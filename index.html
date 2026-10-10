@@ -295,8 +295,38 @@
     }
   });
 
+  
   function renderAll(){renderDashboard();renderTable();renderMap();renderAnalytics();}
+
+  async function refreshIncidentsFromSupabase() {
+    if (!window.CampusShieldBackend?.isConfigured) return;
+
+    try {
+      const user = await window.CampusShieldBackend.getCurrentUser();
+      if (!user) return;
+
+      const rows = await window.CampusShieldBackend.listIncidents();
+
+      incidents = rows.map(i => ({
+        id: i.id,
+        category: i.category,
+        severity: i.severity,
+        location: i.location,
+        description: i.description,
+        reporter: i.reporter || "Signed-in user",
+        status: i.status || "Open",
+        createdAt: i.created_at
+      }));
+
+      persist();
+      renderAll();
+    } catch (error) {
+      console.error("Could not refresh incidents from Supabase:", error);
+    }
+  }
+
   renderAll();
+  refreshIncidentsFromSupabase();
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -305,3 +335,5 @@
 
 </body>
 </html>
+
+  
