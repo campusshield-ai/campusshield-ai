@@ -171,7 +171,6 @@
   $("menuToggle").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
   document.addEventListener("click",e=>{if(window.innerWidth<=760 && $("sidebar").classList.contains("open") && !$("sidebar").contains(e.target) && !$("menuToggle").contains(e.target))$("sidebar").classList.remove("open");});
 
- "re
   $("reportForm").addEventListener("submit", async e => {
     e.preventDefault();
 
@@ -198,8 +197,7 @@
         location,
         description
       });
-
-     
+      
       incidents.unshift({
         id: saved.id,
         category: saved.category,
