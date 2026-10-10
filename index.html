@@ -196,6 +196,63 @@
   function renderAnalytics(){const total=incidents.length,res=incidents.filter(i=>i.status==="Resolved").length,high=incidents.filter(i=>i.severity==="High").length;$("aTotal").textContent=total;$("aHigh").textContent=high;$("aResolved").textContent=res;$("aOpen").textContent=total-res;const cats=groupBy("category");renderBars("analyticsCategories",Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(x=>[x[0],x[1]]),total);const sevs=["High","Medium","Low"].map(s=>[s,incidents.filter(i=>i.severity===s).length,severityColor[s]]);renderBars("analyticsSeverity",sevs,total);renderTrend("analyticsTrend");}
   $("exportCsv").addEventListener("click",()=>{if(!incidents.length){toast("There are no incident records to export yet.");return;}const cols=["id","category","severity","location","description","reporter","status","createdAt"];const quote=v=>`"${String(v??"").replace(/"/g,'""')}"`;const csv=[cols.join(","),...incidents.map(i=>cols.map(c=>quote(i[c])).join(","))].join("\r\n");const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="campusshield-incidents.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast("CSV export prepared.");});
   $("riskForm").addEventListener("submit",e=>{e.preventDefault();const type=Number($("riskType").value),people=Number($("riskPeople").value),urgency=Number($("riskUrgency").value),environment=Number($("riskEnvironment").value);const score=Math.min(100,Math.round(((type*4+people*3+urgency*5+environment*2)/ (5*4+4*3+4*5+3*2))*100));let band,cls,advice;if(score>=75){band="Critical priority";cls="high";advice="Treat this as a prompt for immediate human review. Follow your institution’s official emergency procedures where appropriate.";}else if(score>=50){band="High priority";cls="high";advice="Escalate for timely review by the appropriate campus safety team.";}else if(score>=30){band="Moderate priority";cls="medium";advice="Arrange review and document any changes in the situation.";}else{band="Lower priority";cls="low";advice="Use routine review while remaining alert to changing circumstances.";}const recs=[];if(urgency>=4)recs.push("Urgency was marked as immediate.");if(people>=3)recs.push("Potentially multiple people may be affected.");if(type>=4)recs.push("Selected incident type may carry significant consequences.");if(!recs.length)recs.push("No additional high-weight factors were selected.");$("riskOutput").innerHTML=`<div class="subtle">ASSESSMENT RESULT</div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px"><h3>${band}</h3><span class="tag ${cls}">${score}/100</span></div><div class="risk-score">${score}<span style="font-size:15px;color:var(--muted);letter-spacing:0"> / 100</span></div><div class="risk-meter"><div style="width:${score}%"></div></div><p>${advice}</p><strong style="font-size:12px">Factors to review</strong><ul>${recs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><p><strong>Important:</strong> This score is a simple illustrative calculation. It is not validated, does not predict outcomes, and must not be used as the sole basis for emergency decisions.</p>`;});
+  
+  $("auth-form").addEventListener("submit", e => e.preventDefault());
+
+  $("signup-button").addEventListener("click", async () => {
+    const email = $("auth-email").value.trim();
+    const password = $("auth-password").value;
+    const name = $("auth-name").value.trim();
+    const message = $("auth-message");
+
+    if (!email || !password) {
+      message.textContent = "Enter your email and password.";
+      return;
+    }
+
+    if (!window.CampusShieldBackend?.isConfigured) {
+      message.textContent = "Supabase is not configured. Please try again later.";
+      return;
+    }
+
+    try {
+      const { data, error } = await window.CampusShieldBackend.signUp(email, password, name);
+      if (error) throw error;
+
+      message.textContent = data.user && !data.session
+        ? "Account created. Check your email to confirm it, then sign in."
+        : "Account created. You are signed in.";
+    } catch (error) {
+      message.textContent = "Sign-up failed: " + error.message;
+    }
+  });
+
+  $("signin-button").addEventListener("click", async () => {
+    const email = $("auth-email").value.trim();
+    const password = $("auth-password").value;
+    const message = $("auth-message");
+
+    try {
+      const { error } = await window.CampusShieldBackend.signIn(email, password);
+      if (error) throw error;
+      message.textContent = "Signed in successfully.";
+    } catch (error) {
+      message.textContent = "Sign-in failed: " + error.message;
+    }
+  });
+
+  $("signout-button").addEventListener("click", async () => {
+    const message = $("auth-message");
+
+    try {
+      const { error } = await window.CampusShieldBackend.signOut();
+      if (error) throw error;
+      message.textContent = "Signed out.";
+    } catch (error) {
+      message.textContent = "Sign-out failed: " + error.message;
+    }
+  });
+
   function renderAll(){renderDashboard();renderTable();renderMap();renderAnalytics();}
   renderAll();
 })();
