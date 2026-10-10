@@ -171,13 +171,57 @@
   $("menuToggle").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
   document.addEventListener("click",e=>{if(window.innerWidth<=760 && $("sidebar").classList.contains("open") && !$("sidebar").contains(e.target) && !$("menuToggle").contains(e.target))$("sidebar").classList.remove("open");});
 
-  $("reportForm").addEventListener("submit",e=>{
+ "re
+  $("reportForm").addEventListener("submit", async e => {
     e.preventDefault();
-    const category=$("category").value, severity=$("severity").value, location=$("location").value.trim(), description=$("description").value.trim(), reporter=$("reporter").value.trim();
-    if(!category||!severity||!location||!description){toast("Please complete all required fields.");return;}
-    incidents.unshift({id:(crypto.randomUUID?crypto.randomUUID():"CS-"+Date.now()+"-"+Math.random().toString(36).slice(2,7)),category,severity,location,description,reporter:reporter||"Demo reporter",status:"Open",createdAt:new Date().toISOString()});
-    persist(); $("reportForm").reset(); renderAll(); navigate("manage"); toast("Demo incident report saved in this browser.");
+
+    const category = $("category").value;
+    const severity = $("severity").value;
+    const location = $("location").value.trim();
+    const description = $("description").value.trim();
+    const reporter = $("reporter").value.trim();
+
+    if (!category || !severity || !location || !description) {
+      toast("Please complete all required fields.");
+      return;
+    }
+
+    if (!window.CampusShieldBackend?.isConfigured) {
+      toast("Supabase is not configured.");
+      return;
+    }
+
+    try {
+      const saved = await window.CampusShieldBackend.createIncident({
+        category,
+        severity,
+        location,
+        description
+      });
+
+     
+      incidents.unshift({
+        id: saved.id,
+        category: saved.category,
+        severity: saved.severity,
+        location: saved.location,
+        description: saved.description,
+        reporter: reporter || "Signed-in user",
+        status: saved.status || "Open",
+        createdAt: saved.created_at
+      });
+
+      persist();
+      $("reportForm").reset();
+      renderAll();
+      navigate("manage");
+      toast("Incident report saved to Supabase.");
+    } catch (error) {
+      console.error("Incident submission failed:", error);
+      toast("Could not save report: " + error.message);
+    }
   });
+
 
   function renderIncidentRow(i){return `<div class="incident-row"><div class="incident-symbol">${iconFor(i.category)}</div><div class="incident-main"><strong>${esc(i.category)}</strong><p>${esc(i.description)}</p><div class="incident-meta">${tagSeverity(i.severity)} ${tagStatus(i.status)}<span class="subtle">⌖ ${esc(i.location)}</span><span class="subtle">${esc(dateText(i.createdAt))}</span></div></div></div>`;}
   function renderRecent(){const el=$("recentList");el.innerHTML=incidents.slice(0,5).map(renderIncidentRow).join("")||'<div class="empty">No incidents yet. Create a demo report to populate your dashboard.</div>';}
