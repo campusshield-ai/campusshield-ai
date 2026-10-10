@@ -1,1032 +1,184 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CampusShield AI | Campus Safety</title>
-  <style>
-    :root {
-      --navy: #101d36;
-      --blue: #2764e7;
-      --red: #d93645;
-      --bg: #f3f6fb;
-      --white: #ffffff;
-      --text: #17233b;
-      --muted: #69758b;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Arial, sans-serif;
-    }
-
-    header {
-      background: var(--navy);
-      color: white;
-      padding: 22px 7%;
-    }
-
-    header h1 { margin: 0 0 6px; }
-    header p { margin: 0; color: #cbd6e8; }
-
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      padding: 15px 7%;
-      background: white;
-      border-bottom: 1px solid #e1e7f0;
-    }
-
-    button {
-      border: 0;
-      border-radius: 8px;
-      padding: 11px 15px;
-      background: var(--blue);
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    button.secondary {
-      background: #e8edf7;
-      color: var(--navy);
-    }
-
-    button:focus-visible,
-    input:focus-visible,
-    select:focus-visible,
-    textarea:focus-visible {
-      outline: 3px solid #8db3ff;
-      outline-offset: 2px;
-    }
-
-    main {
-      max-width: 1100px;
-      margin: auto;
-      padding: 25px 18px;
-    }
-
-    .notice {
-      background: #fff4d9;
-      border: 1px solid #f0d58f;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      line-height: 1.5;
-      margin-bottom: 20px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 15px;
-      margin-bottom: 22px;
-    }
-
-    .card, .panel {
-      background: var(--white);
-      padding: 20px;
-      border: 1px solid #e1e7f0;
-      border-radius: 13px;
-    }
-
-    .card p { color: var(--muted); margin: 0; }
-    .number { font-size: 32px; font-weight: bold; margin-top: 12px; }
-    .panel { margin-bottom: 20px; }
-    .panel h2 { margin-top: 0; }
-
-    label {
-      display: block;
-      font-weight: bold;
-      font-size: 13px;
-      margin: 15px 0 7px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 11px;
-      border: 1px solid #cfd7e5;
-      border-radius: 8px;
-      font: inherit;
-      background: white;
-      color: var(--text);
-    }
-
-    textarea { min-height: 100px; resize: vertical; }
-
-    .incident {
-      padding: 16px 0;
-      border-bottom: 1px solid #e5eaf2;
-    }
-
-    .incident:last-child { border-bottom: 0; }
-    .incident strong { display: block; margin-bottom: 6px; }
-    .muted { color: var(--muted); font-size: 13px; }
-    .high { color: var(--red); font-weight: bold; }
-    .medium { color: #a36b08; font-weight: bold; }
-    .low { color: #198754; font-weight: bold; }
-    .hidden { display: none !important; }
-
-    .risk-summary {
-      margin: 14px 0;
-      padding: 14px;
-      border: 1px solid #dbe2ea;
-      border-radius: 10px;
-      background: #f8fafc;
-      overflow-wrap: anywhere;
-    }
-
-    .risk-summary .risk-score {
-      font-size: 24px;
-      font-weight: 800;
-      margin: 10px 0;
-    }
-
-    .risk-badge {
-      display: inline-block;
-      padding: 6px 11px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .risk-low { color: #166534; background: #dcfce7; }
-    .risk-medium { color: #854d0e; background: #fef3c7; }
-    .risk-high { color: #9a3412; background: #ffedd5; }
-    .risk-critical { color: #991b1b; background: #fee2e2; }
-
-    .risk-summary details { margin-top: 12px; }
-    .risk-summary summary { cursor: pointer; font-weight: bold; }
-    .risk-summary li { margin: 7px 0; line-height: 1.5; }
-
-    .risk-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0 18px;
-    }
-
-    .risk-result {
-      margin-top: 20px;
-      padding: 18px;
-      border-radius: 12px;
-      background: #f8fafc;
-      border: 1px solid #dbe2ea;
-    }
-
-    .risk-result .risk-score { font-size: 38px; font-weight: 800; }
-    .risk-result h3 { margin-bottom: 8px; }
-
-
-    .map-layout { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(240px,1fr); gap:16px; align-items:start; }
-    .campus-map { width:100%; display:block; border:1px solid #d5dfeb; border-radius:12px; background:#eef5e9; }
-    .map-legend { display:flex; flex-wrap:wrap; gap:10px 14px; margin:12px 0; }
-    .legend-item { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
-    .legend-dot { width:11px; height:11px; border-radius:50%; display:inline-block; }
-    .map-marker { cursor:pointer; stroke:white; stroke-width:2.5; }
-    .map-marker:focus { outline:none; stroke:#101d36; stroke-width:5; }
-    .map-building { fill:#dbe5f2; stroke:#9aaec6; stroke-width:1.5; }
-    .map-building-label { font-size:10px; fill:#24354d; font-weight:bold; text-anchor:middle; }
-    .map-path { fill:none; stroke:#ffffff; stroke-width:13; stroke-linecap:round; }
-    .map-zone { opacity:.20; stroke-width:2; stroke-dasharray:5 4; }
-    .map-detail { min-height:140px; }
-    .map-detail h3 { margin-top:0; }
-    .map-detail p { line-height:1.5; }
-    .map-report-list { max-height:300px; overflow:auto; }
-    .map-report-button { width:100%; text-align:left; margin:5px 0; background:#f1f5f9; color:var(--text); border:1px solid #dbe2ea; }
-    .map-report-button:hover { background:#e5edf8; }
-    .map-empty { padding:20px; text-align:center; color:var(--muted); }
-
-    .analytics-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
-    .analytics-stat-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:16px 0; }
-    .analytics-stat { padding:16px; border:1px solid #e1e7f0; border-radius:11px; background:#fff; }
-    .analytics-stat .number { font-size:27px; }
-    .bar-row { display:grid; grid-template-columns:minmax(90px,1fr) 2fr 34px; gap:10px; align-items:center; margin:13px 0; font-size:13px; }
-    .bar-track { height:13px; border-radius:99px; background:#edf1f7; overflow:hidden; }
-    .bar-fill { height:100%; border-radius:99px; min-width:0; }
-    .trend-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; align-items:end; min-height:150px; padding-top:15px; }
-    .trend-day { text-align:center; font-size:11px; color:var(--muted); }
-    .trend-bar-wrap { height:105px; display:flex; align-items:flex-end; justify-content:center; margin-bottom:7px; }
-    .trend-bar { width:min(26px,80%); min-height:3px; border-radius:5px 5px 0 0; background:#2764e7; }
-    .analytics-note { padding:11px 13px; border-radius:9px; background:#f8fafc; color:var(--muted); font-size:12px; line-height:1.5; }
-    @media (max-width:760px) { .analytics-grid { grid-template-columns:1fr; } .analytics-stat-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media (max-width:760px) { .map-layout { grid-template-columns:1fr; } .campus-map { min-height:220px; } }
-
-    footer {
-      text-align: center;
-      color: var(--muted);
-      padding: 20px;
-      font-size: 12px;
-    }
-
-    @media (max-width: 650px) {
-      .cards, .risk-grid { grid-template-columns: 1fr; }
-      header { padding: 20px; }
-      nav { padding: 12px; }
-      nav button { flex: 1 1 130px; }
-      main { padding: 18px 12px; }
-      .card, .panel { padding: 16px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07172d">
+<title>CampusShield AI | Intelligent Campus Safety</title>
+<style>
+:root{--navy:#07172d;--navy2:#0d2442;--blue:#1687f8;--teal:#19d3b0;--green:#52df8b;--ink:#17263d;--muted:#6d7c91;--bg:#f3f6fb;--card:#fff;--line:#e2e9f2;--red:#e24d63;--amber:#d99520;--shadow:0 12px 34px rgba(16,37,68,.07)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #8bc6ff;outline-offset:3px}
+.app{min-height:100vh}.sidebar{position:fixed;inset:0 auto 0 0;width:248px;background:linear-gradient(180deg,#07172d,#0a2140);color:#eaf3ff;padding:24px 16px;display:flex;flex-direction:column;z-index:20}.brand{display:flex;align-items:center;gap:12px;padding:0 8px 28px}.brand-mark{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#1488ff,#18d7ac);display:grid;place-items:center;box-shadow:0 8px 20px #1687f84a;flex:none}.brand-mark svg{width:29px;height:29px}.brand-name{font-size:16px;font-weight:850;letter-spacing:-.5px}.brand-name span{color:var(--teal)}.brand-sub{font-size:10px;letter-spacing:1.6px;color:#91a9c8;text-transform:uppercase}.nav-label{font-size:10px;font-weight:800;color:#7188a6;letter-spacing:1.7px;padding:10px 12px}.nav{display:grid;gap:6px}.nav button{border:0;background:transparent;color:#a9bdd7;text-align:left;padding:12px;border-radius:11px;display:flex;gap:12px;align-items:center;font-weight:650;font-size:13px;transition:.18s}.nav button:hover,.nav button.active{background:linear-gradient(90deg,#1687f82e,#19d3b010);color:#fff}.nav button.active{box-shadow:inset 3px 0 var(--teal)}.nav .ico{width:20px;text-align:center;font-size:17px}.sidebar-bottom{margin-top:auto;border:1px solid #ffffff18;border-radius:14px;padding:14px;background:#ffffff08}.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#53e69b;margin-right:7px;box-shadow:0 0 0 4px #53e69b18}.sidebar-bottom strong{font-size:12px}.sidebar-bottom p{margin:5px 0 0;color:#8ea6c5;font-size:11px}
+.main{margin-left:248px;min-width:0}.topbar{height:76px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;background:#ffffffed;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10;backdrop-filter:blur(14px)}.crumb{font-size:12px;color:var(--muted)}.crumb strong{color:var(--ink);font-size:15px;margin-left:8px}.top-actions{display:flex;gap:10px;align-items:center}.pill{display:inline-flex;align-items:center;gap:8px;background:#e9fbf5;color:#137c62;border:1px solid #c8f4e5;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800}.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#e0edff;color:#1459b8;font-weight:800}.menu-toggle{display:none;border:1px solid var(--line);background:white;border-radius:10px;padding:8px 10px}
+.content{max-width:1500px;margin:auto;padding:30px 32px 50px}.page{display:none;animation:fade .2s ease}.page.active{display:block}@keyframes fade{from{opacity:.4;transform:translateY(3px)}to{opacity:1;transform:none}}.page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}.eyebrow{color:#138b8a;text-transform:uppercase;letter-spacing:1.7px;font-size:10px;font-weight:850}.page-heading h1{font-size:clamp(25px,3vw,33px);letter-spacing:-1.2px;margin:4px 0 6px;line-height:1.15}.page-heading p{margin:0;color:var(--muted);font-size:13px}.btn{border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(135deg,#1687f8,#1761d8);color:white;font-size:12px;font-weight:800;box-shadow:0 6px 15px #1687f823}.btn:hover{filter:brightness(1.05);transform:translateY(-1px)}.btn.secondary{background:#edf3fa;color:#243955;box-shadow:none;border:1px solid var(--line)}.btn.danger{background:#fff0f2;color:#b3263b;box-shadow:none}.btn.small{padding:7px 10px;font-size:11px}.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}.stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow);min-width:0}.stat{padding:19px;position:relative;overflow:hidden}.stat:after{content:"";position:absolute;width:85px;height:85px;border-radius:50%;background:var(--wash,#e9f3ff);right:-30px;top:-30px}.stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;font-weight:700;gap:6px}.stat-icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--wash,#e9f3ff);color:var(--accent,#1679eb);font-size:16px;z-index:1}.stat-num{font-size:31px;font-weight:850;letter-spacing:-1.2px;margin:11px 0 3px}.stat-foot{font-size:11px;color:var(--muted)}.stat-foot strong{color:#16956d}.two-col{grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr)}.panel{padding:21px;margin-bottom:17px}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:17px}.panel h2{font-size:15px;letter-spacing:-.3px;margin:0}.panel-head p{font-size:11px;color:var(--muted);margin:4px 0 0}.subtle{font-size:11px;color:var(--muted)}.tag{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:850;white-space:nowrap}.tag.high{background:#fff0f1;color:#bd2f46}.tag.medium{background:#fff5df;color:#98600a}.tag.low{background:#e6f9ef;color:#168154}.tag.open{background:#e8f2ff;color:#235eb2}.tag.resolved{background:#e6f9ef;color:#168154}.incident-list{display:grid}.incident-row{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #edf1f6;align-items:flex-start}.incident-row:last-child{border-bottom:0}.incident-symbol{width:37px;height:37px;display:grid;place-items:center;border-radius:12px;background:#f0f5fb;flex:none}.incident-main{flex:1;min-width:0}.incident-main strong{display:block;font-size:12px;margin:1px 0 3px}.incident-main p{margin:0;color:var(--muted);font-size:11px;overflow-wrap:anywhere}.incident-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px}.empty{padding:25px 10px;text-align:center;color:var(--muted);font-size:12px}.notice{padding:13px 15px;border-radius:12px;background:#fff8e9;border:1px solid #f4e2b9;color:#7d5b1a;font-size:11px;line-height:1.6;margin-bottom:20px}.notice strong{color:#69470d}.map-layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(260px,.8fr);gap:16px}.map-canvas{border-radius:13px;overflow:hidden;background:#eaf3eb;border:1px solid #d7e4dc}.map-canvas svg{display:block;width:100%;height:auto;min-height:300px}.map-marker{cursor:pointer;stroke:#fff;stroke-width:3;transition:transform .15s}.map-marker:hover{stroke:#0b2342;stroke-width:4}.map-marker:focus{outline:none;stroke:#0b2342;stroke-width:5}.map-legend{display:flex;gap:12px;flex-wrap:wrap;margin:13px 0 0}.legend{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}.dot{width:9px;height:9px;border-radius:50%}.map-detail{background:#f7f9fc;border:1px solid var(--line);border-radius:13px;padding:16px;min-height:160px}.map-detail h3{font-size:14px;margin:0 0 7px}.map-detail p{font-size:12px;color:var(--muted);margin:5px 0}.map-reports{margin-top:15px;display:grid;gap:7px}.map-report{width:100%;text-align:left;border:1px solid var(--line);background:white;border-radius:9px;padding:10px;font-size:11px;color:var(--ink)}.map-report:hover{border-color:#8bbdff}.bars{display:grid;gap:15px}.bar-item{display:grid;grid-template-columns:105px 1fr 24px;gap:10px;align-items:center;font-size:11px}.bar-track{height:9px;background:#edf1f7;border-radius:99px;overflow:hidden}.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1687f8,#19d3b0);min-width:0}.trend{height:155px;display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;border-bottom:1px solid var(--line);padding-top:15px}.trend-col{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px}.trend-bar{width:min(26px,75%);min-height:3px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#19d3b0,#1687f8)}.trend-col span{font-size:10px;color:var(--muted)}.trend-col b{font-size:10px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 15px}.field{margin-bottom:15px;min-width:0}.field.full{grid-column:1/-1}.field label{display:block;font-size:11px;font-weight:800;margin-bottom:7px}.field input,.field select,.field textarea,.toolbar input,.toolbar select{width:100%;border:1px solid #d8e1ec;border-radius:10px;padding:11px 12px;background:white;color:var(--ink);min-width:0}.field textarea{min-height:115px;resize:vertical}.field .hint{font-size:10px;color:var(--muted);margin-top:5px}.form-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.toolbar input{flex:1;min-width:170px}.toolbar select{width:auto;min-width:140px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:650px}th{text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.7px;background:#f8fafd;padding:12px;border-bottom:1px solid var(--line)}td{padding:13px 12px;border-bottom:1px solid #edf1f6;font-size:11px;vertical-align:middle}tbody tr:last-child td{border-bottom:0}.td-title{font-weight:800;font-size:12px}.td-sub{color:var(--muted);font-size:10px;margin-top:3px}.actions{display:flex;gap:6px;flex-wrap:wrap}.risk-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 15px}.risk-output{padding:20px;border:1px solid var(--line);border-radius:14px;background:#f8fafd;margin-top:18px}.risk-score{font-size:42px;font-weight:900;letter-spacing:-2px}.risk-meter{height:10px;border-radius:99px;background:#e6ebf3;overflow:hidden;margin:12px 0}.risk-meter div{height:100%;width:0;background:linear-gradient(90deg,#39c98b,#e9b344,#e24d63);transition:width .25s}.risk-output h3{margin:0;font-size:16px}.risk-output p,.risk-output li{font-size:12px;color:var(--muted);line-height:1.7}.footer{text-align:center;color:#8491a4;font-size:10px;padding:10px 0 0}.toast{position:fixed;right:22px;bottom:22px;max-width:calc(100vw - 44px);background:#0c2440;color:white;border:1px solid #294564;padding:13px 17px;border-radius:12px;box-shadow:0 14px 40px #07172d3d;font-size:12px;z-index:50;display:none}.toast.show{display:block;animation:fade .2s}
+@media(max-width:1100px){.sidebar{width:220px}.main{margin-left:220px}.content{padding:25px 22px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.two-col{grid-template-columns:1fr}.map-layout{grid-template-columns:1fr}}
+@media(max-width:760px){.sidebar{transform:translateX(-100%);transition:transform .2s;width:260px;box-shadow:15px 0 35px #07172d20}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.topbar{height:66px;padding:0 14px}.menu-toggle{display:block}.crumb{display:none}.content{padding:20px 12px 35px}.page-heading{flex-direction:column}.page-heading .btn{width:100%}.stats{gap:10px}.stat{padding:14px}.stat-num{font-size:27px}.stat-top{font-size:11px}.panel{padding:15px;border-radius:14px}.form-grid,.risk-inputs{grid-template-columns:1fr}.field.full{grid-column:auto}.analytics-grid{grid-template-columns:1fr}.map-canvas svg{min-height:220px}.pill{font-size:10px}.top-actions{gap:7px}}
+@media(max-width:390px){.stats{grid-template-columns:1fr 1fr}.stat-num{font-size:24px}.stat-top{align-items:flex-start}.stat-icon{width:28px;height:28px}.trend{gap:4px}.bar-item{grid-template-columns:82px 1fr 20px;gap:6px}.toolbar select{flex:1}.brand-name{font-size:15px}}
+</style>
 </head>
-
 <body>
-  <header>
-    <h1>🛡️ CampusShield AI</h1>
-    <p>Intelligent Campus Safety &amp; Emergency Response</p>
-  </header>
-
-  <nav aria-label="Main navigation">
-    <button onclick="showPage('dashboard')">Dashboard</button>
-    <button onclick="showPage('report')">Report Incident</button>
-    <button onclick="showPage('manage')">Manage Incidents</button>
-    <button onclick="showPage('riskAnalysis')">Risk Analysis Tool</button>
-    <button onclick="showPage('campusMap')">Interactive Campus Map</button>
-    <button onclick="showPage('analytics')">Analytics Dashboard</button>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M20 3 34 8v11c0 9-6 14-14 18C12 33 6 28 6 19V8L20 3Z" stroke="white" stroke-width="2.5"/><path d="M11 20 20 13l9 7M14 20v7h12v-7M18 27v-5h4v5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M29 8q4 2 5 6" stroke="#baffdf" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <div><div class="brand-name">Campus<span>Shield</span> AI</div><div class="brand-sub">Campus safety intelligence</div></div>
+  </div>
+  <div class="nav-label">WORKSPACE</div>
+  <nav class="nav" aria-label="Main navigation">
+    <button class="active" data-page="dashboard"><span class="ico">▦</span>Overview</button>
+    <button data-page="report"><span class="ico">＋</span>Report incident</button>
+    <button data-page="manage"><span class="ico">☷</span>Incident management</button>
+    <button data-page="map"><span class="ico">⌖</span>Campus risk map</button>
+    <button data-page="risk"><span class="ico">◈</span>Risk analysis</button>
+    <button data-page="analytics"><span class="ico">▥</span>Analytics & reports</button>
   </nav>
+  <div class="sidebar-bottom"><span class="live-dot"></span><strong>Demo environment active</strong><p>Local browser storage · No live emergency dispatch</p></div>
+</aside>
+<div class="main">
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle" id="menuToggle" aria-label="Open navigation">☰</button><div class="crumb">CampusShield AI /<strong id="currentSection">Overview</strong></div></div>
+  <div class="top-actions"><span class="pill"><span class="live-dot" style="margin:0"></span> SYSTEM ONLINE · DEMO</span><div class="avatar" title="Demo administrator">CS</div></div>
+</header>
+<main class="content">
+  <div class="notice"><strong>Prototype notice:</strong> This is a demonstration interface. Incident records are saved only in this browser on this device. It does not contact campus security or emergency services. Use fictional test data only.</div>
 
-  <main>
-    <div class="notice">
-      <strong>Prototype environment:</strong>
-      This is a demonstration only. Reports are stored in this browser.
-      No emergency alerts are sent. Use fictional test information only.
+  <section class="page active" id="page-dashboard">
+    <div class="page-heading"><div><div class="eyebrow">Safety intelligence platform</div><h1>Campus safety overview</h1><p>Monitor incident activity, review emerging risks, and keep campus teams informed.</p></div><button class="btn" data-goto="report">＋ Create incident report</button></div>
+    <div class="grid stats">
+      <div class="stat" style="--wash:#e6f1ff;--accent:#2479e8"><div class="stat-top">Total incidents <span class="stat-icon">▤</span></div><div class="stat-num" id="totalStat">0</div><div class="stat-foot">All demo records</div></div>
+      <div class="stat" style="--wash:#fff0f1;--accent:#dc4059"><div class="stat-top">Open high-risk <span class="stat-icon">⚠</span></div><div class="stat-num" id="highStat">0</div><div class="stat-foot">Requires review</div></div>
+      <div class="stat" style="--wash:#e4faf1;--accent:#13986d"><div class="stat-top">Resolved <span class="stat-icon">✓</span></div><div class="stat-num" id="resolvedStat">0</div><div class="stat-foot">Marked as resolved</div></div>
+      <div class="stat" style="--wash:#e8f9fb;--accent:#11899a"><div class="stat-top">Resolution rate <span class="stat-icon">↗</span></div><div class="stat-num" id="rateStat">0%</div><div class="stat-foot">Of all reported incidents</div></div>
     </div>
+    <div class="grid two-col">
+      <div class="panel"><div class="panel-head"><div><h2>Recent incidents</h2><p>Latest activity submitted to this demo</p></div><button class="btn secondary small" data-goto="manage">View all</button></div><div class="incident-list" id="recentList"></div></div>
+      <div class="panel"><div class="panel-head"><div><h2>Incident categories</h2><p>Distribution across current records</p></div><span class="subtle">Live summary</span></div><div class="bars" id="categoryBars"></div></div>
+    </div>
+    <div class="grid two-col">
+      <div class="panel"><div class="panel-head"><div><h2>7-day activity</h2><p>Reports by date created in this browser</p></div></div><div class="trend" id="trendChart"></div></div>
+      <div class="panel"><div class="panel-head"><div><h2>Response priorities</h2><p>Open incidents grouped by reported severity</p></div><button class="btn secondary small" data-goto="map">Open risk map</button></div><div id="prioritySummary"></div></div>
+    </div>
+  </section>
 
-    <section id="dashboard">
-      <h2>Campus Safety Overview</h2>
-      <p class="muted">Review demo reports and test the workflow.</p>
-
-      <div class="cards">
-        <div class="card">
-          <p>Total incidents</p>
-          <div class="number" id="total">0</div>
+  <section class="page" id="page-report">
+    <div class="page-heading"><div><div class="eyebrow">Incident intake</div><h1>Report an incident</h1><p>Capture the essential details for a campus safety report.</p></div></div>
+    <div class="panel"><div class="panel-head"><div><h2>Incident details</h2><p>Fields marked * are required. Use fictional details in this demo.</p></div><span class="tag open">New report</span></div>
+      <form id="reportForm">
+        <div class="form-grid">
+          <div class="field"><label for="category">Incident category *</label><select id="category" required><option value="">Select a category</option><option>Medical emergency</option><option>Fire or smoke</option><option>Security concern</option><option>Accident or injury</option><option>Harassment or misconduct</option><option>Facility hazard</option><option>Theft or property</option><option>Other</option></select></div>
+          <div class="field"><label for="severity">Reported severity *</label><select id="severity" required><option value="">Select severity</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+          <div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" placeholder="e.g. Main library entrance" required></div>
+          <div class="field"><label for="reporter">Reporter label (optional)</label><input id="reporter" maxlength="60" placeholder="e.g. Student / Demo reporter"></div>
+          <div class="field full"><label for="description">Incident description *</label><textarea id="description" maxlength="800" placeholder="Describe what happened, when it occurred, and any immediate concerns..." required></textarea><div class="hint">Do not include passwords, private medical information, or other sensitive personal data.</div></div>
         </div>
-        <div class="card">
-          <p>Unresolved high-risk incidents</p>
-          <div class="number" id="highCount">0</div>
-        </div>
-        <div class="card">
-          <p>Resolved incidents</p>
-          <div class="number" id="resolved">0</div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2>Recent Incidents</h2>
-        <div id="recent"></div>
-      </div>
-    </section>
-
-    <section id="report" class="hidden">
-      <div class="panel">
-        <h2>Report a Demo Incident</h2>
-        <p class="muted">Use fictional information for testing.</p>
-
-        <form id="reportForm">
-          <label for="category">Incident category *</label>
-          <select id="category" required>
-            <option value="">Select category</option>
-            <option>Medical emergency</option>
-            <option>Fire or smoke</option>
-            <option>Security concern</option>
-            <option>Accident or injury</option>
-            <option>Harassment or misconduct</option>
-            <option>Facility hazard</option>
-            <option>Other</option>
-          </select>
-
-          <label for="severity">Reported severity *</label>
-          <select id="severity" required>
-            <option value="">Select severity</option>
-            <option>High</option>
-            <option>Medium</option>
-            <option>Low</option>
-          </select>
-
-          <label for="location">Fictional campus location *</label>
-          <input id="location" maxlength="100"
-            placeholder="e.g. Library entrance (sample)" required>
-
-          <label for="description">Description *</label>
-          <textarea id="description" maxlength="800"
-            placeholder="Describe a fictional test scenario..."
-            required></textarea>
-
-          <br><br>
-          <button type="submit">Submit Demo Report</button>
-        </form>
-      </div>
-    </section>
-
-    <section id="manage" class="hidden">
-      <div class="panel">
-        <h2>Incident Management</h2>
-        <p class="muted">
-          Review risk scores and update the workflow status.
-        </p>
-        <div id="allIncidents"></div>
-      </div>
-    </section>
-
-
-    <section id="analytics" class="hidden">
-      <div class="panel">
-        <h2>Analytics Dashboard</h2>
-        <p class="muted">Live summaries calculated from the demo incidents saved in this browser.</p>
-        <div class="analytics-stat-grid">
-          <div class="analytics-stat"><p class="muted">Total incidents</p><div class="number" id="analyticsTotal">0</div></div>
-          <div class="analytics-stat"><p class="muted">Unresolved</p><div class="number" id="analyticsUnresolved">0</div></div>
-          <div class="analytics-stat"><p class="muted">High / critical risk</p><div class="number" id="analyticsHighRisk">0</div></div>
-          <div class="analytics-stat"><p class="muted">Resolved</p><div class="number" id="analyticsResolved">0</div></div>
-        </div>
-        <button type="button" onclick="exportAnalyticsCSV()">Download analytics CSV</button>
-        <p id="exportMessage" class="muted" aria-live="polite"></p>
-      </div>
-      <div class="analytics-grid">
-        <div class="panel"><h3>Risk distribution</h3><p class="muted">Current rule-based assessment of each report.</p><div id="riskDistribution"></div></div>
-        <div class="panel"><h3>Incident status</h3><p class="muted">Workflow progress across all reports.</p><div id="statusDistribution"></div></div>
-        <div class="panel"><h3>Incident categories</h3><p class="muted">Most frequently reported categories in the demo data.</p><div id="categoryDistribution"></div></div>
-        <div class="panel"><h3>Reports over the last 7 days</h3><p class="muted">Counts use the report timestamps stored by this browser.</p><div id="incidentTrend" class="trend-grid"></div></div>
-      </div>
-      <div class="analytics-note">Prototype limitation: these charts summarize only reports stored in this browser. They are not institution-wide statistics, validated safety forecasts, or evidence of actual campus incident rates.</div>
-    </section>
-
-    <section id="campusMap" class="hidden">
-      <div class="panel">
-        <h2>Interactive Campus Map</h2>
-        <p class="muted">Babcock University-inspired schematic for demonstration only. Building positions and incident locations are fictional, not a surveyed or live campus map.</p>
-        <div class="map-legend" aria-label="Risk level legend">
-          <span class="legend-item"><span class="legend-dot" style="background:#dc2626"></span>Critical risk</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#f97316"></span>High risk</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#eab308"></span>Medium risk</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#16a34a"></span>Low risk</span>
-        </div>
-        <div class="map-layout">
-          <div>
-            <svg id="campusSvg" class="campus-map" viewBox="0 0 620 430" role="img" aria-label="Illustrative campus map with clickable incident markers">
-              <rect x="0" y="0" width="620" height="430" rx="12" fill="#eaf3e4"></rect>
-              <path d="M -20 90 C 140 70, 200 140, 300 105 S 490 65, 650 100" class="map-path"></path>
-              <path d="M 90 -20 C 120 100, 100 220, 170 450" class="map-path"></path>
-              <path d="M 310 -20 C 330 100, 285 230, 350 450" class="map-path"></path>
-              <path d="M -20 320 C 140 280, 300 350, 650 280" class="map-path"></path>
-              <g aria-label="Illustrative buildings">
-                <rect class="map-building" x="35" y="30" width="105" height="42" rx="6"></rect><text class="map-building-label" x="87" y="55">North Gate</text>
-                <rect class="map-building" x="205" y="35" width="105" height="52" rx="6"></rect><text class="map-building-label" x="257" y="64">Library</text>
-                <rect class="map-building" x="405" y="35" width="135" height="52" rx="6"></rect><text class="map-building-label" x="472" y="64">Science Block</text>
-                <rect class="map-building" x="35" y="155" width="120" height="52" rx="6"></rect><text class="map-building-label" x="95" y="184">Student Centre</text>
-                <rect class="map-building" x="220" y="155" width="115" height="52" rx="6"></rect><text class="map-building-label" x="277" y="184">Health Centre</text>
-                <rect class="map-building" x="420" y="150" width="120" height="52" rx="6"></rect><text class="map-building-label" x="480" y="179">Residence</text>
-                <rect class="map-building" x="55" y="350" width="120" height="45" rx="6"></rect><text class="map-building-label" x="115" y="377">Sports Field</text>
-                <rect class="map-building" x="245" y="335" width="130" height="52" rx="6"></rect><text class="map-building-label" x="310" y="365">Admin Block</text>
-                <rect class="map-building" x="430" y="335" width="120" height="52" rx="6"></rect><text class="map-building-label" x="490" y="365">Parking Area</text>
-              </g>
-              <g id="mapZones"></g><g id="mapMarkers"></g>
-            </svg>
-            <p class="muted">Select a colored marker to view the matching demo incident. Markers are placed approximately by location name.</p>
-          </div>
-          <div>
-            <div class="panel map-detail" id="mapDetail" aria-live="polite">
-              <h3>Select an incident marker</h3><p class="muted">Incident details will appear here.</p>
-            </div>
-            <div class="panel"><h3>Mapped incidents</h3><div id="mapReportList" class="map-report-list"></div></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="riskAnalysis" class="hidden">
-      <div class="panel">
-        <h2>Risk Analysis Tool</h2>
-        <p class="muted">
-          Test the scoring engine separately using fictional information.
-          The results do not automatically create an incident report.
-        </p>
-
-        <form id="riskForm">
-          <div class="risk-grid">
-            <div>
-              <label for="riskType">Incident type *</label>
-              <select id="riskType" required>
-                <option value="suspicious">Suspicious activity</option>
-                <option value="medical">Medical emergency</option>
-                <option value="fire">Fire or smoke</option>
-                <option value="violence">Violence or immediate threat</option>
-                <option value="harassment">Harassment or personal safety</option>
-                <option value="accident">Accident or injury</option>
-                <option value="property">Property damage or theft</option>
-                <option value="other">Other incident</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="riskSeverity">Reported severity *</label>
-              <select id="riskSeverity" required>
-                <option value="1">Low</option>
-                <option value="2" selected>Medium</option>
-                <option value="3">High</option>
-                <option value="4">Critical</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="riskUrgency">Immediate danger reported? *</label>
-              <select id="riskUrgency" required>
-                <option value="0">No immediate danger reported</option>
-                <option value="1">Possible or unclear danger</option>
-                <option value="2">Immediate danger reported</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="riskLocation">Fictional location *</label>
-              <input id="riskLocation" maxlength="100"
-                placeholder="e.g. Library (sample)" required>
-            </div>
-          </div>
-
-          <label for="riskDescription">Description *</label>
-          <textarea id="riskDescription" maxlength="2000"
-            placeholder="Describe a fictional test scenario..." required></textarea>
-
-          <br><br>
-          <button type="submit">Analyze Risk</button>
-        </form>
-
-        <div id="riskResult" class="risk-result" aria-live="polite" hidden>
-          <h3>Risk assessment</h3>
-          <div id="riskScore" class="risk-score">— / 100</div>
-          <span id="riskLevel" class="risk-badge risk-medium">Not assessed</span>
-
-          <h4>Why this score?</h4>
-          <ul id="riskReasons"></ul>
-
-          <h4>Recommended next action</h4>
-          <p id="riskAction"></p>
-
-          <p class="muted">
-            Illustrative rules only. Human review is required.
-            This tool does not dispatch responders or send alerts.
-          </p>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    CampusShield AI • Prototype v0.2 • Not connected to emergency services
-  </footer>
-
-  <script>
-    "use strict";
-
-    const demoReports = [
-      {
-        id: 1,
-        category: "Security concern",
-        severity: "High",
-        location: "North Gate (sample)",
-        description: "Fictional test: damaged gate lighting needs inspection.",
-        status: "New",
-        created: Date.now() - 60000
-      },
-      {
-        id: 2,
-        category: "Facility hazard",
-        severity: "Medium",
-        location: "Science Block (sample)",
-        description: "Fictional test: water on a corridor floor.",
-        status: "In Progress",
-        created: Date.now() - 120000
-      },
-      {
-        id: 3,
-        category: "Facility hazard",
-        severity: "Low",
-        location: "Sports Field (sample)",
-        description: "Fictional test: a loose training cone was noticed.",
-        status: "Resolved",
-        created: Date.now() - 180000
-      }
-    ];
-
-    function loadReports() {
-      try {
-        const saved = localStorage.getItem("campusShieldDemo");
-
-        if (!saved) return demoReports.map(r => ({ ...r }));
-
-        const parsed = JSON.parse(saved);
-        if (!Array.isArray(parsed)) return demoReports.map(r => ({ ...r }));
-
-        return parsed;
-      } catch (error) {
-        return demoReports.map(r => ({ ...r }));
-      }
-    }
-
-    let reports = loadReports();
-
-    function saveReports() {
-      try {
-        localStorage.setItem("campusShieldDemo", JSON.stringify(reports));
-      } catch (error) {
-        alert("Browser storage is unavailable. Reports may not persist.");
-      }
-    }
-
-    function escapeHTML(value) {
-      return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      })[char]);
-    }
-
-    function showPage(page) {
-      ["dashboard", "report", "manage", "riskAnalysis", "campusMap", "analytics"].forEach(id => {
-        document.getElementById(id).classList.toggle("hidden", id !== page);
-      });
-      render();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    // Shared rule-based assessment engine.
-    function assessRisk(type, severity, urgency, description, location) {
-      const categoryPoints = {
-        suspicious: 15,
-        medical: 30,
-        fire: 35,
-        violence: 35,
-        harassment: 25,
-        accident: 25,
-        property: 10,
-        other: 10,
-        security: 15,
-        facility: 15
-      };
-
-      const typeInfo = {
-        suspicious: "Suspicious activity",
-        medical: "Medical emergency",
-        fire: "Fire or smoke",
-        violence: "Violence or immediate threat",
-        harassment: "Harassment or personal safety",
-        accident: "Accident or injury",
-        property: "Property damage or theft",
-        other: "Other incident",
-        security: "Security concern",
-        facility: "Facility hazard"
-      };
-
-      const severityPoints = { 1: 5, 2: 15, 3: 25, 4: 35 };
-      const severityLabels = { 1: "Low", 2: "Medium", 3: "High", 4: "Critical" };
-      const reasons = [];
-
-      let score = categoryPoints[type] ?? 10;
-
-      reasons.push(
-        "Incident category: " + (typeInfo[type] || "Other incident") +
-        " contributes " + score + " points."
-      );
-
-      const catPoints = score;
-      score = catPoints;
-
-      const sevPoints = severityPoints[severity] ?? 15;
-      score += sevPoints;
-      reasons.push(
-        "Reported severity is " + (severityLabels[severity] || "Medium") +
-        ", contributing " + sevPoints + " points."
-      );
-
-      if (urgency === 2) {
-        score += 30;
-        reasons.push("Immediate danger was reported: +30 points.");
-      } else if (urgency === 1) {
-        score += 15;
-        reasons.push("Danger is possible or unclear: +15 points.");
-      } else {
-        reasons.push(
-          "No immediate danger was reported; this does not prove the scene is safe."
-        );
-      }
-
-      const wordCount = String(description || "").trim()
-        .split(/\s+/).filter(Boolean).length;
-
-      if (wordCount >= 10) {
-        score += 10;
-        reasons.push("Description has at least 10 words: +10 points.");
-      } else {
-        reasons.push("Short description; verify details.");
-      }
-
-      if (String(location || "").trim()) {
-        score += 5;
-        reasons.push("Location supplied: +5 points.");
-      }
-
-      score = Math.min(100, score);
-
-      const criticalType = ["fire", "violence"].includes(type);
-      const criticalMedical = type === "medical" && severity === 4;
-
-      let level;
-      if (urgency === 2 || criticalType || criticalMedical || score >= 80) {
-        level = "Critical";
-      } else if (score >= 60) {
-        level = "High";
-      } else if (score >= 35) {
-        level = "Medium";
-      } else {
-        level = "Low";
-      }
-
-      let action;
-      if (level === "Critical") {
-        action = "Follow the campus emergency procedure and seek immediate review by authorized personnel. Do not wait for this score.";
-      } else if (level === "High") {
-        action = "Prioritize prompt review by the responsible campus safety team and verify the facts.";
-      } else if (level === "Medium") {
-        action = "Review the report, clarify missing details, and monitor for changes.";
-      } else {
-        action = "Queue for routine review and reassess if new information emerges.";
-      }
-
-      return { score, level, reasons, action };
-    }
-
-    function assessReportRisk(report) {
-      const category = String(report.category || "").toLowerCase();
-      const severityText = String(report.severity || "Medium").toLowerCase();
-
-      let type = "other";
-
-      if (/fire|smoke/.test(category)) type = "fire";
-      else if (/medical|health/.test(category)) type = "medical";
-      else if (/violence|threat|attack/.test(category)) type = "violence";
-      else if (/harass|misconduct|personal safety/.test(category)) type = "harassment";
-      else if (/accident|injur/.test(category)) type = "accident";
-      else if (/suspicious/.test(category)) type = "suspicious";
-      else if (/security/.test(category)) type = "security";
-      else if (/theft|property|damage/.test(category)) type = "property";
-      else if (/facility|hazard/.test(category)) type = "facility";
-
-      let severity = 2;
-      if (severityText === "low") severity = 1;
-      if (severityText === "high") severity = 3;
-      if (severityText === "critical") severity = 4;
-
-      // The original incident form does not collect urgency separately.
-      // Do not assume a report is safe just because urgency was not asked.
-      const urgency = 1;
-
-      return assessRisk(
-        type,
-        severity,
-        urgency,
-        report.description || "",
-        report.location || ""
-      );
-    }
-
-    function renderReport(report, allowUpdate = false) {
-      const severityClass = String(report.severity || "Medium").toLowerCase();
-      const risk = assessReportRisk(report);
-      const riskClass = "risk-" + risk.level.toLowerCase();
-
-      const statusControl = allowUpdate
-        ? `<label for="status-${escapeHTML(report.id)}">Update status</label>
-           <select id="status-${escapeHTML(report.id)}"
-             onchange="updateStatus(${JSON.stringify(report.id)}, this.value)">
-             ${["New", "In Progress", "Resolved"].map(status =>
-               `<option value="${status}" ${
-                 report.status === status ? "selected" : ""
-               }>${status}</option>`
-             ).join("")}
-           </select>`
-        : `<span>${escapeHTML(report.status || "New")}</span>`;
-
-      return `
-        <article class="incident">
-          <strong>${escapeHTML(report.category)} —
-            ${escapeHTML(report.location)}</strong>
-
-          <p>${escapeHTML(report.description)}</p>
-
-          <p class="${escapeHTML(severityClass)}">
-            ${escapeHTML(report.severity)} reported priority
-          </p>
-
-          <div class="risk-summary">
-            <strong>Risk assessment</strong>
-            <div class="risk-score">${risk.score}/100</div>
-            <span class="risk-badge ${riskClass}">
-              ${escapeHTML(risk.level)} risk
-            </span>
-
-            <details>
-              <summary>View explanation and recommended action</summary>
-              <ul>
-                ${risk.reasons.map(reason =>
-                  `<li>${escapeHTML(reason)}</li>`
-                ).join("")}
-              </ul>
-              <p><strong>Recommended action:</strong>
-                ${escapeHTML(risk.action)}
-              </p>
-            </details>
-
-            <p class="muted">
-              Illustrative rules only. Human review is required.
-            </p>
-          </div>
-
-          <p class="muted">Status: ${statusControl}</p>
-        </article>`;
-    }
-
-    function render() {
-      document.getElementById("total").textContent = reports.length;
-
-      document.getElementById("highCount").textContent =
-        reports.filter(report => {
-          const risk = assessReportRisk(report);
-          return ["High", "Critical"].includes(risk.level) &&
-            report.status !== "Resolved";
-        }).length;
-
-      document.getElementById("resolved").textContent =
-        reports.filter(r => r.status === "Resolved").length;
-
-      const recent = [...reports]
-        .sort((a, b) => (b.created || 0) - (a.created || 0))
-        .slice(0, 4);
-
-      document.getElementById("recent").innerHTML =
-        recent.length
-          ? recent.map(r => renderReport(r)).join("")
-          : "<p>No demo reports yet.</p>";
-
-      document.getElementById("allIncidents").innerHTML =
-        reports.length
-          ? [...reports]
-              .sort((a, b) => (b.created || 0) - (a.created || 0))
-              .map(r => renderReport(r, true)).join("")
-          : "<p>No demo reports yet.</p>";
-
-      renderCampusMap();
-      renderAnalytics();
-    }
-
-    function renderBarRows(containerId, entries, colorForLabel) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      const max = Math.max(1, ...entries.map(entry => entry.count));
-      container.innerHTML = entries.length ? entries.map(entry => {
-        const color = colorForLabel(entry.label);
-        const width = entry.count ? Math.max(2, (entry.count / max) * 100) : 0;
-        return `<div class="bar-row"><span>${escapeHTML(entry.label)}</span><div class="bar-track" aria-label="${escapeHTML(entry.label)}: ${entry.count}"><div class="bar-fill" style="width:${width}%;background:${color}"></div></div><strong>${entry.count}</strong></div>`;
-      }).join("") : '<p class="muted">No data yet.</p>';
-    }
-
-    function renderAnalytics() {
-      const total = reports.length;
-      const riskLevels = ["Critical", "High", "Medium", "Low"];
-      const riskCounts = Object.fromEntries(riskLevels.map(level => [level, 0]));
-      reports.forEach(report => {
-        const level = assessReportRisk(report).level;
-        riskCounts[level] = (riskCounts[level] || 0) + 1;
-      });
-      const unresolved = reports.filter(report => report.status !== "Resolved").length;
-      const highRisk = reports.filter(report => ["High", "Critical"].includes(assessReportRisk(report).level)).length;
-      const resolved = reports.filter(report => report.status === "Resolved").length;
-      const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-      setText("analyticsTotal", total);
-      setText("analyticsUnresolved", unresolved);
-      setText("analyticsHighRisk", highRisk);
-      setText("analyticsResolved", resolved);
-
-      renderBarRows("riskDistribution", riskLevels.map(label => ({ label, count: riskCounts[label] || 0 })), label => riskColor(label));
-      const statuses = ["New", "In Progress", "Resolved"];
-      renderBarRows("statusDistribution", statuses.map(label => ({ label, count: reports.filter(report => (report.status || "New") === label).length })), label => ({"New":"#64748b", "In Progress":"#2764e7", "Resolved":"#16a34a"}[label]));
-      const categories = {};
-      reports.forEach(report => { const label = String(report.category || "Other"); categories[label] = (categories[label] || 0) + 1; });
-      const categoryRows = Object.entries(categories).map(([label, count]) => ({label, count})).sort((a,b) => b.count-a.count || a.label.localeCompare(b.label)).slice(0, 8);
-      renderBarRows("categoryDistribution", categoryRows, () => "#64748b");
-
-      const trend = document.getElementById("incidentTrend");
-      if (trend) {
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        const days = [];
-        for (let offset = 6; offset >= 0; offset--) {
-          const day = new Date(today); day.setDate(today.getDate() - offset);
-          const next = new Date(day); next.setDate(day.getDate() + 1);
-          const count = reports.filter(report => { const stamp = Number(report.created) || 0; return stamp >= day.getTime() && stamp < next.getTime(); }).length;
-          days.push({ day, count });
-        }
-        const maxCount = Math.max(1, ...days.map(item => item.count));
-        trend.innerHTML = days.map(item => {
-          const height = item.count ? Math.max(6, (item.count / maxCount) * 100) : 3;
-          const label = item.day.toLocaleDateString(undefined, {weekday:"short"});
-          return `<div class="trend-day"><div class="trend-bar-wrap"><div class="trend-bar" style="height:${height}%" title="${item.count} report(s)" aria-label="${label}: ${item.count} reports"></div></div><strong>${item.count}</strong><div>${escapeHTML(label)}</div></div>`;
-        }).join("");
-      }
-    }
-
-    function exportAnalyticsCSV() {
-      const headers = ["ID", "Created", "Category", "Severity", "Risk Score", "Risk Level", "Location", "Status", "Description"];
-      const quote = value => '"' + String(value ?? "").replace(/"/g, '""') + '"';
-      const rows = reports.map(report => {
-        const risk = assessReportRisk(report);
-        return [report.id, report.created ? new Date(report.created).toISOString() : "", report.category, report.severity, risk.score, risk.level, report.location, report.status || "New", report.description];
-      });
-      const csv = [headers, ...rows].map(row => row.map(quote).join(",")).join("\r\n");
-      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "campusshield-analytics.csv";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      const message = document.getElementById("exportMessage");
-      if (message) message.textContent = "CSV export requested for " + reports.length + " demo report(s).";
-    }
-
-    // Schematic map coordinates are illustrative and do not represent surveyed campus data.
-    function mapCoordinates(location, index) {
-      const text = String(location || "").toLowerCase();
-      const known = [
-        { match: /north gate|gate/, x: 88, y: 92 },
-        { match: /library/, x: 255, y: 110 },
-        { match: /science/, x: 470, y: 112 },
-        { match: /student|cafeteria|dining/, x: 100, y: 230 },
-        { match: /health|medical|clinic/, x: 280, y: 230 },
-        { match: /residence|hostel|dorm/, x: 480, y: 230 },
-        { match: /sports|field|stadium/, x: 120, y: 320 },
-        { match: /admin|office/, x: 310, y: 310 },
-        { match: /parking|car park/, x: 490, y: 310 }
-      ];
-      const found = known.find(item => item.match.test(text));
-      if (found) return { x: found.x, y: found.y };
-      const fallback = [
-        { x: 180, y: 135 }, { x: 365, y: 130 }, { x: 185, y: 255 },
-        { x: 375, y: 250 }, { x: 215, y: 315 }, { x: 400, y: 315 }
-      ];
-      return fallback[index % fallback.length];
-    }
-
-    function riskColor(level) {
-      return ({ Critical: "#dc2626", High: "#f97316", Medium: "#eab308", Low: "#16a34a" })[level] || "#64748b";
-    }
-
-    function showMapIncident(id) {
-      const report = reports.find(item => String(item.id) === String(id));
-      if (!report) return;
-      const risk = assessReportRisk(report);
-      const detail = document.getElementById("mapDetail");
-      detail.innerHTML = `
-        <h3>${escapeHTML(report.category)} — ${escapeHTML(report.location)}</h3>
-        <p><strong>Risk:</strong> <span style="color:${riskColor(risk.level)};font-weight:bold">${escapeHTML(risk.level)} (${risk.score}/100)</span></p>
-        <p><strong>Reported priority:</strong> ${escapeHTML(report.severity || "Not specified")}</p>
-        <p><strong>Status:</strong> ${escapeHTML(report.status || "New")}</p>
-        <p>${escapeHTML(report.description || "")}</p>
-        <p class="muted">Illustrative assessment only; authorized human review is required.</p>`;
-    }
-
-    function renderCampusMap() {
-      const markers = document.getElementById("mapMarkers");
-      const zones = document.getElementById("mapZones");
-      const list = document.getElementById("mapReportList");
-      if (!markers || !zones || !list) return;
-      zones.innerHTML = "";
-      markers.innerHTML = "";
-      const sorted = [...reports].sort((a, b) => (b.created || 0) - (a.created || 0));
-
-      sorted.forEach((report, index) => {
-        const pos = mapCoordinates(report.location, index);
-        const risk = assessReportRisk(report);
-        const color = riskColor(risk.level);
-        zones.insertAdjacentHTML("beforeend",
-          `<circle class="map-zone" cx="${pos.x}" cy="${pos.y}" r="27" fill="${color}" stroke="${color}" aria-hidden="true"></circle>`);
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", pos.x);
-        circle.setAttribute("cy", pos.y);
-        circle.setAttribute("r", "12");
-        circle.setAttribute("fill", color);
-        circle.setAttribute("class", "map-marker");
-        circle.setAttribute("tabindex", "0");
-        circle.setAttribute("role", "button");
-        circle.setAttribute("aria-label", `${report.category} at ${report.location}, ${risk.level} risk`);
-        circle.addEventListener("click", () => showMapIncident(report.id));
-        circle.addEventListener("keydown", event => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            showMapIncident(report.id);
-          }
-        });
-        markers.appendChild(circle);
-      });
-
-      list.innerHTML = sorted.length ? "" : '<div class="map-empty">No incidents to display yet. Add a fictional demo report first.</div>';
-      sorted.forEach(report => {
-        const risk = assessReportRisk(report);
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "map-report-button";
-        button.textContent = `${risk.level} risk · ${report.location} · ${report.status || "New"}`;
-        button.addEventListener("click", () => showMapIncident(report.id));
-        list.appendChild(button);
-      });
-    }
-
-    function updateStatus(id, status) {
-      const report = reports.find(r => String(r.id) === String(id));
-      if (!report) return;
-
-      if (!["New", "In Progress", "Resolved"].includes(status)) return;
-
-      report.status = status;
-      saveReports();
-      render();
-    }
-
-    document.getElementById("reportForm").addEventListener("submit", function(event) {
-      event.preventDefault();
-
-      const report = {
-        id: Date.now(),
-        category: document.getElementById("category").value,
-        severity: document.getElementById("severity").value,
-        location: document.getElementById("location").value.trim(),
-        description: document.getElementById("description").value.trim(),
-        status: "New",
-        created: Date.now()
-      };
-
-      if (!report.category || !report.severity ||
-          !report.location || !report.description) {
-        alert("Please complete all required fields.");
-        return;
-      }
-
-      // Calculate and attach the initial risk assessment to the report.
-      // Rendering recalculates it from the current report fields.
-      report.riskAssessment = assessReportRisk(report);
-
-      reports.unshift(report);
-      saveReports();
-      this.reset();
-      showPage("manage");
-      alert("Demo report saved. Risk assessment added. No emergency alert was sent.");
-    });
-
-    document.getElementById("riskForm").addEventListener("submit", function(event) {
-      event.preventDefault();
-
-      const type = document.getElementById("riskType").value;
-      const severity = Number(document.getElementById("riskSeverity").value);
-      const urgency = Number(document.getElementById("riskUrgency").value);
-      const location = document.getElementById("riskLocation").value.trim();
-      const description = document.getElementById("riskDescription").value.trim();
-
-      if (!location || !description) {
-        this.reportValidity();
-        return;
-      }
-
-      const result = assessRisk(type, severity, urgency, description, location);
-
-      document.getElementById("riskScore").textContent = result.score + " / 100";
-
-      const levelEl = document.getElementById("riskLevel");
-      levelEl.textContent = result.level + " risk";
-      levelEl.className = "risk-badge risk-" + result.level.toLowerCase();
-
-      const reasonsEl = document.getElementById("riskReasons");
-      reasonsEl.replaceChildren();
-
-      result.reasons.forEach(reason => {
-        const li = document.createElement("li");
-        li.textContent = reason;
-        reasonsEl.appendChild(li);
-      });
-
-      document.getElementById("riskAction").textContent = result.action;
-      document.getElementById("riskResult").hidden = false;
-    });
-
-    render();
-  </script>
+        <div class="form-actions"><button class="btn" type="submit">Submit demo report</button><button class="btn secondary" type="reset">Clear form</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="page" id="page-manage">
+    <div class="page-heading"><div><div class="eyebrow">Operations</div><h1>Incident management</h1><p>Search, filter, review, and update demo incident records.</p></div><button class="btn" data-goto="report">＋ New incident</button></div>
+    <div class="panel"><div class="toolbar"><input id="searchIncidents" type="search" placeholder="Search category, location, description…"><select id="filterSeverity" aria-label="Filter severity"><option value="">All severities</option><option>High</option><option>Medium</option><option>Low</option></select><select id="filterStatus" aria-label="Filter status"><option value="">All statuses</option><option>Open</option><option>Resolved</option></select></div><div class="table-wrap"><table><thead><tr><th>Incident</th><th>Location</th><th>Severity</th><th>Status</th><th>Reported</th><th>Actions</th></tr></thead><tbody id="incidentTable"></tbody></table></div></div>
+  </section>
+
+  <section class="page" id="page-map">
+    <div class="page-heading"><div><div class="eyebrow">Spatial awareness</div><h1>Campus risk map</h1><p>Select a marker to inspect a demo incident location. Map locations are illustrative, not GPS data.</p></div></div>
+    <div class="panel"><div class="panel-head"><div><h2>Illustrative campus layout</h2><p>Markers are placed approximately by location label, not live coordinates.</p></div><span class="tag open">Interactive demo</span></div>
+      <div class="map-layout"><div><div class="map-canvas"><svg id="campusMap" viewBox="0 0 760 470" role="img" aria-label="Illustrative campus map with selectable incident markers">
+        <rect width="760" height="470" fill="#eaf3eb"/><path d="M0 95H760M0 330H760M180 0V470M575 0V470" stroke="#d7e5d9" stroke-width="2" stroke-dasharray="4 7"/>
+        <path d="M-20 270C140 220 180 310 300 260S520 180 790 240" fill="none" stroke="#fff" stroke-width="38"/><path d="M365 -10C330 90 440 120 400 210S330 360 390 490" fill="none" stroke="#fff" stroke-width="32"/><path d="M-20 270C140 220 180 310 300 260S520 180 790 240" fill="none" stroke="#d8e3d9" stroke-width="2" stroke-dasharray="9 10"/><path d="M365 -10C330 90 440 120 400 210S330 360 390 490" fill="none" stroke="#d8e3d9" stroke-width="2" stroke-dasharray="9 10"/>
+        <g fill="#c8e7be" stroke="#a6cfa1" stroke-width="1.5"><circle cx="90" cy="65" r="25"/><circle cx="130" cy="75" r="18"/><circle cx="670" cy="90" r="24"/><circle cx="710" cy="112" r="17"/><circle cx="90" cy="395" r="26"/><circle cx="135" cy="410" r="17"/><circle cx="655" cy="390" r="27"/><circle cx="700" cy="410" r="18"/><circle cx="610" cy="40" r="14"/><circle cx="230" cy="405" r="18"/></g>
+        <g fill="#d7e2ef" stroke="#9aafc5" stroke-width="2"><rect x="245" y="40" width="100" height="68" rx="6"/><rect x="455" y="55" width="94" height="68" rx="6"/><rect x="80" y="155" width="125" height="75" rx="6"/><rect x="505" y="275" width="130" height="78" rx="6"/><rect x="230" y="340" width="95" height="60" rx="6"/><rect x="555" y="155" width="120" height="62" rx="6"/></g>
+        <g fill="#344d6a" font-size="12" font-weight="700" text-anchor="middle"><text x="295" y="78">LIBRARY</text><text x="502" y="93">SCIENCE</text><text x="142" y="195">STUDENT</text><text x="142" y="210">CENTRE</text><text x="570" y="310">RESIDENCE</text><text x="570" y="325">HALL</text><text x="277" y="375">SPORTS</text><text x="615" y="190">CLINIC</text></g>
+        <g fill="#8ac8a1" stroke="#5aab7b" stroke-width="2"><rect x="337" y="150" width="95" height="72" rx="7"/><path d="M330 150 384 120 439 150Z"/></g><g fill="#234d45" font-size="12" font-weight="800" text-anchor="middle"><text x="384" y="180">ADMIN</text><text x="384" y="196">BUILDING</text></g>
+        <g id="mapMarkers"></g>
+        <text x="18" y="450" fill="#668073" font-size="10">ILLUSTRATIVE CAMPUS PLAN · NOT TO SCALE</text>
+      </svg></div><div class="map-legend"><span class="legend"><i class="dot" style="background:#e24d63"></i>High severity</span><span class="legend"><i class="dot" style="background:#d99520"></i>Medium severity</span><span class="legend"><i class="dot" style="background:#25a66a"></i>Low severity</span></div></div>
+      <div><div class="map-detail" id="mapDetail"><h3>Select an incident marker</h3><p>Choose a colored marker on the campus map to view the associated report details.</p></div><div class="map-reports" id="mapReports"></div></div></div>
+    </div>
+  </section>
+
+  <section class="page" id="page-risk">
+    <div class="page-heading"><div><div class="eyebrow">Decision support</div><h1>Risk analysis</h1><p>Estimate a simple priority score from selected incident factors.</p></div></div>
+    <div class="panel"><div class="panel-head"><div><h2>Risk assessment inputs</h2><p>This transparent rule-based score is a demo aid, not a validated prediction or substitute for professional judgment.</p></div></div>
+      <form id="riskForm"><div class="risk-inputs">
+        <div class="field"><label for="riskType">Incident type</label><select id="riskType"><option value="2">Facility hazard</option><option value="3">Security concern</option><option value="4">Medical emergency</option><option value="5">Fire or smoke</option><option value="3">Accident or injury</option><option value="2">Other concern</option></select></div>
+        <div class="field"><label for="riskPeople">Potential people affected</label><select id="riskPeople"><option value="1">One person</option><option value="2">2–5 people</option><option value="3">6–20 people</option><option value="4">More than 20 people</option></select></div>
+        <div class="field"><label for="riskUrgency">Time sensitivity</label><select id="riskUrgency"><option value="1">Can be reviewed routinely</option><option value="2">Needs attention soon</option><option value="4">Immediate attention may be needed</option></select></div>
+        <div class="field"><label for="riskEnvironment">Location exposure</label><select id="riskEnvironment"><option value="1">Restricted / low traffic</option><option value="2">Shared campus area</option><option value="3">Busy public area</option></select></div>
+      </div><button class="btn" type="submit">Calculate demo risk score</button></form>
+      <div class="risk-output" id="riskOutput" aria-live="polite"><div class="subtle">ASSESSMENT RESULT</div><h3>Ready for assessment</h3><p>Choose the factors above and calculate a score to see a suggested priority band.</p></div>
+    </div>
+  </section>
+
+  <section class="page" id="page-analytics">
+    <div class="page-heading"><div><div class="eyebrow">Reporting & insights</div><h1>Analytics dashboard</h1><p>Summaries are calculated from incident records stored in this browser.</p></div><button class="btn" id="exportCsv">↓ Export CSV</button></div>
+    <div class="grid stats">
+      <div class="stat" style="--wash:#e6f1ff;--accent:#2479e8"><div class="stat-top">Total records <span class="stat-icon">▤</span></div><div class="stat-num" id="aTotal">0</div><div class="stat-foot">All recorded incidents</div></div>
+      <div class="stat" style="--wash:#fff0f1;--accent:#dc4059"><div class="stat-top">High severity <span class="stat-icon">⚠</span></div><div class="stat-num" id="aHigh">0</div><div class="stat-foot">All statuses</div></div>
+      <div class="stat" style="--wash:#e4faf1;--accent:#13986d"><div class="stat-top">Resolved <span class="stat-icon">✓</span></div><div class="stat-num" id="aResolved">0</div><div class="stat-foot">Closed records</div></div>
+      <div class="stat" style="--wash:#e8f9fb;--accent:#11899a"><div class="stat-top">Open records <span class="stat-icon">◷</span></div><div class="stat-num" id="aOpen">0</div><div class="stat-foot">Awaiting review</div></div>
+    </div>
+    <div class="grid two-col"><div class="panel"><div class="panel-head"><div><h2>Category breakdown</h2><p>Number of reports by incident category</p></div></div><div class="bars" id="analyticsCategories"></div></div><div class="panel"><div class="panel-head"><div><h2>Severity breakdown</h2><p>Reported severity across all records</p></div></div><div class="bars" id="analyticsSeverity"></div></div></div>
+    <div class="panel"><div class="panel-head"><div><h2>Last 7 days</h2><p>Daily report volume</p></div></div><div class="trend" id="analyticsTrend"></div></div>
+    <div class="footer">CampusShield AI · Analytics are based on locally stored demo data.</div>
+  </section>
+  <div class="footer">CampusShield AI · Intelligent Campus Safety & Emergency Response System · Demonstration only</div>
+</main>
+</div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(() => {
+  const STORAGE_KEY = "campusshield_ai_incidents_v2";
+  const $ = id => document.getElementById(id);
+  const severityRank = {High:3, Medium:2, Low:1};
+  const severityColor = {High:"#e24d63",Medium:"#d99520",Low:"#25a66a"};
+  let incidents = [];
+  try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); if (Array.isArray(saved)) incidents = saved; } catch(e) { incidents = []; }
+
+  function persist(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(incidents)); } catch(e) { toast("Browser storage is unavailable. Records may not persist after refresh."); } }
+  function esc(value){ return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch])); }
+  function dateText(value){ const d = new Date(value); return Number.isNaN(d.getTime()) ? "Unknown date" : d.toLocaleString([], {month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
+  function shortDate(value){ return new Date(value).toLocaleDateString([], {month:"short",day:"numeric"}); }
+  function tagSeverity(s){ return `<span class="tag ${String(s).toLowerCase()}">${esc(s)}</span>`; }
+  function tagStatus(s){ return `<span class="tag ${s === "Resolved" ? "resolved" : "open"}">${esc(s)}</span>`; }
+  function iconFor(category){ if(/Medical/i.test(category))return "✚"; if(/Fire|smoke/i.test(category))return "♨"; if(/Security|Theft|Harassment/i.test(category))return "⚑"; if(/Accident|injury/i.test(category))return "⚕"; if(/Facility/i.test(category))return "⌁"; return "◈"; }
+  function toast(message){ const el=$("toast"); el.textContent=message; el.classList.add("show"); clearTimeout(toast.timer); toast.timer=setTimeout(()=>el.classList.remove("show"),3200); }
+  function navigate(page){ document.querySelectorAll(".page").forEach(el=>el.classList.toggle("active",el.id==="page-"+page)); document.querySelectorAll(".nav button").forEach(el=>el.classList.toggle("active",el.dataset.page===page)); const names={dashboard:"Overview",report:"Report incident",manage:"Incident management",map:"Campus risk map",risk:"Risk analysis",analytics:"Analytics & reports"}; $("currentSection").textContent=names[page]||"Overview"; $("sidebar").classList.remove("open"); window.scrollTo({top:0,behavior:"smooth"}); if(page==="map")renderMap(); if(page==="analytics")renderAnalytics(); }
+  document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.page)));
+  document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.goto)));
+  $("menuToggle").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
+  document.addEventListener("click",e=>{if(window.innerWidth<=760 && $("sidebar").classList.contains("open") && !$("sidebar").contains(e.target) && !$("menuToggle").contains(e.target))$("sidebar").classList.remove("open");});
+
+  $("reportForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const category=$("category").value, severity=$("severity").value, location=$("location").value.trim(), description=$("description").value.trim(), reporter=$("reporter").value.trim();
+    if(!category||!severity||!location||!description){toast("Please complete all required fields.");return;}
+    incidents.unshift({id:(crypto.randomUUID?crypto.randomUUID():"CS-"+Date.now()+"-"+Math.random().toString(36).slice(2,7)),category,severity,location,description,reporter:reporter||"Demo reporter",status:"Open",createdAt:new Date().toISOString()});
+    persist(); $("reportForm").reset(); renderAll(); navigate("manage"); toast("Demo incident report saved in this browser.");
+  });
+
+  function renderIncidentRow(i){return `<div class="incident-row"><div class="incident-symbol">${iconFor(i.category)}</div><div class="incident-main"><strong>${esc(i.category)}</strong><p>${esc(i.description)}</p><div class="incident-meta">${tagSeverity(i.severity)} ${tagStatus(i.status)}<span class="subtle">⌖ ${esc(i.location)}</span><span class="subtle">${esc(dateText(i.createdAt))}</span></div></div></div>`;}
+  function renderRecent(){const el=$("recentList");el.innerHTML=incidents.slice(0,5).map(renderIncidentRow).join("")||'<div class="empty">No incidents yet. Create a demo report to populate your dashboard.</div>';}
+  function renderBars(elId,items,total){const el=$(elId);if(!items.length){el.innerHTML='<div class="empty">No data to visualize yet.</div>';return;}el.innerHTML=items.map(([name,count,color])=>`<div class="bar-item"><span>${esc(name)}</span><div class="bar-track"><div class="bar-fill" style="width:${total?Math.max(count/total*100,count?2:0):0}%;${color?`background:${color}`:""}"></div></div><strong>${count}</strong></div>`).join("");}
+  function groupBy(key){const out={};incidents.forEach(i=>{out[i[key]]=(out[i[key]]||0)+1;});return out;}
+  function last7(){const days=[];for(let n=6;n>=0;n--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);const next=new Date(d);next.setDate(next.getDate()+1);const count=incidents.filter(i=>{const t=new Date(i.createdAt);return t>=d&&t<next;}).length;days.push({label:d.toLocaleDateString([],{weekday:"short"}),count,date:d});}return days;}
+  function renderTrend(id){const data=last7(),max=Math.max(1,...data.map(x=>x.count));$(id).innerHTML=data.map(d=>`<div class="trend-col"><b>${d.count}</b><div class="trend-bar" style="height:${Math.max(3,d.count/max*78)}%"></div><span>${d.label}</span></div>`).join("");}
+  function renderPriority(){const open=incidents.filter(i=>i.status!=="Resolved");const levels=["High","Medium","Low"];const el=$("prioritySummary");el.innerHTML=levels.map(s=>{const count=open.filter(i=>i.severity===s).length;return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #edf1f6"><span>${tagSeverity(s)} <span class="subtle" style="margin-left:7px">${s==="High"?"Urgent review":s==="Medium"?"Review soon":"Routine review"}</span></span><strong>${count}</strong></div>`;}).join("")+`<p class="subtle" style="margin:13px 0 0">Open incidents: ${open.length}</p>`;}
+  function renderDashboard(){const total=incidents.length, resolved=incidents.filter(i=>i.status==="Resolved").length, high=incidents.filter(i=>i.severity==="High"&&i.status!=="Resolved").length;$("totalStat").textContent=total;$("highStat").textContent=high;$("resolvedStat").textContent=resolved;$("rateStat").textContent=(total?Math.round(resolved/total*100):0)+"%";renderRecent();const cats=groupBy("category");renderBars("categoryBars",Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(x=>[x[0],x[1]]),total);renderTrend("trendChart");renderPriority();}
+  function renderTable(){const q=$("searchIncidents").value.toLowerCase(),sev=$("filterSeverity").value,status=$("filterStatus").value;const list=incidents.filter(i=>(!q||[i.category,i.location,i.description,i.reporter].some(v=>String(v).toLowerCase().includes(q)))&&(!sev||i.severity===sev)&&(!status||i.status===status));$("incidentTable").innerHTML=list.map(i=>`<tr><td><div class="td-title">${esc(i.category)}</div><div class="td-sub">${esc(i.description.slice(0,75))}${i.description.length>75?"…":""}</div></td><td>${esc(i.location)}</td><td>${tagSeverity(i.severity)}</td><td>${tagStatus(i.status)}</td><td>${esc(dateText(i.createdAt))}</td><td><div class="actions"><button class="btn secondary small" data-action="toggle" data-id="${esc(i.id)}">${i.status==="Resolved"?"Reopen":"Resolve"}</button><button class="btn danger small" data-action="delete" data-id="${esc(i.id)}">Delete</button></div></td></tr>`).join("")||'<tr><td colspan="6"><div class="empty">No matching incidents.</div></td></tr>';}
+  ["searchIncidents","filterSeverity","filterStatus"].forEach(id=>$(id).addEventListener(id==="searchIncidents"?"input":"change",renderTable));
+  $("incidentTable").addEventListener("click",e=>{const b=e.target.closest("button[data-action]");if(!b)return;const i=incidents.find(x=>x.id===b.dataset.id);if(!i)return;if(b.dataset.action==="toggle"){i.status=i.status==="Resolved"?"Open":"Resolved";persist();renderAll();toast(`Incident marked ${i.status.toLowerCase()}.`);}else if(b.dataset.action==="delete"){if(confirm("Delete this demo incident? This cannot be undone.")){incidents=incidents.filter(x=>x.id!==i.id);persist();renderAll();toast("Demo incident deleted.");}}});
+  function markerPosition(i,index){const text=(i.location||"").toLowerCase();let x=380,y=235;if(text.includes("library")){x=295;y=75;}else if(text.includes("science")){x=500;y=90;}else if(text.includes("student")){x=145;y=190;}else if(text.includes("residence")||text.includes("hall")){x=570;y=310;}else if(text.includes("clinic")||text.includes("medical")){x=615;y=185;}else if(text.includes("sport")){x=275;y=370;}else if(text.includes("admin")){x=380;y=180;}else{x=80+(index*113)%600;y=70+(index*71)%320;}return{x,y};}
+  function renderMap(){const g=$("mapMarkers");const mapped=incidents.slice(0,50);g.innerHTML=mapped.map((i,n)=>{const p=markerPosition(i,n);return `<g tabindex="0" role="button" aria-label="${esc(i.category)} at ${esc(i.location)}" class="map-marker" data-map-id="${esc(i.id)}" transform="translate(${p.x} ${p.y})"><circle r="14" fill="${severityColor[i.severity]||"#1687f8"}" opacity=".2" stroke="none"/><circle r="8" fill="${severityColor[i.severity]||"#1687f8"}"/><text y="-17" text-anchor="middle" font-size="10" font-weight="800" fill="#24354d" stroke="white" stroke-width="3" paint-order="stroke">${n+1}</text></g>`;}).join("");$("mapReports").innerHTML=mapped.slice(0,8).map((i,n)=>`<button class="map-report" data-select-map="${esc(i.id)}"><span style="color:${severityColor[i.severity]}">●</span> ${esc(i.category)} <span class="subtle">· ${esc(i.location)}</span></button>`).join("")||'<div class="empty">No reports to map yet. Add a demo incident first.</div>';g.querySelectorAll("[data-map-id]").forEach(m=>{m.addEventListener("click",()=>showMapDetail(m.dataset.mapId));m.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();showMapDetail(m.dataset.mapId);}});});$("mapReports").querySelectorAll("[data-select-map]").forEach(b=>b.addEventListener("click",()=>showMapDetail(b.dataset.selectMap)));if(mapped.length)showMapDetail(mapped[0].id);}
+  function showMapDetail(id){const i=incidents.find(x=>x.id===id);if(!i)return;$("mapDetail").innerHTML=`<div class="subtle">INCIDENT DETAILS</div><h3 style="margin-top:8px">${esc(i.category)}</h3><div style="margin:8px 0">${tagSeverity(i.severity)} ${tagStatus(i.status)}</div><p><strong>Location:</strong> ${esc(i.location)}</p><p><strong>Reported:</strong> ${esc(dateText(i.createdAt))}</p><p>${esc(i.description)}</p><button class="btn secondary small" id="mapManageBtn">Manage incident</button>`;$("mapManageBtn").addEventListener("click",()=>navigate("manage"));}
+  function renderAnalytics(){const total=incidents.length,res=incidents.filter(i=>i.status==="Resolved").length,high=incidents.filter(i=>i.severity==="High").length;$("aTotal").textContent=total;$("aHigh").textContent=high;$("aResolved").textContent=res;$("aOpen").textContent=total-res;const cats=groupBy("category");renderBars("analyticsCategories",Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(x=>[x[0],x[1]]),total);const sevs=["High","Medium","Low"].map(s=>[s,incidents.filter(i=>i.severity===s).length,severityColor[s]]);renderBars("analyticsSeverity",sevs,total);renderTrend("analyticsTrend");}
+  $("exportCsv").addEventListener("click",()=>{if(!incidents.length){toast("There are no incident records to export yet.");return;}const cols=["id","category","severity","location","description","reporter","status","createdAt"];const quote=v=>`"${String(v??"").replace(/"/g,'""')}"`;const csv=[cols.join(","),...incidents.map(i=>cols.map(c=>quote(i[c])).join(","))].join("\r\n");const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="campusshield-incidents.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast("CSV export prepared.");});
+  $("riskForm").addEventListener("submit",e=>{e.preventDefault();const type=Number($("riskType").value),people=Number($("riskPeople").value),urgency=Number($("riskUrgency").value),environment=Number($("riskEnvironment").value);const score=Math.min(100,Math.round(((type*4+people*3+urgency*5+environment*2)/ (5*4+4*3+4*5+3*2))*100));let band,cls,advice;if(score>=75){band="Critical priority";cls="high";advice="Treat this as a prompt for immediate human review. Follow your institution’s official emergency procedures where appropriate.";}else if(score>=50){band="High priority";cls="high";advice="Escalate for timely review by the appropriate campus safety team.";}else if(score>=30){band="Moderate priority";cls="medium";advice="Arrange review and document any changes in the situation.";}else{band="Lower priority";cls="low";advice="Use routine review while remaining alert to changing circumstances.";}const recs=[];if(urgency>=4)recs.push("Urgency was marked as immediate.");if(people>=3)recs.push("Potentially multiple people may be affected.");if(type>=4)recs.push("Selected incident type may carry significant consequences.");if(!recs.length)recs.push("No additional high-weight factors were selected.");$("riskOutput").innerHTML=`<div class="subtle">ASSESSMENT RESULT</div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px"><h3>${band}</h3><span class="tag ${cls}">${score}/100</span></div><div class="risk-score">${score}<span style="font-size:15px;color:var(--muted);letter-spacing:0"> / 100</span></div><div class="risk-meter"><div style="width:${score}%"></div></div><p>${advice}</p><strong style="font-size:12px">Factors to review</strong><ul>${recs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><p><strong>Important:</strong> This score is a simple illustrative calculation. It is not validated, does not predict outcomes, and must not be used as the sole basis for emergency decisions.</p>`;});
+  function renderAll(){renderDashboard();renderTable();renderMap();renderAnalytics();}
+  renderAll();
+})();
+</script>
 </body>
 </html>
