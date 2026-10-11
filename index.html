@@ -259,33 +259,56 @@
   
   $("auth-form").addEventListener("submit", e => e.preventDefault());
 
-  $("signup-button").addEventListener("click", async () => {
-    const email = $("auth-email").value.trim();
-    const password = $("auth-password").value;
-    const name = $("auth-name").value.trim();
-    const message = $("auth-message");
+  ```javascript
+$("signup-button").addEventListener("click", async () => {
+  const email = $("auth-email").value.trim();
+  const password = $("auth-password").value;
+  const name = $("auth-name").value.trim();
+  const requestedRole = $("auth-role").value;
+  const message = $("auth-message");
 
-    if (!email || !password) {
-      message.textContent = "Enter your email and password.";
-      return;
+  if (!email || !password) {
+    message.textContent = "Enter your email and password.";
+    return;
+  }
+
+  if (!["student", "teacher"].includes(requestedRole)) {
+    message.textContent = "Choose Student or Teacher.";
+    return;
+  }
+
+  if (!window.CampusShieldBackend?.isConfigured) {
+    message.textContent = "Supabase is not configured. Please try again later.";
+    return;
+  }
+
+  try {
+    const { data, error } = await window.CampusShieldBackend.signUp(
+      email,
+      password,
+      name
+    );
+
+    if (error) throw error;
+
+    // Save the requested role only when a session exists.
+    // If email confirmation is required, we save it after sign-in.
+    if (data.session) {
+      const { error: profileError } =
+        await window.CampusShieldBackend.saveRequestedRole(requestedRole);
+
+      if (profileError) throw profileError;
+    } else {
+      sessionStorage.setItem("campusshield_requested_role", requestedRole);
     }
 
-    if (!window.CampusShieldBackend?.isConfigured) {
-      message.textContent = "Supabase is not configured. Please try again later.";
-      return;
-    }
-
-    try {
-      const { data, error } = await window.CampusShieldBackend.signUp(email, password, name);
-      if (error) throw error;
-
-      message.textContent = data.user && !data.session
-        ? "Account created. Check your email to confirm it, then sign in."
-        : "Account created. You are signed in.";
-    } catch (error) {
-      message.textContent = "Sign-up failed: " + error.message;
-    }
-  });
+    message.textContent = data.user && !data.session
+      ? "Account created. Check your email to confirm it, then sign in."
+      : "Account created. Your requested role is saved; verification is still required.";
+  } catch (error) {
+    message.textContent = "Sign-up failed: " + error.message;
+  }
+});
 
   $("signin-button").addEventListener("click", async () => {
     const email = $("auth-email").value.trim();
