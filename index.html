@@ -44,20 +44,38 @@
 <section class="panel" style="margin-bottom:20px">
   <h2>CampusShield Account</h2>
   <p>Sign in or create an account to submit incident reports.</p>
-  <form id="auth-form">
-    <label for="auth-name">Full name (for new accounts)</label>
-    <input id="auth-name" type="text" placeholder="Your full name">
-    <label for="auth-email">Email address</label>
-    <input id="auth-email" type="email" placeholder="you@example.com" required>
-    <label for="auth-password">Password</label>
-    <input id="auth-password" type="password" placeholder="At least 6 characters" minlength="6" required>
-    <div style="display:flex;gap:10px;margin-top:14px">
-      <button type="button" id="signup-button">Create account</button>
-      <button type="button" id="signin-button">Sign in</button>
-      <button type="button" id="signout-button">Sign out</button>
-    </div>
-    <p id="auth-message" role="status">Not signed in.</p>
-  </form>
+```html
+<form id="auth-form">
+  <label for="auth-name">Full name (for new accounts)</label>
+  <input id="auth-name" type="text" placeholder="Your full name">
+
+  <label for="auth-role">I am registering as</label>
+  <select id="auth-role">
+    <option value="student">Student</option>
+    <option value="teacher">Teacher</option>
+  </select>
+
+  <p style="font-size:13px;color:#666">
+    Your account will remain pending verification until your status is reviewed.
+    You can still submit urgent safety reports.
+  </p>
+
+  <label for="auth-email">Email address</label>
+  <input id="auth-email" type="email" placeholder="you@example.com" required>
+
+  <label for="auth-password">Password</label>
+  <input id="auth-password" type="password"
+         placeholder="At least 6 characters"
+         minlength="6" required>
+
+  <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+    <button type="button" id="signup-button">Create account</button>
+    <button type="button" id="signin-button">Sign in</button>
+    <button type="button" id="signout-button">Sign out</button>
+  </div>
+
+  <p id="auth-message" role="status">Not signed in.</p>
+</form>
 </section>
 
   <div class="notice"><strong>Prototype notice:</strong> This is a demonstration interface. Incident records are saved only in this browser on this device. It does not contact campus security or emergency services. Use fictional test data only.</div>
