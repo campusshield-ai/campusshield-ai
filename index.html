@@ -1,380 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#07172d">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#07172d">
 <title>CampusShield AI | Intelligent Campus Safety</title>
 <style>
-:root{--navy:#07172d;--navy2:#0d2442;--blue:#1687f8;--teal:#19d3b0;--green:#52df8b;--ink:#17263d;--muted:#6d7c91;--bg:#f3f6fb;--card:#fff;--line:#e2e9f2;--red:#e24d63;--amber:#d99520;--shadow:0 12px 34px rgba(16,37,68,.07)}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #8bc6ff;outline-offset:3px}
-.app{min-height:100vh}.sidebar{position:fixed;inset:0 auto 0 0;width:248px;background:linear-gradient(180deg,#07172d,#0a2140);color:#eaf3ff;padding:24px 16px;display:flex;flex-direction:column;z-index:20}.brand{display:flex;align-items:center;gap:12px;padding:0 8px 28px}.brand-mark{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#1488ff,#18d7ac);display:grid;place-items:center;box-shadow:0 8px 20px #1687f84a;flex:none}.brand-mark svg{width:29px;height:29px}.brand-name{font-size:16px;font-weight:850;letter-spacing:-.5px}.brand-name span{color:var(--teal)}.brand-sub{font-size:10px;letter-spacing:1.6px;color:#91a9c8;text-transform:uppercase}.nav-label{font-size:10px;font-weight:800;color:#7188a6;letter-spacing:1.7px;padding:10px 12px}.nav{display:grid;gap:6px}.nav button{border:0;background:transparent;color:#a9bdd7;text-align:left;padding:12px;border-radius:11px;display:flex;gap:12px;align-items:center;font-weight:650;font-size:13px;transition:.18s}.nav button:hover,.nav button.active{background:linear-gradient(90deg,#1687f82e,#19d3b010);color:#fff}.nav button.active{box-shadow:inset 3px 0 var(--teal)}.nav .ico{width:20px;text-align:center;font-size:17px}.sidebar-bottom{margin-top:auto;border:1px solid #ffffff18;border-radius:14px;padding:14px;background:#ffffff08}.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#53e69b;margin-right:7px;box-shadow:0 0 0 4px #53e69b18}.sidebar-bottom strong{font-size:12px}.sidebar-bottom p{margin:5px 0 0;color:#8ea6c5;font-size:11px}
-.main{margin-left:248px;min-width:0}.topbar{height:76px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;background:#ffffffed;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10;backdrop-filter:blur(14px)}.crumb{font-size:12px;color:var(--muted)}.crumb strong{color:var(--ink);font-size:15px;margin-left:8px}.top-actions{display:flex;gap:10px;align-items:center}.pill{display:inline-flex;align-items:center;gap:8px;background:#e9fbf5;color:#137c62;border:1px solid #c8f4e5;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800}.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#e0edff;color:#1459b8;font-weight:800}.menu-toggle{display:none;border:1px solid var(--line);background:white;border-radius:10px;padding:8px 10px}
-.content{max-width:1500px;margin:auto;padding:30px 32px 50px}.page{display:none;animation:fade .2s ease}.page.active{display:block}@keyframes fade{from{opacity:.4;transform:translateY(3px)}to{opacity:1;transform:none}}.page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}.eyebrow{color:#138b8a;text-transform:uppercase;letter-spacing:1.7px;font-size:10px;font-weight:850}.page-heading h1{font-size:clamp(25px,3vw,33px);letter-spacing:-1.2px;margin:4px 0 6px;line-height:1.15}.page-heading p{margin:0;color:var(--muted);font-size:13px}.btn{border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(135deg,#1687f8,#1761d8);color:white;font-size:12px;font-weight:800;box-shadow:0 6px 15px #1687f823}.btn:hover{filter:brightness(1.05);transform:translateY(-1px)}.btn.secondary{background:#edf3fa;color:#243955;box-shadow:none;border:1px solid var(--line)}.btn.danger{background:#fff0f2;color:#b3263b;box-shadow:none}.btn.small{padding:7px 10px;font-size:11px}.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}.stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow);min-width:0}.stat{padding:19px;position:relative;overflow:hidden}.stat:after{content:"";position:absolute;width:85px;height:85px;border-radius:50%;background:var(--wash,#e9f3ff);right:-30px;top:-30px}.stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;font-weight:700;gap:6px}.stat-icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--wash,#e9f3ff);color:var(--accent,#1679eb);font-size:16px;z-index:1}.stat-num{font-size:31px;font-weight:850;letter-spacing:-1.2px;margin:11px 0 3px}.stat-foot{font-size:11px;color:var(--muted)}.stat-foot strong{color:#16956d}.two-col{grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr)}.panel{padding:21px;margin-bottom:17px}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:17px}.panel h2{font-size:15px;letter-spacing:-.3px;margin:0}.panel-head p{font-size:11px;color:var(--muted);margin:4px 0 0}.subtle{font-size:11px;color:var(--muted)}.tag{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:850;white-space:nowrap}.tag.high{background:#fff0f1;color:#bd2f46}.tag.medium{background:#fff5df;color:#98600a}.tag.low{background:#e6f9ef;color:#168154}.tag.open{background:#e8f2ff;color:#235eb2}.tag.resolved{background:#e6f9ef;color:#168154}.incident-list{display:grid}.incident-row{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #edf1f6;align-items:flex-start}.incident-row:last-child{border-bottom:0}.incident-symbol{width:37px;height:37px;display:grid;place-items:center;border-radius:12px;background:#f0f5fb;flex:none}.incident-main{flex:1;min-width:0}.incident-main strong{display:block;font-size:12px;margin:1px 0 3px}.incident-main p{margin:0;color:var(--muted);font-size:11px;overflow-wrap:anywhere}.incident-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px}.empty{padding:25px 10px;text-align:center;color:var(--muted);font-size:12px}.notice{padding:13px 15px;border-radius:12px;background:#fff8e9;border:1px solid #f4e2b9;color:#7d5b1a;font-size:11px;line-height:1.6;margin-bottom:20px}.notice strong{color:#69470d}.map-layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(260px,.8fr);gap:16px}.map-canvas{border-radius:13px;overflow:hidden;background:#eaf3eb;border:1px solid #d7e4dc}.map-canvas svg{display:block;width:100%;height:auto;min-height:300px}.map-marker{cursor:pointer;stroke:#fff;stroke-width:3;transition:transform .15s}.map-marker:hover{stroke:#0b2342;stroke-width:4}.map-marker:focus{outline:none;stroke:#0b2342;stroke-width:5}.map-legend{display:flex;gap:12px;flex-wrap:wrap;margin:13px 0 0}.legend{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}.dot{width:9px;height:9px;border-radius:50%}.map-detail{background:#f7f9fc;border:1px solid var(--line);border-radius:13px;padding:16px;min-height:160px}.map-detail h3{font-size:14px;margin:0 0 7px}.map-detail p{font-size:12px;color:var(--muted);margin:5px 0}.map-reports{margin-top:15px;display:grid;gap:7px}.map-report{width:100%;text-align:left;border:1px solid var(--line);background:white;border-radius:9px;padding:10px;font-size:11px;color:var(--ink)}.map-report:hover{border-color:#8bbdff}.bars{display:grid;gap:15px}.bar-item{display:grid;grid-template-columns:105px 1fr 24px;gap:10px;align-items:center;font-size:11px}.bar-track{height:9px;background:#edf1f7;border-radius:99px;overflow:hidden}.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1687f8,#19d3b0);min-width:0}.trend{height:155px;display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;border-bottom:1px solid var(--line);padding-top:15px}.trend-col{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px}.trend-bar{width:min(26px,75%);min-height:3px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#19d3b0,#1687f8)}.trend-col span{font-size:10px;color:var(--muted)}.trend-col b{font-size:10px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 15px}.field{margin-bottom:15px;min-width:0}.field.full{grid-column:1/-1}.field label{display:block;font-size:11px;font-weight:800;margin-bottom:7px}.field input,.field select,.field textarea,.toolbar input,.toolbar select{width:100%;border:1px solid #d8e1ec;border-radius:10px;padding:11px 12px;background:white;color:var(--ink);min-width:0}.field textarea{min-height:115px;resize:vertical}.field .hint{font-size:10px;color:var(--muted);margin-top:5px}.form-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.toolbar input{flex:1;min-width:170px}.toolbar select{width:auto;min-width:140px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:650px}th{text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.7px;background:#f8fafd;padding:12px;border-bottom:1px solid var(--line)}td{padding:13px 12px;border-bottom:1px solid #edf1f6;font-size:11px;vertical-align:middle}tbody tr:last-child td{border-bottom:0}.td-title{font-weight:800;font-size:12px}.td-sub{color:var(--muted);font-size:10px;margin-top:3px}.actions{display:flex;gap:6px;flex-wrap:wrap}.risk-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 15px}.risk-output{padding:20px;border:1px solid var(--line);border-radius:14px;background:#f8fafd;margin-top:18px}.risk-score{font-size:42px;font-weight:900;letter-spacing:-2px}.risk-meter{height:10px;border-radius:99px;background:#e6ebf3;overflow:hidden;margin:12px 0}.risk-meter div{height:100%;width:0;background:linear-gradient(90deg,#39c98b,#e9b344,#e24d63);transition:width .25s}.risk-output h3{margin:0;font-size:16px}.risk-output p,.risk-output li{font-size:12px;color:var(--muted);line-height:1.7}.footer{text-align:center;color:#8491a4;font-size:10px;padding:10px 0 0}.toast{position:fixed;right:22px;bottom:22px;max-width:calc(100vw - 44px);background:#0c2440;color:white;border:1px solid #294564;padding:13px 17px;border-radius:12px;box-shadow:0 14px 40px #07172d3d;font-size:12px;z-index:50;display:none}.toast.show{display:block;animation:fade .2s}
-@media(max-width:1100px){.sidebar{width:220px}.main{margin-left:220px}.content{padding:25px 22px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.two-col{grid-template-columns:1fr}.map-layout{grid-template-columns:1fr}}
-@media(max-width:760px){.sidebar{transform:translateX(-100%);transition:transform .2s;width:260px;box-shadow:15px 0 35px #07172d20}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.topbar{height:66px;padding:0 14px}.menu-toggle{display:block}.crumb{display:none}.content{padding:20px 12px 35px}.page-heading{flex-direction:column}.page-heading .btn{width:100%}.stats{gap:10px}.stat{padding:14px}.stat-num{font-size:27px}.stat-top{font-size:11px}.panel{padding:15px;border-radius:14px}.form-grid,.risk-inputs{grid-template-columns:1fr}.field.full{grid-column:auto}.analytics-grid{grid-template-columns:1fr}.map-canvas svg{min-height:220px}.pill{font-size:10px}.top-actions{gap:7px}}
-@media(max-width:390px){.stats{grid-template-columns:1fr 1fr}.stat-num{font-size:24px}.stat-top{align-items:flex-start}.stat-icon{width:28px;height:28px}.trend{gap:4px}.bar-item{grid-template-columns:82px 1fr 20px;gap:6px}.toolbar select{flex:1}.brand-name{font-size:15px}}
+:root{--navy:#07172d;--navy2:#0d2442;--blue:#1687f8;--teal:#19d3b0;--ink:#17263d;--muted:#6d7c91;--bg:#f3f6fb;--card:#fff;--line:#e2e9f2;--red:#e24d63;--amber:#d99520;--shadow:0 12px 34px rgba(16,37,68,.07)}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{min-height:100vh}.sidebar{position:fixed;inset:0 auto 0 0;width:235px;background:linear-gradient(180deg,#07172d,#0a2140);color:#eaf3ff;padding:24px 16px;display:flex;flex-direction:column;z-index:5}.brand{font-size:18px;font-weight:850;padding:0 8px 26px}.brand span{color:var(--teal)}.nav-label{font-size:10px;color:#91a9c8;letter-spacing:1.5px;padding:8px}.nav{display:grid;gap:6px}.nav button{border:0;background:transparent;color:#a9bdd7;text-align:left;padding:12px;border-radius:10px;font-weight:650}.nav button:hover,.nav button.active{background:#1687f82e;color:#fff}.sidebar-bottom{margin-top:auto;border:1px solid #ffffff20;border-radius:12px;padding:12px;font-size:12px}.main{margin-left:235px}.topbar{height:68px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:4}.pill{background:#e9fbf5;color:#137c62;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800}.content{max-width:1400px;margin:auto;padding:25px}.panel,.stat{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);padding:20px;margin-bottom:17px}.page{display:none}.page.active{display:block}.heading{margin-bottom:20px}.heading h1{margin:0 0 5px;font-size:30px}.heading p,.muted{color:var(--muted);font-size:13px}.grid{display:grid;gap:15px}.stats{grid-template-columns:repeat(4,minmax(0,1fr))}.stat{margin:0}.stat-label{color:var(--muted);font-size:12px}.stat-num{font-size:30px;font-weight:850;margin-top:8px}.two{grid-template-columns:repeat(2,minmax(0,1fr))}.btn{border:0;border-radius:9px;padding:10px 14px;background:linear-gradient(135deg,#1687f8,#1761d8);color:#fff;font-size:12px;font-weight:800}.btn.secondary{background:#edf3fa;color:#243955;border:1px solid var(--line)}.btn.danger{background:#fff0f2;color:#b3263b}.field{margin:12px 0}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;border:1px solid #d8e1ec;border-radius:9px;padding:11px;background:white;color:var(--ink)}textarea{min-height:100px;resize:vertical}.actions{display:flex;gap:8px;flex-wrap:wrap}.message{font-size:13px;margin:10px 0}.notice{background:#fff8e9;border:1px solid #f4e2b9;color:#7d5b1a;border-radius:10px;padding:12px;margin-bottom:18px;font-size:12px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:600px}th,td{text-align:left;padding:11px;border-bottom:1px solid #edf1f6;font-size:12px}th{color:var(--muted);background:#f8fafd}.tag{display:inline-block;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:800}.high{background:#fff0f1;color:#bd2f46}.medium{background:#fff5df;color:#98600a}.low{background:#e6f9ef;color:#168154}.open{background:#e8f2ff;color:#235eb2}.resolved{background:#e6f9ef;color:#168154}.empty{padding:20px;color:var(--muted);font-size:13px}.toast{position:fixed;right:20px;bottom:20px;background:#0c2440;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:10}.toast.show{display:block}.footer{text-align:center;color:#8491a4;font-size:10px;padding:12px}@media(max-width:900px){.sidebar{width:200px}.main{margin-left:200px}.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}@media(max-width:650px){.sidebar{position:static;width:auto;height:auto;padding:12px}.brand{padding:4px 8px 10px}.nav{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar-bottom{display:none}.main{margin-left:0}.topbar{padding:0 14px}.content{padding:13px}.stats{gap:9px}.stat,.panel{padding:14px}.heading h1{font-size:25px}}
 </style>
 </head>
-<body>
-<div class="app">
-<aside class="sidebar" id="sidebar">
-  <div class="brand">
-    <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M20 3 34 8v11c0 9-6 14-14 18C12 33 6 28 6 19V8L20 3Z" stroke="white" stroke-width="2.5"/><path d="M11 20 20 13l9 7M14 20v7h12v-7M18 27v-5h4v5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M29 8q4 2 5 6" stroke="#baffdf" stroke-width="2" stroke-linecap="round"/></svg></div>
-    <div><div class="brand-name">Campus<span>Shield</span> AI</div><div class="brand-sub">Campus safety intelligence</div></div>
-  </div>
-  <div class="nav-label">WORKSPACE</div>
-  <nav class="nav" aria-label="Main navigation">
-    <button class="active" data-page="dashboard"><span class="ico">▦</span>Overview</button>
-    <button data-page="report"><span class="ico">＋</span>Report incident</button>
-    <button data-page="manage"><span class="ico">☷</span>Incident management</button>
-    <button data-page="map"><span class="ico">⌖</span>Campus risk map</button>
-    <button data-page="risk"><span class="ico">◈</span>Risk analysis</button>
-    <button data-page="analytics"><span class="ico">▥</span>Analytics & reports</button>
-  </nav>
-  <div class="sidebar-bottom"><span class="live-dot"></span><strong>Demo environment active</strong><p>Local browser storage · No live emergency dispatch</p></div>
-</aside>
-<div class="main">
-<header class="topbar">
-  <div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle" id="menuToggle" aria-label="Open navigation">☰</button><div class="crumb">CampusShield AI /<strong id="currentSection">Overview</strong></div></div>
-  <div class="top-actions"><span class="pill"><span class="live-dot" style="margin:0"></span> SYSTEM ONLINE · DEMO</span><div class="avatar" title="Demo administrator">CS</div></div>
-</header>
-<main class="content">
-  
-<section class="panel" style="margin-bottom:20px">
-  <h2>CampusShield Account</h2>
-  <p>Sign in or create an account to submit incident reports.</p>
-
-<form id="auth-form">
-  <label for="auth-name">Full name (for new accounts)</label>
-  <input id="auth-name" type="text" placeholder="Your full name">
-
-  <label for="auth-role">I am registering as</label>
-  <select id="auth-role">
-    <option value="student">Student</option>
-    <option value="teacher">Teacher</option>
-  </select>
-
-  <p style="font-size:13px;color:#666">
-    Your account will remain pending verification until your status is reviewed.
-    You can still submit urgent safety reports.
-  </p>
-
-  <label for="auth-email">Email address</label>
-  <input id="auth-email" type="email" placeholder="you@example.com" required>
-
-  <label for="auth-password">Password</label>
-  <input id="auth-password" type="password"
-         placeholder="At least 6 characters"
-         minlength="6" required>
-
-  <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-    <button type="button" id="signup-button">Create account</button>
-    <button type="button" id="signin-button">Sign in</button>
-    <button type="button" id="signout-button">Sign out</button>
-  </div>
-
-  <p id="auth-message" role="status">Not signed in.</p>
-</form>
-</section>
-
-  <div class="notice"><strong>Prototype notice:</strong> This is a demonstration interface. Incident records are saved only in this browser on this device. It does not contact campus security or emergency services. Use fictional test data only.</div>
-
-  <section class="page active" id="page-dashboard">
-    <div class="page-heading"><div><div class="eyebrow">Safety intelligence platform</div><h1>Campus safety overview</h1><p>Monitor incident activity, review emerging risks, and keep campus teams informed.</p></div><button class="btn" data-goto="report">＋ Create incident report</button></div>
-    <div class="grid stats">
-      <div class="stat" style="--wash:#e6f1ff;--accent:#2479e8"><div class="stat-top">Total incidents <span class="stat-icon">▤</span></div><div class="stat-num" id="totalStat">0</div><div class="stat-foot">All demo records</div></div>
-      <div class="stat" style="--wash:#fff0f1;--accent:#dc4059"><div class="stat-top">Open high-risk <span class="stat-icon">⚠</span></div><div class="stat-num" id="highStat">0</div><div class="stat-foot">Requires review</div></div>
-      <div class="stat" style="--wash:#e4faf1;--accent:#13986d"><div class="stat-top">Resolved <span class="stat-icon">✓</span></div><div class="stat-num" id="resolvedStat">0</div><div class="stat-foot">Marked as resolved</div></div>
-      <div class="stat" style="--wash:#e8f9fb;--accent:#11899a"><div class="stat-top">Resolution rate <span class="stat-icon">↗</span></div><div class="stat-num" id="rateStat">0%</div><div class="stat-foot">Of all reported incidents</div></div>
-    </div>
-    <div class="grid two-col">
-      <div class="panel"><div class="panel-head"><div><h2>Recent incidents</h2><p>Latest activity submitted to this demo</p></div><button class="btn secondary small" data-goto="manage">View all</button></div><div class="incident-list" id="recentList"></div></div>
-      <div class="panel"><div class="panel-head"><div><h2>Incident categories</h2><p>Distribution across current records</p></div><span class="subtle">Live summary</span></div><div class="bars" id="categoryBars"></div></div>
-    </div>
-    <div class="grid two-col">
-      <div class="panel"><div class="panel-head"><div><h2>7-day activity</h2><p>Reports by date created in this browser</p></div></div><div class="trend" id="trendChart"></div></div>
-      <div class="panel"><div class="panel-head"><div><h2>Response priorities</h2><p>Open incidents grouped by reported severity</p></div><button class="btn secondary small" data-goto="map">Open risk map</button></div><div id="prioritySummary"></div></div>
-    </div>
-  </section>
-
-  <section class="page" id="page-report">
-    <div class="page-heading"><div><div class="eyebrow">Incident intake</div><h1>Report an incident</h1><p>Capture the essential details for a campus safety report.</p></div></div>
-    <div class="panel"><div class="panel-head"><div><h2>Incident details</h2><p>Fields marked * are required. Use fictional details in this demo.</p></div><span class="tag open">New report</span></div>
-      <form id="reportForm">
-        <div class="form-grid">
-          <div class="field"><label for="category">Incident category *</label><select id="category" required><option value="">Select a category</option><option>Medical emergency</option><option>Fire or smoke</option><option>Security concern</option><option>Accident or injury</option><option>Harassment or misconduct</option><option>Facility hazard</option><option>Theft or property</option><option>Other</option></select></div>
-          <div class="field"><label for="severity">Reported severity *</label><select id="severity" required><option value="">Select severity</option><option>High</option><option>Medium</option><option>Low</option></select></div>
-          <div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" placeholder="e.g. Main library entrance" required></div>
-          <div class="field"><label for="reporter">Reporter label (optional)</label><input id="reporter" maxlength="60" placeholder="e.g. Student / Demo reporter"></div>
-          <div class="field full"><label for="description">Incident description *</label><textarea id="description" maxlength="800" placeholder="Describe what happened, when it occurred, and any immediate concerns..." required></textarea><div class="hint">Do not include passwords, private medical information, or other sensitive personal data.</div></div>
-        </div>
-        <div class="form-actions"><button class="btn" type="submit">Submit demo report</button><button class="btn secondary" type="reset">Clear form</button></div>
-      </form>
-    </div>
-  </section>
-
-  <section class="page" id="page-manage">
-    <div class="page-heading"><div><div class="eyebrow">Operations</div><h1>Incident management</h1><p>Search, filter, review, and update demo incident records.</p></div><button class="btn" data-goto="report">＋ New incident</button></div>
-    <div class="panel"><div class="toolbar"><input id="searchIncidents" type="search" placeholder="Search category, location, description…"><select id="filterSeverity" aria-label="Filter severity"><option value="">All severities</option><option>High</option><option>Medium</option><option>Low</option></select><select id="filterStatus" aria-label="Filter status"><option value="">All statuses</option><option>Open</option><option>Resolved</option></select></div><div class="table-wrap"><table><thead><tr><th>Incident</th><th>Location</th><th>Severity</th><th>Status</th><th>Reported</th><th>Actions</th></tr></thead><tbody id="incidentTable"></tbody></table></div></div>
-  </section>
-
-  <section class="page" id="page-map">
-    <div class="page-heading"><div><div class="eyebrow">Spatial awareness</div><h1>Campus risk map</h1><p>Select a marker to inspect a demo incident location. Map locations are illustrative, not GPS data.</p></div></div>
-    <div class="panel"><div class="panel-head"><div><h2>Illustrative campus layout</h2><p>Markers are placed approximately by location label, not live coordinates.</p></div><span class="tag open">Interactive demo</span></div>
-      <div class="map-layout"><div><div class="map-canvas"><svg id="campusMap" viewBox="0 0 760 470" role="img" aria-label="Illustrative campus map with selectable incident markers">
-        <rect width="760" height="470" fill="#eaf3eb"/><path d="M0 95H760M0 330H760M180 0V470M575 0V470" stroke="#d7e5d9" stroke-width="2" stroke-dasharray="4 7"/>
-        <path d="M-20 270C140 220 180 310 300 260S520 180 790 240" fill="none" stroke="#fff" stroke-width="38"/><path d="M365 -10C330 90 440 120 400 210S330 360 390 490" fill="none" stroke="#fff" stroke-width="32"/><path d="M-20 270C140 220 180 310 300 260S520 180 790 240" fill="none" stroke="#d8e3d9" stroke-width="2" stroke-dasharray="9 10"/><path d="M365 -10C330 90 440 120 400 210S330 360 390 490" fill="none" stroke="#d8e3d9" stroke-width="2" stroke-dasharray="9 10"/>
-        <g fill="#c8e7be" stroke="#a6cfa1" stroke-width="1.5"><circle cx="90" cy="65" r="25"/><circle cx="130" cy="75" r="18"/><circle cx="670" cy="90" r="24"/><circle cx="710" cy="112" r="17"/><circle cx="90" cy="395" r="26"/><circle cx="135" cy="410" r="17"/><circle cx="655" cy="390" r="27"/><circle cx="700" cy="410" r="18"/><circle cx="610" cy="40" r="14"/><circle cx="230" cy="405" r="18"/></g>
-        <g fill="#d7e2ef" stroke="#9aafc5" stroke-width="2"><rect x="245" y="40" width="100" height="68" rx="6"/><rect x="455" y="55" width="94" height="68" rx="6"/><rect x="80" y="155" width="125" height="75" rx="6"/><rect x="505" y="275" width="130" height="78" rx="6"/><rect x="230" y="340" width="95" height="60" rx="6"/><rect x="555" y="155" width="120" height="62" rx="6"/></g>
-        <g fill="#344d6a" font-size="12" font-weight="700" text-anchor="middle"><text x="295" y="78">LIBRARY</text><text x="502" y="93">SCIENCE</text><text x="142" y="195">STUDENT</text><text x="142" y="210">CENTRE</text><text x="570" y="310">RESIDENCE</text><text x="570" y="325">HALL</text><text x="277" y="375">SPORTS</text><text x="615" y="190">CLINIC</text></g>
-        <g fill="#8ac8a1" stroke="#5aab7b" stroke-width="2"><rect x="337" y="150" width="95" height="72" rx="7"/><path d="M330 150 384 120 439 150Z"/></g><g fill="#234d45" font-size="12" font-weight="800" text-anchor="middle"><text x="384" y="180">ADMIN</text><text x="384" y="196">BUILDING</text></g>
-        <g id="mapMarkers"></g>
-        <text x="18" y="450" fill="#668073" font-size="10">ILLUSTRATIVE CAMPUS PLAN · NOT TO SCALE</text>
-      </svg></div><div class="map-legend"><span class="legend"><i class="dot" style="background:#e24d63"></i>High severity</span><span class="legend"><i class="dot" style="background:#d99520"></i>Medium severity</span><span class="legend"><i class="dot" style="background:#25a66a"></i>Low severity</span></div></div>
-      <div><div class="map-detail" id="mapDetail"><h3>Select an incident marker</h3><p>Choose a colored marker on the campus map to view the associated report details.</p></div><div class="map-reports" id="mapReports"></div></div></div>
-    </div>
-  </section>
-
-  <section class="page" id="page-risk">
-    <div class="page-heading"><div><div class="eyebrow">Decision support</div><h1>Risk analysis</h1><p>Estimate a simple priority score from selected incident factors.</p></div></div>
-    <div class="panel"><div class="panel-head"><div><h2>Risk assessment inputs</h2><p>This transparent rule-based score is a demo aid, not a validated prediction or substitute for professional judgment.</p></div></div>
-      <form id="riskForm"><div class="risk-inputs">
-        <div class="field"><label for="riskType">Incident type</label><select id="riskType"><option value="2">Facility hazard</option><option value="3">Security concern</option><option value="4">Medical emergency</option><option value="5">Fire or smoke</option><option value="3">Accident or injury</option><option value="2">Other concern</option></select></div>
-        <div class="field"><label for="riskPeople">Potential people affected</label><select id="riskPeople"><option value="1">One person</option><option value="2">2–5 people</option><option value="3">6–20 people</option><option value="4">More than 20 people</option></select></div>
-        <div class="field"><label for="riskUrgency">Time sensitivity</label><select id="riskUrgency"><option value="1">Can be reviewed routinely</option><option value="2">Needs attention soon</option><option value="4">Immediate attention may be needed</option></select></div>
-        <div class="field"><label for="riskEnvironment">Location exposure</label><select id="riskEnvironment"><option value="1">Restricted / low traffic</option><option value="2">Shared campus area</option><option value="3">Busy public area</option></select></div>
-      </div><button class="btn" type="submit">Calculate demo risk score</button></form>
-      <div class="risk-output" id="riskOutput" aria-live="polite"><div class="subtle">ASSESSMENT RESULT</div><h3>Ready for assessment</h3><p>Choose the factors above and calculate a score to see a suggested priority band.</p></div>
-    </div>
-  </section>
-
-  <section class="page" id="page-analytics">
-    <div class="page-heading"><div><div class="eyebrow">Reporting & insights</div><h1>Analytics dashboard</h1><p>Summaries are calculated from incident records stored in this browser.</p></div><button class="btn" id="exportCsv">↓ Export CSV</button></div>
-    <div class="grid stats">
-      <div class="stat" style="--wash:#e6f1ff;--accent:#2479e8"><div class="stat-top">Total records <span class="stat-icon">▤</span></div><div class="stat-num" id="aTotal">0</div><div class="stat-foot">All recorded incidents</div></div>
-      <div class="stat" style="--wash:#fff0f1;--accent:#dc4059"><div class="stat-top">High severity <span class="stat-icon">⚠</span></div><div class="stat-num" id="aHigh">0</div><div class="stat-foot">All statuses</div></div>
-      <div class="stat" style="--wash:#e4faf1;--accent:#13986d"><div class="stat-top">Resolved <span class="stat-icon">✓</span></div><div class="stat-num" id="aResolved">0</div><div class="stat-foot">Closed records</div></div>
-      <div class="stat" style="--wash:#e8f9fb;--accent:#11899a"><div class="stat-top">Open records <span class="stat-icon">◷</span></div><div class="stat-num" id="aOpen">0</div><div class="stat-foot">Awaiting review</div></div>
-    </div>
-    <div class="grid two-col"><div class="panel"><div class="panel-head"><div><h2>Category breakdown</h2><p>Number of reports by incident category</p></div></div><div class="bars" id="analyticsCategories"></div></div><div class="panel"><div class="panel-head"><div><h2>Severity breakdown</h2><p>Reported severity across all records</p></div></div><div class="bars" id="analyticsSeverity"></div></div></div>
-    <div class="panel"><div class="panel-head"><div><h2>Last 7 days</h2><p>Daily report volume</p></div></div><div class="trend" id="analyticsTrend"></div></div>
-    <div class="footer">CampusShield AI · Analytics are based on locally stored demo data.</div>
-  </section>
-  <div class="footer">CampusShield AI · Intelligent Campus Safety & Emergency Response System · Demonstration only</div>
-</main>
-</div>
-</div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<body><div class="app">
+<aside class="sidebar"><div class="brand">Campus<span>Shield</span> AI</div><div class="nav-label">WORKSPACE</div><nav class="nav"><button class="active" data-page="dashboard">▦ Overview</button><button data-page="report">＋ Report incident</button><button data-page="manage">☷ Incident management</button><button data-page="risk">◈ Risk analysis</button><button data-page="analytics">▥ Analytics</button></nav><div class="sidebar-bottom">● Demo environment active<br><span class="muted">Use fictional test data only.</span></div></aside>
+<div class="main"><header class="topbar"><strong id="sectionTitle">Overview</strong><span class="pill">● CAMPUSSHIELD · DEMO</span></header><main class="content">
+<section class="panel"><h2>CampusShield Account</h2><p class="muted">Sign in or create an account to submit incident reports.</p><form id="auth-form"><div class="grid two"><div class="field"><label for="auth-name">Full name (for new accounts)</label><input id="auth-name" autocomplete="name" placeholder="Your full name"></div><div class="field"><label for="auth-role">I am registering as</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div><div class="field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div><div class="field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div></div><p class="muted">Your account remains pending verification until reviewed. Urgent reports can still be submitted after sign-in.</p><div class="actions"><button class="btn" type="button" id="signup-button">Create account</button><button class="btn" type="button" id="signin-button">Sign in</button><button class="btn secondary" type="button" id="signout-button">Sign out</button></div><p id="auth-message" class="message" role="status">Not signed in.</p></form></section>
+<div class="notice"><strong>Prototype notice:</strong> This is a demonstration interface. Use fictional test data. Reports are stored in Supabase when configured; this prototype does not contact emergency services.</div>
+<section class="page active" id="page-dashboard"><div class="heading"><h1>Campus safety overview</h1><p>Monitor reports and review safety priorities.</p></div><div class="grid stats"><div class="stat"><div class="stat-label">Total incidents</div><div class="stat-num" id="totalStat">0</div></div><div class="stat"><div class="stat-label">Open high-risk</div><div class="stat-num" id="highStat">0</div></div><div class="stat"><div class="stat-label">Resolved</div><div class="stat-num" id="resolvedStat">0</div></div><div class="stat"><div class="stat-label">Resolution rate</div><div class="stat-num" id="rateStat">0%</div></div></div><div class="panel"><h2>Recent incidents</h2><div id="recentList" class="empty">No incidents yet.</div></div></section>
+<section class="page" id="page-report"><div class="heading"><h1>Report an incident</h1><p>Submit a safety report to your configured Supabase project.</p></div><div class="panel"><form id="reportForm"><div class="grid two"><div class="field"><label for="category">Incident category *</label><select id="category" required><option value="">Select category</option><option>Medical emergency</option><option>Fire or smoke</option><option>Security concern</option><option>Accident or injury</option><option>Harassment or misconduct</option><option>Facility hazard</option><option>Theft or property</option><option>Other</option></select></div><div class="field"><label for="severity">Severity *</label><select id="severity" required><option value="">Select severity</option><option>High</option><option>Medium</option><option>Low</option></select></div><div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" required placeholder="e.g. Main library entrance"></div><div class="field"><label for="reporter">Reporter label (optional)</label><input id="reporter" maxlength="60" placeholder="Student / Demo reporter"></div></div><div class="field"><label for="description">Description *</label><textarea id="description" maxlength="800" required placeholder="Describe what happened and any immediate concerns..."></textarea></div><div class="actions"><button class="btn" type="submit">Submit report</button><button class="btn secondary" type="reset">Clear form</button></div></form></div></section>
+<section class="page" id="page-manage"><div class="heading"><h1>Incident management</h1><p>Review incident records. Status changes require the backend policy to allow them.</p></div><div class="panel"><div class="field"><label for="searchIncidents">Search reports</label><input id="searchIncidents" type="search" placeholder="Search category, location, description"></div><div class="table-wrap"><table><thead><tr><th>Incident</th><th>Location</th><th>Severity</th><th>Status</th><th>Reported</th><th>Action</th></tr></thead><tbody id="incidentTable"></tbody></table></div></div></section>
+<section class="page" id="page-risk"><div class="heading"><h1>Risk analysis</h1><p>Illustrative rule-based score only; not a validated prediction.</p></div><div class="panel"><form id="riskForm"><div class="grid two"><div class="field"><label for="riskType">Incident type</label><select id="riskType"><option value="2">Facility hazard</option><option value="3">Security concern</option><option value="4">Medical emergency</option><option value="5">Fire or smoke</option></select></div><div class="field"><label for="riskPeople">People affected</label><select id="riskPeople"><option value="1">One person</option><option value="2">2–5 people</option><option value="3">6–20 people</option><option value="4">More than 20 people</option></select></div><div class="field"><label for="riskUrgency">Urgency</label><select id="riskUrgency"><option value="1">Routine review</option><option value="2">Needs attention soon</option><option value="4">Immediate attention may be needed</option></select></div><div class="field"><label for="riskEnvironment">Location exposure</label><select id="riskEnvironment"><option value="1">Low traffic</option><option value="2">Shared campus area</option><option value="3">Busy public area</option></select></div></div><button class="btn" type="submit">Calculate score</button></form><div id="riskOutput" class="message" aria-live="polite"></div></div></section>
+<section class="page" id="page-analytics"><div class="heading"><h1>Analytics & reports</h1><p>Summaries are calculated from currently loaded incident records.</p></div><div class="panel"><p id="analyticsSummary">No data loaded.</p><button class="btn" id="exportCsv">Export CSV</button></div></section><div class="footer">CampusShield AI · Demonstration only</div></main></div></div><div class="toast" id="toast" role="status"></div>
+<!-- Load dependencies BEFORE the application code. Keep these files beside this HTML file. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script src="./campusshield-backend.js"></script>
 <script>
 (() => {
-  const STORAGE_KEY = "campusshield_ai_incidents_v2";
   const $ = id => document.getElementById(id);
-  const severityRank = {High:3, Medium:2, Low:1};
-  const severityColor = {High:"#e24d63",Medium:"#d99520",Low:"#25a66a"};
   let incidents = [];
-  try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); if (Array.isArray(saved)) incidents = saved; } catch(e) { incidents = []; }
-
-  function persist(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(incidents)); } catch(e) { toast("Browser storage is unavailable. Records may not persist after refresh."); } }
-  function esc(value){ return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch])); }
-  function dateText(value){ const d = new Date(value); return Number.isNaN(d.getTime()) ? "Unknown date" : d.toLocaleString([], {month:"short",day:"numeric",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
-  function shortDate(value){ return new Date(value).toLocaleDateString([], {month:"short",day:"numeric"}); }
-  function tagSeverity(s){ return `<span class="tag ${String(s).toLowerCase()}">${esc(s)}</span>`; }
-  function tagStatus(s){ return `<span class="tag ${s === "Resolved" ? "resolved" : "open"}">${esc(s)}</span>`; }
-  function iconFor(category){ if(/Medical/i.test(category))return "✚"; if(/Fire|smoke/i.test(category))return "♨"; if(/Security|Theft|Harassment/i.test(category))return "⚑"; if(/Accident|injury/i.test(category))return "⚕"; if(/Facility/i.test(category))return "⌁"; return "◈"; }
-  function toast(message){ const el=$("toast"); el.textContent=message; el.classList.add("show"); clearTimeout(toast.timer); toast.timer=setTimeout(()=>el.classList.remove("show"),3200); }
-  function navigate(page){ document.querySelectorAll(".page").forEach(el=>el.classList.toggle("active",el.id==="page-"+page)); document.querySelectorAll(".nav button").forEach(el=>el.classList.toggle("active",el.dataset.page===page)); const names={dashboard:"Overview",report:"Report incident",manage:"Incident management",map:"Campus risk map",risk:"Risk analysis",analytics:"Analytics & reports"}; $("currentSection").textContent=names[page]||"Overview"; $("sidebar").classList.remove("open"); window.scrollTo({top:0,behavior:"smooth"}); if(page==="map")renderMap(); if(page==="analytics")renderAnalytics(); }
-  document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.page)));
-  document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.goto)));
-  $("menuToggle").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
-  document.addEventListener("click",e=>{if(window.innerWidth<=760 && $("sidebar").classList.contains("open") && !$("sidebar").contains(e.target) && !$("menuToggle").contains(e.target))$("sidebar").classList.remove("open");});
-
-  $("reportForm").addEventListener("submit", async e => {
-    e.preventDefault();
-
-    const category = $("category").value;
-    const severity = $("severity").value;
-    const location = $("location").value.trim();
-    const description = $("description").value.trim();
-    const reporter = $("reporter").value.trim();
-
-    if (!category || !severity || !location || !description) {
-      toast("Please complete all required fields.");
-      return;
-    }
-
-    if (!window.CampusShieldBackend?.isConfigured) {
-      toast("Supabase is not configured.");
-      return;
-    }
-
-    try {
-      const saved = await window.CampusShieldBackend.createIncident({
-        category,
-        severity,
-        location,
-        description
-      });
-      
-      incidents.unshift({
-        id: saved.id,
-        category: saved.category,
-        severity: saved.severity,
-        location: saved.location,
-        description: saved.description,
-        reporter: reporter || "Signed-in user",
-        status: saved.status || "Open",
-        createdAt: saved.created_at
-      });
-
-      persist();
-      $("reportForm").reset();
-      renderAll();
-      navigate("manage");
-      toast("Incident report saved to Supabase.");
-    } catch (error) {
-      console.error("Incident submission failed:", error);
-      toast("Could not save report: " + error.message);
-    }
-  });
-
-
-  function renderIncidentRow(i){return `<div class="incident-row"><div class="incident-symbol">${iconFor(i.category)}</div><div class="incident-main"><strong>${esc(i.category)}</strong><p>${esc(i.description)}</p><div class="incident-meta">${tagSeverity(i.severity)} ${tagStatus(i.status)}<span class="subtle">⌖ ${esc(i.location)}</span><span class="subtle">${esc(dateText(i.createdAt))}</span></div></div></div>`;}
-  function renderRecent(){const el=$("recentList");el.innerHTML=incidents.slice(0,5).map(renderIncidentRow).join("")||'<div class="empty">No incidents yet. Create a demo report to populate your dashboard.</div>';}
-  function renderBars(elId,items,total){const el=$(elId);if(!items.length){el.innerHTML='<div class="empty">No data to visualize yet.</div>';return;}el.innerHTML=items.map(([name,count,color])=>`<div class="bar-item"><span>${esc(name)}</span><div class="bar-track"><div class="bar-fill" style="width:${total?Math.max(count/total*100,count?2:0):0}%;${color?`background:${color}`:""}"></div></div><strong>${count}</strong></div>`).join("");}
-  function groupBy(key){const out={};incidents.forEach(i=>{out[i[key]]=(out[i[key]]||0)+1;});return out;}
-  function last7(){const days=[];for(let n=6;n>=0;n--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);const next=new Date(d);next.setDate(next.getDate()+1);const count=incidents.filter(i=>{const t=new Date(i.createdAt);return t>=d&&t<next;}).length;days.push({label:d.toLocaleDateString([],{weekday:"short"}),count,date:d});}return days;}
-  function renderTrend(id){const data=last7(),max=Math.max(1,...data.map(x=>x.count));$(id).innerHTML=data.map(d=>`<div class="trend-col"><b>${d.count}</b><div class="trend-bar" style="height:${Math.max(3,d.count/max*78)}%"></div><span>${d.label}</span></div>`).join("");}
-  function renderPriority(){const open=incidents.filter(i=>i.status!=="Resolved");const levels=["High","Medium","Low"];const el=$("prioritySummary");el.innerHTML=levels.map(s=>{const count=open.filter(i=>i.severity===s).length;return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #edf1f6"><span>${tagSeverity(s)} <span class="subtle" style="margin-left:7px">${s==="High"?"Urgent review":s==="Medium"?"Review soon":"Routine review"}</span></span><strong>${count}</strong></div>`;}).join("")+`<p class="subtle" style="margin:13px 0 0">Open incidents: ${open.length}</p>`;}
-  function renderDashboard(){const total=incidents.length, resolved=incidents.filter(i=>i.status==="Resolved").length, high=incidents.filter(i=>i.severity==="High"&&i.status!=="Resolved").length;$("totalStat").textContent=total;$("highStat").textContent=high;$("resolvedStat").textContent=resolved;$("rateStat").textContent=(total?Math.round(resolved/total*100):0)+"%";renderRecent();const cats=groupBy("category");renderBars("categoryBars",Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(x=>[x[0],x[1]]),total);renderTrend("trendChart");renderPriority();}
-  function renderTable(){const q=$("searchIncidents").value.toLowerCase(),sev=$("filterSeverity").value,status=$("filterStatus").value;const list=incidents.filter(i=>(!q||[i.category,i.location,i.description,i.reporter].some(v=>String(v).toLowerCase().includes(q)))&&(!sev||i.severity===sev)&&(!status||i.status===status));$("incidentTable").innerHTML=list.map(i=>`<tr><td><div class="td-title">${esc(i.category)}</div><div class="td-sub">${esc(i.description.slice(0,75))}${i.description.length>75?"…":""}</div></td><td>${esc(i.location)}</td><td>${tagSeverity(i.severity)}</td><td>${tagStatus(i.status)}</td><td>${esc(dateText(i.createdAt))}</td><td><div class="actions"><button class="btn secondary small" data-action="toggle" data-id="${esc(i.id)}">${i.status==="Resolved"?"Reopen":"Resolve"}</button><button class="btn danger small" data-action="delete" data-id="${esc(i.id)}">Delete</button></div></td></tr>`).join("")||'<tr><td colspan="6"><div class="empty">No matching incidents.</div></td></tr>';}
-  ["searchIncidents","filterSeverity","filterStatus"].forEach(id=>$(id).addEventListener(id==="searchIncidents"?"input":"change",renderTable));
-  $("incidentTable").addEventListener("click",e=>{const b=e.target.closest("button[data-action]");if(!b)return;const i=incidents.find(x=>x.id===b.dataset.id);if(!i)return;if(b.dataset.action==="toggle"){i.status=i.status==="Resolved"?"Open":"Resolved";persist();renderAll();toast(`Incident marked ${i.status.toLowerCase()}.`);}else if(b.dataset.action==="delete"){if(confirm("Delete this demo incident? This cannot be undone.")){incidents=incidents.filter(x=>x.id!==i.id);persist();renderAll();toast("Demo incident deleted.");}}});
-  function markerPosition(i,index){const text=(i.location||"").toLowerCase();let x=380,y=235;if(text.includes("library")){x=295;y=75;}else if(text.includes("science")){x=500;y=90;}else if(text.includes("student")){x=145;y=190;}else if(text.includes("residence")||text.includes("hall")){x=570;y=310;}else if(text.includes("clinic")||text.includes("medical")){x=615;y=185;}else if(text.includes("sport")){x=275;y=370;}else if(text.includes("admin")){x=380;y=180;}else{x=80+(index*113)%600;y=70+(index*71)%320;}return{x,y};}
-  function renderMap(){const g=$("mapMarkers");const mapped=incidents.slice(0,50);g.innerHTML=mapped.map((i,n)=>{const p=markerPosition(i,n);return `<g tabindex="0" role="button" aria-label="${esc(i.category)} at ${esc(i.location)}" class="map-marker" data-map-id="${esc(i.id)}" transform="translate(${p.x} ${p.y})"><circle r="14" fill="${severityColor[i.severity]||"#1687f8"}" opacity=".2" stroke="none"/><circle r="8" fill="${severityColor[i.severity]||"#1687f8"}"/><text y="-17" text-anchor="middle" font-size="10" font-weight="800" fill="#24354d" stroke="white" stroke-width="3" paint-order="stroke">${n+1}</text></g>`;}).join("");$("mapReports").innerHTML=mapped.slice(0,8).map((i,n)=>`<button class="map-report" data-select-map="${esc(i.id)}"><span style="color:${severityColor[i.severity]}">●</span> ${esc(i.category)} <span class="subtle">· ${esc(i.location)}</span></button>`).join("")||'<div class="empty">No reports to map yet. Add a demo incident first.</div>';g.querySelectorAll("[data-map-id]").forEach(m=>{m.addEventListener("click",()=>showMapDetail(m.dataset.mapId));m.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();showMapDetail(m.dataset.mapId);}});});$("mapReports").querySelectorAll("[data-select-map]").forEach(b=>b.addEventListener("click",()=>showMapDetail(b.dataset.selectMap)));if(mapped.length)showMapDetail(mapped[0].id);}
-  function showMapDetail(id){const i=incidents.find(x=>x.id===id);if(!i)return;$("mapDetail").innerHTML=`<div class="subtle">INCIDENT DETAILS</div><h3 style="margin-top:8px">${esc(i.category)}</h3><div style="margin:8px 0">${tagSeverity(i.severity)} ${tagStatus(i.status)}</div><p><strong>Location:</strong> ${esc(i.location)}</p><p><strong>Reported:</strong> ${esc(dateText(i.createdAt))}</p><p>${esc(i.description)}</p><button class="btn secondary small" id="mapManageBtn">Manage incident</button>`;$("mapManageBtn").addEventListener("click",()=>navigate("manage"));}
-  function renderAnalytics(){const total=incidents.length,res=incidents.filter(i=>i.status==="Resolved").length,high=incidents.filter(i=>i.severity==="High").length;$("aTotal").textContent=total;$("aHigh").textContent=high;$("aResolved").textContent=res;$("aOpen").textContent=total-res;const cats=groupBy("category");renderBars("analyticsCategories",Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(x=>[x[0],x[1]]),total);const sevs=["High","Medium","Low"].map(s=>[s,incidents.filter(i=>i.severity===s).length,severityColor[s]]);renderBars("analyticsSeverity",sevs,total);renderTrend("analyticsTrend");}
-  $("exportCsv").addEventListener("click",()=>{if(!incidents.length){toast("There are no incident records to export yet.");return;}const cols=["id","category","severity","location","description","reporter","status","createdAt"];const quote=v=>`"${String(v??"").replace(/"/g,'""')}"`;const csv=[cols.join(","),...incidents.map(i=>cols.map(c=>quote(i[c])).join(","))].join("\r\n");const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="campusshield-incidents.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast("CSV export prepared.");});
-  $("riskForm").addEventListener("submit",e=>{e.preventDefault();const type=Number($("riskType").value),people=Number($("riskPeople").value),urgency=Number($("riskUrgency").value),environment=Number($("riskEnvironment").value);const score=Math.min(100,Math.round(((type*4+people*3+urgency*5+environment*2)/ (5*4+4*3+4*5+3*2))*100));let band,cls,advice;if(score>=75){band="Critical priority";cls="high";advice="Treat this as a prompt for immediate human review. Follow your institution’s official emergency procedures where appropriate.";}else if(score>=50){band="High priority";cls="high";advice="Escalate for timely review by the appropriate campus safety team.";}else if(score>=30){band="Moderate priority";cls="medium";advice="Arrange review and document any changes in the situation.";}else{band="Lower priority";cls="low";advice="Use routine review while remaining alert to changing circumstances.";}const recs=[];if(urgency>=4)recs.push("Urgency was marked as immediate.");if(people>=3)recs.push("Potentially multiple people may be affected.");if(type>=4)recs.push("Selected incident type may carry significant consequences.");if(!recs.length)recs.push("No additional high-weight factors were selected.");$("riskOutput").innerHTML=`<div class="subtle">ASSESSMENT RESULT</div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px"><h3>${band}</h3><span class="tag ${cls}">${score}/100</span></div><div class="risk-score">${score}<span style="font-size:15px;color:var(--muted);letter-spacing:0"> / 100</span></div><div class="risk-meter"><div style="width:${score}%"></div></div><p>${advice}</p><strong style="font-size:12px">Factors to review</strong><ul>${recs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><p><strong>Important:</strong> This score is a simple illustrative calculation. It is not validated, does not predict outcomes, and must not be used as the sole basis for emergency decisions.</p>`;});
-  
-  $("auth-form").addEventListener("submit", e => e.preventDefault());
-
-  
-$("signup-button").addEventListener("click", async () => {
-  const email = $("auth-email").value.trim();
-  const password = $("auth-password").value;
-  const name = $("auth-name").value.trim();
-  const requestedRole = $("auth-role").value;
-  const message = $("auth-message");
-
-  if (!email || !password) {
-    message.textContent = "Enter your email and password.";
-    return;
-  }
-
-  if (!["student", "teacher"].includes(requestedRole)) {
-    message.textContent = "Choose Student or Teacher.";
-    return;
-  }
-
-  if (!window.CampusShieldBackend?.isConfigured) {
-    message.textContent = "Supabase is not configured. Please try again later.";
-    return;
-  }
-
-  try {
-    const { data, error } = await window.CampusShieldBackend.signUp(
-      email,
-      password,
-      name
-    );
-
-    if (error) throw error;
-
-    // Save the requested role only when a session exists.
-    // If email confirmation is required, we save it after sign-in.
-    if (data.session) {
-      const { error: profileError } =
-        await window.CampusShieldBackend.saveRequestedRole(requestedRole);
-
-      if (profileError) throw profileError;
-    } else {
-      sessionStorage.setItem("campusshield_requested_role", requestedRole);
-    }
-
-    message.textContent = data.user && !data.session
-      ? "Account created. Check your email to confirm it, then sign in."
-      : "Account created. Your requested role is saved; verification is still required.";
-  } catch (error) {
-    message.textContent = "Sign-up failed: " + error.message;
-  }
-});
-
-  $("signin-button").addEventListener("click", async () => {
-    const email = $("auth-email").value.trim();
-    const password = $("auth-password").value;
-    const message = $("auth-message");
-
-    try {
-      const { error } = await window.CampusShieldBackend.signIn(email, password);
-      if (error) throw error;
-      message.textContent = "Signed in successfully.";
-    } catch (error) {
-      message.textContent = "Sign-in failed: " + error.message;
-    }
-  });
-
-  $("signout-button").addEventListener("click", async () => {
-    const message = $("auth-message");
-
-    try {
-      const { error } = await window.CampusShieldBackend.signOut();
-      if (error) throw error;
-      message.textContent = "Signed out.";
-    } catch (error) {
-      message.textContent = "Sign-out failed: " + error.message;
-    }
-  });
-
-  
-  function renderAll(){renderDashboard();renderTable();renderMap();renderAnalytics();}
-
-  async function refreshIncidentsFromSupabase() {
-    if (!window.CampusShieldBackend?.isConfigured) return;
-
-    try {
-      const user = await window.CampusShieldBackend.getCurrentUser();
-      if (!user) return;
-
-      const rows = await window.CampusShieldBackend.listIncidents();
-
-      incidents = rows.map(i => ({
-        id: i.id,
-        category: i.category,
-        severity: i.severity,
-        location: i.location,
-        description: i.description,
-        reporter: i.reporter || "Signed-in user",
-        status: i.status || "Open",
-        createdAt: i.created_at
-      }));
-
-      persist();
-      renderAll();
-    } catch (error) {
-      console.error("Could not refresh incidents from Supabase:", error);
-    }
-  }
-
-  renderAll();
-  refreshIncidentsFromSupabase();
+  const severityRank = {High:3, Medium:2, Low:1};
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const dateText = value => {const d=new Date(value);return Number.isNaN(d.getTime())?'Unknown date':d.toLocaleString();};
+  function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3500);}
+  function tagSeverity(s){return `<span class="tag ${String(s).toLowerCase()}">${esc(s)}</span>`;}
+  function tagStatus(s){return `<span class="tag ${s==='Resolved'?'resolved':'open'}">${esc(s||'Open')}</span>`;}
+  function navigate(page){document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id==='page-'+page));document.querySelectorAll('[data-page]').forEach(el=>el.classList.toggle('active',el.dataset.page===page));const names={dashboard:'Overview',report:'Report incident',manage:'Incident management',risk:'Risk analysis',analytics:'Analytics & reports'};$('sectionTitle').textContent=names[page]||'Overview';if(page==='analytics')renderAnalytics();}
+  document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.page)));
+  function render(){const total=incidents.length,resolved=incidents.filter(i=>i.status==='Resolved').length,high=incidents.filter(i=>i.severity==='High'&&i.status!=='Resolved').length;$('totalStat').textContent=total;$('highStat').textContent=high;$('resolvedStat').textContent=resolved;$('rateStat').textContent=(total?Math.round(resolved/total*100):0)+'%';$('recentList').innerHTML=incidents.slice(0,5).map(i=>`<div style="padding:12px 0;border-bottom:1px solid #edf1f6"><strong>${esc(i.category)}</strong> · ${tagSeverity(i.severity)} ${tagStatus(i.status)}<p class="muted">${esc(i.location)} — ${esc(i.description)}</p></div>`).join('')||'<div class="empty">No incidents yet.</div>';renderTable();renderAnalytics();}
+  function renderTable(){const q=($('searchIncidents').value||'').toLowerCase();const list=incidents.filter(i=>[i.category,i.location,i.description].some(v=>String(v||'').toLowerCase().includes(q)));$('incidentTable').innerHTML=list.map(i=>`<tr><td><strong>${esc(i.category)}</strong><br>${esc(i.description)}</td><td>${esc(i.location)}</td><td>${tagSeverity(i.severity)}</td><td>${tagStatus(i.status)}</td><td>${esc(dateText(i.createdAt))}</td><td><button class="btn secondary" data-resolve="${esc(i.id)}">Resolve</button></td></tr>`).join('')||'<tr><td colspan="6">No matching incidents.</td></tr>';}
+  $('searchIncidents').addEventListener('input',renderTable);
+  $('incidentTable').addEventListener('click',async e=>{const b=e.target.closest('[data-resolve]');if(!b)return;try{const updated=await window.CampusShieldBackend.updateIncidentStatus(b.dataset.resolve,'Resolved');incidents=incidents.map(i=>i.id===updated.id?{...i,status:updated.status||'Resolved'}:i);render();toast('Incident status updated.');}catch(err){console.error(err);toast('Could not update status: '+err.message);}});
+  function renderAnalytics(){$('analyticsSummary').textContent=`${incidents.length} total incident(s), ${incidents.filter(i=>i.severity==='High').length} high-severity, ${incidents.filter(i=>i.status==='Resolved').length} resolved.`;}
+  async function refreshIncidentsFromSupabase(){const backend=window.CampusShieldBackend;if(!backend?.isConfigured)return;try{const user=await backend.getCurrentUser();if(!user)return;const rows=await backend.listIncidents();incidents=rows.map(i=>({id:i.id,category:i.category,severity:i.severity,location:i.location,description:i.description,reporter:i.reporter||'Signed-in user',status:i.status||'Open',createdAt:i.created_at}));render();}catch(e){console.error('Could not refresh incidents:',e);}}
+  $('signup-button').addEventListener('click',async()=>{const backend=window.CampusShieldBackend;const email=$('auth-email').value.trim(),password=$('auth-password').value,name=$('auth-name').value.trim(),requestedRole=$('auth-role').value,msg=$('auth-message');if(!email||!password){msg.textContent='Enter your email and password.';return;}if(!backend?.isConfigured){msg.textContent='Supabase is not connected. Check configuration and script loading.';return;}try{msg.textContent='Creating account...';const {data,error}=await backend.signUp(email,password,name);if(error)throw error;if(data.session){const result=await backend.saveRequestedRole(requestedRole);if(result.error)throw result.error;msg.textContent='Account created. Your role request is pending verification.';}else{sessionStorage.setItem('campusshield_requested_role',requestedRole);msg.textContent='Account created. Check your email to confirm it, then sign in using this browser to submit your role request.';}}catch(e){console.error('Sign-up failed:',e);msg.textContent='Sign-up failed: '+e.message;}});
+  $('signin-button').addEventListener('click',async()=>{const backend=window.CampusShieldBackend;const email=$('auth-email').value.trim(),password=$('auth-password').value,msg=$('auth-message');if(!email||!password){msg.textContent='Enter your email and password.';return;}if(!backend?.isConfigured){msg.textContent='Supabase is not connected. Check configuration and script loading.';return;}try{msg.textContent='Signing in...';const {data,error}=await backend.signIn(email,password);if(error)throw error;const pendingRole=sessionStorage.getItem('campusshield_requested_role');if(pendingRole&&['student','teacher'].includes(pendingRole)){const {error:roleError}=await backend.saveRequestedRole(pendingRole);if(roleError)throw roleError;sessionStorage.removeItem('campusshield_requested_role');}msg.textContent='Signed in successfully. Your account remains pending verification.';await refreshIncidentsFromSupabase();}catch(e){console.error('Sign-in failed:',e);msg.textContent='Sign-in failed: '+e.message;}});
+  $('signout-button').addEventListener('click',async()=>{const backend=window.CampusShieldBackend,msg=$('auth-message');if(!backend?.isConfigured){msg.textContent='Supabase is not connected.';return;}try{const {error}=await backend.signOut();if(error)throw error;msg.textContent='Signed out successfully.';}catch(e){console.error('Sign-out failed:',e);msg.textContent='Sign-out failed: '+e.message;}});
+  $('reportForm').addEventListener('submit',async e=>{e.preventDefault();const backend=window.CampusShieldBackend;if(!backend?.isConfigured){toast('Supabase is not configured.');return;}try{const saved=await backend.createIncident({category:$('category').value,severity:$('severity').value,location:$('location').value.trim(),description:$('description').value.trim()});incidents.unshift({id:saved.id,category:saved.category,severity:saved.severity,location:saved.location,description:saved.description,reporter:$('reporter').value.trim()||'Signed-in user',status:saved.status||'Open',createdAt:saved.created_at});$('reportForm').reset();render();navigate('manage');toast('Incident saved to Supabase.');}catch(err){console.error('Incident submission failed:',err);toast('Could not save report: '+err.message);}});
+  $('riskForm').addEventListener('submit',e=>{e.preventDefault();const t=+$('riskType').value,p=+$('riskPeople').value,u=+$('riskUrgency').value,v=+$('riskEnvironment').value;const score=Math.round((t*4+p*3+u*5+v*2)/42*100);const band=score>=75?'Critical priority':score>=50?'High priority':score>=30?'Moderate priority':'Lower priority';$('riskOutput').textContent=`${band}: ${score}/100. Illustrative score only; seek human review and follow official emergency procedures.`;});
+  $('exportCsv').addEventListener('click',()=>{if(!incidents.length){toast('No incident records to export.');return;}const cols=['id','category','severity','location','description','reporter','status','createdAt'];const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const csv=[cols.join(','),...incidents.map(i=>cols.map(c=>q(i[c])).join(','))].join('\r\n');const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='campusshield-incidents.csv';a.click();URL.revokeObjectURL(url);});
+  $('auth-form').addEventListener('submit',e=>e.preventDefault());
+  render();refreshIncidentsFromSupabase();
+  if(!window.CampusShieldBackend)console.error('CampusShieldBackend is undefined. Check that supabase-config.js and campusshield-backend.js exist beside this HTML and load successfully.');
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
-<script src="campusshield-backend.js"></script>
-
-</body>
-</html>
-
-  
+</body></html>
