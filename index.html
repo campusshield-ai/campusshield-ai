@@ -46,8 +46,22 @@
   $('riskForm').addEventListener('submit',e=>{e.preventDefault();const t=+$('riskType').value,p=+$('riskPeople').value,u=+$('riskUrgency').value,v=+$('riskEnvironment').value;const score=Math.round((t*4+p*3+u*5+v*2)/42*100);const band=score>=75?'Critical priority':score>=50?'High priority':score>=30?'Moderate priority':'Lower priority';$('riskOutput').textContent=`${band}: ${score}/100. Illustrative score only; seek human review and follow official emergency procedures.`;});
   $('exportCsv').addEventListener('click',()=>{if(!incidents.length){toast('No incident records to export.');return;}const cols=['id','category','severity','location','description','reporter','status','createdAt'];const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const csv=[cols.join(','),...incidents.map(i=>cols.map(c=>q(i[c])).join(','))].join('\r\n');const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='campusshield-incidents.csv';a.click();URL.revokeObjectURL(url);});
   $('auth-form').addEventListener('submit',e=>e.preventDefault());
-  render();refreshIncidentsFromSupabase();
-  if(!window.CampusShieldBackend)console.error('CampusShieldBackend is undefined. Check that supabase-config.js and campusshield-backend.js exist beside this HTML and load successfully.');
+  // This app defines render(), so keep render() rather than calling renderAll().
+  render();
+  refreshIncidentsFromSupabase();
+
+  if (!window.CampusShieldBackend) {
+    console.error(
+      'CampusShieldBackend is undefined. Check script paths and loading order.'
+    );
+  } else {
+    console.log(
+      'CampusShieldBackend loaded:',
+      typeof window.CampusShieldBackend.signIn,
+      'Configured:',
+      window.CampusShieldBackend.isConfigured
+    );
+  }
 })();
 </script>
 </body></html>
