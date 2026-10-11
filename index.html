@@ -44,7 +44,7 @@
 <section class="panel" style="margin-bottom:20px">
   <h2>CampusShield Account</h2>
   <p>Sign in or create an account to submit incident reports.</p>
-```html
+
 <form id="auth-form">
   <label for="auth-name">Full name (for new accounts)</label>
   <input id="auth-name" type="text" placeholder="Your full name">
@@ -259,7 +259,7 @@
   
   $("auth-form").addEventListener("submit", e => e.preventDefault());
 
-  ```javascript
+  
 $("signup-button").addEventListener("click", async () => {
   const email = $("auth-email").value.trim();
   const password = $("auth-password").value;
