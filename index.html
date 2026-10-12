@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,286 +5,737 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#07172d">
 <title>CampusShield AI | Intelligent Campus Safety</title>
+
 <style>
-:root{--navy:#07172d;--navy2:#0d2442;--blue:#1687f8;--teal:#19d3b0;--ink:#17263d;--muted:#6d7c91;--bg:#f3f6fb;--card:#fff;--line:#e2e9f2;--red:#e24d63;--amber:#d99520;--shadow:0 12px 34px rgba(16,37,68,.07)}
+:root{
+  --navy:#07172d;
+  --navy2:#0d2442;
+  --blue:#1687f8;
+  --teal:#19d3b0;
+  --ink:#17263d;
+  --muted:#6d7c91;
+  --bg:#f3f6fb;
+  --card:#fff;
+  --line:#e2e9f2;
+  --red:#e24d63;
+  --amber:#d99520;
+  --shadow:0 12px 34px rgba(16,37,68,.07)
+}
+
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif
+}
+
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 .app{min-height:100vh}
-.sidebar{position:fixed;inset:0 auto 0 0;width:235px;background:linear-gradient(180deg,#07172d,#0a2140);color:#eaf3ff;padding:24px 16px;display:flex;flex-direction:column;z-index:5}
-.brand{font-size:18px;font-weight:850;padding:0 8px 26px}
+
+.sidebar{
+  position:fixed;
+  inset:0 auto 0 0;
+  width:235px;
+  background:linear-gradient(180deg,#07172d,#0a2140);
+  color:#eaf3ff;
+  padding:24px 16px;
+  display:flex;
+  flex-direction:column;
+  z-index:5
+}
+
+.brand{
+  font-size:18px;
+  font-weight:850;
+  padding:0 8px 26px
+}
+
 .brand span{color:var(--teal)}
-.nav-label{font-size:10px;color:#91a9c8;letter-spacing:1.5px;padding:8px}
+
+.nav-label{
+  font-size:10px;
+  color:#91a9c8;
+  letter-spacing:1.5px;
+  padding:8px
+}
+
 .nav{display:grid;gap:6px}
-.nav button{border:0;background:transparent;color:#a9bdd7;text-align:left;padding:12px;border-radius:10px;font-weight:650}
-.nav button:hover,.nav button.active{background:#1687f82e;color:#fff}
-.sidebar-bottom{margin-top:auto;border:1px solid #ffffff20;border-radius:12px;padding:12px;font-size:12px}
+
+.nav button{
+  border:0;
+  background:transparent;
+  color:#a9bdd7;
+  text-align:left;
+  padding:12px;
+  border-radius:10px;
+  font-weight:650
+}
+
+.nav button:hover,
+.nav button.active{
+  background:#1687f82e;
+  color:#fff
+}
+
+.sidebar-bottom{
+  margin-top:auto;
+  border:1px solid #ffffff20;
+  border-radius:12px;
+  padding:12px;
+  font-size:12px
+}
+
 .main{margin-left:235px}
-.topbar{height:68px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:4}
-.pill{background:#e9fbf5;color:#137c62;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800}
-.content{max-width:1400px;margin:auto;padding:25px}
-.panel,.stat{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);padding:20px;margin-bottom:17px}
+
+.topbar{
+  height:68px;
+  padding:0 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+  position:sticky;
+  top:0;
+  z-index:4
+}
+
+.pill{
+  background:#e9fbf5;
+  color:#137c62;
+  border-radius:999px;
+  padding:7px 11px;
+  font-size:11px;
+  font-weight:800
+}
+
+.content{
+  max-width:1400px;
+  margin:auto;
+  padding:25px
+}
+
+.panel,.stat{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:15px;
+  box-shadow:var(--shadow);
+  padding:20px;
+  margin-bottom:17px
+}
+
 .page{display:none}
 .page.active{display:block}
+
 .heading{margin-bottom:20px}
 .heading h1{margin:0 0 5px;font-size:30px}
 .heading p,.muted{color:var(--muted);font-size:13px}
+
 .grid{display:grid;gap:15px}
 .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
 .stat{margin:0}
 .stat-label{color:var(--muted);font-size:12px}
 .stat-num{font-size:30px;font-weight:850;margin-top:8px}
 .two{grid-template-columns:repeat(2,minmax(0,1fr))}
-.btn{border:0;border-radius:9px;padding:10px 14px;background:linear-gradient(135deg,#1687f8,#1761d8);color:#fff;font-size:12px;font-weight:800}
-.btn.secondary{background:#edf3fa;color:#243955;border:1px solid var(--line)}
+
+.btn{
+  border:0;
+  border-radius:9px;
+  padding:10px 14px;
+  background:linear-gradient(135deg,#1687f8,#1761d8);
+  color:#fff;
+  font-size:12px;
+  font-weight:800
+}
+
+.btn.secondary{
+  background:#edf3fa;
+  color:#243955;
+  border:1px solid var(--line)
+}
+
 .btn.danger{background:#fff0f2;color:#b3263b}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+
 .field{margin:12px 0}
-.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}
-.field input,.field select,.field textarea{width:100%;border:1px solid #d8e1ec;border-radius:9px;padding:11px;background:white;color:var(--ink)}
+
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:6px
+}
+
+.field input,
+.field select,
+.field textarea{
+  width:100%;
+  border:1px solid #d8e1ec;
+  border-radius:9px;
+  padding:11px;
+  background:white;
+  color:var(--ink)
+}
+
 textarea{min-height:100px;resize:vertical}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .message{font-size:13px;margin:10px 0}
-.notice{background:#fff8e9;border:1px solid #f4e2b9;color:#7d5b1a;border-radius:10px;padding:12px;margin-bottom:18px;font-size:12px}
+
+.notice{
+  background:#fff8e9;
+  border:1px solid #f4e2b9;
+  color:#7d5b1a;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:18px;
+  font-size:12px
+}
+
 .table-wrap{overflow:auto}
 table{width:100%;border-collapse:collapse;min-width:600px}
-th,td{text-align:left;padding:11px;border-bottom:1px solid #edf1f6;font-size:12px}
+
+th,td{
+  text-align:left;
+  padding:11px;
+  border-bottom:1px solid #edf1f6;
+  font-size:12px
+}
+
 th{color:var(--muted);background:#f8fafd}
-.tag{display:inline-block;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:800}
+
+.tag{
+  display:inline-block;
+  border-radius:99px;
+  padding:4px 8px;
+  font-size:10px;
+  font-weight:800
+}
+
 .high{background:#fff0f1;color:#bd2f46}
 .medium{background:#fff5df;color:#98600a}
 .low{background:#e6f9ef;color:#168154}
 .open{background:#e8f2ff;color:#235eb2}
 .resolved{background:#e6f9ef;color:#168154}
 .empty{padding:20px;color:var(--muted);font-size:13px}
-.toast{position:fixed;right:20px;bottom:20px;background:#0c2440;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:10}
+
+.toast{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  background:#0c2440;
+  color:#fff;
+  padding:12px 16px;
+  border-radius:10px;
+  display:none;
+  z-index:10
+}
+
 .toast.show{display:block}
 .footer{text-align:center;color:#8491a4;font-size:10px;padding:12px}
-@media(max-width:900px){.sidebar{width:200px}.main{margin-left:200px}.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
-@media(max-width:650px){.sidebar{position:static;width:auto;height:auto;padding:12px}.brand{padding:4px 8px 10px}.nav{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar-bottom{display:none}.main{margin-left:0}.topbar{padding:0 14px}.content{padding:13px}.stats{gap:9px}.stat,.panel{padding:14px}.heading h1{font-size:25px}}
+
+@media(max-width:900px){
+  .sidebar{width:200px}
+  .main{margin-left:200px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .two{grid-template-columns:1fr}
+}
+
+@media(max-width:650px){
+  .sidebar{
+    position:static;
+    width:auto;
+    height:auto;
+    padding:12px
+  }
+
+  .brand{padding:4px 8px 10px}
+  .nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sidebar-bottom{display:none}
+  .main{margin-left:0}
+  .topbar{padding:0 14px}
+  .content{padding:13px}
+  .stats{gap:9px}
+  .stat,.panel{padding:14px}
+  .heading h1{font-size:25px}
+}
 </style>
 </head>
+
 <body>
 <div class="app">
+
 <aside class="sidebar">
-<div class="brand">Campus<span>Shield</span> AI</div>
-<div class="nav-label">WORKSPACE</div>
-<nav class="nav">
-<button class="active" data-page="dashboard">▦ Overview</button>
-<button data-page="report">＋ Report incident</button>
-<button data-page="manage">☷ Incident management</button>
-<button data-page="risk">◈ Risk analysis</button>
-<button data-page="analytics">▥ Analytics</button>
-<button data-page="approvals" id="approvals-nav" hidden>✓ Account approvals</button>
-</nav>
-<div class="sidebar-bottom">● Demo environment active<br><span class="muted">Use fictional test data only.</span></div>
+  <div class="brand">Campus<span>Shield</span> AI</div>
+  <div class="nav-label">WORKSPACE</div>
+
+  <nav class="nav">
+    <button class="active" data-page="dashboard">▦ Overview</button>
+    <button data-page="report">＋ Report incident</button>
+    <button data-page="manage">☷ Incident management</button>
+    <button data-page="risk">◈ Risk analysis</button>
+    <button data-page="analytics">▥ Analytics</button>
+    <button data-page="approvals" id="approvals-nav" hidden>
+      ✓ Account approvals
+    </button>
+  </nav>
+
+  <div class="sidebar-bottom">
+    ● Demo environment active<br>
+    <span class="muted">Use fictional test data only.</span>
+  </div>
 </aside>
+
 <div class="main">
-<header class="topbar"><strong id="sectionTitle">Overview</strong><span class="pill">● CAMPUSSHIELD · DEMO</span></header>
+
+<header class="topbar">
+  <strong id="sectionTitle">Overview</strong>
+  <span class="pill">● CAMPUSSHIELD · DEMO</span>
+</header>
+
 <main class="content">
 
 <section class="panel">
-<h2>CampusShield Account</h2>
-<p class="muted">Sign in or create an account to submit incident reports.</p>
-<form id="auth-form">
-<div class="grid two">
-<div class="field"><label for="auth-name">Full name (for new accounts)</label><input id="auth-name" autocomplete="name" placeholder="Your full name"></div>
-<div class="field"><label for="auth-role">I am registering as</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
-<div class="field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+  <h2>CampusShield Account</h2>
+  <p class="muted">Sign in or create an account to submit incident reports.</p>
 
-</div>
+  <form id="auth-form">
+    <div class="grid two">
 
-<div class="field">
-  <label>
-    <input type="checkbox" id="remember-email"
-      style="width:auto;margin-right:8px">
-    Remember my email address
-  </label>
-</div>
+      <div class="field">
+        <label for="auth-name">Full name (for new accounts)</label>
+        <input
+          id="auth-name"
+          autocomplete="name"
+          placeholder="Your full name"
+        >
+      </div>
 
-<div class="grid two">
-  <div class="field">
-    <label for="auth-name">Full name (for new accounts)</label>
-    <input id="auth-name" autocomplete="name" placeholder="Your full name">
-  </div>
+      <div class="field">
+        <label for="auth-role">I am registering as</label>
+        <select id="auth-role">
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+        </select>
+      </div>
 
-  <div class="field">
-    <label for="auth-role">I am registering as</label>
-    <select id="auth-role">
-      <option value="student">Student</option>
-      <option value="teacher">Teacher</option>
-    </select>
-  </div>
+      <div class="field">
+        <label for="auth-email">Email address</label>
+        <input
+          id="auth-email"
+          type="email"
+          autocomplete="email"
+          required
+          placeholder="you@example.com"
+        >
+      </div>
 
-  <div class="field">
-    <label for="auth-email">Email address</label>
-    <input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com">
-  </div>
+      <div class="field">
+        <label for="auth-password">Password</label>
+        <input
+          id="auth-password"
+          type="password"
+          autocomplete="current-password"
+          minlength="6"
+          required
+          placeholder="At least 6 characters"
+        >
+      </div>
 
-  <div class="field">
-    <label for="auth-password">Password</label>
-    <input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters">
-  </div>
-</div>
+    </div>
 
-<div class="field">
-  <label>
-    <input
-      type="checkbox"
-      id="remember-email"
-      style="width:auto;margin-right:8px"
-    >
-    Remember my email address
-  </label>
-</div>
+    <div class="field">
+      <label>
+        <input
+          type="checkbox"
+          id="remember-email"
+          style="width:auto;margin-right:8px"
+        >
+        Remember my email address
+      </label>
+    </div>
 
-<p class="muted">Your account status is checked after sign-in. Urgent reports can still be submitted after sign-in.</p>
-<div class="actions">
-<button class="btn" type="button" id="signup-button">Create account</button>
-<button class="btn" type="button" id="signin-button">Sign in</button>
-<button class="btn secondary" type="button" id="signout-button">Sign out</button>
-</div>
-<p id="auth-message" class="message" role="status">Not signed in.</p>
-</form>
+    <p class="muted">
+      Your account status is checked after sign-in.
+      Urgent reports can still be submitted after sign-in.
+    </p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="signup-button">
+        Create account
+      </button>
+
+      <button class="btn" type="button" id="signin-button">
+        Sign in
+      </button>
+
+      <button class="btn secondary" type="button" id="signout-button">
+        Sign out
+      </button>
+    </div>
+
+    <p id="auth-message" class="message" role="status">
+      Not signed in.
+    </p>
+  </form>
 </section>
 
-<div class="notice"><strong>Prototype notice:</strong> This is a demonstration interface. Use fictional test data. Reports are stored in Supabase when configured; this prototype does not contact emergency services.</div>
+<div class="notice">
+  <strong>Prototype notice:</strong>
+  This is a demonstration interface. Use fictional test data.
+  Reports are stored in Supabase when configured; this prototype
+  does not contact emergency services.
+</div><section class="page active" id="page-dashboard">
+  <div class="heading">
+    <h1>Campus safety overview</h1>
+    <p>Monitor reports and review safety priorities.</p>
+  </div>
 
-<section class="page active" id="page-dashboard">
-<div class="heading"><h1>Campus safety overview</h1><p>Monitor reports and review safety priorities.</p></div>
-<div class="grid stats">
-<div class="stat"><div class="stat-label">Total incidents</div><div class="stat-num" id="totalStat">0</div></div>
-<div class="stat"><div class="stat-label">Open high-risk</div><div class="stat-num" id="highStat">0</div></div>
-<div class="stat"><div class="stat-label">Resolved</div><div class="stat-num" id="resolvedStat">0</div></div>
-<div class="stat"><div class="stat-label">Resolution rate</div><div class="stat-num" id="rateStat">0%</div></div>
-</div>
-<div class="panel"><h2>Recent incidents</h2><div id="recentList" class="empty">No incidents yet.</div></div>
+  <div class="grid stats">
+    <div class="stat">
+      <div class="stat-label">Total incidents</div>
+      <div class="stat-num" id="totalStat">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Open high-risk</div>
+      <div class="stat-num" id="highStat">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Resolved</div>
+      <div class="stat-num" id="resolvedStat">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Resolution rate</div>
+      <div class="stat-num" id="rateStat">0%</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Recent incidents</h2>
+    <div id="recentList" class="empty">No incidents yet.</div>
+  </div>
 </section>
 
 <section class="page" id="page-report">
-<div class="heading"><h1>Report an incident</h1><p>Submit a safety report to your configured Supabase project.</p></div>
-<div class="panel">
-<form id="reportForm">
-<div class="grid two">
-<div class="field"><label for="category">Incident category *</label><select id="category" required><option value="">Select category</option><option>Medical emergency</option><option>Fire or smoke</option><option>Security concern</option><option>Accident or injury</option><option>Harassment or misconduct</option><option>Facility hazard</option><option>Theft or property</option><option>Other</option></select></div>
-<div class="field"><label for="severity">Severity *</label><select id="severity" required><option value="">Select severity</option><option>High</option><option>Medium</option><option>Low</option></select></div>
-<div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" required placeholder="e.g. Main library entrance"></div>
-<div class="field"><label for="reporter">Reporter label (optional)</label><input id="reporter" maxlength="60" placeholder="Student / Demo reporter"></div>
-</div>
-<div class="field"><label for="description">Description *</label><textarea id="description" maxlength="800" required placeholder="Describe what happened and any immediate concerns..."></textarea></div>
-<div class="actions"><button class="btn" type="submit">Submit report</button><button class="btn secondary" type="reset">Clear form</button></div>
-</form>
-</div>
+  <div class="heading">
+    <h1>Report an incident</h1>
+    <p>Submit a safety report to your configured Supabase project.</p>
+  </div>
+
+  <div class="panel">
+    <form id="reportForm">
+      <div class="grid two">
+
+        <div class="field">
+          <label for="category">Incident category *</label>
+          <select id="category" required>
+            <option value="">Select category</option>
+            <option>Medical emergency</option>
+            <option>Fire or smoke</option>
+            <option>Security concern</option>
+            <option>Accident or injury</option>
+            <option>Harassment or misconduct</option>
+            <option>Facility hazard</option>
+            <option>Theft or property</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="severity">Severity *</label>
+          <select id="severity" required>
+            <option value="">Select severity</option>
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="location">Campus location *</label>
+          <input
+            id="location"
+            maxlength="100"
+            required
+            placeholder="e.g. Main library entrance"
+          >
+        </div>
+
+        <div class="field">
+          <label for="reporter">Reporter label (optional)</label>
+          <input
+            id="reporter"
+            maxlength="60"
+            placeholder="Student / Demo reporter"
+          >
+        </div>
+
+      </div>
+
+      <div class="field">
+        <label for="description">Description *</label>
+        <textarea
+          id="description"
+          maxlength="800"
+          required
+          placeholder="Describe what happened and any immediate concerns..."
+        ></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn" type="submit">Submit report</button>
+        <button class="btn secondary" type="reset">Clear form</button>
+      </div>
+    </form>
+  </div>
 </section>
 
 <section class="page" id="page-manage">
-<div class="heading"><h1>Incident management</h1><p>Review incident records. Status changes require the backend policy to allow them.</p></div>
-<div class="panel">
-<div class="field"><label for="searchIncidents">Search reports</label><input id="searchIncidents" type="search" placeholder="Search category, location, description"></div>
-<div class="table-wrap"><table><thead><tr><th>Incident</th><th>Location</th><th>Severity</th><th>Status</th><th>Reported</th><th>Action</th></tr></thead><tbody id="incidentTable"></tbody></table></div>
-</div>
-</section>
+  <div class="heading">
+    <h1>Incident management</h1>
+    <p>
+      Review incident records. Status changes require the backend
+      policy to allow them.
+    </p>
+  </div>
 
-<section class="page" id="page-risk">
-<div class="heading"><h1>Risk analysis</h1><p>Illustrative rule-based score only; not a validated prediction.</p></div>
-<div class="panel">
-<form id="riskForm">
-<div class="grid two">
-<div class="field"><label for="riskType">Incident type</label><select id="riskType"><option value="2">Facility hazard</option><option value="3">Security concern</option><option value="4">Medical emergency</option><option value="5">Fire or smoke</option></select></div>
-<div class="field"><label for="riskPeople">People affected</label><select id="riskPeople"><option value="1">One person</option><option value="2">2–5 people</option><option value="3">6–20 people</option><option value="4">More than 20 people</option></select></div>
-<div class="field"><label for="riskUrgency">Urgency</label><select id="riskUrgency"><option value="1">Routine review</option><option value="2">Needs attention soon</option><option value="4">Immediate attention may be needed</option></select></div>
-<div class="field"><label for="riskEnvironment">Location exposure</label><select id="riskEnvironment"><option value="1">Low traffic</option><option value="2">Shared campus area</option><option value="3">Busy public area</option></select></div>
-</div>
-<button class="btn" type="submit">Calculate score</button>
-</form>
-<div id="riskOutput" class="message" aria-live="polite"></div>
-</div>
+  <div class="panel">
+    <div class="field">
+      <label for="searchIncidents">Search reports</label>
+      <input
+        id="searchIncidents"
+        type="search"
+        placeholder="Search category, location, description"
+      >
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Incident</th>
+            <th>Location</th>
+            <th>Severity</th>
+            <th>Status</th>
+            <th>Reported</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="incidentTable">
+          <tr>
+            <td colspan="6">No incidents loaded.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section><section class="page" id="page-risk">
+  <div class="heading">
+    <h1>Risk analysis</h1>
+    <p>Illustrative rule-based score only; not a validated prediction.</p>
+  </div>
+
+  <div class="panel">
+    <form id="riskForm">
+      <div class="grid two">
+
+        <div class="field">
+          <label for="riskType">Incident type</label>
+          <select id="riskType">
+            <option value="2">Facility hazard</option>
+            <option value="3">Security concern</option>
+            <option value="4">Medical emergency</option>
+            <option value="5">Fire or smoke</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="riskPeople">People affected</label>
+          <select id="riskPeople">
+            <option value="1">One person</option>
+            <option value="2">2–5 people</option>
+            <option value="3">6–20 people</option>
+            <option value="4">More than 20 people</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="riskUrgency">Urgency</label>
+          <select id="riskUrgency">
+            <option value="1">Routine review</option>
+            <option value="2">Needs attention soon</option>
+            <option value="4">Immediate attention may be needed</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="riskEnvironment">Location exposure</label>
+          <select id="riskEnvironment">
+            <option value="1">Low traffic</option>
+            <option value="2">Shared campus area</option>
+            <option value="3">Busy public area</option>
+          </select>
+        </div>
+
+      </div>
+
+      <button class="btn" type="submit">Calculate score</button>
+    </form>
+
+    <div id="riskOutput" class="message" aria-live="polite"></div>
+  </div>
 </section>
 
 <section class="page" id="page-analytics">
-<div class="heading"><h1>Analytics & reports</h1><p>Summaries are calculated from currently loaded incident records.</p></div>
-<div class="panel"><p id="analyticsSummary">No data loaded.</p><button class="btn" id="exportCsv">Export CSV</button></div>
+  <div class="heading">
+    <h1>Analytics &amp; reports</h1>
+    <p>Summaries are calculated from currently loaded incident records.</p>
+  </div>
+
+  <div class="panel">
+    <p id="analyticsSummary">No data loaded.</p>
+    <button class="btn" id="exportCsv" type="button">Export CSV</button>
+  </div>
 </section>
 
 <section class="page" id="page-approvals">
-<div class="heading"><h1>Account approvals</h1><p>Review pending student and teacher account requests. Only verified administrators can use this area.</p></div>
-<div class="panel">
-<div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending applications</strong><button class="btn secondary" id="refresh-approvals">Refresh list</button></div>
-<p id="approvals-message" class="message" role="status">Checking administrator access…</p>
-<div class="table-wrap"><table><thead><tr><th>Applicant</th><th>Email / User ID</th><th>Requested role</th><th>Submitted</th><th>Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
-</div>
+  <div class="heading">
+    <h1>Account approvals</h1>
+    <p>
+      Review pending student and teacher account requests.
+      Only verified administrators can use this area.
+    </p>
+  </div>
+
+  <div class="panel">
+    <div
+      class="actions"
+      style="justify-content:space-between;align-items:center"
+    >
+      <strong>Pending applications</strong>
+      <button
+        class="btn secondary"
+        id="refresh-approvals"
+        type="button"
+      >
+        Refresh list
+      </button>
+    </div>
+
+    <p id="approvals-message" class="message" role="status">
+      Checking administrator access…
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Applicant</th>
+            <th>Email / User ID</th>
+            <th>Requested role</th>
+            <th>Submitted</th>
+            <th>Decision</th>
+          </tr>
+        </thead>
+
+        <tbody id="approvals-table">
+          <tr>
+            <td colspan="5">Loading…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </section>
 
 <div class="footer">CampusShield AI · Demonstration only</div>
 </main>
 </div>
 </div>
+
 <div class="toast" id="toast" role="status"></div>
-<!-- Load dependencies BEFORE the application code. Keep these files beside this HTML file. -->
+
+<!-- Load dependencies before the application code. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script src="./campusshield-backend.js"></script>
-<script>
 
-(() => {
+<script>(() => {
+  'use strict';
+
   const $ = id => document.getElementById(id);
   let incidents = [];
-  const severityRank = {High:3, Medium:2, Low:1};
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#39;'
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
   }[ch]));
 
   const dateText = value => {
     const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? 'Unknown date' : d.toLocaleString();
+    return Number.isNaN(d.getTime())
+      ? 'Unknown date'
+      : d.toLocaleString();
   };
 
-  function toast(msg) {
+  function toast(message) {
     const el = $('toast');
-    el.textContent = msg;
+    el.textContent = message;
     el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 3500);
   }
 
-  function tagSeverity(s) {
-    return `<span class="tag ${String(s).toLowerCase()}">${esc(s)}</span>`;
+  function tagSeverity(severity) {
+    const value = String(severity || 'Low').toLowerCase();
+    const safeClass = ['high', 'medium', 'low'].includes(value)
+      ? value
+      : 'low';
+
+    return `<span class="tag ${safeClass}">${esc(severity)}</span>`;
   }
 
-  function tagStatus(s) {
-    return `<span class="tag ${s === 'Resolved' ? 'resolved' : 'open'}">${esc(s || 'Open')}</span>`;
+  function tagStatus(status) {
+    const resolved = status === 'Resolved';
+    return `<span class="tag ${resolved ? 'resolved' : 'open'}">${esc(status || 'Open')}</span>`;
   }
 
   function navigate(page) {
-    document.querySelectorAll('.page').forEach(el =>
-      el.classList.toggle('active', el.id === 'page-' + page)
-    );
+    document.querySelectorAll('.page').forEach(el => {
+      el.classList.toggle('active', el.id === 'page-' + page);
+    });
 
-    document.querySelectorAll('[data-page]').forEach(el =>
-      el.classList.toggle('active', el.dataset.page === page)
-    );
+    document.querySelectorAll('[data-page]').forEach(el => {
+      el.classList.toggle('active', el.dataset.page === page);
+    });
 
     const names = {
-      dashboard:'Overview',
-      report:'Report incident',
-      manage:'Incident management',
-      risk:'Risk analysis',
-      analytics:'Analytics & reports',
-      approvals:'Account approvals'
+      dashboard: 'Overview',
+      report: 'Report incident',
+      manage: 'Incident management',
+      risk: 'Risk analysis',
+      analytics: 'Analytics & reports',
+      approvals: 'Account approvals'
     };
 
     $('sectionTitle').textContent = names[page] || 'Overview';
 
     if (page === 'analytics') renderAnalytics();
+
+    if (page === 'approvals') loadAccountApprovals();
   }
 
-  document.querySelectorAll('[data-page]').forEach(b =>
-    b.addEventListener('click', () => navigate(b.dataset.page))
-  );
+  document.querySelectorAll('[data-page]').forEach(button => {
+    button.addEventListener('click', () => navigate(button.dataset.page));
+  });
 
   function render() {
     const total = incidents.length;
@@ -297,61 +747,87 @@ th{color:var(--muted);background:#f8fafd}
     $('totalStat').textContent = total;
     $('highStat').textContent = high;
     $('resolvedStat').textContent = resolved;
-    $('rateStat').textContent = (total ? Math.round(resolved / total * 100) : 0) + '%';
+    $('rateStat').textContent =
+      (total ? Math.round(resolved / total * 100) : 0) + '%';
 
-    $('recentList').innerHTML = incidents.slice(0, 5).map(i =>
-      `<div style="padding:12px 0;border-bottom:1px solid #edf1f6">
-        <strong>${esc(i.category)}</strong> · ${tagSeverity(i.severity)} ${tagStatus(i.status)}
-        <p class="muted">${esc(i.location)} — ${esc(i.description)}</p>
-      </div>`
-    ).join('') || '<div class="empty">No incidents yet.</div>';
+    $('recentList').innerHTML = incidents.slice(0, 5).map(i => `
+      <div style="padding:12px 0;border-bottom:1px solid #edf1f6">
+        <strong>${esc(i.category)}</strong>
+        · ${tagSeverity(i.severity)}
+        ${tagStatus(i.status)}
+        <p class="muted">
+          ${esc(i.location)} — ${esc(i.description)}
+        </p>
+      </div>
+    `).join('') || '<div class="empty">No incidents yet.</div>';
 
     renderTable();
     renderAnalytics();
   }
 
   function renderTable() {
-    const q = ($('searchIncidents').value || '').toLowerCase();
+    const query = ($('searchIncidents').value || '').toLowerCase();
 
     const list = incidents.filter(i =>
-      [i.category, i.location, i.description].some(v =>
-        String(v || '').toLowerCase().includes(q)
+      [i.category, i.location, i.description].some(value =>
+        String(value || '').toLowerCase().includes(query)
       )
     );
 
-    $('incidentTable').innerHTML = list.map(i =>
-      `<tr>
-        <td><strong>${esc(i.category)}</strong><br>${esc(i.description)}</td>
+    $('incidentTable').innerHTML = list.map(i => `
+      <tr>
+        <td>
+          <strong>${esc(i.category)}</strong><br>
+          ${esc(i.description)}
+        </td>
         <td>${esc(i.location)}</td>
         <td>${tagSeverity(i.severity)}</td>
         <td>${tagStatus(i.status)}</td>
         <td>${esc(dateText(i.createdAt))}</td>
-        <td><button class="btn secondary" data-resolve="${esc(i.id)}">Resolve</button></td>
-      </tr>`
-    ).join('') || '<tr><td colspan="6">No matching incidents.</td></tr>';
+        <td>
+          ${
+            i.status === 'Resolved'
+              ? 'Completed'
+              : `<button class="btn secondary" data-resolve="${esc(i.id)}" type="button">Resolve</button>`
+          }
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="6">No matching incidents.</td></tr>';
   }
 
   $('searchIncidents').addEventListener('input', renderTable);
 
-  $('incidentTable').addEventListener('click', async e => {
-    const b = e.target.closest('[data-resolve]');
-    if (!b) return;
+  $('incidentTable').addEventListener('click', async event => {
+    const button = event.target.closest('[data-resolve]');
+    if (!button) return;
+
+    const backend = window.CampusShieldBackend;
+
+    if (!backend?.isConfigured) {
+      toast('Supabase is not configured.');
+      return;
+    }
+
+    button.disabled = true;
 
     try {
-      const updated = await window.CampusShieldBackend.updateIncidentStatus(
-        b.dataset.resolve,
+      const updated = await backend.updateIncidentStatus(
+        button.dataset.resolve,
         'Resolved'
       );
 
       incidents = incidents.map(i =>
-        i.id === updated.id ? {...i, status:updated.status || 'Resolved'} : i
+        String(i.id) === String(updated.id)
+          ? { ...i, status: updated.status || 'Resolved' }
+          : i
       );
 
       render();
       toast('Incident status updated.');
-    } catch (err) {
-      console.error(err);
-      toast('Could not update status: ' + err.message);
+    } catch (error) {
+      console.error('Could not update incident status:', error);
+      toast('Could not update status: ' + error.message);
+      button.disabled = false;
     }
   });
 
@@ -364,6 +840,7 @@ th{color:var(--muted);background:#f8fafd}
 
   async function refreshIncidentsFromSupabase() {
     const backend = window.CampusShieldBackend;
+
     if (!backend?.isConfigured) return;
 
     try {
@@ -372,20 +849,20 @@ th{color:var(--muted);background:#f8fafd}
 
       const rows = await backend.listIncidents();
 
-      incidents = rows.map(i => ({
-        id:i.id,
-        category:i.category,
-        severity:i.severity,
-        location:i.location,
-        description:i.description,
-        reporter:i.reporter || 'Signed-in user',
-        status:i.status || 'Open',
-        createdAt:i.created_at
+      incidents = (rows || []).map(i => ({
+        id: i.id,
+        category: i.category,
+        severity: i.severity,
+        location: i.location,
+        description: i.description,
+        reporter: i.reporter || 'Signed-in user',
+        status: i.status || 'Open',
+        createdAt: i.created_at
       }));
 
       render();
-    } catch (e) {
-      console.error('Could not refresh incidents:', e);
+    } catch (error) {
+      console.error('Could not refresh incidents:', error);
     }
   }
 
@@ -396,9 +873,10 @@ th{color:var(--muted);background:#f8fafd}
     const nav = $('approvals-nav');
 
     if (!backend?.isConfigured) {
-      message.textContent = 'Supabase is not configured.';
-      tbody.innerHTML = '<tr><td colspan="5">Cannot load applications.</td></tr>';
       nav.hidden = true;
+      message.textContent = 'Supabase is not configured.';
+      tbody.innerHTML =
+        '<tr><td colspan="5">Cannot load applications.</td></tr>';
       return;
     }
 
@@ -412,7 +890,7 @@ th{color:var(--muted);background:#f8fafd}
         throw new Error('Please sign in with an administrator account.');
       }
 
-      const {data:me, error:meError} = await backend.client
+      const { data: me, error: meError } = await backend.client
         .from('profiles')
         .select('role, verification_status')
         .eq('id', user.id)
@@ -420,65 +898,88 @@ th{color:var(--muted);background:#f8fafd}
 
       if (meError) throw meError;
 
-      if (me?.role !== 'admin' || me?.verification_status !== 'verified') {
+      if (
+        me?.role !== 'admin' ||
+        me?.verification_status !== 'verified'
+      ) {
         nav.hidden = true;
-        throw new Error('Access denied. A verified administrator account is required.');
+        throw new Error(
+          'Access denied. A verified administrator account is required.'
+        );
       }
 
       nav.hidden = false;
 
-      const {data:rows, error} = await backend.client
+      const { data: rows, error } = await backend.client
         .from('profiles')
-        .select('id, display_name, role, requested_role, verification_status, created_at')
+        .select(
+          'id, display_name, role, requested_role, verification_status, created_at'
+        )
         .eq('verification_status', 'pending')
         .in('requested_role', ['student', 'teacher'])
-        .order('created_at', {ascending:true});
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
 
       if (!rows?.length) {
-        tbody.innerHTML = '<tr><td colspan="5">There are no pending student or teacher applications.</td></tr>';
+        tbody.innerHTML =
+          '<tr><td colspan="5">There are no pending student or teacher applications.</td></tr>';
         message.textContent = 'Administrator access confirmed.';
         return;
       }
 
-      tbody.innerHTML = rows.map(row => `<tr>
-        <td><strong>${esc(row.display_name || 'Name not provided')}</strong></td>
-        <td><code>${esc(row.id)}</code></td>
-        <td><span class="tag open">${esc(row.requested_role || 'Not specified')}</span></td>
-        <td>${esc(dateText(row.created_at))}</td>
-        <td>
-          <div class="actions">
-            <button class="btn" data-review="approve" data-user-id="${esc(row.id)}">Approve</button>
-            <button class="btn danger" data-review="reject" data-user-id="${esc(row.id)}">Reject</button>
-          </div>
-        </td>
-      </tr>`).join('');
+      tbody.innerHTML = rows.map(row => `
+        <tr>
+          <td><strong>${esc(row.display_name || 'Name not provided')}</strong></td>
+          <td><code>${esc(row.id)}</code></td>
+          <td>
+            <span class="tag open">
+              ${esc(row.requested_role || 'Not specified')}
+            </span>
+          </td>
+          <td>${esc(dateText(row.created_at))}</td>
+          <td>
+            <div class="actions">
+              <button
+                class="btn"
+                type="button"
+                data-review="approve"
+                data-user-id="${esc(row.id)}"
+              >Approve</button>
+
+              <button
+                class="btn danger"
+                type="button"
+                data-review="reject"
+                data-user-id="${esc(row.id)}"
+              >Reject</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
 
       message.textContent = `${rows.length} pending application(s).`;
-    } catch (err) {
-      console.error('Could not load account approvals:', err);
-      tbody.innerHTML = '<tr><td colspan="5">Applications could not be loaded.</td></tr>';
-      message.textContent = err.message || 'Could not load applications.';
+    } catch (error) {
+      console.error('Could not load account approvals:', error);
+      tbody.innerHTML =
+        '<tr><td colspan="5">Applications could not be loaded.</td></tr>';
+      message.textContent = error.message || 'Could not load applications.';
     }
   }
 
   $('refresh-approvals').addEventListener('click', loadAccountApprovals);
 
-  $('approvals-nav').addEventListener('click', () => {
-    navigate('approvals');
-    loadAccountApprovals();
-  });
-
-  $('approvals-table').addEventListener('click', async e => {
-    const button = e.target.closest('[data-review]');
+  $('approvals-table').addEventListener('click', async event => {
+    const button = event.target.closest('[data-review]');
     if (!button) return;
 
     const decision = button.dataset.review;
     const userId = button.dataset.userId;
     const actionLabel = decision === 'approve' ? 'approve' : 'reject';
 
-    if (!confirm(`Are you sure you want to ${actionLabel} this account?`)) return;
+    if (!confirm(`Are you sure you want to ${actionLabel} this account?`)) {
+      return;
+    }
 
     const backend = window.CampusShieldBackend;
     const message = $('approvals-message');
@@ -490,7 +991,7 @@ th{color:var(--muted);background:#f8fafd}
     message.textContent = `Attempting to ${actionLabel} account…`;
 
     try {
-      const {error} = await backend.client.rpc('review_campus_account', {
+      const { error } = await backend.client.rpc('review_campus_account', {
         p_user_id: userId,
         p_decision: decision
       });
@@ -502,85 +1003,103 @@ th{color:var(--muted);background:#f8fafd}
 
       toast(`Account ${decision === 'approve' ? 'approved' : 'rejected'}.`);
       await loadAccountApprovals();
-    } catch (err) {
-      console.error('Account review failed:', err);
-      message.textContent = 'Review failed: ' + (err.message || 'Unknown error');
+    } catch (error) {
+      console.error('Account review failed:', error);
+      message.textContent =
+        'Review failed: ' + (error.message || 'Unknown error');
       toast('Could not review account.');
 
       document.querySelectorAll('#approvals-table button').forEach(b => {
         b.disabled = false;
       });
     }
-  });
-
+  });  // Create a new account.
   $('signup-button').addEventListener('click', async () => {
     const backend = window.CampusShieldBackend;
     const email = $('auth-email').value.trim();
     const password = $('auth-password').value;
     const name = $('auth-name').value.trim();
     const requestedRole = $('auth-role').value;
-    const msg = $('auth-message');
+    const message = $('auth-message');
 
     if (!email || !password) {
-      msg.textContent = 'Enter your email and password.';
+      message.textContent = 'Enter your email and password.';
+      return;
+    }
+
+    if (password.length < 6) {
+      message.textContent = 'Your password must contain at least 6 characters.';
       return;
     }
 
     if (!backend?.isConfigured) {
-      msg.textContent = 'Supabase is not connected. Check configuration and script loading.';
+      message.textContent =
+        'Supabase is not connected. Check configuration and script loading.';
       return;
     }
 
     try {
-      msg.textContent = 'Creating account...';
+      message.textContent = 'Creating account...';
 
-      const {data, error} = await backend.signUp(email, password, name);
+      const { data, error } = await backend.signUp(email, password, name);
+
       if (error) throw error;
 
-      if (data.session) {
+      if (data?.session) {
         const result = await backend.saveRequestedRole(requestedRole);
-        if (result.error) throw result.error;
 
-        msg.textContent = 'Account created. Your role request is pending verification.';
+        if (result?.error) throw result.error;
+
+        message.textContent =
+          'Account created. Your role request is pending verification.';
       } else {
-        sessionStorage.setItem('campusshield_requested_role', requestedRole);
+        sessionStorage.setItem(
+          'campusshield_requested_role',
+          requestedRole
+        );
 
-        msg.textContent =
-          'Account created. Check your email to confirm it, then sign in using this browser to submit your role request.';
+        message.textContent =
+          'Account created. Check your email to confirm it. After confirmation, sign in using this browser to submit your role request.';
       }
-    } catch (e) {
-      console.error('Sign-up failed:', e);
-      msg.textContent = 'Sign-up failed: ' + e.message;
+    } catch (error) {
+      console.error('Sign-up failed:', error);
+      message.textContent = 'Sign-up failed: ' + error.message;
     }
   });
 
+  // Sign in to an existing account.
   $('signin-button').addEventListener('click', async () => {
     const backend = window.CampusShieldBackend;
     const email = $('auth-email').value.trim();
     const password = $('auth-password').value;
-    const msg = $('auth-message');
+    const message = $('auth-message');
 
     if (!email || !password) {
-      msg.textContent = 'Enter your email and password.';
+      message.textContent = 'Enter your email and password.';
       return;
     }
 
     if (!backend?.isConfigured) {
-      msg.textContent = 'Supabase is not connected. Check configuration and script loading.';
+      message.textContent =
+        'Supabase is not connected. Check configuration and script loading.';
       return;
     }
 
     try {
-      msg.textContent = 'Signing in...';
+      message.textContent = 'Signing in...';
 
-      const {error} = await backend.signIn(email, password);
+      const { error } = await backend.signIn(email, password);
+
       if (error) throw error;
 
-      const pendingRole = sessionStorage.getItem('campusshield_requested_role');
+      const pendingRole = sessionStorage.getItem(
+        'campusshield_requested_role'
+      );
 
       if (pendingRole && ['student', 'teacher'].includes(pendingRole)) {
-        const {error:roleError} = await backend.saveRequestedRole(pendingRole);
-        if (roleError) throw roleError;
+        const result = await backend.saveRequestedRole(pendingRole);
+
+        if (result?.error) throw result.error;
 
         sessionStorage.removeItem('campusshield_requested_role');
       }
@@ -591,33 +1110,71 @@ th{color:var(--muted);background:#f8fafd}
         throw new Error('No active user session was found.');
       }
 
-      const {data:profile, error:profileError} = await backend.client
-        .from('profiles')
-        .select('role, verification_status')
-        .eq('id', user.id)
-        .single();
+      const { data: profile, error: profileError } =
+        await backend.client
+          .from('profiles')
+          .select('role, verification_status')
+          .eq('id', user.id)
+          .single();
 
       if (profileError) throw profileError;
 
       if (profile.verification_status === 'verified') {
-        msg.textContent = `Signed in successfully. Your role is ${profile.role}.`;
+        message.textContent =
+          `Signed in successfully. Your role is ${profile.role}.`;
       } else if (profile.verification_status === 'rejected') {
-        msg.textContent =
+        message.textContent =
           'Your account verification was rejected. Please contact an administrator.';
       } else {
-        msg.textContent =
+        message.textContent =
           'Signed in successfully. Your account is pending verification.';
       }
 
       await refreshIncidentsFromSupabase();
-    } catch (e) {
-      console.error('Sign-in failed:', e);
-      msg.textContent = 'Sign-in failed: ' + e.message;
+
+      if (
+        profile.role === 'admin' &&
+        profile.verification_status === 'verified'
+      ) {
+        await loadAccountApprovals();
+      }
+    } catch (error) {
+      console.error('Sign-in failed:', error);
+      message.textContent = 'Sign-in failed: ' + error.message;
     }
   });
 
-  $('reportForm').addEventListener('submit', async e => {
-    e.preventDefault();
+  // Sign out and clear the password field.
+  $('signout-button').addEventListener('click', async () => {
+    try {
+      const backend = window.CampusShieldBackend;
+
+      if (!backend?.client) {
+        throw new Error('Supabase client is unavailable.');
+      }
+
+      const { error } = await backend.client.auth.signOut();
+
+      if (error) throw error;
+
+      $('auth-password').value = '';
+      $('auth-message').textContent = 'You have signed out.';
+      $('approvals-nav').hidden = true;
+
+      incidents = [];
+      render();
+
+      toast('Signed out successfully.');
+    } catch (error) {
+      console.error('Sign-out failed:', error);
+      $('auth-message').textContent =
+        'Sign-out failed: ' + error.message;
+    }
+  });
+
+  // Submit an incident report.
+  $('reportForm').addEventListener('submit', async event => {
+    event.preventDefault();
 
     const backend = window.CampusShieldBackend;
 
@@ -646,66 +1203,86 @@ th{color:var(--muted);background:#f8fafd}
       });
 
       $('reportForm').reset();
+
       render();
       navigate('manage');
       toast('Incident saved to Supabase.');
-    } catch (err) {
-      console.error('Incident submission failed:', err);
-      toast('Could not save report: ' + err.message);
+    } catch (error) {
+      console.error('Incident submission failed:', error);
+      toast('Could not save report: ' + error.message);
     }
   });
 
-  $('riskForm').addEventListener('submit', e => {
-    e.preventDefault();
+  // Calculate the illustrative risk score.
+  $('riskForm').addEventListener('submit', event => {
+    event.preventDefault();
 
-    const t = +$('riskType').value;
-    const p = +$('riskPeople').value;
-    const u = +$('riskUrgency').value;
-    const v = +$('riskEnvironment').value;
+    const type = Number($('riskType').value);
+    const people = Number($('riskPeople').value);
+    const urgency = Number($('riskUrgency').value);
+    const environment = Number($('riskEnvironment').value);
 
-    const score = Math.round((t * 4 + p * 3 + u * 5 + v * 2) / 42 * 100);
+    const score = Math.round(
+      (type * 4 + people * 3 + urgency * 5 + environment * 2) / 42 * 100
+    );
 
-    const band = score >= 75 ? 'Critical priority'
-      : score >= 50 ? 'High priority'
-      : score >= 30 ? 'Moderate priority'
-      : 'Lower priority';
+    const band = score >= 75
+      ? 'Critical priority'
+      : score >= 50
+        ? 'High priority'
+        : score >= 30
+          ? 'Moderate priority'
+          : 'Lower priority';
 
     $('riskOutput').textContent =
       `${band}: ${score}/100. Illustrative score only; seek human review and follow official emergency procedures.`;
   });
 
+  // Export loaded incident records as CSV.
   $('exportCsv').addEventListener('click', () => {
     if (!incidents.length) {
       toast('No incident records to export.');
       return;
     }
 
-    const cols = [
-      'id', 'category', 'severity', 'location',
-      'description', 'reporter', 'status', 'createdAt'
+    const columns = [
+      'id',
+      'category',
+      'severity',
+      'location',
+      'description',
+      'reporter',
+      'status',
+      'createdAt'
     ];
 
-    const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+    const quoteCsv = value =>
+      '"' + String(value ?? '').replace(/"/g, '""') + '"';
 
     const csv = [
-      cols.join(','),
-      ...incidents.map(i => cols.map(c => q(i[c])).join(','))
+      columns.join(','),
+      ...incidents.map(incident =>
+        columns.map(column => quoteCsv(incident[column])).join(',')
+      )
     ].join('\r\n');
 
     const url = URL.createObjectURL(
-      new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8;'})
+      new Blob(['\ufeff' + csv], {
+        type: 'text/csv;charset=utf-8;'
+      })
     );
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'campusshield-incidents.csv';
-    a.click();
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'campusshield-incidents.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 
     URL.revokeObjectURL(url);
   });
 
-
-  // Remember the email address, never the password.
+  // Remember the email address only. Never save the password.
   const emailInput = $('auth-email');
   const rememberCheckbox = $('remember-email');
 
@@ -716,21 +1293,24 @@ th{color:var(--muted);background:#f8fafd}
       emailInput.value = savedEmail;
       rememberCheckbox.checked = true;
     }
-  } catch (err) {
+  } catch (error) {
     console.warn('Email remembering is unavailable in this browser.');
   }
 
   function saveEmailPreference() {
     try {
       if (rememberCheckbox.checked) {
-        localStorage.setItem(
-          'campusshield_saved_email',
-          emailInput.value.trim()
-        );
+        const email = emailInput.value.trim();
+
+        if (email) {
+          localStorage.setItem('campusshield_saved_email', email);
+        } else {
+          localStorage.removeItem('campusshield_saved_email');
+        }
       } else {
         localStorage.removeItem('campusshield_saved_email');
       }
-    } catch (err) {
+    } catch (error) {
       console.warn('Could not save email preference.');
     }
   }
@@ -738,19 +1318,24 @@ th{color:var(--muted);background:#f8fafd}
   emailInput.addEventListener('input', saveEmailPreference);
   rememberCheckbox.addEventListener('change', saveEmailPreference);
 
-  $('auth-form').addEventListener('submit', e => e.preventDefault());
+  // Prevent Enter from accidentally submitting the account form.
+  $('auth-form').addEventListener('submit', event => {
+    event.preventDefault();
+  });
 
-
-  // Keep render() as the app's rendering function.
+  // Hide administrator navigation until access is verified.
   $('approvals-nav').hidden = true;
 
+  // Initialize the interface.
   render();
-  refreshIncidentsFromSupabase();
 
   if (!window.CampusShieldBackend) {
     console.error(
       'CampusShieldBackend is undefined. Check script paths and loading order.'
     );
+
+    $('auth-message').textContent =
+      'Backend unavailable. Check your Supabase configuration and script files.';
   } else {
     console.log(
       'CampusShieldBackend loaded:',
@@ -758,7 +1343,10 @@ th{color:var(--muted);background:#f8fafd}
       'Configured:',
       window.CampusShieldBackend.isConfigured
     );
+
+    refreshIncidentsFromSupabase();
   }
+
 })();
 </script>
 </body>
