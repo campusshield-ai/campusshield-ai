@@ -833,33 +833,52 @@ th{color:var(--muted);background:#f8fafd}
       `${incidents.filter(i => i.status === 'Resolved').length} resolved.`;
   }
 
-  async function refreshIncidentsFromSupabase() {
-    const backend = window.CampusShieldBackend;
+async function refreshIncidentsFromSupabase() {
+  const backend = window.CampusShieldBackend;
 
-    if (!backend?.isConfigured) return;
+  // Stop quietly when Supabase isn't configured.
+  if (!backend?.isConfigured) return;
 
-    try {
-      const user = await backend.getCurrentUser();
-      if (!user) return;
+  try {
+    // No incident query should run until a user is signed in.
+    const user = await backend.getCurrentUser();
 
-      const rows = await backend.listIncidents();
-
-      incidents = (rows || []).map(i => ({
-        id: i.id,
-        category: i.category,
-        severity: i.severity,
-        location: i.location,
-        description: i.description,
-        reporter: i.reporter || 'Signed-in user',
-        status: i.status || 'Open',
-        createdAt: i.created_at
-      }));
-
+    if (!user) {
+      incidents = [];
       render();
-    } catch (error) {
-      console.error('Could not refresh incidents:', error);
+      console.log('No active session. Sign in to load incidents.');
+      return;
     }
+
+    const rows = await backend.listIncidents();
+
+    incidents = (rows || []).map(i => ({
+      id: i.id,
+      category: i.category,
+      severity: i.severity,
+      location: i.location,
+      description: i.description,
+      reporter: i.reporter || 'Signed-in user',
+      status: i.status || 'Open',
+      createdAt: i.created_at
+    }));
+
+    render();
+  } catch (error) {
+    // Missing sessions are normal before sign-in.
+    if (
+      error?.name === 'AuthSessionMissingError' ||
+      /auth session missing/i.test(error?.message || '')
+    ) {
+      incidents = [];
+      render();
+      console.log('No active session. Sign in to load incidents.');
+      return;
+    }
+
+    console.error('Could not refresh incidents:', error);
   }
+}
 
   async function loadAccountApprovals() {
     const backend = window.CampusShieldBackend;
