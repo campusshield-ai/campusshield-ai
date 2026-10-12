@@ -51,11 +51,16 @@
     async getCurrentUser() {
       if (!client) throw new Error("Supabase is not configured.");
 
-      const { data, error } = await client.auth.getUser();
-      if (error) throw error;
+      async function getCurrentUser() {
+  const { data, error } = await client.auth.getSession();
 
-      return data.user;
-    },
+  if (error) throw error;
+
+  // A signed-out visitor is normal; return null instead of throwing.
+  if (!data.session) return null;
+
+  return data.session.user;
+}
 
     async saveRequestedRole(requestedRole) {
       if (!client) throw new Error("Supabase is not configured.");
