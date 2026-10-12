@@ -7,8 +7,10 @@
  * CampusShield AI — public browser configuration
  */
 
+
 window.CAMPUSSHIELD_SUPABASE_CONFIG = {
   url: "https://fvgtnujjnvdkhzqqcaqe.supabase.co",
-  publishableKey: sb_publishable_IDVCTiln0UBuyi_riZ-CJw__i84wmor
+  publishableKey: "sb_publishable_IDVCTiln0UBuyi_riZ-CJw__i84wmor"
 };
+
 
