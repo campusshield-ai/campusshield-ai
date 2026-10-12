@@ -93,7 +93,43 @@ th{color:var(--muted);background:#f8fafd}
 <div class="field"><label for="auth-role">I am registering as</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
 <div class="field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
 <div class="field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div>
+
+<div class="grid two">
+  <div class="field">
+    <label for="auth-name">Full name (for new accounts)</label>
+    <input id="auth-name" autocomplete="name" placeholder="Your full name">
+  </div>
+
+  <div class="field">
+    <label for="auth-role">I am registering as</label>
+    <select id="auth-role">
+      <option value="student">Student</option>
+      <option value="teacher">Teacher</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="auth-email">Email address</label>
+    <input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com">
+  </div>
+
+  <div class="field">
+    <label for="auth-password">Password</label>
+    <input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters">
+  </div>
 </div>
+
+<div class="field">
+  <label>
+    <input
+      type="checkbox"
+      id="remember-email"
+      style="width:auto;margin-right:8px"
+    >
+    Remember my email address
+  </label>
+</div>
+
 <p class="muted">Your account status is checked after sign-in. Urgent reports can still be submitted after sign-in.</p>
 <div class="actions">
 <button class="btn" type="button" id="signup-button">Create account</button>
@@ -659,7 +695,42 @@ th{color:var(--muted);background:#f8fafd}
     URL.revokeObjectURL(url);
   });
 
+
+  // Remember the email address, never the password.
+  const emailInput = $('auth-email');
+  const rememberCheckbox = $('remember-email');
+
+  try {
+    const savedEmail = localStorage.getItem('campusshield_saved_email');
+
+    if (savedEmail) {
+      emailInput.value = savedEmail;
+      rememberCheckbox.checked = true;
+    }
+  } catch (err) {
+    console.warn('Email remembering is unavailable in this browser.');
+  }
+
+  function saveEmailPreference() {
+    try {
+      if (rememberCheckbox.checked) {
+        localStorage.setItem(
+          'campusshield_saved_email',
+          emailInput.value.trim()
+        );
+      } else {
+        localStorage.removeItem('campusshield_saved_email');
+      }
+    } catch (err) {
+      console.warn('Could not save email preference.');
+    }
+  }
+
+  emailInput.addEventListener('input', saveEmailPreference);
+  rememberCheckbox.addEventListener('change', saveEmailPreference);
+
   $('auth-form').addEventListener('submit', e => e.preventDefault());
+
 
   // Keep render() as the app's rendering function.
   $('approvals-nav').hidden = true;
