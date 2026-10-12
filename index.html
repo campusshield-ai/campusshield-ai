@@ -10,7 +10,7 @@
 <body><div class="app">
 <aside class="sidebar"><div class="brand">Campus<span>Shield</span> AI</div><div class="nav-label">WORKSPACE</div><nav class="nav"><button class="active" data-page="dashboard">▦ Overview</button><button data-page="report">＋ Report incident</button><button data-page="manage">☷ Incident management</button><button data-page="risk">◈ Risk analysis</button><button data-page="analytics">▥ Analytics</button></nav><div class="sidebar-bottom">● Demo environment active<br><span class="muted">Use fictional test data only.</span></div></aside>
 <div class="main"><header class="topbar"><strong id="sectionTitle">Overview</strong><span class="pill">● CAMPUSSHIELD · DEMO</span></header><main class="content">
-<section class="panel"><h2>CampusShield Account</h2><p class="muted">Sign in or create an account to submit incident reports.</p><form id="auth-form"><div class="grid two"><div class="field"><label for="auth-name">Full name (for new accounts)</label><input id="auth-name" autocomplete="name" placeholder="Your full name"></div><div class="field"><label for="auth-role">I am registering as</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div><div class="field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div><div class="field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div></div><p class="muted">Your account remains pending verification until reviewed. Urgent reports can still be submitted after sign-in.</p><div class="actions"><button class="btn" type="button" id="signup-button">Create account</button><button class="btn" type="button" id="signin-button">Sign in</button><button class="btn secondary" type="button" id="signout-button">Sign out</button></div><p id="auth-message" class="message" role="status">Not signed in.</p></form></section>
+<section class="panel"><h2>CampusShield Account</h2><p class="muted">Sign in or create an account to submit incident reports.</p><form id="auth-form"><div class="grid two"><div class="field"><label for="auth-name">Full name (for new accounts)</label><input id="auth-name" autocomplete="name" placeholder="Your full name"></div><div class="field"><label for="auth-role">I am registering as</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div><div class="field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div><div class="field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div></div><p class="muted">Your account status is checked after sign-in. Urgent reports can still be submitted after sign-in.</p><div class="actions"><button class="btn" type="button" id="signup-button">Create account</button><button class="btn" type="button" id="signin-button">Sign in</button><button class="btn secondary" type="button" id="signout-button">Sign out</button></div><p id="auth-message" class="message" role="status">Not signed in.</p></form></section>
 <div class="notice"><strong>Prototype notice:</strong> This is a demonstration interface. Use fictional test data. Reports are stored in Supabase when configured; this prototype does not contact emergency services.</div>
 <section class="page active" id="page-dashboard"><div class="heading"><h1>Campus safety overview</h1><p>Monitor reports and review safety priorities.</p></div><div class="grid stats"><div class="stat"><div class="stat-label">Total incidents</div><div class="stat-num" id="totalStat">0</div></div><div class="stat"><div class="stat-label">Open high-risk</div><div class="stat-num" id="highStat">0</div></div><div class="stat"><div class="stat-label">Resolved</div><div class="stat-num" id="resolvedStat">0</div></div><div class="stat"><div class="stat-label">Resolution rate</div><div class="stat-num" id="rateStat">0%</div></div></div><div class="panel"><h2>Recent incidents</h2><div id="recentList" class="empty">No incidents yet.</div></div></section>
 <section class="page" id="page-report"><div class="heading"><h1>Report an incident</h1><p>Submit a safety report to your configured Supabase project.</p></div><div class="panel"><form id="reportForm"><div class="grid two"><div class="field"><label for="category">Incident category *</label><select id="category" required><option value="">Select category</option><option>Medical emergency</option><option>Fire or smoke</option><option>Security concern</option><option>Accident or injury</option><option>Harassment or misconduct</option><option>Facility hazard</option><option>Theft or property</option><option>Other</option></select></div><div class="field"><label for="severity">Severity *</label><select id="severity" required><option value="">Select severity</option><option>High</option><option>Medium</option><option>Low</option></select></div><div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" required placeholder="e.g. Main library entrance"></div><div class="field"><label for="reporter">Reporter label (optional)</label><input id="reporter" maxlength="60" placeholder="Student / Demo reporter"></div></div><div class="field"><label for="description">Description *</label><textarea id="description" maxlength="800" required placeholder="Describe what happened and any immediate concerns..."></textarea></div><div class="actions"><button class="btn" type="submit">Submit report</button><button class="btn secondary" type="reset">Clear form</button></div></form></div></section>
@@ -40,8 +40,76 @@
   function renderAnalytics(){$('analyticsSummary').textContent=`${incidents.length} total incident(s), ${incidents.filter(i=>i.severity==='High').length} high-severity, ${incidents.filter(i=>i.status==='Resolved').length} resolved.`;}
   async function refreshIncidentsFromSupabase(){const backend=window.CampusShieldBackend;if(!backend?.isConfigured)return;try{const user=await backend.getCurrentUser();if(!user)return;const rows=await backend.listIncidents();incidents=rows.map(i=>({id:i.id,category:i.category,severity:i.severity,location:i.location,description:i.description,reporter:i.reporter||'Signed-in user',status:i.status||'Open',createdAt:i.created_at}));render();}catch(e){console.error('Could not refresh incidents:',e);}}
   $('signup-button').addEventListener('click',async()=>{const backend=window.CampusShieldBackend;const email=$('auth-email').value.trim(),password=$('auth-password').value,name=$('auth-name').value.trim(),requestedRole=$('auth-role').value,msg=$('auth-message');if(!email||!password){msg.textContent='Enter your email and password.';return;}if(!backend?.isConfigured){msg.textContent='Supabase is not connected. Check configuration and script loading.';return;}try{msg.textContent='Creating account...';const {data,error}=await backend.signUp(email,password,name);if(error)throw error;if(data.session){const result=await backend.saveRequestedRole(requestedRole);if(result.error)throw result.error;msg.textContent='Account created. Your role request is pending verification.';}else{sessionStorage.setItem('campusshield_requested_role',requestedRole);msg.textContent='Account created. Check your email to confirm it, then sign in using this browser to submit your role request.';}}catch(e){console.error('Sign-up failed:',e);msg.textContent='Sign-up failed: '+e.message;}});
-  $('signin-button').addEventListener('click',async()=>{const backend=window.CampusShieldBackend;const email=$('auth-email').value.trim(),password=$('auth-password').value,msg=$('auth-message');if(!email||!password){msg.textContent='Enter your email and password.';return;}if(!backend?.isConfigured){msg.textContent='Supabase is not connected. Check configuration and script loading.';return;}try{msg.textContent='Signing in...';const {data,error}=await backend.signIn(email,password);if(error)throw error;const pendingRole=sessionStorage.getItem('campusshield_requested_role');if(pendingRole&&['student','teacher'].includes(pendingRole)){const {error:roleError}=await backend.saveRequestedRole(pendingRole);if(roleError)throw roleError;sessionStorage.removeItem('campusshield_requested_role');}msg.textContent='Signed in successfully. Your account remains pending verification.';await refreshIncidentsFromSupabase();}catch(e){console.error('Sign-in failed:',e);msg.textContent='Sign-in failed: '+e.message;}});
-  $('signout-button').addEventListener('click',async()=>{const backend=window.CampusShieldBackend,msg=$('auth-message');if(!backend?.isConfigured){msg.textContent='Supabase is not connected.';return;}try{const {error}=await backend.signOut();if(error)throw error;msg.textContent='Signed out successfully.';}catch(e){console.error('Sign-out failed:',e);msg.textContent='Sign-out failed: '+e.message;}});
+  
+$('signin-button').addEventListener('click', async () => {
+  const backend = window.CampusShieldBackend;
+  const email = $('auth-email').value.trim();
+  const password = $('auth-password').value;
+  const msg = $('auth-message');
+
+  if (!email || !password) {
+    msg.textContent = 'Enter your email and password.';
+    return;
+  }
+
+  if (!backend?.isConfigured) {
+    msg.textContent =
+      'Supabase is not connected. Check configuration and script loading.';
+    return;
+  }
+
+  try {
+    msg.textContent = 'Signing in...';
+
+    const { error } = await backend.signIn(email, password);
+    if (error) throw error;
+
+    const pendingRole = sessionStorage.getItem(
+      'campusshield_requested_role'
+    );
+
+    if (pendingRole && ['student', 'teacher'].includes(pendingRole)) {
+      const { error: roleError } =
+        await backend.saveRequestedRole(pendingRole);
+
+      if (roleError) throw roleError;
+
+      sessionStorage.removeItem('campusshield_requested_role');
+    }
+
+    const user = await backend.getCurrentUser();
+
+    if (!user) {
+      throw new Error('No active user session was found.');
+    }
+
+    const { data: profile, error: profileError } =
+      await backend.client
+        .from('profiles')
+        .select('role, verification_status')
+        .eq('id', user.id)
+        .single();
+
+    if (profileError) throw profileError;
+
+    if (profile.verification_status === 'verified') {
+      msg.textContent =
+        `Signed in successfully. Your role is ${profile.role}.`;
+    } else if (profile.verification_status === 'rejected') {
+      msg.textContent =
+        'Your account verification was rejected. Please contact an administrator.';
+    } else {
+      msg.textContent =
+        'Signed in successfully. Your account is pending verification.';
+    }
+
+    await refreshIncidentsFromSupabase();
+  } catch (e) {
+    console.error('Sign-in failed:', e);
+    msg.textContent = 'Sign-in failed: ' + e.message;
+  }
+});
+
   $('reportForm').addEventListener('submit',async e=>{e.preventDefault();const backend=window.CampusShieldBackend;if(!backend?.isConfigured){toast('Supabase is not configured.');return;}try{const saved=await backend.createIncident({category:$('category').value,severity:$('severity').value,location:$('location').value.trim(),description:$('description').value.trim()});incidents.unshift({id:saved.id,category:saved.category,severity:saved.severity,location:saved.location,description:saved.description,reporter:$('reporter').value.trim()||'Signed-in user',status:saved.status||'Open',createdAt:saved.created_at});$('reportForm').reset();render();navigate('manage');toast('Incident saved to Supabase.');}catch(err){console.error('Incident submission failed:',err);toast('Could not save report: '+err.message);}});
   $('riskForm').addEventListener('submit',e=>{e.preventDefault();const t=+$('riskType').value,p=+$('riskPeople').value,u=+$('riskUrgency').value,v=+$('riskEnvironment').value;const score=Math.round((t*4+p*3+u*5+v*2)/42*100);const band=score>=75?'Critical priority':score>=50?'High priority':score>=30?'Moderate priority':'Lower priority';$('riskOutput').textContent=`${band}: ${score}/100. Illustrative score only; seek human review and follow official emergency procedures.`;});
   $('exportCsv').addEventListener('click',()=>{if(!incidents.length){toast('No incident records to export.');return;}const cols=['id','category','severity','location','description','reporter','status','createdAt'];const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const csv=[cols.join(','),...incidents.map(i=>cols.map(c=>q(i[c])).join(','))].join('\r\n');const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='campusshield-incidents.csv';a.click();URL.revokeObjectURL(url);});
