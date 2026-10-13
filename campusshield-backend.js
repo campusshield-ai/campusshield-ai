@@ -38,6 +38,25 @@ async signUp(email, password, displayName) {
   });
 },
 
+async resendConfirmation(email) {
+  if (!client) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  if (!email || !email.trim()) {
+    throw new Error("Enter your email address.");
+  }
+
+  return client.auth.resend({
+    type: "signup",
+    email: email.trim(),
+    options: {
+      emailRedirectTo:
+        "https://campusshield-ai.github.io/campusshield-ai/"
+    }
+  });
+},
+
     async signIn(email, password) {
       if (!client) throw new Error("Supabase is not configured.");
 
@@ -50,7 +69,6 @@ async signUp(email, password, displayName) {
       return client.auth.signOut();
     },
 
-   
 async getCurrentUser() {
   if (!client) {
     throw new Error("Supabase is not configured.");
