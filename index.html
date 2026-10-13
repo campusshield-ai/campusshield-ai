@@ -117,7 +117,7 @@ th{color:var(--muted);background:#f8fafd}
   <button
     type="button"
     id="resend-confirmation-button"
-    class="secondary-button"
+    class="btn secondary"
   >
     Resend confirmation email
   </button>
@@ -557,6 +557,11 @@ th{color:var(--muted);background:#f8fafd}
     const requestedRole = $('auth-role').value;
     const msg = $('auth-message');
 
+    if (!['student', 'teacher'].includes(requestedRole)) {
+      msg.textContent = 'Select a valid account role.';
+      return;
+    }
+
     if (!email || !password) {
       msg.textContent = 'Enter your email and password.';
       return;
@@ -599,10 +604,7 @@ if (data.session) {
     const email = $('auth-email').value.trim();
     const password = $('auth-password').value;
     const msg = $('auth-message');
-if (!['student', 'teacher'].includes(requestedRole)) {
-  msg.textContent = 'Select a valid account role.';
-  return;
-}
+
     if (!email || !password) {
       msg.textContent = 'Enter your email and password.';
       return;
