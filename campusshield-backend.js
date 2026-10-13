@@ -23,18 +23,20 @@
   window.CampusShieldBackend = {
     isConfigured: ready,
     client,
+ 
+async signUp(email, password, displayName) {
+  if (!client) throw new Error("Supabase is not configured.");
 
-    async signUp(email, password, displayName) {
-      if (!client) throw new Error("Supabase is not configured.");
-
-      return client.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { display_name: displayName || "" }
-        }
-      });
-    },
+  return client.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { display_name: displayName || "" },
+      emailRedirectTo:
+        "https://campusshield-ai.github.io/campusshield-ai/"
+    }
+  });
+},
 
     async signIn(email, password) {
       if (!client) throw new Error("Supabase is not configured.");
