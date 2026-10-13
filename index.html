@@ -113,6 +113,15 @@ th{color:var(--muted);background:#f8fafd}
     <div class="field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
     <div class="field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div>
   </div>
+<div class="field">
+  <button
+    type="button"
+    id="resend-confirmation-button"
+    class="secondary-button"
+  >
+    Resend confirmation email
+  </button>
+</div>
   <div class="field"><label><input type="checkbox" id="remember-email" style="width:auto;margin-right:8px"> Remember my email address</label></div>
   <p class="muted">Student and teacher accounts may require administrator verification. Urgent reports submitted here do not contact emergency services.</p>
   <div class="actions">
@@ -775,6 +784,43 @@ if (!['student', 'teacher'].includes(requestedRole)) {
 
   $('auth-form').addEventListener('submit', e => e.preventDefault());
 
+$('resend-confirmation-button').addEventListener('click', async () => {
+  const backend = window.CampusShieldBackend;
+  const email = $('auth-email').value.trim();
+  const msg = $('auth-message');
+  const button = $('resend-confirmation-button');
+
+  if (!email) {
+    msg.textContent = 'Enter your email address first.';
+    $('auth-email').focus();
+    return;
+  }
+
+  if (!backend?.isConfigured) {
+    msg.textContent = 'Supabase is not connected.';
+    return;
+  }
+
+  button.disabled = true;
+
+  try {
+    msg.textContent = 'Sending confirmation email...';
+
+    const { error } = await backend.resendConfirmation(email);
+
+    if (error) throw error;
+
+    msg.textContent =
+      'If this account requires confirmation, a new email has been requested. Check your inbox and spam folder.';
+  } catch (error) {
+    console.error('Resend confirmation failed:', error);
+
+    msg.textContent =
+      'Could not request another email. Please wait and try again later.';
+  } finally {
+    button.disabled = false;
+  }
+});
 
   // Keep render() as the app's rendering function.
   $('approvals-nav').hidden = true;
