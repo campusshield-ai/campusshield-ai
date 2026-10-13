@@ -564,7 +564,11 @@ th{color:var(--muted);background:#f8fafd}
       const {data, error} = await backend.signUp(email, password, name);
       if (error) throw error;
 
-      if (data.session) {
+      if (!data?.user) {
+  throw new Error('Supabase did not return a user.');
+}
+
+if (data.session) {
         const result = await backend.saveRequestedRole(requestedRole);
         if (result.error) throw result.error;
 
@@ -586,7 +590,10 @@ th{color:var(--muted);background:#f8fafd}
     const email = $('auth-email').value.trim();
     const password = $('auth-password').value;
     const msg = $('auth-message');
-
+if (!['student', 'teacher'].includes(requestedRole)) {
+  msg.textContent = 'Select a valid account role.';
+  return;
+}
     if (!email || !password) {
       msg.textContent = 'Enter your email and password.';
       return;
