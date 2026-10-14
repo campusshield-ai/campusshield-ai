@@ -20,6 +20,7 @@ const rpcPermissionsMigration = await readFile(new URL("../supabase/migrations/2
 const platformAdminProvisioningMigration = await readFile(new URL("../supabase/migrations/20261015090000_require_preprovisioned_platform_admin.sql", import.meta.url), "utf8");
 const platformAdminConsoleMigration = await readFile(new URL("../supabase/migrations/20261015100000_platform_admin_console_rpcs.sql", import.meta.url), "utf8");
 const nucDirectoryMigration = await readFile(new URL("../supabase/migrations/20261015110000_import_official_nuc_university_directory.sql", import.meta.url), "utf8");
+const verifiedCampusAdminMigration = await readFile(new URL("../supabase/migrations/20261015120000_require_verified_campus_staff_for_admin.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -181,6 +182,10 @@ assert.match(html, /id="community-post-media"/);
 assert.match(backend, /uploadCommunityPostMedia/);
 assert.match(backend, /createSignedUrl/);
 assert.match(privateCampusMediaMigration, /create policy campus_media_read_same_campus/i);
+assert.match(verifiedCampusAdminMigration, /cm\\.verification_status='verified'/i);
+assert.match(verifiedCampusAdminMigration, /Choose staff whose account and membership are verified/i);
+assert.match(verifiedCampusAdminMigration, /grant execute on function public\\.platform_assign_campus_admin\\(uuid,uuid\\) to authenticated/i);
+
 
 
 assert.doesNotMatch(html, /national feed/i, "the app must not imply cross-university interaction");
