@@ -523,6 +523,17 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    async reportCampusListing(listingId, reason, details) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const result = await client.rpc("report_campus_marketplace_listing", {
+        p_listing_id: listingId,
+        p_reason: reason,
+        p_details: details || null
+      });
+      if (result.error) throw result.error;
+      return result.data;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
