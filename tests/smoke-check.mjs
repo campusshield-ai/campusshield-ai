@@ -18,6 +18,7 @@ const socialDirectoryMigration = await readFile(new URL("../supabase/migrations/
 const campusRoleScopingMigration = await readFile(new URL("../supabase/migrations/20261015070000_campus_role_scoping.sql", import.meta.url), "utf8");
 const rpcPermissionsMigration = await readFile(new URL("../supabase/migrations/20261015080000_harden_campus_rpc_permissions.sql", import.meta.url), "utf8");
 const platformAdminProvisioningMigration = await readFile(new URL("../supabase/migrations/20261015090000_require_preprovisioned_platform_admin.sql", import.meta.url), "utf8");
+const platformAdminConsoleMigration = await readFile(new URL("../supabase/migrations/20261015100000_platform_admin_console_rpcs.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -151,6 +152,25 @@ assert.match(rpcPermissionsMigration, /grant execute on function public\.review_
 assert.doesNotMatch(rpcPermissionsMigration, /grant execute on function public\.[^;]+ to anon/i, "campus RPCs are never granted to anon");
 assert.match(platformAdminProvisioningMigration, /select 1 from private\.platform_admins pa where pa\.user_id=v_user_id/i);
 assert.doesNotMatch(platformAdminProvisioningMigration, /insert into private\.platform_admins/i, "users cannot self-register as platform administrators");
+assert.match(platformAdminConsoleMigration, /create or replace function public\\.platform_is_admin/i);
+assert.match(platformAdminConsoleMigration, /create or replace function public\\.platform_list_campus_university_requests/i);
+assert.match(platformAdminConsoleMigration, /create or replace function public\\.platform_review_campus_university_request/i);
+assert.match(platformAdminConsoleMigration, /from private\\.platform_admins/i);
+assert.match(platformAdminConsoleMigration, /grant execute on function public\\.platform_review_campus_university_request\\(uuid,text\\) to authenticated/i);
+assert.doesNotMatch(platformAdminConsoleMigration, /grant execute on function public\\.platform_review_campus_university_request\\(uuid,text\\) to anon/i);
+assert.match(html, /id="platform-admin-nav"/);
+assert.match(html, /id="page-platform-admin"/);
+assert.match(html, /id="platform-admin-requests-table"/);
+assert.match(html, /id="platform-admin-candidates-table"/);
+assert.match(backend, /listPlatformUniversityRequests/);
+assert.match(backend, /reviewPlatformUniversityRequest/);
+assert.match(backend, /listPlatformCampusStaffCandidates/);
+assert.match(backend, /assignCampusAdmin/);
+assert.match(html, /id="community-post-media"/);
+assert.match(backend, /uploadCommunityPostMedia/);
+assert.match(backend, /createSignedUrl/);
+assert.match(privateCampusMediaMigration, /create policy campus_media_read_same_campus/i);
+
 
 assert.doesNotMatch(html, /national feed/i, "the app must not imply cross-university interaction");
 
