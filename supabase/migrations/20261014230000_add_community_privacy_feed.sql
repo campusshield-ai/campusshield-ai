@@ -470,7 +470,7 @@ security definer
 set search_path to ''
 as $function$
 begin
-  if private.current_campus_role() <> all (array['admin', 'security', 'teacher']) then
+  if coalesce(private.current_campus_role(), '') not in ('admin', 'security', 'teacher') then
     raise exception 'Only verified campus staff may moderate community posts.';
   end if;
 
@@ -496,7 +496,7 @@ security definer
 set search_path to ''
 as $function$
 begin
-  if private.current_campus_role() <> all (array['admin', 'security', 'teacher']) then
+  if coalesce(private.current_campus_role(), '') not in ('admin', 'security', 'teacher') then
     raise exception 'Only verified campus staff may moderate community comments.';
   end if;
 
@@ -522,7 +522,7 @@ security definer
 set search_path to ''
 as $function$
 begin
-  if private.current_campus_role() <> all (array['admin', 'security', 'teacher']) then
+  if coalesce(private.current_campus_role(), '') not in ('admin', 'security', 'teacher') then
     raise exception 'Only verified campus staff may review community reports.';
   end if;
 
