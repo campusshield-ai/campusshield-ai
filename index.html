@@ -939,6 +939,8 @@ td strong{color:#2a464d;font-size:11px}
         currentProfile = null;
         communityProfile = null;
         campusContext = null;
+        $('platform-admin-nav').hidden = true;
+        $('platform-admin-tools').hidden = true;
         $('community-username-current').textContent = 'Not signed in';
         $('community-feed').innerHTML = '<div class="community-empty">Sign in to view campus updates.</div>';
         incidents = [];
@@ -1010,6 +1012,195 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'events') loadCampusEventsPage();
     if (button.dataset.page === 'marketplace') loadCampusMarketplacePage();
     if (button.dataset.page === 'platform-admin') loadPlatformAdminPage();
+  });
+
+  function safeHttpUrl(value) {
+    try {
+      const url = new URL(String(value || ''));
+      return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+    } catch {
+      return '';
+    }
+  }
+
+  async function refreshPlatformAdminAccess() {
+    const nav = $('platform-admin-nav');
+    const backend = window.CampusShieldBackend;
+    if (!currentProfile || !backend?.isConfigured) {
+      nav.hidden = true;
+      $('platform-admin-tools').hidden = true;
+      return false;
+    }
+    try {
+      const allowed = await backend.isPlatformAdmin();
+      nav.hidden = !allowed;
+      if (!allowed) {
+        $('platform-admin-tools').hidden = true;
+        if ($('page-platform-admin').classList.contains('active')) navigate('dashboard');
+      }
+      return allowed;
+    } catch (err) {
+      console.warn('Could not verify platform administrator access:', err.message);
+      nav.hidden = true;
+      $('platform-admin-tools').hidden = true;
+      return false;
+    }
+  }
+
+  async function loadPlatformAdminPage() {
+    const accessMessage = $('platform-admin-access-message');
+    const accessPanel = $('platform-admin-access-panel');
+    const toolsPanel = $('platform-admin-tools');
+    const backend = window.CampusShieldBackend;
+    accessPanel.hidden = false;
+    toolsPanel.hidden = true;
+    accessMessage.textContent = 'Verifying trusted platform administrator access…';
+    try {
+      if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+        $('platform-admin-nav').hidden = true;
+        accessMessage.textContent = 'Access denied. This console is available only to user IDs provisioned by the database owner as trusted platform administrators.';
+        return;
+      }
+      $('platform-admin-nav').hidden = false;
+      accessPanel.hidden = true;
+      toolsPanel.hidden = false;
+      await populatePlatformAdminUniversities();
+      await Promise.all([loadPlatformUniversityRequests(), loadPlatformAdminCandidates()]);
+    } catch (err) {
+      accessPanel.hidden = false;
+      toolsPanel.hidden = true;
+      accessMessage.textContent = err.message || 'Could not load the platform administration console.';
+    }
+  }
+
+  async function populatePlatformAdminUniversities() {
+    const select = $('platform-admin-university-select');
+    const backend = window.CampusShieldBackend;
+    if (!campusUniversitiesCache) campusUniversitiesCache = await backend.listCampusUniversities();
+    const oldValue = select.value;
+    select.innerHTML = '<option value="">Choose a university</option>' +
+      campusUniversitiesCache.map(function(university) {
+        return '<option value="' + esc(university.id) + '">' + esc(university.name) + ' · ' + esc(university.state) + '</option>';
+      }).join('');
+    if (oldValue && campusUniversitiesCache.some(item => item.id === oldValue)) select.value = oldValue;
+  }
+
+  async function loadPlatformUniversityRequests() {
+    const tbody = $('platform-admin-requests-table');
+    const message = $('platform-admin-requests-message');
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    message.textContent = 'Loading pending university requests…';
+    try {
+      const rows = await window.CampusShieldBackend.listPlatformUniversityRequests();
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6">No university listing requests are waiting for review.</td></tr>';
+        message.textContent = 'No pending university requests.';
+        return;
+      }
+      tbody.innerHTML = rows.map(function(row) {
+        const officialUrl = safeHttpUrl(row.official_website);
+        const website = officialUrl
+          ? '<a href="' + esc(officialUrl) + '" target="_blank" rel="noopener noreferrer">Open official site</a>'
+          : '<span class="muted">Not provided</span>';
+        return '<tr>' +
+          '<td><strong>' + esc(row.university_name) + '</strong><br><code>' + esc(row.id) + '</code></td>' +
+          '<td>' + esc(row.state) + '</td>' +
+          '<td>' + esc(row.ownership) + '</td>' +
+          '<td>' + website + '</td>' +
+          '<td>' + esc(dateText(row.created_at)) + '</td>' +
+          '<td><div class="actions">' +
+            '<button type="button" class="btn" data-platform-university-review="approve" data-request-id="' + esc(row.id) + '">Approve</button>' +
+            '<button type="button" class="btn danger" data-platform-university-review="reject" data-request-id="' + esc(row.id) + '">Reject</button>' +
+          '</div></td></tr>';
+      }).join('');
+      message.textContent = rows.length + ' pending university request(s). Verify details before approving.';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6">University requests could not be loaded.</td></tr>';
+      message.textContent = err.message || 'Could not load university requests.';
+    }
+  }
+
+  async function loadPlatformAdminCandidates() {
+    const tbody = $('platform-admin-candidates-table');
+    const message = $('platform-admin-candidates-message');
+    const universityId = $('platform-admin-university-select').value;
+    if (!universityId) {
+      tbody.innerHTML = '<tr><td colspan="6">Choose a university above.</td></tr>';
+      message.textContent = 'Select a university to load eligible staff.';
+      return;
+    }
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    message.textContent = 'Loading eligible verified staff…';
+    try {
+      const rows = await window.CampusShieldBackend.listPlatformCampusStaffCandidates(universityId);
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6">No eligible staff were found for this university.</td></tr>';
+        message.textContent = 'Only already-verified staff whose membership belongs to this university can be assigned.';
+        return;
+      }
+      tbody.innerHTML = rows.map(function(row) {
+        const profile = [row.faculty, row.department].filter(Boolean).map(esc).join(' · ') || 'Not provided';
+        return '<tr>' +
+          '<td><strong>@' + esc(row.username || 'username unavailable') + '</strong><br><code>' + esc(row.user_id) + '</code></td>' +
+          '<td>' + esc(row.account_role || 'Not specified') + '</td>' +
+          '<td>' + esc(row.account_status || 'unknown') + '</td>' +
+          '<td>' + esc(row.campus_status || 'unknown') + '</td>' +
+          '<td>' + profile + '</td>' +
+          '<td><button type="button" class="btn" data-platform-assign-admin="' + esc(row.user_id) + '">Assign campus admin</button></td>' +
+          '</tr>';
+      }).join('');
+      message.textContent = rows.length + ' eligible staff account(s). Confirm university membership before assignment.';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6">Eligible staff could not be loaded.</td></tr>';
+      message.textContent = err.message || 'Could not load eligible staff.';
+    }
+  }
+
+  $('platform-admin-refresh-requests').addEventListener('click', loadPlatformUniversityRequests);
+  $('platform-admin-refresh-candidates').addEventListener('click', loadPlatformAdminCandidates);
+  $('platform-admin-university-select').addEventListener('change', loadPlatformAdminCandidates);
+
+  $('platform-admin-requests-table').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-platform-university-review]');
+    if (!button) return;
+    const decision = button.dataset.platformUniversityReview;
+    const requestId = button.dataset.requestId;
+    if (!confirm(decision === 'approve'
+      ? 'Approve this university and add it to the available campus directory? Verify the official institution details first.'
+      : 'Reject this university listing request?')) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.reviewPlatformUniversityRequest(requestId, decision);
+      if (decision === 'approve') {
+        campusUniversitiesCache = null;
+        await populatePlatformAdminUniversities();
+      }
+      toast(decision === 'approve' ? 'University added to the directory.' : 'University request rejected.');
+      await loadPlatformUniversityRequests();
+      await loadPlatformAdminCandidates();
+    } catch (err) {
+      button.disabled = false;
+      toast(err.message || 'Could not review the university request.');
+      $('platform-admin-requests-message').textContent = err.message || 'Could not review the university request.';
+    }
+  });
+
+  $('platform-admin-candidates-table').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-platform-assign-admin]');
+    if (!button) return;
+    const userId = button.dataset.platformAssignAdmin;
+    const universityId = $('platform-admin-university-select').value;
+    if (!confirm('Assign this already-verified staff member as an administrator for the selected university?')) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.assignCampusAdmin(userId, universityId);
+      toast('Campus administrator assigned.');
+      await loadPlatformAdminCandidates();
+    } catch (err) {
+      button.disabled = false;
+      toast(err.message || 'Could not assign campus administrator.');
+      $('platform-admin-candidates-message').textContent = err.message || 'Could not assign campus administrator.';
+    }
   });
 
   function render() {
