@@ -364,6 +364,7 @@ td strong{color:#2a464d;font-size:11px}
         <div id="signup-fields" hidden>
           <div class="field"><label for="auth-name">Real name <span class="muted">(optional · private)</span></label><input id="auth-name" autocomplete="name" placeholder="Your real name; not shown to students"></div>
           <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
+          <div class="field"><label for="auth-university">University <span class="muted">(optional if not listed yet)</span></label><select id="auth-university"><option value="">Choose after sign-in</option></select><p class="muted">Your university space is private to that institution. The choice is locked after joining to prevent cross-campus mixing.</p></div>
           <div class="field"><label for="auth-role">Account type</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
         </div>
         <div class="field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
@@ -447,7 +448,32 @@ td strong{color:#2a464d;font-size:11px}
 <section class="page" id="page-community">
 <div class="heading"><h1>Campus community</h1><p>Share public-safe campus issues and suggestions, discuss approved posts, and see verified staff announcements.</p></div>
 <div class="notice-inline"><strong>Protect your privacy.</strong> Community posts are separate from private incident reports and require review before other students can see them. Do not post real names, email addresses, room numbers, medical details, harassment allegations, threats, evidence, or other identifying information. Use <button type="button" class="btn secondary" data-page="report">private incident reporting</button> for sensitive concerns.</div>
-<div class="community-layout">
+<section class="panel" id="campus-onboarding" aria-labelledby="campus-onboarding-title" hidden>
+  <div class="panel-heading"><div><h2 id="campus-onboarding-title">Choose your university</h2><p>This sets your private campus space.</p></div></div>
+  <p class="muted">Posts, comments, student groups, events, marketplace listings and safety reports are restricted to one university. You cannot follow, message, comment on, or join groups with users from another university. Your selection is locked; contact support to request a transfer.</p>
+  <form id="campusOnboardingForm">
+    <div class="field"><label for="campus-university">University *</label><select id="campus-university" required><option value="">Loading university directory…</option></select></div>
+    <div class="field"><label for="campus-faculty">Faculty / school (optional)</label><input id="campus-faculty" maxlength="120" placeholder="e.g. Faculty of Engineering"></div>
+    <div class="field"><label for="campus-department">Department (optional)</label><input id="campus-department" maxlength="120" placeholder="e.g. Computer Science"></div>
+    <div class="field"><label for="campus-course">Course / programme (optional)</label><input id="campus-course" maxlength="120" placeholder="e.g. BSc Computer Science"></div>
+    <div class="field"><label for="campus-year">Year / level (optional)</label><select id="campus-year"><option value="">Prefer not to say</option><option>100 Level</option><option>200 Level</option><option>300 Level</option><option>400 Level</option><option>500 Level</option><option>600 Level</option><option>Postgraduate</option><option>Other</option></select></div>
+    <button class="btn" type="submit" id="campus-onboarding-submit">Join my university space</button>
+    <p id="campus-onboarding-message" class="message" role="status" aria-live="polite"></p>
+  </form>
+  <details style="margin-top:16px"><summary>My university is not listed</summary>
+    <p class="muted">Submit a request for review. Do not choose a different university as a workaround.</p>
+    <form id="campusUniversityRequestForm">
+      <div class="field"><label for="request-university-name">Official university name *</label><input id="request-university-name" required maxlength="180"></div>
+      <div class="field"><label for="request-university-state">State or FCT *</label><input id="request-university-state" required maxlength="80" placeholder="e.g. Lagos"></div>
+      <div class="field"><label for="request-university-ownership">Ownership *</label><select id="request-university-ownership" required><option value="">Select ownership</option><option>Federal</option><option>State</option><option>Private</option></select></div>
+      <div class="field"><label for="request-university-website">Official website (optional)</label><input id="request-university-website" type="url" maxlength="250" placeholder="https://..."></div>
+      <button class="btn secondary" type="submit" id="request-university-submit">Request university listing</button>
+      <p id="campus-university-request-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </details>
+</section>
+<div class="notice-inline" id="campus-context-banner" hidden><strong>Your university space:</strong> <span id="campus-context-name"></span>. Student interaction is limited to members of this university.</div>
+<div class="community-layout" id="community-main-layout">
   <section class="panel" aria-labelledby="community-profile-title">
     <div class="panel-heading"><div><h2 id="community-profile-title">Your public profile</h2><p>Students see your username only.</p></div></div>
     <p class="community-meta">Your current handle <strong id="community-username-current" class="community-handle">@loading</strong></p>
@@ -477,7 +503,7 @@ td strong{color:#2a464d;font-size:11px}
   <div id="community-reports-queue"><p class="muted">Loading reports…</p></div>
   <p id="community-moderation-message" class="message" role="status" aria-live="polite"></p>
 </section>
-<section class="panel" aria-labelledby="community-feed-title">
+<section class="panel" id="community-feed-panel" aria-labelledby="community-feed-title">
   <div class="community-section-title"><div><h2 id="community-feed-title">Latest campus updates</h2><p class="muted">Only published posts appear here. Usernames are public; real names and emails are not.</p></div><button type="button" class="btn secondary" id="refresh-community">Refresh feed</button></div>
   <p id="community-feed-status" class="message" role="status" aria-live="polite">Loading campus community…</p>
   <div id="community-feed"><div class="community-empty">Loading campus updates…</div></div>
@@ -681,6 +707,8 @@ td strong{color:#2a464d;font-size:11px}
 
   let currentProfile = null;
   let communityProfile = null;
+  let campusContext = null;
+  let campusUniversitiesCache = null;
   let communityLoading = false;
 
   function canManageIncidents() {
@@ -763,6 +791,7 @@ td strong{color:#2a464d;font-size:11px}
         authSessionVersion += 1;
         currentProfile = null;
         communityProfile = null;
+        campusContext = null;
         $('community-username-current').textContent = 'Not signed in';
         $('community-feed').innerHTML = '<div class="community-empty">Sign in to view campus updates.</div>';
         incidents = [];
@@ -1148,10 +1177,26 @@ td strong{color:#2a464d;font-size:11px}
     }
     if (communityLoading) return;
     communityLoading = true;
-    $('community-feed-status').textContent = 'Loading campus updates…';
+    $('community-feed-status').textContent = 'Loading your university space…';
     $('community-feed').innerHTML = '<div class="community-empty">Loading campus updates…</div>';
 
     try {
+      const campus = await backend.getMyCampusContext();
+      campusContext = campus;
+      const needsCampus = !campus?.university_id;
+      $('campus-onboarding').hidden = !needsCampus;
+      $('community-main-layout').hidden = needsCampus;
+      $('community-feed-panel').hidden = needsCampus;
+      $('campus-context-banner').hidden = needsCampus;
+      $('community-moderation').hidden = needsCampus || !canModerateCommunity();
+      if (needsCampus) {
+        await populateCampusSelectors();
+        $('community-feed-status').textContent = 'Choose your university before using the campus community.';
+        $('community-feed').innerHTML = '<div class="community-empty">Your campus space has not been selected yet.</div>';
+        $('campus-onboarding-message').textContent = 'Choose your real university. This selection cannot be changed from your account settings.';
+        return;
+      }
+      $('campus-context-name').textContent = campus.university_name + (campus.state ? ' · ' + campus.state : '');
       const profile = await backend.getMyCommunityProfile();
       communityProfile = profile;
       $('community-username-current').textContent = profile?.username ? '@' + profile.username : 'Username unavailable';
@@ -1419,6 +1464,79 @@ td strong{color:#2a464d;font-size:11px}
   $('refresh-community').addEventListener('click', loadCommunityPage);
   $('refresh-community-moderation').addEventListener('click', loadCommunityPage);
 
+  async function populateCampusSelectors() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured) return;
+    try {
+      if (!campusUniversitiesCache) campusUniversitiesCache = await backend.listCampusUniversities();
+      const selects = [$('auth-university'), $('campus-university')];
+      selects.forEach(function(select) {
+        if (!select) return;
+        const previous = select.value;
+        const firstText = select.id === 'auth-university' ? 'Choose after sign-in' : 'Choose your university';
+        select.innerHTML = '<option value="">' + firstText + '</option>' + campusUniversitiesCache.map(function(university) {
+          return '<option value="' + esc(university.id) + '">' + esc(university.name) + ' · ' + esc(university.state) + '</option>';
+        }).join('');
+        if (previous && campusUniversitiesCache.some(u => u.id === previous)) select.value = previous;
+      });
+    } catch (err) {
+      console.error('Could not load university directory:', err);
+      const select = $('campus-university');
+      if (select) select.innerHTML = '<option value="">University directory unavailable</option>';
+    }
+  }
+
+  populateCampusSelectors();
+
+  $('campusOnboardingForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-onboarding-submit');
+    const message = $('campus-onboarding-message');
+    button.disabled = true;
+    message.textContent = 'Saving your campus selection…';
+    try {
+      await window.CampusShieldBackend.setMyCampusMembership({
+        universityId: $('campus-university').value,
+        faculty: $('campus-faculty').value.trim(),
+        department: $('campus-department').value.trim(),
+        course: $('campus-course').value.trim(),
+        yearOfStudy: $('campus-year').value
+      });
+      message.textContent = 'University space created.';
+      campusContext = await window.CampusShieldBackend.getMyCampusContext();
+      await refreshIncidentsFromSupabase();
+      await loadCommunityPage();
+      toast('You have joined your university space.');
+    } catch (err) {
+      message.textContent = err.message || 'Could not join this campus.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campusUniversityRequestForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('request-university-submit');
+    const message = $('campus-university-request-message');
+    button.disabled = true;
+    message.textContent = 'Sending request…';
+    try {
+      await window.CampusShieldBackend.requestCampusUniversity({
+        name: $('request-university-name').value.trim(),
+        state: $('request-university-state').value.trim(),
+        ownership: $('request-university-ownership').value,
+        website: $('request-university-website').value.trim()
+      });
+      $('campusUniversityRequestForm').reset();
+      message.textContent = 'University listing request sent for review. You can join the campus after it is added.';
+      toast('University request submitted.');
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit the request.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
   async function handleSignUp() {
     const backend = window.CampusShieldBackend;
     const email = $('auth-email').value.trim();
@@ -1450,7 +1568,7 @@ td strong{color:#2a464d;font-size:11px}
 
     try {
       msg.textContent = 'Creating account…';
-      const {data, error} = await backend.signUp(email, password, name, username);
+      const {data, error} = await backend.signUp(email, password, name, username, $('auth-university').value || null);
       if (error) throw error;
 
       if (!data?.user) {
@@ -1536,6 +1654,13 @@ if (data.session) {
       const workspaceReady = showWorkspace(profile);
       if (workspaceReady) {
         await refreshIncidentsFromSupabase();
+        const campus = await backend.getMyCampusContext();
+        campusContext = campus;
+        if (!campus?.university_id) {
+          navigate('community');
+          await loadCommunityPage();
+          toast('Choose your university to create your private campus space.');
+        }
       }
     } catch (e) {
       console.error('Sign-in failed:', e);
