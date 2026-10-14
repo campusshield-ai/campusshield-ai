@@ -9,6 +9,7 @@ const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrat
 const usernameLookupRemovalMigration = await readFile(new URL("../supabase/migrations/20261014235000_remove_username_availability_rpc.sql", import.meta.url), "utf8");
 const staffProfileMigration = await readFile(new URL("../supabase/migrations/20261014240000_allow_verified_teachers_to_read_profiles.sql", import.meta.url), "utf8");
 const multiUniversityMigration = await readFile(new URL("../supabase/migrations/20261015000000_multi_university_foundation.sql", import.meta.url), "utf8");
+const campusStaffMigration = await readFile(new URL("../supabase/migrations/20261015010000_campus_staff_membership_review.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -89,6 +90,15 @@ assert.match(multiUniversityMigration, /Your university is locked to protect cam
 assert.match(multiUniversityMigration, /create table if not exists public\.campus_groups/i);
 assert.match(multiUniversityMigration, /create table if not exists public\.campus_events/i);
 assert.match(multiUniversityMigration, /create table if not exists public\.campus_marketplace_listings/i);
+assert.match(campusStaffMigration, /create or replace function public\.bootstrap_first_campus_admin/i);
+assert.match(campusStaffMigration, /create or replace function public\.list_campus_staff_membership_reviews/i);
+assert.match(campusStaffMigration, /create or replace function public\.review_campus_staff_membership/i);
+assert.match(campusStaffMigration, /private\.current_campus_role\(\)/i);
+assert.match(backend, /bootstrapFirstCampusAdmin/);
+assert.match(backend, /listCampusStaffMembershipReviews/);
+assert.match(backend, /reviewCampusStaffMembership/);
+assert.match(html, /id="campus-membership-review-panel"/);
+
 
 assert.match(html, /does not contact emergency services/i, "the emergency-services prototype warning remains visible");
 
