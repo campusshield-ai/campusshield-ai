@@ -543,9 +543,15 @@ td strong{color:#2a464d;font-size:11px}
 <section class="page" id="page-approvals">
 <div class="heading"><h1>Account approvals</h1><p>Review pending student and teacher account requests. Only verified administrators can use this area.</p></div>
 <div class="panel">
-<div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending applications</strong><button class="btn secondary" type="button" id="refresh-approvals">Refresh list</button></div>
+<div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending applications in your university</strong><button class="btn secondary" type="button" id="refresh-approvals">Refresh list</button></div>
 <p id="approvals-message" class="message" role="status">Checking administrator access…</p>
-<div class="table-wrap"><table><caption class="sr-only">Pending student and teacher account requests</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Submitted</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+<div class="table-wrap"><table><caption class="sr-only">Pending student and teacher account requests in this university</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Submitted</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+</div>
+<div class="panel" id="campus-membership-review-panel" hidden style="margin-top:16px">
+  <div class="actions" style="justify-content:space-between;align-items:center"><strong>Campus staff membership checks</strong><button class="btn secondary" type="button" id="refresh-campus-membership-reviews">Refresh checks</button></div>
+  <p class="muted">Approve staff only when you have verified they belong to this university. This check is separate from the account approval above.</p>
+  <p id="campus-membership-reviews-message" class="message" role="status" aria-live="polite">Loading campus membership checks…</p>
+  <div class="table-wrap"><table><caption class="sr-only">Campus-specific staff membership requests</caption><thead><tr><th scope="col">Username</th><th scope="col">Requested role</th><th scope="col">Account status</th><th scope="col">Faculty / department</th><th scope="col">Decision</th></tr></thead><tbody id="campus-membership-reviews-table"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
 </div>
 </section>
 
@@ -1097,8 +1103,9 @@ td strong{color:#2a464d;font-size:11px}
       if (error) throw error;
 
       if (!rows?.length) {
-        tbody.innerHTML = '<tr><td colspan="5">There are no pending student or teacher applications.</td></tr>';
-        message.textContent = 'Administrator access confirmed.';
+        tbody.innerHTML = '<tr><td colspan="5">There are no pending student or teacher applications in this university.</td></tr>';
+        message.textContent = 'University administrator access confirmed.';
+        await loadCampusStaffMembershipReviews();
         return;
       }
 
@@ -1115,7 +1122,8 @@ td strong{color:#2a464d;font-size:11px}
         </td>
       </tr>`).join('');
 
-      message.textContent = `${rows.length} pending application(s).`;
+      message.textContent = `${rows.length} pending application(s) in this university.`;
+      await loadCampusStaffMembershipReviews();
     } catch (err) {
       console.error('Could not load account approvals:', err);
       tbody.innerHTML = '<tr><td colspan="5">Applications could not be loaded.</td></tr>';
@@ -1124,6 +1132,62 @@ td strong{color:#2a464d;font-size:11px}
   }
 
   $('refresh-approvals').addEventListener('click', loadAccountApprovals);
+
+  async function loadCampusStaffMembershipReviews() {
+    const panel = $('campus-membership-review-panel');
+    const tbody = $('campus-membership-reviews-table');
+    const message = $('campus-membership-reviews-message');
+    panel.hidden = true;
+    tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+    message.textContent = 'Checking university administrator access…';
+    try {
+      const rows = await window.CampusShieldBackend.listCampusStaffMembershipReviews();
+      panel.hidden = false;
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5">No staff membership checks are waiting for review.</td></tr>';
+        message.textContent = 'Campus staff membership queue loaded.';
+        return;
+      }
+      tbody.innerHTML = rows.map(function(row) {
+        const detail = [row.faculty, row.department].filter(Boolean).map(esc).join(' · ') || 'Not provided';
+        return '<tr>' +
+          '<td><strong>@' + esc(row.username || 'username unavailable') + '</strong><br><code>' + esc(row.user_id) + '</code></td>' +
+          '<td>' + esc(row.requested_role || row.account_role || 'Staff') + '</td>' +
+          '<td>' + esc(row.account_status || 'unknown') + '</td>' +
+          '<td>' + detail + '</td>' +
+          '<td><div class="actions">' +
+            '<button class="btn" data-campus-membership-review="approve" data-user-id="' + esc(row.user_id) + '">Verify campus</button>' +
+            '<button class="btn danger" data-campus-membership-review="reject" data-user-id="' + esc(row.user_id) + '">Reject</button>' +
+          '</div></td></tr>';
+      }).join('');
+      message.textContent = rows.length + ' staff campus membership check(s) need review.';
+    } catch (err) {
+      if (currentProfile?.role === 'admin' && currentProfile?.verification_status === 'verified') {
+        panel.hidden = false;
+        tbody.innerHTML = '<tr><td colspan="5">Campus-specific staff review is unavailable.</td></tr>';
+        message.textContent = err.message || 'A verified administrator for this university is required. The initial trusted campus administrator must be initialized first.';
+      }
+    }
+  }
+
+  $('refresh-campus-membership-reviews').addEventListener('click', loadCampusStaffMembershipReviews);
+
+  $('campus-membership-reviews-table').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-campus-membership-review]');
+    if (!button) return;
+    const decision = button.dataset.campusMembershipReview;
+    const userId = button.dataset.userId;
+    if (!confirm((decision === 'approve' ? 'Verify this person as a staff member of your university?' : 'Reject this campus staff membership?'))) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.reviewCampusStaffMembership(userId, decision);
+      toast(decision === 'approve' ? 'Campus staff membership verified.' : 'Campus staff membership rejected.');
+      await loadAccountApprovals();
+    } catch (err) {
+      toast(err.message || 'Could not review campus membership.');
+      button.disabled = false;
+    }
+  });
 
   $('approvals-table').addEventListener('click', async e => {
     const button = e.target.closest('[data-review]');
@@ -1508,15 +1572,23 @@ td strong{color:#2a464d;font-size:11px}
     button.disabled = true;
     message.textContent = 'Saving your campus selection…';
     try {
+      const selectedUniversityId = $('campus-university').value;
       await window.CampusShieldBackend.setMyCampusMembership({
-        universityId: $('campus-university').value,
+        universityId: selectedUniversityId,
         faculty: $('campus-faculty').value.trim(),
         department: $('campus-department').value.trim(),
         course: $('campus-course').value.trim(),
         yearOfStudy: $('campus-year').value
       });
-      message.textContent = 'University space created.';
+      let bootstrappedAdmin = false;
+      if (currentProfile?.role === 'admin' && currentProfile?.verification_status === 'verified') {
+        bootstrappedAdmin = await window.CampusShieldBackend.bootstrapFirstCampusAdmin(selectedUniversityId);
+      }
+      message.textContent = bootstrappedAdmin
+        ? 'University space created and initial campus administrator initialized.'
+        : 'University space created. Staff-only powers require this campus membership to be verified.';
       campusContext = await window.CampusShieldBackend.getMyCampusContext();
+      syncCampusAccessNavigation();
       await refreshIncidentsFromSupabase();
       await loadCommunityPage();
       toast('You have joined your university space.');
