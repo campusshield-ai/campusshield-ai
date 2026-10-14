@@ -1,6 +1,16 @@
 -- University-scoped social actions: campus posts, reactions, replies, polls, follows and bookmarks.
 begin;
 
+create or replace function private.current_campus_account_status()
+returns text language sql stable security definer set search_path to ''
+as $function$
+  select p.verification_status::text
+  from public.profiles p where p.id = (select auth.uid()) limit 1;
+$function$;
+revoke all on function private.current_campus_account_status() from public, anon;
+grant execute on function private.current_campus_account_status() to authenticated;
+
+
 alter table public.community_posts drop constraint if exists community_posts_post_type_check;
 alter table public.community_posts add constraint community_posts_post_type_check
   check (post_type in ('safety_issue','suggestion','announcement','campus_update','question','poll','lost_found','marketplace_share'));
@@ -52,7 +62,8 @@ create policy campus_follows_read_same_campus on public.campus_follows for selec
 drop policy if exists campus_follows_add_same_campus on public.campus_follows;
 create policy campus_follows_add_same_campus on public.campus_follows for insert to authenticated
   with check (
-    follower_id = (select auth.uid())
+    private.current_campus_account_status() = any (array['pending','verified'])
+    and follower_id = (select auth.uid())
     and university_id = (select private.current_campus_university_id())
     and exists (select 1 from public.campus_memberships cm
       where cm.user_id = followed_id and cm.university_id = campus_follows.university_id
@@ -73,7 +84,8 @@ create policy community_poll_votes_read_own on public.community_poll_votes for s
 drop policy if exists community_poll_votes_add_same_campus on public.community_poll_votes;
 create policy community_poll_votes_add_same_campus on public.community_poll_votes for insert to authenticated
   with check (
-    user_id = (select auth.uid())
+    private.current_campus_account_status() = any (array['pending','verified'])
+    and user_id = (select auth.uid())
     and university_id = (select private.current_campus_university_id())
     and exists (select 1 from public.community_posts p
       join public.community_poll_options o on o.post_id = p.id
@@ -84,9 +96,10 @@ create policy community_poll_votes_add_same_campus on public.community_poll_vote
   );
 drop policy if exists community_poll_votes_update_own_same_campus on public.community_poll_votes;
 create policy community_poll_votes_update_own_same_campus on public.community_poll_votes for update to authenticated
-  using (user_id = (select auth.uid()))
+  using (user_id = (select auth.uid()) and private.current_campus_account_status() = any (array['pending','verified']))
   with check (
-    user_id = (select auth.uid())
+    private.current_campus_account_status() = any (array['pending','verified'])
+    and user_id = (select auth.uid())
     and university_id = (select private.current_campus_university_id())
     and exists (select 1 from public.community_posts p
       where p.id = post_id and p.university_id = community_poll_votes.university_id and p.post_type = 'poll' and p.status = 'published')
@@ -124,7 +137,7 @@ begin
   if char_length(btrim(coalesce(p_body,''))) not between 10 and 2000 then raise exception 'The post must be 10–2000 characters.'; end if;
   if p_location is not null and char_length(btrim(p_location)) > 120 then raise exception 'The location is too long.'; end if;
   select p.verification_status::text into v_profile_status from public.profiles p where p.id=v_user_id;
-  if v_profile_status not in ('pending','verified') then raise exception 'This account cannot post.'; end if;
+  if v_profile_status is null or v_profile_status not in ('pending','verified') then raise exception 'This account cannot post.'; end if;
   select cp.username into v_username from public.community_profiles cp where cp.user_id=v_user_id;
   if v_username is null then raise exception 'Your public username is not ready yet.'; end if;
   v_status := 'pending';
@@ -173,7 +186,7 @@ begin
   select cp.username into v_username from public.community_profiles cp where cp.user_id=v_user_id;
   if v_username is null then raise exception 'Your public username is not ready yet.'; end if;
   select p.verification_status::text into v_status from public.profiles p where p.id=v_user_id;
-  if v_status not in ('pending','verified') then raise exception 'This account cannot create a poll.'; end if;
+  if v_status is null or v_status not in ('pending','verified') then raise exception 'This account cannot create a poll.'; end if;
   insert into public.community_posts(university_id,author_id,author_username,post_type,title,body,location,status,is_official)
   values(v_university_id,v_user_id,v_username,'poll',btrim(p_title),btrim(p_body),nullif(btrim(coalesce(p_location,'')),''),'pending',false)
   returning id into v_post_id;
@@ -201,7 +214,7 @@ begin
   if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before replying.'; end if;
   if char_length(btrim(coalesce(p_body,''))) not between 2 and 800 then raise exception 'Replies must be 2–800 characters.'; end if;
   select p.verification_status::text into v_status from public.profiles p where p.id=v_user_id;
-  if v_status not in ('pending','verified') then raise exception 'This account cannot reply.'; end if;
+  if v_status is null or v_status not in ('pending','verified') then raise exception 'This account cannot reply.'; end if;
   if not exists(select 1 from public.community_posts p where p.id=p_post_id and p.university_id=v_university_id and p.status='published') then
     raise exception 'This post is not available in your university community.';
   end if;
@@ -226,6 +239,7 @@ declare
   v_count bigint;
 begin
   if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before reacting.'; end if;
+  if private.current_campus_account_status() not in ('pending','verified') then raise exception 'This account cannot react to posts.'; end if;
   if p_reaction_type not in ('like','support','celebrate','helpful') then raise exception 'Choose a valid reaction.'; end if;
   if not exists(select 1 from public.community_posts p where p.id=p_post_id and p.university_id=v_university_id and p.status='published') then
     raise exception 'This post is not available in your university community.';
@@ -255,6 +269,7 @@ declare
   v_exists boolean;
 begin
   if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before bookmarking.'; end if;
+  if private.current_campus_account_status() not in ('pending','verified') then raise exception 'This account cannot bookmark posts.'; end if;
   if not exists(select 1 from public.community_posts p where p.id=p_post_id and p.university_id=v_university_id and p.status='published') then
     raise exception 'This post is not available in your university community.';
   end if;
@@ -318,6 +333,7 @@ as $function$
 declare v_user_id uuid := (select auth.uid()); v_university_id uuid := (select private.current_campus_university_id());
 begin
   if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before voting.'; end if;
+  if private.current_campus_account_status() not in ('pending','verified') then raise exception 'This account cannot vote in polls.'; end if;
   if not exists(select 1 from public.community_posts p join public.community_poll_options o on o.post_id=p.id
     where p.id=p_post_id and o.id=p_option_id and p.post_type='poll' and p.status='published'
       and p.university_id=v_university_id and o.university_id=v_university_id) then
@@ -340,6 +356,7 @@ declare
   v_new_id uuid;
 begin
   if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before reposting.'; end if;
+  if private.current_campus_account_status() not in ('pending','verified') then raise exception 'This account cannot repost content.'; end if;
   select * into v_source from public.community_posts p where p.id=p_post_id and p.university_id=v_university_id and p.status='published';
   if not found then raise exception 'This post is not available in your university community.'; end if;
   select cp.username into v_username from public.community_profiles cp where cp.user_id=v_user_id;
@@ -357,6 +374,8 @@ as $function$
 declare v_user_id uuid := (select auth.uid()); v_university_id uuid := (select private.current_campus_university_id());
 begin
   if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before following.'; end if;
+  if private.current_campus_account_status() not in ('pending','verified') then raise exception 'This account cannot follow campus members.'; end if;
+  if private.current_campus_account_status() not in ('pending','verified') then raise exception 'This account cannot follow campus members.'; end if;
   if p_followed_id=v_user_id then raise exception 'You cannot follow your own profile.'; end if;
   if not exists(select 1 from public.campus_memberships cm where cm.user_id=p_followed_id and cm.university_id=v_university_id and cm.membership_status='active') then
     raise exception 'You can only follow students from your own university.';
