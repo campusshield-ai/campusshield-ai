@@ -406,6 +406,48 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    async listCampusGroups() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.from("campus_groups")
+        .select("id,university_id,name,description,group_type,privacy,status,creator_username,created_at")
+        .eq("status", "active").order("name", { ascending: true }).limit(100);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async listMyCampusGroupMemberships() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_my_campus_group_memberships");
+      if (error) throw error;
+      return (data || []).map(row => row.group_id);
+    },
+
+    async createCampusGroup(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      const campus = await this.getMyCampusContext();
+      if (!user || !campus?.university_id) throw new Error("Sign in and choose your university first.");
+      const { data, error } = await client.from("campus_groups").insert({
+        university_id: campus.university_id, created_by: user.id, name: input.name,
+        description: input.description || null, group_type: input.groupType,
+        privacy: input.privacy || "campus", status: "pending"
+      }).select("id").single();
+      if (error) throw error;
+      return data.id;
+    },
+
+    async joinCampusGroup(groupId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("join_campus_group", { p_group_id: groupId });
+      if (error) throw error;
+    },
+
+    async leaveCampusGroup(groupId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("leave_campus_group", { p_group_id: groupId });
+      if (error) throw error;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
