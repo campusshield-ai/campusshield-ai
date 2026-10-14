@@ -1635,8 +1635,12 @@ td strong{color:#2a464d;font-size:11px}
         $('campus-marketplace-feed').innerHTML = '';
         return;
       }
-      const listings = await backend.listCampusMarketplaceListings();
+      const [listings, myCommunityProfile] = await Promise.all([
+        backend.listCampusMarketplaceListings(),
+        backend.getMyCommunityProfile()
+      ]);
       $('campus-marketplace-feed').innerHTML = listings.length ? listings.map(function(listing) {
+        const isMine = Boolean(myCommunityProfile?.username && listing.seller_username === myCommunityProfile.username);
         return '<article class="community-post">' +
           '<div class="community-meta"><span class="tag open">' + esc(listing.category.replaceAll('_',' ')) + '</span><span>·</span><strong>' + (listing.status === 'sold' ? 'Sold' : 'Available') + '</strong></div>' +
           '<h3 class="community-post-title">' + esc(listing.title) + '</h3>' +
@@ -1644,8 +1648,10 @@ td strong{color:#2a464d;font-size:11px}
           '<p><strong>' + (listing.price_ngn == null ? 'Price not listed' : '₦' + Number(listing.price_ngn).toLocaleString('en-NG')) + '</strong></p>' +
           '<p class="community-meta">Seller: @' + esc(listing.seller_username || 'campus member') + ' · ' + esc(dateText(listing.created_at)) + '</p>' +
           (listing.contact_instructions ? '<p class="community-meta">Contact: ' + esc(listing.contact_instructions) + '</p>' : '') +
+          '<div class="actions">' +
           (listing.status === 'published' ? '<button type="button" class="btn secondary" data-marketplace-report="' + esc(listing.id) + '">Report listing</button>' : '') +
-          '</article>';
+          (isMine && listing.status === 'published' ? '<button type="button" class="btn secondary" data-marketplace-sold="' + esc(listing.id) + '">Mark as sold</button>' : '') +
+          '</div></article>';
       }).join('') : '<div class="community-empty"><strong>No approved listings yet.</strong><p>List a textbook, item or service for review by your university moderators.</p></div>';
       status.textContent = listings.length + ' listing(s) in your university marketplace.';
       if (canModerateCommunity()) await loadCampusContentModeration();
@@ -2173,6 +2179,20 @@ td strong{color:#2a464d;font-size:11px}
   });
 
   $('page-marketplace').addEventListener('click', async function(event) {
+    const soldButton = event.target.closest('[data-marketplace-sold]');
+    if (soldButton) {
+      if (!confirm('Mark your listing as sold?')) return;
+      soldButton.disabled = true;
+      try {
+        await window.CampusShieldBackend.markCampusListingSold(soldButton.dataset.marketplaceSold);
+        toast('Listing marked as sold.');
+        await loadCampusMarketplacePage();
+      } catch (err) {
+        toast(err.message || 'Could not update this listing.');
+        soldButton.disabled = false;
+      }
+      return;
+    }
     const button = event.target.closest('[data-marketplace-report]');
     if (!button) return;
     const answer = window.prompt('Why are you reporting this listing?\n1 = Suspected scam\n2 = Spam\n3 = Unsafe item\n4 = Misleading listing\n5 = Harassment\n6 = Other','1');
