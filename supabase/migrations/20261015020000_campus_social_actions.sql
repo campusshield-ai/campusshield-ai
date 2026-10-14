@@ -174,12 +174,12 @@ begin
   if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before creating a poll.'; end if;
   if char_length(btrim(coalesce(p_title,''))) not between 3 and 100 then raise exception 'The poll title must be 3–100 characters.'; end if;
   if char_length(btrim(coalesce(p_body,''))) not between 10 and 2000 then raise exception 'The poll description must be 10–2000 characters.'; end if;
-  select count(*) into v_count from unnest(v_options) as x where x is not null;
+  select count(*) into v_count from unnest(v_options) as item(opt) where opt is not null;
   if v_count < 2 or v_count > 4 then raise exception 'A poll needs 2–4 answer options.'; end if;
-  if (select count(distinct lower(x)) from unnest(v_options) as x where x is not null) <> v_count then
+  if (select count(distinct lower(opt)) from unnest(v_options) as item(opt) where opt is not null) <> v_count then
     raise exception 'Poll options must be unique.';
   end if;
-  if exists(select 1 from unnest(v_options) as x where x is not null and char_length(x)>160) then
+  if exists(select 1 from unnest(v_options) as item(opt) where opt is not null and char_length(opt)>160) then
     raise exception 'Each poll option must be 160 characters or fewer.';
   end if;
   if p_location is not null and char_length(btrim(p_location))>120 then raise exception 'The location is too long.'; end if;
