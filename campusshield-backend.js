@@ -164,6 +164,127 @@ async getCurrentUser() {
       return data;
     },
 
+    async isPlatformAdmin() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("platform_is_admin");
+      if (error) throw error;
+      return data === true;
+    },
+
+    async listPlatformUniversityRequests() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("platform_list_campus_university_requests");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async reviewPlatformUniversityRequest(requestId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!["approve", "reject"].includes(decision)) throw new Error("Choose approve or reject.");
+      const { error } = await client.rpc("platform_review_campus_university_request", {
+        p_request_id: requestId,
+        p_decision: decision
+      });
+      if (error) throw error;
+    },
+
+    async listPlatformCampusStaffCandidates(universityId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!universityId) return [];
+      const { data, error } = await client.rpc("platform_list_campus_staff_candidates", {
+        p_university_id: universityId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async assignCampusAdmin(userId, universityId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!userId || !universityId) throw new Error("Choose a staff account and university.");
+      const { error } = await client.rpc("platform_assign_campus_admin", {
+        p_user_id: userId,
+        p_university_id: universityId
+      });
+      if (error) throw error;
+    },
+
+    async uploadCommunityPostMedia(postId, files, altText) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      const campus = await this.getMyCampusContext();
+      if (!user || !campus?.university_id) throw new Error("Sign in and choose your university before uploading media.");
+      if (!postId) throw new Error("Create the campus post before attaching media.");
+
+      const selected = Array.from(files || []);
+      if (selected.length > 4) throw new Error("Attach no more than four files to one post.");
+      const allowedTypes = new Set([
+        "image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm"
+      ]);
+      const bucket = client.storage.from("campus-community-media");
+
+      for (const file of selected) {
+        if (!allowedTypes.has(file.type)) {
+          throw new Error("Use JPG, PNG, WEBP, GIF, MP4, or WEBM files only.");
+        }
+        if (!file.size || file.size > 50 * 1024 * 1024) {
+          throw new Error("Each image or video must be 50 MB or smaller.");
+        }
+
+        const cleanedName = String(file.name || "attachment")
+          .normalize("NFKD")
+          .replace(/[^a-zA-Z0-9._-]+/g, "_")
+          .slice(-90) || "attachment";
+        const objectPath = campus.university_id + "/" + postId + "/" +
+          Date.now() + "-" + Math.random().toString(36).slice(2, 10) + "-" + cleanedName;
+
+        const { error: uploadError } = await bucket.upload(objectPath, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type
+        });
+        if (uploadError) throw uploadError;
+
+        const { error: metadataError } = await client.from("community_post_media").insert({
+          post_id: postId,
+          university_id: campus.university_id,
+          uploader_id: user.id,
+          object_path: objectPath,
+          media_kind: file.type.startsWith("video/") ? "video" : "image",
+          mime_type: file.type,
+          byte_size: file.size,
+          alt_text: String(altText || "").trim().slice(0, 250) || null
+        });
+        if (metadataError) {
+          await bucket.remove([objectPath]);
+          throw metadataError;
+        }
+      }
+      return selected.length;
+    },
+
+    async listCommunityPostMedia(postIds) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!Array.isArray(postIds) || postIds.length === 0) return [];
+      const ids = postIds.filter(Boolean).slice(0, 50);
+      if (!ids.length) return [];
+      const { data, error } = await client
+        .from("community_post_media")
+        .select("id,post_id,university_id,object_path,media_kind,mime_type,byte_size,alt_text,created_at")
+        .in("post_id", ids)
+        .order("created_at", { ascending: true })
+        .limit(100);
+      if (error) throw error;
+
+      return Promise.all((data || []).map(async function(media) {
+        const { data: signed, error: signedError } = await client
+          .storage.from("campus-community-media")
+          .createSignedUrl(media.object_path, 1800);
+        return Object.assign({}, media, {
+          signed_url: signedError ? null : (signed?.signedUrl || null)
+        });
+      }));
+    },
+
     async getMyCommunityProfile() {
       if (!client) throw new Error("Supabase is not configured.");
 
