@@ -95,4 +95,17 @@ for insert to authenticated with check (
   )
 );
 
+drop policy if exists campus_media_delete_own_same_campus on storage.objects;
+create policy campus_media_delete_own_same_campus on storage.objects
+for delete to authenticated using (
+  bucket_id = 'campus-community-media'
+  and split_part(name,'/',1) = (select private.current_campus_university_id())::text
+  and exists (
+    select 1 from public.community_posts p
+    where p.id::text = split_part(name,'/',2)
+      and p.author_id = (select auth.uid())
+      and p.university_id = (select private.current_campus_university_id())
+  )
+);
+
 commit;
