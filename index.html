@@ -711,9 +711,21 @@ td strong{color:#2a464d;font-size:11px}
   let campusUniversitiesCache = null;
   let communityLoading = false;
 
-  function canManageIncidents() {
+  function hasVerifiedCampusStaffMembership() {
     return currentProfile?.verification_status === 'verified' &&
+      campusContext?.membership_status === 'active' &&
+      campusContext?.verification_status === 'verified';
+  }
+
+  function canManageIncidents() {
+    return hasVerifiedCampusStaffMembership() &&
       ['security', 'admin'].includes(currentProfile.role);
+  }
+
+  function syncCampusAccessNavigation() {
+    const verified = currentProfile?.verification_status === 'verified';
+    const staffCampusApproved = hasVerifiedCampusStaffMembership();
+    $('approvals-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
   }
 
   function showWorkspace(profile) {
@@ -1157,7 +1169,7 @@ td strong{color:#2a464d;font-size:11px}
   });
 
   function canModerateCommunity() {
-    return currentProfile?.verification_status === 'verified' &&
+    return hasVerifiedCampusStaffMembership() &&
       ['admin', 'security', 'teacher'].includes(currentProfile.role);
   }
 
@@ -1183,6 +1195,7 @@ td strong{color:#2a464d;font-size:11px}
     try {
       const campus = await backend.getMyCampusContext();
       campusContext = campus;
+      syncCampusAccessNavigation();
       const needsCampus = !campus?.university_id;
       $('campus-onboarding').hidden = !needsCampus;
       $('community-main-layout').hidden = needsCampus;
@@ -1653,10 +1666,10 @@ if (data.session) {
 
       const workspaceReady = showWorkspace(profile);
       if (workspaceReady) {
+        campusContext = await backend.getMyCampusContext();
+        syncCampusAccessNavigation();
         await refreshIncidentsFromSupabase();
-        const campus = await backend.getMyCampusContext();
-        campusContext = campus;
-        if (!campus?.university_id) {
+        if (!campusContext?.university_id) {
           navigate('community');
           await loadCommunityPage();
           toast('Choose your university to create your private campus space.');
@@ -1874,10 +1887,16 @@ $('resend-confirmation-button').addEventListener('click', async () => {
           if (!error && profile) {
             const workspaceReady = showWorkspace(profile);
             if (workspaceReady) {
+              campusContext = await backend.getMyCampusContext();
+              syncCampusAccessNavigation();
               await refreshIncidentsFromSupabase();
               $('auth-message').textContent = profile.verification_status === 'verified'
                 ? `Signed in. Your role is ${profile.role}.`
                 : 'Your account is pending verification. You can submit incident reports.';
+              if (!campusContext?.university_id) {
+                navigate('community');
+                await loadCommunityPage();
+              }
             }
           }
         }
