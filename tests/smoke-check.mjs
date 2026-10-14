@@ -19,6 +19,7 @@ const campusRoleScopingMigration = await readFile(new URL("../supabase/migration
 const rpcPermissionsMigration = await readFile(new URL("../supabase/migrations/20261015080000_harden_campus_rpc_permissions.sql", import.meta.url), "utf8");
 const platformAdminProvisioningMigration = await readFile(new URL("../supabase/migrations/20261015090000_require_preprovisioned_platform_admin.sql", import.meta.url), "utf8");
 const platformAdminConsoleMigration = await readFile(new URL("../supabase/migrations/20261015100000_platform_admin_console_rpcs.sql", import.meta.url), "utf8");
+const nucDirectoryMigration = await readFile(new URL("../supabase/migrations/20261015110000_import_official_nuc_university_directory.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -158,6 +159,16 @@ assert.match(platformAdminConsoleMigration, /create or replace function public\.
 assert.match(platformAdminConsoleMigration, /from private\.platform_admins/i);
 assert.match(platformAdminConsoleMigration, /grant execute on function public\.platform_review_campus_university_request\(uuid,text\) to authenticated/i);
 assert.doesNotMatch(platformAdminConsoleMigration, /grant execute on function public\.platform_review_campus_university_request\(uuid,text\) to anon/i);
+assert.match(nucDirectoryMigration, /Import the 328-entry NUC university roster/i);
+assert.match(nucDirectoryMigration, /77 Federal, 69 State, 182 Private/i);
+assert.match(nucDirectoryMigration, /https:\/\/enuc\.nuc\.edu\.ng\/nus/i);
+assert.match(nucDirectoryMigration, /Kwara State University, Ilorin/i);
+assert.match(nucDirectoryMigration, /Aliko Dangote University of Science & Technology, Wudil/i);
+assert.match(nucDirectoryMigration, /on conflict \(slug\) do update/i);
+assert.doesNotMatch(nucDirectoryMigration, /Pearl University[\s\S]{0,160}crutech\.edu\.ng/i, "do not assign another university's URL to Pearl University");
+assert.match(html, /id="community-post-media-alt"/);
+assert.match(html, /media\.media_kind === 'video'/);
+
 assert.match(html, /id="platform-admin-nav"/);
 assert.match(html, /id="page-platform-admin"/);
 assert.match(html, /id="platform-admin-requests-table"/);
