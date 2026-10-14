@@ -80,7 +80,7 @@ assert.match(backend, /set_my_campus_membership/);
 assert.match(backend, /university_id: campus\.university_id/);
 assert.match(html, /id="campusOnboardingForm"/);
 assert.match(html, /id="campusUniversityRequestForm"/);
-assert.match(html, /selection is locked/i);
+assert.match(html, /locked after joining/i);
 assert.match(multiUniversityMigration, /private\.current_campus_university_id\(\)/i);
 assert.match(multiUniversityMigration, /create policy community_posts_read_same_campus/i);
 assert.match(multiUniversityMigration, /create policy incidents_read_own_or_same_campus_staff/i);
