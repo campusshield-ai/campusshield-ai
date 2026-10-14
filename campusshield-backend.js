@@ -448,6 +448,49 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    async listCampusEvents() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.from("campus_events")
+        .select("id,university_id,title,description,category,starts_at,ends_at,location,status,organizer_username,created_at")
+        .eq("status", "published").order("starts_at", { ascending: true }).limit(100);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async createCampusEvent(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      const campus = await this.getMyCampusContext();
+      if (!user || !campus?.university_id) throw new Error("Sign in and choose your university first.");
+      const { data, error } = await client.from("campus_events").insert({
+        university_id: campus.university_id, created_by: user.id, title: input.title,
+        description: input.description || null, category: input.category,
+        starts_at: input.startsAt, ends_at: input.endsAt || null,
+        location: input.location || null, status: "pending"
+      }).select("id").single();
+      if (error) throw error;
+      return data.id;
+    },
+
+    async listMyCampusEventRsvps() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.from("campus_event_rsvps")
+        .select("event_id,response").order("updated_at", { ascending: false }).limit(300);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async setCampusEventRsvp(eventId, response) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in to RSVP.");
+      const { error } = await client.from("campus_event_rsvps").upsert({
+        event_id: eventId, user_id: user.id, response: response || "going",
+        updated_at: new Date().toISOString()
+      }, { onConflict: "event_id,user_id" });
+      if (error) throw error;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
