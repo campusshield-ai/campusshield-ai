@@ -268,8 +268,9 @@ begin
 end;
 $function$;
 
-create or replace function public.get_community_post_social(p_post_ids uuid[])
-returns table(post_id uuid,reaction_count bigint,user_reaction text,is_bookmarked boolean)
+drop function if exists public.get_community_post_social(uuid[]);
+create function public.get_community_post_social(p_post_ids uuid[])
+returns table(post_id uuid,reaction_count bigint,user_reaction text,is_bookmarked boolean,following_author boolean)
 language plpgsql stable security definer set search_path to ''
 as $function$
 declare
@@ -282,7 +283,8 @@ begin
     select p.id,
       (select count(*) from public.community_post_reactions r where r.post_id=p.id),
       (select r.reaction_type from public.community_post_reactions r where r.post_id=p.id and r.user_id=v_user_id),
-      exists(select 1 from public.community_post_bookmarks b where b.post_id=p.id and b.user_id=v_user_id)
+      exists(select 1 from public.community_post_bookmarks b where b.post_id=p.id and b.user_id=v_user_id),
+      exists(select 1 from public.campus_follows f where f.follower_id=v_user_id and f.followed_id=p.author_id and f.university_id=v_university_id)
     from public.community_posts p
     where p.id=any(coalesce(p_post_ids,array[]::uuid[]))
       and p.university_id=v_university_id and p.status='published';
@@ -369,6 +371,32 @@ begin
 end;
 $function$;
 
+create or replace function public.toggle_campus_follow_post_author(p_post_id uuid,p_follow boolean)
+returns boolean language plpgsql security definer set search_path to ''
+as $function$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_university_id uuid := (select private.current_campus_university_id());
+  v_author_id uuid;
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before following.'; end if;
+  select p.author_id into v_author_id from public.community_posts p
+    where p.id=p_post_id and p.university_id=v_university_id and p.status='published';
+  if not found then raise exception 'This post is not available in your university community.'; end if;
+  if v_author_id=v_user_id then raise exception 'You cannot follow your own profile.'; end if;
+  if p_follow then
+    insert into public.campus_follows(follower_id,followed_id,university_id)
+    values(v_user_id,v_author_id,v_university_id)
+    on conflict(follower_id,followed_id) do nothing;
+    return true;
+  else
+    delete from public.campus_follows
+    where follower_id=v_user_id and followed_id=v_author_id and university_id=v_university_id;
+    return false;
+  end if;
+end;
+$function$;
+
 revoke all on function public.create_campus_social_post(text,text,text,text) from public,anon;
 revoke all on function public.create_community_poll(text,text,text,text,text,text,text) from public,anon;
 revoke all on function public.create_community_reply(uuid,uuid,text) from public,anon;
@@ -379,6 +407,7 @@ revoke all on function public.get_community_poll_data(uuid) from public,anon;
 revoke all on function public.vote_community_poll(uuid,uuid) from public,anon;
 revoke all on function public.repost_community_post(uuid) from public,anon;
 revoke all on function public.toggle_campus_follow(uuid,boolean) from public,anon;
+revoke all on function public.toggle_campus_follow_post_author(uuid,boolean) from public,anon;
 grant execute on function public.create_campus_social_post(text,text,text,text) to authenticated;
 grant execute on function public.create_community_poll(text,text,text,text,text,text,text) to authenticated;
 grant execute on function public.create_community_reply(uuid,uuid,text) to authenticated;
@@ -389,5 +418,6 @@ grant execute on function public.get_community_poll_data(uuid) to authenticated;
 grant execute on function public.vote_community_poll(uuid,uuid) to authenticated;
 grant execute on function public.repost_community_post(uuid) to authenticated;
 grant execute on function public.toggle_campus_follow(uuid,boolean) to authenticated;
+grant execute on function public.toggle_campus_follow_post_author(uuid,boolean) to authenticated;
 
 commit;
