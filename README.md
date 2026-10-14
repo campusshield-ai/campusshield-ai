@@ -1,14 +1,14 @@
 # CampusShield AI 🛡️
 
-### Intelligent Campus Safety & Emergency Response System
+### Campus Safety Incident Reporting Prototype
 
-**CampusShield AI** is a technology-driven campus safety project designed to help universities improve incident reporting, visualize safety risks, and support faster emergency response.
+**CampusShield AI** is a campus safety prototype for submitting and reviewing incident reports. It does not provide emergency dispatch or response services.
 
 🌐 **Live Website:** https://campusshield-ai.github.io/campusshield-ai/
 
 ## 🚀 Project Overview
 
-CampusShield AI aims to make campus environments safer by combining interactive mapping, incident monitoring, risk visualization, and data analytics in one platform.
+CampusShield AI helps campus communities record safety concerns and review incident information available to their signed-in accounts.
 
 The project is being developed with Nigerian university campuses in mind.
 
@@ -33,7 +33,8 @@ To develop accessible technology that helps universities identify safety concern
 - HTML
 - CSS
 - JavaScript
-- Interactive mapping and data visualization technologies
+- Supabase Auth and PostgreSQL
+- GitHub Pages hosting
 
 ## 🧪 Development Status
 
