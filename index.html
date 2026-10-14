@@ -538,7 +538,7 @@ td strong{color:#2a464d;font-size:11px}
       <form id="campusGroupForm">
         <div class="field"><label for="campus-group-name">Group name *</label><input id="campus-group-name" required minlength="3" maxlength="100" placeholder="e.g. Computer Science 300 Level"></div>
         <div class="field"><label for="campus-group-type">Group type *</label><select id="campus-group-type" required><option value="course">Course / level</option><option value="department">Department</option><option value="faculty">Faculty / school</option><option value="society">Student society</option><option value="study_group">Study group</option><option value="interest">Shared interest</option></select></div>
-        <div class="field"><label for="campus-group-privacy">Privacy *</label><select id="campus-group-privacy"><option value="campus">Visible to my university</option><option value="request_to_join">Request to join</option></select></div>
+        <div class="field"><label for="campus-group-privacy">Visibility *</label><select id="campus-group-privacy"><option value="campus">Visible to members of my university</option></select><p class="muted">Groups stay inside your selected university. Restricted join requests will be added after the initial pilot.</p></div>
         <div class="field"><label for="campus-group-description">Description *</label><textarea id="campus-group-description" required minlength="10" maxlength="1000" placeholder="What is this group for?"></textarea></div>
         <button class="btn" id="campus-group-submit" type="submit">Submit group for review</button>
         <p id="campus-group-message" class="message" role="status" aria-live="polite"></p>
