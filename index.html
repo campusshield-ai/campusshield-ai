@@ -446,8 +446,8 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 <section class="page" id="page-community">
-<div class="heading"><h1>Campus community</h1><p>Share public-safe campus issues and suggestions, discuss approved posts, and see verified staff announcements.</p></div>
-<div class="notice-inline"><strong>Protect your privacy.</strong> Community posts are separate from private incident reports and require review before other students can see them. Do not post real names, email addresses, room numbers, medical details, harassment allegations, threats, evidence, or other identifying information. Use <button type="button" class="btn secondary" data-page="report">private incident reporting</button> for sensitive concerns.</div>
+<div class="heading"><h1>Campus community</h1><p>Your university-only social space for updates, questions, polls, lost-and-found posts and safety suggestions.</p></div>
+<div class="notice-inline"><strong>One university, one private community.</strong> Your posts, comments, follows, groups, events and marketplace activity are limited to the university you selected. There is no cross-university student interaction. Student posts are reviewed before publication. Do not post real names, email addresses, room numbers, medical details, harassment allegations, threats, evidence, or other identifying information. Use <button type="button" class="btn secondary" data-page="report">private incident reporting</button> for sensitive concerns.</div>
 <section class="panel" id="campus-onboarding" aria-labelledby="campus-onboarding-title" hidden>
   <div class="panel-heading"><div><h2 id="campus-onboarding-title">Choose your university</h2><p>This sets your private campus space.</p></div></div>
   <p class="muted">Posts, comments, student groups, events, marketplace listings and safety reports are restricted to one university. You cannot follow, message, comment on, or join groups with users from another university. Your selection is locked; contact support to request a transfer.</p>
@@ -486,10 +486,26 @@ td strong{color:#2a464d;font-size:11px}
   <section class="panel" aria-labelledby="community-post-title">
     <div class="panel-heading"><div><h2 id="community-post-title">Share with campus</h2><p>Student posts are reviewed before publication.</p></div></div>
     <form id="communityPostForm">
-      <div class="field"><label for="community-post-type">Post type</label><select id="community-post-type"><option value="safety_issue">Campus safety issue</option><option value="suggestion">Safety improvement suggestion</option><option id="community-announcement-option" value="announcement" disabled>Official staff announcement</option></select></div>
+      <div class="field"><label for="community-post-type">Post type</label><select id="community-post-type">
+  <option value="campus_update">Campus update</option>
+  <option value="question">Question for students</option>
+  <option value="poll">Poll</option>
+  <option value="lost_found">Lost and found</option>
+  <option value="safety_issue">Campus safety issue</option>
+  <option value="suggestion">Safety improvement suggestion</option>
+  <option id="community-announcement-option" value="announcement" disabled>Official staff announcement</option>
+</select></div>
       <div class="field"><label for="community-post-title-input">Title *</label><input id="community-post-title-input" required minlength="3" maxlength="100" placeholder="e.g. Broken light near the library"></div>
       <div class="field"><label for="community-post-location">General location <span class="muted">(optional)</span></label><input id="community-post-location" maxlength="120" placeholder="e.g. Main library entrance; no room numbers"></div>
-      <div class="field"><label for="community-post-body">Description *</label><textarea id="community-post-body" required minlength="10" maxlength="2000" placeholder="Describe the issue or suggestion without naming or identifying anyone."></textarea></div>
+      <div class="field"><label for="community-post-body">Description *</label><textarea id="community-post-body" required minlength="10" maxlength="2000" placeholder="Share helpful context without identifying another person."></textarea></div>
+      <div class="panel" id="community-poll-options" hidden>
+        <h3>Poll answers</h3>
+        <p class="muted">Add two to four unique answers. Polls stay pending until a campus moderator publishes them.</p>
+        <div class="field"><label for="community-poll-option-1">Answer 1 *</label><input id="community-poll-option-1" maxlength="160"></div>
+        <div class="field"><label for="community-poll-option-2">Answer 2 *</label><input id="community-poll-option-2" maxlength="160"></div>
+        <div class="field"><label for="community-poll-option-3">Answer 3 (optional)</label><input id="community-poll-option-3" maxlength="160"></div>
+        <div class="field"><label for="community-poll-option-4">Answer 4 (optional)</label><input id="community-poll-option-4" maxlength="160"></div>
+      </div>
       <div class="actions"><button class="btn" type="submit" id="community-post-submit">Submit for review</button></div>
       <p id="community-post-message" class="message" role="status" aria-live="polite">Official announcements are reserved for verified staff.</p>
     </form>
