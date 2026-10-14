@@ -182,9 +182,9 @@ assert.match(html, /id="community-post-media"/);
 assert.match(backend, /uploadCommunityPostMedia/);
 assert.match(backend, /createSignedUrl/);
 assert.match(privateCampusMediaMigration, /create policy campus_media_read_same_campus/i);
-assert.match(verifiedCampusAdminMigration, /cm\\.verification_status='verified'/i);
+assert.match(verifiedCampusAdminMigration, /cm\.verification_status='verified'/i);
 assert.match(verifiedCampusAdminMigration, /Choose staff whose account and membership are verified/i);
-assert.match(verifiedCampusAdminMigration, /grant execute on function public\\.platform_assign_campus_admin\\(uuid,uuid\\) to authenticated/i);
+assert.match(verifiedCampusAdminMigration, /grant execute on function public\.platform_assign_campus_admin\(uuid,uuid\) to authenticated/i);
 
 
 
