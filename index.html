@@ -267,6 +267,11 @@ th{color:var(--muted);background:#f8fafd}
 
   let currentProfile = null;
 
+  function canManageIncidents() {
+    return currentProfile?.verification_status === 'verified' &&
+      ['security', 'admin'].includes(currentProfile.role);
+  }
+
   function showWorkspace(profile) {
     if (!profile) {
       currentProfile = null;
@@ -399,7 +404,9 @@ th{color:var(--muted);background:#f8fafd}
         <td>${tagSeverity(i.severity)}</td>
         <td>${tagStatus(i.status)}</td>
         <td>${esc(dateText(i.createdAt))}</td>
-        <td><button class="btn secondary" data-resolve="${esc(i.id)}">Resolve</button></td>
+        <td>${canManageIncidents() && i.status !== 'Resolved'
+          ? `<button class="btn secondary" data-resolve="${esc(i.id)}">Resolve</button>`
+          : '<span class="muted">—</span>'}</td>
       </tr>`
     ).join('') || '<tr><td colspan="6">No matching incidents.</td></tr>';
   }
@@ -409,6 +416,12 @@ th{color:var(--muted);background:#f8fafd}
   $('incidentTable').addEventListener('click', async e => {
     const b = e.target.closest('[data-resolve]');
     if (!b) return;
+
+    if (!canManageIncidents()) {
+      toast('Only verified security staff or administrators can update incidents.');
+      renderTable();
+      return;
+    }
 
     try {
       const backend = window.CampusShieldBackend;
