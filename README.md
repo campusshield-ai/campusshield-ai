@@ -93,8 +93,9 @@ The additive migrations must be tested in a separate/staging Supabase project be
 - `20261015050000_marketplace_reporting.sql` — campus-only scam/listing reports
 - `20261015060000_social_directory_helpers.sql` — private listing-ownership status helper
 - `20261015070000_campus_role_scoping.sql` — campus-specific staff roles and a trusted platform-admin assignment function
+- `20261015080000_harden_campus_rpc_permissions.sql` — restricts privileged campus RPC execution to authenticated users
 
-Do not merge or deploy this branch until SQL syntax, RLS boundaries, role bootstrap, rollback behavior and the Node smoke-check suite have been verified. The full NUC directory, automatic review of new-university requests, a self-service platform-admin screen for assigning each campus administrator, private photo/video upload UI, and a two-university end-to-end test are still outstanding. For the pilot, the trusted platform administrator assignment function requires careful manual use for the initial staff verification process.
+The GitHub Actions source smoke-check workflow is now passing, but it does not apply or execute SQL against PostgreSQL. Do not merge or deploy this branch until SQL syntax, RLS boundaries, role bootstrap, rollback behavior and two-university auth/RLS isolation have been verified in a separate staging Supabase branch. The full NUC directory, automatic review of new-university requests, a self-service platform-admin screen for assigning each campus administrator, private photo/video upload UI, and a two-university end-to-end test are still outstanding. For the pilot, the trusted platform administrator assignment function requires careful manual use for the initial staff verification process.
 
 ## 🔮 Future Plans
 
