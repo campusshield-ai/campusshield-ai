@@ -1255,9 +1255,14 @@ td strong{color:#2a464d;font-size:11px}
 
   function communityPostTypeLabel(type) {
     return ({
+      campus_update: 'Campus update',
+      question: 'Student question',
+      poll: 'Campus poll',
+      lost_found: 'Lost and found',
       safety_issue: 'Campus safety issue',
       suggestion: 'Safety improvement suggestion',
-      announcement: 'Official staff announcement'
+      announcement: 'Official staff announcement',
+      marketplace_share: 'Marketplace listing'
     })[type] || 'Campus update';
   }
 
@@ -1303,8 +1308,19 @@ td strong{color:#2a464d;font-size:11px}
       $('community-announcement-option').disabled = !canModerateCommunity();
 
       const posts = await backend.listCommunityPosts();
-      const comments = await backend.listCommunityComments(posts.map(function(post) { return post.id; }));
-      renderCommunityFeed(posts, comments);
+      const postIds = posts.map(function(post) { return post.id; });
+      const [comments, socialRows] = await Promise.all([
+        backend.listCommunityComments(postIds),
+        backend.getCommunityPostSocial(postIds)
+      ]);
+      const pollsByPost = {};
+      const pollPosts = posts.filter(function(post) { return post.post_type === 'poll'; }).slice(0, 20);
+      const pollResults = await Promise.all(pollPosts.map(async function(post) {
+        try { return [post.id, await backend.getCommunityPollData(post.id)]; }
+        catch (err) { console.warn('Could not load poll results:', err.message); return [post.id, []]; }
+      }));
+      pollResults.forEach(function(entry) { pollsByPost[entry[0]] = entry[1]; });
+      renderCommunityFeed(posts, comments, socialRows, pollsByPost);
       $('community-feed-status').textContent = posts.length + (posts.length === 1 ? ' published post' : ' published posts') + ' · refreshed ' + new Date().toLocaleTimeString();
 
       $('community-moderation').hidden = !canModerateCommunity();
@@ -1319,29 +1335,72 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
-  function renderCommunityFeed(posts, comments) {
+  function renderCommunityFeed(posts, comments, socialRows, pollsByPost) {
     const list = Array.isArray(posts) ? posts : [];
     const commentList = Array.isArray(comments) ? comments : [];
+    const socialByPost = Object.create(null);
+    (Array.isArray(socialRows) ? socialRows : []).forEach(function(row) {
+      socialByPost[row.post_id] = row;
+    });
+    const pollMap = pollsByPost || Object.create(null);
     if (!list.length) {
-      $('community-feed').innerHTML = '<div class="community-empty"><strong>No published campus updates yet.</strong><p>Share a public-safe safety issue or suggestion. A moderator will review student posts before publication.</p></div>';
+      $('community-feed').innerHTML = '<div class="community-empty"><strong>No published campus updates yet.</strong><p>Start a campus update, ask a question, create a poll or share a safety suggestion. Student posts appear after review.</p></div>';
       return;
     }
 
-    const commentsByPost = {};
+    const commentsByPost = Object.create(null);
     commentList.forEach(function(comment) {
       if (!commentsByPost[comment.post_id]) commentsByPost[comment.post_id] = [];
       commentsByPost[comment.post_id].push(comment);
     });
 
+    function renderComment(comment, postId, childrenByParent, depth) {
+      const replyButton = depth < 3
+        ? '<button type="button" class="btn secondary" data-community-reply="' + esc(comment.id) + '" data-post-id="' + esc(postId) + '">Reply</button>'
+        : '';
+      const nested = (childrenByParent[comment.id] || []).map(function(child) {
+        return renderComment(child, postId, childrenByParent, depth + 1);
+      }).join('');
+      return '<article class="community-comment" style="margin-left:' + Math.min(depth, 3) * 14 + 'px">' +
+        '<div class="community-comment-header"><div class="community-meta"><strong class="community-handle">@' + esc(comment.author_username) + '</strong><span>·</span><time>' + esc(dateText(comment.created_at)) + '</time></div>' +
+        '<div class="actions">' + replyButton +
+        '<button type="button" class="btn secondary" data-report-community-type="comment" data-report-community-id="' + esc(comment.id) + '">Report</button></div></div>' +
+        '<p>' + esc(comment.body) + '</p>' + nested +
+        '</article>';
+    }
+
     $('community-feed').innerHTML = list.map(function(post) {
       const postComments = commentsByPost[post.id] || [];
-      const commentsHtml = postComments.map(function(comment) {
-        return '<article class="community-comment">' +
-          '<div class="community-comment-header"><div class="community-meta"><strong class="community-handle">@' + esc(comment.author_username) + '</strong><span>·</span><time>' + esc(dateText(comment.created_at)) + '</time></div>' +
-          '<button type="button" class="btn secondary" data-report-community-type="comment" data-report-community-id="' + esc(comment.id) + '">Report</button></div>' +
-          '<p>' + esc(comment.body) + '</p>' +
-          '</article>';
+      const childrenByParent = Object.create(null);
+      postComments.forEach(function(comment) {
+        if (comment.parent_comment_id) {
+          if (!childrenByParent[comment.parent_comment_id]) childrenByParent[comment.parent_comment_id] = [];
+          childrenByParent[comment.parent_comment_id].push(comment);
+        }
+      });
+      const commentsHtml = postComments.filter(function(comment) {
+        return !comment.parent_comment_id;
+      }).map(function(comment) {
+        return renderComment(comment, post.id, childrenByParent, 0);
       }).join('');
+      const social = socialByPost[post.id] || {};
+      const reactionCount = Number(social.reaction_count || 0);
+      const reacted = Boolean(social.user_reaction);
+      const bookmarked = Boolean(social.is_bookmarked);
+      const followingAuthor = Boolean(social.following_author);
+      const pollOptions = pollMap[post.id] || [];
+      const pollHtml = post.post_type === 'poll'
+        ? '<section class="community-poll"><strong>Vote in this poll</strong>' +
+          (pollOptions.length ? pollOptions.map(function(option) {
+            return '<label class="community-poll-option"><input type="radio" name="poll-' + esc(post.id) + '" value="' + esc(option.option_id) + '"' + (option.my_vote ? ' checked' : '') + '> ' +
+              esc(option.option_text) + ' <span class="muted">(' + Number(option.vote_count || 0) + ' votes)</span></label>';
+          }).join('') : '<p class="muted">Poll choices are unavailable right now.</p>') +
+          (pollOptions.length ? '<button type="button" class="btn secondary" data-community-poll-vote="' + esc(post.id) + '">Submit vote</button>' : '') +
+          '</section>'
+        : '';
+      const followButton = !social.is_my_post
+        ? '<button type="button" class="btn secondary" data-community-follow="' + esc(post.id) + '" data-follow-state="' + (followingAuthor ? 'following' : 'not_following') + '">' + (followingAuthor ? 'Following author' : 'Follow author') + '</button>'
+        : '';
 
       return '<article class="community-post" id="community-post-' + esc(post.id) + '">' +
         '<div class="community-post-header"><div class="community-meta">' +
@@ -1351,11 +1410,17 @@ td strong{color:#2a464d;font-size:11px}
         '<h3 class="community-post-title">' + esc(post.title) + '</h3>' +
         '<p class="community-post-body">' + esc(post.body) + '</p>' +
         (post.location ? '<p class="community-meta"><span aria-hidden="true">⌖</span> ' + esc(post.location) + '</p>' : '') +
+        pollHtml +
+        '<div class="community-post-actions">' +
+        '<button type="button" class="btn secondary" data-community-reaction="' + esc(post.id) + '" aria-pressed="' + String(reacted) + '">' + (reacted ? 'Liked' : 'Like') + ' (' + reactionCount + ')</button>' +
+        '<button type="button" class="btn secondary" data-community-bookmark="' + esc(post.id) + '" aria-pressed="' + String(bookmarked) + '">' + (bookmarked ? 'Saved' : 'Bookmark') + '</button>' +
+        '<button type="button" class="btn secondary" data-community-repost="' + esc(post.id) + '">Repost</button>' +
+        followButton + '</div>' +
         '<div class="community-comments"><div class="community-meta"><strong>' + postComments.length + (postComments.length === 1 ? ' comment' : ' comments') + '</strong></div>' +
         commentsHtml +
         '<form class="community-comment-form" data-community-comment-form data-post-id="' + esc(post.id) + '">' +
         '<label class="sr-only" for="comment-' + esc(post.id) + '">Write a comment</label>' +
-        '<textarea id="comment-' + esc(post.id) + '" name="comment" maxlength="800" required placeholder="Write a helpful, respectful reply…"></textarea>' +
+        '<textarea id="comment-' + esc(post.id) + '" name="comment" maxlength="800" required placeholder="Write a helpful, respectful comment…"></textarea>' +
         '<button type="submit" class="btn">Comment</button>' +
         '</form></div></article>';
     }).join('');
