@@ -394,6 +394,9 @@ td strong{color:#2a464d;font-size:11px}
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
 <button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus community</button>
+<button data-page="groups"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span>Groups</button>
+<button data-page="events"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>Events</button>
+<button data-page="marketplace"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16l-1.5-5h-13L4 8ZM5 8v13h14V8M9 21v-7h6v7M3 8a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg></span>Marketplace</button>
 <button data-page="manage"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button>
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
@@ -524,6 +527,86 @@ td strong{color:#2a464d;font-size:11px}
   <p id="community-feed-status" class="message" role="status" aria-live="polite">Loading campus community…</p>
   <div id="community-feed"><div class="community-empty">Loading campus updates…</div></div>
 </section>
+</section>
+
+<section class="page" id="page-groups">
+  <div class="heading"><h1>Campus groups</h1><p>Find study circles, departments, societies and interest groups inside your university only.</p></div>
+  <div class="notice-inline"><strong>Campus-only groups.</strong> A group can only contain members of your selected university. New groups are checked by campus staff before becoming visible.</div>
+  <div class="community-layout">
+    <section class="panel" aria-labelledby="campus-groups-create-title">
+      <div class="panel-heading"><div><h2 id="campus-groups-create-title">Create a group</h2><p>Build a space for study, courses or shared interests.</p></div></div>
+      <form id="campusGroupForm">
+        <div class="field"><label for="campus-group-name">Group name *</label><input id="campus-group-name" required minlength="3" maxlength="100" placeholder="e.g. Computer Science 300 Level"></div>
+        <div class="field"><label for="campus-group-type">Group type *</label><select id="campus-group-type" required><option value="course">Course / level</option><option value="department">Department</option><option value="faculty">Faculty / school</option><option value="society">Student society</option><option value="study_group">Study group</option><option value="interest">Shared interest</option></select></div>
+        <div class="field"><label for="campus-group-privacy">Privacy *</label><select id="campus-group-privacy"><option value="campus">Visible to my university</option><option value="request_to_join">Request to join</option></select></div>
+        <div class="field"><label for="campus-group-description">Description *</label><textarea id="campus-group-description" required minlength="10" maxlength="1000" placeholder="What is this group for?"></textarea></div>
+        <button class="btn" id="campus-group-submit" type="submit">Submit group for review</button>
+        <p id="campus-group-message" class="message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="campus-groups-list-title">
+      <div class="panel-heading"><div><h2 id="campus-groups-list-title">Discover campus groups</h2><p class="muted">Approved groups at your university.</p></div><button class="btn secondary" type="button" id="refresh-campus-groups">Refresh</button></div>
+      <p id="campus-groups-status" class="message" role="status" aria-live="polite">Loading groups…</p>
+      <div id="campus-groups-feed"><div class="community-empty">Loading groups…</div></div>
+    </section>
+  </div>
+  <section class="panel" id="campus-content-moderation" hidden aria-labelledby="campus-content-moderation-title">
+    <div class="panel-heading"><div><h2 id="campus-content-moderation-title">Campus content moderation</h2><p>Review groups, events and marketplace listings for your university.</p></div><button type="button" class="btn secondary" id="refresh-campus-content-moderation">Refresh queue</button></div>
+    <h3>Groups awaiting review</h3><div id="moderation-groups-feed"><div class="community-empty">Loading queue…</div></div>
+    <h3>Events awaiting review</h3><div id="moderation-events-feed"><div class="community-empty">Loading queue…</div></div>
+    <h3>Marketplace listings awaiting review</h3><div id="moderation-listings-feed"><div class="community-empty">Loading queue…</div></div>
+    <h3>Marketplace safety reports</h3><div id="moderation-listing-reports-feed"><div class="community-empty">Loading queue…</div></div>
+    <p id="campus-content-moderation-message" class="message" role="status" aria-live="polite"></p>
+  </section>
+</section>
+
+<section class="page" id="page-events">
+  <div class="heading"><h1>Campus events</h1><p>Find campus activities, seminars, sports, society meetings and career events at your university.</p></div>
+  <div class="notice-inline"><strong>University-only events.</strong> New student-submitted events need campus staff approval. Check event details independently before attending.</div>
+  <div class="community-layout">
+    <section class="panel" aria-labelledby="campus-events-create-title">
+      <div class="panel-heading"><div><h2 id="campus-events-create-title">Submit an event</h2><p>Events are reviewed before appearing publicly.</p></div></div>
+      <form id="campusEventForm">
+        <div class="field"><label for="campus-event-title">Event title *</label><input id="campus-event-title" required minlength="3" maxlength="120" placeholder="e.g. Faculty tech seminar"></div>
+        <div class="field"><label for="campus-event-category">Category *</label><select id="campus-event-category" required><option value="academic">Academic / seminar</option><option value="sports">Sports</option><option value="society">Student society</option><option value="career">Career / hackathon</option><option value="faith">Faith / fellowship</option><option value="social">Social</option><option value="safety">Campus safety</option><option value="other">Other</option></select></div>
+        <div class="field"><label for="campus-event-start">Start date and time *</label><input id="campus-event-start" required type="datetime-local"></div>
+        <div class="field"><label for="campus-event-end">End date and time (optional)</label><input id="campus-event-end" type="datetime-local"></div>
+        <div class="field"><label for="campus-event-location">General location *</label><input id="campus-event-location" required maxlength="180" placeholder="e.g. Main auditorium"></div>
+        <div class="field"><label for="campus-event-description">Description *</label><textarea id="campus-event-description" required minlength="10" maxlength="2000" placeholder="Provide organizer and registration details. Avoid posting private student information."></textarea></div>
+        <button class="btn" id="campus-event-submit" type="submit">Submit event for review</button>
+        <p id="campus-event-message" class="message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="campus-events-list-title">
+      <div class="panel-heading"><div><h2 id="campus-events-list-title">Upcoming campus events</h2><p class="muted">Only approved events from your university.</p></div><button class="btn secondary" type="button" id="refresh-campus-events">Refresh</button></div>
+      <p id="campus-events-status" class="message" role="status" aria-live="polite">Loading events…</p>
+      <div id="campus-events-feed"><div class="community-empty">Loading events…</div></div>
+    </section>
+  </div>
+</section>
+
+<section class="page" id="page-marketplace">
+  <div class="heading"><h1>Campus marketplace</h1><p>Discover textbooks, electronics, accommodation and student services within your university.</p></div>
+  <div class="notice-inline"><strong>Stay safe.</strong> Listings are campus-only and reviewed before appearing. CampusShield does not take payments or provide escrow. Meet safely, verify the item, do not share passwords or verification codes, and report suspicious listings. Never send money based only on a listing.</div>
+  <div class="community-layout">
+    <section class="panel" aria-labelledby="campus-marketplace-create-title">
+      <div class="panel-heading"><div><h2 id="campus-marketplace-create-title">List an item or service</h2><p>Use a safe contact method; don't publish home addresses or personal identification.</p></div></div>
+      <form id="campusMarketplaceForm">
+        <div class="field"><label for="campus-listing-category">Category *</label><select id="campus-listing-category" required><option value="books">Textbooks / study materials</option><option value="electronics">Electronics</option><option value="accommodation">Accommodation</option><option value="services">Student services</option><option value="clothing">Clothing</option><option value="furniture">Furniture</option><option value="other">Other</option></select></div>
+        <div class="field"><label for="campus-listing-title">Title *</label><input id="campus-listing-title" required minlength="3" maxlength="120" placeholder="e.g. Used Calculus textbook"></div>
+        <div class="field"><label for="campus-listing-price">Price in naira (optional)</label><input id="campus-listing-price" type="number" min="0" step="0.01" placeholder="e.g. 8500"></div>
+        <div class="field"><label for="campus-listing-description">Description *</label><textarea id="campus-listing-description" required minlength="10" maxlength="1800" placeholder="Condition, availability, important details"></textarea></div>
+        <div class="field"><label for="campus-listing-contact">Contact instructions (optional)</label><input id="campus-listing-contact" maxlength="250" placeholder="e.g. Contact me through the campus community"></div>
+        <button class="btn" id="campus-listing-submit" type="submit">Submit listing for review</button>
+        <p id="campus-listing-message" class="message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="campus-marketplace-list-title">
+      <div class="panel-heading"><div><h2 id="campus-marketplace-list-title">Campus listings</h2><p class="muted">Listings from your university only.</p></div><button class="btn secondary" type="button" id="refresh-campus-marketplace">Refresh</button></div>
+      <p id="campus-marketplace-status" class="message" role="status" aria-live="polite">Loading listings…</p>
+      <div id="campus-marketplace-feed"><div class="community-empty">Loading listings…</div></div>
+    </section>
+  </div>
 </section>
 
 <section class="page" id="page-manage">
