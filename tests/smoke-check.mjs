@@ -8,6 +8,7 @@ const usernameSyncMigration = await readFile(new URL("../supabase/migrations/202
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
 const usernameLookupRemovalMigration = await readFile(new URL("../supabase/migrations/20261014235000_remove_username_availability_rpc.sql", import.meta.url), "utf8");
 const staffProfileMigration = await readFile(new URL("../supabase/migrations/20261014240000_allow_verified_teachers_to_read_profiles.sql", import.meta.url), "utf8");
+const multiUniversityMigration = await readFile(new URL("../supabase/migrations/20261015000000_multi_university_foundation.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -73,6 +74,22 @@ assert.match(usernameSyncMigration, /update public\.community_posts/i);
 assert.match(usernameSyncMigration, /update public\.community_comments/i);
 assert.match(usernameLookupRemovalMigration, /drop function if exists public\.check_community_username_available\(text\)/i);
 assert.match(staffProfileMigration, /private\.current_campus_role\(\) = any \(array\[\x27admin\x27, \x27security\x27, \x27teacher\x27\]\)/i);
+assert.match(backend, /listCampusUniversities/);
+assert.match(backend, /get_my_campus_context/);
+assert.match(backend, /set_my_campus_membership/);
+assert.match(backend, /university_id: campus\.university_id/);
+assert.match(html, /id="campusOnboardingForm"/);
+assert.match(html, /id="campusUniversityRequestForm"/);
+assert.match(html, /selection is locked/i);
+assert.match(multiUniversityMigration, /private\.current_campus_university_id\(\)/i);
+assert.match(multiUniversityMigration, /create policy community_posts_read_same_campus/i);
+assert.match(multiUniversityMigration, /create policy incidents_read_own_or_same_campus_staff/i);
+assert.match(multiUniversityMigration, /create or replace function public\.set_my_campus_membership/i);
+assert.match(multiUniversityMigration, /Your university is locked to protect campus privacy/i);
+assert.match(multiUniversityMigration, /create table if not exists public\.campus_groups/i);
+assert.match(multiUniversityMigration, /create table if not exists public\.campus_events/i);
+assert.match(multiUniversityMigration, /create table if not exists public\.campus_marketplace_listings/i);
+
 assert.match(html, /does not contact emergency services/i, "the emergency-services prototype warning remains visible");
 
 assert.equal(manifest.name, "CampusShield AI");
