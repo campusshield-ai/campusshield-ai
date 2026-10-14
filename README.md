@@ -78,6 +78,14 @@ The campus community is intentionally separate from private incident reporting. 
 
 The additive database migrations, applied in order to the connected CampusShield Supabase project, are `supabase/migrations/20261014230000_add_community_privacy_feed.sql`, `supabase/migrations/20261014233000_sync_community_username_snapshots.sql`, `supabase/migrations/20261014234000_restrict_username_availability.sql`, `supabase/migrations/20261014235000_remove_username_availability_rpc.sql`, and `supabase/migrations/20261014240000_allow_verified_teachers_to_read_profiles.sql`. Apply all five in order when setting up another environment before deploying the updated frontend/backend files.
 
+## 🏫 Multi-university foundation
+
+CampusShield is being designed as separate university spaces on one platform. A signed-in account has one campus membership at a time, and a database-enforced university ID scopes community posts, comments, moderation queues, events, groups, marketplace listings, and incident records. Campus selection is locked after joining; transfers need support review. The public university directory starts with a curated set of NUC-listed institutions and supports requests for missing universities. **Do not describe the nationwide directory as complete until the full current NUC list is imported and reviewed.**
+
+The social experience is intended to include campus posts, questions, polls, course and department groups, campus events, a university-only marketplace, and public-safe safety suggestions. Cross-university follows, messaging, comments, groups, marketplace access, and other student-to-student interactions are deliberately disabled. The initial feature branch establishes the membership and access-control foundation; the remaining social controls need frontend workflows and tests before they can be called complete.
+
+The new additive migrations are `supabase/migrations/20261015000000_multi_university_foundation.sql` and, when present, later campus-social migrations. Apply the existing migrations in chronological order in a test environment, then verify that two test accounts assigned to different universities cannot read, comment on, report, moderate, or otherwise interact with one another's campus content.
+
 ## 🔮 Future Plans
 
 - Interactive campus map
