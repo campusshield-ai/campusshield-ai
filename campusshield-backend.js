@@ -491,6 +491,38 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    async listCampusMarketplaceListings() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.from("campus_marketplace_listings")
+        .select("id,university_id,category,title,description,price_ngn,contact_instructions,status,seller_username,created_at,updated_at")
+        .in("status", ["published", "sold"]).order("created_at", { ascending: false }).limit(100);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async createCampusMarketplaceListing(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      const campus = await this.getMyCampusContext();
+      if (!user || !campus?.university_id) throw new Error("Sign in and choose your university first.");
+      const price = input.priceNgn === "" || input.priceNgn == null ? null : Number(input.priceNgn);
+      if (price !== null && (!Number.isFinite(price) || price < 0)) throw new Error("Enter a valid price in naira.");
+      const { data, error } = await client.from("campus_marketplace_listings").insert({
+        university_id: campus.university_id, seller_id: user.id, category: input.category,
+        title: input.title, description: input.description, price_ngn: price,
+        contact_instructions: input.contactInstructions || null, status: "pending"
+      }).select("id").single();
+      if (error) throw error;
+      return data.id;
+    },
+
+    async markCampusListingSold(listingId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.from("campus_marketplace_listings")
+        .update({ status: "sold", updated_at: new Date().toISOString() }).eq("id", listingId);
+      if (error) throw error;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
