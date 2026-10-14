@@ -680,6 +680,8 @@ td strong{color:#2a464d;font-size:11px}
   }
 
   let currentProfile = null;
+  let communityProfile = null;
+  let communityLoading = false;
 
   function canManageIncidents() {
     return currentProfile?.verification_status === 'verified' &&
@@ -726,6 +728,7 @@ td strong{color:#2a464d;font-size:11px}
     const isSignUp = authMode === 'signup';
     $('signup-fields').hidden = !isSignUp;
     $('auth-role').required = isSignUp;
+    $('auth-username').required = isSignUp;
     $('resend-field').hidden = isSignUp;
     $('auth-title').textContent = isSignUp ? 'Create your account' : 'Welcome back';
     $('auth-subtitle').textContent = isSignUp
@@ -1123,9 +1126,6 @@ td strong{color:#2a464d;font-size:11px}
       });
     }
   });
-
-  let communityProfile = null;
-  let communityLoading = false;
 
   function canModerateCommunity() {
     return currentProfile?.verification_status === 'verified' &&
