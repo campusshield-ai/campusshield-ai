@@ -25,10 +25,27 @@ assert.match(backend, /update\(\{\s*status\s*\}/);
 assert.match(html, /function canManageIncidents\(\)/);
 assert.match(html, /\['security', 'admin'\]\.includes\(currentProfile\.role\)/);
 assert.match(html, /if \(!canManageIncidents\(\)\)/);
-assert.match(html, /\.in\('verification_status', \['pending', 'rejected'\]\)/);
-assert.match(html, /requested_role\.in\.\(student,teacher\),role\.in\.\(student,teacher\)/);
-assert.match(html, /row\.verification_status === 'pending'/);
-assert.match(html, /Rejected — view only/);
+assert.ok(
+  html.includes(".in('verification_status', ['pending', 'rejected'])"),
+  "account approvals query includes pending and rejected applications"
+);
+assert.ok(
+  html.includes(".or('requested_role.in.(student,teacher),role.in.(student,teacher)')"),
+  "account approvals query includes student/teacher applicants by requested or current role"
+);
+assert.ok(
+  html.includes("row.verification_status === 'pending'"),
+  "review actions are shown only for pending applications"
+);
+assert.ok(
+  html.includes("Rejected — view only"),
+  "rejected applications are displayed read-only"
+);
+assert.doesNotMatch(
+  html,
+  /\.eq\('verification_status', 'pending'\)/,
+  "no pending-only status filter remains in the approvals query"
+);
 assert.match(html, /const total = incidents\.length/);
 assert.match(html, /await refreshIncidentsFromSupabase\(\)/);
 assert.match(html, /id="refresh-incidents"/);
