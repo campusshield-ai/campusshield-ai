@@ -20,16 +20,24 @@ assert.doesNotMatch(publicKey, /secret|service_role/i);
 
 assert.match(backend, /from\("incidents"\)/);
 assert.match(backend, /reporter_id:\s*user\.id/);
+assert.match(backend, /client\.auth\.getUser\(\)/);
 assert.match(backend, /update\(\{\s*status\s*\}/);
 assert.match(html, /function canManageIncidents\(\)/);
 assert.match(html, /\['security', 'admin'\]\.includes\(currentProfile\.role\)/);
 assert.match(html, /if \(!canManageIncidents\(\)\)/);
 assert.match(html, /const total = incidents\.length/);
 assert.match(html, /await refreshIncidentsFromSupabase\(\)/);
+assert.match(html, /id="refresh-incidents"/);
+assert.match(html, /setInterval\(\(\) => \{[\s\S]*?\}, 60000\)/);
+assert.match(html, /addEventListener\('visibilitychange'/);
+assert.match(html, /requestSessionVersion !== authSessionVersion/);
+assert.match(html, /id="incidentSyncStatus"/);
+assert.doesNotMatch(html, /id="reporter"/);
 assert.match(html, /does not contact emergency services/i);
 
 console.log(`PASS ${inlineScripts.length} inline script(s), backend, and config parse`);
 console.log("PASS browser config uses the Supabase project URL and publishable key only");
 console.log("PASS incident reads, submissions, status updates, and dashboard metrics use Supabase data");
+console.log("PASS incident data can be refreshed manually, on tab return, and every minute");
 console.log("PASS resolve controls are shown only to verified security/admin users");
 console.log("PASS emergency-services prototype warning remains visible");

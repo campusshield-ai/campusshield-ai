@@ -74,12 +74,11 @@ async getCurrentUser() {
     throw new Error("Supabase is not configured.");
   }
 
-  const { data, error } = await client.auth.getSession();
+  const { data, error } = await client.auth.getUser();
 
   if (error) throw error;
 
-  
-  return data.session ? data.session.user : null;
+  return data.user || null;
 },
 
 

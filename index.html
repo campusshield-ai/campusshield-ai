@@ -149,7 +149,7 @@ th{color:var(--muted);background:#f8fafd}
 <div class="sidebar-bottom">● Demo environment active<br><span class="muted">Use fictional test data only.</span></div>
 </aside>
 <div class="main">
-<header class="topbar"><strong id="sectionTitle">Overview</strong><div class="actions" style="align-items:center"><span class="pill">● CAMPUSSHIELD · DEMO</span><button class="btn secondary" type="button" id="signout-button">Sign out</button></div></header>
+<header class="topbar"><strong id="sectionTitle">Overview</strong><div class="actions" style="align-items:center"><span id="incidentSyncStatus" class="muted" role="status" aria-live="polite">Incident data not loaded</span><button class="btn secondary" type="button" id="refresh-incidents" aria-label="Refresh incident data">↻ Refresh data</button><span class="pill">● CAMPUSSHIELD · DEMO</span><button class="btn secondary" type="button" id="signout-button">Sign out</button></div></header>
 <main class="content">
 
 
@@ -175,7 +175,7 @@ th{color:var(--muted);background:#f8fafd}
 <div class="field"><label for="category">Incident category *</label><select id="category" required><option value="">Select category</option><option>Medical emergency</option><option>Fire or smoke</option><option>Security concern</option><option>Accident or injury</option><option>Harassment or misconduct</option><option>Facility hazard</option><option>Theft or property</option><option>Other</option></select></div>
 <div class="field"><label for="severity">Severity *</label><select id="severity" required><option value="">Select severity</option><option>High</option><option>Medium</option><option>Low</option></select></div>
 <div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" required placeholder="e.g. Main library entrance"></div>
-<div class="field"><label for="reporter">Reporter label (optional)</label><input id="reporter" maxlength="60" placeholder="Student / Demo reporter"></div>
+<div class="field" style="align-self:end"><span class="muted">Your signed-in account is linked to this report automatically.</span></div>
 </div>
 <div class="field"><label for="description">Description *</label><textarea id="description" maxlength="800" required placeholder="Describe what happened and any immediate concerns..."></textarea></div>
 <div class="actions"><button class="btn" type="submit">Submit report</button><button class="btn secondary" type="reset">Clear form</button></div>
@@ -235,6 +235,10 @@ th{color:var(--muted);background:#f8fafd}
 (() => {
   const $ = id => document.getElementById(id);
   let incidents = [];
+  let incidentRefreshInProgress = false;
+  let incidentRefreshQueued = false;
+  let authSessionVersion = 0;
+  let incidentsLastUpdated = null;
   const severityRank = {High:3, Medium:2, Low:1};
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -308,9 +312,14 @@ th{color:var(--muted);background:#f8fafd}
   // Avoid asynchronous Supabase calls inside this auth callback.
   if (window.CampusShieldBackend?.client?.auth) {
     window.CampusShieldBackend.client.auth.onAuthStateChange(event => {
+      if (event === 'SIGNED_IN') authSessionVersion += 1;
+
       if (event === 'SIGNED_OUT') {
+        authSessionVersion += 1;
         currentProfile = null;
         incidents = [];
+        incidentsLastUpdated = null;
+        $('incidentSyncStatus').textContent = 'Signed out';
         render();
         showLogin('You have signed out. Please sign in to continue.');
       }
@@ -413,6 +422,10 @@ th{color:var(--muted);background:#f8fafd}
 
   $('searchIncidents').addEventListener('input', renderTable);
 
+  $('refresh-incidents').addEventListener('click', () => {
+    refreshIncidentsFromSupabase({quiet:false});
+  });
+
   $('incidentTable').addEventListener('click', async e => {
     const b = e.target.closest('[data-resolve]');
     if (!b) return;
@@ -455,15 +468,34 @@ th{color:var(--muted);background:#f8fafd}
       `${incidents.filter(i => i.status === 'Resolved').length} resolved.`;
   }
 
-  async function refreshIncidentsFromSupabase() {
+  async function refreshIncidentsFromSupabase({quiet = true} = {}) {
     const backend = window.CampusShieldBackend;
-    if (!backend?.isConfigured) return;
+    const status = $('incidentSyncStatus');
+    const refreshButton = $('refresh-incidents');
+
+    if (!backend?.isConfigured) {
+      status.textContent = 'Supabase is not connected';
+      return false;
+    }
+
+    if (!currentProfile) {
+      status.textContent = 'Sign in to load incident data';
+      return false;
+    }
+
+    if (incidentRefreshInProgress) {
+      incidentRefreshQueued = true;
+      return false;
+    }
+
+    incidentRefreshInProgress = true;
+    const requestSessionVersion = authSessionVersion;
+    refreshButton.disabled = true;
+    if (!quiet) status.textContent = 'Refreshing incident data…';
 
     try {
-      const user = await backend.getCurrentUser();
-      if (!user) return;
-
       const rows = await backend.listIncidents();
+      if (requestSessionVersion !== authSessionVersion || !currentProfile) return false;
 
       incidents = rows.map(i => ({
         id:i.id,
@@ -476,11 +508,39 @@ th{color:var(--muted);background:#f8fafd}
         createdAt:i.created_at
       }));
 
+      incidentsLastUpdated = new Date();
+      status.textContent = `Updated ${incidentsLastUpdated.toLocaleTimeString()}`;
       render();
+      return true;
     } catch (e) {
+      if (requestSessionVersion !== authSessionVersion || !currentProfile) return false;
       console.error('Could not refresh incidents:', e);
+      status.textContent = incidentsLastUpdated
+        ? `Refresh failed · last updated ${incidentsLastUpdated.toLocaleTimeString()}`
+        : 'Incident data could not be loaded';
+      if (!quiet) toast('Could not refresh incident data. Check your connection and account access.');
+      return false;
+    } finally {
+      incidentRefreshInProgress = false;
+      refreshButton.disabled = false;
+      if (incidentRefreshQueued) {
+        incidentRefreshQueued = false;
+        window.setTimeout(() => refreshIncidentsFromSupabase({quiet:true}), 0);
+      }
     }
   }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && currentProfile) {
+      refreshIncidentsFromSupabase({quiet:true});
+    }
+  });
+
+  window.setInterval(() => {
+    if (document.visibilityState === 'visible' && currentProfile) {
+      refreshIncidentsFromSupabase({quiet:true});
+    }
+  }, 60000);
 
   async function loadAccountApprovals() {
     const backend = window.CampusShieldBackend;
@@ -740,7 +800,7 @@ if (data.session) {
         severity: saved.severity,
         location: saved.location,
         description: saved.description,
-        reporter: $('reporter').value.trim() || 'Signed-in user',
+        reporter: 'Signed-in user',
         status: saved.status || 'Open',
         createdAt: saved.created_at
       });
