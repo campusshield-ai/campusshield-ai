@@ -509,12 +509,12 @@ td strong{color:#2a464d;font-size:11px}
   if (!isInstalled && isIOS) {
     installGuidance.textContent = 'On iPhone or iPad, open this page in Safari, tap Share, then choose “Add to Home Screen”.';
     installCard.hidden = false;
-    workspaceInstallButton.textContent = 'Install guide';
+    workspaceInstallButton.textContent = 'Install app';
     workspaceInstallButton.hidden = false;
   } else if (!isInstalled && /android/i.test(navigator.userAgent)) {
-    installGuidance.textContent = 'Add CampusShield to your home screen for a full-screen app experience.';
+    installGuidance.textContent = 'Open your browser’s menu (⋮), then choose “Install app” or “Add to Home screen”.';
     installCard.hidden = false;
-    workspaceInstallButton.textContent = 'Install help';
+    workspaceInstallButton.textContent = 'Install app';
     workspaceInstallButton.hidden = false;
   }
 
@@ -545,7 +545,7 @@ td strong{color:#2a464d;font-size:11px}
     } catch {
       installButton.hidden = true;
       installGuidance.textContent = 'Open your browser’s menu and choose “Install app” or “Add to Home screen”.';
-      workspaceInstallButton.textContent = 'Install help';
+      workspaceInstallButton.textContent = 'Install app';
     } finally {
       installButton.disabled = false;
     }
