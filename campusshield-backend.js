@@ -196,15 +196,111 @@ async getCurrentUser() {
 
     async createCommunityPost(input) {
       if (!client) throw new Error("Supabase is not configured.");
+      let data, error;
+      if (input.postType === "poll") {
+        ({ data, error } = await client.rpc("create_community_poll", {
+          p_title: input.title,
+          p_body: input.body,
+          p_option_1: input.options?.[0] || "",
+          p_option_2: input.options?.[1] || "",
+          p_option_3: input.options?.[2] || null,
+          p_option_4: input.options?.[3] || null,
+          p_location: input.location || null
+        }));
+      } else if (["campus_update", "question", "lost_found"].includes(input.postType)) {
+        ({ data, error } = await client.rpc("create_campus_social_post", {
+          p_post_type: input.postType,
+          p_title: input.title,
+          p_body: input.body,
+          p_location: input.location || null
+        }));
+      } else {
+        ({ data, error } = await client.rpc("create_community_post", {
+          p_post_type: input.postType,
+          p_title: input.title,
+          p_body: input.body,
+          p_location: input.location || null
+        }));
+      }
+      if (error) throw error;
+      return data;
+    },
 
-      const { data, error } = await client.rpc("create_community_post", {
-        p_post_type: input.postType,
-        p_title: input.title,
-        p_body: input.body,
-        p_location: input.location || null
+    async getCommunityPostSocial(postIds) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!Array.isArray(postIds) || !postIds.length) return [];
+      const { data, error } = await client.rpc("get_community_post_social", {
+        p_post_ids: postIds.slice(0, 50)
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async toggleCommunityReaction(postId, reactionType = "like") {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("toggle_community_reaction", {
+        p_post_id: postId,
+        p_reaction_type: reactionType
       });
       if (error) throw error;
       return data;
+    },
+
+    async toggleCommunityBookmark(postId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("toggle_community_bookmark", {
+        p_post_id: postId
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
+    async getCommunityPollData(postId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("get_community_poll_data", {
+        p_post_id: postId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async voteCommunityPoll(postId, optionId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("vote_community_poll", {
+        p_post_id: postId,
+        p_option_id: optionId
+      });
+      if (error) throw error;
+    },
+
+    async createCommunityReply(postId, parentCommentId, body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_community_reply", {
+        p_post_id: postId,
+        p_parent_comment_id: parentCommentId,
+        p_body: body
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async repostCommunityPost(postId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("repost_community_post", {
+        p_post_id: postId
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async toggleCampusFollow(userId, follow) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("toggle_campus_follow", {
+        p_followed_id: userId,
+        p_follow: Boolean(follow)
+      });
+      if (error) throw error;
+      return data === true;
     },
 
     async listCommunityComments(postIds) {
@@ -213,7 +309,7 @@ async getCurrentUser() {
 
       const { data, error } = await client
         .from("community_comments")
-        .select("id, post_id, author_username, body, status, created_at, updated_at")
+        .select("id, post_id, author_username, parent_comment_id, body, status, created_at, updated_at")
         .in("post_id", postIds)
         .eq("status", "published")
         .order("created_at", { ascending: true });
