@@ -1,8 +1,7 @@
 -- Import the 328-entry NUC university roster (77 Federal, 69 State, 182 Private).
--- Name/category rows are from the NUC-sourced category reference snapshot fetched 2026-09-05;
--- the official NUC eNUC page currently reports the same totals: https://enuc.nuc.edu.ng/nus
--- States and available official websites were reconciled from the institution location list.
--- Preserve IDs and slugs for the starter records so any existing membership foreign keys remain valid.
+-- University names and ownership are from a NUC-sourced category reference snapshot fetched 2026-09-05.
+-- Verify row-by-row against the live eNUC site before a public launch; available websites are source-backed only.
+-- Preserve IDs and slugs for starter records so existing membership foreign keys remain valid.
 begin;
 
 update public.campus_universities as u
@@ -298,7 +297,7 @@ values
 ('Elrazi Medical University Yargaya University, Kano State','elrazi-medical-university-yargaya-university-kano-state','Private','Kano','https://enuc.nuc.edu.ng/nus',null,true),
 ('Venite University, Iloro-Ekiti, Ekiti State','venite-university-iloro-ekiti-ekiti-state','Private','Ekiti','https://enuc.nuc.edu.ng/nus',null,true),
 ('Shanahan University Onitsha, Anambra State','shanahan-university-onitsha-anambra-state','Private','Anambra','https://enuc.nuc.edu.ng/nus',null,true),
-('The Duke Medical University, Calabar, Cross River State','the-duke-medical-university-calabar-cross-river-state','Private','Cross River','https://enuc.nuc.edu.ng/nus','https://www.crutech.edu.ng',true),
+('The Duke Medical University, Calabar, Cross River State','the-duke-medical-university-calabar-cross-river-state','Private','Cross River','https://enuc.nuc.edu.ng/nus',null,true),
 ('Mercy Medical University, Iwo, Ogun State','mercy-medical-university-iwo-ogun-state','Private','Ogun','https://enuc.nuc.edu.ng/nus',null,true),
 ('Cosmopolitan University Abuja','cosmopolitan-university-abuja','Private','FCT Abuja','https://enuc.nuc.edu.ng/nus',null,true),
 ('Miva Open University, Abuja FCT','miva-open-university-abuja-fct','Private','FCT Abuja','https://enuc.nuc.edu.ng/nus','https://miva.university',true),
@@ -328,14 +327,14 @@ values
 ('Leadership University, Abuja, FCT','leadership-university-abuja-fct','Private','FCT Abuja','https://enuc.nuc.edu.ng/nus',null,true),
 ('Jimoh Babalola University, Ilorin, Kwara State','jimoh-babalola-university-ilorin-kwara-state','Private','Kwara','https://enuc.nuc.edu.ng/nus',null,true),
 ('Bridget University Mbaise, Okirika-Nweke, Imo State','bridget-university-mbaise-okirika-nweke-imo-state','Private','Imo','https://enuc.nuc.edu.ng/nus',null,true),
-('Greenland University, Jalingo, Taraba State','greenland-university-jalingo-taraba-state','Private','Taraba','https://enuc.nuc.edu.ng/nus','https://www.tsuniversity.edu.ng',true),
+('Greenland University, Jalingo, Taraba State','greenland-university-jalingo-taraba-state','Private','Taraba','https://enuc.nuc.edu.ng/nus',null,true),
 ('JEFAP University, Suleja, Niger State','jefap-university-suleja-niger-state','Private','Niger','https://enuc.nuc.edu.ng/nus',null,true),
 ('Azione Verde University, Amaigbo, Imo State','azione-verde-university-amaigbo-imo-state','Private','Imo','https://enuc.nuc.edu.ng/nus',null,true),
 ('Unique Open University, Ojo, Lagos State','unique-open-university-ojo-lagos-state','Private','Lagos','https://enuc.nuc.edu.ng/nus',null,true),
 ('American Open University, Abeokuta, Ogun State','american-open-university-abeokuta-ogun-state','Private','Ogun','https://enuc.nuc.edu.ng/nus',null,true),
 ('Millenium Crest University, Ikare Akoko, Ondo State','millenium-crest-university-ikare-akoko-ondo-state','Private','Ondo','https://enuc.nuc.edu.ng/nus',null,true),
 ('Abdulfattah Durojaiye University, Abeokuta Ogun State','abdulfattah-durojaiye-university-abeokuta-ogun-state','Private','Ogun','https://enuc.nuc.edu.ng/nus',null,true),
-('Euston University, Abakaliki, Ebonyi State','euston-university-abakaliki-ebonyi-state','Private','Ebonyi','https://enuc.nuc.edu.ng/nus','https://www.ebsu.edu.ng',true),
+('Euston University, Abakaliki, Ebonyi State','euston-university-abakaliki-ebonyi-state','Private','Ebonyi','https://enuc.nuc.edu.ng/nus',null,true),
 ('Adeche Momoh University, Igarra, Edo State','adeche-momoh-university-igarra-edo-state','Private','Edo','https://enuc.nuc.edu.ng/nus',null,true),
 ('Sani Bello University, Kontagora Niger State','sani-bello-university-kontagora-niger-state','Private','Niger','https://enuc.nuc.edu.ng/nus',null,true),
 ('Godday Erewa University, Sapele, Delta State','godday-erewa-university-sapele-delta-state','Private','Delta','https://enuc.nuc.edu.ng/nus',null,true),
@@ -346,7 +345,7 @@ values
 ('Maria Assumpta University Owerri, Imo State','maria-assumpta-university-owerri-imo-state','Private','Imo','https://enuc.nuc.edu.ng/nus',null,true),
 ('High Flyers University, Ikere-Ekiti, Ekiti State','high-flyers-university-ikere-ekiti-ekiti-state','Private','Ekiti','https://enuc.nuc.edu.ng/nus',null,true),
 ('Ummah University of Nigeria, Abuja','ummah-university-of-nigeria-abuja','Private','FCT','https://enuc.nuc.edu.ng/nus',null,true),
-('Pearl University, Calabar, Cross river','pearl-university-calabar-cross-river','Private','Cross River','https://enuc.nuc.edu.ng/nus','https://www.crutech.edu.ng',true),
+('Pearl University, Calabar, Cross river','pearl-university-calabar-cross-river','Private','Cross River','https://enuc.nuc.edu.ng/nus',null,true),
 ('Omega University Kaduna','omega-university-kaduna','Private','Kaduna','https://enuc.nuc.edu.ng/nus',null,true)
 on conflict (slug) do update
 set name=excluded.name,
