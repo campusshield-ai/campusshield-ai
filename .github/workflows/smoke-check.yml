@@ -1,0 +1,25 @@
+name: CampusShield smoke checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+      - feature/nigerian-multi-university-foundation
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run frontend and migration smoke checks
+        run: node tests/smoke-check.mjs
