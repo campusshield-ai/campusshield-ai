@@ -62,6 +62,22 @@ th{color:var(--muted);background:#f8fafd}
 .toast{position:fixed;right:20px;bottom:20px;background:#0c2440;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:10}
 .toast.show{display:block}
 .footer{text-align:center;color:#8491a4;font-size:10px;padding:12px}
+
+/* CampusShield AI official branding and social profiles */
+.campus-social-block{margin-top:28px}
+.campus-social-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.official-badge{display:inline-flex;align-items:center;gap:9px;min-height:48px;padding:8px 17px;border-radius:999px;background:#142832;color:#eef6fc;font-size:16px;font-weight:800;letter-spacing:.2px}
+.official-badge svg{width:25px;height:25px;flex:none}
+.social-link{width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#142832;color:#f7fbff;border:1px solid #ffffff12;text-decoration:none;transition:transform .18s ease,background .18s ease}
+.social-link svg{width:22px;height:22px;display:block;fill:currentColor}
+.social-link.is-pending{opacity:.86;cursor:default}
+.social-link:not(.is-pending):hover{background:#203d4a;transform:translateY(-2px)}
+.social-link:focus-visible{outline:3px solid #19d3b0;outline-offset:3px}
+.social-caption{margin:10px 0 0;color:#9eb4c8;font-size:11px}
+.workspace-social{display:flex;justify-content:center;margin:8px auto 2px}
+.workspace-social .social-caption{color:#8491a4;text-align:center}
+@media(max-width:650px){.campus-social-row{gap:7px}.official-badge{min-height:44px;padding:7px 13px;font-size:14px}.social-link{width:44px;height:44px}.social-link svg{width:20px;height:20px}}
+
 @media(max-width:900px){.sidebar{width:200px}.main{margin-left:200px}.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
 @media(max-width:650px){.sidebar{position:static;width:auto;height:auto;padding:12px}.brand{padding:4px 8px 10px}.nav{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar-bottom{display:none}.main{margin-left:0}.topbar{padding:0 14px}.content{padding:13px}.stats{gap:9px}.stat,.panel{padding:14px}.heading h1{font-size:25px}}
 
@@ -101,6 +117,28 @@ th{color:var(--muted);background:#f8fafd}
       <div><span>03</span><strong>Protect the community</strong><small>Support a more informed campus response.</small></div>
     </div>
     <p class="login-footnote">Demonstration platform · Does not contact emergency services</p>
+
+    <div class="campus-social-block">
+      <div class="campus-social-row" aria-label="Official CampusShield AI social channels">
+        <span class="official-badge" title="Official CampusShield AI project website">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#34d399" d="M16 1.5l4.1 3 5.1-.1 1.4 4.9 4.1 3-1.2 5 1.2 5-4.1 3-1.4 4.9-5.1-.1-4.1 3-4.1-3-5.1.1-1.4-4.9-4.1-3 1.2-5-1.2-5 4.1-3 1.4-4.9 5.1.1z"/><path d="M10 16.2l3.7 3.7L22.3 11" fill="none" stroke="#073b32" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Official</span>
+        </span>
+        <a class="social-link is-pending" id="campus-social-x" aria-label="X profile coming soon" aria-disabled="true" tabindex="-1" title="X profile coming soon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.636 7.584H.474l8.59-9.82L0 1.153h7.594l5.243 6.932zm-1.293 19.472h2.039L6.486 3.248H4.298z"/></svg>
+        </a>
+        <a class="social-link is-pending" id="campus-social-tiktok" aria-label="TikTok profile coming soon" aria-disabled="true" tabindex="-1" title="TikTok profile coming soon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.44v13.67a2.9 2.9 0 0 1-2.9 2.9 2.9 2.9 0 1 1 2.9-2.9c0-.16-.01-.32-.04-.48V11.7a6.34 6.34 0 1 0 3.48 5.67V9.8a8.19 8.19 0 0 0 4.8 1.55V7.91c-.35 0-.69-.04-1.03-.12z"/></svg>
+        </a>
+        <a class="social-link is-pending" id="campus-social-instagram" aria-label="Instagram profile coming soon" aria-disabled="true" tabindex="-1" title="Instagram profile coming soon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm0 2A3.8 3.8 0 0 0 4 7.8v8.4A3.8 3.8 0 0 0 7.8 20h8.4a3.8 3.8 0 0 0 3.8-3.8V7.8A3.8 3.8 0 0 0 16.2 4H7.8zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.2-3.5a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>
+        </a>
+        <a class="social-link is-pending" id="campus-social-linkedin" aria-label="LinkedIn profile coming soon" aria-disabled="true" tabindex="-1" title="LinkedIn profile coming soon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 2H3.55C2.69 2 2 2.68 2 3.52v16.96c0 .84.69 1.52 1.55 1.52h16.9c.86 0 1.55-.68 1.55-1.52V3.52c0-.84-.69-1.52-1.55-1.52zM7.93 18.34H4.96V9.02h2.97v9.32zM6.45 7.75a1.72 1.72 0 1 1 .02-3.44 1.72 1.72 0 0 1-.02 3.44zm12 10.59h-2.97V13.8c0-1.08-.02-2.47-1.5-2.47-1.5 0-1.73 1.17-1.73 2.39v4.62H9.28V9.02h2.85v1.27h.04c.4-.75 1.37-1.54 2.82-1.54 3.01 0 3.56 1.98 3.56 4.56v5.03z"/></svg>
+        </a>
+      </div>
+      <p class="social-caption">Official CampusShield AI channels · Social profiles coming soon</p>
+    </div>
   </div>
   <div class="login-form-wrap">
     <section class="panel auth-panel">
@@ -221,6 +259,28 @@ th{color:var(--muted);background:#f8fafd}
 </div>
 </section>
 
+<div class="workspace-social">
+    <div class="campus-social-block">
+      <div class="campus-social-row" aria-label="Official CampusShield AI social channels">
+        <span class="official-badge" title="Official CampusShield AI project website">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#34d399" d="M16 1.5l4.1 3 5.1-.1 1.4 4.9 4.1 3-1.2 5 1.2 5-4.1 3-1.4 4.9-5.1-.1-4.1 3-4.1-3-5.1.1-1.4-4.9-4.1-3 1.2-5-1.2-5 4.1-3 1.4-4.9 5.1.1z"/><path d="M10 16.2l3.7 3.7L22.3 11" fill="none" stroke="#073b32" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Official</span>
+        </span>
+        <a class="social-link is-pending" id="campus-social-x" aria-label="X profile coming soon" aria-disabled="true" tabindex="-1" title="X profile coming soon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.636 7.584H.474l8.59-9.82L0 1.153h7.594l5.243 6.932zm-1.293 19.472h2.039L6.486 3.248H4.298z"/></svg>
+        </a>
+        <a class="social-link is-pending" id="campus-social-tiktok" aria-label="TikTok profile coming soon" aria-disabled="true" tabindex="-1" title="TikTok profile coming soon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.44v13.67a2.9 2.9 0 0 1-2.9 2.9 2.9 2.9 0 1 1 2.9-2.9c0-.16-.01-.32-.04-.48V11.7a6.34 6.34 0 1 0 3.48 5.67V9.8a8.19 8.19 0 0 0 4.8 1.55V7.91c-.35 0-.69-.04-1.03-.12z"/></svg>
+        </a>
+        <a class="social-link is-pending" id="campus-social-instagram" aria-label="Instagram profile coming soon" aria-disabled="true" tabindex="-1" title="Instagram profile coming soon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm0 2A3.8 3.8 0 0 0 4 7.8v8.4A3.8 3.8 0 0 0 7.8 20h8.4a3.8 3.8 0 0 0 3.8-3.8V7.8A3.8 3.8 0 0 0 16.2 4H7.8zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.2-3.5a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>
+        </a>
+        <a class="social-link is-pending" id="campus-social-linkedin" aria-label="LinkedIn profile coming soon" aria-disabled="true" tabindex="-1" title="LinkedIn profile coming soon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 2H3.55C2.69 2 2 2.68 2 3.52v16.96c0 .84.69 1.52 1.55 1.52h16.9c.86 0 1.55-.68 1.55-1.52V3.52c0-.84-.69-1.52-1.55-1.52zM7.93 18.34H4.96V9.02h2.97v9.32zM6.45 7.75a1.72 1.72 0 1 1 .02-3.44 1.72 1.72 0 0 1-.02 3.44zm12 10.59h-2.97V13.8c0-1.08-.02-2.47-1.5-2.47-1.5 0-1.73 1.17-1.73 2.39v4.62H9.28V9.02h2.85v1.27h.04c.4-.75 1.37-1.54 2.82-1.54 3.01 0 3.56 1.98 3.56 4.56v5.03z"/></svg>
+        </a>
+      </div>
+      <p class="social-caption">Official CampusShield AI channels · Social profiles coming soon</p>
+    </div></div>
 <div class="footer">CampusShield AI · Demonstration only</div>
 </main>
 </div>
