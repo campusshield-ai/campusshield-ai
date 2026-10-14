@@ -270,7 +270,7 @@ $function$;
 
 drop function if exists public.get_community_post_social(uuid[]);
 create function public.get_community_post_social(p_post_ids uuid[])
-returns table(post_id uuid,reaction_count bigint,user_reaction text,is_bookmarked boolean,following_author boolean)
+returns table(post_id uuid,reaction_count bigint,user_reaction text,is_bookmarked boolean,following_author boolean,is_my_post boolean)
 language plpgsql stable security definer set search_path to ''
 as $function$
 declare
@@ -284,7 +284,8 @@ begin
       (select count(*) from public.community_post_reactions r where r.post_id=p.id),
       (select r.reaction_type from public.community_post_reactions r where r.post_id=p.id and r.user_id=v_user_id),
       exists(select 1 from public.community_post_bookmarks b where b.post_id=p.id and b.user_id=v_user_id),
-      exists(select 1 from public.campus_follows f where f.follower_id=v_user_id and f.followed_id=p.author_id and f.university_id=v_university_id)
+      exists(select 1 from public.campus_follows f where f.follower_id=v_user_id and f.followed_id=p.author_id and f.university_id=v_university_id),
+      p.author_id=v_user_id
     from public.community_posts p
     where p.id=any(coalesce(p_post_ids,array[]::uuid[]))
       and p.university_id=v_university_id and p.status='published';
