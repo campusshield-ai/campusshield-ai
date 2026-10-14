@@ -76,7 +76,7 @@ The campus community is intentionally separate from private incident reporting. 
 - Sensitive incidents (including medical emergencies, threats, harassment, or cases containing identifying evidence) should use private incident reporting and must not be copied into public community posts.
 - Public posts and comments are not a substitute for a validated emergency-response system. The prototype still does not contact emergency services.
 
-The additive database migrations, applied in order to the connected CampusShield Supabase project, are `supabase/migrations/20261014230000_add_community_privacy_feed.sql`, `supabase/migrations/20261014233000_sync_community_username_snapshots.sql`, and `supabase/migrations/20261014234000_restrict_username_availability.sql`. Apply all three in order when setting up another environment before deploying the updated frontend/backend files.
+The additive database migrations, applied in order to the connected CampusShield Supabase project, are `supabase/migrations/20261014230000_add_community_privacy_feed.sql`, `supabase/migrations/20261014233000_sync_community_username_snapshots.sql`, `supabase/migrations/20261014234000_restrict_username_availability.sql`, and `supabase/migrations/20261014235000_remove_username_availability_rpc.sql`. Apply all four in order when setting up another environment before deploying the updated frontend/backend files.
 
 ## 🔮 Future Plans
 
