@@ -88,7 +88,7 @@ A separate project named CampusShield AI Staging was created in eu-west-1. The s
 - `20261015000000_multi_university_foundation.sql` — campus membership, university-scoped RLS and core social schemas
 - `20261015010000_campus_staff_membership_review.sql` — first campus-admin bootstrap and campus-specific staff verification
 - `20261015020000_campus_social_actions.sql` — reactions, follows, polls, reposts, bookmarks and replies
-- `20261015030000_private_campus_media.sql` — private media storage schema and storage policies (upload UI pending)
+- `20261015030000_private_campus_media.sql` — private media storage schema and campus-scoped storage policies (browser upload/playback test pending)
 - `20261015040000_campus_groups_events_marketplace.sql` — group, event and marketplace permissions/moderation
 - `20261015050000_marketplace_reporting.sql` — campus-only scam/listing reports
 - `20261015060000_social_directory_helpers.sql` — private listing-ownership status helper
