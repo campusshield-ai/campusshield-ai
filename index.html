@@ -244,6 +244,25 @@ td strong{color:#2a464d;font-size:11px}
 .analytics-mark{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:#e3f3ec;color:#267b68;font-size:16px}
 .notice-inline{margin:0 0 16px;padding:12px 14px;border:1px solid #e8e6d7;border-radius:11px;background:#fbfaf4;color:#68705b;font-size:11px}
 .risk-output{margin-top:15px;padding:13px 15px;border-radius:12px;background:#f3f8f6;color:#345c51;font-weight:680}
+.community-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:16px;margin-bottom:18px;align-items:start}
+.community-post{border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;background:#fff}
+.community-post-header,.community-comment-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.community-post-title{margin:9px 0 6px;font-size:17px;line-height:1.35}
+.community-post-body{white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0;color:#30445f}
+.community-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:11px}
+.community-handle{color:#0d8478;font-weight:850}
+.community-official{display:inline-flex;border-radius:99px;padding:4px 8px;background:#e4faf3;color:#087b60;font-size:10px;font-weight:850}
+.community-comment{padding:11px 0;border-top:1px solid #edf1f6}
+.community-comment p{margin:6px 0 8px;white-space:pre-wrap;overflow-wrap:anywhere}
+.community-comments{margin-top:14px}
+.community-comment-form{display:flex;gap:8px;margin-top:10px;align-items:flex-start}
+.community-comment-form textarea{min-height:44px;max-height:120px;flex:1}
+.community-post-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.community-moderation-item,.community-report-item{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:#fbfcfe}
+.community-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.community-empty{padding:24px;border:1px dashed #cad5e4;border-radius:12px;text-align:center;color:var(--muted)}
+@media(max-width:900px){.community-layout{grid-template-columns:1fr}}
+@media(max-width:650px){.community-post{padding:12px}.community-comment-form{flex-direction:column}.community-comment-form .btn{width:100%}}
 .footer{padding:25px 10px 13px;color:#9aa6a5;font-size:9px;letter-spacing:.04em}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .toast{right:22px;bottom:22px;max-width:min(440px,calc(100vw - 32px));padding:13px 16px;border:1px solid #ffffff22;border-radius:12px;background:#17363d;box-shadow:0 12px 35px #102b3530;color:#fff;font-size:12px;line-height:1.45}
@@ -343,7 +362,8 @@ td strong{color:#2a464d;font-size:11px}
       </div>
       <form id="auth-form">
         <div id="signup-fields" hidden>
-          <div class="field"><label for="auth-name">Full name <span class="muted">(optional)</span></label><input id="auth-name" autocomplete="name" placeholder="Your name"></div>
+          <div class="field"><label for="auth-name">Real name <span class="muted">(optional · private)</span></label><input id="auth-name" autocomplete="name" placeholder="Your real name; not shown to students"></div>
+          <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
           <div class="field"><label for="auth-role">Account type</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
         </div>
         <div class="field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
@@ -372,6 +392,7 @@ td strong{color:#2a464d;font-size:11px}
 <nav class="nav">
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
+<button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus community</button>
 <button data-page="manage"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button>
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
@@ -421,6 +442,46 @@ td strong{color:#2a464d;font-size:11px}
 <div class="actions"><button class="btn" type="submit" id="report-submit">Submit report</button><button class="btn secondary" type="reset">Clear form</button></div>
 </form>
 </div>
+</section>
+
+<section class="page" id="page-community">
+<div class="heading"><h1>Campus community</h1><p>Share public-safe campus issues and suggestions, discuss approved posts, and see verified staff announcements.</p></div>
+<div class="notice-inline"><strong>Protect your privacy.</strong> Community posts are separate from private incident reports and require review before other students can see them. Do not post real names, email addresses, room numbers, medical details, harassment allegations, threats, evidence, or other identifying information. Use <button type="button" class="btn secondary" data-page="report">private incident reporting</button> for sensitive concerns.</div>
+<div class="community-layout">
+  <section class="panel" aria-labelledby="community-profile-title">
+    <div class="panel-heading"><div><h2 id="community-profile-title">Your public profile</h2><p>Students see your username only.</p></div></div>
+    <p class="community-meta">Your current handle <strong id="community-username-current" class="community-handle">@loading</strong></p>
+    <form id="communityUsernameForm">
+      <div class="field"><label for="community-username">Change username</label><input id="community-username" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" autocomplete="nickname" placeholder="Choose a unique username"><p class="muted">Lowercase letters, numbers, and underscores only. Usernames can be changed once every 7 days.</p></div>
+      <button class="btn secondary" type="submit" id="community-username-save">Save username</button>
+      <p id="community-profile-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="panel" aria-labelledby="community-post-title">
+    <div class="panel-heading"><div><h2 id="community-post-title">Share with campus</h2><p>Student posts are reviewed before publication.</p></div></div>
+    <form id="communityPostForm">
+      <div class="field"><label for="community-post-type">Post type</label><select id="community-post-type"><option value="safety_issue">Campus safety issue</option><option value="suggestion">Safety improvement suggestion</option><option id="community-announcement-option" value="announcement" disabled>Official staff announcement</option></select></div>
+      <div class="field"><label for="community-post-title-input">Title *</label><input id="community-post-title-input" required minlength="3" maxlength="100" placeholder="e.g. Broken light near the library"></div>
+      <div class="field"><label for="community-post-location">General location <span class="muted">(optional)</span></label><input id="community-post-location" maxlength="120" placeholder="e.g. Main library entrance; no room numbers"></div>
+      <div class="field"><label for="community-post-body">Description *</label><textarea id="community-post-body" required minlength="10" maxlength="2000" placeholder="Describe the issue or suggestion without naming or identifying anyone."></textarea></div>
+      <div class="actions"><button class="btn" type="submit" id="community-post-submit">Submit for review</button></div>
+      <p id="community-post-message" class="message" role="status" aria-live="polite">Official announcements are reserved for verified staff.</p>
+    </form>
+  </section>
+</div>
+<section class="panel" id="community-moderation" hidden aria-labelledby="community-moderation-title">
+  <div class="panel-heading"><div><h2 id="community-moderation-title">Community moderation</h2><p>Review student submissions and reports. Moderation actions are checked again by Supabase.</p></div><button type="button" class="btn secondary" id="refresh-community-moderation">Refresh queue</button></div>
+  <h3>Posts awaiting review</h3>
+  <div id="community-moderation-posts"><p class="muted">Loading moderation queue…</p></div>
+  <h3>Reports from the community</h3>
+  <div id="community-reports-queue"><p class="muted">Loading reports…</p></div>
+  <p id="community-moderation-message" class="message" role="status" aria-live="polite"></p>
+</section>
+<section class="panel" aria-labelledby="community-feed-title">
+  <div class="community-section-title"><div><h2 id="community-feed-title">Latest campus updates</h2><p class="muted">Only published posts appear here. Usernames are public; real names and emails are not.</p></div><button type="button" class="btn secondary" id="refresh-community">Refresh feed</button></div>
+  <p id="community-feed-status" class="message" role="status" aria-live="polite">Loading campus community…</p>
+  <div id="community-feed"><div class="community-empty">Loading campus updates…</div></div>
+</section>
 </section>
 
 <section class="page" id="page-manage">
@@ -647,6 +708,8 @@ td strong{color:#2a464d;font-size:11px}
       el.hidden = !verified;
     });
     $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
+    const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
+    $('community-announcement-option').disabled = !canPublishOfficial;
     navigate('dashboard');
     return true;
   }
@@ -696,6 +759,9 @@ td strong{color:#2a464d;font-size:11px}
       if (event === 'SIGNED_OUT') {
         authSessionVersion += 1;
         currentProfile = null;
+        communityProfile = null;
+        $('community-username-current').textContent = 'Not signed in';
+        $('community-feed').innerHTML = '<div class="community-empty">Sign in to view campus updates.</div>';
         incidents = [];
         incidentsLastUpdated = null;
         $('incidentSyncStatus').textContent = 'Signed out';
@@ -742,7 +808,8 @@ td strong{color:#2a464d;font-size:11px}
       manage:'Incident management',
       risk:'Risk analysis',
       analytics:'Analytics & reports',
-      approvals:'Account approvals'
+      approvals:'Account approvals',
+      community:'Campus community'
     };
 
     $('sectionTitle').textContent = names[page] || 'Overview';
@@ -755,6 +822,7 @@ td strong{color:#2a464d;font-size:11px}
     if (!button) return;
     navigate(button.dataset.page);
     if (button.dataset.page === 'approvals') loadAccountApprovals();
+    if (button.dataset.page === 'community') loadCommunityPage();
   });
 
   function render() {
@@ -1056,11 +1124,307 @@ td strong{color:#2a464d;font-size:11px}
     }
   });
 
+  let communityProfile = null;
+  let communityLoading = false;
+
+  function canModerateCommunity() {
+    return currentProfile?.verification_status === 'verified' &&
+      ['admin', 'security', 'teacher'].includes(currentProfile.role);
+  }
+
+  function communityPostTypeLabel(type) {
+    return ({
+      safety_issue: 'Campus safety issue',
+      suggestion: 'Safety improvement suggestion',
+      announcement: 'Official staff announcement'
+    })[type] || 'Campus update';
+  }
+
+  async function loadCommunityPage() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile) {
+      $('community-feed-status').textContent = 'Sign in to use the campus community.';
+      return;
+    }
+    if (communityLoading) return;
+    communityLoading = true;
+    $('community-feed-status').textContent = 'Loading campus updates…';
+    $('community-feed').innerHTML = '<div class="community-empty">Loading campus updates…</div>';
+
+    try {
+      const profile = await backend.getMyCommunityProfile();
+      communityProfile = profile;
+      $('community-username-current').textContent = profile?.username ? '@' + profile.username : 'Username unavailable';
+      $('community-username').value = profile?.username || '';
+      $('community-announcement-option').disabled = !canModerateCommunity();
+
+      const posts = await backend.listCommunityPosts();
+      const comments = await backend.listCommunityComments(posts.map(function(post) { return post.id; }));
+      renderCommunityFeed(posts, comments);
+      $('community-feed-status').textContent = posts.length + (posts.length === 1 ? ' published post' : ' published posts') + ' · refreshed ' + new Date().toLocaleTimeString();
+
+      $('community-moderation').hidden = !canModerateCommunity();
+      if (canModerateCommunity()) await loadCommunityModeration();
+    } catch (err) {
+      console.error('Could not load the community:', err);
+      $('community-feed-status').textContent = 'The community could not be loaded. Check the database migration and try refreshing.';
+      $('community-feed').innerHTML = '<div class="community-empty">Campus updates are temporarily unavailable.</div>';
+      if (canModerateCommunity()) $('community-moderation').hidden = false;
+    } finally {
+      communityLoading = false;
+    }
+  }
+
+  function renderCommunityFeed(posts, comments) {
+    const list = Array.isArray(posts) ? posts : [];
+    const commentList = Array.isArray(comments) ? comments : [];
+    if (!list.length) {
+      $('community-feed').innerHTML = '<div class="community-empty"><strong>No published campus updates yet.</strong><p>Share a public-safe safety issue or suggestion. A moderator will review student posts before publication.</p></div>';
+      return;
+    }
+
+    const commentsByPost = {};
+    commentList.forEach(function(comment) {
+      if (!commentsByPost[comment.post_id]) commentsByPost[comment.post_id] = [];
+      commentsByPost[comment.post_id].push(comment);
+    });
+
+    $('community-feed').innerHTML = list.map(function(post) {
+      const postComments = commentsByPost[post.id] || [];
+      const commentsHtml = postComments.map(function(comment) {
+        return '<article class="community-comment">' +
+          '<div class="community-comment-header"><div class="community-meta"><strong class="community-handle">@' + esc(comment.author_username) + '</strong><span>·</span><time>' + esc(dateText(comment.created_at)) + '</time></div>' +
+          '<button type="button" class="btn secondary" data-report-community-type="comment" data-report-community-id="' + esc(comment.id) + '">Report</button></div>' +
+          '<p>' + esc(comment.body) + '</p>' +
+          '</article>';
+      }).join('');
+
+      return '<article class="community-post" id="community-post-' + esc(post.id) + '">' +
+        '<div class="community-post-header"><div class="community-meta">' +
+        (post.is_official ? '<span class="community-official">Verified staff update</span>' : '<span class="tag open">' + esc(communityPostTypeLabel(post.post_type)) + '</span>') +
+        '<strong class="community-handle">@' + esc(post.author_username) + '</strong><span>·</span><time>' + esc(dateText(post.created_at)) + '</time></div>' +
+        '<button type="button" class="btn secondary" data-report-community-type="post" data-report-community-id="' + esc(post.id) + '">Report</button></div>' +
+        '<h3 class="community-post-title">' + esc(post.title) + '</h3>' +
+        '<p class="community-post-body">' + esc(post.body) + '</p>' +
+        (post.location ? '<p class="community-meta"><span aria-hidden="true">⌖</span> ' + esc(post.location) + '</p>' : '') +
+        '<div class="community-comments"><div class="community-meta"><strong>' + postComments.length + (postComments.length === 1 ? ' comment' : ' comments') + '</strong></div>' +
+        commentsHtml +
+        '<form class="community-comment-form" data-community-comment-form data-post-id="' + esc(post.id) + '">' +
+        '<label class="sr-only" for="comment-' + esc(post.id) + '">Write a comment</label>' +
+        '<textarea id="comment-' + esc(post.id) + '" name="comment" maxlength="800" required placeholder="Write a helpful, respectful reply…"></textarea>' +
+        '<button type="submit" class="btn">Comment</button>' +
+        '</form></div></article>';
+    }).join('');
+  }
+
+  async function loadCommunityModeration() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !canModerateCommunity()) return;
+
+    $('community-moderation-message').textContent = 'Loading moderation queue…';
+    try {
+      const posts = await backend.listCommunityModerationPosts();
+      const reports = await backend.listCommunityReports();
+
+      $('community-moderation-posts').innerHTML = posts.length ? posts.map(function(post) {
+        return '<article class="community-moderation-item">' +
+          '<div class="community-meta"><strong>@' + esc(post.author_username) + '</strong><span>·</span>' + esc(communityPostTypeLabel(post.post_type)) + '<span>·</span>' + esc(dateText(post.created_at)) + '</div>' +
+          '<h4>' + esc(post.title) + '</h4><p class="community-post-body">' + esc(post.body) + '</p>' +
+          (post.location ? '<p class="community-meta">Location: ' + esc(post.location) + '</p>' : '') +
+          '<div class="community-post-actions"><button type="button" class="btn" data-moderate-community-post="publish" data-community-post-id="' + esc(post.id) + '">Publish</button><button type="button" class="btn danger" data-moderate-community-post="reject" data-community-post-id="' + esc(post.id) + '">Reject</button></div></article>';
+      }).join('') : '<div class="community-empty">No posts are waiting for review.</div>';
+
+      $('community-reports-queue').innerHTML = reports.length ? reports.map(function(report) {
+        const targetId = report.target_type === 'post' ? report.post_id : report.comment_id;
+        return '<article class="community-report-item">' +
+          '<div class="community-meta"><strong>' + esc(report.target_type === 'post' ? 'Reported post' : 'Reported comment') + '</strong><span>·</span>' + esc(report.reason.replaceAll('_', ' ')) + '<span>·</span>' + esc(dateText(report.created_at)) + '</div>' +
+          '<p>' + esc(report.details || 'No extra details provided.') + '</p>' +
+          '<p class="community-meta">Content reference: ' + esc(String(targetId || '').slice(0, 12)) + '…</p>' +
+          '<div class="community-post-actions"><button type="button" class="btn danger" data-community-report-action="hide" data-community-report-id="' + esc(report.id) + '" data-community-report-type="' + esc(report.target_type) + '" data-community-target-id="' + esc(targetId) + '">Hide content & review</button><button type="button" class="btn secondary" data-community-report-action="dismiss" data-community-report-id="' + esc(report.id) + '">Dismiss report</button></div></article>';
+      }).join('') : '<div class="community-empty">No new community reports.</div>';
+
+      $('community-moderation-message').textContent = posts.length + ' post(s) awaiting review · ' + reports.length + ' report(s) to review.';
+    } catch (err) {
+      console.error('Could not load community moderation:', err);
+      $('community-moderation-message').textContent = 'The moderation queue could not be loaded: ' + (err.message || 'unknown error');
+      $('community-moderation-posts').innerHTML = '<div class="community-empty">Moderation queue unavailable.</div>';
+      $('community-reports-queue').innerHTML = '<div class="community-empty">Report queue unavailable.</div>';
+    }
+  }
+
+  $('communityUsernameForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const input = $('community-username');
+    const message = $('community-profile-message');
+    const username = input.value.trim().toLowerCase();
+
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+      message.textContent = 'Use 3–20 lowercase letters, numbers, or underscores.';
+      return;
+    }
+    if (!backend?.isConfigured) {
+      message.textContent = 'Supabase is not configured.';
+      return;
+    }
+
+    const button = $('community-username-save');
+    button.disabled = true;
+    message.textContent = 'Saving username…';
+    try {
+      const savedUsername = await backend.setMyCommunityUsername(username);
+      communityProfile = Object.assign({}, communityProfile || {}, { username: savedUsername });
+      $('community-username-current').textContent = '@' + savedUsername;
+      input.value = savedUsername;
+      message.textContent = 'Your public username has been updated.';
+      toast('Username updated.');
+    } catch (err) {
+      message.textContent = err.message || 'Could not save username.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('communityPostForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const button = $('community-post-submit');
+    const message = $('community-post-message');
+    if (!backend?.isConfigured) {
+      message.textContent = 'Supabase is not configured.';
+      return;
+    }
+    if (button.disabled) return;
+
+    const postType = $('community-post-type').value;
+    const title = $('community-post-title-input').value.trim();
+    const body = $('community-post-body').value.trim();
+    const location = $('community-post-location').value.trim();
+    button.disabled = true;
+    button.textContent = postType === 'announcement' ? 'Publishing announcement…' : 'Submitting for review…';
+    message.textContent = 'Sending your post…';
+    try {
+      await backend.createCommunityPost({ postType: postType, title: title, body: body, location: location });
+      $('communityPostForm').reset();
+      message.textContent = postType === 'announcement'
+        ? 'Official announcement published.'
+        : 'Submitted. Your post will appear to other students after moderation.';
+      toast(postType === 'announcement' ? 'Official announcement published.' : 'Community post submitted for review.');
+      await loadCommunityPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit your post.';
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Submit for review';
+    }
+  });
+
+  $('community-feed').addEventListener('submit', async function(event) {
+    const form = event.target.closest('[data-community-comment-form]');
+    if (!form) return;
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const button = form.querySelector('button[type="submit"]');
+    const textarea = form.querySelector('textarea[name="comment"]');
+    const postId = form.dataset.postId;
+    const body = textarea.value.trim();
+    if (!backend?.isConfigured) {
+      toast('Supabase is not configured.');
+      return;
+    }
+    if (body.length < 2 || body.length > 800) {
+      toast('Comments must be 2–800 characters.');
+      return;
+    }
+    button.disabled = true;
+    try {
+      await backend.createCommunityComment(postId, body);
+      toast('Comment added.');
+      await loadCommunityPage();
+    } catch (err) {
+      toast(err.message || 'Could not add comment.');
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('community-feed').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-report-community-type]');
+    if (!button) return;
+    const targetType = button.dataset.reportCommunityType;
+    const targetId = button.dataset.reportCommunityId;
+    const answer = window.prompt('Why are you reporting this ' + targetType + '?\n1 = Spam\n2 = Harassment\n3 = Personal information\n4 = Misinformation\n5 = Other', '5');
+    if (answer === null) return;
+    const reasons = { '1': 'spam', '2': 'harassment', '3': 'personal_information', '4': 'misinformation', '5': 'other' };
+    const reason = reasons[String(answer).trim()];
+    if (!reason) {
+      toast('Choose a reason from 1 to 5.');
+      return;
+    }
+    const details = window.prompt('Optional details (do not include private information):', '') || '';
+    try {
+      await window.CampusShieldBackend.reportCommunityContent(targetType, targetId, reason, details.trim());
+      toast('Report sent to the moderation team.');
+    } catch (err) {
+      toast(err.message || 'Could not report this content.');
+    }
+  });
+
+  $('community-moderation').addEventListener('click', async function(event) {
+    const postButton = event.target.closest('[data-moderate-community-post]');
+    const reportButton = event.target.closest('[data-community-report-action]');
+    const backend = window.CampusShieldBackend;
+    if (postButton) {
+      const decision = postButton.dataset.moderateCommunityPost;
+      const postId = postButton.dataset.communityPostId;
+      if (!confirm('Are you sure you want to ' + decision + ' this community post?')) return;
+      postButton.disabled = true;
+      try {
+        await backend.moderateCommunityPost(postId, decision);
+        toast(decision === 'publish' ? 'Community post published.' : 'Community post rejected.');
+        await loadCommunityPage();
+      } catch (err) {
+        toast(err.message || 'Moderation failed.');
+        postButton.disabled = false;
+      }
+      return;
+    }
+
+    if (!reportButton) return;
+    const action = reportButton.dataset.communityReportAction;
+    const reportId = reportButton.dataset.communityReportId;
+    reportButton.disabled = true;
+    try {
+      if (action === 'hide') {
+        const targetType = reportButton.dataset.communityReportType;
+        const targetId = reportButton.dataset.communityTargetId;
+        if (!confirm('Hide this content and mark the report as reviewed?')) {
+          reportButton.disabled = false;
+          return;
+        }
+        if (targetType === 'post') await backend.moderateCommunityPost(targetId, 'hide');
+        else await backend.moderateCommunityComment(targetId, 'hide');
+        await backend.resolveCommunityReport(reportId, 'reviewed');
+      } else {
+        await backend.resolveCommunityReport(reportId, 'dismissed');
+      }
+      toast(action === 'hide' ? 'Content hidden and report reviewed.' : 'Report dismissed.');
+      await loadCommunityPage();
+    } catch (err) {
+      toast(err.message || 'Could not update the report.');
+      reportButton.disabled = false;
+    }
+  });
+
+  $('refresh-community').addEventListener('click', loadCommunityPage);
+  $('refresh-community-moderation').addEventListener('click', loadCommunityPage);
+
   async function handleSignUp() {
     const backend = window.CampusShieldBackend;
     const email = $('auth-email').value.trim();
     const password = $('auth-password').value;
     const name = $('auth-name').value.trim();
+    const username = $('auth-username').value.trim().toLowerCase();
     const requestedRole = $('auth-role').value;
     const msg = $('auth-message');
 
@@ -1074,15 +1438,26 @@ td strong{color:#2a464d;font-size:11px}
       return;
     }
 
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+      msg.textContent = 'Choose a username with 3–20 lowercase letters, numbers, or underscores.';
+      return;
+    }
+
     if (!backend?.isConfigured) {
       msg.textContent = 'Supabase is not connected. Check configuration and script loading.';
       return;
     }
 
     try {
-      msg.textContent = 'Creating account...';
+      msg.textContent = 'Checking username availability…';
+      const usernameAvailable = await backend.checkCommunityUsernameAvailable(username);
+      if (!usernameAvailable) {
+        msg.textContent = 'That username is unavailable. Choose another one.';
+        return;
+      }
 
-      const {data, error} = await backend.signUp(email, password, name);
+      msg.textContent = 'Creating account...';
+      const {data, error} = await backend.signUp(email, password, name, username);
       if (error) throw error;
 
       if (!data?.user) {
@@ -1093,12 +1468,12 @@ if (data.session) {
         const result = await backend.saveRequestedRole(requestedRole);
         if (result.error) throw result.error;
 
-        msg.textContent = 'Account created. Your role request is pending verification.';
+        msg.textContent = 'Account created. Your role request is pending verification. Other students will see @' + username + ', not your real name or email.';
       } else {
         sessionStorage.setItem('campusshield_requested_role', requestedRole);
 
         msg.textContent =
-          'Account created. Check your email to confirm it, then sign in using this browser to submit your role request.';
+          'Account created. Check your email to confirm it, then sign in using this browser to submit your role request. Other students will see @' + username + ', not your real name or email.';
       }
     } catch (e) {
       console.error('Sign-up failed:', e);
