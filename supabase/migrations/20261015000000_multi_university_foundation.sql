@@ -156,6 +156,15 @@ $function$;
 revoke all on function private.user_has_current_campus(uuid) from public, anon;
 grant execute on function private.user_has_current_campus(uuid) to authenticated;
 
+create or replace function private.current_campus_account_status()
+returns text language sql stable security definer set search_path to ''
+as $function$
+  select p.verification_status::text
+  from public.profiles p where p.id = (select auth.uid()) limit 1;
+$function$;
+revoke all on function private.current_campus_account_status() from public, anon;
+grant execute on function private.current_campus_account_status() to authenticated;
+
 drop policy if exists "Users can read own profile; verified staff can read profiles" on public.profiles;
 create policy "Users can read own profile; verified staff can read profiles"
   on public.profiles for select to authenticated
@@ -738,13 +747,15 @@ create policy campus_groups_read_same_campus on public.campus_groups for select 
   using (university_id = (select private.current_campus_university_id()) and status = 'active');
 drop policy if exists campus_groups_create_same_campus on public.campus_groups;
 create policy campus_groups_create_same_campus on public.campus_groups for insert to authenticated
-  with check (created_by = (select auth.uid()) and university_id = (select private.current_campus_university_id()));
+  with check (private.current_campus_account_status() = any (array['pending','verified'])
+    and created_by = (select auth.uid()) and university_id = (select private.current_campus_university_id()));
 drop policy if exists campus_group_members_read_same_campus on public.campus_group_members;
 create policy campus_group_members_read_same_campus on public.campus_group_members for select to authenticated
   using (exists (select 1 from public.campus_groups g where g.id = group_id and g.university_id = (select private.current_campus_university_id())));
 drop policy if exists campus_group_members_join_same_campus on public.campus_group_members;
 create policy campus_group_members_join_same_campus on public.campus_group_members for insert to authenticated
-  with check (user_id = (select auth.uid()) and member_role = 'member' and exists (
+  with check (private.current_campus_account_status() = any (array['pending','verified'])
+    and user_id = (select auth.uid()) and member_role = 'member' and exists (
     select 1 from public.campus_groups g where g.id = group_id and g.university_id = (select private.current_campus_university_id()) and g.status = 'active'
   ));
 drop policy if exists campus_group_members_leave_own on public.campus_group_members;
@@ -756,18 +767,22 @@ create policy campus_events_read_same_campus on public.campus_events for select 
   using (university_id = (select private.current_campus_university_id()) and (status = 'published' or created_by = (select auth.uid())));
 drop policy if exists campus_events_create_same_campus on public.campus_events;
 create policy campus_events_create_same_campus on public.campus_events for insert to authenticated
-  with check (created_by = (select auth.uid()) and university_id = (select private.current_campus_university_id()) and status = 'pending');
+  with check (private.current_campus_account_status() = any (array['pending','verified'])
+    and created_by = (select auth.uid()) and university_id = (select private.current_campus_university_id()) and status = 'pending');
 drop policy if exists campus_event_rsvps_read_own on public.campus_event_rsvps;
 create policy campus_event_rsvps_read_own on public.campus_event_rsvps for select to authenticated
   using (user_id = (select auth.uid()));
 drop policy if exists campus_event_rsvps_add_own_same_campus on public.campus_event_rsvps;
 create policy campus_event_rsvps_add_own_same_campus on public.campus_event_rsvps for insert to authenticated
-  with check (user_id = (select auth.uid()) and exists (
+  with check (private.current_campus_account_status() = any (array['pending','verified'])
+    and user_id = (select auth.uid()) and exists (
     select 1 from public.campus_events e where e.id = event_id and e.university_id = (select private.current_campus_university_id()) and e.status = 'published'
   ));
 drop policy if exists campus_event_rsvps_update_own_same_campus on public.campus_event_rsvps;
 create policy campus_event_rsvps_update_own_same_campus on public.campus_event_rsvps for update to authenticated
-  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()) and exists (
+  using (user_id = (select auth.uid()) and private.current_campus_account_status() = any (array['pending','verified']))
+  with check (private.current_campus_account_status() = any (array['pending','verified'])
+    and user_id = (select auth.uid()) and exists (
     select 1 from public.campus_events e where e.id = event_id and e.university_id = (select private.current_campus_university_id())
   ));
 
@@ -776,12 +791,14 @@ create policy campus_marketplace_read_same_campus on public.campus_marketplace_l
   using (university_id = (select private.current_campus_university_id()) and (status = 'published' or seller_id = (select auth.uid())));
 drop policy if exists campus_marketplace_create_same_campus on public.campus_marketplace_listings;
 create policy campus_marketplace_create_same_campus on public.campus_marketplace_listings for insert to authenticated
-  with check (seller_id = (select auth.uid()) and university_id = (select private.current_campus_university_id()) and status = 'pending');
+  with check (private.current_campus_account_status() = any (array['pending','verified'])
+    and seller_id = (select auth.uid()) and university_id = (select private.current_campus_university_id()) and status = 'pending');
 drop policy if exists campus_marketplace_update_own_same_campus on public.campus_marketplace_listings;
 create policy campus_marketplace_update_own_same_campus on public.campus_marketplace_listings for update to authenticated
   using (seller_id = (select auth.uid()) and university_id = (select private.current_campus_university_id()))
   with check (
-    seller_id = (select auth.uid())
+    private.current_campus_account_status() = any (array['pending','verified'])
+    and seller_id = (select auth.uid())
     and university_id = (select private.current_campus_university_id())
     and status in ('pending','sold')
   );
@@ -791,10 +808,13 @@ create policy community_post_reactions_read_same_campus on public.community_post
   using (exists (select 1 from public.community_posts p where p.id = post_id and p.university_id = (select private.current_campus_university_id()) and p.status = 'published'));
 drop policy if exists community_post_reactions_add_same_campus on public.community_post_reactions;
 create policy community_post_reactions_add_same_campus on public.community_post_reactions for insert to authenticated
-  with check (user_id = (select auth.uid()) and exists (select 1 from public.community_posts p where p.id = post_id and p.university_id = (select private.current_campus_university_id()) and p.status = 'published'));
+  with check (private.current_campus_account_status() = any (array['pending','verified'])
+    and user_id = (select auth.uid()) and exists (select 1 from public.community_posts p where p.id = post_id and p.university_id = (select private.current_campus_university_id()) and p.status = 'published'));
 drop policy if exists community_post_reactions_update_own_same_campus on public.community_post_reactions;
 create policy community_post_reactions_update_own_same_campus on public.community_post_reactions for update to authenticated
-  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()) and exists (select 1 from public.community_posts p where p.id = post_id and p.university_id = (select private.current_campus_university_id())));
+  using (user_id = (select auth.uid()) and private.current_campus_account_status() = any (array['pending','verified']))
+  with check (private.current_campus_account_status() = any (array['pending','verified'])
+    and user_id = (select auth.uid()) and exists (select 1 from public.community_posts p where p.id = post_id and p.university_id = (select private.current_campus_university_id())));
 drop policy if exists community_post_reactions_delete_own on public.community_post_reactions;
 create policy community_post_reactions_delete_own on public.community_post_reactions for delete to authenticated using (user_id = (select auth.uid()));
 
@@ -802,7 +822,8 @@ drop policy if exists community_post_bookmarks_read_own on public.community_post
 create policy community_post_bookmarks_read_own on public.community_post_bookmarks for select to authenticated using (user_id = (select auth.uid()));
 drop policy if exists community_post_bookmarks_add_same_campus on public.community_post_bookmarks;
 create policy community_post_bookmarks_add_same_campus on public.community_post_bookmarks for insert to authenticated
-  with check (user_id = (select auth.uid()) and exists (select 1 from public.community_posts p where p.id = post_id and p.university_id = (select private.current_campus_university_id()) and p.status = 'published'));
+  with check (private.current_campus_account_status() = any (array['pending','verified'])
+    and user_id = (select auth.uid()) and exists (select 1 from public.community_posts p where p.id = post_id and p.university_id = (select private.current_campus_university_id()) and p.status = 'published'));
 drop policy if exists community_post_bookmarks_delete_own on public.community_post_bookmarks;
 create policy community_post_bookmarks_delete_own on public.community_post_bookmarks for delete to authenticated using (user_id = (select auth.uid()));
 
