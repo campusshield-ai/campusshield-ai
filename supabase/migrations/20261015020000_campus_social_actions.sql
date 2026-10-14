@@ -308,7 +308,7 @@ end;
 $function$;
 
 create or replace function public.get_community_poll_data(p_post_id uuid)
-returns table(option_id uuid,option_text text,position integer,vote_count bigint,my_vote boolean)
+returns table(option_id uuid,option_text text,"position" integer,vote_count bigint,my_vote boolean)
 language plpgsql stable security definer set search_path to ''
 as $function$
 declare
