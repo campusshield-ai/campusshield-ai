@@ -123,9 +123,53 @@ begin
 end;
 $function$;
 
+create or replace function public.list_my_campus_group_memberships()
+returns table(group_id uuid) language sql stable security definer set search_path to ''
+as $function$
+  select gm.group_id
+  from public.campus_group_members gm
+  join public.campus_groups g on g.id=gm.group_id
+  where gm.user_id=(select auth.uid())
+    and g.university_id=(select private.current_campus_university_id())
+    and g.status='active';
+$function$;
+
+create or replace function public.join_campus_group(p_group_id uuid)
+returns void language plpgsql security definer set search_path to ''
+as $function$
+declare v_user_id uuid := (select auth.uid()); v_university_id uuid := (select private.current_campus_university_id());
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose your university before joining a group.'; end if;
+  if private.current_campus_account_status() not in ('pending','verified') then raise exception 'This account cannot join groups.'; end if;
+  if not exists(select 1 from public.campus_groups g where g.id=p_group_id and g.university_id=v_university_id and g.status='active') then
+    raise exception 'This group is not available in your university.';
+  end if;
+  insert into public.campus_group_members(group_id,user_id,member_role)
+    values(p_group_id,v_user_id,'member') on conflict(group_id,user_id) do nothing;
+end;
+$function$;
+
+create or replace function public.leave_campus_group(p_group_id uuid)
+returns void language plpgsql security definer set search_path to ''
+as $function$
+declare v_user_id uuid := (select auth.uid()); v_university_id uuid := (select private.current_campus_university_id());
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose your university first.'; end if;
+  delete from public.campus_group_members gm using public.campus_groups g
+    where gm.group_id=g.id and gm.group_id=p_group_id and gm.user_id=v_user_id
+      and g.university_id=v_university_id;
+end;
+$function$;
+
 revoke all on function public.list_campus_content_moderation() from public,anon;
 revoke all on function public.review_campus_content(text,uuid,text) from public,anon;
+revoke all on function public.list_my_campus_group_memberships() from public,anon;
+revoke all on function public.join_campus_group(uuid) from public,anon;
+revoke all on function public.leave_campus_group(uuid) from public,anon;
 grant execute on function public.list_campus_content_moderation() to authenticated;
 grant execute on function public.review_campus_content(text,uuid,text) to authenticated;
+grant execute on function public.list_my_campus_group_memberships() to authenticated;
+grant execute on function public.join_campus_group(uuid) to authenticated;
+grant execute on function public.leave_campus_group(uuid) to authenticated;
 
 commit;
