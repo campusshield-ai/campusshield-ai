@@ -149,8 +149,8 @@ assert.match(rpcPermissionsMigration, /grant execute on function public\.get_my_
 assert.match(rpcPermissionsMigration, /revoke all on function public\.review_campus_account\(uuid,text\) from public, anon/i);
 assert.match(rpcPermissionsMigration, /grant execute on function public\.review_campus_staff_membership\(uuid,text\) to authenticated/i);
 assert.doesNotMatch(rpcPermissionsMigration, /grant execute on function public\.[^;]+ to anon/i, "campus RPCs are never granted to anon");
-assert.match(platformAdminProvisioningMigration, /select 1 from private\\.platform_admins pa where pa\\.user_id=v_user_id/i);
-assert.doesNotMatch(platformAdminProvisioningMigration, /insert into private\\.platform_admins/i, "users cannot self-register as platform administrators");
+assert.match(platformAdminProvisioningMigration, /select 1 from private\.platform_admins pa where pa\.user_id=v_user_id/i);
+assert.doesNotMatch(platformAdminProvisioningMigration, /insert into private\.platform_admins/i, "users cannot self-register as platform administrators");
 
 assert.doesNotMatch(html, /national feed/i, "the app must not imply cross-university interaction");
 
