@@ -16,6 +16,7 @@ const campusGroupsEventsMarketplaceMigration = await readFile(new URL("../supaba
 const marketplaceReportingMigration = await readFile(new URL("../supabase/migrations/20261015050000_marketplace_reporting.sql", import.meta.url), "utf8");
 const socialDirectoryMigration = await readFile(new URL("../supabase/migrations/20261015060000_social_directory_helpers.sql", import.meta.url), "utf8");
 const campusRoleScopingMigration = await readFile(new URL("../supabase/migrations/20261015070000_campus_role_scoping.sql", import.meta.url), "utf8");
+const rpcPermissionsMigration = await readFile(new URL("../supabase/migrations/20261015080000_harden_campus_rpc_permissions.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -142,6 +143,11 @@ assert.match(campusRoleScopingMigration, /create table if not exists private\.pl
 assert.match(campusRoleScopingMigration, /create or replace function private\.current_campus_role/i);
 assert.match(campusRoleScopingMigration, /create or replace function public\.platform_assign_campus_admin/i);
 assert.match(campusRoleScopingMigration, /campus_role='admin'/i);
+assert.match(rpcPermissionsMigration, /revoke all on function public\.get_my_campus_context\(\) from public, anon/i);
+assert.match(rpcPermissionsMigration, /grant execute on function public\.get_my_campus_context\(\) to authenticated/i);
+assert.match(rpcPermissionsMigration, /revoke all on function public\.review_campus_account\(uuid,text\) from public, anon/i);
+assert.match(rpcPermissionsMigration, /grant execute on function public\.review_campus_staff_membership\(uuid,text\) to authenticated/i);
+assert.doesNotMatch(rpcPermissionsMigration, /grant execute on function public\.[^;]+ to anon/i, "campus RPCs are never granted to anon");
 
 assert.doesNotMatch(html, /national feed/i, "the app must not imply cross-university interaction");
 
