@@ -71,7 +71,7 @@ for select to authenticated using (
     select 1
     from public.community_post_media m
     join public.community_posts p on p.id = m.post_id
-    where m.object_path = storage.objects.name
+    where m.object_path = name
       and m.university_id = (select private.current_campus_university_id())
       and (
         p.status = 'published'
