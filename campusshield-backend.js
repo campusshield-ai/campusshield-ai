@@ -534,6 +534,29 @@ async getCurrentUser() {
       return result.data;
     },
 
+    async listCampusContentModeration() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_content_moderation");
+      if (error) throw error;
+      return data || { groups: [], events: [], listings: [], listing_reports: [] };
+    },
+
+    async reviewCampusContent(contentType, contentId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("review_campus_content", {
+        p_content_type: contentType, p_content_id: contentId, p_decision: decision
+      });
+      if (error) throw error;
+    },
+
+    async reviewCampusListingReport(reportId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("review_campus_marketplace_report", {
+        p_report_id: reportId, p_decision: decision
+      });
+      if (error) throw error;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
