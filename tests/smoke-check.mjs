@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
+const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -37,6 +38,31 @@ assert.match(html, /requestSessionVersion !== authSessionVersion/);
 assert.match(html, /id="incidentSyncStatus"/);
 assert.doesNotMatch(html, /id="reporter"/);
 assert.match(html, /does not contact emergency services/i);
+
+// Campus community and public-identity privacy.
+assert.match(html, /id="auth-username"/);
+assert.match(html, /id="page-community"/);
+assert.match(html, /id="communityUsernameForm"/);
+assert.match(html, /id="communityPostForm"/);
+assert.match(html, /id="community-moderation"/);
+assert.match(html, /data-community-comment-form/);
+assert.match(html, /data-report-community-type/);
+assert.match(html, /Other students see this username, not your real name or email/i);
+assert.match(backend, /get_my_community_profile/);
+assert.match(backend, /check_community_username_available/);
+assert.match(backend, /set_my_community_username/);
+assert.match(backend, /create_community_post/);
+assert.match(backend, /create_community_comment/);
+assert.match(backend, /report_community_content/);
+assert.match(communityMigration, /alter table public\.community_posts enable row level security/i);
+assert.match(communityMigration, /grant select \(id, author_username, post_type, title, body, location, status, is_official, created_at, updated_at\)/i);
+assert.match(communityMigration, /grant select \(id, post_id, author_username, body, status, created_at, updated_at\)/i);
+assert.match(communityMigration, /private\.current_campus_role\(\)/i);
+assert.match(communityMigration, /create trigger initialize_community_profile_after_profile_insert/i);
+assert.match(communityMigration, /create or replace function public\.set_my_community_username/i);
+assert.match(communityMigration, /create or replace function public\.moderate_community_post/i);
+assert.doesNotMatch(communityMigration, /grant select \(.*author_id/i);
+assert.match(html, /does not contact emergency services/i, "the emergency-services prototype warning remains visible");
 
 assert.equal(manifest.name, "CampusShield AI");
 assert.ok(manifest.name || manifest.short_name, "manifest provides an app name");
