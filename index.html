@@ -1008,7 +1008,7 @@ td strong{color:#2a464d;font-size:11px}
 
       const pendingCount = rows.filter(row => row.verification_status === 'pending').length;
       const rejectedCount = rows.filter(row => row.verification_status === 'rejected').length;
-      message.textContent = `${pendingCount} pending and ${rejectedCount} rejected application(s)`;;
+      message.textContent = `${pendingCount} pending and ${rejectedCount} rejected application(s).`;
     } catch (err) {
       console.error('Could not load account approvals:', err);
       tbody.innerHTML = '<tr><td colspan="6">Applications could not be loaded.</td></tr>';
