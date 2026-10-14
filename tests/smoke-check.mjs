@@ -6,6 +6,7 @@ const backend = await readFile(new URL("../campusshield-backend.js", import.meta
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
+const usernameLookupRemovalMigration = await readFile(new URL("../supabase/migrations/20261014235000_remove_username_availability_rpc.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -51,7 +52,6 @@ assert.match(html, /data-community-comment-form/);
 assert.match(html, /data-report-community-type/);
 assert.match(html, /Other students see this username, not your real name or email/i);
 assert.match(backend, /get_my_community_profile/);
-assert.match(backend, /check_community_username_available/);
 assert.match(backend, /set_my_community_username/);
 assert.match(backend, /create_community_post/);
 assert.match(backend, /create_community_comment/);
@@ -68,8 +68,9 @@ assert.match(usernameSyncMigration, /create trigger sync_community_username_snap
 assert.match(usernameAvailabilityMigration, /revoke execute on function public\.check_community_username_available\(text\) from anon, public/i);
 assert.match(usernameAvailabilityMigration, /create policy community_profiles_read_own/i);
 assert.match(usernameAvailabilityMigration, /That username is already taken/i);
-assert.match(usernameSyncMigration, /update public\\.community_posts/i);
-assert.match(usernameSyncMigration, /update public\\.community_comments/i);
+assert.match(usernameSyncMigration, /update public\.community_posts/i);
+assert.match(usernameSyncMigration, /update public\.community_comments/i);
+assert.match(usernameLookupRemovalMigration, /drop function if exists public\.check_community_username_available\(text\)/i);
 assert.match(html, /does not contact emergency services/i, "the emergency-services prototype warning remains visible");
 
 assert.equal(manifest.name, "CampusShield AI");
