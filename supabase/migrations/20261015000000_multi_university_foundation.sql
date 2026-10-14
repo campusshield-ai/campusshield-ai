@@ -117,6 +117,97 @@ $function$;
 revoke all on function private.current_campus_university_id() from public, anon;
 grant execute on function private.current_campus_university_id() to authenticated;
 
+-- A role only grants campus-staff powers after that staff account's campus membership
+-- has been reviewed for this specific university.
+create or replace function private.current_campus_role()
+returns text
+language sql
+stable
+security definer
+set search_path to ''
+as $function$
+  select p.role::text
+  from public.profiles p
+  join public.campus_memberships cm on cm.user_id = p.id
+  where p.id = (select auth.uid())
+    and p.verification_status = 'verified'
+    and cm.membership_status = 'active'
+    and cm.verification_status = 'verified'
+  limit 1;
+$function$;
+revoke all on function private.current_campus_role() from public, anon;
+grant execute on function private.current_campus_role() to authenticated;
+
+create or replace function private.user_has_current_campus(p_user_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path to ''
+as $function$
+  select exists (
+    select 1
+    from public.campus_memberships cm
+    where cm.user_id = p_user_id
+      and cm.university_id = (select private.current_campus_university_id())
+      and cm.membership_status = 'active'
+  );
+$function$;
+revoke all on function private.user_has_current_campus(uuid) from public, anon;
+grant execute on function private.user_has_current_campus(uuid) to authenticated;
+
+drop policy if exists "Users can read own profile; verified staff can read profiles" on public.profiles;
+create policy "Users can read own profile; verified staff can read profiles"
+  on public.profiles for select to authenticated
+  using (
+    id = (select auth.uid())
+    or (
+      private.current_campus_role() = any (array['admin','security','teacher'])
+      and private.user_has_current_campus(id)
+    )
+  );
+
+-- An institution administrator may review accounts only inside their own university.
+create or replace function public.review_campus_account(p_user_id uuid, p_decision text)
+returns void
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  v_admin_role text;
+  v_admin_status text;
+  v_requested_role text;
+begin
+  select p.role::text, p.verification_status::text
+    into v_admin_role, v_admin_status
+  from public.profiles p where p.id = (select auth.uid());
+
+  if v_admin_role is distinct from 'admin'
+     or v_admin_status is distinct from 'verified'
+     or coalesce(private.current_campus_role(),'') <> 'admin' then
+    raise exception 'A verified administrator with approved membership for this university is required.';
+  end if;
+  if p_decision not in ('approve','reject') then raise exception 'Decision must be approve or reject.'; end if;
+  if not private.user_has_current_campus(p_user_id) then raise exception 'This account is not a member of your university.'; end if;
+
+  select p.requested_role::text into v_requested_role
+  from public.profiles p
+  where p.id = p_user_id and p.verification_status::text = 'pending';
+  if not found then raise exception 'Pending account not found.'; end if;
+  if v_requested_role not in ('student','teacher') then raise exception 'Only student and teacher requests can be reviewed here.'; end if;
+
+  if p_decision = 'approve' then
+    update public.profiles set role = v_requested_role, verification_status = 'verified'
+    where id = p_user_id and verification_status::text = 'pending';
+  else
+    update public.profiles set verification_status = 'rejected'
+    where id = p_user_id and verification_status::text = 'pending';
+  end if;
+  if not found then raise exception 'The account could not be updated.'; end if;
+end;
+$function$;
+
 alter table public.campus_universities enable row level security;
 alter table public.campus_memberships enable row level security;
 alter table public.campus_university_requests enable row level security;
@@ -128,10 +219,7 @@ create policy campus_memberships_read_own on public.campus_memberships
   for select to authenticated using (user_id = (select auth.uid()));
 drop policy if exists campus_university_requests_read_own_or_admin on public.campus_university_requests;
 create policy campus_university_requests_read_own_or_admin on public.campus_university_requests
-  for select to authenticated using (
-    requester_id = (select auth.uid())
-    or private.current_campus_role() = 'admin'
-  );
+  for select to authenticated using (requester_id = (select auth.uid()));
 revoke all on table public.campus_universities from public;
 grant select on table public.campus_universities to anon, authenticated;
 revoke all on table public.campus_memberships from anon, authenticated;
@@ -656,7 +744,7 @@ create policy campus_group_members_read_same_campus on public.campus_group_membe
   using (exists (select 1 from public.campus_groups g where g.id = group_id and g.university_id = (select private.current_campus_university_id())));
 drop policy if exists campus_group_members_join_same_campus on public.campus_group_members;
 create policy campus_group_members_join_same_campus on public.campus_group_members for insert to authenticated
-  with check (user_id = (select auth.uid()) and exists (
+  with check (user_id = (select auth.uid()) and member_role = 'member' and exists (
     select 1 from public.campus_groups g where g.id = group_id and g.university_id = (select private.current_campus_university_id()) and g.status = 'active'
   ));
 drop policy if exists campus_group_members_leave_own on public.campus_group_members;
@@ -692,7 +780,11 @@ create policy campus_marketplace_create_same_campus on public.campus_marketplace
 drop policy if exists campus_marketplace_update_own_same_campus on public.campus_marketplace_listings;
 create policy campus_marketplace_update_own_same_campus on public.campus_marketplace_listings for update to authenticated
   using (seller_id = (select auth.uid()) and university_id = (select private.current_campus_university_id()))
-  with check (seller_id = (select auth.uid()) and university_id = (select private.current_campus_university_id()));
+  with check (
+    seller_id = (select auth.uid())
+    and university_id = (select private.current_campus_university_id())
+    and status in ('pending','sold')
+  );
 
 drop policy if exists community_post_reactions_read_same_campus on public.community_post_reactions;
 create policy community_post_reactions_read_same_campus on public.community_post_reactions for select to authenticated
@@ -722,6 +814,9 @@ grant select (id, university_id, name, description, group_type, privacy, status,
   on public.campus_groups to authenticated;
 grant insert (university_id, created_by, name, description, group_type, privacy, status)
   on public.campus_groups to authenticated;
+grant select (group_id, member_role, created_at) on public.campus_group_members to authenticated;
+grant insert (group_id, user_id, member_role) on public.campus_group_members to authenticated;
+grant delete on public.campus_group_members to authenticated;
 grant select (id, university_id, title, description, category, starts_at, ends_at, location, status, created_at)
   on public.campus_events to authenticated;
 grant insert (university_id, created_by, title, description, category, starts_at, ends_at, location, status)
