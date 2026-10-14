@@ -152,12 +152,12 @@ assert.match(rpcPermissionsMigration, /grant execute on function public\.review_
 assert.doesNotMatch(rpcPermissionsMigration, /grant execute on function public\.[^;]+ to anon/i, "campus RPCs are never granted to anon");
 assert.match(platformAdminProvisioningMigration, /select 1 from private\.platform_admins pa where pa\.user_id=v_user_id/i);
 assert.doesNotMatch(platformAdminProvisioningMigration, /insert into private\.platform_admins/i, "users cannot self-register as platform administrators");
-assert.match(platformAdminConsoleMigration, /create or replace function public\\.platform_is_admin/i);
-assert.match(platformAdminConsoleMigration, /create or replace function public\\.platform_list_campus_university_requests/i);
-assert.match(platformAdminConsoleMigration, /create or replace function public\\.platform_review_campus_university_request/i);
-assert.match(platformAdminConsoleMigration, /from private\\.platform_admins/i);
-assert.match(platformAdminConsoleMigration, /grant execute on function public\\.platform_review_campus_university_request\\(uuid,text\\) to authenticated/i);
-assert.doesNotMatch(platformAdminConsoleMigration, /grant execute on function public\\.platform_review_campus_university_request\\(uuid,text\\) to anon/i);
+assert.match(platformAdminConsoleMigration, /create or replace function public\.platform_is_admin/i);
+assert.match(platformAdminConsoleMigration, /create or replace function public\.platform_list_campus_university_requests/i);
+assert.match(platformAdminConsoleMigration, /create or replace function public\.platform_review_campus_university_request/i);
+assert.match(platformAdminConsoleMigration, /from private\.platform_admins/i);
+assert.match(platformAdminConsoleMigration, /grant execute on function public\.platform_review_campus_university_request\(uuid,text\) to authenticated/i);
+assert.doesNotMatch(platformAdminConsoleMigration, /grant execute on function public\.platform_review_campus_university_request\(uuid,text\) to anon/i);
 assert.match(html, /id="platform-admin-nav"/);
 assert.match(html, /id="page-platform-admin"/);
 assert.match(html, /id="platform-admin-requests-table"/);
