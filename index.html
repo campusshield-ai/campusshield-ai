@@ -268,16 +268,29 @@ th{color:var(--muted);background:#f8fafd}
   let currentProfile = null;
 
   function showWorkspace(profile) {
-    currentProfile = profile || null;
+    if (!profile) {
+      currentProfile = null;
+      showLogin('Your account profile could not be loaded. Please sign in again or contact support.');
+      return false;
+    }
+
+    if (profile.verification_status === 'rejected') {
+      currentProfile = null;
+      showLogin('Your account verification was rejected. Please contact a CampusShield administrator.');
+      return false;
+    }
+
+    currentProfile = profile;
     $('login-screen').hidden = true;
     $('workspace').hidden = false;
 
-    const pending = currentProfile?.verification_status !== 'verified';
+    const verified = currentProfile.verification_status === 'verified';
     document.querySelectorAll('[data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
-      el.hidden = pending;
+      el.hidden = !verified;
     });
-    $('approvals-nav').hidden = !(currentProfile?.role === 'admin' && currentProfile?.verification_status === 'verified');
+    $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
     navigate('dashboard');
+    return true;
   }
 
   function showLogin(message) {
@@ -286,12 +299,38 @@ th{color:var(--muted);background:#f8fafd}
     if (message) $('auth-message').textContent = message;
   }
 
+  // Keep the visible workspace synchronized with the Supabase session.
+  // Avoid asynchronous Supabase calls inside this auth callback.
+  if (window.CampusShieldBackend?.client?.auth) {
+    window.CampusShieldBackend.client.auth.onAuthStateChange(event => {
+      if (event === 'SIGNED_OUT') {
+        currentProfile = null;
+        incidents = [];
+        render();
+        showLogin('You have signed out. Please sign in to continue.');
+      }
+    });
+  }
+
   function navigate(page) {
-    const pending = currentProfile?.verification_status !== 'verified';
-    if (pending && ['manage', 'risk', 'analytics', 'approvals'].includes(page)) {
+    if (!currentProfile) {
+      showLogin('Please sign in to access CampusShield.');
+      return;
+    }
+
+    const verified = currentProfile.verification_status === 'verified';
+    const verifiedAdmin = verified && currentProfile.role === 'admin';
+
+    if (!verified && ['manage', 'risk', 'analytics'].includes(page)) {
       page = 'dashboard';
       toast('This area is available after account verification.');
     }
+
+    if (page === 'approvals' && !verifiedAdmin) {
+      page = 'dashboard';
+      toast('Only verified administrators can access account approvals.');
+    }
+
     document.querySelectorAll('.page').forEach(el =>
       el.classList.toggle('active', el.id === 'page-' + page)
     );
@@ -654,8 +693,10 @@ if (data.session) {
           'Signed in successfully. Your account is pending verification.';
       }
 
-      showWorkspace(profile);
-      await refreshIncidentsFromSupabase();
+      const workspaceReady = showWorkspace(profile);
+      if (workspaceReady) {
+        await refreshIncidentsFromSupabase();
+      }
     } catch (e) {
       console.error('Sign-in failed:', e);
       msg.textContent = 'Sign-in failed: ' + e.message;
@@ -842,11 +883,13 @@ $('resend-confirmation-button').addEventListener('click', async () => {
             .eq('id', user.id)
             .single();
           if (!error && profile) {
-            showWorkspace(profile);
-            await refreshIncidentsFromSupabase();
-            $('auth-message').textContent = profile.verification_status === 'verified'
-              ? `Signed in. Your role is ${profile.role}.`
-              : 'Your account is pending verification. You can submit incident reports.';
+            const workspaceReady = showWorkspace(profile);
+            if (workspaceReady) {
+              await refreshIncidentsFromSupabase();
+              $('auth-message').textContent = profile.verification_status === 'verified'
+                ? `Signed in. Your role is ${profile.role}.`
+                : 'Your account is pending verification. You can submit incident reports.';
+            }
           }
         }
       }
