@@ -106,6 +106,31 @@ async getCurrentUser() {
       return data || [];
     },
 
+    async bootstrapFirstCampusAdmin(universityId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("bootstrap_first_campus_admin", {
+        p_university_id: universityId
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
+    async listCampusStaffMembershipReviews() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_staff_membership_reviews");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async reviewCampusStaffMembership(userId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("review_campus_staff_membership", {
+        p_user_id: userId,
+        p_decision: decision
+      });
+      if (error) throw error;
+    },
+
     async getMyCampusContext() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("get_my_campus_context");
