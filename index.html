@@ -1635,12 +1635,14 @@ td strong{color:#2a464d;font-size:11px}
         $('campus-marketplace-feed').innerHTML = '';
         return;
       }
-      const [listings, myCommunityProfile] = await Promise.all([
+      const [listings, ownListingResult] = await Promise.all([
         backend.listCampusMarketplaceListings(),
-        backend.getMyCommunityProfile()
+        backend.client.rpc("list_my_campus_marketplace_listings")
       ]);
+      if (ownListingResult.error) throw ownListingResult.error;
+      const ownListingIds = new Set((ownListingResult.data || []).map(function(row) { return row.listing_id; }));
       $('campus-marketplace-feed').innerHTML = listings.length ? listings.map(function(listing) {
-        const isMine = Boolean(myCommunityProfile?.username && listing.seller_username === myCommunityProfile.username);
+        const isMine = ownListingIds.has(listing.id);
         return '<article class="community-post">' +
           '<div class="community-meta"><span class="tag open">' + esc(listing.category.replaceAll('_',' ')) + '</span><span>·</span><strong>' + (listing.status === 'sold' ? 'Sold' : 'Available') + '</strong></div>' +
           '<h3 class="community-post-title">' + esc(listing.title) + '</h3>' +
