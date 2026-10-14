@@ -472,7 +472,7 @@ td strong{color:#2a464d;font-size:11px}
     </form>
   </details>
 </section>
-<div class="notice-inline" id="campus-context-banner" hidden><strong>Your university space:</strong> <span id="campus-context-name"></span>. Student interaction is limited to members of this university.</div>
+<div class="notice-inline" id="campus-context-banner" hidden><strong>Your university space:</strong> <span id="campus-context-name"></span>. Student interaction is limited to members of this university. <span id="campus-context-status"></span></div>
 <div class="community-layout" id="community-main-layout">
   <section class="panel" aria-labelledby="community-profile-title">
     <div class="panel-heading"><div><h2 id="community-profile-title">Your public profile</h2><p>Students see your username only.</p></div></div>
@@ -1274,6 +1274,12 @@ td strong{color:#2a464d;font-size:11px}
         return;
       }
       $('campus-context-name').textContent = campus.university_name + (campus.state ? ' · ' + campus.state : '');
+      $('campus-context-status').textContent =
+        currentProfile?.verification_status === 'verified' &&
+        ['admin','security','teacher'].includes(currentProfile.role) &&
+        campus.verification_status !== 'verified'
+          ? ' Staff-only actions remain disabled until your membership is verified by this university.'
+          : '';
       const profile = await backend.getMyCommunityProfile();
       communityProfile = profile;
       $('community-username-current').textContent = profile?.username ? '@' + profile.username : 'Username unavailable';
