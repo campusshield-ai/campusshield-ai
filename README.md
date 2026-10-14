@@ -22,6 +22,14 @@ The project is being developed with Nigerian university campuses in mind.
 - **Responsive workspace** — Layout adapts to desktop, tablet, and phone screens.
 - **PWA install setup** — Android browsers can offer installation when their browser criteria are met; iPhone and iPad users can add CampusShield from Safari’s Share menu.
 
+
+- **Privacy-preserving campus community** — Public cards show chosen usernames, not real names or email addresses.
+- **Username customization** — New accounts choose a unique handle; signed-in users can change it with a cooldown.
+- **Reviewed community posts** — Students can submit public-safe safety issues and improvement suggestions; these stay out of the public feed until reviewed.
+- **Comments and replies** — Students can discuss published community posts using their public handles.
+- **Verified staff announcements** — Approved teacher, security, and administrator accounts can publish clearly labelled official updates.
+- **Community moderation** — Authorized staff can publish or reject submissions, hide reported content, and review user reports.
+
 The current app does not include an interactive campus map. Map-based views remain a future feature.
 
 ## 🎯 Our Mission
@@ -55,6 +63,21 @@ CampusShield requires an internet connection to sign in and load or submit repor
 
 The browser uses the Supabase publishable key, which is intended for public client applications. Never place a Supabase secret or `service_role` key in browser code. Database Row Level Security policies are the access-control boundary; interface role checks only shape the user experience and do not replace RLS. Dashboard counts reflect the rows Supabase makes available to the signed-in user.
 
+## 🧑‍🤝‍🧑 Campus Community and privacy
+
+The campus community is intentionally separate from private incident reporting. A student must submit a public-safe issue or suggestion separately; submitting a private incident does not automatically publish or share that incident.
+
+- Public posts and comments store a username snapshot for display.
+- Real names and email addresses are not rendered in community cards or comments.
+- Username changes are validated and checked for uniqueness by a database function.
+- Student community posts require review before publication; verified staff announcements are labelled as official.
+- Students can report posts and comments. Verified teachers, security personnel, and administrators can moderate community content.
+- Supabase Row Level Security and restricted column grants protect internal author IDs and report submitter IDs from community queries.
+- Sensitive incidents (including medical emergencies, threats, harassment, or cases containing identifying evidence) should use private incident reporting and must not be copied into public community posts.
+- Public posts and comments are not a substitute for a validated emergency-response system. The prototype still does not contact emergency services.
+
+The additive database migration is in `supabase/migrations/20261014230000_add_community_privacy_feed.sql`. Apply it to a Supabase environment before deploying the updated frontend/backend files.
+
 ## 🔮 Future Plans
 
 - Interactive campus map
@@ -62,7 +85,8 @@ The browser uses the Supabase publishable key, which is intended for public clie
 - Advanced analytics and trend visualization
 - Risk monitoring and alert features
 - Administrative dashboard improvements
-- Stronger privacy and security controls
+- Interactive campus map and safety notifications
+- AI-assisted trend summaries and duplicate-issue detection after appropriate validation
 
 ## 👥 Team
 
