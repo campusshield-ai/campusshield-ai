@@ -100,7 +100,7 @@ async getCurrentUser() {
       const { data, error } = await client
         .from("incidents")
         .select(
-          "id, reporter_id, category, severity, location, description, status, created_at, updated_at"
+          "id, category, severity, location, description, status, created_at, updated_at"
         )
         .order("created_at", { ascending: false });
 
