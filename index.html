@@ -2019,6 +2019,179 @@ td strong{color:#2a464d;font-size:11px}
     }
   });
 
+  $('campusGroupForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-group-submit');
+    const message = $('campus-group-message');
+    button.disabled = true;
+    message.textContent = 'Submitting your group…';
+    try {
+      await window.CampusShieldBackend.createCampusGroup({
+        name: $('campus-group-name').value.trim(),
+        groupType: $('campus-group-type').value,
+        privacy: $('campus-group-privacy').value,
+        description: $('campus-group-description').value.trim()
+      });
+      $('campusGroupForm').reset();
+      message.textContent = 'Group submitted. It will appear only in your university after campus staff approve it.';
+      toast('Group submitted for campus review.');
+      await loadCampusGroupsPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit this group.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campusEventForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-event-submit');
+    const message = $('campus-event-message');
+    const starts = $('campus-event-start').value;
+    const ends = $('campus-event-end').value;
+    if (ends && new Date(ends).getTime() < new Date(starts).getTime()) {
+      message.textContent = 'The event end time must be after the start time.';
+      return;
+    }
+    button.disabled = true;
+    message.textContent = 'Submitting event…';
+    try {
+      await window.CampusShieldBackend.createCampusEvent({
+        title: $('campus-event-title').value.trim(),
+        category: $('campus-event-category').value,
+        startsAt: new Date(starts).toISOString(),
+        endsAt: ends ? new Date(ends).toISOString() : null,
+        location: $('campus-event-location').value.trim(),
+        description: $('campus-event-description').value.trim()
+      });
+      $('campusEventForm').reset();
+      message.textContent = 'Event submitted. It will only appear to your university after approval.';
+      toast('Event submitted for campus review.');
+      await loadCampusEventsPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit this event.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campusMarketplaceForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-listing-submit');
+    const message = $('campus-listing-message');
+    button.disabled = true;
+    message.textContent = 'Submitting listing…';
+    try {
+      await window.CampusShieldBackend.createCampusMarketplaceListing({
+        category: $('campus-listing-category').value,
+        title: $('campus-listing-title').value.trim(),
+        priceNgn: $('campus-listing-price').value,
+        description: $('campus-listing-description').value.trim(),
+        contactInstructions: $('campus-listing-contact').value.trim()
+      });
+      $('campusMarketplaceForm').reset();
+      message.textContent = 'Listing submitted for review. CampusShield does not process payments or escrow.';
+      toast('Marketplace listing submitted for campus review.');
+      await loadCampusMarketplacePage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit this listing.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('refresh-campus-groups').addEventListener('click', loadCampusGroupsPage);
+  $('refresh-campus-events').addEventListener('click', loadCampusEventsPage);
+  $('refresh-campus-marketplace').addEventListener('click', loadCampusMarketplacePage);
+  $('refresh-campus-content-moderation').addEventListener('click', loadCampusContentModeration);
+
+  $('page-groups').addEventListener('click', async function(event) {
+    const groupButton = event.target.closest('[data-campus-group-action]');
+    const contentButton = event.target.closest('[data-campus-content-review]');
+    const reportButton = event.target.closest('[data-marketplace-report-review]');
+    if (groupButton) {
+      const action = groupButton.dataset.campusGroupAction;
+      const groupId = groupButton.dataset.campusGroupId;
+      groupButton.disabled = true;
+      try {
+        if (action === 'join') await window.CampusShieldBackend.joinCampusGroup(groupId);
+        else await window.CampusShieldBackend.leaveCampusGroup(groupId);
+        toast(action === 'join' ? 'You joined the campus group.' : 'You left the campus group.');
+        await loadCampusGroupsPage();
+      } catch (err) {
+        toast(err.message || 'Could not update group membership.');
+        groupButton.disabled = false;
+      }
+      return;
+    }
+    if (contentButton) {
+      const decision = contentButton.dataset.campusContentReview;
+      const type = contentButton.dataset.campusContentType;
+      const id = contentButton.dataset.campusContentId;
+      if (!confirm('Are you sure you want to ' + decision + ' this ' + type + '?')) return;
+      contentButton.disabled = true;
+      try {
+        await window.CampusShieldBackend.reviewCampusContent(type,id,decision);
+        toast(type.charAt(0).toUpperCase()+type.slice(1)+' '+(decision==='publish'?'approved':'rejected')+'.');
+        await loadCampusContentModeration();
+        await Promise.all([loadCampusGroupsPage(),loadCampusEventsPage(),loadCampusMarketplacePage()]);
+      } catch (err) {
+        toast(err.message || 'Could not review this campus content.');
+        contentButton.disabled = false;
+      }
+      return;
+    }
+    if (reportButton) {
+      const decision = reportButton.dataset.marketplaceReportReview;
+      const reportId = reportButton.dataset.marketplaceReportId;
+      if (!confirm(decision === 'hide_listing' ? 'Hide this listing and mark its report reviewed?' : 'Dismiss this marketplace report?')) return;
+      reportButton.disabled = true;
+      try {
+        await window.CampusShieldBackend.reviewCampusListingReport(reportId,decision);
+        toast(decision === 'hide_listing' ? 'Listing hidden and report reviewed.' : 'Marketplace report dismissed.');
+        await loadCampusContentModeration();
+        await loadCampusMarketplacePage();
+      } catch (err) {
+        toast(err.message || 'Could not resolve this marketplace report.');
+        reportButton.disabled = false;
+      }
+    }
+  });
+
+  $('page-events').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-campus-event-rsvp]');
+    if (!button) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.setCampusEventRsvp(button.dataset.campusEventId,button.dataset.campusEventRsvp);
+      toast(button.dataset.campusEventRsvp === 'going' ? 'You are marked as going.' : 'Marked as interested.');
+      await loadCampusEventsPage();
+    } catch (err) {
+      toast(err.message || 'Could not save your RSVP.');
+      button.disabled = false;
+    }
+  });
+
+  $('page-marketplace').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-marketplace-report]');
+    if (!button) return;
+    const answer = window.prompt('Why are you reporting this listing?\n1 = Suspected scam\n2 = Spam\n3 = Unsafe item\n4 = Misleading listing\n5 = Harassment\n6 = Other','1');
+    if (answer === null) return;
+    const reasons = {'1':'scam_suspicion','2':'spam','3':'unsafe_item','4':'misleading_listing','5':'harassment','6':'other'};
+    const reason = reasons[String(answer).trim()];
+    if (!reason) { toast('Choose a report reason from 1 to 6.'); return; }
+    const details = window.prompt('Optional details; do not include private information.','') || '';
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.reportCampusListing(button.dataset.marketplaceReport,reason,details.trim());
+      toast('Marketplace report sent to your campus moderators.');
+      await loadCampusMarketplacePage();
+    } catch (err) {
+      toast(err.message || 'Could not report this listing.');
+      button.disabled = false;
+    }
+  });
+
   async function handleSignUp() {
     const backend = window.CampusShieldBackend;
     const email = $('auth-email').value.trim();
