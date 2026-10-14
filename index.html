@@ -1449,14 +1449,7 @@ td strong{color:#2a464d;font-size:11px}
     }
 
     try {
-      msg.textContent = 'Checking username availability…';
-      const usernameAvailable = await backend.checkCommunityUsernameAvailable(username);
-      if (!usernameAvailable) {
-        msg.textContent = 'That username is unavailable. Choose another one.';
-        return;
-      }
-
-      msg.textContent = 'Creating account...';
+      msg.textContent = 'Creating account…';
       const {data, error} = await backend.signUp(email, password, name, username);
       if (error) throw error;
 
@@ -1477,7 +1470,11 @@ if (data.session) {
       }
     } catch (e) {
       console.error('Sign-up failed:', e);
-      msg.textContent = 'Sign-up failed: ' + e.message;
+      if (/database error saving new user/i.test(String(e.message || ''))) {
+        msg.textContent = 'Sign-up failed. That username may already be taken; choose another username and try again. If it continues, contact the CampusShield administrator.';
+      } else {
+        msg.textContent = 'Sign-up failed: ' + e.message;
+      }
     }
   }
 
