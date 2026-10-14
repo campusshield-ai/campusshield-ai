@@ -1494,6 +1494,16 @@ td strong{color:#2a464d;font-size:11px}
     }
   });
 
+  function syncCommunityPollFields() {
+    const isPoll = $('community-post-type').value === 'poll';
+    $('community-poll-options').hidden = !isPoll;
+    ['community-poll-option-1','community-poll-option-2'].forEach(function(id) {
+      $(id).required = isPoll;
+    });
+  }
+  $('community-post-type').addEventListener('change', syncCommunityPollFields);
+  syncCommunityPollFields();
+
   $('communityPostForm').addEventListener('submit', async function(event) {
     event.preventDefault();
     const backend = window.CampusShieldBackend;
@@ -1509,12 +1519,19 @@ td strong{color:#2a464d;font-size:11px}
     const title = $('community-post-title-input').value.trim();
     const body = $('community-post-body').value.trim();
     const location = $('community-post-location').value.trim();
+    const options = [
+      $('community-poll-option-1').value.trim(),
+      $('community-poll-option-2').value.trim(),
+      $('community-poll-option-3').value.trim(),
+      $('community-poll-option-4').value.trim()
+    ];
     button.disabled = true;
     button.textContent = postType === 'announcement' ? 'Publishing announcement…' : 'Submitting for review…';
     message.textContent = 'Sending your post…';
     try {
-      await backend.createCommunityPost({ postType: postType, title: title, body: body, location: location });
+      await backend.createCommunityPost({ postType: postType, title: title, body: body, location: location, options: options });
       $('communityPostForm').reset();
+      syncCommunityPollFields();
       message.textContent = postType === 'announcement'
         ? 'Official announcement published.'
         : 'Submitted. Your post will appear to other students after moderation.';
@@ -1558,6 +1575,72 @@ td strong{color:#2a464d;font-size:11px}
   });
 
   $('community-feed').addEventListener('click', async function(event) {
+    const reactionButton = event.target.closest('[data-community-reaction]');
+    const bookmarkButton = event.target.closest('[data-community-bookmark]');
+    const repostButton = event.target.closest('[data-community-repost]');
+    const followButton = event.target.closest('[data-community-follow]');
+    const pollButton = event.target.closest('[data-community-poll-vote]');
+    const replyButton = event.target.closest('[data-community-reply]');
+    const backend = window.CampusShieldBackend;
+
+    try {
+      if (reactionButton) {
+        await backend.toggleCommunityReaction(reactionButton.dataset.communityReaction, 'like');
+        toast('Reaction updated.');
+        await loadCommunityPage();
+        return;
+      }
+      if (bookmarkButton) {
+        const saved = await backend.toggleCommunityBookmark(bookmarkButton.dataset.communityBookmark);
+        toast(saved ? 'Post bookmarked.' : 'Bookmark removed.');
+        await loadCommunityPage();
+        return;
+      }
+      if (repostButton) {
+        if (!confirm('Repost this campus update for review? It will only be shared inside your university.')) return;
+        await backend.repostCommunityPost(repostButton.dataset.communityRepost);
+        toast('Repost submitted for campus moderation.');
+        await loadCommunityPage();
+        return;
+      }
+      if (followButton) {
+        const follow = followButton.dataset.followState !== 'following';
+        await backend.toggleCampusFollowPostAuthor(followButton.dataset.communityFollow, follow);
+        toast(follow ? 'Following this campus member.' : 'You unfollowed this campus member.');
+        await loadCommunityPage();
+        return;
+      }
+      if (pollButton) {
+        const postId = pollButton.dataset.communityPollVote;
+        const selected = Array.from($('community-feed').querySelectorAll('input[type="radio"]'))
+          .find(function(input) { return input.name === 'poll-' + postId && input.checked; });
+        if (!selected) {
+          toast('Choose an answer before voting.');
+          return;
+        }
+        await backend.voteCommunityPoll(postId, selected.value);
+        toast('Your vote has been saved.');
+        await loadCommunityPage();
+        return;
+      }
+      if (replyButton) {
+        const body = window.prompt('Write a respectful reply (2–800 characters):', '');
+        if (body === null) return;
+        if (body.trim().length < 2 || body.trim().length > 800) {
+          toast('Replies must be 2–800 characters.');
+          return;
+        }
+        await backend.createCommunityReply(replyButton.dataset.postId, replyButton.dataset.communityReply, body.trim());
+        toast('Reply added.');
+        await loadCommunityPage();
+        return;
+      }
+    } catch (err) {
+      console.error('Campus social action failed:', err);
+      toast(err.message || 'Could not complete this action.');
+      return;
+    }
+
     const button = event.target.closest('[data-report-community-type]');
     if (!button) return;
     const targetType = button.dataset.reportCommunityType;
