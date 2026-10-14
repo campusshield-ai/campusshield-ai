@@ -427,6 +427,7 @@ create policy community_posts_read_same_campus on public.community_posts
     university_id = (select private.current_campus_university_id())
     and (
       status = 'published'
+      or author_id = (select auth.uid())
       or private.current_campus_role() = any (array['admin','security','teacher'])
     )
   );
@@ -494,8 +495,10 @@ begin
   if p_location is not null and char_length(btrim(p_location)) > 120 then raise exception 'The location must be 120 characters or fewer.'; end if;
 
   if p_post_type = 'announcement' then
-    if v_verification_status <> 'verified' or v_role not in ('admin','security','teacher') then
-      raise exception 'Only verified campus staff can publish official announcements.';
+    if v_verification_status <> 'verified'
+      or v_role not in ('admin','security','teacher')
+      or coalesce(private.current_campus_role(),'') not in ('admin','security','teacher') then
+      raise exception 'Only staff with approved membership for this university can publish official announcements.';
     end if;
     v_is_official := true;
     v_status := 'published';
