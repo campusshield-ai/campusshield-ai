@@ -1550,6 +1550,144 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
+  async function loadCampusGroupsPage() {
+    const backend = window.CampusShieldBackend;
+    const status = $('campus-groups-status');
+    if (!currentProfile || !backend?.isConfigured) return;
+    status.textContent = 'Loading your university groups…';
+    try {
+      campusContext = await backend.getMyCampusContext();
+      if (!campusContext?.university_id) {
+        status.textContent = 'Choose your university on the Campus community page first.';
+        $('campus-groups-feed').innerHTML = '';
+        return;
+      }
+      const [groups, joined] = await Promise.all([
+        backend.listCampusGroups(),
+        backend.listMyCampusGroupMemberships()
+      ]);
+      const memberIds = new Set(joined);
+      $('campus-groups-feed').innerHTML = groups.length ? groups.map(function(group) {
+        const isJoined = memberIds.has(group.id);
+        return '<article class="community-post">' +
+          '<div class="community-meta"><span class="tag open">' + esc(group.group_type.replaceAll('_',' ')) + '</span><span>·</span><strong>' + esc(group.privacy === 'request_to_join' ? 'Request to join' : 'Campus group') + '</strong></div>' +
+          '<h3 class="community-post-title">' + esc(group.name) + '</h3>' +
+          '<p class="community-post-body">' + esc(group.description || 'Campus group') + '</p>' +
+          '<p class="community-meta">Created by @' + esc(group.creator_username || 'campus member') + '</p>' +
+          '<button type="button" class="btn ' + (isJoined ? 'secondary' : '') + '" data-campus-group-action="' + (isJoined ? 'leave' : 'join') + '" data-campus-group-id="' + esc(group.id) + '">' + (isJoined ? 'Leave group' : 'Join group') + '</button>' +
+          '</article>';
+      }).join('') : '<div class="community-empty"><strong>No approved groups yet.</strong><p>Create one for your course, department, study circle or society. It will be reviewed before appearing.</p></div>';
+      status.textContent = groups.length + ' approved group(s) in your university.';
+      if (canModerateCommunity()) await loadCampusContentModeration();
+    } catch (err) {
+      status.textContent = err.message || 'Could not load campus groups.';
+      $('campus-groups-feed').innerHTML = '<div class="community-empty">Campus groups are temporarily unavailable.</div>';
+    }
+  }
+
+  async function loadCampusEventsPage() {
+    const backend = window.CampusShieldBackend;
+    const status = $('campus-events-status');
+    if (!currentProfile || !backend?.isConfigured) return;
+    status.textContent = 'Loading campus events…';
+    try {
+      campusContext = await backend.getMyCampusContext();
+      if (!campusContext?.university_id) {
+        status.textContent = 'Choose your university on the Campus community page first.';
+        $('campus-events-feed').innerHTML = '';
+        return;
+      }
+      const [events, responses] = await Promise.all([
+        backend.listCampusEvents(),
+        backend.listMyCampusEventRsvps()
+      ]);
+      const rsvpByEvent = Object.create(null);
+      responses.forEach(row => { rsvpByEvent[row.event_id] = row.response; });
+      $('campus-events-feed').innerHTML = events.length ? events.map(function(event) {
+        const current = rsvpByEvent[event.id] || '';
+        return '<article class="community-post">' +
+          '<div class="community-meta"><span class="tag open">' + esc(event.category.replaceAll('_',' ')) + '</span><span>·</span><time>' + esc(dateText(event.starts_at)) + '</time></div>' +
+          '<h3 class="community-post-title">' + esc(event.title) + '</h3>' +
+          '<p class="community-post-body">' + esc(event.description || '') + '</p>' +
+          '<p class="community-meta">Location: ' + esc(event.location || 'See organizer details') + (event.organizer_username ? ' · Organizer @' + esc(event.organizer_username) : '') + '</p>' +
+          (event.ends_at ? '<p class="community-meta">Ends: ' + esc(dateText(event.ends_at)) + '</p>' : '') +
+          '<div class="actions"><button type="button" class="btn ' + (current === 'going' ? 'secondary' : '') + '" data-campus-event-rsvp="going" data-campus-event-id="' + esc(event.id) + '">' + (current === 'going' ? 'Going ✓' : 'I’m going') + '</button>' +
+          '<button type="button" class="btn secondary" data-campus-event-rsvp="interested" data-campus-event-id="' + esc(event.id) + '">' + (current === 'interested' ? 'Interested ✓' : 'Interested') + '</button></div>' +
+          '</article>';
+      }).join('') : '<div class="community-empty"><strong>No upcoming approved events.</strong><p>Submit an event for your campus staff to review.</p></div>';
+      status.textContent = events.length + ' upcoming event(s) in your university.';
+      if (canModerateCommunity()) await loadCampusContentModeration();
+    } catch (err) {
+      status.textContent = err.message || 'Could not load campus events.';
+      $('campus-events-feed').innerHTML = '<div class="community-empty">Campus events are temporarily unavailable.</div>';
+    }
+  }
+
+  async function loadCampusMarketplacePage() {
+    const backend = window.CampusShieldBackend;
+    const status = $('campus-marketplace-status');
+    if (!currentProfile || !backend?.isConfigured) return;
+    status.textContent = 'Loading your campus marketplace…';
+    try {
+      campusContext = await backend.getMyCampusContext();
+      if (!campusContext?.university_id) {
+        status.textContent = 'Choose your university on the Campus community page first.';
+        $('campus-marketplace-feed').innerHTML = '';
+        return;
+      }
+      const listings = await backend.listCampusMarketplaceListings();
+      $('campus-marketplace-feed').innerHTML = listings.length ? listings.map(function(listing) {
+        return '<article class="community-post">' +
+          '<div class="community-meta"><span class="tag open">' + esc(listing.category.replaceAll('_',' ')) + '</span><span>·</span><strong>' + (listing.status === 'sold' ? 'Sold' : 'Available') + '</strong></div>' +
+          '<h3 class="community-post-title">' + esc(listing.title) + '</h3>' +
+          '<p class="community-post-body">' + esc(listing.description) + '</p>' +
+          '<p><strong>' + (listing.price_ngn == null ? 'Price not listed' : '₦' + Number(listing.price_ngn).toLocaleString('en-NG')) + '</strong></p>' +
+          '<p class="community-meta">Seller: @' + esc(listing.seller_username || 'campus member') + ' · ' + esc(dateText(listing.created_at)) + '</p>' +
+          (listing.contact_instructions ? '<p class="community-meta">Contact: ' + esc(listing.contact_instructions) + '</p>' : '') +
+          (listing.status === 'published' ? '<button type="button" class="btn secondary" data-marketplace-report="' + esc(listing.id) + '">Report listing</button>' : '') +
+          '</article>';
+      }).join('') : '<div class="community-empty"><strong>No approved listings yet.</strong><p>List a textbook, item or service for review by your university moderators.</p></div>';
+      status.textContent = listings.length + ' listing(s) in your university marketplace.';
+      if (canModerateCommunity()) await loadCampusContentModeration();
+    } catch (err) {
+      status.textContent = err.message || 'Could not load the campus marketplace.';
+      $('campus-marketplace-feed').innerHTML = '<div class="community-empty">The marketplace is temporarily unavailable.</div>';
+    }
+  }
+
+  async function loadCampusContentModeration() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !canModerateCommunity()) {
+      $('campus-content-moderation').hidden = true;
+      return;
+    }
+    $('campus-content-moderation').hidden = false;
+    const status = $('campus-content-moderation-message');
+    status.textContent = 'Loading your campus review queue…';
+    try {
+      const data = await backend.listCampusContentModeration();
+      const groups = data.groups || [];
+      const events = data.events || [];
+      const listings = data.listings || [];
+      const reports = data.listing_reports || [];
+      const makeCard = function(type, item, name, summary, meta) {
+        return '<article class="community-moderation-item">' +
+          '<h4>' + esc(name) + '</h4><p>' + esc(summary || '') + '</p><p class="community-meta">' + esc(meta || '') + '</p>' +
+          '<div class="actions"><button type="button" class="btn" data-campus-content-review="publish" data-campus-content-type="' + type + '" data-campus-content-id="' + esc(item.id) + '">Approve</button>' +
+          '<button type="button" class="btn danger" data-campus-content-review="reject" data-campus-content-type="' + type + '" data-campus-content-id="' + esc(item.id) + '">Reject</button></div></article>';
+      };
+      $('moderation-groups-feed').innerHTML = groups.length ? groups.map(x => makeCard('group',x,x.name,x.description,x.group_type+' · @'+(x.creator_username||'member'))).join('') : '<div class="community-empty">No groups awaiting review.</div>';
+      $('moderation-events-feed').innerHTML = events.length ? events.map(x => makeCard('event',x,x.title,x.description,x.category+' · '+dateText(x.starts_at))).join('') : '<div class="community-empty">No events awaiting review.</div>';
+      $('moderation-listings-feed').innerHTML = listings.length ? listings.map(x => makeCard('listing',x,x.title,x.description,x.category+' · '+(x.price_ngn == null ? 'no price' : '₦'+Number(x.price_ngn).toLocaleString('en-NG')))).join('') : '<div class="community-empty">No listings awaiting review.</div>';
+      $('moderation-listing-reports-feed').innerHTML = reports.length ? reports.map(function(x) {
+        return '<article class="community-moderation-item"><h4>'+esc(x.listing_title || 'Marketplace listing')+'</h4><p>'+esc(String(x.reason||'other').replaceAll('_',' '))+'</p><p>'+esc(x.details || 'No extra details provided.')+'</p><div class="actions"><button class="btn danger" type="button" data-marketplace-report-review="hide_listing" data-marketplace-report-id="'+esc(x.id)+'">Hide listing</button><button class="btn secondary" type="button" data-marketplace-report-review="dismissed" data-marketplace-report-id="'+esc(x.id)+'">Dismiss report</button></div></article>';
+      }).join('') : '<div class="community-empty">No marketplace reports pending.</div>';
+      status.textContent = 'Queue loaded · '+groups.length+' group(s), '+events.length+' event(s), '+listings.length+' listing(s), '+reports.length+' marketplace report(s).';
+    } catch (err) {
+      status.textContent = err.message || 'Campus moderation queue is unavailable.';
+    }
+  }
+
   $('communityUsernameForm').addEventListener('submit', async function(event) {
     event.preventDefault();
     const backend = window.CampusShieldBackend;
