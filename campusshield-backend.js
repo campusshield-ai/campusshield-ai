@@ -24,14 +24,14 @@
     isConfigured: ready,
     client,
  
-async signUp(email, password, displayName, username) {
+async signUp(email, password, displayName, username, universityId) {
   if (!client) throw new Error("Supabase is not configured.");
 
   return client.auth.signUp({
     email,
     password,
     options: {
-      data: { display_name: displayName || "", username: String(username || "").trim().toLowerCase() },
+      data: { display_name: displayName || "", username: String(username || "").trim().toLowerCase(), university_id: universityId || null },
       emailRedirectTo:
         "https://campusshield-ai.github.io/campusshield-ai/"
     }
@@ -92,6 +92,51 @@ async getCurrentUser() {
       return client.rpc("save_my_requested_role", {
         p_requested_role: requestedRole
       });
+    },
+
+    async listCampusUniversities() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client
+        .from("campus_universities")
+        .select("id, name, slug, ownership, state")
+        .eq("is_active", true)
+        .order("name", { ascending: true })
+        .limit(500);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async getMyCampusContext() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("get_my_campus_context");
+      if (error) throw error;
+      return Array.isArray(data) ? (data[0] || null) : data;
+    },
+
+    async setMyCampusMembership(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!input || !input.universityId) throw new Error("Choose your university.");
+      const { data, error } = await client.rpc("set_my_campus_membership", {
+        p_university_id: input.universityId,
+        p_faculty: input.faculty || null,
+        p_department: input.department || null,
+        p_course: input.course || null,
+        p_year_of_study: input.yearOfStudy || null
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async requestCampusUniversity(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("request_campus_university", {
+        p_university_name: input.name,
+        p_state: input.state,
+        p_ownership: input.ownership,
+        p_official_website: input.website || null
+      });
+      if (error) throw error;
+      return data;
     },
 
     async getMyCommunityProfile() {
@@ -250,11 +295,16 @@ async getCurrentUser() {
       if (!user) {
         throw new Error("Please sign in before submitting an incident.");
       }
+      const campus = await this.getMyCampusContext();
+      if (!campus?.university_id) {
+        throw new Error("Choose your university in Campus community before submitting a report.");
+      }
 
       const { data, error } = await client
         .from("incidents")
         .insert({
           reporter_id: user.id,
+          university_id: campus.university_id,
           category: input.category,
           severity: input.severity,
           location: input.location,
