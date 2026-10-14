@@ -102,16 +102,6 @@ async getCurrentUser() {
       return Array.isArray(data) ? (data[0] || null) : data;
     },
 
-    async checkCommunityUsernameAvailable(username) {
-      if (!client) throw new Error("Supabase is not configured.");
-
-      const { data, error } = await client.rpc("check_community_username_available", {
-        p_username: String(username || "").trim().toLowerCase()
-      });
-      if (error) throw error;
-      return data === true;
-    },
-
     async setMyCommunityUsername(username) {
       if (!client) throw new Error("Supabase is not configured.");
 
