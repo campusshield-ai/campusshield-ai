@@ -15,6 +15,7 @@ const privateCampusMediaMigration = await readFile(new URL("../supabase/migratio
 const campusGroupsEventsMarketplaceMigration = await readFile(new URL("../supabase/migrations/20261015040000_campus_groups_events_marketplace.sql", import.meta.url), "utf8");
 const marketplaceReportingMigration = await readFile(new URL("../supabase/migrations/20261015050000_marketplace_reporting.sql", import.meta.url), "utf8");
 const socialDirectoryMigration = await readFile(new URL("../supabase/migrations/20261015060000_social_directory_helpers.sql", import.meta.url), "utf8");
+const campusRoleScopingMigration = await readFile(new URL("../supabase/migrations/20261015070000_campus_role_scoping.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -136,6 +137,12 @@ assert.match(campusGroupsEventsMarketplaceMigration, /create policy campus_marke
 assert.match(marketplaceReportingMigration, /create or replace function public\.report_campus_marketplace_listing/i);
 assert.match(marketplaceReportingMigration, /create or replace function public\.review_campus_marketplace_report/i);
 assert.match(socialDirectoryMigration, /list_my_campus_marketplace_listings/i);
+assert.match(campusRoleScopingMigration, /add column if not exists campus_role/i);
+assert.match(campusRoleScopingMigration, /create table if not exists private\.platform_admins/i);
+assert.match(campusRoleScopingMigration, /create or replace function private\.current_campus_role/i);
+assert.match(campusRoleScopingMigration, /create or replace function public\.platform_assign_campus_admin/i);
+assert.match(campusRoleScopingMigration, /campus_role='admin'/i);
+
 assert.doesNotMatch(html, /national feed/i, "the app must not imply cross-university interaction");
 
 
