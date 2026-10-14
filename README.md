@@ -84,7 +84,7 @@ CampusShield is being designed as separate university spaces on one platform. A 
 
 The social experience is intended to include campus posts, questions, polls, course and department groups, campus events, a university-only marketplace, and public-safe safety suggestions. Cross-university follows, messaging, comments, groups, marketplace access, and other student-to-student interactions are deliberately disabled. The initial feature branch establishes the membership and access-control foundation; the remaining social controls need frontend workflows and tests before they can be called complete.
 
-The new additive migrations are `supabase/migrations/20261015000000_multi_university_foundation.sql` and, when present, later campus-social migrations. Apply the existing migrations in chronological order in a test environment, then verify that two test accounts assigned to different universities cannot read, comment on, report, moderate, or otherwise interact with one another's campus content.
+The new additive migration is `supabase/migrations/20261015000000_multi_university_foundation.sql`. Apply the existing migrations in chronological order in a test environment, then verify that two test accounts assigned to different universities cannot read, comment on, report, moderate, or otherwise interact with one another's campus content. The initial directory is a starter set, not yet the complete NUC roster; import and review the full current NUC list before public nationwide launch.
 
 ## 🔮 Future Plans
 
