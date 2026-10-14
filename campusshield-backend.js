@@ -188,6 +188,7 @@ async getCurrentUser() {
       const { data, error } = await client
         .from("community_posts")
         .select("id, author_username, post_type, title, body, location, status, is_official, created_at, updated_at")
+        .eq("status", "published")
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
