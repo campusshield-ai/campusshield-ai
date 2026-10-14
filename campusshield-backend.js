@@ -303,6 +303,16 @@ async getCurrentUser() {
       return data === true;
     },
 
+    async toggleCampusFollowPostAuthor(postId, follow) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("toggle_campus_follow_post_author", {
+        p_post_id: postId,
+        p_follow: Boolean(follow)
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
     async listCommunityComments(postIds) {
       if (!client) throw new Error("Supabase is not configured.");
       if (!Array.isArray(postIds) || postIds.length === 0) return [];
