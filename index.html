@@ -958,7 +958,10 @@ td strong{color:#2a464d;font-size:11px}
       risk:'Risk analysis',
       analytics:'Analytics & reports',
       approvals:'Account approvals',
-      community:'Campus community'
+      community:'Campus community',
+      groups:'Campus groups',
+      events:'Campus events',
+      marketplace:'Campus marketplace'
     };
 
     $('sectionTitle').textContent = names[page] || 'Overview';
@@ -972,6 +975,9 @@ td strong{color:#2a464d;font-size:11px}
     navigate(button.dataset.page);
     if (button.dataset.page === 'approvals') loadAccountApprovals();
     if (button.dataset.page === 'community') loadCommunityPage();
+    if (button.dataset.page === 'groups') loadCampusGroupsPage();
+    if (button.dataset.page === 'events') loadCampusEventsPage();
+    if (button.dataset.page === 'marketplace') loadCampusMarketplacePage();
   });
 
   function render() {
