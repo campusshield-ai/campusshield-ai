@@ -133,8 +133,8 @@ assert.match(privateCampusMediaMigration, /values \([\s\S]*?'campus-community-me
 assert.match(privateCampusMediaMigration, /split_part\(name,'\/',1\)/i);
 assert.match(campusGroupsEventsMarketplaceMigration, /create or replace function public\.review_campus_content/i);
 assert.match(campusGroupsEventsMarketplaceMigration, /create policy campus_groups_create_same_campus/i);
-assert.match(campusGroupsEventsMarketplaceMigration, /create policy campus_events_create_same_campus/i);
-assert.match(campusGroupsEventsMarketplaceMigration, /create policy campus_marketplace_create_same_campus/i);
+assert.match(multiUniversityMigration, /create policy campus_events_create_same_campus/i);
+assert.match(multiUniversityMigration, /create policy campus_marketplace_create_same_campus/i);
 assert.match(marketplaceReportingMigration, /create or replace function public\.report_campus_marketplace_listing/i);
 assert.match(marketplaceReportingMigration, /create or replace function public\.review_campus_marketplace_report/i);
 assert.match(socialDirectoryMigration, /list_my_campus_marketplace_listings/i);
