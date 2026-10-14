@@ -5,6 +5,7 @@ const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
+const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -64,6 +65,9 @@ assert.match(communityMigration, /create or replace function public\.set_my_comm
 assert.match(communityMigration, /create or replace function public\.moderate_community_post/i);
 assert.doesNotMatch(communityMigration, /grant select \(.*author_id/i);
 assert.match(usernameSyncMigration, /create trigger sync_community_username_snapshots_after_update/i);
+assert.match(usernameAvailabilityMigration, /revoke execute on function public\.check_community_username_available\(text\) from anon, public/i);
+assert.match(usernameAvailabilityMigration, /create policy community_profiles_read_own/i);
+assert.match(usernameAvailabilityMigration, /That username is already taken/i);
 assert.match(usernameSyncMigration, /update public\\.community_posts/i);
 assert.match(usernameSyncMigration, /update public\\.community_comments/i);
 assert.match(html, /does not contact emergency services/i, "the emergency-services prototype warning remains visible");
