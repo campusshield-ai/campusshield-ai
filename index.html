@@ -261,6 +261,10 @@ td strong{color:#2a464d;font-size:11px}
 .community-moderation-item,.community-report-item{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:#fbfcfe}
 .community-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .community-empty{padding:24px;border:1px dashed #cad5e4;border-radius:12px;text-align:center;color:var(--muted)}
+.community-media-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin:12px 0}
+.community-media-grid figure{margin:0;min-width:0}
+.community-media-grid img,.community-media-grid video{display:block;width:100%;max-height:420px;object-fit:contain;border:1px solid #e1ebe6;border-radius:12px;background:#f4f7f5}
+.community-media-grid figcaption{margin-top:5px;color:var(--muted);font-size:10px;overflow-wrap:anywhere}
 @media(max-width:900px){.community-layout{grid-template-columns:1fr}}
 @media(max-width:650px){.community-post{padding:12px}.community-comment-form{flex-direction:column}.community-comment-form .btn{width:100%}}
 .footer{padding:25px 10px 13px;color:#9aa6a5;font-size:9px;letter-spacing:.04em}
@@ -401,6 +405,7 @@ td strong{color:#2a464d;font-size:11px}
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
 <button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button>
+<button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform admin</button>
 </nav>
 <div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
 </aside>
@@ -501,6 +506,8 @@ td strong{color:#2a464d;font-size:11px}
       <div class="field"><label for="community-post-title-input">Title *</label><input id="community-post-title-input" required minlength="3" maxlength="100" placeholder="e.g. Broken light near the library"></div>
       <div class="field"><label for="community-post-location">General location <span class="muted">(optional)</span></label><input id="community-post-location" maxlength="120" placeholder="e.g. Main library entrance; no room numbers"></div>
       <div class="field"><label for="community-post-body">Description *</label><textarea id="community-post-body" required minlength="10" maxlength="2000" placeholder="Share helpful context without identifying another person."></textarea></div>
+      <div class="field"><label for="community-post-media">Attach photos or video (optional)</label><input id="community-post-media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" multiple><p class="muted">Up to four JPG, PNG, WEBP, GIF, MP4 or WEBM files; 50 MB per file. Attach only public-safe content, never private incident evidence or identifying documents.</p></div>
+      <div class="field"><label for="community-post-media-alt">Accessibility description (optional)</label><input id="community-post-media-alt" maxlength="250" placeholder="Briefly describe the image for someone using a screen reader"></div>
       <div class="panel" id="community-poll-options" hidden>
         <h3>Poll answers</h3>
         <p class="muted">Add two to four unique answers. Polls stay pending until a campus moderator publishes them.</p>
@@ -652,6 +659,28 @@ td strong{color:#2a464d;font-size:11px}
   <p id="campus-membership-reviews-message" class="message" role="status" aria-live="polite">Loading campus membership checks…</p>
   <div class="table-wrap"><table><caption class="sr-only">Campus-specific staff membership requests</caption><thead><tr><th scope="col">Username</th><th scope="col">Requested role</th><th scope="col">Account status</th><th scope="col">Faculty / department</th><th scope="col">Decision</th></tr></thead><tbody id="campus-membership-reviews-table"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
 </div>
+</section>
+
+
+<section class="page" id="page-platform-admin">
+  <div class="heading"><div><h1>Platform administration</h1><p>Manage requested university listings and assign university-level administrators. Access is verified by Supabase, not by this interface alone.</p></div></div>
+  <div class="notice-inline"><strong>Trusted access only.</strong> University requests and campus administrator assignments are global platform actions. Only user IDs explicitly provisioned in the private platform-admin registry can use these controls.</div>
+  <section class="panel" id="platform-admin-access-panel">
+    <p id="platform-admin-access-message" class="message" role="status" aria-live="polite">Checking platform administrator access…</p>
+  </section>
+  <div id="platform-admin-tools" hidden>
+    <section class="panel">
+      <div class="panel-heading"><div><h2>University listing requests</h2><p>Approve only after verifying the official institution name and website.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-requests">Refresh requests</button></div>
+      <p id="platform-admin-requests-message" class="message" role="status" aria-live="polite">Loading requests…</p>
+      <div class="table-wrap"><table><caption class="sr-only">Pending requests to add a university to the CampusShield directory</caption><thead><tr><th scope="col">University</th><th scope="col">State / FCT</th><th scope="col">Ownership</th><th scope="col">Official website</th><th scope="col">Requested</th><th scope="col">Decision</th></tr></thead><tbody id="platform-admin-requests-table"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
+    </section>
+    <section class="panel">
+      <div class="panel-heading"><div><h2>Assign campus administrator</h2><p>Select an institution to see eligible, already-verified staff whose membership belongs to that university.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-candidates">Refresh staff</button></div>
+      <div class="field"><label for="platform-admin-university-select">University *</label><select id="platform-admin-university-select"><option value="">Loading university directory…</option></select></div>
+      <p id="platform-admin-candidates-message" class="message" role="status" aria-live="polite">Choose a university to load verified staff.</p>
+      <div class="table-wrap"><table><caption class="sr-only">Eligible verified staff who can be assigned as campus administrators</caption><thead><tr><th scope="col">Username</th><th scope="col">Account role</th><th scope="col">Account status</th><th scope="col">Campus status</th><th scope="col">Faculty / department</th><th scope="col">Action</th></tr></thead><tbody id="platform-admin-candidates-table"><tr><td colspan="6">Choose a university above.</td></tr></tbody></table></div>
+    </section>
+  </div>
 </section>
 
 <div class="workspace-social">
@@ -858,6 +887,7 @@ td strong{color:#2a464d;font-size:11px}
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
     $('community-announcement-option').disabled = !canPublishOfficial;
     navigate('dashboard');
+    refreshPlatformAdminAccess();
     return true;
   }
 
@@ -958,6 +988,7 @@ td strong{color:#2a464d;font-size:11px}
       risk:'Risk analysis',
       analytics:'Analytics & reports',
       approvals:'Account approvals',
+      'platform-admin':'Platform administration',
       community:'Campus community',
       groups:'Campus groups',
       events:'Campus events',
@@ -978,6 +1009,7 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'groups') loadCampusGroupsPage();
     if (button.dataset.page === 'events') loadCampusEventsPage();
     if (button.dataset.page === 'marketplace') loadCampusMarketplacePage();
+    if (button.dataset.page === 'platform-admin') loadPlatformAdminPage();
   });
 
   function render() {
@@ -1398,10 +1430,16 @@ td strong{color:#2a464d;font-size:11px}
 
       const posts = await backend.listCommunityPosts();
       const postIds = posts.map(function(post) { return post.id; });
-      const [comments, socialRows] = await Promise.all([
+      const [comments, socialRows, mediaRows] = await Promise.all([
         backend.listCommunityComments(postIds),
-        backend.getCommunityPostSocial(postIds)
+        backend.getCommunityPostSocial(postIds),
+        backend.listCommunityPostMedia(postIds)
       ]);
+      const mediaByPost = Object.create(null);
+      (mediaRows || []).forEach(function(item) {
+        if (!mediaByPost[item.post_id]) mediaByPost[item.post_id] = [];
+        mediaByPost[item.post_id].push(item);
+      });
       const pollsByPost = {};
       const pollPosts = posts.filter(function(post) { return post.post_type === 'poll'; }).slice(0, 20);
       const pollResults = await Promise.all(pollPosts.map(async function(post) {
@@ -1409,7 +1447,7 @@ td strong{color:#2a464d;font-size:11px}
         catch (err) { console.warn('Could not load poll results:', err.message); return [post.id, []]; }
       }));
       pollResults.forEach(function(entry) { pollsByPost[entry[0]] = entry[1]; });
-      renderCommunityFeed(posts, comments, socialRows, pollsByPost);
+      renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost);
       $('community-feed-status').textContent = posts.length + (posts.length === 1 ? ' published post' : ' published posts') + ' · refreshed ' + new Date().toLocaleTimeString();
 
       $('community-moderation').hidden = !canModerateCommunity();
@@ -1425,6 +1463,7 @@ td strong{color:#2a464d;font-size:11px}
   }
 
   function renderCommunityFeed(posts, comments, socialRows, pollsByPost) {
+    const mediaMap = mediaByPost || Object.create(null);
     const list = Array.isArray(posts) ? posts : [];
     const commentList = Array.isArray(comments) ? comments : [];
     const socialByPost = Object.create(null);
@@ -1491,13 +1530,25 @@ td strong{color:#2a464d;font-size:11px}
         ? '<button type="button" class="btn secondary" data-community-follow="' + esc(post.id) + '" data-follow-state="' + (followingAuthor ? 'following' : 'not_following') + '">' + (followingAuthor ? 'Following author' : 'Follow author') + '</button>'
         : '';
 
+      const mediaHtml = (mediaMap[post.id] || []).map(function(media) {
+        if (!media.signed_url) return '';
+        const url = esc(media.signed_url);
+        const alt = esc(media.alt_text || post.title || 'Campus community attachment');
+        if (media.media_kind === 'video') {
+          return '<figure><video controls preload="metadata" aria-label="' + alt + '"><source src="' + url + '" type="' + esc(media.mime_type) + '">Your browser cannot play this video.</video>' +
+            (media.alt_text ? '<figcaption>' + esc(media.alt_text) + '</figcaption>' : '') + '</figure>';
+        }
+        return '<figure><img src="' + url + '" alt="' + alt + '" loading="lazy" referrerpolicy="no-referrer">' +
+          (media.alt_text ? '<figcaption>' + esc(media.alt_text) + '</figcaption>' : '') + '</figure>';
+      }).join('');
+      const mediaBlock = mediaHtml ? '<div class="community-media-grid">' + mediaHtml + '</div>' : '';
       return '<article class="community-post" id="community-post-' + esc(post.id) + '">' +
         '<div class="community-post-header"><div class="community-meta">' +
         (post.is_official ? '<span class="community-official">Verified staff update</span>' : '<span class="tag open">' + esc(communityPostTypeLabel(post.post_type)) + '</span>') +
         '<strong class="community-handle">@' + esc(post.author_username) + '</strong><span>·</span><time>' + esc(dateText(post.created_at)) + '</time></div>' +
         '<button type="button" class="btn secondary" data-report-community-type="post" data-report-community-id="' + esc(post.id) + '">Report</button></div>' +
         '<h3 class="community-post-title">' + esc(post.title) + '</h3>' +
-        '<p class="community-post-body">' + esc(post.body) + '</p>' +
+        '<p class="community-post-body">' + esc(post.body) + '</p>' + mediaBlock +
         (post.location ? '<p class="community-meta"><span aria-hidden="true">⌖</span> ' + esc(post.location) + '</p>' : '') +
         pollHtml +
         '<div class="community-post-actions">' +
@@ -1764,13 +1815,19 @@ td strong{color:#2a464d;font-size:11px}
     button.textContent = postType === 'announcement' ? 'Publishing announcement…' : 'Submitting for review…';
     message.textContent = 'Sending your post…';
     try {
-      await backend.createCommunityPost({ postType: postType, title: title, body: body, location: location, options: options });
+      const selectedFiles = Array.from($('community-post-media').files || []);
+      if (selectedFiles.length > 4) throw new Error("Attach no more than four files to one post.");
+      const postId = await backend.createCommunityPost({ postType: postType, title: title, body: body, location: location, options: options });
+      if (selectedFiles.length) {
+        message.textContent = 'Post saved. Uploading private campus attachments…';
+        await backend.uploadCommunityPostMedia(postId, selectedFiles, $('community-post-media-alt').value.trim());
+      }
       $('communityPostForm').reset();
       syncCommunityPollFields();
       message.textContent = postType === 'announcement'
         ? 'Official announcement published.'
         : 'Submitted. Your post will appear to other students after moderation.';
-      toast(postType === 'announcement' ? 'Official announcement published.' : 'Community post submitted for review.');
+      toast(selectedFiles.length ? 'Post and attachments submitted for review.' : (postType === 'announcement' ? 'Official announcement published.' : 'Community post submitted for review.'));
       await loadCommunityPage();
     } catch (err) {
       message.textContent = err.message || 'Could not submit your post.';
