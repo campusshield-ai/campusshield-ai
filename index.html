@@ -2518,10 +2518,13 @@ if (data.session) {
       }
     } catch (e) {
       console.error('Sign-up failed:', e);
-      if (/database error saving new user/i.test(String(e.message || ''))) {
+      const errorMessage = String(e.message || '');
+      if (/email rate limit exceeded/i.test(errorMessage)) {
+        msg.textContent = 'Supabase has temporarily limited confirmation emails. Wait before trying again; repeated sign-up attempts will not speed this up. Once the limit clears, request a confirmation email for this account instead of registering repeatedly.';
+      } else if (/database error saving new user/i.test(errorMessage)) {
         msg.textContent = 'Sign-up failed. That username may already be taken; choose another username and try again. If it continues, contact the CampusShield administrator.';
       } else {
-        msg.textContent = 'Sign-up failed: ' + e.message;
+        msg.textContent = 'Sign-up failed: ' + errorMessage;
       }
     }
   }
@@ -2776,8 +2779,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   } catch (error) {
     console.error('Resend confirmation failed:', error);
 
-    msg.textContent =
-      'Could not request another email. Please wait and try again later.';
+    msg.textContent = /email rate limit exceeded/i.test(String(error.message || ''))
+      ? 'Supabase has temporarily limited confirmation emails. Please wait before trying again; repeated resend requests will not speed this up.'
+      : 'Could not request another email. Please wait and try again later.';
   } finally {
     button.disabled = false;
   }
