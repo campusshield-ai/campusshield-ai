@@ -32,8 +32,8 @@ for (const [index, source] of inlineScripts.entries()) {
 }
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
 assert.doesNotThrow(() => new Function(config), "Supabase config parses");
-assert.match(backend, /emailRedirectTo:\\s*window\\.location\\.origin\\s*\\+\\s*window\\.location\\.pathname/);
-assert.doesNotMatch(backend, /emailRedirectTo:\\s*["']https:\\/\\/campusshield-ai\\.github\\.io\\/campusshield-ai\\//);
+assert.match(backend, /emailRedirectTo:\s*window\.location\.origin\s*\+\s*window\.location\.pathname/);
+assert.doesNotMatch(backend, /emailRedirectTo:\s*["']https:\/\/campusshield-ai\.github\.io\/campusshield-ai\//);
 
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
 assert.match(config, /https:\/\/fvgtnujjnvdkhzqqcaqe\.supabase\.co/);
