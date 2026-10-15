@@ -127,3 +127,12 @@ CampusShield AI is a technology development project. Any risk indicators or anal
 ---
 
 **CampusShield AI — Building Safer Campuses Through Technology.**
+
+
+## Student identity verification in staging
+
+The current test branch includes a student identity form and a companion browser helper that uploads JPEG, PNG, or PDF files (max 5 MiB) to the private `student-identity-documents` bucket using the fixed per-user object path. Student identity records are protected by RLS; only the owner or a verified administrator at the same university can read the metadata/document. Approval and rejection use server-side RPC checks, and a student account cannot be approved until identity is approved.
+
+The browser configuration on this branch is intentionally set to the separate staging project `hywcpnoqqhxvujnimhxl` with a publishable key only. Do not use it for production. Use synthetic data and dummy files only; do not upload real student IDs.
+
+The SQL/RLS/RPC rollback-only workflow passed 15/15 assertions on staging. The transaction was rolled back and a post-check found no test identity rows or Storage objects left behind. The actual browser upload and signed-link click test still needs to be completed in Live Server. Current Security Advisor findings are documented in the update package: 40 warnings and one informational notice remain.
