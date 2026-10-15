@@ -88,8 +88,8 @@ assert.match(html, /repeated sign-up attempts will not speed this up/i, "rate-li
 // Campus community and public-identity privacy.
 assert.match(html, /id="auth-username"/);
 assert.match(html, /id="page-community"/);
-assert.match(html, /function renderCommunityFeed\\(posts, comments, socialRows, pollsByPost, mediaByPost\\)/);
-assert.match(html, /renderCommunityFeed\\(posts, comments, socialRows, pollsByPost, mediaByPost\\)/);
+assert.match(html, /function renderCommunityFeed\(posts, comments, socialRows, pollsByPost, mediaByPost\)/);
+assert.match(html, /renderCommunityFeed\(posts, comments, socialRows, pollsByPost, mediaByPost\)/);
 assert.match(html, /id="communityUsernameForm"/);
 assert.match(html, /id="communityPostForm"/);
 assert.match(html, /id="community-moderation"/);
