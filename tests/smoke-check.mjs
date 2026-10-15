@@ -33,17 +33,17 @@ for (const [index, source] of inlineScripts.entries()) {
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
 assert.doesNotThrow(() => new Function(config), "Supabase config parses");
 
-assert.match(config, /window\\.CAMPUSSHIELD_SUPABASE_CONFIG\\s*=/);
-const isStagingConfig = /CAMPUSSHIELD_TEST_ENVIRONMENT\\s*=\\s*"staging"/.test(config);
+assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
+const isStagingConfig = /CAMPUSSHIELD_TEST_ENVIRONMENT\s*=\s*"staging"/.test(config);
 if (isStagingConfig) {
-  assert.match(config, /https:\\/\\/hywcpnoqqhxvujnimhxl\\.supabase\\.co/, "staging config points to the dedicated staging project");
-  assert.match(config, /stagingProjectRef\\s*=\\s*"hywcpnoqqhxvujnimhxl"/);
+  assert.match(config, /https:\/\/hywcpnoqqhxvujnimhxl\.supabase\.co/, "staging config points to the dedicated staging project");
+  assert.match(config, /stagingProjectRef\s*=\s*"hywcpnoqqhxvujnimhxl"/);
   assert.match(config, /production Supabase is forbidden/i, "staging config has an explicit production guard");
-  assert.doesNotMatch(config, /https:\\/\\/fvgtnujjnvdkhzqqcaqe\\.supabase\\.co/, "staging config never targets production");
+  assert.doesNotMatch(config, /https:\/\/fvgtnujjnvdkhzqqcaqe\.supabase\.co/, "staging config never targets production");
 } else {
-  assert.match(config, /https:\\/\\/fvgtnujjnvdkhzqqcaqe\\.supabase\\.co/, "production config keeps the production project");
+  assert.match(config, /https:\/\/fvgtnujjnvdkhzqqcaqe\.supabase\.co/, "production config keeps the production project");
 }
-const publicKey = config.match(/publishableKey\\s*:\\s*"([^"]+)"/)?.[1];
+const publicKey = config.match(/publishableKey\s*:\s*"([^"]+)"/)?.[1];
 assert.ok(publicKey?.startsWith("sb_publishable_"), "uses a publishable browser key");
 assert.doesNotMatch(publicKey, /secret|service_role/i);
 
