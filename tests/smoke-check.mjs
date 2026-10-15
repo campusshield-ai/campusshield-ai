@@ -50,6 +50,9 @@ assert.ok(
   html.includes("Rejected — view only"),
   "rejected applications are displayed read-only"
 );
+assert.match(html, /<th scope="col">Status<\/th>/, "account approvals table includes a Status column");
+assert.match(html, /row\.verification_status === 'rejected' \? 'high' : 'open'/, "approval status styling distinguishes rejected applications");
+assert.match(html, /colspan="6"/, "account approvals placeholders span all six columns");
 assert.doesNotMatch(
   html,
   /\.eq\('verification_status', 'pending'\)/,
