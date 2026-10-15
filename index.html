@@ -647,11 +647,11 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 <section class="page" id="page-approvals">
-<div class="heading"><h1>Account approvals</h1><p>Review pending student and teacher requests, and view rejected applications. Only verified administrators can use this area.</p></div>
+<div class="heading"><h1>Account approvals</h1><p>Review pending student and teacher account requests. Only verified administrators can use this area.</p></div>
 <div class="panel">
-<div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending and rejected applications in your university</strong><button class="btn secondary" type="button" id="refresh-approvals">Refresh list</button></div>
+<div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending applications in your university</strong><button class="btn secondary" type="button" id="refresh-approvals">Refresh list</button></div>
 <p id="approvals-message" class="message" role="status">Checking administrator access…</p>
-<div class="table-wrap"><table><caption class="sr-only">Pending and rejected student and teacher applications in this university</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Status</th><th scope="col">Submitted</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
+<div class="table-wrap"><table><caption class="sr-only">Pending student and teacher account requests in this university</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Submitted</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
 </div>
 <div class="panel" id="campus-membership-review-panel" hidden style="margin-top:16px">
   <div class="actions" style="justify-content:space-between;align-items:center"><strong>Campus staff membership checks</strong><button class="btn secondary" type="button" id="refresh-campus-membership-reviews">Refresh checks</button></div>
@@ -1391,13 +1391,13 @@ td strong{color:#2a464d;font-size:11px}
 
     if (!backend?.isConfigured) {
       message.textContent = 'Supabase is not configured.';
-      tbody.innerHTML = '<tr><td colspan="6">Cannot load applications.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5">Cannot load applications.</td></tr>';
       nav.hidden = true;
       return;
     }
 
     message.textContent = 'Checking administrator access…';
-    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
 
     try {
       const user = await backend.getCurrentUser();
@@ -1424,16 +1424,15 @@ td strong{color:#2a464d;font-size:11px}
       const {data:rows, error} = await backend.client
         .from('profiles')
         .select('id, display_name, role, requested_role, verification_status, created_at')
-        .in('verification_status', ['pending', 'rejected'])
-        .or('requested_role.in.(student,teacher),role.in.(student,teacher)')
-        .order('verification_status', {ascending:true})
+        .eq('verification_status', 'pending')
+        .in('requested_role', ['student', 'teacher'])
         .order('created_at', {ascending:true});
 
       if (error) throw error;
 
       if (!rows?.length) {
-        tbody.innerHTML = '<tr><td colspan="6">There are no pending or rejected student or teacher applications in this university.</td></tr>';
-        message.textContent = 'University administrator access confirmed. No pending or rejected applications.';
+        tbody.innerHTML = '<tr><td colspan="5">There are no pending student or teacher applications in this university.</td></tr>';
+        message.textContent = 'University administrator access confirmed.';
         await loadCampusStaffMembershipReviews();
         return;
       }
@@ -1441,25 +1440,21 @@ td strong{color:#2a464d;font-size:11px}
       tbody.innerHTML = rows.map(row => `<tr>
         <td><strong>${esc(row.display_name || 'Name not provided')}</strong></td>
         <td><code>${esc(row.id)}</code></td>
-        <td><span class="tag open">${esc(row.requested_role || row.role || 'Not specified')}</span></td>
-        <td><span class="tag ${row.verification_status === 'rejected' ? 'high' : 'open'}">${esc(row.verification_status === 'rejected' ? 'Rejected' : 'Pending')}</span></td>
+        <td><span class="tag open">${esc(row.requested_role || 'Not specified')}</span></td>
         <td>${esc(dateText(row.created_at))}</td>
-        <td>${row.verification_status === 'pending'
-          ? `<div class="actions">
-              <button class="btn" type="button" data-review="approve" data-user-id="${esc(row.id)}">Approve</button>
-              <button class="btn danger" type="button" data-review="reject" data-user-id="${esc(row.id)}">Reject</button>
-            </div>`
-          : '<span class="muted">Rejected — view only; follow up with the applicant if they request a review.</span>'}
+        <td>
+          <div class="actions">
+            <button class="btn" data-review="approve" data-user-id="${esc(row.id)}">Approve</button>
+            <button class="btn danger" data-review="reject" data-user-id="${esc(row.id)}">Reject</button>
+          </div>
         </td>
       </tr>`).join('');
 
-      const pendingCount = rows.filter(row => row.verification_status === 'pending').length;
-      const rejectedCount = rows.filter(row => row.verification_status === 'rejected').length;
-      message.textContent = `${pendingCount} pending and ${rejectedCount} rejected application(s) in this university.`;
+      message.textContent = `${rows.length} pending application(s) in this university.`;
       await loadCampusStaffMembershipReviews();
     } catch (err) {
       console.error('Could not load account approvals:', err);
-      tbody.innerHTML = '<tr><td colspan="6">Applications could not be loaded.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5">Applications could not be loaded.</td></tr>';
       message.textContent = err.message || 'Could not load applications.';
     }
   }
@@ -1658,7 +1653,7 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
-  function renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost) {
+  function renderCommunityFeed(posts, comments, socialRows, pollsByPost) {
     const mediaMap = mediaByPost || Object.create(null);
     const list = Array.isArray(posts) ? posts : [];
     const commentList = Array.isArray(comments) ? comments : [];
@@ -2518,13 +2513,10 @@ if (data.session) {
       }
     } catch (e) {
       console.error('Sign-up failed:', e);
-      const errorMessage = String(e.message || '');
-      if (/email rate limit exceeded/i.test(errorMessage)) {
-        msg.textContent = 'Supabase has temporarily limited confirmation emails. Wait before trying again; repeated sign-up attempts will not speed this up. Once the limit clears, request a confirmation email for this account instead of registering repeatedly.';
-      } else if (/database error saving new user/i.test(errorMessage)) {
+      if (/database error saving new user/i.test(String(e.message || ''))) {
         msg.textContent = 'Sign-up failed. That username may already be taken; choose another username and try again. If it continues, contact the CampusShield administrator.';
       } else {
-        msg.textContent = 'Sign-up failed: ' + errorMessage;
+        msg.textContent = 'Sign-up failed: ' + e.message;
       }
     }
   }
@@ -2779,9 +2771,8 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   } catch (error) {
     console.error('Resend confirmation failed:', error);
 
-    msg.textContent = /email rate limit exceeded/i.test(String(error.message || ''))
-      ? 'Supabase has temporarily limited confirmation emails. Please wait before trying again; repeated resend requests will not speed this up.'
-      : 'Could not request another email. Please wait and try again later.';
+    msg.textContent =
+      'Could not request another email. Please wait and try again later.';
   } finally {
     button.disabled = false;
   }
