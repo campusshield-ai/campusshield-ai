@@ -82,6 +82,8 @@ assert.match(html, /requestSessionVersion !== authSessionVersion/);
 assert.match(html, /id="incidentSyncStatus"/);
 assert.doesNotMatch(html, /id="reporter"/);
 assert.match(html, /does not contact emergency services/i);
+assert.match(html, /temporarily limited confirmation emails/i, "signup/resend explains Supabase email rate limits");
+assert.match(html, /repeated sign-up attempts will not speed this up/i, "rate-limit guidance discourages repeated signup retries");
 
 // Campus community and public-identity privacy.
 assert.match(html, /id="auth-username"/);
