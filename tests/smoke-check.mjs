@@ -34,6 +34,27 @@ assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
 assert.doesNotThrow(() => new Function(config), "Supabase config parses");
 assert.match(backend, /emailRedirectTo:\s*window\.location\.origin\s*\+\s*window\.location\.pathname/);
 assert.doesNotMatch(backend, /emailRedirectTo:\s*["']https:\/\/campusshield-ai\.github\.io\/campusshield-ai\//);
+assert.ok(
+  html.includes(".in('verification_status', ['pending', 'rejected'])"),
+  "account approvals query includes pending and rejected applications"
+);
+assert.ok(
+  html.includes(".or('requested_role.in.(student,teacher),role.in.(student,teacher)')"),
+  "account approvals query includes student/teacher applicants by requested or current role"
+);
+assert.ok(
+  html.includes("row.verification_status === 'pending'"),
+  "review actions are shown only for pending applications"
+);
+assert.ok(
+  html.includes("Rejected — view only"),
+  "rejected applications are displayed read-only"
+);
+assert.doesNotMatch(
+  html,
+  /\.eq\('verification_status', 'pending'\)/,
+  "no pending-only status filter remains in the approvals query"
+);
 
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
 assert.match(config, /https:\/\/fvgtnujjnvdkhzqqcaqe\.supabase\.co/);
