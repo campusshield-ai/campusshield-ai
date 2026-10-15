@@ -32,8 +32,7 @@ async signUp(email, password, displayName, username, universityId) {
     password,
     options: {
       data: { display_name: displayName || "", username: String(username || "").trim().toLowerCase(), university_id: universityId || null },
-      emailRedirectTo:
-        "https://campusshield-ai.github.io/campusshield-ai/"
+      emailRedirectTo: window.location.origin + window.location.pathname
     }
   });
 },
@@ -51,8 +50,7 @@ async resendConfirmation(email) {
     type: "signup",
     email: email.trim(),
     options: {
-      emailRedirectTo:
-        "https://campusshield-ai.github.io/campusshield-ai/"
+      emailRedirectTo: window.location.origin + window.location.pathname
     }
   });
 },
