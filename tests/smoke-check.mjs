@@ -218,7 +218,7 @@ assert.match(securePrivateMediaPolicyMigration, /create or replace function priv
 assert.match(securePrivateMediaPolicyMigration, /create or replace function private\\.owns_community_post_for_media/i);
 assert.match(securePrivateMediaPolicyMigration, /create policy campus_media_upload_same_campus[\\s\\S]*?private\\.owns_community_post_for_media/i);
 assert.match(securePrivateMediaPolicyMigration, /create policy campus_media_read_same_campus[\\s\\S]*?private\\.can_read_community_post_for_media/i);
-assert.doesNotMatch(securePrivateMediaPolicyMigration, /grant select \\(.*author_id/i, "private media fix does not expose author_id through direct SELECT grants");
+assert.doesNotMatch(securePrivateMediaPolicyMigration, /grant select \([^)]*author_id/i, "private media fix does not expose author_id through direct SELECT grants");
 assert.match(verifiedCampusAdminMigration, /cm\.verification_status='verified'/i);
 assert.match(verifiedCampusAdminMigration, /Choose staff whose account and membership are verified/i);
 assert.match(verifiedCampusAdminMigration, /grant execute on function public\.platform_assign_campus_admin\(uuid,uuid\) to authenticated/i);
