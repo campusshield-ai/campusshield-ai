@@ -1653,7 +1653,9 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
-  function renderCommunityFeed(posts, comments, socialRows, pollsByPost) {
+  
+function renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost) {
+ {
     const mediaMap = mediaByPost || Object.create(null);
     const list = Array.isArray(posts) ? posts : [];
     const commentList = Array.isArray(comments) ? comments : [];
