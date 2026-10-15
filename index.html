@@ -245,6 +245,15 @@ td strong{color:#2a464d;font-size:11px}
 .notice-inline{margin:0 0 16px;padding:12px 14px;border:1px solid #e8e6d7;border-radius:11px;background:#fbfaf4;color:#68705b;font-size:11px}
 .risk-output{margin-top:15px;padding:13px 15px;border-radius:12px;background:#f3f8f6;color:#345c51;font-weight:680}
 .community-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:16px;margin-bottom:18px;align-items:start}
+.campus-home-panel{margin-bottom:16px}
+.campus-feature-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.campus-feature{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:15px;border:1px solid #e4ece8;border-radius:14px;background:linear-gradient(155deg,#fff,#f8fbf9)}
+.campus-feature-kicker{color:#31806e;font-size:8px;font-weight:850;letter-spacing:.13em}
+.campus-feature h3{margin:8px 0 3px;color:#193c43;font-size:14px;letter-spacing:-.025em}
+.campus-feature p{flex:1;margin:0 0 12px;color:#708188;font-size:10px;line-height:1.55}
+.campus-feature .btn{min-height:36px;padding:8px 10px;font-size:10px}
+.campus-roadmap-note{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#f1f7f4;color:#61756f;font-size:10px}
+.campus-roadmap-note strong{color:#315b50}
 .community-post{border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;background:#fff}
 .community-post-header,.community-comment-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .community-post-title{margin:9px 0 6px;font-size:17px;line-height:1.35}
@@ -265,7 +274,7 @@ td strong{color:#2a464d;font-size:11px}
 .community-media-grid figure{margin:0;min-width:0}
 .community-media-grid img,.community-media-grid video{display:block;width:100%;max-height:420px;object-fit:contain;border:1px solid #e1ebe6;border-radius:12px;background:#f4f7f5}
 .community-media-grid figcaption{margin-top:5px;color:var(--muted);font-size:10px;overflow-wrap:anywhere}
-@media(max-width:900px){.community-layout{grid-template-columns:1fr}}
+@media(max-width:900px){.community-layout{grid-template-columns:1fr}.campus-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.community-post{padding:12px}.community-comment-form{flex-direction:column}.community-comment-form .btn{width:100%}}
 .footer{padding:25px 10px 13px;color:#9aa6a5;font-size:9px;letter-spacing:.04em}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
@@ -323,13 +332,13 @@ td strong{color:#2a464d;font-size:11px}
 <section id="login-screen" class="login-screen">
   <div class="login-intro">
     <div class="login-brand"><span class="brand-mark" aria-hidden="true">CS</span><span class="login-brand-name">Campus<strong>Shield</strong> AI</span></div>
-    <p class="eyebrow">A CLEARER VIEW OF CAMPUS SAFETY</p>
-    <h1>Make every report easier to understand.</h1>
-    <p>Bring reports, review status, and safety patterns into one calm, focused workspace.</p>
+    <p class="eyebrow">CAMPUS SAFETY · COMMUNITY · STUDENT SUCCESS</p>
+    <h1>One trusted home for campus life.</h1>
+    <p>Find your campus community, explore events and services, and use safety tools built around privacy and accountable review.</p>
     <div class="login-points">
-      <div><span>01</span><strong>Report with context</strong><small>Capture the category, place, and what happened.</small></div>
-      <div><span>02</span><strong>Review activity</strong><small>See status and records your account can access.</small></div>
-      <div><span>03</span><strong>Spot patterns</strong><small>Use simple summaries to guide human review.</small></div>
+      <div><span>01</span><strong>Stay safe</strong><small>Share a private report and follow its review status.</small></div>
+      <div><span>02</span><strong>Find your people</strong><small>Join campus conversations, groups and events.</small></div>
+      <div><span>03</span><strong>Grow your future</strong><small>Discover study circles, career events and campus services.</small></div>
     </div>
     <p class="login-footnote">Demonstration prototype · Does not contact emergency services</p>
 
@@ -397,7 +406,7 @@ td strong{color:#2a464d;font-size:11px}
 <nav class="nav">
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
-<button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus community</button>
+<button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>CampusPulse</button>
 <button data-page="groups"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span>Groups</button>
 <button data-page="events"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>Events</button>
 <button data-page="marketplace"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16l-1.5-5h-13L4 8ZM5 8v13h14V8M9 21v-7h6v7M3 8a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg></span>Marketplace</button>
@@ -405,6 +414,7 @@ td strong{color:#2a464d;font-size:11px}
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
 <button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button>
+<button data-page="identity-verification" id="identity-verification-nav" hidden>Student identity</button>
 <button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform admin</button>
 </nav>
 <div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
@@ -422,7 +432,7 @@ td strong{color:#2a464d;font-size:11px}
 
 <section class="page active" id="page-dashboard">
 <div class="heading">
-  <div><h1>Campus safety overview</h1><p>A measured view of incident records available to your signed-in account.</p></div>
+  <div><h1>Your campus, in one place.</h1><p>Stay safe, find your people, and make the most of campus life. Your campus space is limited to your university.</p></div>
   <div class="heading-actions"><button class="btn" type="button" data-page="report"><span aria-hidden="true">＋</span>New report</button></div>
 </div>
 <div class="grid stats" aria-label="Incident statistics">
@@ -431,6 +441,16 @@ td strong{color:#2a464d;font-size:11px}
   <div class="stat"><div class="stat-label">Resolved reports</div><div class="stat-num" id="resolvedStat">—</div><p class="stat-note">Marked resolved in the records</p></div>
   <div class="stat"><div class="stat-label">Resolution rate</div><div class="stat-num" id="rateStat">—</div><p class="stat-note">Resolved reports ÷ reports in view</p></div>
 </div>
+<section class="panel campus-home-panel" aria-labelledby="campus-home-title">
+  <div class="panel-heading"><div><h2 id="campus-home-title">Find your people. Grow your future.</h2><p>Explore useful things happening around your university.</p></div><span class="muted">Your campus only</span></div>
+  <div class="grid campus-feature-grid">
+    <article class="campus-feature"><span class="campus-feature-kicker">CAMPUSPULSE</span><h3>Join the conversation</h3><p>Campus updates, questions, polls and useful tips from your university community.</p><button class="btn secondary" type="button" data-page="community">Open CampusPulse</button></article>
+    <article class="campus-feature"><span class="campus-feature-kicker">STUDY & COMMUNITY</span><h3>Find your people</h3><p>Explore study circles, departments, societies and interest groups.</p><button class="btn secondary" type="button" data-page="groups">Explore groups</button></article>
+    <article class="campus-feature"><span class="campus-feature-kicker">EVENTS</span><h3>Take part on campus</h3><p>Discover seminars, society meetups, sports and career events.</p><button class="btn secondary" type="button" data-page="events">Browse events</button></article>
+    <article class="campus-feature"><span class="campus-feature-kicker">CAMPUS SERVICES</span><h3>Share and discover</h3><p>Find textbooks, services and other campus listings with community safeguards.</p><button class="btn secondary" type="button" data-page="marketplace">Open marketplace</button></article>
+  </div>
+  <p class="campus-roadmap-note"><strong>On the roadmap:</strong> a verified Opportunity Hub for scholarships and internships, plus a Campus AI Companion grounded in approved university information.</p>
+</section>
 <div class="panel">
   <div class="panel-heading"><div><h2>Recent reports</h2><p>Latest records your account can access.</p></div><span class="muted">Sorted newest first</span></div>
   <div id="recentList" class="recent-list"><div class="empty-state"><span class="empty-state-mark" aria-hidden="true">＋</span><div><strong>No reports in view yet</strong><p>Submit a report to start the activity list.</p></div><button class="btn secondary" type="button" data-page="report">Create a report</button></div></div>
@@ -454,17 +474,17 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 <section class="page" id="page-community">
-<div class="heading"><h1>Campus community</h1><p>Your university-only social space for updates, questions, polls, lost-and-found posts and safety suggestions.</p></div>
+<div class="heading"><h1>CampusPulse</h1><p>Your university-only social space for updates, questions, polls, lost-and-found posts and safety suggestions.</p></div>
 <div class="notice-inline"><strong>One university, one private community.</strong> Your posts, comments, follows, groups, events and marketplace activity are limited to the university you selected. There is no cross-university student interaction. Student posts are reviewed before publication. Do not post real names, email addresses, room numbers, medical details, harassment allegations, threats, evidence, or other identifying information. Use <button type="button" class="btn secondary" data-page="report">private incident reporting</button> for sensitive concerns.</div>
 <section class="panel" id="campus-onboarding" aria-labelledby="campus-onboarding-title" hidden>
   <div class="panel-heading"><div><h2 id="campus-onboarding-title">Choose your university</h2><p>This sets your private campus space.</p></div></div>
   <p class="muted">Posts, comments, student groups, events, marketplace listings and safety reports are restricted to one university. You cannot follow, message, comment on, or join groups with users from another university. Your selection is locked; contact support to request a transfer.</p>
   <form id="campusOnboardingForm">
     <div class="field"><label for="campus-university">University *</label><select id="campus-university" required><option value="">Loading university directory…</option></select></div>
-    <div class="field"><label for="campus-faculty">Faculty / school (optional)</label><input id="campus-faculty" maxlength="120" placeholder="e.g. Faculty of Engineering"></div>
-    <div class="field"><label for="campus-department">Department (optional)</label><input id="campus-department" maxlength="120" placeholder="e.g. Computer Science"></div>
-    <div class="field"><label for="campus-course">Course / programme (optional)</label><input id="campus-course" maxlength="120" placeholder="e.g. BSc Computer Science"></div>
-    <div class="field"><label for="campus-year">Year / level (optional)</label><select id="campus-year"><option value="">Prefer not to say</option><option>100 Level</option><option>200 Level</option><option>300 Level</option><option>400 Level</option><option>500 Level</option><option>600 Level</option><option>Postgraduate</option><option>Other</option></select></div>
+    <div class="field"><label for="campus-faculty">Current faculty / school *</label><input id="campus-faculty" minlength="2" maxlength="120" placeholder="e.g. Faculty of Engineering" required></div>
+    <div class="field"><label for="campus-department">Current department *</label><input id="campus-department" minlength="2" maxlength="120" placeholder="e.g. Computer Science" required></div>
+    <div class="field"><label for="campus-course">Current course / programme *</label><input id="campus-course" minlength="2" maxlength="120" placeholder="e.g. BSc Computer Science" required></div>
+    <div class="field"><label for="campus-year">Current level *</label><select id="campus-year" required><option value="" selected disabled>Select your current level</option><option>100 Level</option><option>200 Level</option><option>300 Level</option><option>400 Level</option><option>500 Level</option><option>600 Level</option><option>Postgraduate</option></select></div>
     <button class="btn" type="submit" id="campus-onboarding-submit">Join my university space</button>
     <p id="campus-onboarding-message" class="message" role="status" aria-live="polite"></p>
   </form>
@@ -647,11 +667,11 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 <section class="page" id="page-approvals">
-<div class="heading"><h1>Account approvals</h1><p>Review pending student and teacher account requests. Only verified administrators can use this area.</p></div>
+<div class="heading"><h1>Account approvals</h1><p>Review pending student and teacher requests, and view rejected applications. Only verified administrators can use this area.</p></div>
 <div class="panel">
-<div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending applications in your university</strong><button class="btn secondary" type="button" id="refresh-approvals">Refresh list</button></div>
+<div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending and rejected applications in your university</strong><button class="btn secondary" type="button" id="refresh-approvals">Refresh list</button></div>
 <p id="approvals-message" class="message" role="status">Checking administrator access…</p>
-<div class="table-wrap"><table><caption class="sr-only">Pending and rejected student and teacher account requests in this university</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Status</th><th scope="col">Submitted</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
+<div class="table-wrap"><table><caption class="sr-only">Pending and rejected student and teacher applications in this university</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Status</th><th scope="col">Submitted</th><th scope="col">Student identity</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="7">Loading…</td></tr></tbody></table></div>
 </div>
 <div class="panel" id="campus-membership-review-panel" hidden style="margin-top:16px">
   <div class="actions" style="justify-content:space-between;align-items:center"><strong>Campus staff membership checks</strong><button class="btn secondary" type="button" id="refresh-campus-membership-reviews">Refresh checks</button></div>
@@ -659,6 +679,19 @@ td strong{color:#2a464d;font-size:11px}
   <p id="campus-membership-reviews-message" class="message" role="status" aria-live="polite">Loading campus membership checks…</p>
   <div class="table-wrap"><table><caption class="sr-only">Campus-specific staff membership requests</caption><thead><tr><th scope="col">Username</th><th scope="col">Requested role</th><th scope="col">Account status</th><th scope="col">Faculty / department</th><th scope="col">Decision</th></tr></thead><tbody id="campus-membership-reviews-table"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
 </div>
+</section>
+
+<section class="page" id="page-identity-verification">
+  <div class="heading"><h1>Student identity verification</h1><p>Submit a school ID document for review by an authorized administrator at your university. Use fictional details and files in this prototype.</p></div>
+  <div class="panel">
+    <p id="identity-verification-status" class="message" role="status" aria-live="polite">Loading your submission status…</p>
+    <form id="studentIdentityForm">
+      <div class="field"><label for="identity-institution">Institution</label><input id="identity-institution" readonly aria-readonly="true"></div>
+      <div class="field"><label for="identity-student-number">Student / matric number *</label><input id="identity-student-number" required maxlength="80" autocomplete="off"></div>
+      <div class="field"><label for="identity-document">Student ID image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>JPEG, PNG, or PDF; maximum 5 MB. Use synthetic data only.</small></div>
+      <button class="btn" type="submit" id="identity-submit">Submit for review</button>
+    </form>
+  </div>
 </section>
 
 
@@ -714,6 +747,7 @@ td strong{color:#2a464d;font-size:11px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script src="./campusshield-backend.js"></script>
+<script src="./campusshield-backend-identity-addon.js"></script>
 <script>
 
 (() => {
@@ -860,6 +894,11 @@ td strong{color:#2a464d;font-size:11px}
     const verified = currentProfile?.verification_status === 'verified';
     const staffCampusApproved = hasVerifiedCampusStaffMembership();
     $('approvals-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
+    $('identity-verification-nav').hidden = !isStudentAccount();
+  }
+
+  function isStudentAccount() {
+    return ['student'].includes(currentProfile?.requested_role || currentProfile?.role);
   }
 
   function showWorkspace(profile) {
@@ -884,6 +923,7 @@ td strong{color:#2a464d;font-size:11px}
       el.hidden = !verified;
     });
     $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
+    $('identity-verification-nav').hidden = !isStudentAccount();
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
     $('community-announcement-option').disabled = !canPublishOfficial;
     navigate('dashboard');
@@ -958,7 +998,6 @@ td strong{color:#2a464d;font-size:11px}
       showLogin('Please sign in to access CampusShield.');
       return;
     }
-
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
 
@@ -970,6 +1009,10 @@ td strong{color:#2a464d;font-size:11px}
     if (page === 'approvals' && !verifiedAdmin) {
       page = 'dashboard';
       toast('Only verified administrators can access account approvals.');
+    }
+    if (page === 'identity-verification' && !isStudentAccount()) {
+      page = 'dashboard';
+      toast('Student identity verification is available to student accounts.');
     }
 
     document.querySelectorAll('.page').forEach(el =>
@@ -990,8 +1033,9 @@ td strong{color:#2a464d;font-size:11px}
       risk:'Risk analysis',
       analytics:'Analytics & reports',
       approvals:'Account approvals',
+      'identity-verification':'Student identity',
       'platform-admin':'Platform administration',
-      community:'Campus community',
+      community:'CampusPulse',
       groups:'Campus groups',
       events:'Campus events',
       marketplace:'Campus marketplace'
@@ -1000,6 +1044,7 @@ td strong{color:#2a464d;font-size:11px}
     $('sectionTitle').textContent = names[page] || 'Overview';
 
     if (page === 'analytics') renderAnalytics();
+    if (page === 'identity-verification') loadStudentIdentityStatus();
   }
 
   document.addEventListener('click', e => {
@@ -1007,6 +1052,7 @@ td strong{color:#2a464d;font-size:11px}
     if (!button) return;
     navigate(button.dataset.page);
     if (button.dataset.page === 'approvals') loadAccountApprovals();
+    if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
     if (button.dataset.page === 'community') loadCommunityPage();
     if (button.dataset.page === 'groups') loadCampusGroupsPage();
     if (button.dataset.page === 'events') loadCampusEventsPage();
@@ -1391,13 +1437,13 @@ td strong{color:#2a464d;font-size:11px}
 
     if (!backend?.isConfigured) {
       message.textContent = 'Supabase is not configured.';
-      tbody.innerHTML = '<tr><td colspan="6">Cannot load applications.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7">Cannot load applications.</td></tr>';
       nav.hidden = true;
       return;
     }
 
     message.textContent = 'Checking administrator access…';
-    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
 
     try {
       const user = await backend.getCurrentUser();
@@ -1426,37 +1472,59 @@ td strong{color:#2a464d;font-size:11px}
         .select('id, display_name, role, requested_role, verification_status, created_at')
         .in('verification_status', ['pending', 'rejected'])
         .or('requested_role.in.(student,teacher),role.in.(student,teacher)')
+        .order('verification_status', {ascending:true})
         .order('created_at', {ascending:true});
 
       if (error) throw error;
 
+      const studentIds = rows.filter(row => (row.requested_role || row.role) === 'student').map(row => row.id);
+      let identityByUser = new Map();
+      if (studentIds.length) {
+        const {data:identityRows, error:identityError} = await backend.client
+          .from('student_identity_verifications')
+          .select('user_id, student_number, university_id, status, object_path')
+          .in('user_id', studentIds);
+        if (identityError) throw identityError;
+        identityByUser = new Map((identityRows || []).map(identity => [identity.user_id, identity]));
+      }
+
       if (!rows?.length) {
-        tbody.innerHTML = '<tr><td colspan="6">There are no pending or rejected student or teacher applications in this university.</td></tr>';
-        message.textContent = 'University administrator access confirmed.';
+        tbody.innerHTML = '<tr><td colspan="7">There are no pending or rejected student or teacher applications in this university.</td></tr>';
+        message.textContent = 'University administrator access confirmed. No pending or rejected applications.';
         await loadCampusStaffMembershipReviews();
         return;
       }
 
       tbody.innerHTML = rows.map(row => {
-        const statusTag = row.verification_status === 'rejected' ? 'high' : 'open';
-        const decisionCell = row.verification_status === 'pending'
-          ? '<div class="actions"><button class="btn" data-review="approve" data-user-id="' + esc(row.id) + '">Approve</button><button class="btn danger" data-review="reject" data-user-id="' + esc(row.id) + '">Reject</button></div>'
-          : '<span class="muted">Rejected — view only</span>';
+        const identity = identityByUser.get(row.id);
+        const isStudent = (row.requested_role || row.role) === 'student';
+        const documentCell = identity?.object_path
+          ? `<button class="btn secondary" type="button" data-student-document="${esc(identity.object_path)}">Open ID document</button>`
+          : '<span class="muted">No document</span>';
+        const identityDecision = isStudent && row.verification_status === 'pending'
+          ? `<div class="actions"><button class="btn" type="button" data-identity-review="approve" data-user-id="${esc(row.id)}" ${identity?.status !== 'pending' ? 'disabled' : ''}>Approve ID & account</button><button class="btn danger" type="button" data-identity-review="reject" data-user-id="${esc(row.id)}" ${identity?.status !== 'pending' ? 'disabled' : ''}>Reject ID & account</button></div>`
+          : row.verification_status === 'pending'
+            ? `<div class="actions"><button class="btn" type="button" data-review="approve" data-user-id="${esc(row.id)}">Approve</button><button class="btn danger" type="button" data-review="reject" data-user-id="${esc(row.id)}">Reject</button></div>`
+            : '<span class="muted">Rejected — view only; follow up with the applicant if they request a review.</span>';
         return `<tr>
-          <td><strong>${esc(row.display_name || 'Name not provided')}</strong></td>
-          <td><code>${esc(row.id)}</code></td>
-          <td><span class="tag open">${esc(row.requested_role || row.role || 'Not specified')}</span></td>
-          <td><span class="tag ${row.verification_status === 'rejected' ? 'high' : 'open'}">${esc(row.verification_status || 'unknown')}</span></td>
-          <td>${esc(dateText(row.created_at))}</td>
-          <td>${decisionCell}</td>
-        </tr>`;
+        <td><strong>${esc(row.display_name || 'Name not provided')}</strong></td>
+        <td><code>${esc(row.id)}</code></td>
+        <td><span class="tag open">${esc(row.requested_role || row.role || 'Not specified')}</span></td>
+        <td><span class="tag ${row.verification_status === 'rejected' ? 'high' : 'open'}">${esc(row.verification_status === 'rejected' ? 'Rejected' : 'Pending')}</span></td>
+        <td>${esc(dateText(row.created_at))}</td>
+        <td>${isStudent ? `<strong>${esc(identity?.student_number || '—')}</strong><br><span class="muted">ID status: ${esc(identity?.status || 'not submitted')}</span><br>${documentCell}` : '—'}</td>
+        <td>${identityDecision}
+        </td>
+      </tr>`;
       }).join('');
 
-      message.textContent = `${rows.length} pending or rejected application(s) in this university.`;
+      const pendingCount = rows.filter(row => row.verification_status === 'pending').length;
+      const rejectedCount = rows.filter(row => row.verification_status === 'rejected').length;
+      message.textContent = `${pendingCount} pending and ${rejectedCount} rejected application(s) in this university.`;
       await loadCampusStaffMembershipReviews();
     } catch (err) {
       console.error('Could not load account approvals:', err);
-      tbody.innerHTML = '<tr><td colspan="6">Applications could not be loaded.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7">Applications could not be loaded.</td></tr>';
       message.textContent = err.message || 'Could not load applications.';
     }
   }
@@ -1539,7 +1607,7 @@ td strong{color:#2a464d;font-size:11px}
     message.textContent = `Attempting to ${actionLabel} account…`;
 
     try {
-      const {error} = await backend.client.rpc('review_campus_account', {
+    const {error} = await backend.client.rpc('review_campus_account', {
         p_user_id: userId,
         p_decision: decision
       });
@@ -1559,6 +1627,89 @@ td strong{color:#2a464d;font-size:11px}
       document.querySelectorAll('#approvals-table button').forEach(b => {
         b.disabled = false;
       });
+    }
+  });
+
+  async function loadStudentIdentityStatus() {
+    const status = $('identity-verification-status');
+    const form = $('studentIdentityForm');
+    const submit = $('identity-submit');
+    $('identity-institution').value = campusContext?.university_name || 'Select your university first';
+    form.hidden = !campusContext?.university_id;
+    if (!campusContext?.university_id) {
+      status.textContent = 'Choose your university and complete campus onboarding before submitting identity documents.';
+      return;
+    }
+    status.textContent = 'Checking submission status…';
+    try {
+      const submission = await window.CampusShieldBackend.getMyStudentIdentityVerification();
+      if (!submission) {
+        status.textContent = 'No identity document submitted. Your institution is locked to your selected university.';
+        form.hidden = false;
+        submit.disabled = false;
+      } else {
+        status.textContent = `Submission ${submission.status}. Submitted ${dateText(submission.created_at)}. Student number: ${submission.student_number}.`;
+        form.hidden = true;
+      }
+    } catch (err) {
+      status.textContent = err.message || 'Could not load your identity submission status.';
+      form.hidden = true;
+    }
+  }
+
+  $('studentIdentityForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const file = $('identity-document').files?.[0];
+    const number = $('identity-student-number').value.trim();
+    const status = $('identity-verification-status');
+    if (!campusContext?.university_id || number.length < 2 || number.length > 80 || !file) {
+      status.textContent = 'Choose your university and enter a valid student or matric number and document.';
+      return;
+    }
+    $('identity-submit').disabled = true;
+    status.textContent = 'Uploading your document securely…';
+    try {
+      await window.CampusShieldBackend.uploadStudentIdentityDocument(file, number);
+      status.textContent = 'Identity document submitted for administrator review.';
+      $('studentIdentityForm').reset();
+      await loadStudentIdentityStatus();
+    } catch (err) {
+      status.textContent = err.message || 'Submission failed. Please try again.';
+      $('identity-submit').disabled = false;
+    }
+  });
+
+  $('approvals-table').addEventListener('click', async event => {
+    const openButton = event.target.closest('[data-student-document]');
+    if (!openButton) return;
+    openButton.disabled = true;
+    try {
+      const url = await window.CampusShieldBackend.createStudentIdentityDocumentUrl(openButton.dataset.studentDocument);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast(err.message || 'Could not open the ID document.');
+    } finally {
+      openButton.disabled = false;
+    }
+  });
+
+  $('approvals-table').addEventListener('click', async event => {
+    const button = event.target.closest('[data-identity-review]');
+    if (!button) return;
+    const decision = button.dataset.identityReview;
+    if (!confirm(`Are you sure you want to ${decision} this student identity and account?`)) return;
+    button.disabled = true;
+    try {
+      const {error} = await window.CampusShieldBackend.client.rpc('review_student_identity_verification', {
+        p_user_id: button.dataset.userId,
+        p_decision: decision
+      });
+      if (error) throw error;
+      toast(decision === 'approve' ? 'Identity and student account approved.' : 'Identity and student account rejected.');
+      await loadAccountApprovals();
+    } catch (err) {
+      toast(err.message || 'Could not review student identity.');
+      button.disabled = false;
     }
   });
 
@@ -1655,8 +1806,7 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
-  
-function renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost) {
+  function renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost) {
     const mediaMap = mediaByPost || Object.create(null);
     const list = Array.isArray(posts) ? posts : [];
     const commentList = Array.isArray(comments) ? comments : [];
@@ -1847,8 +1997,7 @@ function renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPo
         backend.listMyCampusEventRsvps()
       ]);
       const rsvpByEvent = Object.create(null);
-      responses.forEach(row => { rsvpByEvent[row.event_id] = row.response; });
-      $('campus-events-feed').innerHTML = events.length ? events.map(function(event) {
+      responses.forEach(row => { rsvpByEvent[row.event_id] = row.response; });      $('campus-events-feed').innerHTML = events.length ? events.map(function(event) {
         const current = rsvpByEvent[event.id] || '';
         return '<article class="community-post">' +
           '<div class="community-meta"><span class="tag open">' + esc(event.category.replaceAll('_',' ')) + '</span><span>·</span><time>' + esc(dateText(event.starts_at)) + '</time></div>' +
@@ -2516,12 +2665,13 @@ if (data.session) {
       }
     } catch (e) {
       console.error('Sign-up failed:', e);
-      if (/database error saving new user/i.test(String(e.message || ''))) {
+      const errorMessage = String(e.message || '');
+      if (/email rate limit exceeded/i.test(errorMessage)) {
+        msg.textContent = 'Supabase has temporarily limited confirmation emails. Wait before trying again; repeated sign-up attempts will not speed this up. Once the limit clears, request a confirmation email for this account instead of registering repeatedly.';
+      } else if (/database error saving new user/i.test(errorMessage)) {
         msg.textContent = 'Sign-up failed. That username may already be taken; choose another username and try again. If it continues, contact the CampusShield administrator.';
-      } else if (/rate limit|too many requests|over_email_send_rate_limit/i.test(String(e.message || ''))) {
-        msg.textContent = 'Supabase has temporarily limited confirmation emails. Repeated sign-up attempts will not speed this up; wait at least an hour before retrying.';
       } else {
-        msg.textContent = 'Sign-up failed: ' + e.message;
+        msg.textContent = 'Sign-up failed: ' + errorMessage;
       }
     }
   }
@@ -2565,7 +2715,7 @@ if (data.session) {
 
       const {data:profile, error:profileError} = await backend.client
         .from('profiles')
-        .select('role, verification_status')
+        .select('role, requested_role, verification_status')
         .eq('id', user.id)
         .single();
 
@@ -2776,8 +2926,8 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   } catch (error) {
     console.error('Resend confirmation failed:', error);
 
-    msg.textContent = /rate limit|too many requests|over_email_send_rate_limit/i.test(String(error.message || ''))
-      ? 'Supabase has temporarily limited confirmation emails. Repeated sign-up attempts will not speed this up; wait at least an hour before retrying.'
+    msg.textContent = /email rate limit exceeded/i.test(String(error.message || ''))
+      ? 'Supabase has temporarily limited confirmation emails. Please wait before trying again; repeated resend requests will not speed this up.'
       : 'Could not request another email. Please wait and try again later.';
   } finally {
     button.disabled = false;
@@ -2799,7 +2949,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         if (user) {
           const {data:profile, error} = await backend.client
             .from('profiles')
-            .select('role, verification_status')
+            .select('role, requested_role, verification_status')
             .eq('id', user.id)
             .single();
           if (!error && profile) {
@@ -2846,7 +2996,6 @@ $('resend-confirmation-button').addEventListener('click', async () => {
 
       const {error} = await backend.client.auth.signOut();
       if (error) throw error;
-
       $('auth-password').value = '';
       currentProfile = null;
       showLogin('You have signed out.');
