@@ -18,7 +18,7 @@ const sokotoMigration = readFileSync(sokotoMigrationPath, "utf8");
 const officialNamesMigration = readFileSync(officialNamesMigrationPath, "utf8");
 const baseline = readFileSync(baselinePath, "utf8");
 
-const migrationFiles = readdirSync("supabase/migrations").filter((file) => /^\\d{14}_.+\\.sql$/.test(file));
+const migrationFiles = readdirSync("supabase/migrations").filter((file) => /^\d{14}_.+\.sql$/.test(file));
 const migrationVersions = new Map();
 for (const file of migrationFiles) {
   const version = file.slice(0, 14);
