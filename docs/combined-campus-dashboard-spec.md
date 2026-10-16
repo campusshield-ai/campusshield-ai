@@ -137,3 +137,61 @@ The inspected `index.html` at the feature-stack commit already contains parts of
 - Student/staff onboarding and staff-verification UI hooks in the existing frontend/backend.
 
 This is a source-level inventory only; it does not certify that every feature works end-to-end or that authorization is secure. Before coding the dashboard, map the existing DOM page IDs, navigation handlers, backend calls, and database policies. Reuse working components and existing authorization paths rather than duplicating the feed, tickets, notices, or identity workflows. Verify the current page structure against the actual branch before editing; do not assume CSS class names prove that a corresponding page or service is complete.
+
+
+## 11. Concrete integration map from the inspected prototype
+
+### Existing navigation and page IDs
+
+The current shell uses `button[data-page]` and matching `section.page#page-<key>` elements. The inspected navigation keys are:
+
+- `dashboard` — `#page-dashboard`
+- `report` — `#page-report`
+- `manage` — `#page-manage`
+- `risk` — `#page-risk`
+- `analytics` — `#page-analytics`
+- `approvals` — `#page-approvals`
+- `identity-verification` — `#page-identity-verification`
+- `staff-verification` — `#page-staff-verification`
+- `staff-review` — `#page-staff-review`
+- `platform-admin` — `#page-platform-admin`
+- `noticeboard` — `#page-noticeboard`
+- `helpdesk` — `#page-helpdesk`
+- `community` — `#page-community` (CampusPulse)
+- `groups` — `#page-groups`
+- `events` — `#page-events`
+- `marketplace` — `#page-marketplace`
+
+The existing document-level click handler calls `navigate()` and then the appropriate page loader for noticeboard, Helpdesk, CampusPulse, groups, events, marketplace and administrative views. Preserve this routing model unless a reviewed refactor is needed; dashboard shortcuts already use `data-page`.
+
+### Existing dashboard inventory
+
+The current `#page-dashboard` already contains:
+
+- Role-adjusted heading copy for student, teaching staff and campus-admin contexts.
+- Incident summary metrics and recent report list.
+- A campus feature grid linking to Helpdesk, Verified Noticeboard, CampusPulse, groups, events and marketplace.
+- A roadmap note that labels future AI/planner/network capabilities as not yet implemented.
+- A prominent new-incident-report action and a prototype warning that emergency services are not contacted.
+
+### Verified integration gaps to address next
+
+The dashboard is currently a **navigation hub**, not yet a complete live campus overview:
+
+1. The feature grid provides links, but the inspected markup does not include a dedicated latest-notices preview, upcoming-events preview, recent CampusPulse highlights, or a Helpdesk status summary.
+2. The header's visible refresh status/button is incident-oriented. Do not label it as refreshing every dashboard service unless it really refreshes each one.
+3. Student and staff dashboards currently share most of the same cards. Improve relevance by rendering role-appropriate actions only after the trusted profile and campus membership are loaded.
+4. Avoid loading protected previews before authorization is resolved. Do not briefly render stale data from a previous account after sign-out or account switching.
+5. Prefer small, explicit loader functions for each dashboard preview, each calling the existing service/backend methods and handling empty/error/loading states. Reuse the existing notice, event, feed and Helpdesk loaders where possible; avoid duplicating data access code.
+6. Each preview should link to its full page using the existing `data-page` navigation. It must not expose restricted content in a notification or card to users whose access has been revoked.
+
+### Suggested safe implementation order
+
+1. Add an explicit dashboard refresh action that refreshes only the data it actually requests and reports partial failures clearly.
+2. Add a latest-notices preview using the existing noticeboard service, with campus scope and expiry filtering enforced by the backend/database.
+3. Add an upcoming-events preview using the existing events loader, with date and campus scope handled consistently.
+4. Add a CampusPulse preview using the existing feed loader, but only after approved membership is confirmed; do not bypass the moderation/publication state.
+5. Add a Helpdesk summary limited to the current user's requests, plus a separate staff queue summary only for authorized campus staff.
+6. Add stale-session/account-switch protections and test negative authorization cases before considering a pilot.
+
+No live data queries, UI edits, or browser tests are implied by this inventory. The items above are the next implementation work, not claims of completed behavior.
