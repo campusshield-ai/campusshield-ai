@@ -156,7 +156,7 @@ function applyDelta(roster, sql) {
 }
 
 function applyNameDelta(roster, sql) {
-  const updateMatch = sql.match(/from\\s*\\(\\s*values([\\s\\S]*?)\\)\\s*as\\s+v\\s*\\(slug\\s*,\\s*name\\s*\\)/i);
+  const updateMatch = sql.match(/from\s*\(\s*values([\s\S]*?)\)\s*as\s+v\s*\(slug\s*,\s*name\s*\)/i);
   assert.ok(updateMatch, "Could not parse name-variant corrections");
   let corrections = 0;
   for (const row of parseTuples(updateMatch[1])) {
