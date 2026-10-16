@@ -11,6 +11,10 @@ No production database migration, production deployment, PR merge, real student 
 
 ## Fixes made during this review
 
+### 0. Broad client table privileges on `public.profiles` (critical)
+The live staging privilege query found table-level grants to `anon` and `authenticated` that included INSERT/UPDATE/DELETE/TRUNCATE (RLS is not a substitute for removing unnecessary table privileges, and TRUNCATE is not row-filtered by RLS). Added migration `20261016236000_lock_profile_table_privileges.sql` and applied it to staging only. Verified after the change: anon has no profile table privileges; authenticated has SELECT only at table level plus UPDATE on `display_name` and `requested_role`; authenticated cannot INSERT/DELETE/TRUNCATE, and cannot update `role` or `verification_status`. Added a regression assertion to the smoke suite. Treat this as a high-priority security correction and verify the latest CI result before release.
+
+
 ### 1. Campus interaction reads were accidentally restricted
 The earlier restrictive RLS policy used `FOR ALL`, which also filtered `SELECT`. This could block reads that existing read policies were intended to allow. Migration `20261016234000_limit_verified_interaction_policy_to_writes.sql` replaces it with separate restrictive `INSERT`, `UPDATE`, and `DELETE` policies for six interaction tables. Staging `pg_policies` inspection confirmed the write-only policy set.
 
