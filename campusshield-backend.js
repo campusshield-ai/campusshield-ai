@@ -193,6 +193,39 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    async recordCampusIdentityEvidenceCheck({ userId, evidenceType, outcome, sourceKind, sourceReference = null, reviewerNote = null }) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!userId) throw new Error("Choose an account to review.");
+      const allowedTypes = ["student_id", "staff_id", "payment_receipt"];
+      const allowedOutcomes = ["needs_review", "institution_confirmed", "not_confirmed"];
+      const allowedSources = ["document_visual_review", "official_university_email", "university_registry", "direct_institution_contact", "official_payment_portal", "other"];
+      if (!allowedTypes.includes(evidenceType) || !allowedOutcomes.includes(outcome) || !allowedSources.includes(sourceKind)) {
+        throw new Error("Choose a valid evidence type, outcome, and source.");
+      }
+      if (outcome === "institution_confirmed" && (!["official_university_email", "university_registry", "direct_institution_contact", "official_payment_portal"].includes(sourceKind) || !String(sourceReference || "").trim())) {
+        throw new Error("Institution confirmation requires an authoritative source and reference.");
+      }
+      const { data, error } = await client.rpc("record_campus_identity_evidence_check", {
+        p_subject_user_id: userId,
+        p_evidence_type: evidenceType,
+        p_outcome: outcome,
+        p_source_kind: sourceKind,
+        p_source_reference: sourceReference || null,
+        p_reviewer_note: reviewerNote || null
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusIdentityEvidenceChecks(userId = null) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_identity_evidence_checks", {
+        p_subject_user_id: userId || null
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
     async createCampusStaffDocumentUrl(path) {
       if (!client) throw new Error("Supabase is not configured.");
       if (!path) return null;
