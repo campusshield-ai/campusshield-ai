@@ -2874,8 +2874,41 @@ td strong{color:#2a464d;font-size:11px}
       const notices = await backend.listCampusNotices();
       const staff = canModerateCommunity();
       $('campus-notice-publisher-panel').hidden = !staff;
-      $('campus-noticeboard-feed').innerHTML = notices.length
-        ? notices.map(function(notice) {
+
+      // Fail closed for student audience targeting: only show faculty/department notices
+      // when the signed-in student's own profile matches the intended audience.
+      let audienceProfile = null;
+      if (!staff) {
+        const user = await backend.getCurrentUser();
+        if (!user?.id) throw new Error('Sign in again to check notice audience access.');
+        const {data, error} = await backend.client.from('profiles')
+          .select('faculty,department')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (error) throw error;
+        audienceProfile = data || {};
+      }
+      const normalizeAudience = value => String(value || '').trim().toLocaleLowerCase().replace(/\\s+/g, ' ');
+      const activeNotices = notices.filter(function(notice) {
+        if (!notice.expires_at) return true;
+        const expiryTime = new Date(notice.expires_at).getTime();
+        return Number.isFinite(expiryTime) && expiryTime > Date.now();
+      });
+      const visibleNotices = activeNotices.filter(function(notice) {
+        if (staff) return true;
+        const scope = notice.audience_scope || 'campus';
+        if (scope === 'campus') return true;
+        const facultyMatches = normalizeAudience(notice.target_faculty) &&
+          normalizeAudience(notice.target_faculty) === normalizeAudience(audienceProfile?.faculty);
+        if (scope === 'faculty') return Boolean(facultyMatches);
+        if (scope === 'department') {
+          return Boolean(facultyMatches && normalizeAudience(notice.target_department) &&
+            normalizeAudience(notice.target_department) === normalizeAudience(audienceProfile?.department));
+        }
+        return false;
+      });
+      $('campus-noticeboard-feed').innerHTML = visibleNotices.length
+        ? visibleNotices.map(function(notice) {
             const expiry = notice.expires_at ? '<p class="community-meta">Expires ' + esc(dateText(notice.expires_at)) + '</p>' : '';
             const archiveButton = staff ? '<button type="button" class="btn secondary" data-archive-campus-notice="' + esc(notice.id) + '">Archive notice</button>' : '';
             return '<article class="community-post campus-notice-card">' +
@@ -2886,8 +2919,8 @@ td strong{color:#2a464d;font-size:11px}
               (archiveButton ? '<div class="community-post-actions">' + archiveButton + '</div>' : '') +
               '</article>';
           }).join('')
-        : '<div class="community-empty"><strong>No active official notices.</strong><p>Check back for verified academic dates, registration deadlines and campus service updates.</p></div>';
-      $('campus-notices-status').textContent = notices.length + ' active notice(s) visible to your campus account.';
+        : '<div class="community-empty"><strong>No notices currently visible.</strong><p>There may be no active notices, or current notices may target another faculty or department.</p></div>';
+      $('campus-notices-status').textContent = visibleNotices.length + ' active notice(s) visible to your campus account.';
     } catch (err) {
       console.error('Could not load campus noticeboard:', err);
       $('campus-notices-status').textContent = err.message || 'Official notices could not be loaded.';
