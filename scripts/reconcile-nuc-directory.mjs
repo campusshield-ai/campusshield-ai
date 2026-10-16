@@ -185,7 +185,7 @@ function applyStateDelta(roster, sql) {
 
 function applyDeactivationDelta(roster, sql) {
   assert.match(sql, /mewar-international-university-masaka-nasarawa-state/);
-  assert.match(sql, /Mewar University duplicate row is referenced/);
+  assert.match(sql, /Mewar University alias candidate is referenced/);
   const slugMatch = sql.match(/where\s+slug\s*=\s*'([^']+)'/i);
   assert.ok(slugMatch, "Could not parse duplicate alias slug");
   const slug = slugMatch[1];
