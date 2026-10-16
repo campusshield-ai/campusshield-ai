@@ -6,12 +6,14 @@ const nameMigrationPath = "supabase/migrations/20261016160000_reconcile_nuc_name
 const stateMigrationPath = "supabase/migrations/20261016170000_reconcile_nuc_state_mismatch.sql";
 const deactivationMigrationPath = "supabase/migrations/20261016180000_deactivate_duplicate_mewar_alias.sql";
 const manualMigrationPath = "supabase/migrations/20261016190000_reconcile_nuc_manual_name_matches.sql";
+const sokotoMigrationPath = "supabase/migrations/20261016200000_reconcile_sokoto_state_university_name.sql";
 const baselinePath = "supabase/migrations/20261015110000_import_official_nuc_university_directory.sql";
 const migration = readFileSync(migrationPath, "utf8");
 const nameMigration = readFileSync(nameMigrationPath, "utf8");
 const stateMigration = readFileSync(stateMigrationPath, "utf8");
 const deactivationMigration = readFileSync(deactivationMigrationPath, "utf8");
 const manualMigration = readFileSync(manualMigrationPath, "utf8");
+const sokotoMigration = readFileSync(sokotoMigrationPath, "utf8");
 const baseline = readFileSync(baselinePath, "utf8");
 
 const expectedSlugs = [
@@ -125,4 +127,9 @@ for (const slug of expectedManualNameSlugs) {
 assert.match(manualMigration, /Michael & Cecilia Ibru University, Owhode, Delta State/);
 assert.match(manualMigration, /Glorious Vision University \(formerly Samuel Adegboyega University\)/);
 
-console.log("NUC directory reconciliation smoke checks passed (16 corrections + 1 addition, 15 name variants, one state correction, and one guarded duplicate-alias deactivation, and 17 manual name matches; IDs/slugs preserved).");
+assert.match(sokotoMigration, /Sokoto State University, Sokoto/);
+assert.match(sokotoMigration, /sokoto-state-university/);
+assert.doesNotMatch(sokotoMigration, /\\bdelete\\s+from\\b/i);
+assert.doesNotMatch(sokotoMigration, /set\\s+id\\s*=|set\\s+slug\\s*=/i);
+
+console.log("NUC directory reconciliation smoke checks passed (16 corrections + 1 addition, 15 name variants, one state correction, and one guarded duplicate-alias deactivation, and 17 manual name matches plus one exact Sokoto name correction; IDs/slugs preserved).");
