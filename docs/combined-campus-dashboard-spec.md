@@ -195,3 +195,14 @@ The dashboard is currently a **navigation hub**, not yet a complete live campus 
 6. Add stale-session/account-switch protections and test negative authorization cases before considering a pilot.
 
 No live data queries, UI edits, or browser tests are implied by this inventory. The items above are the next implementation work, not claims of completed behavior.
+
+
+## 12. Static source inspection results
+
+A read-only source scan of the inspected feature-stack `index.html` found:
+
+- 16 distinct navigation keys and 16 matching page sections; no navigation key was missing a corresponding page section, and no page section was missing a navigation key.
+- The Supabase JS library, project config, backend helper, and identity add-on appear in the expected dependency order.
+- The dashboard already has the campus feature grid, but no dedicated dashboard preview containers were found for notices, events, CampusPulse, or Helpdesk.
+- The simple duplicate-ID scan reported only the literal template expression ` ${esc(row.id)} `, which is generated markup rather than a literal static DOM ID. This is a scanner false positive and must not be treated as a confirmed duplicate DOM ID.
+- The scan did not execute JavaScript, query Supabase, inspect live rendered DOM, or prove that authorization policies are correct. Browser acceptance and backend authorization tests remain required.
