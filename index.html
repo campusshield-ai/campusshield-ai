@@ -3804,10 +3804,10 @@ td strong{color:#2a464d;font-size:11px}
     const evidenceButton = event.target.closest('[data-evidence-check]');
     if (evidenceButton) {
       const userId = evidenceButton.dataset.staffUser;
-      const typeChoice = prompt('Evidence type: 1 = Staff ID, 2 = Student ID, 3 = Payment receipt', '1');
-      const typeMap = { '1': 'staff_id', '2': 'student_id', '3': 'payment_receipt' };
+      const typeChoice = prompt('Evidence type: 1 = Staff ID, 2 = Payment receipt', '1');
+      const typeMap = { '1': 'staff_id', '2': 'payment_receipt' };
       const evidenceType = typeMap[String(typeChoice || '').trim()];
-      if (!evidenceType) { toast('Choose evidence type 1, 2, or 3.'); return; }
+      if (!evidenceType) { toast('Choose evidence type 1 or 2.'); return; }
       const outcomeChoice = prompt('Outcome: 1 = Needs review, 2 = Institution confirmed, 3 = Not confirmed', '1');
       const outcomeMap = { '1': 'needs_review', '2': 'institution_confirmed', '3': 'not_confirmed' };
       const outcome = outcomeMap[String(outcomeChoice || '').trim()];
