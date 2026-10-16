@@ -10,6 +10,7 @@ const genericTeacherGuard = await readFile(new URL('../supabase/migrations/20261
 const adminAppointmentGuard = await readFile(new URL('../supabase/migrations/20261016225000_require_explicit_approved_campus_admin_request.sql', import.meta.url), 'utf8');
 const verifiedSocialGuard = await readFile(new URL('../supabase/migrations/20261016226000_require_verified_account_for_social_interactions.sql', import.meta.url), 'utf8');
 const verifiedInteractionsRls = await readFile(new URL('../supabase/migrations/20261016227000_require_verified_campus_interactions.sql', import.meta.url), 'utf8');
+const verifiedSocialRpc = await readFile(new URL('../supabase/migrations/20261016228000_require_verified_account_for_social_rpc_actions.sql', import.meta.url), 'utf8');
 
 for (const expected of [
   'id="auth-role"',
@@ -61,6 +62,15 @@ assert.match(verifiedSocialGuard, /create or replace function public\.join_campu
 assert.match(verifiedSocialGuard, /revoke all on function public\.create_community_comment\(uuid,text\) from public, anon/i);
 assert.match(verifiedInteractionsRls, /create policy[\s\S]*as restrictive for all to authenticated using \(private\.current_user_has_verified_campus_access\(\)\) with check \(private\.current_user_has_verified_campus_access\(\)\)/i, 'direct writes to social and campus-interaction tables must require verified campus access');
 for (const table of ['campus_event_rsvps', 'campus_follows', 'campus_group_members', 'community_poll_votes', 'community_post_bookmarks', 'community_post_reactions']) assert.ok(verifiedInteractionsRls.includes("'" + table + "'"), 'verified interaction policy must cover ' + table);
+for (const fn of ['toggle_community_reaction', 'toggle_community_bookmark', 'vote_community_poll', 'repost_community_post', 'toggle_campus_follow', 'toggle_campus_follow_post_author']) {
+  const start = verifiedSocialRpc.indexOf('create or replace function public.' + fn);
+  assert.ok(start >= 0, 'verified social RPC migration must redefine ' + fn);
+  const next = verifiedSocialRpc.indexOf('create or replace function public.', start + 1);
+  const body = verifiedSocialRpc.slice(start, next < 0 ? verifiedSocialRpc.length : next);
+  assert.match(body, /current_campus_account_status\(\) is distinct from 'verified'/i, fn + ' must require verified campus status');
+  assert.match(body, /current_campus_role\(\)/i, fn + ' must require an active verified campus role');
+}
+assert.match(verifiedSocialRpc, /revoke all on function public\.toggle_campus_follow_post_author\(uuid,boolean\) from public, anon/i, 'social RPCs must not be executable by anon');
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
