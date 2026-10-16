@@ -833,11 +833,30 @@ td strong{color:#2a464d;font-size:11px}
   <div class="panel">
     <p id="identity-verification-status" class="message" role="status" aria-live="polite">Loading your submission status…</p>
     <form id="studentIdentityForm">
-      <div class="field"><label for="identity-institution">Institution</label><input id="identity-institution" readonly aria-readonly="true"></div>
+      <div class="field">
+        <label for="identity-institution-search">Search your university (locked to your campus) *</label>
+        <input id="identity-institution-search" type="search" list="identity-university-options" autocomplete="off" aria-describedby="identity-university-help" required>
+        <datalist id="identity-university-options"></datalist>
+        <input id="identity-institution" type="hidden">
+        <small id="identity-university-help">Your university is fixed by campus onboarding. You can search the NUC-backed directory to confirm it, but you cannot submit an identity document for a different university.</small>
+      </div>
       <div class="field"><label for="identity-student-number">Student / matric number *</label><input id="identity-student-number" required maxlength="80" autocomplete="off"></div>
       <div class="field"><label for="identity-document">Student ID image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>JPEG, PNG, or PDF; maximum 5 MB. Use synthetic data only.</small></div>
       <button class="btn" type="submit" id="identity-submit">Submit for review</button>
     </form>
+    <details id="identity-university-request" style="margin-top:16px">
+      <summary>Other / institution not listed</summary>
+      <p class="muted">Request a university directory listing for platform-admin review. A listing request does not change your locked campus or bypass identity approval.</p>
+      <form id="identityUniversityRequestForm">
+        <div class="field"><label for="identity-request-university-name">Official university name *</label><input id="identity-request-university-name" required maxlength="180"></div>
+        <div class="field"><label for="identity-request-university-state">State or FCT *</label><input id="identity-request-university-state" required maxlength="80" placeholder="e.g. Lagos"></div>
+        <div class="field"><label for="identity-request-university-ownership">Ownership *</label><select id="identity-request-university-ownership" required><option value="">Select ownership</option><option>Federal</option><option>State</option><option>Private</option></select></div>
+        <div class="field"><label for="identity-request-university-website">Official website (optional)</label><input id="identity-request-university-website" type="url" maxlength="250" placeholder="https://..."></div>
+        <button class="btn secondary" type="submit" id="identity-request-university-submit">Request university listing</button>
+        <p id="identity-request-university-message" class="message" role="status" aria-live="polite"></p>
+      </form>
+    </details>
+    <p class="muted">Directory source: <a href="https://enuc.nuc.edu.ng/nus" target="_blank" rel="noopener noreferrer">National Universities Commission (NUC) Nigerian University System</a>. If a recently approved institution is missing, submit a listing request for review.</p>
   </div>
 </section>
 
@@ -1953,8 +1972,21 @@ td strong{color:#2a464d;font-size:11px}
     const status = $('identity-verification-status');
     const form = $('studentIdentityForm');
     const submit = $('identity-submit');
-    $('identity-institution').value = campusContext?.university_name || 'Select your university first';
+    $('identity-institution').value = campusContext?.university_name || '';
+    const institutionSearch = $('identity-institution-search');
+    const institutionOptions = $('identity-university-options');
+    institutionSearch.value = campusContext?.university_name || '';
+    institutionSearch.setCustomValidity('');
     form.hidden = !campusContext?.university_id;
+    try {
+      if (!campusUniversitiesCache) campusUniversitiesCache = await window.CampusShieldBackend.listCampusUniversities();
+      institutionOptions.innerHTML = campusUniversitiesCache.map(university =>
+        '<option value="' + esc(university.name) + '">' + esc(university.name) + ' · ' + esc(university.state) + ' · ' + esc(university.ownership) + '</option>'
+      ).join('');
+    } catch (directoryError) {
+      console.warn('Could not load the NUC-backed university directory:', directoryError.message);
+      $('identity-university-help').textContent = 'Could not load the directory right now. Your already-locked campus remains authoritative; try refreshing before submission.';
+    }
     if (!campusContext?.university_id) {
       status.textContent = 'Choose your university and complete campus onboarding before submitting identity documents.';
       syncIdentityNavigation();
@@ -2015,8 +2047,52 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
+  $('identity-institution-search').addEventListener('input', () => {
+    const typed = $('identity-institution-search').value.trim().toLocaleLowerCase();
+    const locked = String(campusContext?.university_name || '').trim().toLocaleLowerCase();
+    const matchesLockedCampus = Boolean(locked) && typed === locked;
+    $('identity-institution-search').setCustomValidity(
+      matchesLockedCampus ? '' : 'Your university is locked to your campus. Select the exact institution shown for your account; contact support if it is wrong.'
+    );
+    $('identity-institution').value = campusContext?.university_name || '';
+    $('identity-university-help').textContent = matchesLockedCampus
+      ? 'Confirmed: this matches your locked campus.'
+      : 'Your university is fixed by campus onboarding. Select the exact registered institution; another university cannot be submitted.';
+  });
+
+  $('identityUniversityRequestForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = $('identity-request-university-submit');
+    const message = $('identity-request-university-message');
+    button.disabled = true;
+    message.textContent = 'Sending request for platform review…';
+    try {
+      await window.CampusShieldBackend.requestCampusUniversity({
+        name: $('identity-request-university-name').value.trim(),
+        state: $('identity-request-university-state').value.trim(),
+        ownership: $('identity-request-university-ownership').value,
+        website: $('identity-request-university-website').value.trim()
+      });
+      $('identityUniversityRequestForm').reset();
+      message.textContent = 'University listing request submitted for platform-admin review. Your current campus and identity status have not changed.';
+      toast('University listing request submitted.');
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit the university listing request.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
   $('studentIdentityForm').addEventListener('submit', async event => {
     event.preventDefault();
+    const lockedInstitution = String(campusContext?.university_name || '').trim();
+    const typedInstitution = $('identity-institution-search').value.trim();
+    if (!lockedInstitution || typedInstitution.toLocaleLowerCase() !== lockedInstitution.toLocaleLowerCase()) {
+      $('identity-institution-search').setCustomValidity('Your university is locked to your campus. Select the exact institution shown for your account.');
+      $('identity-institution-search').reportValidity();
+      return;
+    }
+    $('identity-institution').value = lockedInstitution;
     const file = $('identity-document').files?.[0];
     const number = $('identity-student-number').value.trim();
     const status = $('identity-verification-status');
