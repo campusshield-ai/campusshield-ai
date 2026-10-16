@@ -2,11 +2,14 @@ name: CampusShield smoke checks
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - feature/nigerian-multi-university-foundation
   push:
     branches:
       - main
       - feature/nigerian-multi-university-foundation
+      - feature/identity-university-search
 
 permissions:
   contents: read
@@ -26,3 +29,12 @@ jobs:
           node tests/smoke-check.mjs
           node tests/student-identity-smoke-check.mjs
           node tests/campus-life-smoke-check.mjs
+          node tests/nuc-directory-reconciliation-smoke-check.mjs
+          node scripts/reconcile-nuc-directory.mjs
+      - name: Upload live NUC roster audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuc-roster-audit
+          path: artifacts/nuc-roster-audit/
+          if-no-files-found: error
+          retention-days: 14
