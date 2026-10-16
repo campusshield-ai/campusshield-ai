@@ -6,6 +6,7 @@ const backend = await readFile(new URL("../campusshield-backend.js", import.meta
 const migration = await readFile(new URL("../supabase/migrations/20261016120000_campus_life_helpdesk_noticeboard.sql", import.meta.url), "utf8");
 const wrappers = await readFile(new URL("../supabase/migrations/20261016123000_harden_campus_life_rpc_wrappers.sql", import.meta.url), "utf8");
 const noticeAudience = await readFile(new URL("../supabase/migrations/20261016130000_secure_noticeboard_audience_rls.sql", import.meta.url), "utf8");
+const identityGate = await readFile(new URL("../supabase/migrations/20261016140000_identity_gate_and_resubmission.sql", import.meta.url), "utf8");
 
 assert.match(html, /data-page="noticeboard"/);
 assert.match(html, /id="forgot-password-button"/, "login retains Forgot password");
@@ -63,6 +64,15 @@ assert.match(wrappers, /alter function public\.submit_campus_helpdesk_ticket[\s\
 assert.match(wrappers, /create or replace function public\.publish_campus_notice[\s\S]*?security invoker/i);
 assert.match(noticeAudience, /private\.current_user_matches_notice_audience/i);
 assert.match(noticeAudience, /campus_notices_read_published_for_campus_audience/i);
+assert.match(identityGate, /current_user_has_verified_campus_access/i);
+assert.match(identityGate, /enforce_verified_campus_access_for_interaction/i);
+assert.match(identityGate, /campus_identity_verified_read_gate/i);
+assert.match(identityGate, /student_identity_delete_unsubmitted_or_rejected_own/i);
+assert.match(identityGate, /status = 'rejected'/i);
+assert.match(identityGate, /p_rejection_reason text default null/i);
+assert.match(identityGate, /Verify your student identity and wait for account approval/i);
+assert.match(identityGate, /revoke all on function public\.submit_student_identity_verification/i);
+assert.match(identityGate, /revoke all on function public\.review_student_identity_verification/i);
 assert.doesNotMatch(backend, /service_role|sb_secret_/i);
 
 console.log("PASS CampusShield Helpdesk and verified noticeboard UI wiring");
