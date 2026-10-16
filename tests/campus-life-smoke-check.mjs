@@ -65,7 +65,7 @@ assert.match(wrappers, /alter function public\.submit_campus_helpdesk_ticket[\s\
 assert.match(wrappers, /create or replace function public\.publish_campus_notice[\s\S]*?security invoker/i);
 assert.match(noticeAudience, /private\.current_user_matches_notice_audience/i);
 assert.match(noticeAudience, /campus_notices_read_published_for_campus_audience/i);
-assert.match(verifiedNoticeReadGate, /create policy campus_notices_require_verified_campus_access[\\s\\S]*?as restrictive[\\s\\S]*?for select to authenticated/i);
+assert.match(verifiedNoticeReadGate, /create policy campus_notices_require_verified_campus_access[\s\S]*?as restrictive[\s\S]*?for select[\s\S]*?to authenticated/i);
 assert.match(verifiedNoticeReadGate, /current_user_has_verified_campus_access/i);
 assert.match(identityGate, /current_user_has_verified_campus_access/i);
 assert.match(identityGate, /enforce_verified_campus_access_for_interaction/i);
