@@ -199,7 +199,7 @@ function applyDeactivationDelta(roster, sql) {
 }
 
 function applyManualNameDelta(roster, sql) {
-  const updateMatch = sql.match(/from\\s*\\(\\s*values([\\s\\S]*?)\\)\\s*as\\s+v\\s*\\(slug\\s*,\\s*name\\s*\\)/i);
+  const updateMatch = sql.match(/from\s*\(\s*values([\s\S]*?)\)\s*as\s+v\s*\(slug\s*,\s*name\s*\)/i);
   assert.ok(updateMatch, "Could not parse manually reviewed name corrections");
   let corrections = 0;
   for (const row of parseTuples(updateMatch[1])) {
