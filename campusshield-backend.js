@@ -344,7 +344,7 @@ async getCurrentUser() {
     async createStudentIdentityDocumentUrl(objectPath) {
       if (!client) throw new Error("Supabase is not configured.");
       const safePath = String(objectPath || "");
-      if (!/^[0-9a-fA-F-]{36}\\/[0-9a-fA-F-]{36}\\.(jpg|jpeg|png|pdf)$/.test(safePath)) {
+      if (!/^[0-9a-fA-F-]{36}\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|pdf)$/.test(safePath)) {
         throw new Error("The student document path is invalid.");
       }
       const { data, error } = await client.storage
