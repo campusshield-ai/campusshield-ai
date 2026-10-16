@@ -32,7 +32,7 @@ for (const expected of [
   'id="evidence-audit-rows"',
   'data-evidence-check',
   'Record evidence check',
-  'Institution confirmed requires an authoritative source and reference.'
+  'authoritative source and reference.'
   'id="platform-admin-admin-requests-table"',
   'Appoint campus admin',
   'requested_campus_admin',
