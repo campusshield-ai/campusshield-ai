@@ -9,6 +9,7 @@ const legacyGuard = await readFile(new URL('../supabase/migrations/2026101622400
 const genericTeacherGuard = await readFile(new URL('../supabase/migrations/20261016225000_guard_generic_teacher_account_approval.sql', import.meta.url), 'utf8');
 const adminAppointmentGuard = await readFile(new URL('../supabase/migrations/20261016225000_require_explicit_approved_campus_admin_request.sql', import.meta.url), 'utf8');
 const verifiedSocialGuard = await readFile(new URL('../supabase/migrations/20261016226000_require_verified_account_for_social_interactions.sql', import.meta.url), 'utf8');
+const verifiedInteractionsRls = await readFile(new URL('../supabase/migrations/20261016227000_require_verified_campus_interactions.sql', import.meta.url), 'utf8');
 
 for (const expected of [
   'id="auth-role"',
@@ -58,6 +59,8 @@ assert.match(verifiedSocialGuard, /create or replace function public\.create_com
 assert.match(verifiedSocialGuard, /create or replace function public\.create_community_reply[\s\S]*v_status is distinct from 'verified'/i, 'only verified accounts may publish replies');
 assert.match(verifiedSocialGuard, /create or replace function public\.join_campus_group[\s\S]*current_campus_account_status\(\) is distinct from 'verified'/i, 'only verified accounts may join campus groups');
 assert.match(verifiedSocialGuard, /revoke all on function public\.create_community_comment\(uuid,text\) from public, anon/i);
+assert.match(verifiedInteractionsRls, /create policy[\s\S]*as restrictive for all to authenticated using \(private\.current_user_has_verified_campus_access\(\)\) with check \(private\.current_user_has_verified_campus_access\(\)\)/i, 'direct writes to social and campus-interaction tables must require verified campus access');
+for (const table of ['campus_event_rsvps', 'campus_follows', 'campus_group_members', 'community_poll_votes', 'community_post_bookmarks', 'community_post_reactions']) assert.ok(verifiedInteractionsRls.includes("'" + table + "'"), 'verified interaction policy must cover ' + table);
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
