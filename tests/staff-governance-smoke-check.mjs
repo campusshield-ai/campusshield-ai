@@ -100,6 +100,10 @@ assert.ok(evidenceAudit.includes('revoke all on function public.record_campus_id
 assert.ok(evidenceAuditHistory.includes('create or replace function public.list_campus_identity_evidence_checks'), 'evidence history must be exposed through a guarded RPC');
 assert.ok(evidenceAuditHistory.includes("private.current_campus_role()) is distinct from 'admin'"), 'evidence history RPC must require campus admin');
 assert.ok(evidenceAuditHistory.includes('limit 200'), 'evidence history must be bounded');
+assert.ok(evidenceAuditHistory.includes('where c.university_id=v_university_id'), 'evidence history must be restricted to the reviewer campus');
+assert.ok(evidenceAuditHistory.includes("private.current_campus_role()) is distinct from 'admin'") && evidenceAuditHistory.includes("p.verification_status::text='verified'"), 'evidence history must require a verified campus administrator');
+assert.ok(evidenceAuditHistory.includes('set search_path = \'\''), 'evidence history SECURITY DEFINER function must use a locked search path');
+assert.ok(evidenceAuditHistory.includes('revoke all on function public.list_campus_identity_evidence_checks(uuid) from public, anon'), 'anonymous access to evidence history must be revoked');
 assert.ok(html.includes('listCampusIdentityEvidenceChecks()'), 'evidence history UI must load the guarded RPC');
 assert.ok(html.includes('recordCampusIdentityEvidenceCheck({ userId, evidenceType, outcome, sourceKind'), 'evidence review UI must save the audit record');
 assert.ok(html.includes("evidenceType: 'student_id'"), 'student identity review must record student ID evidence checks');
