@@ -123,3 +123,17 @@ Record each test as Pass, Fail, or Blocked, with sanitized screenshots/logs and 
 ## 9. Definition of done
 
 The dashboard is complete only when it is integrated with the existing flows, role and university boundaries are enforced server-side, the acceptance tests pass in staging, accessibility and mobile checks are documented, and all remaining security findings have an owner and disposition. A visual mockup or passing smoke test alone is not sufficient.
+
+
+## 10. Existing prototype inventory (read-only inspection)
+
+The inspected `index.html` at the feature-stack commit already contains parts of the intended experience, including:
+
+- A campus feature grid and campus-home panel styling.
+- CampusPulse post, comment, media, reporting, and moderation UI styling.
+- Helpdesk ticket cards, timelines, and staff controls.
+- Campus notice cards.
+- Responsive navigation and mobile layout rules.
+- Student/staff onboarding and staff-verification UI hooks in the existing frontend/backend.
+
+This is a source-level inventory only; it does not certify that every feature works end-to-end or that authorization is secure. Before coding the dashboard, map the existing DOM page IDs, navigation handlers, backend calls, and database policies. Reuse working components and existing authorization paths rather than duplicating the feed, tickets, notices, or identity workflows. Verify the current page structure against the actual branch before editing; do not assume CSS class names prove that a corresponding page or service is complete.
