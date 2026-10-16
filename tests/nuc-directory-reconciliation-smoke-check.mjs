@@ -5,11 +5,13 @@ const migrationPath = "supabase/migrations/20261016150000_reconcile_nuc_director
 const nameMigrationPath = "supabase/migrations/20261016160000_reconcile_nuc_name_variants.sql";
 const stateMigrationPath = "supabase/migrations/20261016170000_reconcile_nuc_state_mismatch.sql";
 const deactivationMigrationPath = "supabase/migrations/20261016180000_deactivate_duplicate_mewar_alias.sql";
+const manualMigrationPath = "supabase/migrations/20261016190000_reconcile_nuc_manual_name_matches.sql";
 const baselinePath = "supabase/migrations/20261015110000_import_official_nuc_university_directory.sql";
 const migration = readFileSync(migrationPath, "utf8");
 const nameMigration = readFileSync(nameMigrationPath, "utf8");
 const stateMigration = readFileSync(stateMigrationPath, "utf8");
 const deactivationMigration = readFileSync(deactivationMigrationPath, "utf8");
+const manualMigration = readFileSync(manualMigrationPath, "utf8");
 const baseline = readFileSync(baselinePath, "utf8");
 
 const expectedSlugs = [
@@ -91,4 +93,36 @@ assert.match(deactivationMigration, /Mewar University alias candidate is referen
 assert.doesNotMatch(deactivationMigration, /\bdelete\s+from\b/i);
 assert.doesNotMatch(deactivationMigration, /set\s+id\s*=|set\s+slug\s*=/i);
 
-console.log("NUC directory reconciliation smoke checks passed (16 corrections + 1 addition, 15 name variants, one state correction, and one guarded duplicate-alias deactivation; IDs/slugs preserved).");
+
+const expectedManualNameSlugs = [
+  "ekiti-state-university",
+  "pan-atlantic-university",
+  "bayelsa-medical-university",
+  "crescent-university",
+  "baze-university",
+  "glorious-vision-university-ogwa-edo-state",
+  "evangel-university-akaeze",
+  "augustine-university",
+  "chrisland-university",
+  "micheal-cecilia-ibru-university",
+  "mountain-top-university",
+  "ojaja-university-eiyenkorin-kwara-state",
+  "precious-cornerstone-university-oyo",
+  "skyline-university-kano",
+  "khalifa-isiyaku-rabiu-university-kano",
+  "rayhaan-university-kebbi",
+  "wesley-university-ondo",
+];
+assert.match(manualMigration, /expected_count integer := 17/);
+assert.match(manualMigration, /begin;/i);
+assert.match(manualMigration, /commit;/i);
+assert.doesNotMatch(manualMigration, /\\bdelete\\s+from\\b/i);
+assert.doesNotMatch(manualMigration, /set\\s+id\\s*=|set\\s+slug\\s*=/i);
+for (const slug of expectedManualNameSlugs) {
+  assert.ok(baseline.includes(slug), `manual name target slug must exist in baseline: ${slug}`);
+  assert.ok(manualMigration.includes(slug), `manual name migration must include slug: ${slug}`);
+}
+assert.match(manualMigration, /Michael & Cecilia Ibru University, Owhode, Delta State/);
+assert.match(manualMigration, /Glorious Vision University \\(formerly Samuel Adegboyega University\\)/);
+
+console.log("NUC directory reconciliation smoke checks passed (16 corrections + 1 addition, 15 name variants, one state correction, and one guarded duplicate-alias deactivation, and 17 manual name matches; IDs/slugs preserved).");
