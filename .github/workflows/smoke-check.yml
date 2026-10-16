@@ -29,3 +29,4 @@ jobs:
           node tests/smoke-check.mjs
           node tests/student-identity-smoke-check.mjs
           node tests/campus-life-smoke-check.mjs
+          node tests/nuc-directory-reconciliation-smoke-check.mjs
