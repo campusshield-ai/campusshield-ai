@@ -7,9 +7,10 @@ The live NUC directory currently reports 77 federal, 69 state and 182 private un
 
 ## Changes in migration `20261016150000_reconcile_nuc_directory_live_deltas.sql`
 
-This migration corrects 16 high-confidence existing records against the live NUC listing:
+This migration corrects 16 high-confidence existing records against the live NUC listing and adds one confirmed current NUC-listed university missing from the baseline snapshot:
 
 - Corrects the state for Federal University Gashua (Yobe), Federal University Dutsin-Ma (Katsina), Federal University Otuoke (Bayelsa), Federal University Gusau (Zamfara), and Jigawa State University of Allied and Medical Science (Jigawa).
+- Adds Mewar University, Masaka, Nasarawa State, which was present in the live NUC listing but absent from the baseline seed.
 - Corrects current NUC display names for City University, Millennium Crest University, Transatlantic University of Medicine and Health Sciences, Baba-Ahmed University, Modibbo Adama University, Michael Okpara University of Agriculture, Federal University of Health Sciences at Funtua, Federal University of Agriculture and Developmental Studies at Iragbiji, Federal University of Agriculture and Technology at Okeho, Cross River University of Education and Entrepreneurship, and Ebonyi State University of Aeronautics and Aerospace Engineering.
 
 The migration updates by the existing `slug`, asserts all 16 slugs exist, preserves the primary keys and all foreign-key relationships, does not delete or deactivate any institution, and does not change any official website unless a later reviewed change explicitly does so.
