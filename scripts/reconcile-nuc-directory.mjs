@@ -239,6 +239,38 @@ const nucUnmatched = nuc.filter(row => !matchedLive.has(normalizeName(row.name))
   };
 });
 
+// Suggest only mutual best matches with a strong name score and identical ownership/state.
+ // These are review candidates, not automatic renames; NUC and university sites can conflict.
+const nucUnmatchedByName = new Map(nucUnmatched.map(row => [row.nucName, row]));
+const suggestedPairs = [];
+for (const dbRow of dbUnmatched) {
+  const top = dbRow.candidates[0];
+  if (!top || top.similarity < 0.72) continue;
+  const nucRow = nucUnmatchedByName.get(top.name);
+  if (!nucRow || !nucRow.candidates[0]) continue;
+  const reverse = nucRow.candidates[0];
+  if (
+    reverse.name === dbRow.databaseName &&
+    reverse.similarity >= 0.72 &&
+    dbRow.ownership === nucRow.ownership &&
+    normalizeState(dbRow.state) === normalizeState(nucRow.state)
+  ) {
+    suggestedPairs.push({
+      databaseSlug: dbRow.slug,
+      databaseName: dbRow.databaseName,
+      nucName: nucRow.nucName,
+      ownership: dbRow.ownership,
+      state: dbRow.state,
+      similarity: Number(top.similarity.toFixed(3))
+    });
+  }
+}
+suggestedPairs.sort((a, b) => a.databaseName.localeCompare(b.databaseName));
+const suggestedDbNames = new Set(suggestedPairs.map(row => row.databaseName));
+const suggestedNucNames = new Set(suggestedPairs.map(row => row.nucName));
+const unresolvedDatabaseRows = dbUnmatched.filter(row => !suggestedDbNames.has(row.databaseName));
+const unresolvedNucRows = nucUnmatched.filter(row => !suggestedNucNames.has(row.nucName));
+
 const duplicateGroups = [];
 const normalized = new Map();
 for (const row of database) {
@@ -263,6 +295,9 @@ const report = {
   ownershipOrStateMismatches: matched.filter(r => r.ownershipMismatch || r.stateMismatch),
   databaseRowsWithoutExactNameMatch: dbUnmatched,
   nucRowsWithoutExactNameMatch: nucUnmatched,
+  suggestedSameInstitutionPairs: suggestedPairs,
+  unresolvedDatabaseRows,
+  unresolvedNucRows,
   duplicateNormalizedDatabaseNames: duplicateGroups,
   note: "Fuzzy candidates are review suggestions only. Do not automatically delete, merge, deactivate, or regenerate IDs/slugs. The NUC website can contain inconsistent naming; investigate aliases and conflicting NUC pages before changing identity."
 };
@@ -280,6 +315,9 @@ const md = [
   `- Matched records with ownership/state mismatches: **${report.ownershipOrStateMismatches.length}**`,
   `- Database names without exact match: **${report.databaseRowsWithoutExactNameMatch.length}**`,
   `- NUC names without exact match: **${report.nucRowsWithoutExactNameMatch.length}**`,
+  `- Mutual high-similarity candidate pairs for review: **${report.suggestedSameInstitutionPairs.length}**`,
+  `- Database rows still unresolved after candidate pairing: **${report.unresolvedDatabaseRows.length}**`,
+  `- NUC rows still unresolved after candidate pairing: **${report.unresolvedNucRows.length}**`,
   `- Duplicate normalized database names: **${report.duplicateNormalizedDatabaseNames.length}**`,
   "",
   "## Counts by ownership",
@@ -293,6 +331,12 @@ const md = [
   "| Database name | NUC name | DB ownership/state | NUC ownership/state |",
   "|---|---|---|---|",
   ...report.ownershipOrStateMismatches.map(r => `| ${r.databaseName} | ${r.nucName} | ${r.databaseOwnership} / ${r.databaseState} | ${r.nucOwnership} / ${r.nucState} |`),
+  "",
+  "## High-similarity same-ownership/state candidates (manual review required)",
+  "",
+  "| Existing database name | Current NUC name | Ownership/state | Name similarity |",
+  "|---|---|---|---:|",
+  ...report.suggestedSameInstitutionPairs.map(r => `| ${r.databaseName} | ${r.nucName} | ${r.ownership} / ${r.state} | ${r.similarity} |`),
   "",
   "## Database rows without exact normalized-name matches",
   "",
@@ -319,6 +363,9 @@ console.log(JSON.stringify({
   ownershipOrStateMismatches: report.ownershipOrStateMismatches.length,
   databaseRowsWithoutExactNameMatch: report.databaseRowsWithoutExactNameMatch.length,
   nucRowsWithoutExactNameMatch: report.nucRowsWithoutExactNameMatch.length,
+  suggestedSameInstitutionPairs: report.suggestedSameInstitutionPairs.length,
+  unresolvedDatabaseRows: report.unresolvedDatabaseRows.length,
+  unresolvedNucRows: report.unresolvedNucRows.length,
   duplicateNormalizedDatabaseNames: report.duplicateNormalizedDatabaseNames.length,
   report: `${outputDir}/nuc-roster-audit.md`
 }, null, 2));
