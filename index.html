@@ -315,6 +315,13 @@ td strong{color:#2a464d;font-size:11px}
 .auth-tabs button{min-height:37px;border:0;border-radius:8px;background:transparent;color:#708188;font-size:11px;font-weight:760}
 .auth-tabs button[aria-pressed="true"]{background:#fff;box-shadow:0 2px 8px #15343d12;color:#1b5155}
 .auth-panel .actions .btn{width:100%;min-height:44px}
+#signup-fields .field input,#signup-fields .field select{min-height:42px}
+#signup-student-fields,#signup-staff-fields{display:grid;gap:0}
+#signup-student-fields[hidden],#signup-staff-fields[hidden]{display:none}
+#campusStaffVerificationForm .field input[type="file"]{padding:9px;background:#f8fbfa}
+#campus-staff-verification-queue .actions{display:flex;gap:6px;flex-wrap:wrap}
+#campus-staff-verification-queue .btn{padding:8px 10px}
+
 #auth-message{min-height:20px;margin:12px 0 0}
 .auth-footnote{margin:12px 0 0;color:#849398;font-size:10px;line-height:1.55}
 .remember-field{margin:11px 0;color:#5f757b;font-size:10px}
@@ -445,10 +452,23 @@ td strong{color:#2a464d;font-size:11px}
       </div>
       <form id="auth-form">
         <div id="signup-fields" hidden>
-          <div class="field"><label for="auth-name">Real name <span class="muted">(optional · private)</span></label><input id="auth-name" autocomplete="name" placeholder="Your real name; not shown to students"></div>
+          <div class="field"><label for="auth-name">Full name *</label><input id="auth-name" autocomplete="name" required maxlength="120" placeholder="Your official full name"></div>
           <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
-          <div class="field"><label for="auth-university">University <span class="muted">(optional if not listed yet)</span></label><select id="auth-university"><option value="">Choose after sign-in</option></select><p class="muted">Your university space is private to that institution. The choice is locked after joining to prevent cross-campus mixing.</p></div>
-          <div class="field"><label for="auth-role">Account type</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
+          <div class="field"><label for="auth-role">Campus account type *</label><select id="auth-role" required><option value="student">Student</option><option value="teacher">Teacher / university staff</option></select><p class="muted">Choose the role that matches your institution. Staff applications require separate verification.</p></div>
+          <div class="field"><label for="auth-university">University or institution *</label><select id="auth-university" required><option value="">Loading university directory…</option></select><p class="muted">Your campus is locked after registration to protect university privacy. If it is missing, request a listing through the platform support process.</p></div>
+          <div id="signup-student-fields">
+            <div class="field"><label for="auth-faculty">Faculty / school *</label><input id="auth-faculty" maxlength="120" required placeholder="e.g. Faculty of Engineering"></div>
+            <div class="field"><label for="auth-department">Department *</label><input id="auth-department" maxlength="120" required placeholder="e.g. Computer Engineering"></div>
+            <div class="field"><label for="auth-course">Course / programme *</label><input id="auth-course" maxlength="120" required placeholder="e.g. B.Eng. Computer Engineering"></div>
+            <div class="field"><label for="auth-year-of-study">Current level / year *</label><select id="auth-year-of-study" required><option value="">Choose your level</option><option>100 Level</option><option>200 Level</option><option>300 Level</option><option>400 Level</option><option>500 Level</option><option>600 Level</option><option>Postgraduate Diploma</option><option>Masters</option><option>Doctoral</option><option>Other</option></select></div>
+          </div>
+          <div id="signup-staff-fields" hidden>
+            <div class="field"><label for="auth-staff-position">Official university position *</label><select id="auth-staff-position"><option value="">Choose your position</option><option>Vice-Chancellor</option><option>Deputy Vice-Chancellor</option><option>Registrar</option><option>Bursar</option><option>University Librarian</option><option>Dean</option><option>Head of Department</option><option>Professor</option><option>Lecturer</option><option>Administrative staff</option><option>Security staff</option><option>Other university employee</option></select><p class="muted">Your title is reviewed and does not automatically grant administrator permissions.</p></div>
+            <div class="field"><label for="auth-staff-number">Staff / employee ID number</label><input id="auth-staff-number" maxlength="80" placeholder="If available"></div>
+            <div class="field"><label for="auth-official-email">Official university email</label><input id="auth-official-email" type="email" maxlength="254" placeholder="name@university.edu.ng"><p class="muted">A university email helps review your application, but may not be available to every employee. You can submit a staff ID after sign-in.</p></div>
+            <label class="remember-field"><input type="checkbox" id="auth-request-campus-admin"> Request consideration for university administrator access</label>
+            <p class="muted">This is only a request. Campus administrator access is granted separately after staff verification by an authorized CampusShield platform administrator.</p>
+          </div>
         </div>
         <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
         <div class="field" id="auth-password-field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div>
@@ -493,6 +513,8 @@ td strong{color:#2a464d;font-size:11px}
 <button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
 <button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button>
 <button data-page="identity-verification" id="identity-verification-nav" hidden>Student identity</button>
+<button data-page="staff-verification" id="staff-verification-nav" hidden>Staff verification</button>
+<button data-page="staff-review" id="staff-review-nav" hidden>Staff applications</button>
 <button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform admin</button>
 </nav>
 <div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
@@ -861,6 +883,32 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 
+<section class="page" id="page-staff-verification">
+  <div class="heading"><div><h1>Staff identity verification</h1><p>Submit evidence of your university employment. Your position is a claim until an authorized reviewer verifies it.</p></div></div>
+  <div class="panel">
+    <div class="notice"><span class="notice-icon" aria-hidden="true">i</span><span><strong>Private by design.</strong> Staff documents are stored in a private bucket and shared only with authorized reviewers at your university. Maximum 5 MiB; PDF, JPG or PNG.</span></div>
+    <p id="staff-verification-status" class="muted" role="status" aria-live="polite">Loading your staff verification status…</p>
+    <form id="campusStaffVerificationForm">
+      <div class="grid two">
+        <div class="field"><label for="staff-verification-position">Official university position *</label><input id="staff-verification-position" maxlength="120" required placeholder="e.g. Lecturer, Registrar, Vice-Chancellor"></div>
+        <div class="field"><label for="staff-verification-number">Staff / employee ID number</label><input id="staff-verification-number" maxlength="80" placeholder="If available"></div>
+        <div class="field"><label for="staff-verification-email">Official university email</label><input id="staff-verification-email" type="email" maxlength="254" placeholder="name@university.edu.ng"></div>
+        <div class="field"><label for="staff-verification-document">Staff ID card or employment evidence</label><input id="staff-verification-document" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"><p class="muted">Use a clear image or PDF. Do not upload passwords or unrelated personal documents.</p></div>
+      </div>
+      <label class="remember-field"><input type="checkbox" id="staff-request-campus-admin"> Request consideration for university administrator access</label>
+      <p class="muted">Administrator permissions are never assigned from a job title or checkbox. An authorized CampusShield platform administrator must separately appoint a verified staff member to the campus admin role.</p>
+      <div class="actions"><button type="submit" class="btn" id="staff-verification-submit">Submit staff verification</button></div>
+    </form>
+  </div>
+</section>
+
+<section class="page" id="page-staff-review">
+  <div class="heading"><div><h1>Staff application review</h1><p>Review staff evidence for your university only. Approving staff identity does not automatically grant campus administrator privileges.</p></div><div class="heading-actions"><button type="button" class="btn secondary" id="refresh-staff-verification-queue">Refresh queue</button></div></div>
+  <div class="panel"><p id="staff-review-message" class="muted" role="status" aria-live="polite">Only verified campus administrators can access this queue.</p>
+    <div class="table-wrap"><table><thead><tr><th>Applicant</th><th>Position / evidence</th><th>Admin request</th><th>Submitted</th><th>Review</th></tr></thead><tbody id="campus-staff-verification-queue"><tr><td colspan="5">Loading applications…</td></tr></tbody></table></div>
+  </div>
+</section>
+
 <section class="page" id="page-platform-admin">
   <div class="heading"><div><h1>Platform administration</h1><p>Manage requested university listings and assign university-level administrators. Access is verified by Supabase, not by this interface alone.</p></div></div>
   <div class="notice-inline"><strong>Trusted access only.</strong> University requests and campus administrator assignments are global platform actions. Only user IDs explicitly provisioned in the private platform-admin registry can use these controls.</div>
@@ -1092,10 +1140,16 @@ td strong{color:#2a464d;font-size:11px}
     const staffCampusApproved = hasVerifiedCampusStaffMembership();
     $('approvals-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
     $('identity-verification-nav').hidden = !isStudentAccount();
+    $('staff-verification-nav').hidden = !isTeacherAccount();
+    $('staff-review-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
   }
 
   function isStudentAccount() {
     return ['student'].includes(currentProfile?.requested_role || currentProfile?.role);
+  }
+
+  function isTeacherAccount() {
+    return ['teacher'].includes(currentProfile?.requested_role || currentProfile?.role);
   }
 
   function showWorkspace(profile) {
@@ -1117,9 +1171,11 @@ td strong{color:#2a464d;font-size:11px}
     $('workspace').hidden = false;
 
     const verified = currentProfile.verification_status === 'verified';
-    document.querySelectorAll('[data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
+    document.querySelectorAll('[data-page="noticeboard"], [data-page="helpdesk"], [data-page="community"], [data-page="groups"], [data-page="events"], [data-page="marketplace"], [data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
       el.hidden = !verified;
     });
+    $('staff-verification-nav').hidden = !isTeacherAccount();
+    $('staff-review-nav').hidden = !(verified && currentProfile.role === 'admin' && hasVerifiedCampusStaffMembership());
     $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
     $('identity-verification-nav').hidden = !isStudentAccount();
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
@@ -1155,6 +1211,9 @@ td strong{color:#2a464d;font-size:11px}
     $('remember-email-field').hidden = isSignUp || isReset;
     $('auth-role').required = isSignUp;
     $('auth-username').required = isSignUp;
+    $('auth-name').required = isSignUp;
+    $('auth-university').required = isSignUp;
+    syncSignupRoleFields(isSignUp);
     $('resend-field').hidden = isSignUp || isReset;
     $('auth-helper').hidden = isReset;
     $('install-card').hidden = isReset;
@@ -1167,7 +1226,7 @@ td strong{color:#2a464d;font-size:11px}
     $('auth-password').autocomplete = isSignUp ? 'new-password' : 'current-password';
     $('auth-submit').textContent = isSignUp ? 'Create account' : isReset ? 'Update password' : 'Sign in';
     $('auth-helper').textContent = isSignUp
-      ? 'Student and teacher accounts require administrator verification for incident management and analysis. Reports can be submitted while verification is pending. This prototype does not contact emergency services.'
+      ? 'Choose your university and complete your student or staff details now. Identity is reviewed before access to restricted campus features. This prototype does not contact emergency services.'
       : 'Use fictional information only. This prototype does not contact emergency services.';
     document.querySelectorAll('[data-auth-mode]').forEach(button =>
       button.setAttribute('aria-pressed', String(button.dataset.authMode === authMode))
@@ -1178,6 +1237,18 @@ td strong{color:#2a464d;font-size:11px}
         ? 'Enter and confirm your new password.'
         : 'Please sign in or create an account.';
   }
+
+  function syncSignupRoleFields(enabled = authMode === 'signup') {
+    const isTeacher = $('auth-role').value === 'teacher';
+    $('signup-student-fields').hidden = !enabled || isTeacher;
+    $('signup-staff-fields').hidden = !enabled || !isTeacher;
+    ['auth-faculty','auth-department','auth-course','auth-year-of-study'].forEach(id => {
+      $(id).required = Boolean(enabled && !isTeacher);
+    });
+    $('auth-staff-position').required = Boolean(enabled && isTeacher);
+  }
+
+  $('auth-role').addEventListener('change', () => syncSignupRoleFields());
 
   document.querySelectorAll('[data-auth-mode]').forEach(button =>
     button.addEventListener('click', () => {
@@ -3087,7 +3158,7 @@ td strong{color:#2a464d;font-size:11px}
       selects.forEach(function(select) {
         if (!select) return;
         const previous = select.value;
-        const firstText = select.id === 'auth-university' ? 'Choose after sign-in' : 'Choose your university';
+        const firstText = select.id === 'auth-university' ? 'Choose your university' : 'Choose your university';
         select.innerHTML = '<option value="">' + firstText + '</option>' + campusUniversitiesCache.map(function(university) {
           return '<option value="' + esc(university.id) + '">' + esc(university.name) + ' · ' + esc(university.state) + '</option>';
         }).join('');
@@ -3353,55 +3424,79 @@ td strong{color:#2a464d;font-size:11px}
     const name = $('auth-name').value.trim();
     const username = $('auth-username').value.trim().toLowerCase();
     const requestedRole = $('auth-role').value;
+    const universityId = $('auth-university').value;
     const msg = $('auth-message');
+    const isTeacher = requestedRole === 'teacher';
 
     if (!['student', 'teacher'].includes(requestedRole)) {
-      msg.textContent = 'Select a valid account role.';
+      msg.textContent = 'Select Student or Teacher / university staff.';
       return;
     }
-
-    if (!email || !password) {
-      msg.textContent = 'Enter your email and password.';
+    if (!email || !password || !name || !universityId) {
+      msg.textContent = 'Enter your name, email, password, and choose your university.';
       return;
     }
-
     if (!/^[a-z0-9_]{3,20}$/.test(username)) {
       msg.textContent = 'Choose a username with 3–20 lowercase letters, numbers, or underscores.';
       return;
     }
-
+    if (!isTeacher && !['auth-faculty','auth-department','auth-course','auth-year-of-study'].every(id => $(id).value.trim())) {
+      msg.textContent = 'Complete your faculty, department, course, and level before creating a student account.';
+      return;
+    }
+    if (isTeacher && !$('auth-staff-position').value) {
+      msg.textContent = 'Choose your official position in the university.';
+      return;
+    }
     if (!backend?.isConfigured) {
       msg.textContent = 'Supabase is not connected. Check configuration and script loading.';
       return;
     }
 
+    const profileData = isTeacher ? {
+      requested_role: 'teacher',
+      campus_position: $('auth-staff-position').value,
+      campus_staff_number: $('auth-staff-number').value.trim(),
+      campus_official_email: $('auth-official-email').value.trim(),
+      requested_campus_admin: $('auth-request-campus-admin').checked
+    } : {
+      requested_role: 'student',
+      faculty: $('auth-faculty').value.trim(),
+      department: $('auth-department').value.trim(),
+      course: $('auth-course').value.trim(),
+      year_of_study: $('auth-year-of-study').value
+    };
+
     try {
-      msg.textContent = 'Creating account…';
-      const {data, error} = await backend.signUp(email, password, name, username, $('auth-university').value || null);
+      msg.textContent = 'Creating your CampusShield account…';
+      const {data, error} = await backend.signUp(email, password, name, username, universityId, profileData);
       if (error) throw error;
+      if (!data?.user) throw new Error('Supabase did not return a user.');
 
-      if (!data?.user) {
-  throw new Error('Supabase did not return a user.');
-}
-
-if (data.session) {
+      if (data.session) {
         const result = await backend.saveRequestedRole(requestedRole);
         if (result.error) throw result.error;
-
-        msg.textContent = 'Account created. Your role request is pending verification. Other students will see @' + username + ', not your real name or email.';
+        await backend.setMyCampusMembership({
+          universityId,
+          faculty: profileData.faculty || null,
+          department: profileData.department || null,
+          course: profileData.course || null,
+          yearOfStudy: profileData.year_of_study || null
+        });
+        msg.textContent = isTeacher
+          ? 'Account created. Sign in to submit your staff ID or official university email for administrator review.'
+          : 'Account created. Confirm your email and sign in to submit your student identity document.';
       } else {
         sessionStorage.setItem('campusshield_requested_role', requestedRole);
-
-        msg.textContent =
-          'Account created. Check your email to confirm it, then sign in using this browser to submit your role request. Other students will see @' + username + ', not your real name or email.';
+        msg.textContent = 'Account created. Check your email to confirm it, then sign in in this browser to finish campus onboarding and submit your identity evidence.';
       }
     } catch (e) {
       console.error('Sign-up failed:', e);
       const errorMessage = String(e.message || '');
       if (/email rate limit exceeded/i.test(errorMessage)) {
-        msg.textContent = 'Supabase has temporarily limited confirmation emails. Wait before trying again; repeated sign-up attempts will not speed this up. Once the limit clears, request a confirmation email for this account instead of registering repeatedly.';
+        msg.textContent = 'Supabase has temporarily limited confirmation emails. Wait before trying again; repeated sign-up attempts will not speed this up.';
       } else if (/database error saving new user/i.test(errorMessage)) {
-        msg.textContent = 'Sign-up failed. That username may already be taken; choose another username and try again. If it continues, contact the CampusShield administrator.';
+        msg.textContent = 'Sign-up failed. That username may already be taken; choose another username and try again.';
       } else {
         msg.textContent = 'Sign-up failed: ' + errorMessage;
       }
@@ -3445,6 +3540,17 @@ if (data.session) {
         throw new Error('No active user session was found.');
       }
 
+      const onboarding = user.user_metadata || {};
+      if (onboarding.university_id) {
+        await backend.setMyCampusMembership({
+          universityId: onboarding.university_id,
+          faculty: onboarding.faculty || null,
+          department: onboarding.department || null,
+          course: onboarding.course || null,
+          yearOfStudy: onboarding.year_of_study || null
+        });
+      }
+
       const {data:profile, error:profileError} = await backend.client
         .from('profiles')
         .select('role, requested_role, verification_status')
@@ -3475,6 +3581,9 @@ if (data.session) {
         } else if (isStudentAccount()) {
           navigate('identity-verification');
           await loadStudentIdentityStatus();
+        } else if (isTeacherAccount() && currentProfile.verification_status !== 'verified') {
+          navigate('staff-verification');
+          await loadCampusStaffVerificationStatus();
         }
       }
     } catch (e) {
@@ -3505,6 +3614,127 @@ if (data.session) {
       button.textContent = authMode === 'signup' ? 'Create account' : authMode === 'reset' ? 'Update password' : 'Sign in';
     }
   });
+
+  async function loadCampusStaffVerificationStatus() {
+    const status = $('staff-verification-status');
+    const form = $('campusStaffVerificationForm');
+    if (!status || !form || !window.CampusShieldBackend?.isConfigured) return;
+    try {
+      const user = await window.CampusShieldBackend.getCurrentUser();
+      const meta = user?.user_metadata || {};
+      $('staff-verification-position').value = meta.campus_position || $('staff-verification-position').value || '';
+      $('staff-verification-number').value = meta.campus_staff_number || $('staff-verification-number').value || '';
+      $('staff-verification-email').value = meta.campus_official_email || $('staff-verification-email').value || '';
+      $('staff-request-campus-admin').checked = Boolean(meta.requested_campus_admin);
+      const existing = await window.CampusShieldBackend.getMyCampusStaffVerification();
+      if (existing?.status === 'pending') {
+        status.textContent = 'Your staff application is pending review. You can use the permitted onboarding screens while waiting.';
+        form.hidden = true;
+      } else if (existing?.status === 'approved') {
+        status.textContent = 'Your staff identity is verified. Campus administrator access, if requested, is a separate appointment.';
+        form.hidden = true;
+      } else if (existing?.status === 'rejected') {
+        status.textContent = 'Your staff application was not approved: ' + (existing.rejection_reason || 'Please correct your evidence and resubmit.');
+        form.hidden = false;
+      } else {
+        status.textContent = 'Submit a staff number, official university email, or staff ID document to begin verification.';
+        form.hidden = false;
+      }
+    } catch (err) {
+      status.textContent = err.message || 'Could not load your staff verification status.';
+    }
+  }
+
+  async function loadCampusStaffVerificationQueue() {
+    const tbody = $('campus-staff-verification-queue');
+    const message = $('staff-review-message');
+    if (!tbody || !message) return;
+    tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+    try {
+      const rows = await window.CampusShieldBackend.listCampusStaffVerificationReviews();
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5">No pending staff applications for this university.</td></tr>';
+        message.textContent = 'No applications are waiting for review.';
+        return;
+      }
+      const rendered = [];
+      for (const row of rows) {
+        let documentLink = '<span class="muted">No document uploaded</span>';
+        if (row.document_path) {
+          try {
+            const signedUrl = await window.CampusShieldBackend.createCampusStaffDocumentUrl(row.document_path);
+            if (signedUrl) documentLink = '<a href="' + esc(signedUrl) + '" target="_blank" rel="noopener noreferrer">Open private evidence</a>';
+          } catch (err) {
+            documentLink = '<span class="muted">Evidence link unavailable</span>';
+          }
+        }
+        const evidence = [row.official_email, row.staff_number ? 'Staff ID: ' + row.staff_number : null].filter(Boolean).map(esc).join('<br>') || '<span class="muted">Details supplied in application</span>';
+        rendered.push('<tr><td><strong>@' + esc(row.username || 'staff applicant') + '</strong><br><code>' + esc(row.user_id) + '</code></td>' +
+          '<td><strong>' + esc(row.position_title) + '</strong><br>' + evidence + '<br>' + documentLink + '</td>' +
+          '<td>' + (row.requested_campus_admin ? '<strong>Requested</strong><br><span class="muted">Requires separate platform-admin appointment</span>' : 'Not requested') + '</td>' +
+          '<td>' + esc(dateText(row.created_at)) + '</td>' +
+          '<td><div class="actions"><button type="button" class="btn" data-staff-review="approve" data-staff-user="' + esc(row.user_id) + '">Approve staff</button><button type="button" class="btn danger" data-staff-review="reject" data-staff-user="' + esc(row.user_id) + '">Reject</button></div></td></tr>');
+      }
+      tbody.innerHTML = rendered.join('');
+      message.textContent = rows.length + ' pending staff application(s). Verify the evidence and university position before deciding.';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="5">Staff applications could not be loaded.</td></tr>';
+      message.textContent = err.message || 'Only a verified campus administrator can load this queue.';
+    }
+  }
+
+  $('campusStaffVerificationForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = $('staff-verification-submit');
+    const status = $('staff-verification-status');
+    const documentFile = $('staff-verification-document').files?.[0] || null;
+    button.disabled = true;
+    status.textContent = 'Uploading evidence privately and submitting your application…';
+    try {
+      await window.CampusShieldBackend.submitCampusStaffVerification({
+        positionTitle: $('staff-verification-position').value.trim(),
+        staffNumber: $('staff-verification-number').value.trim(),
+        officialEmail: $('staff-verification-email').value.trim(),
+        requestedCampusAdmin: $('staff-request-campus-admin').checked,
+        document: documentFile
+      });
+      $('staff-verification-document').value = '';
+      status.textContent = 'Staff verification submitted. Your application is pending review by an authorized administrator at your university.';
+      await loadCampusStaffVerificationStatus();
+    } catch (err) {
+      status.textContent = err.message || 'Could not submit staff verification.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campus-staff-verification-queue').addEventListener('click', async event => {
+    const button = event.target.closest('[data-staff-review]');
+    if (!button) return;
+    const decision = button.dataset.staffReview;
+    const reason = decision === 'reject' ? prompt('Give the staff applicant a reason (5–1000 characters):') : null;
+    if (decision === 'reject' && (!reason || reason.trim().length < 5)) {
+      toast('Enter a rejection reason of at least 5 characters.');
+      return;
+    }
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.reviewCampusStaffVerification(button.dataset.staffUser, decision, reason?.trim() || null);
+      toast(decision === 'approve' ? 'Staff identity approved.' : 'Staff application rejected.');
+      await loadCampusStaffVerificationQueue();
+    } catch (err) {
+      toast(err.message || 'Could not review staff application.');
+      button.disabled = false;
+    }
+  });
+
+  $('refresh-staff-verification-queue').addEventListener('click', loadCampusStaffVerificationQueue);
+  document.querySelectorAll('[data-page="staff-review"]').forEach(button => button.addEventListener('click', () => {
+    if (button.dataset.page === 'staff-review') loadCampusStaffVerificationQueue();
+  }));
+  document.querySelectorAll('[data-page="staff-verification"]').forEach(button => button.addEventListener('click', () => {
+    if (button.dataset.page === 'staff-verification') loadCampusStaffVerificationStatus();
+  }));
 
   $('reportForm').addEventListener('submit', async e => {
     e.preventDefault();
