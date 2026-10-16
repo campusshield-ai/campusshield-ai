@@ -32,7 +32,7 @@
 
     const { data, error } = await client
       .from("student_identity_verifications")
-      .select("user_id, university_id, student_number, object_path, status, reviewed_by, reviewed_at, created_at")
+      .select("user_id, university_id, institution_name, student_number, object_path, status, rejection_reason, reviewed_by, reviewed_at, created_at, updated_at")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -40,7 +40,7 @@
     return data || null;
   };
 
-  backend.uploadStudentIdentityDocument = async function uploadStudentIdentityDocument(file, studentNumber) {
+  backend.uploadStudentIdentityDocument = async function uploadStudentIdentityDocument(file, details) {
     const client = requireClient();
     const user = await backend.getCurrentUser();
     if (!user) throw new Error("Sign in before submitting an identity document.");
@@ -50,8 +50,12 @@
       throw new Error("Complete campus onboarding before submitting your identity document.");
     }
 
-    const normalizedNumber = String(studentNumber || "").trim();
-    if (normalizedNumber.length < 2 || normalizedNumber.length > 80) {
+    const institutionName = String(details?.institutionName || campus.university_name || "").trim();
+    const studentNumber = String(details?.studentNumber || "").trim();
+    if (institutionName.length < 2 || institutionName.length > 180) {
+      throw new Error("The institution name is missing or invalid.");
+    }
+    if (studentNumber.length < 2 || studentNumber.length > 80) {
       throw new Error("Student or matric number must be 2–80 characters.");
     }
     if (!file || !(file instanceof File)) {
@@ -61,12 +65,12 @@
       throw new Error("Use a JPEG, PNG, or PDF document only.");
     }
     if (file.size < 1 || file.size > maxFileBytes) {
-      throw new Error("The identity document must be smaller than or equal to 5 MB.");
+      throw new Error("The identity document must be smaller than or equal to 5 MiB.");
     }
 
     const existing = await backend.getMyStudentIdentityVerification();
-    if (existing) {
-      throw new Error("An identity document is already on file. Contact your university administrator for review.");
+    if (existing && existing.status !== "rejected") {
+      throw new Error("Your identity is already submitted. Wait for review before taking another action.");
     }
 
     const { data: profile, error: profileError } = await client
@@ -79,9 +83,18 @@
       throw new Error("A pending student account is required to submit a student ID.");
     }
 
-    // Staging Storage policy permits one fixed object path per user.
+    // The private bucket path is fixed by the database to the signed-in user's own folder.
     const objectPath = user.id + "/student-identity-document";
     const bucket = client.storage.from(bucketName);
+
+    if (existing?.status === "rejected") {
+      // Delete is permitted only for the owner of a rejected document.
+      const { error: removeError } = await bucket.remove([objectPath]);
+      if (removeError && !/not found|does not exist|no such object/i.test(removeError.message || "")) {
+        throw removeError;
+      }
+    }
+
     const { error: uploadError } = await bucket.upload(objectPath, file, {
       cacheControl: "3600",
       upsert: false,
@@ -90,11 +103,12 @@
     if (uploadError) throw uploadError;
 
     const { error: submitError } = await client.rpc("submit_student_identity_verification", {
-      p_student_number: normalizedNumber,
+      p_institution_name: institutionName,
+      p_student_number: studentNumber,
       p_object_path: objectPath
     });
     if (submitError) {
-      // The Storage policy permits removal of an unsubmitted owner's object only.
+      // A failed resubmission leaves the old row rejected; the owner can remove the new unsubmitted object.
       try { await bucket.remove([objectPath]); } catch (_) { /* Preserve the original error. */ }
       throw submitError;
     }
