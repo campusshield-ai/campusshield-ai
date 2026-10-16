@@ -1,0 +1,52 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import vm from 'node:vm';
+
+const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+const backend = await readFile(new URL('../campusshield-backend.js', import.meta.url), 'utf8');
+const migration = await readFile(new URL('../supabase/migrations/20261016220000_campus_staff_identity_and_governance.sql', import.meta.url), 'utf8');
+
+for (const expected of [
+  'id="auth-role"',
+  'id="auth-university"',
+  'id="auth-faculty"',
+  'id="auth-department"',
+  'id="auth-course"',
+  'id="auth-year-of-study"',
+  'id="auth-staff-position"',
+  'id="auth-official-email"',
+  'id="page-staff-verification"',
+  'id="page-staff-review"',
+  'id="campusStaffVerificationForm"',
+  'id="campus-staff-verification-queue"',
+  'requested_campus_admin',
+  'Your title is reviewed and does not automatically grant administrator permissions.'
+]) assert.ok(html.includes(expected), 'onboarding page must include ' + expected);
+
+for (const method of [
+  'submitCampusStaffVerification',
+  'getMyCampusStaffVerification',
+  'listCampusStaffVerificationReviews',
+  'reviewCampusStaffVerification',
+  'createCampusStaffDocumentUrl'
+]) assert.ok(backend.includes('async ' + method + '('), 'backend must expose ' + method);
+
+assert.match(migration, /create table if not exists public\.campus_staff_verifications/i);
+assert.match(migration, /public\.submit_campus_staff_verification/i);
+assert.match(migration, /public\.list_campus_staff_verification_reviews/i);
+assert.match(migration, /public\.review_campus_staff_verification/i);
+assert.match(migration, /public = false|values \('campus-staff-documents',[\s\S]{0,80}false/i);
+assert.match(migration, /private\.current_campus_role\(\)[\s\S]{0,80}'admin'/i);
+assert.match(migration, /requested_campus_admin[\s\S]{0,200}campus administrator/i);
+assert.doesNotMatch(migration, /grant execute on function public\.review_campus_staff_verification\([^;]+ to anon/i);
+assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
+
+const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+let parsed = 0;
+for (const match of html.matchAll(scriptRe)) {
+  if (/\bsrc\s*=/.test(match[1])) continue;
+  vm.createScript(match[2], { filename: 'index-inline-' + (++parsed) + '.js' });
+}
+vm.createScript(backend, { filename: 'campusshield-backend.js' });
+console.log('Staff onboarding and campus governance smoke checks passed (' + parsed + ' inline scripts parsed).');
+console.log('No Supabase writes or identity uploads were performed.');
