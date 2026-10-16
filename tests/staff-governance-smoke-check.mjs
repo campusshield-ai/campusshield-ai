@@ -130,7 +130,7 @@ assert.ok(html.includes('data-student-evidence-check'), 'student identity queue 
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 assert.ok(backend.includes('file.type === "application/pdf" ? "pdf" : file.type === "image/jpeg" ? "jpg" : "png"'), 'staff upload extension must be derived from validated MIME type');
 assert.ok(backend.includes('cleanedBase + "." + extension'), 'staff upload object name must end with the MIME-matched extension');
-assert.match(anonymousIncidentReadGuard, /revoke select on table public\\.incidents from anon/i, 'anonymous clients must not have table-level access to sensitive incident reports');
+assert.match(anonymousIncidentReadGuard, /revoke select on table public\.incidents from anon/i, 'anonymous clients must not have table-level access to sensitive incident reports');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 let parsed = 0;
