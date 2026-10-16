@@ -1021,11 +1021,36 @@ td strong{color:#2a464d;font-size:11px}
   }
 
   function syncIdentityNavigation() {
+    const student = isStudentAccount();
     const studentLocked = isStudentIdentityLocked();
-    $('identity-verification-nav').hidden = !isStudentAccount();
+    const verified = currentProfile?.verification_status === 'verified';
+    $('identity-verification-nav').hidden = !student;
+
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
-      if (!isStudentAccount() || button.id === 'identity-verification-nav') return;
-      if (!studentLocked) return;
+      if (button.id === 'identity-verification-nav') return;
+      if (button.id === 'platform-admin-nav') return;
+
+      if (!student) {
+        if (button.id === 'approvals-nav') {
+          button.hidden = !(verified && currentProfile?.role === 'admin' && hasVerifiedCampusStaffMembership());
+        } else if (['manage','risk','analytics'].includes(button.dataset.page)) {
+          button.hidden = !verified;
+        } else {
+          button.hidden = false;
+        }
+        return;
+      }
+
+      if (button.id === 'approvals-nav') {
+        button.hidden = !(verified && currentProfile?.role === 'admin' && hasVerifiedCampusStaffMembership());
+        return;
+      }
+      if (!studentLocked) {
+        if (['manage','risk','analytics'].includes(button.dataset.page)) button.hidden = !verified;
+        else button.hidden = false;
+        return;
+      }
+
       const allowNoticeRead = button.dataset.page === 'noticeboard';
       const allowCampusSetup = button.dataset.page === 'community' && !campusContext?.university_id;
       button.hidden = !(allowNoticeRead || allowCampusSetup);
