@@ -1008,6 +1008,29 @@ td strong{color:#2a464d;font-size:11px}
   let campusContext = null;
   let campusUniversitiesCache = null;
   let communityLoading = false;
+  let studentIdentitySubmission = null;
+
+  function hasApprovedStudentIdentity() {
+    return isStudentAccount() &&
+      currentProfile?.verification_status === 'verified' &&
+      studentIdentitySubmission?.status === 'approved';
+  }
+
+  function isStudentIdentityLocked() {
+    return isStudentAccount() && !hasApprovedStudentIdentity();
+  }
+
+  function syncIdentityNavigation() {
+    const studentLocked = isStudentIdentityLocked();
+    $('identity-verification-nav').hidden = !isStudentAccount();
+    document.querySelectorAll('.nav button[data-page]').forEach(button => {
+      if (!isStudentAccount() || button.id === 'identity-verification-nav') return;
+      if (!studentLocked) return;
+      const allowNoticeRead = button.dataset.page === 'noticeboard';
+      const allowCampusSetup = button.dataset.page === 'community' && !campusContext?.university_id;
+      button.hidden = !(allowNoticeRead || allowCampusSetup);
+    });
+  }
 
   function hasVerifiedCampusStaffMembership() {
     return currentProfile?.verification_status === 'verified' &&
@@ -1045,6 +1068,7 @@ td strong{color:#2a464d;font-size:11px}
     }
 
     currentProfile = profile;
+    studentIdentitySubmission = null;
     $('login-screen').hidden = true;
     $('workspace').hidden = false;
 
@@ -1056,6 +1080,7 @@ td strong{color:#2a464d;font-size:11px}
     $('identity-verification-nav').hidden = !isStudentAccount();
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
     $('community-announcement-option').disabled = !canPublishOfficial;
+    syncIdentityNavigation();
     navigate('dashboard');
     refreshPlatformAdminAccess();
     return true;
@@ -1253,6 +1278,12 @@ td strong{color:#2a464d;font-size:11px}
     }
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
+
+    if (isStudentIdentityLocked() &&
+        !['identity-verification','noticeboard'].includes(page) &&
+        !(page === 'community' && !campusContext?.university_id)) {
+      page = campusContext?.university_id ? 'identity-verification' : 'community';
+    }
 
     if (!verified && ['manage', 'risk', 'analytics'].includes(page)) {
       page = 'dashboard';
@@ -1739,7 +1770,7 @@ td strong{color:#2a464d;font-size:11px}
       if (studentIds.length) {
         const {data:identityRows, error:identityError} = await backend.client
           .from('student_identity_verifications')
-          .select('user_id, student_number, university_id, status, object_path')
+          .select('user_id, institution_name, student_number, university_id, status, rejection_reason, object_path')
           .in('user_id', studentIds);
         if (identityError) throw identityError;
         identityByUser = new Map((identityRows || []).map(identity => [identity.user_id, identity]));
@@ -1759,17 +1790,23 @@ td strong{color:#2a464d;font-size:11px}
           ? `<button class="btn secondary" type="button" data-student-document="${esc(identity.object_path)}">Open ID document</button>`
           : '<span class="muted">No document</span>';
         const identityDecision = isStudent && row.verification_status === 'pending'
-          ? `<div class="actions"><button class="btn" type="button" data-identity-review="approve" data-user-id="${esc(row.id)}" ${identity?.status !== 'pending' ? 'disabled' : ''}>Approve ID & account</button><button class="btn danger" type="button" data-identity-review="reject" data-user-id="${esc(row.id)}" ${identity?.status !== 'pending' ? 'disabled' : ''}>Reject ID & account</button></div>`
+          ? !identity
+            ? '<span class="muted">Waiting for student ID submission.</span><br><button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>'
+            : identity.status === 'pending'
+              ? `<div class="actions"><button class="btn" type="button" data-identity-review="approve" data-user-id="${esc(row.id)}">Approve ID & account</button><button class="btn danger" type="button" data-identity-review="reject" data-user-id="${esc(row.id)}">Reject ID with reason</button></div>`
+              : identity.status === 'rejected'
+                ? '<span class="muted">ID rejected; student may resubmit.</span>'
+                : `<div class="actions"><button class="btn" type="button" data-review="approve" data-user-id="${esc(row.id)}">Approve account</button><button class="btn danger" type="button" data-review="reject" data-user-id="${esc(row.id)}">Reject account</button></div>`
           : row.verification_status === 'pending'
             ? `<div class="actions"><button class="btn" type="button" data-review="approve" data-user-id="${esc(row.id)}">Approve</button><button class="btn danger" type="button" data-review="reject" data-user-id="${esc(row.id)}">Reject</button></div>`
-            : '<span class="muted">Rejected — view only; follow up with the applicant if they request a review.</span>';
+            : '<span class="muted">Account rejected — view only.</span>';
         return `<tr>
         <td><strong>${esc(row.display_name || 'Name not provided')}</strong></td>
         <td><code>${esc(row.id)}</code></td>
         <td><span class="tag open">${esc(row.requested_role || row.role || 'Not specified')}</span></td>
         <td><span class="tag ${row.verification_status === 'rejected' ? 'high' : 'open'}">${esc(row.verification_status === 'rejected' ? 'Rejected' : 'Pending')}</span></td>
         <td>${esc(dateText(row.created_at))}</td>
-        <td>${isStudent ? `<strong>${esc(identity?.student_number || '—')}</strong><br><span class="muted">ID status: ${esc(identity?.status || 'not submitted')}</span><br>${documentCell}` : '—'}</td>
+        <td>${isStudent ? `<strong>${esc(identity?.institution_name || 'Institution not submitted')}</strong><br><strong>${esc(identity?.student_number || '—')}</strong><br><span class="muted">ID status: ${esc(identity?.status || 'not submitted')}</span>${identity?.rejection_reason ? '<br><span class="muted">Reason: ' + esc(identity.rejection_reason) + '</span>' : ''}<br>${documentCell}` : '—'}</td>
         <td>${identityDecision}
         </td>
       </tr>`;
@@ -1895,21 +1932,60 @@ td strong{color:#2a464d;font-size:11px}
     form.hidden = !campusContext?.university_id;
     if (!campusContext?.university_id) {
       status.textContent = 'Choose your university and complete campus onboarding before submitting identity documents.';
+      syncIdentityNavigation();
+      return;
+    }
+    if (!isStudentAccount()) {
+      form.hidden = true;
+      status.textContent = 'Student identity verification is available to student accounts only.';
       return;
     }
     status.textContent = 'Checking submission status…';
+    form.hidden = true;
     try {
       const submission = await window.CampusShieldBackend.getMyStudentIdentityVerification();
+      studentIdentitySubmission = submission;
       if (!submission) {
-        status.textContent = 'No identity document submitted. Your institution is locked to your selected university.';
+        $('identity-student-number').value = '';
+        status.textContent = 'Identity verification is required before you can report incidents or participate in CampusPulse. Submit your own student ID card or matriculation document.';
         form.hidden = false;
         submit.disabled = false;
-      } else {
-        status.textContent = `Submission ${submission.status}. Submitted ${dateText(submission.created_at)}. Student number: ${submission.student_number}.`;
+      } else if (submission.status === 'approved') {
+        $('identity-student-number').value = submission.student_number || '';
+        const user = await window.CampusShieldBackend.getCurrentUser();
+        if (user) {
+          const {data:profile, error:profileError} = await window.CampusShieldBackend.client
+            .from('profiles')
+            .select('role, requested_role, verification_status')
+            .eq('id', user.id)
+            .single();
+          if (!profileError && profile) currentProfile = profile;
+        }
+        status.textContent = currentProfile?.verification_status === 'verified'
+          ? 'Your student identity is approved. Restricted campus features are now available.'
+          : 'Your ID has been approved. Refresh your account status, then sign in again if access does not update.';
         form.hidden = true;
+        syncIdentityNavigation();
+        if ($('page-identity-verification').classList.contains('active') && currentProfile?.verification_status === 'verified') {
+          navigate('dashboard');
+        }
+      } else if (submission.status === 'pending') {
+        $('identity-student-number').value = submission.student_number || '';
+        status.textContent = 'Your ID submission is awaiting administrator review. Incident reporting and CampusPulse participation stay locked until approval.';
+        form.hidden = true;
+        submit.disabled = true;
+      } else {
+        $('identity-student-number').value = submission.student_number || '';
+        status.textContent = 'Your ID was rejected. Reason: ' +
+          (submission.rejection_reason || 'Please upload a clearer document or contact your campus administrator.') +
+          ' Correct the details or choose a clearer file and resubmit.';
+        form.hidden = false;
+        submit.disabled = false;
       }
+      syncIdentityNavigation();
     } catch (err) {
-      status.textContent = err.message || 'Could not load your identity submission status.';
+      console.error('Could not load student identity status:', err);
+      status.textContent = err.message || 'Could not load your identity status. Please refresh and try again.';
       form.hidden = true;
     }
   }
@@ -1926,7 +2002,10 @@ td strong{color:#2a464d;font-size:11px}
     $('identity-submit').disabled = true;
     status.textContent = 'Uploading your document securely…';
     try {
-      await window.CampusShieldBackend.uploadStudentIdentityDocument(file, number);
+      await window.CampusShieldBackend.uploadStudentIdentityDocument(file, {
+        institutionName: campusContext.university_name,
+        studentNumber: number
+      });
       status.textContent = 'Identity document submitted for administrator review.';
       $('studentIdentityForm').reset();
       await loadStudentIdentityStatus();
@@ -1954,15 +2033,29 @@ td strong{color:#2a464d;font-size:11px}
     const button = event.target.closest('[data-identity-review]');
     if (!button) return;
     const decision = button.dataset.identityReview;
-    if (!confirm(`Are you sure you want to ${decision} this student identity and account?`)) return;
+    let rejectionReason = null;
+    if (decision === 'reject') {
+      rejectionReason = window.prompt('Enter a helpful rejection reason (5–1000 characters). The student can see it and resubmit:', '');
+      if (rejectionReason === null) return;
+      rejectionReason = rejectionReason.trim();
+      if (rejectionReason.length < 5 || rejectionReason.length > 1000) {
+        toast('Provide a rejection reason of 5–1000 characters.');
+        return;
+      }
+    } else if (!confirm('Approve this student ID and activate the student account?')) {
+      return;
+    }
     button.disabled = true;
     try {
       const {error} = await window.CampusShieldBackend.client.rpc('review_student_identity_verification', {
         p_user_id: button.dataset.userId,
-        p_decision: decision
+        p_decision: decision,
+        p_rejection_reason: rejectionReason
       });
       if (error) throw error;
-      toast(decision === 'approve' ? 'Identity and student account approved.' : 'Identity and student account rejected.');
+      toast(decision === 'approve'
+        ? 'Student identity approved and account activated.'
+        : 'ID rejected. The student can correct the document and resubmit.');
       await loadAccountApprovals();
     } catch (err) {
       toast(err.message || 'Could not review student identity.');
@@ -3278,6 +3371,9 @@ if (data.session) {
           navigate('community');
           await loadCommunityPage();
           toast('Choose your university to create your private campus space.');
+        } else if (isStudentAccount()) {
+          navigate('identity-verification');
+          await loadStudentIdentityStatus();
         }
       }
     } catch (e) {
@@ -3522,6 +3618,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
               if (!campusContext?.university_id) {
                 navigate('community');
                 await loadCommunityPage();
+              } else if (isStudentAccount()) {
+                navigate('identity-verification');
+                await loadStudentIdentityStatus();
               }
             }
           }
