@@ -227,7 +227,7 @@ function applySokotoNameDelta(roster, sql) {
 }
 
 function applyOfficialCurrentNamesDelta(roster, sql) {
-  const matches = [...sql.matchAll(/update\\s+public\\.campus_universities\\s+set\\s+name\\s*=\\s*'((?:''|[^'])*)'[\\s\\S]*?where\\s+slug\\s*=\\s*'([^']+)'/gi)];
+  const matches = [...sql.matchAll(/update\s+public\.campus_universities\s+set\s+name\s*=\s*'((?:''|[^'])*)'[\s\S]*?where\s+slug\s*=\s*'([^']+)'/gi)];
   assert.equal(matches.length, 2, "Expected two official current-name corrections");
   for (const match of matches) {
     const [, rawName, slug] = match;
