@@ -906,6 +906,11 @@ td strong{color:#2a464d;font-size:11px}
   <div class="heading"><div><h1>Staff application review</h1><p>Review staff evidence for your university only. Approving staff identity does not automatically grant campus administrator privileges.</p></div><div class="heading-actions"><button type="button" class="btn secondary" id="refresh-staff-verification-queue">Refresh queue</button></div></div>
   <div class="panel"><p id="staff-review-message" class="muted" role="status" aria-live="polite">Only verified campus administrators can access this queue.</p>
     <div class="table-wrap"><table><thead><tr><th>Applicant</th><th>Position / evidence</th><th>Admin request</th><th>Submitted</th><th>Review</th></tr></thead><tbody id="campus-staff-verification-queue"><tr><td colspan="5">Loading applications…</td></tr></tbody></table></div>
+    <section class="panel" style="margin-top:16px">
+      <div class="panel-heading"><div><h2>Evidence review history</h2><p>Audit records for this university only. “Institution confirmed” requires an authoritative source and reference.</p></div><button type="button" class="btn secondary" id="refresh-evidence-audit">Refresh history</button></div>
+      <p id="evidence-audit-message" class="muted" role="status" aria-live="polite">Evidence review history has not been loaded.</p>
+      <div class="table-wrap"><table><thead><tr><th>Account</th><th>Evidence</th><th>Outcome</th><th>Source / reference</th><th>Reviewer / time</th><th>Notes</th></tr></thead><tbody id="evidence-audit-rows"><tr><td colspan="6">Use Refresh history to load records.</td></tr></tbody></table></div>
+    </section>
   </div>
 </section>
 
@@ -3712,6 +3717,26 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
+  async function loadCampusIdentityEvidenceAudit() {
+    const tbody = $('evidence-audit-rows');
+    const message = $('evidence-audit-message');
+    if (!tbody || !message) return;
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    try {
+      const rows = await window.CampusShieldBackend.listCampusIdentityEvidenceChecks();
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6">No evidence review records yet.</td></tr>';
+        message.textContent = 'No evidence checks have been recorded for this university.';
+        return;
+      }
+      tbody.innerHTML = rows.map(row => '<tr><td><code>' + esc(row.subject_user_id) + '</code></td><td>' + esc(row.evidence_type) + '</td><td>' + esc(row.outcome) + '</td><td>' + esc(row.source_kind) + (row.source_reference ? '<br>' + esc(row.source_reference) : '') + '</td><td><code>' + esc(row.checked_by) + '</code><br>' + esc(dateText(row.checked_at)) + '</td><td>' + esc(row.reviewer_note || '—') + '</td></tr>').join('');
+      message.textContent = rows.length + ' recent evidence check(s).';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6">Evidence history could not be loaded.</td></tr>';
+      message.textContent = err.message || 'Only a verified campus administrator can view this history.';
+    }
+  }
+
   async function loadCampusStaffVerificationQueue() {
     const tbody = $('campus-staff-verification-queue');
     const message = $('staff-review-message');
@@ -3740,7 +3765,7 @@ td strong{color:#2a464d;font-size:11px}
           '<td><strong>' + esc(row.position_title) + '</strong><br>' + evidence + '<br>' + documentLink + '</td>' +
           '<td>' + (row.requested_campus_admin ? '<strong>Requested</strong><br><span class="muted">Requires separate platform-admin appointment</span>' : 'Not requested') + '</td>' +
           '<td>' + esc(dateText(row.created_at)) + '</td>' +
-          '<td><div class="actions"><button type="button" class="btn" data-staff-review="approve" data-staff-user="' + esc(row.user_id) + '">Approve staff</button><button type="button" class="btn danger" data-staff-review="reject" data-staff-user="' + esc(row.user_id) + '">Reject</button></div></td></tr>');
+          '<td><div class="actions"><button type="button" class="btn secondary" data-evidence-check data-staff-user="' + esc(row.user_id) + '">Record evidence check</button><button type="button" class="btn" data-staff-review="approve" data-staff-user="' + esc(row.user_id) + '">Approve staff</button><button type="button" class="btn danger" data-staff-review="reject" data-staff-user="' + esc(row.user_id) + '">Reject</button></div></td></tr>');
       }
       tbody.innerHTML = rendered.join('');
       message.textContent = rows.length + ' pending staff application(s). Verify the evidence and university position before deciding.';
@@ -3776,6 +3801,38 @@ td strong{color:#2a464d;font-size:11px}
   });
 
   $('campus-staff-verification-queue').addEventListener('click', async event => {
+    const evidenceButton = event.target.closest('[data-evidence-check]');
+    if (evidenceButton) {
+      const userId = evidenceButton.dataset.staffUser;
+      const typeChoice = prompt('Evidence type: 1 = Staff ID, 2 = Student ID, 3 = Payment receipt', '1');
+      const typeMap = { '1': 'staff_id', '2': 'student_id', '3': 'payment_receipt' };
+      const evidenceType = typeMap[String(typeChoice || '').trim()];
+      if (!evidenceType) { toast('Choose evidence type 1, 2, or 3.'); return; }
+      const outcomeChoice = prompt('Outcome: 1 = Needs review, 2 = Institution confirmed, 3 = Not confirmed', '1');
+      const outcomeMap = { '1': 'needs_review', '2': 'institution_confirmed', '3': 'not_confirmed' };
+      const outcome = outcomeMap[String(outcomeChoice || '').trim()];
+      if (!outcome) { toast('Choose outcome 1, 2, or 3.'); return; }
+      const sourceChoice = prompt('Source: 1 = Visual document review, 2 = Official university email, 3 = University registry, 4 = Direct institution contact, 5 = Official payment portal, 6 = Other', '1');
+      const sourceMap = { '1': 'document_visual_review', '2': 'official_university_email', '3': 'university_registry', '4': 'direct_institution_contact', '5': 'official_payment_portal', '6': 'other' };
+      const sourceKind = sourceMap[String(sourceChoice || '').trim()];
+      if (!sourceKind) { toast('Choose source 1–6.'); return; }
+      const sourceReference = prompt('Source reference (required for institution confirmation; never enter passwords or private secrets):', '') || '';
+      if (outcome === 'institution_confirmed' && (!['official_university_email','university_registry','direct_institution_contact','official_payment_portal'].includes(sourceKind) || !sourceReference.trim())) {
+        toast('Institution confirmation requires an authoritative source and traceable reference.');
+        return;
+      }
+      const reviewerNote = prompt('Reviewer note (optional; do not include unnecessary sensitive information):', '') || '';
+      evidenceButton.disabled = true;
+      try {
+        await window.CampusShieldBackend.recordCampusIdentityEvidenceCheck({ userId, evidenceType, outcome, sourceKind, sourceReference: sourceReference.trim() || null, reviewerNote: reviewerNote.trim() || null });
+        toast('Evidence check recorded in the university audit history.');
+        await loadCampusIdentityEvidenceAudit();
+      } catch (err) {
+        toast(err.message || 'Could not record evidence check.');
+        evidenceButton.disabled = false;
+      }
+      return;
+    }
     const button = event.target.closest('[data-staff-review]');
     if (!button) return;
     const decision = button.dataset.staffReview;
@@ -3796,6 +3853,7 @@ td strong{color:#2a464d;font-size:11px}
   });
 
   $('refresh-staff-verification-queue').addEventListener('click', loadCampusStaffVerificationQueue);
+  $('refresh-evidence-audit')?.addEventListener('click', loadCampusIdentityEvidenceAudit);
   document.querySelectorAll('[data-page="staff-review"]').forEach(button => button.addEventListener('click', () => {
     if (button.dataset.page === 'staff-review') loadCampusStaffVerificationQueue();
   }));
