@@ -9,6 +9,7 @@ const stateDeltaPath = "supabase/migrations/20261016170000_reconcile_nuc_state_m
 const deactivationDeltaPath = "supabase/migrations/20261016180000_deactivate_duplicate_mewar_alias.sql";
 const manualNameDeltaPath = "supabase/migrations/20261016190000_reconcile_nuc_manual_name_matches.sql";
 const sokotoNameDeltaPath = "supabase/migrations/20261016200000_reconcile_sokoto_state_university_name.sql";
+const officialNamesDeltaPath = "supabase/migrations/20261016210000_correct_official_current_university_names.sql";
 const outputDir = "artifacts/nuc-roster-audit";
 
 function decodeHtml(value) {
@@ -225,6 +226,18 @@ function applySokotoNameDelta(roster, sql) {
   return 1;
 }
 
+function applyOfficialCurrentNamesDelta(roster, sql) {
+  const matches = [...sql.matchAll(/update\\s+public\\.campus_universities\\s+set\\s+name\\s*=\\s*'((?:''|[^'])*)'[\\s\\S]*?where\\s+slug\\s*=\\s*'([^']+)'/gi)];
+  assert.equal(matches.length, 2, "Expected two official current-name corrections");
+  for (const match of matches) {
+    const [, rawName, slug] = match;
+    const existing = roster.get(slug);
+    assert.ok(existing, `Official-name correction slug absent from seed: ${slug}`);
+    roster.set(slug, { ...existing, name: rawName.replace(/''/g, "'"), source: "seed+delta" });
+  }
+  return matches.length;
+}
+
 function levenshtein(a, b) {
   const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
   for (let i = 1; i <= a.length; i++) {
@@ -278,6 +291,7 @@ const stateDelta = readFileSync(stateDeltaPath, "utf8");
 const deactivationDelta = readFileSync(deactivationDeltaPath, "utf8");
 const manualNameDelta = readFileSync(manualNameDeltaPath, "utf8");
 const sokotoNameDelta = readFileSync(sokotoNameDeltaPath, "utf8");
+const officialNamesDelta = readFileSync(officialNamesDeltaPath, "utf8");
 const roster = readSeedRoster(seed);
 const deltaStats = applyDelta(roster, delta);
 const nameCorrections = applyNameDelta(roster, nameDelta);
@@ -285,6 +299,7 @@ const stateCorrections = applyStateDelta(roster, stateDelta);
 const deactivatedAliases = applyDeactivationDelta(roster, deactivationDelta);
 const manualNameCorrections = applyManualNameDelta(roster, manualNameDelta);
 const sokotoNameCorrections = applySokotoNameDelta(roster, sokotoNameDelta);
+const officialNameCorrections = applyOfficialCurrentNamesDelta(roster, officialNamesDelta);
 const allRosterRows = [...roster.values()];
 const inactiveRosterRows = allRosterRows.filter(row => row.isActive === false);
 const database = allRosterRows.filter(row => row.isActive !== false);
@@ -393,6 +408,8 @@ const report = {
   manualNameCorrections,
   sokotoNameDeltaMigration: sokotoNameDeltaPath,
   sokotoNameCorrections,
+  officialNamesDeltaMigration: officialNamesDeltaPath,
+  officialNameCorrections,
   allRosterTotal: allRosterRows.length,
   inactiveRosterRows: inactiveRosterRows.map(({ slug, name, ownership, state }) => ({ slug, name, ownership, state })),
   sourceCounts: counts(nuc),
@@ -426,6 +443,7 @@ const md = [
   `- Confirmed state correction(s) in the third delta: **${report.stateCorrections}**`,
   `- Manually reviewed display-name corrections in the fifth delta: **${report.manualNameCorrections}**`,
   `- Additional exact-name corrections in the sixth delta: **${report.sokotoNameCorrections}**`,
+  `- Current official-name corrections from institutional sources in the seventh delta: **${report.officialNameCorrections}**`,
   `- Exact normalized-name matches: **${report.exactNameMatches}**`,
   `- Matched records with ownership/state mismatches: **${report.ownershipOrStateMismatches.length}**`,
   `- Database names without exact match: **${report.databaseRowsWithoutExactNameMatch.length}**`,
