@@ -5,6 +5,8 @@ const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const backend = await readFile(new URL('../campusshield-backend.js', import.meta.url), 'utf8');
 const identityAddon = await readFile(new URL('../campusshield-backend-identity-addon.js', import.meta.url), 'utf8');
 const noticeRls = await readFile(new URL('../supabase/migrations/20261016130000_secure_noticeboard_audience_rls.sql', import.meta.url), 'utf8');
+const helpdeskRls = await readFile(new URL('../supabase/migrations/20261016120000_campus_life_helpdesk_noticeboard.sql', import.meta.url), 'utf8');
+const identityGate = await readFile(new URL('../supabase/migrations/20261016140000_identity_gate_and_resubmission.sql', import.meta.url), 'utf8');
 
 function includes(source, value, message = value) {
   assert.ok(source.includes(value), 'Expected source to include: ' + message);
@@ -51,11 +53,26 @@ for (const state of [
   'You have no Helpdesk requests yet.'
 ]) includes(html, state);
 
-// Helpdesk preview may render only the signed-in user's own requests.
+// Helpdesk preview filters to the signed-in user's own requests. The database must
+// independently restrict ticket rows to the owner or verified campus staff.
 includes(html, 'ticket.created_by === user.id');
 includes(html, "ownTickets.length + ' request(s) submitted'");
 includes(html, 'esc(title || \'Untitled\')');
 includes(html, 'esc(String(detail).slice(0, 180))');
+includes(helpdeskRls, 'university_id = (select private.current_campus_university_id())');
+includes(helpdeskRls, 'created_by = (select auth.uid())');
+includes(helpdeskRls, "in ('admin','security','teacher')");
+includes(helpdeskRls, 'campus_helpdesk_tickets_read_owner_or_verified_campus_staff');
+includes(helpdeskRls, 'campus_helpdesk_updates_read_ticket_owner_or_staff');
+
+// The server-side read gate requires verified campus access; student access includes
+// an approved identity record for the selected university, not just a UI check.
+includes(identityGate, 'private.current_user_has_verified_campus_access()');
+includes(identityGate, "p.verification_status = 'verified'");
+includes(identityGate, "siv.status = 'approved'");
+includes(identityGate, "siv.university_id = (select private.current_campus_university_id())");
+includes(identityGate, 'campus_identity_verified_read_gate');
+includes(identityGate, 'public.campus_helpdesk_tickets');
 
 // Dashboard preview is campus-wide only. Full noticeboard applies audience and expiry filters.
 includes(html, "return notice.audience_scope === 'campus'");
