@@ -8,6 +8,7 @@ const migration = await readFile(new URL('../supabase/migrations/20261016220000_
 const legacyGuard = await readFile(new URL('../supabase/migrations/20261016224000_guard_legacy_staff_membership_review.sql', import.meta.url), 'utf8');
 const genericTeacherGuard = await readFile(new URL('../supabase/migrations/20261016225000_guard_generic_teacher_account_approval.sql', import.meta.url), 'utf8');
 const adminAppointmentGuard = await readFile(new URL('../supabase/migrations/20261016225000_require_explicit_approved_campus_admin_request.sql', import.meta.url), 'utf8');
+const verifiedSocialGuard = await readFile(new URL('../supabase/migrations/20261016226000_require_verified_account_for_social_interactions.sql', import.meta.url), 'utf8');
 
 for (const expected of [
   'id="auth-role"',
@@ -53,6 +54,10 @@ assert.match(genericTeacherGuard, /student_identity_verifications[\s\S]*siv\.sta
 assert.ok(adminAppointmentGuard.includes("v.status='approved'"), 'campus-admin appointment requires approved staff verification');
 assert.ok(adminAppointmentGuard.includes('v.requested_campus_admin=true'), 'campus-admin appointment requires explicit request');
 assert.ok(adminAppointmentGuard.includes("p.role::text='teacher'"), 'campus-admin appointment requires verified teacher role');
+assert.match(verifiedSocialGuard, /create or replace function public\.create_community_comment[\s\S]*v_verification_status is distinct from 'verified'/i, 'only verified accounts may publish comments');
+assert.match(verifiedSocialGuard, /create or replace function public\.create_community_reply[\s\S]*v_status is distinct from 'verified'/i, 'only verified accounts may publish replies');
+assert.match(verifiedSocialGuard, /create or replace function public\.join_campus_group[\s\S]*current_campus_account_status\(\) is distinct from 'verified'/i, 'only verified accounts may join campus groups');
+assert.match(verifiedSocialGuard, /revoke all on function public\.create_community_comment\(uuid,text\) from public, anon/i);
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
