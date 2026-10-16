@@ -5,6 +5,8 @@ import vm from 'node:vm';
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const addon = await readFile(new URL('../campusshield-backend-identity-addon.js', import.meta.url), 'utf8');
 const migration = await readFile(new URL('../supabase/migrations/20261015220432_student_identity_verification.sql', import.meta.url), 'utf8');
+const identityGateMigration = await readFile(new URL('../supabase/migrations/20261016140000_identity_gate_and_resubmission.sql', import.meta.url), 'utf8');
+const config = await readFile(new URL('../supabase-config.js', import.meta.url), 'utf8');
 
 for (const required of [
   'id="studentIdentityForm"',
@@ -13,7 +15,9 @@ for (const required of [
   'id="identity-document"',
   'data-identity-review="approve"',
   'data-identity-review="reject"',
-  'Rejected — view only',
+  'Your ID was rejected',
+  'Correct the details or choose a clearer file and resubmit.',
+  'p_rejection_reason: rejectionReason',
   'campus-roadmap-note',
   'Find your people. Grow your future.'
 ]) assert.ok(html.includes(required), 'index.html should contain ' + required);
@@ -25,6 +29,16 @@ for (const method of ['getMyStudentIdentityVerification', 'uploadStudentIdentity
 assert.ok(addon.includes('student-identity-documents'), 'uploads use the private identity bucket');
 assert.ok(addon.includes('5 * 1024 * 1024'), 'uploads are limited to 5 MiB in the client');
 assert.ok(addon.includes('student-identity-document'), 'upload path uses the safe staging object name');
+assert.ok(addon.includes('p_institution_name: institutionName'), 'identity submission includes institution name');
+assert.ok(addon.includes('existing?.status === "rejected"'), 'rejected identity can be resubmitted');
+assert.ok(addon.includes('rejection_reason'), 'student identity status returns rejection reason');
+assert.ok(identityGateMigration.includes('current_user_has_verified_campus_access'), 'database adds identity-aware verified access helper');
+assert.ok(identityGateMigration.includes('enforce_verified_campus_access_for_interaction'), 'database trigger gates privileged RPC writes');
+assert.ok(identityGateMigration.includes("where student_identity_verifications.status = 'rejected'"), 'only rejected identity submissions can be replaced');
+assert.ok(identityGateMigration.includes('p_rejection_reason text default null'), 'identity rejection can record a resubmission reason');
+assert.ok(identityGateMigration.includes('student_identity_delete_unsubmitted_or_rejected_own'), 'only unsubmitted or rejected own ID objects can be deleted');
+assert.ok(config.includes('campusshield-ai.github.io') && config.includes('isProductionHost'), 'production hostname selects production while development uses staging');
+assert.doesNotMatch(config, /service_role|sb_secret_/i, 'browser config must not contain privileged keys');
 
 for (const requirement of [
   'enable row level security',
