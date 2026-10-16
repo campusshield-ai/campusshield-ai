@@ -41,9 +41,9 @@ Unmatched database rows:
 - David Nweze Umahi Federal University of Medical Sciences, Uburu — Federal / Ebonyi
 - University of Cross River State, Calabar — State / Cross River
 - University of Medical Sciences, Ondo City, Ondo State — State / Ondo
-- Kashim Ibrahim (formerly Bornu State) University, Maiduguri — State / Borno
+- Kashim Ibrahim University, Maiduguri, Borno State — State / Borno
 - Lagos State University of Education, Ijanikin — State / Lagos
-- Elrazi Medical University Yargaya University, Kano State — Private / Kano
+- Elrazi Medical University, Kano — Private / Kano
 
 Unmatched live NUC rows:
 - Cross River University of Technology, Calabar — State / Cross River
@@ -61,14 +61,14 @@ This list deliberately remains unresolved because NUC pages disagree on naming a
 
 These records still require authoritative clarification; no automated or guessed change was applied:
 
-- **Bowen University / Redeemer's University:** live NUS location/state fields conflict with known institution locations and/or the existing roster.
-- **Cross River University of Technology / University of Cross River State:** the live NUS table and NUC state-university listing use different names.
-- **David Nweze Umahi Federal University of Medical Sciences / King David Umahi University of Medical Sciences:** NUC's historical takeover/renaming notice and current live NUS display are inconsistent.
-- **University of Medical Sciences, Ondo / Ondo State University of Medical Sciences:** NUC sources use different names.
-- **Kashim Ibrahim (formerly Bornu State) University / Borno State University:** identity and current naming need an explicit authoritative source.
-- **Lagos State University of Education / Lagos University of Education:** NUC sources differ on the name; preserve the existing canonical record pending clarification.
-- **Rivers State University / Rivers State University of Science & Technology:** current state-university listing and live NUS display differ.
-- **Elrazi Medical University / Elrazi University of Medical Sciences:** source wording is inconsistent enough that a merge/rename would be premature.
+- **Bowen University / Redeemer's University:** live NUS location/state fields conflict with the institutions' own addresses. Bowen's official site gives Iwo, Osun State ([source](https://bowen.edu.ng/plan-your-visit/)); Redeemer's official staff portal gives Ede, Osun State ([source](https://staff.run.edu.ng/index.php?success=0)). Keep the existing Osun location; do not copy the NUC NUS Ogun/Mowe location into the canonical record.
+- **Cross River University of Technology / University of Cross River State:** the live NUS table and NUC state-university listing use different names. Preserve the current canonical name until NUC reconciles its own listings.
+- **David Nweze Umahi Federal University of Medical Sciences / King David Umahi University of Medical Sciences:** NUC's historical takeover/renaming notice ([source](https://www.nuc.edu.ng/fg-takes-over-renames-david-umahi-varsity-uburu/)) and current live NUS display are inconsistent.
+- **University of Medical Sciences, Ondo / Ondo State University of Medical Sciences:** NUC sources use different names. The institution's current official site uses **University of Medical Sciences, Ondo** ([source](https://www.unimed.edu.ng/)); keep that canonical display.
+- **Kashim Ibrahim University / Borno State University:** the institution's official site says it was established as Borno State University and renamed in 2025 ([source](https://www.kiu.edu.ng/)); the 2025 state gazette amends the law to replace “Borno State University” with “Kashim Ibrahim University” ([gazette](https://kiu.edu.ng/documents/AMENDMENTS.pdf)). The database display was corrected to **Kashim Ibrahim University, Maiduguri, Borno State** while preserving the stable slug. The live NUC NUS entry still appears to use the former name.
+- **Lagos State University of Education / Lagos University of Education:** NUC sources differ on the name. The institution's official site consistently uses **Lagos State University of Education** ([source](https://lasued.edu.ng/)); preserve that canonical display pending NUC clarification.
+- **Rivers State University / Rivers State University of Science & Technology:** current state-university listing and live NUS display differ. The institution's own site identifies the older name as its former name ([source](https://www.rsu.edu.ng/surveying-and-geomatics/)); this is a confirmed rename alias, not a separate university.
+- **Elrazi Medical University / Elrazi University of Medical Sciences:** the institution's current official site uses **Elrazi Medical University, Kano** ([source](https://www.elrazi.edu.ng/)), while the live NUC NUS row uses “Elrazi University of Medical Sciences”. The database display was corrected to the official institution name with the existing slug preserved; the NUC display conflict remains open.
 - **Mewar University / Mewar International University:** already held as an inactive alias candidate pending NUC clarification; the existing canonical record remains active.
 
 ## Verification required
