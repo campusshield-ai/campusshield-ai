@@ -249,6 +249,125 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    async getMyStudentIdentityVerification() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in before checking student identity.");
+      const { data, error } = await client
+        .from("student_identity_verifications")
+        .select("user_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data || null;
+    },
+
+    async listStudentIdentityVerifications(userIds) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const ids = Array.isArray(userIds) ? [...new Set(userIds.filter(Boolean))].slice(0, 200) : [];
+      if (!ids.length) return [];
+      const { data, error } = await client
+        .from("student_identity_verifications")
+        .select("user_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at")
+        .in("user_id", ids);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async uploadStudentIdentityDocument(file, details) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!file) throw new Error("Choose a student ID image or PDF.");
+      const maxBytes = 5 * 1024 * 1024;
+      if (file.size < 1 || file.size > maxBytes) {
+        throw new Error("Student ID files must be no larger than 5 MiB.");
+      }
+      const extension = String(file.name || "").split(".").pop().toLowerCase();
+      const mimeByExtension = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        pdf: "application/pdf"
+      };
+      const expectedMime = mimeByExtension[extension];
+      if (!expectedMime || (file.type && file.type !== expectedMime)) {
+        throw new Error("Upload a JPEG, PNG, or PDF student ID document.");
+      }
+      const institutionName = String(details?.institutionName || "").trim();
+      const studentNumber = String(details?.studentNumber || "").trim();
+      if (institutionName.length < 2 || institutionName.length > 180) {
+        throw new Error("Institution name must be 2–180 characters.");
+      }
+      if (studentNumber.length < 2 || studentNumber.length > 80) {
+        throw new Error("Student or matric number must be 2–80 characters.");
+      }
+
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in before submitting student identity.");
+      const previous = await this.getMyStudentIdentityVerification();
+      if (previous?.status === "approved") {
+        throw new Error("Your student identity is already approved.");
+      }
+      if (previous?.status === "pending") {
+        throw new Error("Your current identity submission is awaiting review.");
+      }
+
+      const safeFilename = crypto.randomUUID() + "." + extension;
+      const objectPath = user.id + "/" + safeFilename;
+      const bucket = client.storage.from("student-identity-documents");
+      const { error: uploadError } = await bucket.upload(objectPath, file, {
+        contentType: expectedMime,
+        cacheControl: "3600",
+        upsert: false
+      });
+      if (uploadError) throw uploadError;
+
+      try {
+        const { error: submitError } = await client.rpc("submit_student_identity_verification", {
+          p_institution_name: institutionName,
+          p_student_number: studentNumber,
+          p_object_path: objectPath
+        });
+        if (submitError) throw submitError;
+      } catch (error) {
+        const { error: cleanupError } = await bucket.remove([objectPath]);
+        if (cleanupError) console.warn("Could not remove an unsubmitted identity upload:", cleanupError.message);
+        throw error;
+      }
+
+      if (previous?.object_path && previous.object_path !== objectPath) {
+        const { error: cleanupError } = await bucket.remove([previous.object_path]);
+        if (cleanupError) console.warn("The replaced rejected document could not be removed:", cleanupError.message);
+      }
+      return this.getMyStudentIdentityVerification();
+    },
+
+    async createStudentIdentityDocumentUrl(objectPath) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const safePath = String(objectPath || "");
+      if (!/^[0-9a-fA-F-]{36}\\/[0-9a-fA-F-]{36}\\.(jpg|jpeg|png|pdf)$/.test(safePath)) {
+        throw new Error("The student document path is invalid.");
+      }
+      const { data, error } = await client.storage
+        .from("student-identity-documents")
+        .createSignedUrl(safePath, 90);
+      if (error) throw error;
+      if (!data?.signedUrl) throw new Error("A temporary document link could not be created.");
+      return data.signedUrl;
+    },
+
+    async reviewStudentIdentityVerification(userId, decision, rejectionReason) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!["approve", "reject"].includes(decision)) {
+        throw new Error("Choose approve or reject.");
+      }
+      const { error } = await client.rpc("review_student_identity_verification", {
+        p_user_id: userId,
+        p_decision: decision,
+        p_rejection_reason: rejectionReason || null
+      });
+      if (error) throw error;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
