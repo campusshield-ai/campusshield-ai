@@ -922,6 +922,11 @@ td strong{color:#2a464d;font-size:11px}
       <div class="table-wrap"><table><caption class="sr-only">Pending requests to add a university to the CampusShield directory</caption><thead><tr><th scope="col">University</th><th scope="col">State / FCT</th><th scope="col">Ownership</th><th scope="col">Official website</th><th scope="col">Requested</th><th scope="col">Decision</th></tr></thead><tbody id="platform-admin-requests-table"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
     </section>
     <section class="panel">
+      <div class="panel-heading"><div><h2>Verified senior-staff requests</h2><p>Only approved staff who explicitly requested administrator consideration appear here. Assignment is a separate trusted action.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-admin-requests">Refresh requests</button></div>
+      <p id="platform-admin-admin-requests-message" class="message" role="status" aria-live="polite">Loading verified staff requests…</p>
+      <div class="table-wrap"><table><caption class="sr-only">Approved senior staff requesting campus administrator appointment</caption><thead><tr><th scope="col">Applicant</th><th scope="col">University</th><th scope="col">Verified position</th><th scope="col">Official email</th><th scope="col">Submitted</th><th scope="col">Action</th></tr></thead><tbody id="platform-admin-admin-requests-table"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
+    </section>
+    <section class="panel">
       <div class="panel-heading"><div><h2>Assign campus administrator</h2><p>Select an institution to see eligible, already-verified staff whose membership belongs to that university.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-candidates">Refresh staff</button></div>
       <div class="field"><label for="platform-admin-university-select">University *</label><select id="platform-admin-university-select"><option value="">Loading university directory…</option></select></div>
       <p id="platform-admin-candidates-message" class="message" role="status" aria-live="polite">Choose a university to load verified staff.</p>
@@ -1532,7 +1537,7 @@ td strong{color:#2a464d;font-size:11px}
       accessPanel.hidden = true;
       toolsPanel.hidden = false;
       await populatePlatformAdminUniversities();
-      await Promise.all([loadPlatformUniversityRequests(), loadPlatformAdminCandidates()]);
+      await Promise.all([loadPlatformUniversityRequests(), loadPlatformAdminCandidates(), loadPlatformCampusAdminRequests()]);
     } catch (err) {
       accessPanel.hidden = false;
       toolsPanel.hidden = true;
@@ -1586,6 +1591,50 @@ td strong{color:#2a464d;font-size:11px}
       message.textContent = err.message || 'Could not load university requests.';
     }
   }
+
+  async function loadPlatformCampusAdminRequests() {
+    const tbody = $('platform-admin-admin-requests-table');
+    const message = $('platform-admin-admin-requests-message');
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    try {
+      const rows = await window.CampusShieldBackend.listPlatformCampusAdminRequests();
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6">No approved senior-staff requests are waiting for appointment.</td></tr>';
+        message.textContent = 'A staff member appears here only after their identity is approved and they request campus administrator consideration.';
+        return;
+      }
+      tbody.innerHTML = rows.map(row =>
+        '<tr><td><strong>@' + esc(row.username || 'staff applicant') + '</strong><br><code>' + esc(row.user_id) + '</code></td>' +
+        '<td>' + esc(row.university_name) + '</td>' +
+        '<td>' + esc(row.position_title) + '</td>' +
+        '<td>' + esc(row.official_email || 'Not provided') + '</td>' +
+        '<td>' + esc(dateText(row.created_at)) + '</td>' +
+        '<td><button type="button" class="btn" data-platform-admin-request-assign="' + esc(row.user_id) + '" data-university-id="' + esc(row.university_id) + '">Appoint campus admin</button></td></tr>'
+      ).join('');
+      message.textContent = rows.length + ' verified senior-staff request(s). Confirm the appointment with the university before assigning access.';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6">Requests could not be loaded.</td></tr>';
+      message.textContent = err.message || 'Could not load campus administrator requests.';
+    }
+  }
+
+  $('platform-admin-admin-requests-table').addEventListener('click', async event => {
+    const button = event.target.closest('[data-platform-admin-request-assign]');
+    if (!button) return;
+    if (!confirm('Appoint this verified staff member as campus administrator for the displayed university? This grants university-level controls, not platform-wide access.')) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.assignCampusAdmin(button.dataset.platformAdminRequestAssign, button.dataset.universityId);
+      $('platform-admin-university-select').value = button.dataset.universityId;
+      await Promise.all([loadPlatformCampusAdminRequests(), loadPlatformAdminCandidates()]);
+      toast('Campus administrator appointed for that university.');
+    } catch (err) {
+      toast(err.message || 'Could not appoint campus administrator.');
+      button.disabled = false;
+    }
+  });
+
+  $('platform-admin-refresh-admin-requests').addEventListener('click', loadPlatformCampusAdminRequests);
 
   async function loadPlatformAdminCandidates() {
     const tbody = $('platform-admin-candidates-table');
