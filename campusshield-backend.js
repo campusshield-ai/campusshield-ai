@@ -141,9 +141,13 @@ async getCurrentUser() {
         const allowedTypes = new Set(["application/pdf", "image/jpeg", "image/png"]);
         if (!allowedTypes.has(file.type)) throw new Error("Use a PDF, JPG, or PNG staff ID document.");
         if (!file.size || file.size > 5 * 1024 * 1024) throw new Error("Staff ID documents must be 5 MiB or smaller.");
-        const cleanedName = String(file.name || "staff-id")
-          .normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-80) || "staff-id";
-        documentPath = user.id + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 10) + "-" + cleanedName;
+        // Derive the storage extension from the validated MIME type, not the user-supplied filename.
+        // This keeps extension-based Storage policies aligned with the accepted content type.
+        const extension = file.type === "application/pdf" ? "pdf" : file.type === "image/jpeg" ? "jpg" : "png";
+        const cleanedBase = String(file.name || "staff-id")
+          .replace(/\\.[^.]*$/, "")
+          .normalize("NFKD").replace(/[^a-zA-Z0-9_-]+/g, "_").slice(-70) || "staff-id";
+        documentPath = user.id + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 10) + "-" + cleanedBase + "." + extension;
         const { error: uploadError } = await client.storage.from("campus-staff-documents").upload(documentPath, file, {
           cacheControl: "3600", upsert: false, contentType: file.type
         });
