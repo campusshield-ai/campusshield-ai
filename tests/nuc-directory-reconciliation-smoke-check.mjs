@@ -8,7 +8,6 @@ const deactivationMigrationPath = "supabase/migrations/20261016180000_deactivate
 const manualMigrationPath = "supabase/migrations/20261016190000_reconcile_nuc_manual_name_matches.sql";
 const sokotoMigrationPath = "supabase/migrations/20261016200000_reconcile_sokoto_state_university_name.sql";
 const officialNamesMigrationPath = "supabase/migrations/20261016210000_correct_official_current_university_names.sql";
-const officialNamesMigrationPath = "supabase/migrations/20261016210000_correct_official_current_university_names.sql";
 const baselinePath = "supabase/migrations/20261015110000_import_official_nuc_university_directory.sql";
 const migration = readFileSync(migrationPath, "utf8");
 const nameMigration = readFileSync(nameMigrationPath, "utf8");
@@ -16,7 +15,6 @@ const stateMigration = readFileSync(stateMigrationPath, "utf8");
 const deactivationMigration = readFileSync(deactivationMigrationPath, "utf8");
 const manualMigration = readFileSync(manualMigrationPath, "utf8");
 const sokotoMigration = readFileSync(sokotoMigrationPath, "utf8");
-const officialNamesMigration = readFileSync(officialNamesMigrationPath, "utf8");
 const officialNamesMigration = readFileSync(officialNamesMigrationPath, "utf8");
 const baseline = readFileSync(baselinePath, "utf8");
 
