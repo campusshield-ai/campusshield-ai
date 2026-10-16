@@ -525,6 +525,83 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    async submitCampusHelpdeskTicket(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!input) throw new Error("Complete the campus request form.");
+      const { data, error } = await client.rpc("submit_campus_helpdesk_ticket", {
+        p_category: input.category,
+        p_title: String(input.title || "").trim(),
+        p_description: String(input.description || "").trim(),
+        p_location: String(input.location || "").trim(),
+        p_priority: input.priority || "normal"
+      });
+      if (error) throw error;
+      return Array.isArray(data) ? (data[0] || null) : data;
+    },
+
+    async listCampusHelpdeskTickets() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.from("campus_helpdesk_tickets")
+        .select("id,reference_code,university_id,created_by,created_by_username,category,title,description,location,priority,status,assigned_department,created_at,updated_at,closed_at")
+        .order("created_at", { ascending: false }).limit(100);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async listCampusHelpdeskTicketUpdates(ticketIds) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const ids = Array.isArray(ticketIds) ? ticketIds.filter(Boolean).slice(0, 100) : [];
+      if (!ids.length) return [];
+      const { data, error } = await client.from("campus_helpdesk_ticket_updates")
+        .select("id,ticket_id,author_id,author_label,message,from_status,to_status,department_to,created_at")
+        .in("ticket_id", ids).order("created_at", { ascending: true }).limit(400);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async updateCampusHelpdeskTicket(ticketId, status, department, message) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("update_campus_helpdesk_ticket", {
+        p_ticket_id: ticketId,
+        p_status: status || null,
+        p_assigned_department: department === undefined ? null : department,
+        p_message: String(message || "").trim() || null
+      });
+      if (error) throw error;
+    },
+
+    async listCampusNotices() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.from("campus_notices")
+        .select("id,university_id,publisher_label,title,body,category,audience_scope,target_faculty,target_department,status,published_at,expires_at,created_at")
+        .eq("status", "published").order("published_at", { ascending: false }).limit(100);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async publishCampusNotice(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!input) throw new Error("Complete the official notice form.");
+      const { data, error } = await client.rpc("publish_campus_notice", {
+        p_publisher_label: String(input.publisherLabel || "").trim(),
+        p_title: String(input.title || "").trim(),
+        p_body: String(input.body || "").trim(),
+        p_category: input.category,
+        p_audience_scope: input.audienceScope || "campus",
+        p_target_faculty: input.targetFaculty || null,
+        p_target_department: input.targetDepartment || null,
+        p_expires_at: input.expiresAt || null
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async archiveCampusNotice(noticeId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("archive_campus_notice", { p_notice_id: noticeId });
+      if (error) throw error;
+    },
+
     async listCampusGroups() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.from("campus_groups")
