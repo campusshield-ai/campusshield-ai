@@ -49,8 +49,9 @@ assert.ok(
   "review actions are shown only for pending applications"
 );
 assert.ok(
-  html.includes("Rejected — view only"),
-  "rejected applications are displayed read-only"
+  html.includes("ID rejected; student may resubmit.") &&
+  html.includes("Your ID was rejected"),
+  "rejected student identity submissions can be corrected and resubmitted"
 );
 assert.match(html, /<th scope="col">Status<\/th>/, "account approvals table includes a Status column");
 assert.match(html, /row\.verification_status === 'rejected' \? 'high' : 'open'/, "approval status styling distinguishes rejected applications");
