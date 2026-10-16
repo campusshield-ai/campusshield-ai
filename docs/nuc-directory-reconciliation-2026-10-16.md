@@ -31,15 +31,15 @@ This is a **verified delta, not certification of all 328 rows**. The original mi
 
 ## Automated live-page comparison (16 October 2026)
 
-GitHub Actions run #196 fetched the live NUC HTML table and parsed **328 current rows** (77 Federal, 69 State, 182 Private). Comparing the current NUC names with the checked-in seed plus the staging delta produced:
+GitHub Actions run #195 fetched the live NUC HTML table and parsed **328 current rows** (77 Federal, 69 State, 182 Private). Comparing the current NUC names with the checked-in seed plus the staging delta produced:
 
-- Exact normalized-name match count is recalculated after each reviewed delta; the latest report includes the Mercy state correction and the inactive Mewar alias.
-- One-to-one candidate pairs and the remaining unresolved rows are listed in the current report. Candidate matches are advisory only; two earlier candidates had state differences and were not auto-applied.
+- **158 exact normalized-name matches** after the 15 name corrections, Mercy state correction, and inactive Mewar alias.
+- **144 one-to-one candidate pairs** for manual review; two candidates have state differences and were not auto-applied.
 - **88 database rows and 87 NUC rows** still unresolved after those conservative pairs.
 - **0 duplicate normalized database names** in the reconstructed roster.
-- The initial reconstructed roster had 329 active rows, one private row more than NUC; the duplicate Mewar alias is now inactive, so the active roster should return to the NUC count of 328. The inactive alias remains stored for auditability and keeps its ID.
+- The active roster now has **328 rows** (77 Federal, 69 State, 182 Private), matching the NUC table counts. One duplicate Mewar alias remains stored but inactive (329 total rows including that inactive alias), preserving its ID for auditability.
 
-These counts show why a simple count or exact-name match is insufficient. The detailed row-by-row candidates and unresolved entries are attached to GitHub Actions as the `nuc-roster-audit` artifact (latest successful run: [run #196](https://github.com/campusshield-ai/campusshield-ai/actions/runs/38875105769)); the audit is deliberately non-destructive and does not auto-merge institutions.
+These counts show why a simple count or exact-name match is insufficient. The detailed row-by-row candidates and unresolved entries are attached to GitHub Actions as the `nuc-roster-audit` artifact (latest successful run: [run #195](https://github.com/campusshield-ai/campusshield-ai/actions/runs/38875105769)); the audit is deliberately non-destructive and does not auto-merge institutions.
 
 ### Conflicting official names requiring human review
 
