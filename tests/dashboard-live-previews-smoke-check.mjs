@@ -31,7 +31,8 @@ includes(html, "clearDashboardCampusPreviews('Sign in to load your campus previe
 // Async work must not paint data after sign-out or account/session switching.
 includes(html, 'requestSessionVersion === authSessionVersion');
 includes(html, 'currentProfile === profileAtStart');
-includes(html, "if (event === 'SIGNED_OUT') authSessionVersion += 1;");
+includes(html, "if (event === 'SIGNED_OUT') {");
+includes(html, 'authSessionVersion += 1;');
 includes(html, 'currentProfile = null;');
 includes(html, 'campusContext = null;');
 
