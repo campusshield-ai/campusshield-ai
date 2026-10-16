@@ -29,8 +29,31 @@ The project is being developed with Nigerian university campuses in mind.
 - **Comments and replies** — Students can discuss published community posts using their public handles.
 - **Verified staff announcements** — Approved teacher, security, and administrator accounts can publish clearly labelled official updates.
 - **Community moderation** — Authorized staff can publish or reject submissions, hide reported content, and review user reports.
+- **CampusShield Helpdesk (staging-first)** — Students can submit facilities, hostel, Wi-Fi/ICT, classroom equipment and administrative service requests with a reference number, status history and visible staff updates. Verified campus staff can assign the responsible unit and update progress.
+- **Verified Campus Noticeboard (staging-first)** — Verified teacher, security and administrator accounts can publish official notices with a publishing-unit label, campus/faculty/department audience and optional expiry. Row Level Security restricts notices to the intended campus audience.
+- **University service design** — The Helpdesk and noticeboard follow common campus-system patterns: trackable service tickets with progress updates, and centralized official academic/service notices. These do not replace a university’s official student portal, SIS, LMS or emergency process.
 
 The current app does not include an interactive campus map. Map-based views remain a future feature.
+
+## 🏫 Campus Life Operating System roadmap
+
+The first practical expansion pairs service delivery with trusted information:
+
+1. **Helpdesk:** reference numbers, responsible units, status history, student-visible progress and staff-only queue controls.
+2. **Verified noticeboard:** notices with issuer unit, audience scope and expiry.
+3. **CampusPulse:** moderated conversations, groups and events.
+4. **Academic Companion (planned):** study plans, assignments, quiz generation and approved-material search; this must be connected only to material the student is authorized to access.
+5. **Student Innovation Network (planned):** team discovery, project portfolios, hackathons and collaboration opportunities.
+
+Personal timetables, course materials, assignment data, AI answers, notifications and university system integrations remain roadmap work until a secure, authorized source of data is connected. Do not treat generated AI content as an official university notice.
+
+### University-system patterns reviewed
+
+- [University of Lagos student portal](https://unilag.edu.ng/student-portal/) — central links to academic calendars, exam/lecture timetables and student services.
+- [Babcock University Support Portal](https://support.babcock.edu.ng/doc/experience-management-system/overview) — support tickets, progress tracking, team responses and self-service support.
+- [University of Sunderland helpdesk case study](https://www.casestudies.com/company/engage2serve/case-study/enhance-student-experience-using-e2s-retain-raise-the-bar-on-student-support-and-service) — centralized student support with case management and routing.
+
+These are design references, not claims of endorsement, partnership or direct integration.
 
 ## 🎯 Our Mission
 
