@@ -426,9 +426,10 @@ td strong{color:#2a464d;font-size:11px}
       </div>
       <form id="auth-form">
         <div id="signup-fields" hidden>
-          <div class="field"><label for="auth-name">Real name <span class="muted">(optional · private)</span></label><input id="auth-name" autocomplete="name" placeholder="Your real name; not shown to students"></div>
+          <div class="field"><label for="auth-name">Full name <span class="muted">(private)</span></label><input id="auth-name" autocomplete="name" placeholder="Your official name; not shown to other students"></div>
           <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
           <div class="field"><label for="auth-role">Account type</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
+          <p class="muted">Student accounts must submit a student ID card or matriculation document after email confirmation. Student features stay locked until a verified administrator approves the identity.</p>
         </div>
         <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
         <div class="field" id="auth-password-field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div>
@@ -469,6 +470,7 @@ td strong{color:#2a464d;font-size:11px}
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
 <button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button>
+<button data-page="identity-verification" id="identity-verification-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M5.8 16a3.2 3.2 0 0 1 6.4 0M14 9h4M14 13h4"/></svg></span>Student identity</button>
 </nav>
 <div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
 </aside>
@@ -587,12 +589,28 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 <section class="page" id="page-approvals">
-<div class="heading"><h1>Account approvals</h1><p>Review pending student and teacher account requests. Only verified administrators can use this area.</p></div>
+<div class="heading"><h1>Account approvals</h1><p>Review student IDs and pending student/teacher requests. Student approvals require a valid identity review.</p></div>
 <div class="panel">
 <div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending applications</strong><button class="btn secondary" type="button" id="refresh-approvals">Refresh list</button></div>
 <p id="approvals-message" class="message" role="status">Checking administrator access…</p>
-<div class="table-wrap"><table><caption class="sr-only">Pending student and teacher account requests</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Submitted</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+<div class="table-wrap"><table><caption class="sr-only">Pending student and teacher account requests and private student identity reviews</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Submitted</th><th scope="col">Student identity</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
+<p class="muted">ID documents and student numbers are visible only to the account owner and verified administrators. Temporary document links expire after 90 seconds.</p>
 </div>
+</section>
+
+<section class="page" id="page-identity-verification">
+  <div class="heading"><div><h1>Student identity verification</h1><p>Verify that you belong to the institution you name. Your ID is private and is not shown on your public profile.</p></div></div>
+  <div class="notice-inline"><strong>Private document handling.</strong> Upload only your own student ID card or official matriculation document. Verified CampusShield administrators can review it. Do not upload bank, medical or unrelated personal documents. Student access remains locked while your submission is pending.</div>
+  <div class="panel">
+    <p id="identity-verification-status" class="message" role="status" aria-live="polite">Checking your identity submission…</p>
+    <form id="studentIdentityForm" hidden>
+      <div class="field"><label for="identity-institution">University / institution name *</label><input id="identity-institution" required minlength="2" maxlength="180" autocomplete="organization" placeholder="Enter the official institution name"></div>
+      <div class="field"><label for="identity-student-number">Student / matriculation number *</label><input id="identity-student-number" required minlength="2" maxlength="80" autocomplete="off" placeholder="Enter your student number"></div>
+      <div class="field"><label for="identity-document">Student ID card image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><p class="muted">JPEG, PNG or PDF · Maximum 5 MiB. Use a clear image of your own student ID. Do not upload anyone else’s document.</p></div>
+      <button class="btn" type="submit" id="identity-submit">Submit for verification</button>
+    </form>
+    <button class="btn secondary" type="button" id="identity-refresh-status">Refresh verification status</button>
+  </div>
 </section>
 
 
@@ -737,6 +755,102 @@ td strong{color:#2a464d;font-size:11px}
   let currentProfile = null;
   let communityProfile = null;
   let communityLoading = false;
+  let studentIdentitySubmission = null;
+
+  function isStudentAccount() {
+    const requestedRole = currentProfile?.requested_role;
+    if (requestedRole) return requestedRole === 'student';
+    return currentProfile?.role === 'student';
+  }
+
+  function hasApprovedStudentIdentity() {
+    return isStudentAccount() &&
+      currentProfile?.verification_status === 'verified' &&
+      studentIdentitySubmission?.status === 'approved';
+  }
+
+  function syncIdentityNavigation() {
+    const isStudent = isStudentAccount();
+    const needsIdentity = isStudent && !hasApprovedStudentIdentity();
+    $('identity-verification-nav').hidden = !isStudent;
+    document.querySelectorAll('.nav button[data-page]').forEach(button => {
+      if (button.id === 'identity-verification-nav') return;
+      if (needsIdentity) button.hidden = true;
+      else if (['manage','risk','analytics'].includes(button.dataset.page)) {
+        button.hidden = currentProfile?.verification_status !== 'verified';
+      }
+    });
+    $('approvals-nav').hidden = !(
+      currentProfile?.role === 'admin' &&
+      currentProfile?.verification_status === 'verified'
+    );
+  }
+
+  async function loadStudentIdentityStatus() {
+    const status = $('identity-verification-status');
+    const form = $('studentIdentityForm');
+    const submit = $('identity-submit');
+    if (!currentProfile || !isStudentAccount()) {
+      form.hidden = true;
+      status.textContent = 'Student identity verification is available only to student accounts.';
+      return;
+    }
+    status.textContent = 'Checking your private identity submission…';
+    form.hidden = true;
+    try {
+      const submission = await window.CampusShieldBackend.getMyStudentIdentityVerification();
+      studentIdentitySubmission = submission;
+      if (!submission) {
+        $('identity-institution').value = '';
+        $('identity-student-number').value = '';
+        status.textContent = 'Required before student features can be used: enter your institution and matriculation number, then upload your own student ID card.';
+        form.hidden = false;
+        submit.disabled = false;
+      } else if (submission.status === 'approved') {
+        $('identity-institution').value = submission.institution_name || '';
+        $('identity-student-number').value = submission.student_number || '';
+        const user = await window.CampusShieldBackend.getCurrentUser();
+        if (user) {
+          const { data: profile, error } = await window.CampusShieldBackend.client
+            .from('profiles')
+            .select('role,requested_role,verification_status')
+            .eq('id', user.id)
+            .single();
+          if (!error && profile) currentProfile = profile;
+        }
+        status.textContent = currentProfile?.verification_status === 'verified'
+          ? 'Identity verified on ' + dateText(submission.reviewed_at || submission.created_at) + '. Your student access is active.'
+          : 'Your identity was approved. Refresh or sign in again to load your account status.';
+        form.hidden = true;
+        syncIdentityNavigation();
+        if ($('page-identity-verification').classList.contains('active') &&
+            currentProfile?.verification_status === 'verified') {
+          navigate('dashboard');
+        }
+      } else if (submission.status === 'pending') {
+        $('identity-institution').value = submission.institution_name || '';
+        $('identity-student-number').value = submission.student_number || '';
+        status.textContent = 'Your ID is awaiting administrator review. Student incidents and community participation remain locked until approval.';
+        form.hidden = true;
+        submit.disabled = true;
+      } else {
+        $('identity-institution').value = submission.institution_name || '';
+        $('identity-student-number').value = submission.student_number || '';
+        status.textContent = 'Your previous ID submission was rejected. Reason: ' +
+          (submission.rejection_reason || 'Please contact your campus administrator for clarification.') +
+          ' You can correct the details or upload a clearer document and resubmit.';
+        form.hidden = false;
+        submit.disabled = false;
+      }
+      syncIdentityNavigation();
+    } catch (error) {
+      console.error('Could not load student identity status:', error);
+      status.textContent = error.message || 'Could not load identity status. Please refresh and try again.';
+      form.hidden = true;
+    }
+  }
+
+
 
   function canManageIncidents() {
     return currentProfile?.verification_status === 'verified' &&
@@ -757,6 +871,7 @@ td strong{color:#2a464d;font-size:11px}
     }
 
     currentProfile = profile;
+    studentIdentitySubmission = null;
     $('login-screen').hidden = true;
     $('workspace').hidden = false;
 
@@ -767,6 +882,7 @@ td strong{color:#2a464d;font-size:11px}
     $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
     $('community-announcement-option').disabled = !canPublishOfficial;
+    syncIdentityNavigation();
     navigate('dashboard');
     return true;
   }
@@ -806,9 +922,10 @@ td strong{color:#2a464d;font-size:11px}
         ? 'Set a new password to finish recovering your account.'
         : 'Sign in to review campus safety reports.';
     $('auth-password').autocomplete = isSignUp ? 'new-password' : 'current-password';
+    $('auth-name').required = isSignUp && $('auth-role').value === 'student';
     $('auth-submit').textContent = isSignUp ? 'Create account' : isReset ? 'Update password' : 'Sign in';
     $('auth-helper').textContent = isSignUp
-      ? 'Student and teacher accounts require administrator verification for incident management and analysis. Reports can be submitted while verification is pending. This prototype does not contact emergency services.'
+      ? 'Student accounts must submit a private student ID after email confirmation. A verified administrator must approve identity before student features unlock. Teacher accounts remain subject to staff verification. This prototype does not contact emergency services.'
       : 'Use fictional information only. This prototype does not contact emergency services.';
     document.querySelectorAll('[data-auth-mode]').forEach(button =>
       button.setAttribute('aria-pressed', String(button.dataset.authMode === authMode))
@@ -825,6 +942,9 @@ td strong{color:#2a464d;font-size:11px}
       if (!authBusy) setAuthMode(button.dataset.authMode);
     })
   );
+  $('auth-role').addEventListener('change', () => {
+    $('auth-name').required = authMode === 'signup' && $('auth-role').value === 'student';
+  });
 
   async function handleForgotPassword() {
     const backend = window.CampusShieldBackend;
@@ -941,6 +1061,7 @@ td strong{color:#2a464d;font-size:11px}
         authSessionVersion += 1;
         currentProfile = null;
         communityProfile = null;
+        studentIdentitySubmission = null;
         $('community-username-current').textContent = 'Not signed in';
         $('community-feed').innerHTML = '<div class="community-empty">Sign in to view campus updates.</div>';
         incidents = [];
@@ -961,6 +1082,15 @@ td strong{color:#2a464d;font-size:11px}
 
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
+    const studentNeedsIdentity = isStudentAccount() && !hasApprovedStudentIdentity();
+
+    if (studentNeedsIdentity && page !== 'identity-verification') {
+      page = 'identity-verification';
+    }
+    if (page === 'identity-verification' && !isStudentAccount()) {
+      page = 'dashboard';
+      toast('Student identity verification is available to student accounts.');
+    }
 
     if (!verified && ['manage', 'risk', 'analytics'].includes(page)) {
       page = 'dashboard';
@@ -990,12 +1120,14 @@ td strong{color:#2a464d;font-size:11px}
       risk:'Risk analysis',
       analytics:'Analytics & reports',
       approvals:'Account approvals',
+      'identity-verification':'Student identity verification',
       community:'Campus community'
     };
 
     $('sectionTitle').textContent = names[page] || 'Overview';
 
     if (page === 'analytics') renderAnalytics();
+    if (page === 'identity-verification') loadStudentIdentityStatus();
   }
 
   document.addEventListener('click', e => {
@@ -1003,6 +1135,7 @@ td strong{color:#2a464d;font-size:11px}
     if (!button) return;
     navigate(button.dataset.page);
     if (button.dataset.page === 'approvals') loadAccountApprovals();
+    if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
     if (button.dataset.page === 'community') loadCommunityPage();
   });
 
@@ -1259,6 +1392,43 @@ td strong{color:#2a464d;font-size:11px}
       message.textContent = err.message || 'Could not load applications.';
     }
   }
+
+  $('studentIdentityForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!isStudentAccount()) {
+      toast('This form is available only to student accounts.');
+      return;
+    }
+    const file = $('identity-document').files?.[0];
+    const institutionName = $('identity-institution').value.trim();
+    const studentNumber = $('identity-student-number').value.trim();
+    const button = $('identity-submit');
+    const status = $('identity-verification-status');
+    if (!file) {
+      status.textContent = 'Choose your student ID card image or PDF first.';
+      return;
+    }
+    button.disabled = true;
+    button.textContent = 'Uploading securely…';
+    status.textContent = 'Uploading your document to private storage and submitting it for review…';
+    try {
+      await window.CampusShieldBackend.uploadStudentIdentityDocument(file, {
+        institutionName: institutionName,
+        studentNumber: studentNumber
+      });
+      $('identity-document').value = '';
+      toast('Student identity submitted for review.');
+      await loadStudentIdentityStatus();
+    } catch (error) {
+      console.error('Student identity submission failed:', error);
+      status.textContent = error.message || 'Could not submit your identity. Please check the file and try again.';
+      button.disabled = false;
+    } finally {
+      button.textContent = 'Submit for verification';
+    }
+  });
+
+  $('identity-refresh-status').addEventListener('click', loadStudentIdentityStatus);
 
   $('refresh-approvals').addEventListener('click', loadAccountApprovals);
 
