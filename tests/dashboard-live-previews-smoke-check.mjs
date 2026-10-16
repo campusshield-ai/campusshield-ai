@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const backend = await readFile(new URL('../campusshield-backend.js', import.meta.url), 'utf8');
 const identityAddon = await readFile(new URL('../campusshield-backend-identity-addon.js', import.meta.url), 'utf8');
+const noticeRls = await readFile(new URL('../supabase/migrations/20261016130000_secure_noticeboard_audience_rls.sql', import.meta.url), 'utf8');
 
 function includes(source, value, message = value) {
   assert.ok(source.includes(value), 'Expected source to include: ' + message);
@@ -64,6 +65,18 @@ includes(html, "normalizeAudience(notice.target_faculty) === normalizeAudience(a
 includes(html, "normalizeAudience(notice.target_department) === normalizeAudience(audienceProfile?.department)");
 includes(html, 'Number.isFinite(expiryTime) && expiryTime > Date.now()');
 includes(html, "if (error) throw error;", 'notice audience profile lookup fails closed');
+
+// Server-side notice access must remain campus-scoped and enforce audience/expiry rules;
+// client-side filtering is only presentation, never the authorization boundary.
+includes(noticeRls, 'university_id = (select private.current_campus_university_id())');
+includes(noticeRls, "status = 'published'");
+includes(noticeRls, '(expires_at is null or expires_at > now())');
+includes(noticeRls, 'private.current_user_matches_notice_audience(');
+includes(noticeRls, "cm.membership_status = 'active'");
+includes(noticeRls, "p_audience_scope = 'faculty'");
+includes(noticeRls, "p_audience_scope = 'department'");
+includes(noticeRls, 'set search_path = \'\'');
+includes(noticeRls, 'revoke all on function private.current_user_matches_notice_audience');
 
 // Expected backend methods exist and continue using existing RLS-scoped queries.
 for (const method of [
