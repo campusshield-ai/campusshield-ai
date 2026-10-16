@@ -5,7 +5,7 @@ https://enuc.nuc.edu.ng/nus
 
 The live NUC directory currently reports 77 federal, 69 state and 182 private universities (328 total). It includes universities approved or renamed after the directory snapshot used by the original import migration.
 
-## Changes in migration `20261016150000_reconcile_nuc_directory_live_deltas.sql`
+## Changes in migration `20261016151000_reconcile_nuc_directory_live_deltas.sql`
 
 The first migration corrects 16 high-confidence existing records and initially added a Mewar University row:
 
