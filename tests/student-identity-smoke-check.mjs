@@ -7,6 +7,7 @@ const addon = await readFile(new URL('../campusshield-backend-identity-addon.js'
 const migration = await readFile(new URL('../supabase/migrations/20261015220432_student_identity_verification.sql', import.meta.url), 'utf8');
 const identityGateMigration = await readFile(new URL('../supabase/migrations/20261016140000_identity_gate_and_resubmission.sql', import.meta.url), 'utf8');
 const config = await readFile(new URL('../supabase-config.js', import.meta.url), 'utf8');
+const communityReadGate = await readFile(new URL('../supabase/migrations/20261016150000_gate_community_read_rpcs.sql', import.meta.url), 'utf8');
 
 for (const required of [
   'id="studentIdentityForm"',
@@ -38,6 +39,10 @@ assert.ok(identityGateMigration.includes("where student_identity_verifications.s
 assert.ok(identityGateMigration.includes('p_rejection_reason text default null'), 'identity rejection can record a resubmission reason');
 assert.ok(identityGateMigration.includes('student_identity_delete_unsubmitted_or_rejected_own'), 'only unsubmitted or rejected own ID objects can be deleted');
 assert.ok(config.includes('campusshield-ai.github.io') && config.includes('isProductionHost'), 'production hostname selects production while development uses staging');
+assert.match(communityReadGate, /create or replace function public\.get_community_poll_data/i);
+assert.match(communityReadGate, /create or replace function public\.get_community_post_social/i);
+assert.equal((communityReadGate.match(/current_user_has_verified_campus_access\(\)/g) || []).length, 2,
+  'both SECURITY DEFINER community read RPCs enforce approved campus access');
 assert.doesNotMatch(config, /service_role|sb_secret_/i, 'browser config must not contain privileged keys');
 
 for (const requirement of [
