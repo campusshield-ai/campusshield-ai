@@ -6,6 +6,7 @@ const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const backend = await readFile(new URL('../campusshield-backend.js', import.meta.url), 'utf8');
 const migration = await readFile(new URL('../supabase/migrations/20261016220000_campus_staff_identity_and_governance.sql', import.meta.url), 'utf8');
 const legacyGuard = await readFile(new URL('../supabase/migrations/20261016224000_guard_legacy_staff_membership_review.sql', import.meta.url), 'utf8');
+const genericTeacherGuard = await readFile(new URL('../supabase/migrations/20261016225000_guard_generic_teacher_account_approval.sql', import.meta.url), 'utf8');
 const adminAppointmentGuard = await readFile(new URL('../supabase/migrations/20261016225000_require_explicit_approved_campus_admin_request.sql', import.meta.url), 'utf8');
 
 for (const expected of [
@@ -47,6 +48,8 @@ assert.ok(migration.includes('separate decisions'), 'staff review separates iden
 assert.doesNotMatch(migration, /grant execute on function public\.review_campus_staff_verification\([^;]+ to anon/i);
 assert.match(legacyGuard, /v_requested_role\s*=\s*'teacher'\s+or\s+v_role\s*=\s*'teacher'[\s\S]*campus_staff_verifications[\s\S]*v\.status\s*=\s*'approved'/i, 'legacy membership review must require approved staff verification for teacher applicants');
 assert.match(legacyGuard, /revoke all on function public\.review_campus_staff_membership\(uuid,text\) from public, anon/i);
+assert.match(genericTeacherGuard, /v_requested_role\s*=\s*'teacher'[\s\S]*campus_staff_verifications[\s\S]*csv\.status\s*=\s*'approved'/i, 'generic account approval must require approved staff verification for teachers');
+assert.match(genericTeacherGuard, /student_identity_verifications[\s\S]*siv\.status\s*=\s*'approved'/i, 'generic account approval must retain student identity approval gate');
 assert.ok(adminAppointmentGuard.includes("v.status='approved'"), 'campus-admin appointment requires approved staff verification');
 assert.ok(adminAppointmentGuard.includes('v.requested_campus_admin=true'), 'campus-admin appointment requires explicit request');
 assert.ok(adminAppointmentGuard.includes("p.role::text='teacher'"), 'campus-admin appointment requires verified teacher role');
