@@ -14,6 +14,7 @@ const verifiedSocialRpc = await readFile(new URL('../supabase/migrations/2026101
 const marketplaceSellerGuard = await readFile(new URL('../supabase/migrations/20261016230000_marketplace_seller_update_guard.sql', import.meta.url), 'utf8');
 const profileSelfUpdateGuard = await readFile(new URL('../supabase/migrations/20261016231000_restrict_profile_self_update_columns.sql', import.meta.url), 'utf8');
 const evidenceAudit = await readFile(new URL('../supabase/migrations/20261016232000_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
+const evidenceAuditHistory = await readFile(new URL('../supabase/migrations/20261016233000_list_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 
 for (const expected of [
   'id="auth-role"',
@@ -28,6 +29,10 @@ for (const expected of [
   'id="page-staff-review"',
   'id="campusStaffVerificationForm"',
   'id="campus-staff-verification-queue"',
+  'id="evidence-audit-rows"',
+  'data-evidence-check',
+  'Record evidence check',
+  'Institution confirmed requires an authoritative source and reference.'
   'id="platform-admin-admin-requests-table"',
   'Appoint campus admin',
   'requested_campus_admin',
@@ -38,6 +43,8 @@ for (const method of [
   'submitCampusStaffVerification',
   'getMyCampusStaffVerification',
   'listCampusStaffVerificationReviews',
+  'recordCampusIdentityEvidenceCheck',
+  'listCampusIdentityEvidenceChecks',
   'reviewCampusStaffVerification',
   'createCampusStaffDocumentUrl',
   'listPlatformCampusAdminRequests'
@@ -88,6 +95,11 @@ assert.ok(evidenceAudit.includes("private.current_campus_role()) is distinct fro
 assert.ok(evidenceAudit.includes('private.user_has_current_campus(p_subject_user_id)'), 'evidence audit RPC must be campus scoped');
 assert.ok(evidenceAudit.includes('security invoker') && evidenceAudit.includes('private.record_campus_identity_evidence_check'), 'public audit RPC must use an invoker wrapper');
 assert.ok(evidenceAudit.includes('revoke all on function public.record_campus_identity_evidence_check(uuid,text,text,text,text,text) from public, anon'), 'anonymous callers must not execute evidence audit RPC');
+assert.ok(evidenceAuditHistory.includes('create or replace function public.list_campus_identity_evidence_checks'), 'evidence history must be exposed through a guarded RPC');
+assert.ok(evidenceAuditHistory.includes("private.current_campus_role()) is distinct from 'admin'"), 'evidence history RPC must require campus admin');
+assert.ok(evidenceAuditHistory.includes('limit 200'), 'evidence history must be bounded');
+assert.ok(html.includes('listCampusIdentityEvidenceChecks()'), 'evidence history UI must load the guarded RPC');
+assert.ok(html.includes('recordCampusIdentityEvidenceCheck({ userId, evidenceType, outcome, sourceKind'), 'evidence review UI must save the audit record');
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
