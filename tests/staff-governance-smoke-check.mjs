@@ -32,7 +32,9 @@ for (const expected of [
   'id="evidence-audit-rows"',
   'data-evidence-check',
   'Record evidence check',
-  'authoritative source and reference.'
+  'authoritative source and reference.',
+  'data-student-evidence-check',
+  "evidenceType: 'student_id'",
   'id="platform-admin-admin-requests-table"',
   'Appoint campus admin',
   'requested_campus_admin',
@@ -100,6 +102,8 @@ assert.ok(evidenceAuditHistory.includes("private.current_campus_role()) is disti
 assert.ok(evidenceAuditHistory.includes('limit 200'), 'evidence history must be bounded');
 assert.ok(html.includes('listCampusIdentityEvidenceChecks()'), 'evidence history UI must load the guarded RPC');
 assert.ok(html.includes('recordCampusIdentityEvidenceCheck({ userId, evidenceType, outcome, sourceKind'), 'evidence review UI must save the audit record');
+assert.ok(html.includes("evidenceType: 'student_id'"), 'student identity review must record student ID evidence checks');
+assert.ok(html.includes('data-student-evidence-check'), 'student identity queue must expose the evidence audit action');
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
