@@ -383,6 +383,19 @@ td strong{color:#2a464d;font-size:11px}
 .campus-hub-channel-link:focus-visible{outline:3px solid #71e7d1;outline-offset:2px}
 .campus-hub-live{padding:4px 5px;border:1px solid #2d8d78;border-radius:999px;color:#8ce8d8;font-size:7px;font-weight:900}
 
+.dashboard-live-panel{margin-top:17px}
+.dashboard-preview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.dashboard-preview-card{min-width:0;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fbfcfe}
+.dashboard-preview-card h3{margin:0 0 4px;font-size:13px}
+.dashboard-preview-card .muted{margin:0 0 10px;font-size:11px}
+.dashboard-preview-items{display:grid;gap:9px}
+.dashboard-preview-item{min-width:0;padding-top:9px;border-top:1px solid #e9eef5}
+.dashboard-preview-item:first-child{padding-top:0;border-top:0}
+.dashboard-preview-item strong{display:block;overflow-wrap:anywhere;font-size:12px}
+.dashboard-preview-item p{margin:4px 0;color:#53647a;font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.dashboard-preview-item small{display:block;color:var(--muted);font-size:10px}
+.dashboard-preview-empty{padding:12px;border:1px dashed #d5deea;border-radius:9px;color:var(--muted);font-size:11px}
+@media(max-width:650px){.dashboard-preview-grid{grid-template-columns:1fr}.dashboard-preview-card{padding:12px}}
 </style>
 </head>
 <body>
@@ -552,6 +565,16 @@ td strong{color:#2a464d;font-size:11px}
     <article class="campus-feature"><span class="campus-feature-kicker">CAMPUS SERVICES</span><h3>Share and discover</h3><p>Find textbooks, services and other campus listings with community safeguards.</p><button class="btn secondary" type="button" data-page="marketplace">Open marketplace</button></article>
   </div>
   <p class="campus-roadmap-note"><strong>Next steps:</strong> an AI Academic Companion grounded in approved course materials, a private timetable and deadline planner, and a Student Innovation Network for project teams and campus challenges. These remain roadmap items until their secure data connections are implemented.</p>
+</section>
+<section class="panel dashboard-live-panel" aria-labelledby="dashboard-live-title">
+  <div class="panel-heading"><div><h2 id="dashboard-live-title">Your campus at a glance</h2><p>Live previews from your selected university. Access depends on your verified account and campus permissions.</p></div><button class="btn secondary" type="button" id="refresh-dashboard-previews">Refresh campus feed</button></div>
+  <p id="dashboard-previews-status" class="message" role="status" aria-live="polite">Campus previews load when your account is eligible.</p>
+  <div class="dashboard-preview-grid">
+    <section class="dashboard-preview-card" aria-labelledby="dashboard-notices-title"><h3 id="dashboard-notices-title">Official notices</h3><p class="muted">Verified university updates</p><div id="dashboard-notices-preview" class="dashboard-preview-items"><div class="dashboard-preview-empty">Preview not loaded.</div></div><p><button class="btn secondary" type="button" data-page="noticeboard">View all notices</button></p></section>
+    <section class="dashboard-preview-card" aria-labelledby="dashboard-events-title"><h3 id="dashboard-events-title">Upcoming events</h3><p class="muted">What is happening next</p><div id="dashboard-events-preview" class="dashboard-preview-items"><div class="dashboard-preview-empty">Preview not loaded.</div></div><p><button class="btn secondary" type="button" data-page="events">View all events</button></p></section>
+    <section class="dashboard-preview-card" aria-labelledby="dashboard-community-title"><h3 id="dashboard-community-title">CampusPulse</h3><p class="muted">Recent published campus posts</p><div id="dashboard-community-preview" class="dashboard-preview-items"><div class="dashboard-preview-empty">Preview not loaded.</div></div><p><button class="btn secondary" type="button" data-page="community">Open CampusPulse</button></p></section>
+    <section class="dashboard-preview-card" aria-labelledby="dashboard-helpdesk-title"><h3 id="dashboard-helpdesk-title">My Helpdesk</h3><p class="muted">Your campus service requests</p><div id="dashboard-helpdesk-preview" class="dashboard-preview-items"><div class="dashboard-preview-empty">Preview not loaded.</div></div><p><button class="btn secondary" type="button" data-page="helpdesk">Track requests</button></p></section>
+  </div>
 </section>
 <div class="panel">
   <div class="panel-heading"><div><h2>Recent reports</h2><p>Latest records your account can access.</p></div><span class="muted">Sorted newest first</span></div>
@@ -1215,6 +1238,7 @@ td strong{color:#2a464d;font-size:11px}
   }
 
   function showLogin(message) {
+    clearDashboardCampusPreviews('Sign in to load your campus previews.');
     $('workspace').hidden = true;
     $('login-screen').hidden = false;
     setAuthMode('signin');
@@ -1473,6 +1497,7 @@ td strong{color:#2a464d;font-size:11px}
     $('sectionTitle').textContent = names[page] || 'Overview';
 
     if (page === 'analytics') renderAnalytics();
+    if (page === 'dashboard') loadDashboardCampusPreviews();
     if (page === 'identity-verification') loadStudentIdentityStatus();
   }
 
@@ -2678,6 +2703,156 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
+  let dashboardPreviewRequestId = 0;
+
+  function clearDashboardCampusPreviews(message) {
+    dashboardPreviewRequestId += 1;
+    const status = $('dashboard-previews-status');
+    if (status) status.textContent = message || 'Campus previews are unavailable.';
+    ['dashboard-notices-preview','dashboard-events-preview','dashboard-community-preview','dashboard-helpdesk-preview'].forEach(function(id) {
+      const target = $(id);
+      if (target) target.innerHTML = '<div class="dashboard-preview-empty">No preview available.</div>';
+    });
+  }
+
+  async function loadDashboardCampusPreviews() {
+    const requestId = ++dashboardPreviewRequestId;
+    const requestSessionVersion = authSessionVersion;
+    const profileAtStart = currentProfile;
+    const status = $('dashboard-previews-status');
+    if (!status) return;
+    const targets = {
+      notices: $('dashboard-notices-preview'),
+      events: $('dashboard-events-preview'),
+      community: $('dashboard-community-preview'),
+      helpdesk: $('dashboard-helpdesk-preview')
+    };
+    Object.values(targets).forEach(function(target) {
+      target.innerHTML = '<div class="dashboard-preview-empty">Loading…</div>';
+    });
+
+    const stillCurrent = function() {
+      return requestId === dashboardPreviewRequestId &&
+        requestSessionVersion === authSessionVersion &&
+        currentProfile === profileAtStart &&
+        Boolean(currentProfile);
+    };
+
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!profileAtStart || !backend?.isConfigured) {
+        clearDashboardCampusPreviews('Sign in to load your campus previews.');
+        return;
+      }
+      if (profileAtStart.verification_status !== 'verified') {
+        clearDashboardCampusPreviews('Campus previews unlock after account verification.');
+        return;
+      }
+
+      const [campus, user] = await Promise.all([
+        backend.getMyCampusContext(),
+        backend.getCurrentUser()
+      ]);
+      if (!stillCurrent()) return;
+      campusContext = campus;
+      if (!campus?.university_id || !user?.id) {
+        clearDashboardCampusPreviews('Choose your university and sign in again to load campus previews.');
+        return;
+      }
+
+      if (isStudentAccount()) {
+        const identity = await backend.getMyStudentIdentityVerification();
+        if (!stillCurrent()) return;
+        studentIdentitySubmission = identity;
+        if (identity?.status !== 'approved') {
+          clearDashboardCampusPreviews('Complete student identity verification to view campus community previews.');
+          return;
+        }
+      } else if (!hasVerifiedCampusStaffMembership()) {
+        clearDashboardCampusPreviews('Campus previews are available after your university staff membership is verified.');
+        return;
+      }
+
+      status.textContent = 'Loading content for ' + String(campus.university_name || 'your university') + '…';
+      const [noticesResult, eventsResult, postsResult, ticketsResult] = await Promise.allSettled([
+        backend.listCampusNotices(),
+        backend.listCampusEvents(),
+        backend.listCommunityPosts(),
+        backend.listCampusHelpdeskTickets()
+      ]);
+      if (!stillCurrent()) return;
+
+      function previewError(result, label) {
+        if (result.status === 'rejected') {
+          console.warn('Dashboard ' + label + ' preview could not load:', result.reason?.message || result.reason);
+          return true;
+        }
+        return false;
+      }
+      function emptyPreview(label) {
+        return '<div class="dashboard-preview-empty">' + esc(label) + '</div>';
+      }
+      function item(title, detail, meta) {
+        return '<article class="dashboard-preview-item"><strong>' + esc(title || 'Untitled') + '</strong>' +
+          (detail ? '<p>' + esc(String(detail).slice(0, 180)) + (String(detail).length > 180 ? '…' : '') + '</p>' : '') +
+          (meta ? '<small>' + esc(meta) + '</small>' : '') + '</article>';
+      }
+
+      if (previewError(noticesResult, 'official notices')) {
+        targets.notices.innerHTML = emptyPreview('Notices are temporarily unavailable.');
+      } else {
+        const notices = (noticesResult.value || []).filter(function(notice) {
+          // Until profile faculty/department targeting is loaded here, only show campus-wide notices.
+          // This avoids surfacing a faculty- or department-restricted notice to the wrong audience.
+          return notice.audience_scope === 'campus' && (!notice.expires_at || new Date(notice.expires_at).getTime() > Date.now());
+        }).slice(0, 2);
+        targets.notices.innerHTML = notices.length ? notices.map(function(notice) {
+          return item(notice.title, notice.body, 'Published ' + dateText(notice.published_at) + ' · ' + (notice.publisher_label || 'Verified campus unit'));
+        }).join('') : emptyPreview('No active official notices yet.');
+      }
+
+      if (previewError(eventsResult, 'events')) {
+        targets.events.innerHTML = emptyPreview('Events are temporarily unavailable.');
+      } else {
+        const now = Date.now();
+        const events = (eventsResult.value || []).filter(function(event) {
+          return new Date(event.starts_at).getTime() >= now;
+        }).sort(function(a,b) { return new Date(a.starts_at) - new Date(b.starts_at); }).slice(0, 2);
+        targets.events.innerHTML = events.length ? events.map(function(event) {
+          return item(event.title, event.description, dateText(event.starts_at) + ' · ' + (event.location || 'Location to be announced'));
+        }).join('') : emptyPreview('No upcoming approved events yet.');
+      }
+
+      if (previewError(postsResult, 'CampusPulse')) {
+        targets.community.innerHTML = emptyPreview('CampusPulse is temporarily unavailable.');
+      } else {
+        const posts = (postsResult.value || []).slice(0, 2);
+        targets.community.innerHTML = posts.length ? posts.map(function(post) {
+          const label = post.is_official ? 'Official campus post' : (post.author_username ? '@' + post.author_username : 'Campus member');
+          return item(post.title || label, post.body, label + ' · ' + dateText(post.created_at));
+        }).join('') : emptyPreview('No published CampusPulse posts yet.');
+      }
+
+      if (previewError(ticketsResult, 'Helpdesk')) {
+        targets.helpdesk.innerHTML = emptyPreview('Helpdesk summary is temporarily unavailable.');
+      } else {
+        const ownTickets = (ticketsResult.value || []).filter(function(ticket) { return ticket.created_by === user.id; });
+        const openCount = ownTickets.filter(function(ticket) { return !['resolved','closed'].includes(String(ticket.status || '').toLowerCase()); }).length;
+        const resolvedCount = ownTickets.length - openCount;
+        targets.helpdesk.innerHTML = ownTickets.length
+          ? item(ownTickets.length + ' request(s) submitted', openCount + ' open · ' + resolvedCount + ' resolved or closed', 'Latest request: ' + (ownTickets[0]?.reference_code || 'Reference available in Helpdesk'))
+          : emptyPreview('You have no Helpdesk requests yet.');
+      }
+      status.textContent = 'Campus previews refreshed · ' + new Date().toLocaleTimeString();
+    } catch (error) {
+      if (!stillCurrent()) return;
+      console.error('Could not load campus dashboard previews:', error);
+      clearDashboardCampusPreviews('Campus previews could not be loaded. Refresh and try again.');
+    }
+  }
+
+  $('refresh-dashboard-previews').addEventListener('click', loadDashboardCampusPreviews);
+
   async function loadCampusNoticeboardPage() {
     const backend = window.CampusShieldBackend;
     if (!backend?.isConfigured || !currentProfile) {
@@ -2699,8 +2874,41 @@ td strong{color:#2a464d;font-size:11px}
       const notices = await backend.listCampusNotices();
       const staff = canModerateCommunity();
       $('campus-notice-publisher-panel').hidden = !staff;
-      $('campus-noticeboard-feed').innerHTML = notices.length
-        ? notices.map(function(notice) {
+
+      // Fail closed for student audience targeting: only show faculty/department notices
+      // when the signed-in student's own profile matches the intended audience.
+      let audienceProfile = null;
+      if (!staff) {
+        const user = await backend.getCurrentUser();
+        if (!user?.id) throw new Error('Sign in again to check notice audience access.');
+        const {data, error} = await backend.client.from('profiles')
+          .select('faculty,department')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (error) throw error;
+        audienceProfile = data || {};
+      }
+      const normalizeAudience = value => String(value || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+      const activeNotices = notices.filter(function(notice) {
+        if (!notice.expires_at) return true;
+        const expiryTime = new Date(notice.expires_at).getTime();
+        return Number.isFinite(expiryTime) && expiryTime > Date.now();
+      });
+      const visibleNotices = activeNotices.filter(function(notice) {
+        if (staff) return true;
+        const scope = notice.audience_scope || 'campus';
+        if (scope === 'campus') return true;
+        const facultyMatches = normalizeAudience(notice.target_faculty) &&
+          normalizeAudience(notice.target_faculty) === normalizeAudience(audienceProfile?.faculty);
+        if (scope === 'faculty') return Boolean(facultyMatches);
+        if (scope === 'department') {
+          return Boolean(facultyMatches && normalizeAudience(notice.target_department) &&
+            normalizeAudience(notice.target_department) === normalizeAudience(audienceProfile?.department));
+        }
+        return false;
+      });
+      $('campus-noticeboard-feed').innerHTML = visibleNotices.length
+        ? visibleNotices.map(function(notice) {
             const expiry = notice.expires_at ? '<p class="community-meta">Expires ' + esc(dateText(notice.expires_at)) + '</p>' : '';
             const archiveButton = staff ? '<button type="button" class="btn secondary" data-archive-campus-notice="' + esc(notice.id) + '">Archive notice</button>' : '';
             return '<article class="community-post campus-notice-card">' +
@@ -2711,8 +2919,8 @@ td strong{color:#2a464d;font-size:11px}
               (archiveButton ? '<div class="community-post-actions">' + archiveButton + '</div>' : '') +
               '</article>';
           }).join('')
-        : '<div class="community-empty"><strong>No active official notices.</strong><p>Check back for verified academic dates, registration deadlines and campus service updates.</p></div>';
-      $('campus-notices-status').textContent = notices.length + ' active notice(s) visible to your campus account.';
+        : '<div class="community-empty"><strong>No notices currently visible.</strong><p>There may be no active notices, or current notices may target another faculty or department.</p></div>';
+      $('campus-notices-status').textContent = visibleNotices.length + ' active notice(s) visible to your campus account.';
     } catch (err) {
       console.error('Could not load campus noticeboard:', err);
       $('campus-notices-status').textContent = err.message || 'Official notices could not be loaded.';

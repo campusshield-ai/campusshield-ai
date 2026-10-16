@@ -6,12 +6,15 @@ on:
       - main
       - feature/nigerian-multi-university-foundation
       - feature/identity-university-search
+      - fix/staff-verification-role-state
   push:
     branches:
       - main
       - feature/nigerian-multi-university-foundation
       - feature/identity-university-search
       - feature/onboarding-staff-governance
+      - fix/staff-verification-role-state
+      - feature/dashboard-live-previews
 
 permissions:
   contents: read
@@ -33,6 +36,7 @@ jobs:
           node tests/campus-life-smoke-check.mjs
           node tests/nuc-directory-reconciliation-smoke-check.mjs
           node tests/staff-governance-smoke-check.mjs
+          node tests/dashboard-live-previews-smoke-check.mjs
           node scripts/reconcile-nuc-directory.mjs
       - name: Upload live NUC roster audit
         uses: actions/upload-artifact@v4
