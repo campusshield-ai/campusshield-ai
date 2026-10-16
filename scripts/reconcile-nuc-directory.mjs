@@ -6,6 +6,7 @@ const seedPath = "supabase/migrations/20261015110000_import_official_nuc_univers
 const deltaPath = "supabase/migrations/20261016150000_reconcile_nuc_directory_live_deltas.sql";
 const nameDeltaPath = "supabase/migrations/20261016160000_reconcile_nuc_name_variants.sql";
 const stateDeltaPath = "supabase/migrations/20261016170000_reconcile_nuc_state_mismatch.sql";
+const deactivationDeltaPath = "supabase/migrations/20261016180000_deactivate_duplicate_mewar_alias.sql";
 const outputDir = "artifacts/nuc-roster-audit";
 
 function decodeHtml(value) {
@@ -149,7 +150,7 @@ function applyDelta(roster, sql) {
   for (const row of parseTuples(insertMatch[1])) {
     const [name, slug, ownership, state, , officialWebsite] = row;
     const existing = roster.get(slug);
-    roster.set(slug, { slug, name, ownership, state, officialWebsite: officialWebsite ?? existing?.officialWebsite ?? null, source: "seed+delta" });
+    roster.set(slug, { slug, name, ownership, state, officialWebsite: officialWebsite ?? existing?.officialWebsite ?? null, isActive: true, source: "seed+delta" });
     if (!existing) additions++;
   }
   assert.equal(additions, 1, "Expected one new NUC record in reconciliation migration");
@@ -179,6 +180,20 @@ function applyStateDelta(roster, sql) {
   assert.ok(existing, `State correction slug absent from seed: ${slug}`);
   roster.set(slug, { ...existing, name: rawName.replace(/''/g, "'"), state, source: "seed+delta" });
   assert.equal(slug, "mercy-medical-university-iwo-ogun-state");
+  return 1;
+}
+
+function applyDeactivationDelta(roster, sql) {
+  assert.match(sql, /mewar-international-university-masaka-nasarawa-state/);
+  assert.match(sql, /Mewar University duplicate row is referenced/);
+  const slugMatch = sql.match(/where\\s+slug\\s*=\\s*'([^']+)'/i);
+  assert.ok(slugMatch, "Could not parse duplicate alias slug");
+  const slug = slugMatch[1];
+  const existing = roster.get(slug);
+  assert.ok(existing, `Deactivation slug absent from roster: ${slug}`);
+  roster.set(slug, { ...existing, isActive: false, source: "seed+delta" });
+  const canonical = roster.get("mewar-international-university-masaka-nasarawa-state");
+  assert.ok(canonical && canonical.isActive !== false, "Canonical Mewar International University must remain active");
   return 1;
 }
 
@@ -232,11 +247,15 @@ const seed = readFileSync(seedPath, "utf8");
 const delta = readFileSync(deltaPath, "utf8");
 const nameDelta = readFileSync(nameDeltaPath, "utf8");
 const stateDelta = readFileSync(stateDeltaPath, "utf8");
+const deactivationDelta = readFileSync(deactivationDeltaPath, "utf8");
 const roster = readSeedRoster(seed);
 const deltaStats = applyDelta(roster, delta);
 const nameCorrections = applyNameDelta(roster, nameDelta);
 const stateCorrections = applyStateDelta(roster, stateDelta);
-const database = [...roster.values()];
+const deactivatedAliases = applyDeactivationDelta(roster, deactivationDelta);
+const allRosterRows = [...roster.values()];
+const inactiveRosterRows = allRosterRows.filter(row => row.isActive === false);
+const database = allRosterRows.filter(row => row.isActive !== false);
 
 const nucByName = new Map(nuc.map(row => [normalizeName(row.name), row]));
 const matched = [];
@@ -336,6 +355,10 @@ const report = {
   nameCorrections,
   stateCorrectionMigration: stateDeltaPath,
   stateCorrections,
+  deactivationMigration: deactivationDeltaPath,
+  deactivatedAliases,
+  allRosterTotal: allRosterRows.length,
+  inactiveRosterRows: inactiveRosterRows.map(({ slug, name, ownership, state }) => ({ slug, name, ownership, state })),
   sourceCounts: counts(nuc),
   rosterCounts: counts(database),
   sourceTotal: nuc.length,
@@ -360,7 +383,9 @@ const md = [
   `- Generated: ${report.generatedAt}`,
   `- Source: ${NUC_URL}`,
   `- Current NUC table rows parsed: **${report.sourceTotal}**`,
-  `- Reconstructed staging roster rows (seed + deltas): **${report.rosterTotal}**`,
+  `- Reconstructed active roster rows (seed + deltas): **${report.rosterTotal}**`,
+  `- Total rows including inactive audit aliases: **${report.allRosterTotal}**`,
+  `- Inactive duplicate aliases preserved by ID: **${report.inactiveRosterRows.length}**`,
   `- High-confidence name variants corrected by the second delta: **${report.nameCorrections}**`,
   `- Confirmed state correction(s) in the third delta: **${report.stateCorrections}**`,
   `- Exact normalized-name matches: **${report.exactNameMatches}**`,
@@ -414,6 +439,9 @@ console.log(JSON.stringify({
   exactNameMatches: report.exactNameMatches,
   nameCorrections: report.nameCorrections,
   stateCorrections: report.stateCorrections,
+  deactivatedAliases: report.deactivatedAliases,
+  allRosterTotal: report.allRosterTotal,
+  inactiveRosterRows: report.inactiveRosterRows.length,
   ownershipOrStateMismatches: report.ownershipOrStateMismatches.length,
   databaseRowsWithoutExactNameMatch: report.databaseRowsWithoutExactNameMatch.length,
   nucRowsWithoutExactNameMatch: report.nucRowsWithoutExactNameMatch.length,
