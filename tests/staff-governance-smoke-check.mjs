@@ -96,6 +96,10 @@ assert.ok(evidenceAudit.includes("outcome <> 'institution_confirmed'") && eviden
 assert.ok(evidenceAudit.includes("private.current_campus_role()) is distinct from 'admin'"), 'evidence audit RPC must require campus admin');
 assert.ok(evidenceAudit.includes('private.user_has_current_campus(p_subject_user_id)'), 'evidence audit RPC must be campus scoped');
 assert.ok(evidenceAudit.includes('security invoker') && evidenceAudit.includes('private.record_campus_identity_evidence_check'), 'public audit RPC must use an invoker wrapper');
+assert.ok(evidenceAudit.includes("set search_path = ''"), 'private evidence recorder must use a locked search path');
+assert.ok(evidenceAudit.includes('grant execute on function private.record_campus_identity_evidence_check(uuid,text,text,text,text,text) to authenticated, service_role'), 'private evidence recorder must be executable only through explicitly granted trusted roles');
+assert.ok(evidenceAudit.includes('revoke all on function private.record_campus_identity_evidence_check(uuid,text,text,text,text,text) from public, anon'), 'anonymous execution of the private evidence recorder must be revoked');
+assert.ok(evidenceAudit.includes('grant execute on function public.record_campus_identity_evidence_check(uuid,text,text,text,text,text) to authenticated, service_role'), 'public evidence wrapper must be granted to authenticated users only after explicit revocation');
 assert.ok(evidenceAudit.includes('revoke all on function public.record_campus_identity_evidence_check(uuid,text,text,text,text,text) from public, anon'), 'anonymous callers must not execute evidence audit RPC');
 assert.ok(evidenceAuditHistory.includes('create or replace function public.list_campus_identity_evidence_checks'), 'evidence history must be exposed through a guarded RPC');
 assert.ok(evidenceAuditHistory.includes("private.current_campus_role()) is distinct from 'admin'"), 'evidence history RPC must require campus admin');
