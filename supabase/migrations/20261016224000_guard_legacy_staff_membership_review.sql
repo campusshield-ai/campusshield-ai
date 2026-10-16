@@ -36,7 +36,7 @@ begin
     raise exception 'This staff membership request is not in your university queue.';
   end if;
 
-  if v_requested_role='teacher' and not exists (
+  if (v_requested_role='teacher' or v_role='teacher') and not exists (
     select 1
     from public.campus_staff_verifications v
     where v.user_id=p_user_id
