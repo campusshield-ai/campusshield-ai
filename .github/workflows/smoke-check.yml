@@ -22,4 +22,6 @@ jobs:
         with:
           node-version: 22
       - name: Run frontend and migration smoke checks
-        run: node tests/smoke-check.mjs
+        run: |
+          node tests/smoke-check.mjs
+          node tests/student-identity-smoke-check.mjs
