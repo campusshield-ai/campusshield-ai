@@ -30,3 +30,11 @@ jobs:
           node tests/student-identity-smoke-check.mjs
           node tests/campus-life-smoke-check.mjs
           node tests/nuc-directory-reconciliation-smoke-check.mjs
+          node scripts/reconcile-nuc-directory.mjs
+      - name: Upload live NUC roster audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuc-roster-audit
+          path: artifacts/nuc-roster-audit/
+          if-no-files-found: error
+          retention-days: 14
