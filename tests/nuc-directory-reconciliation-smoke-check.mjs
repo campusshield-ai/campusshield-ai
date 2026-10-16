@@ -87,7 +87,7 @@ assert.doesNotMatch(stateMigration, /set\s+id\s*=|set\s+slug\s*=/i);
 
 assert.match(deactivationMigration, /mewar-international-university-masaka-nasarawa-state/);
 assert.match(deactivationMigration, /set is_active = false/i);
-assert.match(deactivationMigration, /Mewar University duplicate row is referenced/);
+assert.match(deactivationMigration, /Mewar University alias candidate is referenced/);
 assert.doesNotMatch(deactivationMigration, /\bdelete\s+from\b/i);
 assert.doesNotMatch(deactivationMigration, /set\s+id\s*=|set\s+slug\s*=/i);
 
