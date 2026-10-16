@@ -80,14 +80,14 @@ assert.match(marketplaceSellerGuard, /grant update \(status, updated_at\)[\s\S]*
 assert.ok(marketplaceSellerGuard.includes('drop policy if exists campus_marketplace_update_own_same_campus'), 'old permissive marketplace update policy must be removed');
 assert.match(profileSelfUpdateGuard, /revoke update on public\.profiles from authenticated/i, 'table-level profile update must be revoked before safe column grants');
 assert.match(profileSelfUpdateGuard, /grant update \(display_name, requested_role\)[\s\S]*to authenticated/i, 'self-service profile updates must be limited to display name and requested role');
-assert.match(evidenceAudit, /create table if not exists public\\.campus_identity_evidence_checks/i, 'evidence checks must be recorded in an audit table');
-assert.match(evidenceAudit, /alter table public\\.campus_identity_evidence_checks enable row level security/i, 'evidence audit table must enforce RLS');
-assert.match(evidenceAudit, /revoke all on table public\\.campus_identity_evidence_checks from public, anon, authenticated/i, 'clients must not read or write audit records directly');
-assert.match(evidenceAudit, /outcome = 'institution_confirmed'[\\s\\S]*source_kind in \\('official_university_email','university_registry','direct_institution_contact','official_payment_portal'\\)[\\s\\S]*source_reference/i, 'institution confirmation must require an authoritative source and reference');
-assert.match(evidenceAudit, /private\\.current_campus_role\\(\\) is distinct from 'admin'/i, 'evidence audit RPC must require campus admin');
-assert.match(evidenceAudit, /private\\.user_has_current_campus\\(p_subject_user_id\\)/i, 'evidence audit RPC must be campus scoped');
-assert.match(evidenceAudit, /security invoker[\\s\\S]*private\\.record_campus_identity_evidence_check/i, 'public audit RPC must use an invoker wrapper');
-assert.match(evidenceAudit, /revoke all on function public\\.record_campus_identity_evidence_check\\(uuid,text,text,text,text,text\\) from public, anon/i, 'anonymous callers must not execute evidence audit RPC');
+assert.ok(evidenceAudit.includes('create table if not exists public.campus_identity_evidence_checks'), 'evidence checks must be recorded in an audit table');
+assert.ok(evidenceAudit.includes('alter table public.campus_identity_evidence_checks enable row level security'), 'evidence audit table must enforce RLS');
+assert.ok(evidenceAudit.includes('revoke all on table public.campus_identity_evidence_checks from public, anon, authenticated'), 'clients must not read or write audit records directly');
+assert.ok(evidenceAudit.includes("outcome <> 'institution_confirmed'") && evidenceAudit.includes("source_kind in ('official_university_email','university_registry','direct_institution_contact','official_payment_portal')") && evidenceAudit.includes('source_reference'), 'institution confirmation must require an authoritative source and reference');
+assert.ok(evidenceAudit.includes("private.current_campus_role()) is distinct from 'admin'"), 'evidence audit RPC must require campus admin');
+assert.ok(evidenceAudit.includes('private.user_has_current_campus(p_subject_user_id)'), 'evidence audit RPC must be campus scoped');
+assert.ok(evidenceAudit.includes('security invoker') && evidenceAudit.includes('private.record_campus_identity_evidence_check'), 'public audit RPC must use an invoker wrapper');
+assert.ok(evidenceAudit.includes('revoke all on function public.record_campus_identity_evidence_check(uuid,text,text,text,text,text) from public, anon'), 'anonymous callers must not execute evidence audit RPC');
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
