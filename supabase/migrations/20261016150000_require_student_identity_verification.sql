@@ -201,7 +201,7 @@ begin
         reviewed_at = null,
         created_at = now(),
         updated_at = now()
-    where public.student_identity_verifications.status = 'rejected';
+    where student_identity_verifications.status = 'rejected';
 
   get diagnostics v_changed = row_count;
   if v_changed = 0 then
@@ -246,7 +246,7 @@ begin
   if v_admin_role is distinct from 'admin' or v_admin_status is distinct from 'verified' then
     raise exception 'Only a verified administrator can review student identity.';
   end if;
-  if p_decision not in ('approve','reject') then
+  if p_decision is null or p_decision not in ('approve','reject') then
     raise exception 'Decision must be approve or reject.';
   end if;
   if p_decision = 'reject'
@@ -358,7 +358,7 @@ begin
   if v_admin_role is distinct from 'admin' or v_admin_status is distinct from 'verified' then
     raise exception 'Only verified administrators may review accounts.';
   end if;
-  if p_decision not in ('approve','reject') then
+  if p_decision is null or p_decision not in ('approve','reject') then
     raise exception 'Decision must be approve or reject.';
   end if;
 
