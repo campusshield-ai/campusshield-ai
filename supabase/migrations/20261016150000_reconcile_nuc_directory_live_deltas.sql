@@ -35,6 +35,21 @@ from (values
 ) as v(slug, name, ownership, state)
 where u.slug = v.slug;
 
+-- The live NUC listing contains Mewar University, Masaka, Nasarawa State,
+-- which is absent from the 2026-09-05 seed snapshot. Add by stable slug; never replace IDs.
+insert into public.campus_universities
+  (name, slug, ownership, state, source_url, official_website, is_active)
+values
+  ('Mewar University, Masaka, Nasarawa State', 'mewar-university-masaka-nasarawa-state',
+   'Private', 'Nasarawa', 'https://enuc.nuc.edu.ng/nus', null, true)
+on conflict (slug) do update
+set name = excluded.name,
+    ownership = excluded.ownership,
+    state = excluded.state,
+    source_url = excluded.source_url,
+    is_active = true,
+    updated_at = now();
+
 -- Fail loudly rather than silently pass if a target slug was absent from the baseline seed.
 do $$
 declare
