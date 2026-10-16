@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs"
 const NUC_URL = "https://enuc.nuc.edu.ng/nus";
 const seedPath = "supabase/migrations/20261015110000_import_official_nuc_university_directory.sql";
 const deltaPath = "supabase/migrations/20261016150000_reconcile_nuc_directory_live_deltas.sql";
+const nameDeltaPath = "supabase/migrations/20261016160000_reconcile_nuc_name_variants.sql";
 const outputDir = "artifacts/nuc-roster-audit";
 
 function decodeHtml(value) {
@@ -154,6 +155,21 @@ function applyDelta(roster, sql) {
   return { corrections, additions };
 }
 
+function applyNameDelta(roster, sql) {
+  const updateMatch = sql.match(/from\\s*\\(\\s*values([\\s\\S]*?)\\)\\s*as\\s+v\\s*\\(slug\\s*,\\s*name\\s*\\)/i);
+  assert.ok(updateMatch, "Could not parse name-variant corrections");
+  let corrections = 0;
+  for (const row of parseTuples(updateMatch[1])) {
+    const [slug, name] = row;
+    const existing = roster.get(slug);
+    assert.ok(existing, `Name correction slug absent from seed: ${slug}`);
+    roster.set(slug, { ...existing, name, source: "seed+delta" });
+    corrections++;
+  }
+  assert.equal(corrections, 15, "Expected 15 high-confidence name corrections");
+  return corrections;
+}
+
 function levenshtein(a, b) {
   const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
   for (let i = 1; i <= a.length; i++) {
@@ -202,8 +218,10 @@ assert.ok(nuc.length >= 300, `Expected a full NUC table, parsed only ${nuc.lengt
 
 const seed = readFileSync(seedPath, "utf8");
 const delta = readFileSync(deltaPath, "utf8");
+const nameDelta = readFileSync(nameDeltaPath, "utf8");
 const roster = readSeedRoster(seed);
 const deltaStats = applyDelta(roster, delta);
+const nameCorrections = applyNameDelta(roster, nameDelta);
 const database = [...roster.values()];
 
 const nucByName = new Map(nuc.map(row => [normalizeName(row.name), row]));
@@ -286,6 +304,8 @@ const report = {
   sourceUrl: NUC_URL,
   seedMigration: seedPath,
   reconciliationMigration: deltaPath,
+  nameVariantMigration: nameDeltaPath,
+  nameCorrections,
   sourceCounts: counts(nuc),
   rosterCounts: counts(database),
   sourceTotal: nuc.length,
@@ -310,7 +330,8 @@ const md = [
   `- Generated: ${report.generatedAt}`,
   `- Source: ${NUC_URL}`,
   `- Current NUC table rows parsed: **${report.sourceTotal}**`,
-  `- Reconstructed staging roster rows (seed + delta): **${report.rosterTotal}**`,
+  `- Reconstructed staging roster rows (seed + deltas): **${report.rosterTotal}**`,
+  `- High-confidence name variants corrected by the second delta: **${report.nameCorrections}**`,
   `- Exact normalized-name matches: **${report.exactNameMatches}**`,
   `- Matched records with ownership/state mismatches: **${report.ownershipOrStateMismatches.length}**`,
   `- Database names without exact match: **${report.databaseRowsWithoutExactNameMatch.length}**`,
@@ -360,6 +381,7 @@ console.log(JSON.stringify({
   sourceTotal: report.sourceTotal, sourceCounts: report.sourceCounts,
   rosterTotal: report.rosterTotal, rosterCounts: report.rosterCounts,
   exactNameMatches: report.exactNameMatches,
+  nameCorrections: report.nameCorrections,
   ownershipOrStateMismatches: report.ownershipOrStateMismatches.length,
   databaseRowsWithoutExactNameMatch: report.databaseRowsWithoutExactNameMatch.length,
   nucRowsWithoutExactNameMatch: report.nucRowsWithoutExactNameMatch.length,
