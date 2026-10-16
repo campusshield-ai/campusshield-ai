@@ -357,6 +357,32 @@ td strong{color:#2a464d;font-size:11px}
 .campus-hub-channel-link:focus-visible{outline:3px solid #71e7d1;outline-offset:2px}
 .campus-hub-live{padding:4px 5px;border:1px solid #2d8d78;border-radius:999px;color:#8ce8d8;font-size:7px;font-weight:900}
 
+
+/* CampusPulse mobile spacing refinement — visual-only, preserves existing behavior. */
+.community-layout{gap:14px}
+.community-post{padding:14px;margin:10px 0;border-radius:15px}
+.community-post-title{margin:7px 0 5px;font-size:16px;line-height:1.4}
+.community-post-body{margin:8px 0;line-height:1.55}
+.community-post-actions{gap:7px;margin-top:9px}
+.community-comments{margin-top:11px}
+.community-comment{padding:9px 0}
+.community-comment-form{gap:7px;margin-top:8px}
+#communityPostForm .field{margin:10px 0}
+#communityPostForm .field input,
+#communityPostForm .field select,
+#communityPostForm .field textarea{padding:10px 11px;border-radius:10px}
+#communityPostForm .field textarea{min-height:96px}
+#community-post-submit{min-height:42px;padding:10px 16px}
+@media(max-width:650px){
+  .community-layout{gap:10px;margin-bottom:12px}
+  .community-post{padding:12px;margin:9px 0;border-radius:13px}
+  .community-post-title{font-size:15px}
+  .community-post-actions{gap:6px}
+  .community-post-actions .btn{min-height:38px;padding:8px 10px}
+  #communityPostForm .field{margin:8px 0}
+  #communityPostForm .field textarea{min-height:82px}
+}
+
 </style>
 </head>
 <body>
