@@ -245,6 +245,15 @@ td strong{color:#2a464d;font-size:11px}
 .notice-inline{margin:0 0 16px;padding:12px 14px;border:1px solid #e8e6d7;border-radius:11px;background:#fbfaf4;color:#68705b;font-size:11px}
 .risk-output{margin-top:15px;padding:13px 15px;border-radius:12px;background:#f3f8f6;color:#345c51;font-weight:680}
 .community-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:16px;margin-bottom:18px;align-items:start}
+.campus-home-panel{margin-bottom:16px}
+.campus-feature-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.campus-feature{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:15px;border:1px solid #e4ece8;border-radius:14px;background:linear-gradient(155deg,#fff,#f8fbf9)}
+.campus-feature-kicker{color:#31806e;font-size:8px;font-weight:850;letter-spacing:.13em}
+.campus-feature h3{margin:8px 0 3px;color:#193c43;font-size:14px;letter-spacing:-.025em}
+.campus-feature p{flex:1;margin:0 0 12px;color:#708188;font-size:10px;line-height:1.55}
+.campus-feature .btn{min-height:36px;padding:8px 10px;font-size:10px}
+.campus-roadmap-note{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#f1f7f4;color:#61756f;font-size:10px}
+.campus-roadmap-note strong{color:#315b50}
 .community-post{border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;background:#fff}
 .community-post-header,.community-comment-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .community-post-title{margin:9px 0 6px;font-size:17px;line-height:1.35}
@@ -261,7 +270,18 @@ td strong{color:#2a464d;font-size:11px}
 .community-moderation-item,.community-report-item{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:#fbfcfe}
 .community-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .community-empty{padding:24px;border:1px dashed #cad5e4;border-radius:12px;text-align:center;color:var(--muted)}
-@media(max-width:900px){.community-layout{grid-template-columns:1fr}}
+.community-media-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin:12px 0}
+.community-media-grid figure{margin:0;min-width:0}
+.community-media-grid img,.community-media-grid video{display:block;width:100%;max-height:420px;object-fit:contain;border:1px solid #e1ebe6;border-radius:12px;background:#f4f7f5}
+.community-media-grid figcaption{margin-top:5px;color:var(--muted);font-size:10px;overflow-wrap:anywhere}
+@media(max-width:900px){.community-layout{grid-template-columns:1fr}.campus-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.campus-ticket-card,.campus-notice-card{overflow-wrap:anywhere}
+.campus-ticket-timeline{margin-top:12px;padding-top:10px;border-top:1px solid #edf1ef}
+.campus-ticket-timeline summary{cursor:pointer;color:#34645d;font-size:11px;font-weight:780}
+.campus-ticket-staff-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 10px;margin-top:12px;padding-top:10px;border-top:1px solid #edf1ef}
+.campus-ticket-staff-controls .field:last-of-type{grid-column:1/-1}
+.campus-ticket-staff-controls textarea{min-height:72px}
+@media(max-width:520px){.campus-ticket-staff-controls{grid-template-columns:1fr}}
 @media(max-width:650px){.community-post{padding:12px}.community-comment-form{flex-direction:column}.community-comment-form .btn{width:100%}}
 .footer{padding:25px 10px 13px;color:#9aa6a5;font-size:9px;letter-spacing:.04em}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
@@ -363,13 +383,13 @@ td strong{color:#2a464d;font-size:11px}
 <section id="login-screen" class="login-screen">
   <div class="login-intro">
     <div class="login-brand"><span class="brand-mark" aria-hidden="true">CS</span><span class="login-brand-name">Campus<strong>Shield</strong> AI</span></div>
-    <p class="eyebrow">A CLEARER VIEW OF CAMPUS SAFETY</p>
-    <h1>Make every report easier to understand.</h1>
-    <p>Bring reports, review status, and safety patterns into one calm, focused workspace.</p>
+    <p class="eyebrow">CAMPUS SAFETY · COMMUNITY · STUDENT SUCCESS</p>
+    <h1>One trusted home for campus life.</h1>
+    <p>Find your campus community, explore events and services, and use safety tools built around privacy and accountable review.</p>
     <div class="login-points">
-      <div><span>01</span><strong>Report with context</strong><small>Capture the category, place, and what happened.</small></div>
-      <div><span>02</span><strong>Review activity</strong><small>See status and records your account can access.</small></div>
-      <div><span>03</span><strong>Spot patterns</strong><small>Use simple summaries to guide human review.</small></div>
+      <div><span>01</span><strong>Stay safe</strong><small>Share a private report and follow its review status.</small></div>
+      <div><span>02</span><strong>Find your people</strong><small>Join campus conversations, groups and events.</small></div>
+      <div><span>03</span><strong>Grow your future</strong><small>Discover study circles, career events and campus services.</small></div>
     </div>
     <p class="login-footnote">Demonstration prototype · Does not contact emergency services</p>
 
@@ -428,6 +448,7 @@ td strong{color:#2a464d;font-size:11px}
         <div id="signup-fields" hidden>
           <div class="field"><label for="auth-name">Real name <span class="muted">(optional · private)</span></label><input id="auth-name" autocomplete="name" placeholder="Your real name; not shown to students"></div>
           <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
+          <div class="field"><label for="auth-university">University <span class="muted">(optional if not listed yet)</span></label><select id="auth-university"><option value="">Choose after sign-in</option></select><p class="muted">Your university space is private to that institution. The choice is locked after joining to prevent cross-campus mixing.</p></div>
           <div class="field"><label for="auth-role">Account type</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
         </div>
         <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
@@ -463,12 +484,19 @@ td strong{color:#2a464d;font-size:11px}
 <div class="nav-label">WORKSPACE</div>
 <nav class="nav">
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
+<button data-page="noticeboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3.5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>Noticeboard</button>
+<button data-page="helpdesk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Helpdesk</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
-<button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus community</button>
+<button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>CampusPulse</button>
+<button data-page="groups"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span>Groups</button>
+<button data-page="events"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>Events</button>
+<button data-page="marketplace"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16l-1.5-5h-13L4 8ZM5 8v13h14V8M9 21v-7h6v7M3 8a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg></span>Marketplace</button>
 <button data-page="manage"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button>
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
 <button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button>
+<button data-page="identity-verification" id="identity-verification-nav" hidden>Student identity</button>
+<button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform admin</button>
 </nav>
 <div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
 </aside>
@@ -485,7 +513,7 @@ td strong{color:#2a464d;font-size:11px}
 
 <section class="page active" id="page-dashboard">
 <div class="heading">
-  <div><h1>Campus safety overview</h1><p>A measured view of incident records available to your signed-in account.</p></div>
+  <div><h1>Your campus, in one place.</h1><p>Stay safe, find your people, and make the most of campus life. Your campus space is limited to your university.</p></div>
   <div class="heading-actions"><button class="btn" type="button" data-page="report"><span aria-hidden="true">＋</span>New report</button></div>
 </div>
 <div class="grid stats" aria-label="Incident statistics">
@@ -494,6 +522,18 @@ td strong{color:#2a464d;font-size:11px}
   <div class="stat"><div class="stat-label">Resolved reports</div><div class="stat-num" id="resolvedStat">—</div><p class="stat-note">Marked resolved in the records</p></div>
   <div class="stat"><div class="stat-label">Resolution rate</div><div class="stat-num" id="rateStat">—</div><p class="stat-note">Resolved reports ÷ reports in view</p></div>
 </div>
+<section class="panel campus-home-panel" aria-labelledby="campus-home-title">
+  <div class="panel-heading"><div><h2 id="campus-home-title">Find your people. Grow your future.</h2><p>Explore useful things happening around your university.</p></div><span class="muted">Your campus only</span></div>
+  <div class="grid campus-feature-grid">
+    <article class="campus-feature"><span class="campus-feature-kicker">CAMPUS HELPDESK</span><h3>Get campus problems moving</h3><p>Report broken facilities, Wi-Fi problems and service requests with a reference number and progress history.</p><button class="btn secondary" type="button" data-page="helpdesk">Raise a request</button></article>
+    <article class="campus-feature"><span class="campus-feature-kicker">VERIFIED NOTICES</span><h3>Know what is official</h3><p>Find university announcements, registration dates, academic updates and service notices with expiry dates.</p><button class="btn secondary" type="button" data-page="noticeboard">Open noticeboard</button></article>
+    <article class="campus-feature"><span class="campus-feature-kicker">CAMPUSPULSE</span><h3>Join the conversation</h3><p>Campus updates, questions, polls and useful tips from your university community.</p><button class="btn secondary" type="button" data-page="community">Open CampusPulse</button></article>
+    <article class="campus-feature"><span class="campus-feature-kicker">STUDY & COMMUNITY</span><h3>Find your people</h3><p>Explore study circles, departments, societies and interest groups.</p><button class="btn secondary" type="button" data-page="groups">Explore groups</button></article>
+    <article class="campus-feature"><span class="campus-feature-kicker">EVENTS</span><h3>Take part on campus</h3><p>Discover seminars, society meetups, sports and career events.</p><button class="btn secondary" type="button" data-page="events">Browse events</button></article>
+    <article class="campus-feature"><span class="campus-feature-kicker">CAMPUS SERVICES</span><h3>Share and discover</h3><p>Find textbooks, services and other campus listings with community safeguards.</p><button class="btn secondary" type="button" data-page="marketplace">Open marketplace</button></article>
+  </div>
+  <p class="campus-roadmap-note"><strong>Next steps:</strong> an AI Academic Companion grounded in approved course materials, a private timetable and deadline planner, and a Student Innovation Network for project teams and campus challenges. These remain roadmap items until their secure data connections are implemented.</p>
+</section>
 <div class="panel">
   <div class="panel-heading"><div><h2>Recent reports</h2><p>Latest records your account can access.</p></div><span class="muted">Sorted newest first</span></div>
   <div id="recentList" class="recent-list"><div class="empty-state"><span class="empty-state-mark" aria-hidden="true">＋</span><div><strong>No reports in view yet</strong><p>Submit a report to start the activity list.</p></div><button class="btn secondary" type="button" data-page="report">Create a report</button></div></div>
@@ -516,10 +556,102 @@ td strong{color:#2a464d;font-size:11px}
 </div>
 </section>
 
+
+<section class="page" id="page-noticeboard">
+  <div class="heading">
+    <div><h1>Verified campus noticeboard</h1><p>Official updates for your university, with a named publishing unit and clear expiry dates.</p></div>
+    <div class="heading-actions"><button class="btn secondary" type="button" id="refresh-campus-notices">Refresh notices</button></div>
+  </div>
+  <div class="notice-inline"><strong>Trust first.</strong> Notices are published only by verified campus staff. Check the publishing unit and expiry date; high-stakes academic or fee details should still be confirmed through the institution's official portal.</div>
+  <section class="panel" id="campus-notice-publisher-panel" hidden aria-labelledby="campus-notice-publisher-title">
+    <div class="panel-heading"><div><h2 id="campus-notice-publisher-title">Publish an official notice</h2><p>Use your department or office as the publisher label. Do not enter a personal email or phone number in public notice content.</p></div></div>
+    <form id="campusNoticeForm">
+      <div class="grid two">
+        <div class="field"><label for="campus-notice-publisher">Publishing unit *</label><input id="campus-notice-publisher" required maxlength="100" placeholder="e.g. ICT Directorate"></div>
+        <div class="field"><label for="campus-notice-category">Notice category *</label><select id="campus-notice-category" required><option value="announcement">General announcement</option><option value="academic">Academic calendar / exams</option><option value="registration">Registration deadline</option><option value="fees">Fees / finance</option><option value="facilities">Facilities / maintenance</option><option value="closure">Closure / disruption</option><option value="events">Campus event</option><option value="safety">Campus safety</option><option value="it_service">ICT service / outage</option><option value="other">Other</option></select></div>
+        <div class="field"><label for="campus-notice-audience">Audience *</label><select id="campus-notice-audience" required><option value="campus">Entire university</option><option value="faculty">Specific faculty / school</option><option value="department">Specific department</option></select></div>
+        <div class="field"><label for="campus-notice-expires">Expiry date (optional)</label><input id="campus-notice-expires" type="datetime-local"><small>Expired notices automatically disappear from the student feed.</small></div>
+      </div>
+      <div class="grid two" id="campus-notice-faculty-wrap" hidden>
+        <div class="field"><label for="campus-notice-faculty">Faculty / school *</label><input id="campus-notice-faculty" maxlength="120" placeholder="e.g. Faculty of Engineering"></div>
+      </div>
+      <div class="grid two" id="campus-notice-department-wrap" hidden>
+        <div class="field"><label for="campus-notice-department">Department *</label><input id="campus-notice-department" maxlength="120" placeholder="e.g. Computer Science"></div>
+      </div>
+      <div class="field"><label for="campus-notice-title">Title *</label><input id="campus-notice-title" required minlength="4" maxlength="140" placeholder="e.g. Second semester registration closes Friday"></div>
+      <div class="field"><label for="campus-notice-body">Notice details *</label><textarea id="campus-notice-body" required minlength="10" maxlength="5000" placeholder="Provide the confirmed details and the next action students should take."></textarea></div>
+      <div class="actions"><button class="btn" type="submit" id="campus-notice-submit">Publish notice</button></div>
+      <p id="campus-notice-publisher-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Latest official updates</h2><p>Filtered to your campus and, where specified, your faculty or department.</p></div></div>
+    <p id="campus-notices-status" class="message" role="status" aria-live="polite">Loading official notices…</p>
+    <div id="campus-noticeboard-feed"><div class="community-empty">Loading official notices…</div></div>
+  </section>
+</section>
+
+<section class="page" id="page-helpdesk">
+  <div class="heading">
+    <div><h1>CampusShield Helpdesk</h1><p>Track everyday campus service issues from submission to resolution.</p></div>
+    <div class="heading-actions"><button class="btn secondary" type="button" id="refresh-campus-helpdesk">Refresh requests</button></div>
+  </div>
+  <div class="notice-inline"><strong>Not an emergency channel.</strong> For immediate danger or sensitive safety concerns, use your university's official emergency process and CampusShield's private incident reporting. Helpdesk response times depend on your institution; the prototype does not promise an SLA.</div>
+  <div class="community-layout">
+    <section class="panel" aria-labelledby="campus-helpdesk-submit-title">
+      <div class="panel-heading"><div><h2 id="campus-helpdesk-submit-title">Report a campus service problem</h2><p>Each request gets a reference number and an update history.</p></div></div>
+      <form id="campusHelpdeskForm">
+        <div class="field"><label for="campus-helpdesk-category">Service area *</label><select id="campus-helpdesk-category" required><option value="facilities">Facilities / repairs</option><option value="hostel">Hostel / accommodation facilities</option><option value="wifi_it">Wi-Fi / ICT services</option><option value="classroom_equipment">Classroom equipment</option><option value="academic_service">Academic service support</option><option value="administration">Administrative service</option><option value="accessibility">Accessibility / walkway</option><option value="other">Other campus service</option></select></div>
+        <div class="field"><label for="campus-helpdesk-title">Short title *</label><input id="campus-helpdesk-title" required minlength="4" maxlength="120" placeholder="e.g. Wi-Fi unavailable in the library"></div>
+        <div class="field"><label for="campus-helpdesk-location">General location (optional)</label><input id="campus-helpdesk-location" maxlength="180" placeholder="e.g. Main library study area; no room or personal details"></div>
+        <div class="field"><label for="campus-helpdesk-priority">Priority *</label><select id="campus-helpdesk-priority"><option value="normal">Normal</option><option value="low">Low</option><option value="high">High</option></select><small>Choose a reasonable service priority; it is not an emergency dispatch signal.</small></div>
+        <div class="field"><label for="campus-helpdesk-description">Describe the problem *</label><textarea id="campus-helpdesk-description" required minlength="10" maxlength="3000" placeholder="What is affected? When did it begin? What action would help? Avoid sensitive personal information."></textarea></div>
+        <button class="btn" type="submit" id="campus-helpdesk-submit">Submit request</button>
+        <p id="campus-helpdesk-submit-message" class="message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="campus-helpdesk-mine-title">
+      <div class="panel-heading"><div><h2 id="campus-helpdesk-mine-title">My requests</h2><p>Follow the reference number, assigned unit and progress notes.</p></div></div>
+      <p id="campus-helpdesk-my-status" class="message" role="status" aria-live="polite">Loading your requests…</p>
+      <div id="campus-helpdesk-my-tickets"><div class="community-empty">Loading your requests…</div></div>
+    </section>
+  </div>
+  <section class="panel" id="campus-helpdesk-staff-panel" hidden aria-labelledby="campus-helpdesk-staff-title">
+    <div class="panel-heading"><div><h2 id="campus-helpdesk-staff-title">Campus service queue</h2><p>Verified staff can assign a responsible unit, update status and leave a note visible to the requester.</p></div></div>
+    <p id="campus-helpdesk-staff-status" class="message" role="status" aria-live="polite">Loading campus queue…</p>
+    <div id="campus-helpdesk-staff-queue"><div class="community-empty">Loading the campus queue…</div></div>
+  </section>
+</section>
+
 <section class="page" id="page-community">
-<div class="heading"><h1>Campus community</h1><p>Share public-safe campus issues and suggestions, discuss approved posts, and see verified staff announcements.</p></div>
-<div class="notice-inline"><strong>Protect your privacy.</strong> Community posts are separate from private incident reports and require review before other students can see them. Do not post real names, email addresses, room numbers, medical details, harassment allegations, threats, evidence, or other identifying information. Use <button type="button" class="btn secondary" data-page="report">private incident reporting</button> for sensitive concerns.</div>
-<div class="community-layout">
+<div class="heading"><h1>CampusPulse</h1><p>Your university-only social space for updates, questions, polls, lost-and-found posts and safety suggestions.</p></div>
+<div class="notice-inline"><strong>One university, one private community.</strong> Your posts, comments, follows, groups, events and marketplace activity are limited to the university you selected. There is no cross-university student interaction. Student posts are reviewed before publication. Do not post real names, email addresses, room numbers, medical details, harassment allegations, threats, evidence, or other identifying information. Use <button type="button" class="btn secondary" data-page="report">private incident reporting</button> for sensitive concerns.</div>
+<section class="panel" id="campus-onboarding" aria-labelledby="campus-onboarding-title" hidden>
+  <div class="panel-heading"><div><h2 id="campus-onboarding-title">Choose your university</h2><p>This sets your private campus space.</p></div></div>
+  <p class="muted">Posts, comments, student groups, events, marketplace listings and safety reports are restricted to one university. You cannot follow, message, comment on, or join groups with users from another university. Your selection is locked; contact support to request a transfer.</p>
+  <form id="campusOnboardingForm">
+    <div class="field"><label for="campus-university">University *</label><select id="campus-university" required><option value="">Loading university directory…</option></select></div>
+    <div class="field"><label for="campus-faculty">Current faculty / school *</label><input id="campus-faculty" minlength="2" maxlength="120" placeholder="e.g. Faculty of Engineering" required></div>
+    <div class="field"><label for="campus-department">Current department *</label><input id="campus-department" minlength="2" maxlength="120" placeholder="e.g. Computer Science" required></div>
+    <div class="field"><label for="campus-course">Current course / programme *</label><input id="campus-course" minlength="2" maxlength="120" placeholder="e.g. BSc Computer Science" required></div>
+    <div class="field"><label for="campus-year">Current level *</label><select id="campus-year" required><option value="" selected disabled>Select your current level</option><option>100 Level</option><option>200 Level</option><option>300 Level</option><option>400 Level</option><option>500 Level</option><option>600 Level</option><option>Postgraduate</option></select></div>
+    <button class="btn" type="submit" id="campus-onboarding-submit">Join my university space</button>
+    <p id="campus-onboarding-message" class="message" role="status" aria-live="polite"></p>
+  </form>
+  <details style="margin-top:16px"><summary>My university is not listed</summary>
+    <p class="muted">Submit a request for review. Do not choose a different university as a workaround.</p>
+    <form id="campusUniversityRequestForm">
+      <div class="field"><label for="request-university-name">Official university name *</label><input id="request-university-name" required maxlength="180"></div>
+      <div class="field"><label for="request-university-state">State or FCT *</label><input id="request-university-state" required maxlength="80" placeholder="e.g. Lagos"></div>
+      <div class="field"><label for="request-university-ownership">Ownership *</label><select id="request-university-ownership" required><option value="">Select ownership</option><option>Federal</option><option>State</option><option>Private</option></select></div>
+      <div class="field"><label for="request-university-website">Official website (optional)</label><input id="request-university-website" type="url" maxlength="250" placeholder="https://..."></div>
+      <button class="btn secondary" type="submit" id="request-university-submit">Request university listing</button>
+      <p id="campus-university-request-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </details>
+</section>
+<div class="notice-inline" id="campus-context-banner" hidden><strong>Your university space:</strong> <span id="campus-context-name"></span>. Student interaction is limited to members of this university. <span id="campus-context-status"></span></div>
+<div class="community-layout" id="community-main-layout">
   <section class="panel" aria-labelledby="community-profile-title">
     <div class="panel-heading"><div><h2 id="community-profile-title">Your public profile</h2><p>Students see your username only.</p></div></div>
     <p class="community-meta">Your current handle <strong id="community-username-current" class="community-handle">@loading</strong></p>
@@ -532,10 +664,28 @@ td strong{color:#2a464d;font-size:11px}
   <section class="panel" aria-labelledby="community-post-title">
     <div class="panel-heading"><div><h2 id="community-post-title">Share with campus</h2><p>Student posts are reviewed before publication.</p></div></div>
     <form id="communityPostForm">
-      <div class="field"><label for="community-post-type">Post type</label><select id="community-post-type"><option value="safety_issue">Campus safety issue</option><option value="suggestion">Safety improvement suggestion</option><option id="community-announcement-option" value="announcement" disabled>Official staff announcement</option></select></div>
+      <div class="field"><label for="community-post-type">Post type</label><select id="community-post-type">
+  <option value="campus_update">Campus update</option>
+  <option value="question">Question for students</option>
+  <option value="poll">Poll</option>
+  <option value="lost_found">Lost and found</option>
+  <option value="safety_issue">Campus safety issue</option>
+  <option value="suggestion">Safety improvement suggestion</option>
+  <option id="community-announcement-option" value="announcement" disabled>Official staff announcement</option>
+</select></div>
       <div class="field"><label for="community-post-title-input">Title *</label><input id="community-post-title-input" required minlength="3" maxlength="100" placeholder="e.g. Broken light near the library"></div>
       <div class="field"><label for="community-post-location">General location <span class="muted">(optional)</span></label><input id="community-post-location" maxlength="120" placeholder="e.g. Main library entrance; no room numbers"></div>
-      <div class="field"><label for="community-post-body">Description *</label><textarea id="community-post-body" required minlength="10" maxlength="2000" placeholder="Describe the issue or suggestion without naming or identifying anyone."></textarea></div>
+      <div class="field"><label for="community-post-body">Description *</label><textarea id="community-post-body" required minlength="10" maxlength="2000" placeholder="Share helpful context without identifying another person."></textarea></div>
+      <div class="field"><label for="community-post-media">Attach photos or video (optional)</label><input id="community-post-media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" multiple><p class="muted">Up to four JPG, PNG, WEBP, GIF, MP4 or WEBM files; 50 MB per file. Attach only public-safe content, never private incident evidence or identifying documents.</p></div>
+      <div class="field"><label for="community-post-media-alt">Accessibility description (optional)</label><input id="community-post-media-alt" maxlength="250" placeholder="Briefly describe the image for someone using a screen reader"></div>
+      <div class="panel" id="community-poll-options" hidden>
+        <h3>Poll answers</h3>
+        <p class="muted">Add two to four unique answers. Polls stay pending until a campus moderator publishes them.</p>
+        <div class="field"><label for="community-poll-option-1">Answer 1 *</label><input id="community-poll-option-1" maxlength="160"></div>
+        <div class="field"><label for="community-poll-option-2">Answer 2 *</label><input id="community-poll-option-2" maxlength="160"></div>
+        <div class="field"><label for="community-poll-option-3">Answer 3 (optional)</label><input id="community-poll-option-3" maxlength="160"></div>
+        <div class="field"><label for="community-poll-option-4">Answer 4 (optional)</label><input id="community-poll-option-4" maxlength="160"></div>
+      </div>
       <div class="actions"><button class="btn" type="submit" id="community-post-submit">Submit for review</button></div>
       <p id="community-post-message" class="message" role="status" aria-live="polite">Official announcements are reserved for verified staff.</p>
     </form>
@@ -549,11 +699,91 @@ td strong{color:#2a464d;font-size:11px}
   <div id="community-reports-queue"><p class="muted">Loading reports…</p></div>
   <p id="community-moderation-message" class="message" role="status" aria-live="polite"></p>
 </section>
-<section class="panel" aria-labelledby="community-feed-title">
+<section class="panel" id="community-feed-panel" aria-labelledby="community-feed-title">
   <div class="community-section-title"><div><h2 id="community-feed-title">Latest campus updates</h2><p class="muted">Only published posts appear here. Usernames are public; real names and emails are not.</p></div><button type="button" class="btn secondary" id="refresh-community">Refresh feed</button></div>
   <p id="community-feed-status" class="message" role="status" aria-live="polite">Loading campus community…</p>
   <div id="community-feed"><div class="community-empty">Loading campus updates…</div></div>
 </section>
+</section>
+
+<section class="page" id="page-groups">
+  <div class="heading"><h1>Campus groups</h1><p>Find study circles, departments, societies and interest groups inside your university only.</p></div>
+  <div class="notice-inline"><strong>Campus-only groups.</strong> A group can only contain members of your selected university. New groups are checked by campus staff before becoming visible.</div>
+  <div class="community-layout">
+    <section class="panel" aria-labelledby="campus-groups-create-title">
+      <div class="panel-heading"><div><h2 id="campus-groups-create-title">Create a group</h2><p>Build a space for study, courses or shared interests.</p></div></div>
+      <form id="campusGroupForm">
+        <div class="field"><label for="campus-group-name">Group name *</label><input id="campus-group-name" required minlength="3" maxlength="100" placeholder="e.g. Computer Science 300 Level"></div>
+        <div class="field"><label for="campus-group-type">Group type *</label><select id="campus-group-type" required><option value="course">Course / level</option><option value="department">Department</option><option value="faculty">Faculty / school</option><option value="society">Student society</option><option value="study_group">Study group</option><option value="interest">Shared interest</option></select></div>
+        <div class="field"><label for="campus-group-privacy">Visibility *</label><select id="campus-group-privacy"><option value="campus">Visible to members of my university</option></select><p class="muted">Groups stay inside your selected university. Restricted join requests will be added after the initial pilot.</p></div>
+        <div class="field"><label for="campus-group-description">Description *</label><textarea id="campus-group-description" required minlength="10" maxlength="1000" placeholder="What is this group for?"></textarea></div>
+        <button class="btn" id="campus-group-submit" type="submit">Submit group for review</button>
+        <p id="campus-group-message" class="message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="campus-groups-list-title">
+      <div class="panel-heading"><div><h2 id="campus-groups-list-title">Discover campus groups</h2><p class="muted">Approved groups at your university.</p></div><button class="btn secondary" type="button" id="refresh-campus-groups">Refresh</button></div>
+      <p id="campus-groups-status" class="message" role="status" aria-live="polite">Loading groups…</p>
+      <div id="campus-groups-feed"><div class="community-empty">Loading groups…</div></div>
+    </section>
+  </div>
+  <section class="panel" id="campus-content-moderation" hidden aria-labelledby="campus-content-moderation-title">
+    <div class="panel-heading"><div><h2 id="campus-content-moderation-title">Campus content moderation</h2><p>Review groups, events and marketplace listings for your university.</p></div><button type="button" class="btn secondary" id="refresh-campus-content-moderation">Refresh queue</button></div>
+    <h3>Groups awaiting review</h3><div id="moderation-groups-feed"><div class="community-empty">Loading queue…</div></div>
+    <h3>Events awaiting review</h3><div id="moderation-events-feed"><div class="community-empty">Loading queue…</div></div>
+    <h3>Marketplace listings awaiting review</h3><div id="moderation-listings-feed"><div class="community-empty">Loading queue…</div></div>
+    <h3>Marketplace safety reports</h3><div id="moderation-listing-reports-feed"><div class="community-empty">Loading queue…</div></div>
+    <p id="campus-content-moderation-message" class="message" role="status" aria-live="polite"></p>
+  </section>
+</section>
+
+<section class="page" id="page-events">
+  <div class="heading"><h1>Campus events</h1><p>Find campus activities, seminars, sports, society meetings and career events at your university.</p></div>
+  <div class="notice-inline"><strong>University-only events.</strong> New student-submitted events need campus staff approval. Check event details independently before attending.</div>
+  <div class="community-layout">
+    <section class="panel" aria-labelledby="campus-events-create-title">
+      <div class="panel-heading"><div><h2 id="campus-events-create-title">Submit an event</h2><p>Events are reviewed before appearing publicly.</p></div></div>
+      <form id="campusEventForm">
+        <div class="field"><label for="campus-event-title">Event title *</label><input id="campus-event-title" required minlength="3" maxlength="120" placeholder="e.g. Faculty tech seminar"></div>
+        <div class="field"><label for="campus-event-category">Category *</label><select id="campus-event-category" required><option value="academic">Academic / seminar</option><option value="sports">Sports</option><option value="society">Student society</option><option value="career">Career / hackathon</option><option value="faith">Faith / fellowship</option><option value="social">Social</option><option value="safety">Campus safety</option><option value="other">Other</option></select></div>
+        <div class="field"><label for="campus-event-start">Start date and time *</label><input id="campus-event-start" required type="datetime-local"></div>
+        <div class="field"><label for="campus-event-end">End date and time (optional)</label><input id="campus-event-end" type="datetime-local"></div>
+        <div class="field"><label for="campus-event-location">General location *</label><input id="campus-event-location" required maxlength="180" placeholder="e.g. Main auditorium"></div>
+        <div class="field"><label for="campus-event-description">Description *</label><textarea id="campus-event-description" required minlength="10" maxlength="2000" placeholder="Provide organizer and registration details. Avoid posting private student information."></textarea></div>
+        <button class="btn" id="campus-event-submit" type="submit">Submit event for review</button>
+        <p id="campus-event-message" class="message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="campus-events-list-title">
+      <div class="panel-heading"><div><h2 id="campus-events-list-title">Upcoming campus events</h2><p class="muted">Only approved events from your university.</p></div><button class="btn secondary" type="button" id="refresh-campus-events">Refresh</button></div>
+      <p id="campus-events-status" class="message" role="status" aria-live="polite">Loading events…</p>
+      <div id="campus-events-feed"><div class="community-empty">Loading events…</div></div>
+    </section>
+  </div>
+</section>
+
+<section class="page" id="page-marketplace">
+  <div class="heading"><h1>Campus marketplace</h1><p>Discover textbooks, electronics, accommodation and student services within your university.</p></div>
+  <div class="notice-inline"><strong>Stay safe.</strong> Listings are campus-only and reviewed before appearing. CampusShield does not take payments or provide escrow. Meet safely, verify the item, do not share passwords or verification codes, and report suspicious listings. Never send money based only on a listing.</div>
+  <div class="community-layout">
+    <section class="panel" aria-labelledby="campus-marketplace-create-title">
+      <div class="panel-heading"><div><h2 id="campus-marketplace-create-title">List an item or service</h2><p>Use a safe contact method; don't publish home addresses or personal identification.</p></div></div>
+      <form id="campusMarketplaceForm">
+        <div class="field"><label for="campus-listing-category">Category *</label><select id="campus-listing-category" required><option value="books">Textbooks / study materials</option><option value="electronics">Electronics</option><option value="accommodation">Accommodation</option><option value="services">Student services</option><option value="clothing">Clothing</option><option value="furniture">Furniture</option><option value="other">Other</option></select></div>
+        <div class="field"><label for="campus-listing-title">Title *</label><input id="campus-listing-title" required minlength="3" maxlength="120" placeholder="e.g. Used Calculus textbook"></div>
+        <div class="field"><label for="campus-listing-price">Price in naira (optional)</label><input id="campus-listing-price" type="number" min="0" step="0.01" placeholder="e.g. 8500"></div>
+        <div class="field"><label for="campus-listing-description">Description *</label><textarea id="campus-listing-description" required minlength="10" maxlength="1800" placeholder="Condition, availability, important details"></textarea></div>
+        <div class="field"><label for="campus-listing-contact">Contact instructions (optional)</label><input id="campus-listing-contact" maxlength="250" placeholder="e.g. Contact me through the campus community"></div>
+        <button class="btn" id="campus-listing-submit" type="submit">Submit listing for review</button>
+        <p id="campus-listing-message" class="message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="campus-marketplace-list-title">
+      <div class="panel-heading"><div><h2 id="campus-marketplace-list-title">Campus listings</h2><p class="muted">Listings from your university only.</p></div><button class="btn secondary" type="button" id="refresh-campus-marketplace">Refresh</button></div>
+      <p id="campus-marketplace-status" class="message" role="status" aria-live="polite">Loading listings…</p>
+      <div id="campus-marketplace-feed"><div class="community-empty">Loading listings…</div></div>
+    </section>
+  </div>
 </section>
 
 <section class="page" id="page-manage">
@@ -587,12 +817,53 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 <section class="page" id="page-approvals">
-<div class="heading"><h1>Account approvals</h1><p>Review pending student and teacher account requests. Only verified administrators can use this area.</p></div>
+<div class="heading"><h1>Account approvals</h1><p>Review pending student and teacher requests, and view rejected applications. Only verified administrators can use this area.</p></div>
 <div class="panel">
-<div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending applications</strong><button class="btn secondary" type="button" id="refresh-approvals">Refresh list</button></div>
+<div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending and rejected applications in your university</strong><button class="btn secondary" type="button" id="refresh-approvals">Refresh list</button></div>
 <p id="approvals-message" class="message" role="status">Checking administrator access…</p>
-<div class="table-wrap"><table><caption class="sr-only">Pending student and teacher account requests</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Submitted</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+<div class="table-wrap"><table><caption class="sr-only">Pending and rejected student and teacher applications in this university</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Status</th><th scope="col">Submitted</th><th scope="col">Student identity</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="7">Loading…</td></tr></tbody></table></div>
 </div>
+<div class="panel" id="campus-membership-review-panel" hidden style="margin-top:16px">
+  <div class="actions" style="justify-content:space-between;align-items:center"><strong>Campus staff membership checks</strong><button class="btn secondary" type="button" id="refresh-campus-membership-reviews">Refresh checks</button></div>
+  <p class="muted">Approve staff only when you have verified they belong to this university. This check is separate from the account approval above.</p>
+  <p id="campus-membership-reviews-message" class="message" role="status" aria-live="polite">Loading campus membership checks…</p>
+  <div class="table-wrap"><table><caption class="sr-only">Campus-specific staff membership requests</caption><thead><tr><th scope="col">Username</th><th scope="col">Requested role</th><th scope="col">Account status</th><th scope="col">Faculty / department</th><th scope="col">Decision</th></tr></thead><tbody id="campus-membership-reviews-table"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+</div>
+</section>
+
+<section class="page" id="page-identity-verification">
+  <div class="heading"><h1>Student identity verification</h1><p>Submit a school ID document for review by an authorized administrator at your university. Use fictional details and files in this prototype.</p></div>
+  <div class="panel">
+    <p id="identity-verification-status" class="message" role="status" aria-live="polite">Loading your submission status…</p>
+    <form id="studentIdentityForm">
+      <div class="field"><label for="identity-institution">Institution</label><input id="identity-institution" readonly aria-readonly="true"></div>
+      <div class="field"><label for="identity-student-number">Student / matric number *</label><input id="identity-student-number" required maxlength="80" autocomplete="off"></div>
+      <div class="field"><label for="identity-document">Student ID image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>JPEG, PNG, or PDF; maximum 5 MB. Use synthetic data only.</small></div>
+      <button class="btn" type="submit" id="identity-submit">Submit for review</button>
+    </form>
+  </div>
+</section>
+
+
+<section class="page" id="page-platform-admin">
+  <div class="heading"><div><h1>Platform administration</h1><p>Manage requested university listings and assign university-level administrators. Access is verified by Supabase, not by this interface alone.</p></div></div>
+  <div class="notice-inline"><strong>Trusted access only.</strong> University requests and campus administrator assignments are global platform actions. Only user IDs explicitly provisioned in the private platform-admin registry can use these controls.</div>
+  <section class="panel" id="platform-admin-access-panel">
+    <p id="platform-admin-access-message" class="message" role="status" aria-live="polite">Checking platform administrator access…</p>
+  </section>
+  <div id="platform-admin-tools" hidden>
+    <section class="panel">
+      <div class="panel-heading"><div><h2>University listing requests</h2><p>Approve only after verifying the official institution name and website.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-requests">Refresh requests</button></div>
+      <p id="platform-admin-requests-message" class="message" role="status" aria-live="polite">Loading requests…</p>
+      <div class="table-wrap"><table><caption class="sr-only">Pending requests to add a university to the CampusShield directory</caption><thead><tr><th scope="col">University</th><th scope="col">State / FCT</th><th scope="col">Ownership</th><th scope="col">Official website</th><th scope="col">Requested</th><th scope="col">Decision</th></tr></thead><tbody id="platform-admin-requests-table"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
+    </section>
+    <section class="panel">
+      <div class="panel-heading"><div><h2>Assign campus administrator</h2><p>Select an institution to see eligible, already-verified staff whose membership belongs to that university.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-candidates">Refresh staff</button></div>
+      <div class="field"><label for="platform-admin-university-select">University *</label><select id="platform-admin-university-select"><option value="">Loading university directory…</option></select></div>
+      <p id="platform-admin-candidates-message" class="message" role="status" aria-live="polite">Choose a university to load verified staff.</p>
+      <div class="table-wrap"><table><caption class="sr-only">Eligible verified staff who can be assigned as campus administrators</caption><thead><tr><th scope="col">Username</th><th scope="col">Account role</th><th scope="col">Account status</th><th scope="col">Campus status</th><th scope="col">Faculty / department</th><th scope="col">Action</th></tr></thead><tbody id="platform-admin-candidates-table"><tr><td colspan="6">Choose a university above.</td></tr></tbody></table></div>
+    </section>
+  </div>
 </section>
 
 
@@ -605,6 +876,7 @@ td strong{color:#2a464d;font-size:11px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script src="./campusshield-backend.js"></script>
+<script src="./campusshield-backend-identity-addon.js"></script>
 <script>
 
 (() => {
@@ -736,11 +1008,30 @@ td strong{color:#2a464d;font-size:11px}
 
   let currentProfile = null;
   let communityProfile = null;
+  let campusContext = null;
+  let campusUniversitiesCache = null;
   let communityLoading = false;
 
-  function canManageIncidents() {
+  function hasVerifiedCampusStaffMembership() {
     return currentProfile?.verification_status === 'verified' &&
+      campusContext?.membership_status === 'active' &&
+      campusContext?.verification_status === 'verified';
+  }
+
+  function canManageIncidents() {
+    return hasVerifiedCampusStaffMembership() &&
       ['security', 'admin'].includes(currentProfile.role);
+  }
+
+  function syncCampusAccessNavigation() {
+    const verified = currentProfile?.verification_status === 'verified';
+    const staffCampusApproved = hasVerifiedCampusStaffMembership();
+    $('approvals-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
+    $('identity-verification-nav').hidden = !isStudentAccount();
+  }
+
+  function isStudentAccount() {
+    return ['student'].includes(currentProfile?.requested_role || currentProfile?.role);
   }
 
   function showWorkspace(profile) {
@@ -765,9 +1056,11 @@ td strong{color:#2a464d;font-size:11px}
       el.hidden = !verified;
     });
     $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
+    $('identity-verification-nav').hidden = !isStudentAccount();
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
     $('community-announcement-option').disabled = !canPublishOfficial;
     navigate('dashboard');
+    refreshPlatformAdminAccess();
     return true;
   }
 
@@ -941,6 +1234,9 @@ td strong{color:#2a464d;font-size:11px}
         authSessionVersion += 1;
         currentProfile = null;
         communityProfile = null;
+        campusContext = null;
+        $('platform-admin-nav').hidden = true;
+        $('platform-admin-tools').hidden = true;
         $('community-username-current').textContent = 'Not signed in';
         $('community-feed').innerHTML = '<div class="community-empty">Sign in to view campus updates.</div>';
         incidents = [];
@@ -958,7 +1254,6 @@ td strong{color:#2a464d;font-size:11px}
       showLogin('Please sign in to access CampusShield.');
       return;
     }
-
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
 
@@ -970,6 +1265,10 @@ td strong{color:#2a464d;font-size:11px}
     if (page === 'approvals' && !verifiedAdmin) {
       page = 'dashboard';
       toast('Only verified administrators can access account approvals.');
+    }
+    if (page === 'identity-verification' && !isStudentAccount()) {
+      page = 'dashboard';
+      toast('Student identity verification is available to student accounts.');
     }
 
     document.querySelectorAll('.page').forEach(el =>
@@ -990,12 +1289,20 @@ td strong{color:#2a464d;font-size:11px}
       risk:'Risk analysis',
       analytics:'Analytics & reports',
       approvals:'Account approvals',
-      community:'Campus community'
+      'identity-verification':'Student identity',
+      'platform-admin':'Platform administration',
+      noticeboard:'Verified noticeboard',
+      helpdesk:'Campus Helpdesk',
+      community:'CampusPulse',
+      groups:'Campus groups',
+      events:'Campus events',
+      marketplace:'Campus marketplace'
     };
 
     $('sectionTitle').textContent = names[page] || 'Overview';
 
     if (page === 'analytics') renderAnalytics();
+    if (page === 'identity-verification') loadStudentIdentityStatus();
   }
 
   document.addEventListener('click', e => {
@@ -1003,7 +1310,203 @@ td strong{color:#2a464d;font-size:11px}
     if (!button) return;
     navigate(button.dataset.page);
     if (button.dataset.page === 'approvals') loadAccountApprovals();
+    if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
+    if (button.dataset.page === 'noticeboard') loadCampusNoticeboardPage();
+    if (button.dataset.page === 'helpdesk') loadCampusHelpdeskPage();
     if (button.dataset.page === 'community') loadCommunityPage();
+    if (button.dataset.page === 'groups') loadCampusGroupsPage();
+    if (button.dataset.page === 'events') loadCampusEventsPage();
+    if (button.dataset.page === 'marketplace') loadCampusMarketplacePage();
+    if (button.dataset.page === 'platform-admin') loadPlatformAdminPage();
+  });
+
+  function safeHttpUrl(value) {
+    try {
+      const url = new URL(String(value || ''));
+      return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+    } catch {
+      return '';
+    }
+  }
+
+  async function refreshPlatformAdminAccess() {
+    const nav = $('platform-admin-nav');
+    const backend = window.CampusShieldBackend;
+    if (!currentProfile || !backend?.isConfigured) {
+      nav.hidden = true;
+      $('platform-admin-tools').hidden = true;
+      return false;
+    }
+    try {
+      const allowed = await backend.isPlatformAdmin();
+      nav.hidden = !allowed;
+      if (!allowed) {
+        $('platform-admin-tools').hidden = true;
+        if ($('page-platform-admin').classList.contains('active')) navigate('dashboard');
+      }
+      return allowed;
+    } catch (err) {
+      console.warn('Could not verify platform administrator access:', err.message);
+      nav.hidden = true;
+      $('platform-admin-tools').hidden = true;
+      return false;
+    }
+  }
+
+  async function loadPlatformAdminPage() {
+    const accessMessage = $('platform-admin-access-message');
+    const accessPanel = $('platform-admin-access-panel');
+    const toolsPanel = $('platform-admin-tools');
+    const backend = window.CampusShieldBackend;
+    accessPanel.hidden = false;
+    toolsPanel.hidden = true;
+    accessMessage.textContent = 'Verifying trusted platform administrator access…';
+    try {
+      if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+        $('platform-admin-nav').hidden = true;
+        accessMessage.textContent = 'Access denied. This console is available only to user IDs provisioned by the database owner as trusted platform administrators.';
+        return;
+      }
+      $('platform-admin-nav').hidden = false;
+      accessPanel.hidden = true;
+      toolsPanel.hidden = false;
+      await populatePlatformAdminUniversities();
+      await Promise.all([loadPlatformUniversityRequests(), loadPlatformAdminCandidates()]);
+    } catch (err) {
+      accessPanel.hidden = false;
+      toolsPanel.hidden = true;
+      accessMessage.textContent = err.message || 'Could not load the platform administration console.';
+    }
+  }
+
+  async function populatePlatformAdminUniversities() {
+    const select = $('platform-admin-university-select');
+    const backend = window.CampusShieldBackend;
+    if (!campusUniversitiesCache) campusUniversitiesCache = await backend.listCampusUniversities();
+    const oldValue = select.value;
+    select.innerHTML = '<option value="">Choose a university</option>' +
+      campusUniversitiesCache.map(function(university) {
+        return '<option value="' + esc(university.id) + '">' + esc(university.name) + ' · ' + esc(university.state) + '</option>';
+      }).join('');
+    if (oldValue && campusUniversitiesCache.some(item => item.id === oldValue)) select.value = oldValue;
+  }
+
+  async function loadPlatformUniversityRequests() {
+    const tbody = $('platform-admin-requests-table');
+    const message = $('platform-admin-requests-message');
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    message.textContent = 'Loading pending university requests…';
+    try {
+      const rows = await window.CampusShieldBackend.listPlatformUniversityRequests();
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6">No university listing requests are waiting for review.</td></tr>';
+        message.textContent = 'No pending university requests.';
+        return;
+      }
+      tbody.innerHTML = rows.map(function(row) {
+        const officialUrl = safeHttpUrl(row.official_website);
+        const website = officialUrl
+          ? '<a href="' + esc(officialUrl) + '" target="_blank" rel="noopener noreferrer">Open official site</a>'
+          : '<span class="muted">Not provided</span>';
+        return '<tr>' +
+          '<td><strong>' + esc(row.university_name) + '</strong><br><code>' + esc(row.id) + '</code></td>' +
+          '<td>' + esc(row.state) + '</td>' +
+          '<td>' + esc(row.ownership) + '</td>' +
+          '<td>' + website + '</td>' +
+          '<td>' + esc(dateText(row.created_at)) + '</td>' +
+          '<td><div class="actions">' +
+            '<button type="button" class="btn" data-platform-university-review="approve" data-request-id="' + esc(row.id) + '">Approve</button>' +
+            '<button type="button" class="btn danger" data-platform-university-review="reject" data-request-id="' + esc(row.id) + '">Reject</button>' +
+          '</div></td></tr>';
+      }).join('');
+      message.textContent = rows.length + ' pending university request(s). Verify details before approving.';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6">University requests could not be loaded.</td></tr>';
+      message.textContent = err.message || 'Could not load university requests.';
+    }
+  }
+
+  async function loadPlatformAdminCandidates() {
+    const tbody = $('platform-admin-candidates-table');
+    const message = $('platform-admin-candidates-message');
+    const universityId = $('platform-admin-university-select').value;
+    if (!universityId) {
+      tbody.innerHTML = '<tr><td colspan="6">Choose a university above.</td></tr>';
+      message.textContent = 'Select a university to load eligible staff.';
+      return;
+    }
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    message.textContent = 'Loading eligible verified staff…';
+    try {
+      const rows = await window.CampusShieldBackend.listPlatformCampusStaffCandidates(universityId);
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6">No eligible staff were found for this university.</td></tr>';
+        message.textContent = 'Only already-verified staff whose membership belongs to this university can be assigned.';
+        return;
+      }
+      tbody.innerHTML = rows.map(function(row) {
+        const profile = [row.faculty, row.department].filter(Boolean).map(esc).join(' · ') || 'Not provided';
+        return '<tr>' +
+          '<td><strong>@' + esc(row.username || 'username unavailable') + '</strong><br><code>' + esc(row.user_id) + '</code></td>' +
+          '<td>' + esc(row.account_role || 'Not specified') + '</td>' +
+          '<td>' + esc(row.account_status || 'unknown') + '</td>' +
+          '<td>' + esc(row.campus_status || 'unknown') + '</td>' +
+          '<td>' + profile + '</td>' +
+          '<td><button type="button" class="btn" data-platform-assign-admin="' + esc(row.user_id) + '">Assign campus admin</button></td>' +
+          '</tr>';
+      }).join('');
+      message.textContent = rows.length + ' eligible staff account(s). Confirm university membership before assignment.';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6">Eligible staff could not be loaded.</td></tr>';
+      message.textContent = err.message || 'Could not load eligible staff.';
+    }
+  }
+
+  $('platform-admin-refresh-requests').addEventListener('click', loadPlatformUniversityRequests);
+  $('platform-admin-refresh-candidates').addEventListener('click', loadPlatformAdminCandidates);
+  $('platform-admin-university-select').addEventListener('change', loadPlatformAdminCandidates);
+
+  $('platform-admin-requests-table').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-platform-university-review]');
+    if (!button) return;
+    const decision = button.dataset.platformUniversityReview;
+    const requestId = button.dataset.requestId;
+    if (!confirm(decision === 'approve'
+      ? 'Approve this university and add it to the available campus directory? Verify the official institution details first.'
+      : 'Reject this university listing request?')) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.reviewPlatformUniversityRequest(requestId, decision);
+      if (decision === 'approve') {
+        campusUniversitiesCache = null;
+        await populatePlatformAdminUniversities();
+      }
+      toast(decision === 'approve' ? 'University added to the directory.' : 'University request rejected.');
+      await loadPlatformUniversityRequests();
+      await loadPlatformAdminCandidates();
+    } catch (err) {
+      button.disabled = false;
+      toast(err.message || 'Could not review the university request.');
+      $('platform-admin-requests-message').textContent = err.message || 'Could not review the university request.';
+    }
+  });
+
+  $('platform-admin-candidates-table').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-platform-assign-admin]');
+    if (!button) return;
+    const userId = button.dataset.platformAssignAdmin;
+    const universityId = $('platform-admin-university-select').value;
+    if (!confirm('Assign this already-verified staff member as an administrator for the selected university?')) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.assignCampusAdmin(userId, universityId);
+      toast('Campus administrator assigned.');
+      await loadPlatformAdminCandidates();
+    } catch (err) {
+      button.disabled = false;
+      toast(err.message || 'Could not assign campus administrator.');
+      $('platform-admin-candidates-message').textContent = err.message || 'Could not assign campus administrator.';
+    }
   });
 
   function render() {
@@ -1194,13 +1697,13 @@ td strong{color:#2a464d;font-size:11px}
 
     if (!backend?.isConfigured) {
       message.textContent = 'Supabase is not configured.';
-      tbody.innerHTML = '<tr><td colspan="5">Cannot load applications.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7">Cannot load applications.</td></tr>';
       nav.hidden = true;
       return;
     }
 
     message.textContent = 'Checking administrator access…';
-    tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
 
     try {
       const user = await backend.getCurrentUser();
@@ -1227,40 +1730,122 @@ td strong{color:#2a464d;font-size:11px}
       const {data:rows, error} = await backend.client
         .from('profiles')
         .select('id, display_name, role, requested_role, verification_status, created_at')
-        .eq('verification_status', 'pending')
-        .in('requested_role', ['student', 'teacher'])
+        .in('verification_status', ['pending', 'rejected'])
+        .or('requested_role.in.(student,teacher),role.in.(student,teacher)')
+        .order('verification_status', {ascending:true})
         .order('created_at', {ascending:true});
 
       if (error) throw error;
 
+      const studentIds = rows.filter(row => (row.requested_role || row.role) === 'student').map(row => row.id);
+      let identityByUser = new Map();
+      if (studentIds.length) {
+        const {data:identityRows, error:identityError} = await backend.client
+          .from('student_identity_verifications')
+          .select('user_id, student_number, university_id, status, object_path')
+          .in('user_id', studentIds);
+        if (identityError) throw identityError;
+        identityByUser = new Map((identityRows || []).map(identity => [identity.user_id, identity]));
+      }
+
       if (!rows?.length) {
-        tbody.innerHTML = '<tr><td colspan="5">There are no pending student or teacher applications.</td></tr>';
-        message.textContent = 'Administrator access confirmed.';
+        tbody.innerHTML = '<tr><td colspan="7">There are no pending or rejected student or teacher applications in this university.</td></tr>';
+        message.textContent = 'University administrator access confirmed. No pending or rejected applications.';
+        await loadCampusStaffMembershipReviews();
         return;
       }
 
-      tbody.innerHTML = rows.map(row => `<tr>
+      tbody.innerHTML = rows.map(row => {
+        const identity = identityByUser.get(row.id);
+        const isStudent = (row.requested_role || row.role) === 'student';
+        const documentCell = identity?.object_path
+          ? `<button class="btn secondary" type="button" data-student-document="${esc(identity.object_path)}">Open ID document</button>`
+          : '<span class="muted">No document</span>';
+        const identityDecision = isStudent && row.verification_status === 'pending'
+          ? `<div class="actions"><button class="btn" type="button" data-identity-review="approve" data-user-id="${esc(row.id)}" ${identity?.status !== 'pending' ? 'disabled' : ''}>Approve ID & account</button><button class="btn danger" type="button" data-identity-review="reject" data-user-id="${esc(row.id)}" ${identity?.status !== 'pending' ? 'disabled' : ''}>Reject ID & account</button></div>`
+          : row.verification_status === 'pending'
+            ? `<div class="actions"><button class="btn" type="button" data-review="approve" data-user-id="${esc(row.id)}">Approve</button><button class="btn danger" type="button" data-review="reject" data-user-id="${esc(row.id)}">Reject</button></div>`
+            : '<span class="muted">Rejected — view only; follow up with the applicant if they request a review.</span>';
+        return `<tr>
         <td><strong>${esc(row.display_name || 'Name not provided')}</strong></td>
         <td><code>${esc(row.id)}</code></td>
-        <td><span class="tag open">${esc(row.requested_role || 'Not specified')}</span></td>
+        <td><span class="tag open">${esc(row.requested_role || row.role || 'Not specified')}</span></td>
+        <td><span class="tag ${row.verification_status === 'rejected' ? 'high' : 'open'}">${esc(row.verification_status === 'rejected' ? 'Rejected' : 'Pending')}</span></td>
         <td>${esc(dateText(row.created_at))}</td>
-        <td>
-          <div class="actions">
-            <button class="btn" data-review="approve" data-user-id="${esc(row.id)}">Approve</button>
-            <button class="btn danger" data-review="reject" data-user-id="${esc(row.id)}">Reject</button>
-          </div>
+        <td>${isStudent ? `<strong>${esc(identity?.student_number || '—')}</strong><br><span class="muted">ID status: ${esc(identity?.status || 'not submitted')}</span><br>${documentCell}` : '—'}</td>
+        <td>${identityDecision}
         </td>
-      </tr>`).join('');
+      </tr>`;
+      }).join('');
 
-      message.textContent = `${rows.length} pending application(s).`;
+      const pendingCount = rows.filter(row => row.verification_status === 'pending').length;
+      const rejectedCount = rows.filter(row => row.verification_status === 'rejected').length;
+      message.textContent = `${pendingCount} pending and ${rejectedCount} rejected application(s) in this university.`;
+      await loadCampusStaffMembershipReviews();
     } catch (err) {
       console.error('Could not load account approvals:', err);
-      tbody.innerHTML = '<tr><td colspan="5">Applications could not be loaded.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7">Applications could not be loaded.</td></tr>';
       message.textContent = err.message || 'Could not load applications.';
     }
   }
 
   $('refresh-approvals').addEventListener('click', loadAccountApprovals);
+
+  async function loadCampusStaffMembershipReviews() {
+    const panel = $('campus-membership-review-panel');
+    const tbody = $('campus-membership-reviews-table');
+    const message = $('campus-membership-reviews-message');
+    panel.hidden = true;
+    tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+    message.textContent = 'Checking university administrator access…';
+    try {
+      const rows = await window.CampusShieldBackend.listCampusStaffMembershipReviews();
+      panel.hidden = false;
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5">No staff membership checks are waiting for review.</td></tr>';
+        message.textContent = 'Campus staff membership queue loaded.';
+        return;
+      }
+      tbody.innerHTML = rows.map(function(row) {
+        const detail = [row.faculty, row.department].filter(Boolean).map(esc).join(' · ') || 'Not provided';
+        return '<tr>' +
+          '<td><strong>@' + esc(row.username || 'username unavailable') + '</strong><br><code>' + esc(row.user_id) + '</code></td>' +
+          '<td>' + esc(row.requested_role || row.account_role || 'Staff') + '</td>' +
+          '<td>' + esc(row.account_status || 'unknown') + '</td>' +
+          '<td>' + detail + '</td>' +
+          '<td><div class="actions">' +
+            '<button class="btn" data-campus-membership-review="approve" data-user-id="' + esc(row.user_id) + '">Verify campus</button>' +
+            '<button class="btn danger" data-campus-membership-review="reject" data-user-id="' + esc(row.user_id) + '">Reject</button>' +
+          '</div></td></tr>';
+      }).join('');
+      message.textContent = rows.length + ' staff campus membership check(s) need review.';
+    } catch (err) {
+      if (currentProfile?.role === 'admin' && currentProfile?.verification_status === 'verified') {
+        panel.hidden = false;
+        tbody.innerHTML = '<tr><td colspan="5">Campus-specific staff review is unavailable.</td></tr>';
+        message.textContent = err.message || 'A verified administrator for this university is required. The initial trusted campus administrator must be initialized first.';
+      }
+    }
+  }
+
+  $('refresh-campus-membership-reviews').addEventListener('click', loadCampusStaffMembershipReviews);
+
+  $('campus-membership-reviews-table').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-campus-membership-review]');
+    if (!button) return;
+    const decision = button.dataset.campusMembershipReview;
+    const userId = button.dataset.userId;
+    if (!confirm((decision === 'approve' ? 'Verify this person as a staff member of your university?' : 'Reject this campus staff membership?'))) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.reviewCampusStaffMembership(userId, decision);
+      toast(decision === 'approve' ? 'Campus staff membership verified.' : 'Campus staff membership rejected.');
+      await loadAccountApprovals();
+    } catch (err) {
+      toast(err.message || 'Could not review campus membership.');
+      button.disabled = false;
+    }
+  });
 
   $('approvals-table').addEventListener('click', async e => {
     const button = e.target.closest('[data-review]');
@@ -1282,7 +1867,7 @@ td strong{color:#2a464d;font-size:11px}
     message.textContent = `Attempting to ${actionLabel} account…`;
 
     try {
-      const {error} = await backend.client.rpc('review_campus_account', {
+    const {error} = await backend.client.rpc('review_campus_account', {
         p_user_id: userId,
         p_decision: decision
       });
@@ -1305,16 +1890,104 @@ td strong{color:#2a464d;font-size:11px}
     }
   });
 
+  async function loadStudentIdentityStatus() {
+    const status = $('identity-verification-status');
+    const form = $('studentIdentityForm');
+    const submit = $('identity-submit');
+    $('identity-institution').value = campusContext?.university_name || 'Select your university first';
+    form.hidden = !campusContext?.university_id;
+    if (!campusContext?.university_id) {
+      status.textContent = 'Choose your university and complete campus onboarding before submitting identity documents.';
+      return;
+    }
+    status.textContent = 'Checking submission status…';
+    try {
+      const submission = await window.CampusShieldBackend.getMyStudentIdentityVerification();
+      if (!submission) {
+        status.textContent = 'No identity document submitted. Your institution is locked to your selected university.';
+        form.hidden = false;
+        submit.disabled = false;
+      } else {
+        status.textContent = `Submission ${submission.status}. Submitted ${dateText(submission.created_at)}. Student number: ${submission.student_number}.`;
+        form.hidden = true;
+      }
+    } catch (err) {
+      status.textContent = err.message || 'Could not load your identity submission status.';
+      form.hidden = true;
+    }
+  }
+
+  $('studentIdentityForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const file = $('identity-document').files?.[0];
+    const number = $('identity-student-number').value.trim();
+    const status = $('identity-verification-status');
+    if (!campusContext?.university_id || number.length < 2 || number.length > 80 || !file) {
+      status.textContent = 'Choose your university and enter a valid student or matric number and document.';
+      return;
+    }
+    $('identity-submit').disabled = true;
+    status.textContent = 'Uploading your document securely…';
+    try {
+      await window.CampusShieldBackend.uploadStudentIdentityDocument(file, number);
+      status.textContent = 'Identity document submitted for administrator review.';
+      $('studentIdentityForm').reset();
+      await loadStudentIdentityStatus();
+    } catch (err) {
+      status.textContent = err.message || 'Submission failed. Please try again.';
+      $('identity-submit').disabled = false;
+    }
+  });
+
+  $('approvals-table').addEventListener('click', async event => {
+    const openButton = event.target.closest('[data-student-document]');
+    if (!openButton) return;
+    openButton.disabled = true;
+    try {
+      const url = await window.CampusShieldBackend.createStudentIdentityDocumentUrl(openButton.dataset.studentDocument);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast(err.message || 'Could not open the ID document.');
+    } finally {
+      openButton.disabled = false;
+    }
+  });
+
+  $('approvals-table').addEventListener('click', async event => {
+    const button = event.target.closest('[data-identity-review]');
+    if (!button) return;
+    const decision = button.dataset.identityReview;
+    if (!confirm(`Are you sure you want to ${decision} this student identity and account?`)) return;
+    button.disabled = true;
+    try {
+      const {error} = await window.CampusShieldBackend.client.rpc('review_student_identity_verification', {
+        p_user_id: button.dataset.userId,
+        p_decision: decision
+      });
+      if (error) throw error;
+      toast(decision === 'approve' ? 'Identity and student account approved.' : 'Identity and student account rejected.');
+      await loadAccountApprovals();
+    } catch (err) {
+      toast(err.message || 'Could not review student identity.');
+      button.disabled = false;
+    }
+  });
+
   function canModerateCommunity() {
-    return currentProfile?.verification_status === 'verified' &&
+    return hasVerifiedCampusStaffMembership() &&
       ['admin', 'security', 'teacher'].includes(currentProfile.role);
   }
 
   function communityPostTypeLabel(type) {
     return ({
+      campus_update: 'Campus update',
+      question: 'Student question',
+      poll: 'Campus poll',
+      lost_found: 'Lost and found',
       safety_issue: 'Campus safety issue',
       suggestion: 'Safety improvement suggestion',
-      announcement: 'Official staff announcement'
+      announcement: 'Official staff announcement',
+      marketplace_share: 'Marketplace listing'
     })[type] || 'Campus update';
   }
 
@@ -1326,10 +1999,33 @@ td strong{color:#2a464d;font-size:11px}
     }
     if (communityLoading) return;
     communityLoading = true;
-    $('community-feed-status').textContent = 'Loading campus updates…';
+    $('community-feed-status').textContent = 'Loading your university space…';
     $('community-feed').innerHTML = '<div class="community-empty">Loading campus updates…</div>';
 
     try {
+      const campus = await backend.getMyCampusContext();
+      campusContext = campus;
+      syncCampusAccessNavigation();
+      const needsCampus = !campus?.university_id;
+      $('campus-onboarding').hidden = !needsCampus;
+      $('community-main-layout').hidden = needsCampus;
+      $('community-feed-panel').hidden = needsCampus;
+      $('campus-context-banner').hidden = needsCampus;
+      $('community-moderation').hidden = needsCampus || !canModerateCommunity();
+      if (needsCampus) {
+        await populateCampusSelectors();
+        $('community-feed-status').textContent = 'Choose your university before using the campus community.';
+        $('community-feed').innerHTML = '<div class="community-empty">Your campus space has not been selected yet.</div>';
+        $('campus-onboarding-message').textContent = 'Choose your real university. This selection cannot be changed from your account settings.';
+        return;
+      }
+      $('campus-context-name').textContent = campus.university_name + (campus.state ? ' · ' + campus.state : '');
+      $('campus-context-status').textContent =
+        currentProfile?.verification_status === 'verified' &&
+        ['admin','security','teacher'].includes(currentProfile.role) &&
+        campus.verification_status !== 'verified'
+          ? ' Staff-only actions remain disabled until your membership is verified by this university.'
+          : '';
       const profile = await backend.getMyCommunityProfile();
       communityProfile = profile;
       $('community-username-current').textContent = profile?.username ? '@' + profile.username : 'Username unavailable';
@@ -1337,8 +2033,25 @@ td strong{color:#2a464d;font-size:11px}
       $('community-announcement-option').disabled = !canModerateCommunity();
 
       const posts = await backend.listCommunityPosts();
-      const comments = await backend.listCommunityComments(posts.map(function(post) { return post.id; }));
-      renderCommunityFeed(posts, comments);
+      const postIds = posts.map(function(post) { return post.id; });
+      const [comments, socialRows, mediaRows] = await Promise.all([
+        backend.listCommunityComments(postIds),
+        backend.getCommunityPostSocial(postIds),
+        backend.listCommunityPostMedia(postIds)
+      ]);
+      const mediaByPost = Object.create(null);
+      (mediaRows || []).forEach(function(item) {
+        if (!mediaByPost[item.post_id]) mediaByPost[item.post_id] = [];
+        mediaByPost[item.post_id].push(item);
+      });
+      const pollsByPost = {};
+      const pollPosts = posts.filter(function(post) { return post.post_type === 'poll'; }).slice(0, 20);
+      const pollResults = await Promise.all(pollPosts.map(async function(post) {
+        try { return [post.id, await backend.getCommunityPollData(post.id)]; }
+        catch (err) { console.warn('Could not load poll results:', err.message); return [post.id, []]; }
+      }));
+      pollResults.forEach(function(entry) { pollsByPost[entry[0]] = entry[1]; });
+      renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost);
       $('community-feed-status').textContent = posts.length + (posts.length === 1 ? ' published post' : ' published posts') + ' · refreshed ' + new Date().toLocaleTimeString();
 
       $('community-moderation').hidden = !canModerateCommunity();
@@ -1353,43 +2066,105 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
-  function renderCommunityFeed(posts, comments) {
+  function renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost) {
+    const mediaMap = mediaByPost || Object.create(null);
     const list = Array.isArray(posts) ? posts : [];
     const commentList = Array.isArray(comments) ? comments : [];
+    const socialByPost = Object.create(null);
+    (Array.isArray(socialRows) ? socialRows : []).forEach(function(row) {
+      socialByPost[row.post_id] = row;
+    });
+    const pollMap = pollsByPost || Object.create(null);
     if (!list.length) {
-      $('community-feed').innerHTML = '<div class="community-empty"><strong>No published campus updates yet.</strong><p>Share a public-safe safety issue or suggestion. A moderator will review student posts before publication.</p></div>';
+      $('community-feed').innerHTML = '<div class="community-empty"><strong>No published campus updates yet.</strong><p>Start a campus update, ask a question, create a poll or share a safety suggestion. Student posts appear after review.</p></div>';
       return;
     }
 
-    const commentsByPost = {};
+    const commentsByPost = Object.create(null);
     commentList.forEach(function(comment) {
       if (!commentsByPost[comment.post_id]) commentsByPost[comment.post_id] = [];
       commentsByPost[comment.post_id].push(comment);
     });
 
+    function renderComment(comment, postId, childrenByParent, depth) {
+      const replyButton = depth < 3
+        ? '<button type="button" class="btn secondary" data-community-reply="' + esc(comment.id) + '" data-post-id="' + esc(postId) + '">Reply</button>'
+        : '';
+      const nested = (childrenByParent[comment.id] || []).map(function(child) {
+        return renderComment(child, postId, childrenByParent, depth + 1);
+      }).join('');
+      return '<article class="community-comment" style="margin-left:' + Math.min(depth, 3) * 14 + 'px">' +
+        '<div class="community-comment-header"><div class="community-meta"><strong class="community-handle">@' + esc(comment.author_username) + '</strong><span>·</span><time>' + esc(dateText(comment.created_at)) + '</time></div>' +
+        '<div class="actions">' + replyButton +
+        '<button type="button" class="btn secondary" data-report-community-type="comment" data-report-community-id="' + esc(comment.id) + '">Report</button></div></div>' +
+        '<p>' + esc(comment.body) + '</p>' + nested +
+        '</article>';
+    }
+
     $('community-feed').innerHTML = list.map(function(post) {
       const postComments = commentsByPost[post.id] || [];
-      const commentsHtml = postComments.map(function(comment) {
-        return '<article class="community-comment">' +
-          '<div class="community-comment-header"><div class="community-meta"><strong class="community-handle">@' + esc(comment.author_username) + '</strong><span>·</span><time>' + esc(dateText(comment.created_at)) + '</time></div>' +
-          '<button type="button" class="btn secondary" data-report-community-type="comment" data-report-community-id="' + esc(comment.id) + '">Report</button></div>' +
-          '<p>' + esc(comment.body) + '</p>' +
-          '</article>';
+      const childrenByParent = Object.create(null);
+      postComments.forEach(function(comment) {
+        if (comment.parent_comment_id) {
+          if (!childrenByParent[comment.parent_comment_id]) childrenByParent[comment.parent_comment_id] = [];
+          childrenByParent[comment.parent_comment_id].push(comment);
+        }
+      });
+      const commentsHtml = postComments.filter(function(comment) {
+        return !comment.parent_comment_id;
+      }).map(function(comment) {
+        return renderComment(comment, post.id, childrenByParent, 0);
       }).join('');
+      const social = socialByPost[post.id] || {};
+      const reactionCount = Number(social.reaction_count || 0);
+      const reacted = Boolean(social.user_reaction);
+      const bookmarked = Boolean(social.is_bookmarked);
+      const followingAuthor = Boolean(social.following_author);
+      const pollOptions = pollMap[post.id] || [];
+      const pollHtml = post.post_type === 'poll'
+        ? '<section class="community-poll"><strong>Vote in this poll</strong>' +
+          (pollOptions.length ? pollOptions.map(function(option) {
+            return '<label class="community-poll-option"><input type="radio" name="poll-' + esc(post.id) + '" value="' + esc(option.option_id) + '"' + (option.my_vote ? ' checked' : '') + '> ' +
+              esc(option.option_text) + ' <span class="muted">(' + Number(option.vote_count || 0) + ' votes)</span></label>';
+          }).join('') : '<p class="muted">Poll choices are unavailable right now.</p>') +
+          (pollOptions.length ? '<button type="button" class="btn secondary" data-community-poll-vote="' + esc(post.id) + '">Submit vote</button>' : '') +
+          '</section>'
+        : '';
+      const followButton = !social.is_my_post
+        ? '<button type="button" class="btn secondary" data-community-follow="' + esc(post.id) + '" data-follow-state="' + (followingAuthor ? 'following' : 'not_following') + '">' + (followingAuthor ? 'Following author' : 'Follow author') + '</button>'
+        : '';
 
+      const mediaHtml = (mediaMap[post.id] || []).map(function(media) {
+        if (!media.signed_url) return '';
+        const url = esc(media.signed_url);
+        const alt = esc(media.alt_text || post.title || 'Campus community attachment');
+        if (media.media_kind === 'video') {
+          return '<figure><video controls preload="metadata" aria-label="' + alt + '"><source src="' + url + '" type="' + esc(media.mime_type) + '">Your browser cannot play this video.</video>' +
+            (media.alt_text ? '<figcaption>' + esc(media.alt_text) + '</figcaption>' : '') + '</figure>';
+        }
+        return '<figure><img src="' + url + '" alt="' + alt + '" loading="lazy" referrerpolicy="no-referrer">' +
+          (media.alt_text ? '<figcaption>' + esc(media.alt_text) + '</figcaption>' : '') + '</figure>';
+      }).join('');
+      const mediaBlock = mediaHtml ? '<div class="community-media-grid">' + mediaHtml + '</div>' : '';
       return '<article class="community-post" id="community-post-' + esc(post.id) + '">' +
         '<div class="community-post-header"><div class="community-meta">' +
         (post.is_official ? '<span class="community-official">Verified staff update</span>' : '<span class="tag open">' + esc(communityPostTypeLabel(post.post_type)) + '</span>') +
         '<strong class="community-handle">@' + esc(post.author_username) + '</strong><span>·</span><time>' + esc(dateText(post.created_at)) + '</time></div>' +
         '<button type="button" class="btn secondary" data-report-community-type="post" data-report-community-id="' + esc(post.id) + '">Report</button></div>' +
         '<h3 class="community-post-title">' + esc(post.title) + '</h3>' +
-        '<p class="community-post-body">' + esc(post.body) + '</p>' +
+        '<p class="community-post-body">' + esc(post.body) + '</p>' + mediaBlock +
         (post.location ? '<p class="community-meta"><span aria-hidden="true">⌖</span> ' + esc(post.location) + '</p>' : '') +
+        pollHtml +
+        '<div class="community-post-actions">' +
+        '<button type="button" class="btn secondary" data-community-reaction="' + esc(post.id) + '" aria-pressed="' + String(reacted) + '">' + (reacted ? 'Liked' : 'Like') + ' (' + reactionCount + ')</button>' +
+        '<button type="button" class="btn secondary" data-community-bookmark="' + esc(post.id) + '" aria-pressed="' + String(bookmarked) + '">' + (bookmarked ? 'Saved' : 'Bookmark') + '</button>' +
+        '<button type="button" class="btn secondary" data-community-repost="' + esc(post.id) + '">Repost</button>' +
+        followButton + '</div>' +
         '<div class="community-comments"><div class="community-meta"><strong>' + postComments.length + (postComments.length === 1 ? ' comment' : ' comments') + '</strong></div>' +
         commentsHtml +
         '<form class="community-comment-form" data-community-comment-form data-post-id="' + esc(post.id) + '">' +
         '<label class="sr-only" for="comment-' + esc(post.id) + '">Write a comment</label>' +
-        '<textarea id="comment-' + esc(post.id) + '" name="comment" maxlength="800" required placeholder="Write a helpful, respectful reply…"></textarea>' +
+        '<textarea id="comment-' + esc(post.id) + '" name="comment" maxlength="800" required placeholder="Write a helpful, respectful comment…"></textarea>' +
         '<button type="submit" class="btn">Comment</button>' +
         '</form></div></article>';
     }).join('');
@@ -1430,6 +2205,432 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
+
+  function campusNoticeAudienceLabel(notice) {
+    if (notice.audience_scope === 'department') return 'Department · ' + (notice.target_department || 'selected department');
+    if (notice.audience_scope === 'faculty') return 'Faculty · ' + (notice.target_faculty || 'selected faculty');
+    return 'Entire university';
+  }
+
+  function helpdeskCategoryLabel(value) {
+    return ({
+      facilities:'Facilities / repairs',
+      hostel:'Hostel facilities',
+      wifi_it:'Wi-Fi / ICT services',
+      classroom_equipment:'Classroom equipment',
+      academic_service:'Academic service',
+      administration:'Administrative service',
+      accessibility:'Accessibility',
+      other:'Other service'
+    })[value] || 'Campus service';
+  }
+
+  function helpdeskStatusLabel(value) {
+    return ({
+      submitted:'Submitted',
+      assigned:'Assigned',
+      in_progress:'In progress',
+      waiting_student:'Waiting for student',
+      resolved:'Resolved',
+      closed:'Closed'
+    })[value] || 'Submitted';
+  }
+
+  function renderHelpdeskTicket(ticket, updates, staffView) {
+    const ticketUpdates = (updates || []).filter(function(item) { return item.ticket_id === ticket.id; });
+    const timeline = ticketUpdates.length
+      ? '<details class="campus-ticket-timeline"><summary>' + ticketUpdates.length + ' progress update(s)</summary>' +
+        ticketUpdates.map(function(item) {
+          return '<div class="community-comment"><div class="community-meta"><strong>' + esc(item.author_label || 'Campus member') + '</strong><span>·</span><time>' + esc(dateText(item.created_at)) + '</time>' +
+            (item.to_status ? '<span class="tag open">' + esc(helpdeskStatusLabel(item.to_status)) + '</span>' : '') +
+            '</div><p>' + esc(item.message) + '</p></div>';
+        }).join('') + '</details>'
+      : '<p class="muted">No progress notes yet.</p>';
+    const staffControls = staffView
+      ? '<div class="campus-ticket-staff-controls">' +
+        '<div class="field"><label for="ticket-status-' + esc(ticket.id) + '">Status</label><select id="ticket-status-' + esc(ticket.id) + '" data-helpdesk-status="' + esc(ticket.id) + '">' +
+        ['submitted','assigned','in_progress','waiting_student','resolved','closed'].map(function(status) {
+          return '<option value="' + status + '"' + (ticket.status === status ? ' selected' : '') + '>' + esc(helpdeskStatusLabel(status)) + '</option>';
+        }).join('') + '</select></div>' +
+        '<div class="field"><label for="ticket-department-' + esc(ticket.id) + '">Responsible unit</label><input id="ticket-department-' + esc(ticket.id) + '" data-helpdesk-department="' + esc(ticket.id) + '" maxlength="100" value="' + esc(ticket.assigned_department || '') + '" placeholder="e.g. Works Department"></div>' +
+        '<div class="field"><label for="ticket-staff-message-' + esc(ticket.id) + '">Progress note (visible to requester)</label><textarea id="ticket-staff-message-' + esc(ticket.id) + '" data-helpdesk-message="' + esc(ticket.id) + '" maxlength="1200" placeholder="Record an action, request more information, or explain the status change."></textarea></div>' +
+        '<button type="button" class="btn" data-helpdesk-save="' + esc(ticket.id) + '">Save update</button></div>'
+      : '<form class="community-comment-form" data-helpdesk-reply data-ticket-id="' + esc(ticket.id) + '">' +
+        '<label class="sr-only" for="ticket-reply-' + esc(ticket.id) + '">Reply to request ' + esc(ticket.reference_code) + '</label>' +
+        '<textarea id="ticket-reply-' + esc(ticket.id) + '" name="message" maxlength="1200" minlength="2" placeholder="Add helpful information or reply to a staff update…" required ' + (['resolved','closed'].includes(ticket.status) ? 'disabled' : '') + '></textarea>' +
+        '<button type="submit" class="btn secondary" ' + (['resolved','closed'].includes(ticket.status) ? 'disabled' : '') + '>Add update</button></form>';
+    const priorityClass = ticket.priority === 'high' ? 'high' : ticket.priority === 'low' ? 'low' : 'medium';
+    return '<article class="community-post campus-ticket-card">' +
+      '<div class="community-meta"><span class="tag open">' + esc(ticket.reference_code) + '</span><span class="tag ' + priorityClass + '">' + esc(ticket.priority) + ' priority</span><span class="tag ' + (['resolved','closed'].includes(ticket.status) ? 'low' : 'open') + '">' + esc(helpdeskStatusLabel(ticket.status)) + '</span></div>' +
+      '<h3 class="community-post-title">' + esc(ticket.title) + '</h3>' +
+      '<p class="community-meta">' + esc(helpdeskCategoryLabel(ticket.category)) + ' · Submitted ' + esc(dateText(ticket.created_at)) + '</p>' +
+      '<p class="community-post-body">' + esc(ticket.description) + '</p>' +
+      (ticket.location ? '<p class="community-meta">Location: ' + esc(ticket.location) + '</p>' : '') +
+      '<p class="community-meta">Responsible unit: <strong>' + esc(ticket.assigned_department || 'Not assigned yet') + '</strong>' +
+      (staffView ? ' · Requested by @' + esc(ticket.created_by_username || 'campus member') : '') + '</p>' +
+      timeline + staffControls + '</article>';
+  }
+
+  async function loadCampusHelpdeskPage() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile) {
+      $('campus-helpdesk-my-status').textContent = 'Sign in to submit and track campus service requests.';
+      $('campus-helpdesk-my-tickets').innerHTML = '<div class="community-empty">Sign in to continue.</div>';
+      return;
+    }
+    $('campus-helpdesk-my-status').textContent = 'Loading your campus service requests…';
+    $('campus-helpdesk-my-tickets').innerHTML = '<div class="community-empty">Loading requests…</div>';
+    $('campus-helpdesk-staff-panel').hidden = true;
+    try {
+      campusContext = await backend.getMyCampusContext();
+      if (!campusContext?.university_id) {
+        $('campus-helpdesk-my-status').textContent = 'Choose your university before using Helpdesk.';
+        $('campus-helpdesk-my-tickets').innerHTML = '<div class="community-empty">Choose your university on CampusPulse first. <button type="button" class="btn secondary" data-page="community">Choose university</button></div>';
+        return;
+      }
+      const user = await backend.getCurrentUser();
+      if (!user) throw new Error('Sign in again to continue.');
+      const tickets = await backend.listCampusHelpdeskTickets();
+      const updates = await backend.listCampusHelpdeskTicketUpdates(tickets.map(function(ticket) { return ticket.id; }));
+      const mine = tickets.filter(function(ticket) { return ticket.created_by === user.id; });
+      $('campus-helpdesk-my-tickets').innerHTML = mine.length
+        ? mine.map(function(ticket) { return renderHelpdeskTicket(ticket, updates, false); }).join('')
+        : '<div class="community-empty"><strong>No service requests yet.</strong><p>Report a Wi-Fi, facilities, hostel or other service problem to create your first trackable ticket.</p></div>';
+      $('campus-helpdesk-my-status').textContent = mine.length + ' request(s) · refresh to check the latest progress.';
+      const staff = canModerateCommunity();
+      $('campus-helpdesk-staff-panel').hidden = !staff;
+      if (staff) {
+        $('campus-helpdesk-staff-status').textContent = tickets.length + ' campus request(s) available to verified staff.';
+        $('campus-helpdesk-staff-queue').innerHTML = tickets.length
+          ? tickets.map(function(ticket) { return renderHelpdeskTicket(ticket, updates, true); }).join('')
+          : '<div class="community-empty">No requests are waiting in this campus queue.</div>';
+      }
+    } catch (err) {
+      console.error('Could not load campus Helpdesk:', err);
+      $('campus-helpdesk-my-status').textContent = err.message || 'Campus requests could not be loaded.';
+      $('campus-helpdesk-my-tickets').innerHTML = '<div class="community-empty">Helpdesk is temporarily unavailable. Please refresh and try again.</div>';
+    }
+  }
+
+  async function loadCampusNoticeboardPage() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile) {
+      $('campus-notices-status').textContent = 'Sign in to read official notices for your university.';
+      $('campus-noticeboard-feed').innerHTML = '<div class="community-empty">Sign in to continue.</div>';
+      $('campus-notice-publisher-panel').hidden = true;
+      return;
+    }
+    $('campus-notices-status').textContent = 'Loading verified campus notices…';
+    $('campus-noticeboard-feed').innerHTML = '<div class="community-empty">Loading notices…</div>';
+    try {
+      campusContext = await backend.getMyCampusContext();
+      if (!campusContext?.university_id) {
+        $('campus-notices-status').textContent = 'Choose your university before reading campus notices.';
+        $('campus-noticeboard-feed').innerHTML = '<div class="community-empty">Choose your university on CampusPulse first. <button type="button" class="btn secondary" data-page="community">Choose university</button></div>';
+        $('campus-notice-publisher-panel').hidden = true;
+        return;
+      }
+      const notices = await backend.listCampusNotices();
+      const staff = canModerateCommunity();
+      $('campus-notice-publisher-panel').hidden = !staff;
+      $('campus-noticeboard-feed').innerHTML = notices.length
+        ? notices.map(function(notice) {
+            const expiry = notice.expires_at ? '<p class="community-meta">Expires ' + esc(dateText(notice.expires_at)) + '</p>' : '';
+            const archiveButton = staff ? '<button type="button" class="btn secondary" data-archive-campus-notice="' + esc(notice.id) + '">Archive notice</button>' : '';
+            return '<article class="community-post campus-notice-card">' +
+              '<div class="community-meta"><span class="community-official">Verified campus notice</span><span class="tag open">' + esc(String(notice.category || 'announcement').replaceAll('_',' ')) + '</span><time>' + esc(dateText(notice.published_at)) + '</time></div>' +
+              '<h3 class="community-post-title">' + esc(notice.title) + '</h3>' +
+              '<p class="community-post-body">' + esc(notice.body) + '</p>' +
+              '<p class="community-meta">Published by <strong>' + esc(notice.publisher_label) + '</strong> · ' + esc(campusNoticeAudienceLabel(notice)) + '</p>' + expiry +
+              (archiveButton ? '<div class="community-post-actions">' + archiveButton + '</div>' : '') +
+              '</article>';
+          }).join('')
+        : '<div class="community-empty"><strong>No active official notices.</strong><p>Check back for verified academic dates, registration deadlines and campus service updates.</p></div>';
+      $('campus-notices-status').textContent = notices.length + ' active notice(s) visible to your campus account.';
+    } catch (err) {
+      console.error('Could not load campus noticeboard:', err);
+      $('campus-notices-status').textContent = err.message || 'Official notices could not be loaded.';
+      $('campus-noticeboard-feed').innerHTML = '<div class="community-empty">The noticeboard is temporarily unavailable.</div>';
+      $('campus-notice-publisher-panel').hidden = true;
+    }
+  }
+
+  function syncCampusNoticeAudienceFields() {
+    const scope = $('campus-notice-audience').value;
+    $('campus-notice-faculty-wrap').hidden = scope === 'campus';
+    $('campus-notice-department-wrap').hidden = scope !== 'department';
+    $('campus-notice-faculty').required = scope !== 'campus';
+    $('campus-notice-department').required = scope === 'department';
+  }
+  $('campus-notice-audience').addEventListener('change', syncCampusNoticeAudienceFields);
+  syncCampusNoticeAudienceFields();
+
+  $('campusHelpdeskForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-helpdesk-submit');
+    const message = $('campus-helpdesk-submit-message');
+    if (!window.CampusShieldBackend?.isConfigured) {
+      message.textContent = 'Supabase is not configured.';
+      return;
+    }
+    button.disabled = true;
+    message.textContent = 'Submitting request and creating reference number…';
+    try {
+      const ticket = await window.CampusShieldBackend.submitCampusHelpdeskTicket({
+        category: $('campus-helpdesk-category').value,
+        title: $('campus-helpdesk-title').value.trim(),
+        location: $('campus-helpdesk-location').value.trim(),
+        priority: $('campus-helpdesk-priority').value,
+        description: $('campus-helpdesk-description').value.trim()
+      });
+      $('campusHelpdeskForm').reset();
+      message.textContent = 'Request submitted. Your reference is ' + (ticket?.reference_code || 'created') + '.';
+      toast('Campus service request submitted.');
+      await loadCampusHelpdeskPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit the campus request.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campus-helpdesk-my-tickets').addEventListener('submit', async function(event) {
+    const form = event.target.closest('[data-helpdesk-reply]');
+    if (!form) return;
+    event.preventDefault();
+    const textarea = form.querySelector('textarea[name="message"]');
+    const button = form.querySelector('button[type="submit"]');
+    const message = textarea.value.trim();
+    if (message.length < 2 || message.length > 1200) {
+      toast('A reply must be 2–1200 characters.');
+      return;
+    }
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.updateCampusHelpdeskTicket(form.dataset.ticketId, null, null, message);
+      toast('Request update added.');
+      await loadCampusHelpdeskPage();
+    } catch (err) {
+      toast(err.message || 'Could not add your request update.');
+      button.disabled = false;
+    }
+  });
+
+  $('campus-helpdesk-staff-queue').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-helpdesk-save]');
+    if (!button) return;
+    const ticketId = button.dataset.helpdeskSave;
+    const status = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-status="' + CSS.escape(ticketId) + '"]');
+    const department = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-department="' + CSS.escape(ticketId) + '"]');
+    const note = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-message="' + CSS.escape(ticketId) + '"]');
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.updateCampusHelpdeskTicket(ticketId, status?.value || null, department?.value ?? null, note?.value || null);
+      toast('Helpdesk request updated.');
+      await loadCampusHelpdeskPage();
+    } catch (err) {
+      toast(err.message || 'Could not update the Helpdesk request.');
+      button.disabled = false;
+    }
+  });
+
+  $('campusNoticeForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-notice-submit');
+    const message = $('campus-notice-publisher-message');
+    if (!window.CampusShieldBackend?.isConfigured) {
+      message.textContent = 'Supabase is not configured.';
+      return;
+    }
+    button.disabled = true;
+    message.textContent = 'Publishing official notice…';
+    try {
+      const expiryValue = $('campus-notice-expires').value;
+      await window.CampusShieldBackend.publishCampusNotice({
+        publisherLabel: $('campus-notice-publisher').value.trim(),
+        title: $('campus-notice-title').value.trim(),
+        body: $('campus-notice-body').value.trim(),
+        category: $('campus-notice-category').value,
+        audienceScope: $('campus-notice-audience').value,
+        targetFaculty: $('campus-notice-audience').value === 'campus' ? null : $('campus-notice-faculty').value.trim(),
+        targetDepartment: $('campus-notice-audience').value === 'department' ? $('campus-notice-department').value.trim() : null,
+        expiresAt: expiryValue ? new Date(expiryValue).toISOString() : null
+      });
+      $('campusNoticeForm').reset();
+      syncCampusNoticeAudienceFields();
+      message.textContent = 'Official notice published. It is visible only to its selected campus audience.';
+      toast('Official notice published.');
+      await loadCampusNoticeboardPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not publish this notice.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campus-noticeboard-feed').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-archive-campus-notice]');
+    if (!button) return;
+    if (!confirm('Archive this official notice? It will no longer appear in the active student noticeboard.')) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.archiveCampusNotice(button.dataset.archiveCampusNotice);
+      toast('Notice archived.');
+      await loadCampusNoticeboardPage();
+    } catch (err) {
+      toast(err.message || 'Could not archive the notice.');
+      button.disabled = false;
+    }
+  });
+
+  $('refresh-campus-helpdesk').addEventListener('click', loadCampusHelpdeskPage);
+  $('refresh-campus-notices').addEventListener('click', loadCampusNoticeboardPage);
+
+  async function loadCampusGroupsPage() {
+    const backend = window.CampusShieldBackend;
+    const status = $('campus-groups-status');
+    if (!currentProfile || !backend?.isConfigured) return;
+    status.textContent = 'Loading your university groups…';
+    try {
+      campusContext = await backend.getMyCampusContext();
+      if (!campusContext?.university_id) {
+        status.textContent = 'Choose your university on the Campus community page first.';
+        $('campus-groups-feed').innerHTML = '';
+        return;
+      }
+      const [groups, joined] = await Promise.all([
+        backend.listCampusGroups(),
+        backend.listMyCampusGroupMemberships()
+      ]);
+      const memberIds = new Set(joined);
+      $('campus-groups-feed').innerHTML = groups.length ? groups.map(function(group) {
+        const isJoined = memberIds.has(group.id);
+        return '<article class="community-post">' +
+          '<div class="community-meta"><span class="tag open">' + esc(group.group_type.replaceAll('_',' ')) + '</span><span>·</span><strong>' + esc(group.privacy === 'request_to_join' ? 'Request to join' : 'Campus group') + '</strong></div>' +
+          '<h3 class="community-post-title">' + esc(group.name) + '</h3>' +
+          '<p class="community-post-body">' + esc(group.description || 'Campus group') + '</p>' +
+          '<p class="community-meta">Created by @' + esc(group.creator_username || 'campus member') + '</p>' +
+          '<button type="button" class="btn ' + (isJoined ? 'secondary' : '') + '" data-campus-group-action="' + (isJoined ? 'leave' : 'join') + '" data-campus-group-id="' + esc(group.id) + '">' + (isJoined ? 'Leave group' : 'Join group') + '</button>' +
+          '</article>';
+      }).join('') : '<div class="community-empty"><strong>No approved groups yet.</strong><p>Create one for your course, department, study circle or society. It will be reviewed before appearing.</p></div>';
+      status.textContent = groups.length + ' approved group(s) in your university.';
+      if (canModerateCommunity()) await loadCampusContentModeration();
+    } catch (err) {
+      status.textContent = err.message || 'Could not load campus groups.';
+      $('campus-groups-feed').innerHTML = '<div class="community-empty">Campus groups are temporarily unavailable.</div>';
+    }
+  }
+
+  async function loadCampusEventsPage() {
+    const backend = window.CampusShieldBackend;
+    const status = $('campus-events-status');
+    if (!currentProfile || !backend?.isConfigured) return;
+    status.textContent = 'Loading campus events…';
+    try {
+      campusContext = await backend.getMyCampusContext();
+      if (!campusContext?.university_id) {
+        status.textContent = 'Choose your university on the Campus community page first.';
+        $('campus-events-feed').innerHTML = '';
+        return;
+      }
+      const [events, responses] = await Promise.all([
+        backend.listCampusEvents(),
+        backend.listMyCampusEventRsvps()
+      ]);
+      const rsvpByEvent = Object.create(null);
+      responses.forEach(row => { rsvpByEvent[row.event_id] = row.response; });      $('campus-events-feed').innerHTML = events.length ? events.map(function(event) {
+        const current = rsvpByEvent[event.id] || '';
+        return '<article class="community-post">' +
+          '<div class="community-meta"><span class="tag open">' + esc(event.category.replaceAll('_',' ')) + '</span><span>·</span><time>' + esc(dateText(event.starts_at)) + '</time></div>' +
+          '<h3 class="community-post-title">' + esc(event.title) + '</h3>' +
+          '<p class="community-post-body">' + esc(event.description || '') + '</p>' +
+          '<p class="community-meta">Location: ' + esc(event.location || 'See organizer details') + (event.organizer_username ? ' · Organizer @' + esc(event.organizer_username) : '') + '</p>' +
+          (event.ends_at ? '<p class="community-meta">Ends: ' + esc(dateText(event.ends_at)) + '</p>' : '') +
+          '<div class="actions"><button type="button" class="btn ' + (current === 'going' ? 'secondary' : '') + '" data-campus-event-rsvp="going" data-campus-event-id="' + esc(event.id) + '">' + (current === 'going' ? 'Going ✓' : 'I’m going') + '</button>' +
+          '<button type="button" class="btn secondary" data-campus-event-rsvp="interested" data-campus-event-id="' + esc(event.id) + '">' + (current === 'interested' ? 'Interested ✓' : 'Interested') + '</button></div>' +
+          '</article>';
+      }).join('') : '<div class="community-empty"><strong>No upcoming approved events.</strong><p>Submit an event for your campus staff to review.</p></div>';
+      status.textContent = events.length + ' upcoming event(s) in your university.';
+      if (canModerateCommunity()) await loadCampusContentModeration();
+    } catch (err) {
+      status.textContent = err.message || 'Could not load campus events.';
+      $('campus-events-feed').innerHTML = '<div class="community-empty">Campus events are temporarily unavailable.</div>';
+    }
+  }
+
+  async function loadCampusMarketplacePage() {
+    const backend = window.CampusShieldBackend;
+    const status = $('campus-marketplace-status');
+    if (!currentProfile || !backend?.isConfigured) return;
+    status.textContent = 'Loading your campus marketplace…';
+    try {
+      campusContext = await backend.getMyCampusContext();
+      if (!campusContext?.university_id) {
+        status.textContent = 'Choose your university on the Campus community page first.';
+        $('campus-marketplace-feed').innerHTML = '';
+        return;
+      }
+      const [listings, ownListingResult] = await Promise.all([
+        backend.listCampusMarketplaceListings(),
+        backend.client.rpc("list_my_campus_marketplace_listings")
+      ]);
+      if (ownListingResult.error) throw ownListingResult.error;
+      const ownListingIds = new Set((ownListingResult.data || []).map(function(row) { return row.listing_id; }));
+      $('campus-marketplace-feed').innerHTML = listings.length ? listings.map(function(listing) {
+        const isMine = ownListingIds.has(listing.id);
+        return '<article class="community-post">' +
+          '<div class="community-meta"><span class="tag open">' + esc(listing.category.replaceAll('_',' ')) + '</span><span>·</span><strong>' + (listing.status === 'sold' ? 'Sold' : 'Available') + '</strong></div>' +
+          '<h3 class="community-post-title">' + esc(listing.title) + '</h3>' +
+          '<p class="community-post-body">' + esc(listing.description) + '</p>' +
+          '<p><strong>' + (listing.price_ngn == null ? 'Price not listed' : '₦' + Number(listing.price_ngn).toLocaleString('en-NG')) + '</strong></p>' +
+          '<p class="community-meta">Seller: @' + esc(listing.seller_username || 'campus member') + ' · ' + esc(dateText(listing.created_at)) + '</p>' +
+          (listing.contact_instructions ? '<p class="community-meta">Contact: ' + esc(listing.contact_instructions) + '</p>' : '') +
+          '<div class="actions">' +
+          (listing.status === 'published' ? '<button type="button" class="btn secondary" data-marketplace-report="' + esc(listing.id) + '">Report listing</button>' : '') +
+          (isMine && listing.status === 'published' ? '<button type="button" class="btn secondary" data-marketplace-sold="' + esc(listing.id) + '">Mark as sold</button>' : '') +
+          '</div></article>';
+      }).join('') : '<div class="community-empty"><strong>No approved listings yet.</strong><p>List a textbook, item or service for review by your university moderators.</p></div>';
+      status.textContent = listings.length + ' listing(s) in your university marketplace.';
+      if (canModerateCommunity()) await loadCampusContentModeration();
+    } catch (err) {
+      status.textContent = err.message || 'Could not load the campus marketplace.';
+      $('campus-marketplace-feed').innerHTML = '<div class="community-empty">The marketplace is temporarily unavailable.</div>';
+    }
+  }
+
+  async function loadCampusContentModeration() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !canModerateCommunity()) {
+      $('campus-content-moderation').hidden = true;
+      return;
+    }
+    $('campus-content-moderation').hidden = false;
+    const status = $('campus-content-moderation-message');
+    status.textContent = 'Loading your campus review queue…';
+    try {
+      const data = await backend.listCampusContentModeration();
+      const groups = data.groups || [];
+      const events = data.events || [];
+      const listings = data.listings || [];
+      const reports = data.listing_reports || [];
+      const makeCard = function(type, item, name, summary, meta) {
+        return '<article class="community-moderation-item">' +
+          '<h4>' + esc(name) + '</h4><p>' + esc(summary || '') + '</p><p class="community-meta">' + esc(meta || '') + '</p>' +
+          '<div class="actions"><button type="button" class="btn" data-campus-content-review="publish" data-campus-content-type="' + type + '" data-campus-content-id="' + esc(item.id) + '">Approve</button>' +
+          '<button type="button" class="btn danger" data-campus-content-review="reject" data-campus-content-type="' + type + '" data-campus-content-id="' + esc(item.id) + '">Reject</button></div></article>';
+      };
+      $('moderation-groups-feed').innerHTML = groups.length ? groups.map(x => makeCard('group',x,x.name,x.description,x.group_type+' · @'+(x.creator_username||'member'))).join('') : '<div class="community-empty">No groups awaiting review.</div>';
+      $('moderation-events-feed').innerHTML = events.length ? events.map(x => makeCard('event',x,x.title,x.description,x.category+' · '+dateText(x.starts_at))).join('') : '<div class="community-empty">No events awaiting review.</div>';
+      $('moderation-listings-feed').innerHTML = listings.length ? listings.map(x => makeCard('listing',x,x.title,x.description,x.category+' · '+(x.price_ngn == null ? 'no price' : '₦'+Number(x.price_ngn).toLocaleString('en-NG')))).join('') : '<div class="community-empty">No listings awaiting review.</div>';
+      $('moderation-listing-reports-feed').innerHTML = reports.length ? reports.map(function(x) {
+        return '<article class="community-moderation-item"><h4>'+esc(x.listing_title || 'Marketplace listing')+'</h4><p>'+esc(String(x.reason||'other').replaceAll('_',' '))+'</p><p>'+esc(x.details || 'No extra details provided.')+'</p><div class="actions"><button class="btn danger" type="button" data-marketplace-report-review="hide_listing" data-marketplace-report-id="'+esc(x.id)+'">Hide listing</button><button class="btn secondary" type="button" data-marketplace-report-review="dismissed" data-marketplace-report-id="'+esc(x.id)+'">Dismiss report</button></div></article>';
+      }).join('') : '<div class="community-empty">No marketplace reports pending.</div>';
+      status.textContent = 'Queue loaded · '+groups.length+' group(s), '+events.length+' event(s), '+listings.length+' listing(s), '+reports.length+' marketplace report(s).';
+    } catch (err) {
+      status.textContent = err.message || 'Campus moderation queue is unavailable.';
+    }
+  }
+
   $('communityUsernameForm').addEventListener('submit', async function(event) {
     event.preventDefault();
     const backend = window.CampusShieldBackend;
@@ -1463,6 +2664,16 @@ td strong{color:#2a464d;font-size:11px}
     }
   });
 
+  function syncCommunityPollFields() {
+    const isPoll = $('community-post-type').value === 'poll';
+    $('community-poll-options').hidden = !isPoll;
+    ['community-poll-option-1','community-poll-option-2'].forEach(function(id) {
+      $(id).required = isPoll;
+    });
+  }
+  $('community-post-type').addEventListener('change', syncCommunityPollFields);
+  syncCommunityPollFields();
+
   $('communityPostForm').addEventListener('submit', async function(event) {
     event.preventDefault();
     const backend = window.CampusShieldBackend;
@@ -1478,16 +2689,29 @@ td strong{color:#2a464d;font-size:11px}
     const title = $('community-post-title-input').value.trim();
     const body = $('community-post-body').value.trim();
     const location = $('community-post-location').value.trim();
+    const options = [
+      $('community-poll-option-1').value.trim(),
+      $('community-poll-option-2').value.trim(),
+      $('community-poll-option-3').value.trim(),
+      $('community-poll-option-4').value.trim()
+    ];
     button.disabled = true;
     button.textContent = postType === 'announcement' ? 'Publishing announcement…' : 'Submitting for review…';
     message.textContent = 'Sending your post…';
     try {
-      await backend.createCommunityPost({ postType: postType, title: title, body: body, location: location });
+      const selectedFiles = Array.from($('community-post-media').files || []);
+      if (selectedFiles.length > 4) throw new Error("Attach no more than four files to one post.");
+      const postId = await backend.createCommunityPost({ postType: postType, title: title, body: body, location: location, options: options });
+      if (selectedFiles.length) {
+        message.textContent = 'Post saved. Uploading private campus attachments…';
+        await backend.uploadCommunityPostMedia(postId, selectedFiles, $('community-post-media-alt').value.trim());
+      }
       $('communityPostForm').reset();
+      syncCommunityPollFields();
       message.textContent = postType === 'announcement'
         ? 'Official announcement published.'
         : 'Submitted. Your post will appear to other students after moderation.';
-      toast(postType === 'announcement' ? 'Official announcement published.' : 'Community post submitted for review.');
+      toast(selectedFiles.length ? 'Post and attachments submitted for review.' : (postType === 'announcement' ? 'Official announcement published.' : 'Community post submitted for review.'));
       await loadCommunityPage();
     } catch (err) {
       message.textContent = err.message || 'Could not submit your post.';
@@ -1527,6 +2751,72 @@ td strong{color:#2a464d;font-size:11px}
   });
 
   $('community-feed').addEventListener('click', async function(event) {
+    const reactionButton = event.target.closest('[data-community-reaction]');
+    const bookmarkButton = event.target.closest('[data-community-bookmark]');
+    const repostButton = event.target.closest('[data-community-repost]');
+    const followButton = event.target.closest('[data-community-follow]');
+    const pollButton = event.target.closest('[data-community-poll-vote]');
+    const replyButton = event.target.closest('[data-community-reply]');
+    const backend = window.CampusShieldBackend;
+
+    try {
+      if (reactionButton) {
+        await backend.toggleCommunityReaction(reactionButton.dataset.communityReaction, 'like');
+        toast('Reaction updated.');
+        await loadCommunityPage();
+        return;
+      }
+      if (bookmarkButton) {
+        const saved = await backend.toggleCommunityBookmark(bookmarkButton.dataset.communityBookmark);
+        toast(saved ? 'Post bookmarked.' : 'Bookmark removed.');
+        await loadCommunityPage();
+        return;
+      }
+      if (repostButton) {
+        if (!confirm('Repost this campus update for review? It will only be shared inside your university.')) return;
+        await backend.repostCommunityPost(repostButton.dataset.communityRepost);
+        toast('Repost submitted for campus moderation.');
+        await loadCommunityPage();
+        return;
+      }
+      if (followButton) {
+        const follow = followButton.dataset.followState !== 'following';
+        await backend.toggleCampusFollowPostAuthor(followButton.dataset.communityFollow, follow);
+        toast(follow ? 'Following this campus member.' : 'You unfollowed this campus member.');
+        await loadCommunityPage();
+        return;
+      }
+      if (pollButton) {
+        const postId = pollButton.dataset.communityPollVote;
+        const selected = Array.from($('community-feed').querySelectorAll('input[type="radio"]'))
+          .find(function(input) { return input.name === 'poll-' + postId && input.checked; });
+        if (!selected) {
+          toast('Choose an answer before voting.');
+          return;
+        }
+        await backend.voteCommunityPoll(postId, selected.value);
+        toast('Your vote has been saved.');
+        await loadCommunityPage();
+        return;
+      }
+      if (replyButton) {
+        const body = window.prompt('Write a respectful reply (2–800 characters):', '');
+        if (body === null) return;
+        if (body.trim().length < 2 || body.trim().length > 800) {
+          toast('Replies must be 2–800 characters.');
+          return;
+        }
+        await backend.createCommunityReply(replyButton.dataset.postId, replyButton.dataset.communityReply, body.trim());
+        toast('Reply added.');
+        await loadCommunityPage();
+        return;
+      }
+    } catch (err) {
+      console.error('Campus social action failed:', err);
+      toast(err.message || 'Could not complete this action.');
+      return;
+    }
+
     const button = event.target.closest('[data-report-community-type]');
     if (!button) return;
     const targetType = button.dataset.reportCommunityType;
@@ -1597,6 +2887,274 @@ td strong{color:#2a464d;font-size:11px}
   $('refresh-community').addEventListener('click', loadCommunityPage);
   $('refresh-community-moderation').addEventListener('click', loadCommunityPage);
 
+  async function populateCampusSelectors() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured) return;
+    try {
+      if (!campusUniversitiesCache) campusUniversitiesCache = await backend.listCampusUniversities();
+      const selects = [$('auth-university'), $('campus-university')];
+      selects.forEach(function(select) {
+        if (!select) return;
+        const previous = select.value;
+        const firstText = select.id === 'auth-university' ? 'Choose after sign-in' : 'Choose your university';
+        select.innerHTML = '<option value="">' + firstText + '</option>' + campusUniversitiesCache.map(function(university) {
+          return '<option value="' + esc(university.id) + '">' + esc(university.name) + ' · ' + esc(university.state) + '</option>';
+        }).join('');
+        if (previous && campusUniversitiesCache.some(u => u.id === previous)) select.value = previous;
+      });
+    } catch (err) {
+      console.error('Could not load university directory:', err);
+      const select = $('campus-university');
+      if (select) select.innerHTML = '<option value="">University directory unavailable</option>';
+    }
+  }
+
+  populateCampusSelectors();
+
+  $('campusOnboardingForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-onboarding-submit');
+    const message = $('campus-onboarding-message');
+    button.disabled = true;
+    message.textContent = 'Saving your campus selection…';
+    try {
+      const selectedUniversityId = $('campus-university').value;
+      await window.CampusShieldBackend.setMyCampusMembership({
+        universityId: selectedUniversityId,
+        faculty: $('campus-faculty').value.trim(),
+        department: $('campus-department').value.trim(),
+        course: $('campus-course').value.trim(),
+        yearOfStudy: $('campus-year').value
+      });
+      let bootstrappedAdmin = false;
+      if (currentProfile?.role === 'admin' && currentProfile?.verification_status === 'verified') {
+        bootstrappedAdmin = await window.CampusShieldBackend.bootstrapFirstCampusAdmin(selectedUniversityId);
+      }
+      message.textContent = bootstrappedAdmin
+        ? 'University space created and initial campus administrator initialized.'
+        : 'University space created. Staff-only powers require this campus membership to be verified.';
+      campusContext = await window.CampusShieldBackend.getMyCampusContext();
+      syncCampusAccessNavigation();
+      await refreshIncidentsFromSupabase();
+      await loadCommunityPage();
+      toast('You have joined your university space.');
+    } catch (err) {
+      message.textContent = err.message || 'Could not join this campus.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campusUniversityRequestForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('request-university-submit');
+    const message = $('campus-university-request-message');
+    button.disabled = true;
+    message.textContent = 'Sending request…';
+    try {
+      await window.CampusShieldBackend.requestCampusUniversity({
+        name: $('request-university-name').value.trim(),
+        state: $('request-university-state').value.trim(),
+        ownership: $('request-university-ownership').value,
+        website: $('request-university-website').value.trim()
+      });
+      $('campusUniversityRequestForm').reset();
+      message.textContent = 'University listing request sent for review. You can join the campus after it is added.';
+      toast('University request submitted.');
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit the request.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campusGroupForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-group-submit');
+    const message = $('campus-group-message');
+    button.disabled = true;
+    message.textContent = 'Submitting your group…';
+    try {
+      await window.CampusShieldBackend.createCampusGroup({
+        name: $('campus-group-name').value.trim(),
+        groupType: $('campus-group-type').value,
+        privacy: $('campus-group-privacy').value,
+        description: $('campus-group-description').value.trim()
+      });
+      $('campusGroupForm').reset();
+      message.textContent = 'Group submitted. It will appear only in your university after campus staff approve it.';
+      toast('Group submitted for campus review.');
+      await loadCampusGroupsPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit this group.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campusEventForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-event-submit');
+    const message = $('campus-event-message');
+    const starts = $('campus-event-start').value;
+    const ends = $('campus-event-end').value;
+    if (ends && new Date(ends).getTime() < new Date(starts).getTime()) {
+      message.textContent = 'The event end time must be after the start time.';
+      return;
+    }
+    button.disabled = true;
+    message.textContent = 'Submitting event…';
+    try {
+      await window.CampusShieldBackend.createCampusEvent({
+        title: $('campus-event-title').value.trim(),
+        category: $('campus-event-category').value,
+        startsAt: new Date(starts).toISOString(),
+        endsAt: ends ? new Date(ends).toISOString() : null,
+        location: $('campus-event-location').value.trim(),
+        description: $('campus-event-description').value.trim()
+      });
+      $('campusEventForm').reset();
+      message.textContent = 'Event submitted. It will only appear to your university after approval.';
+      toast('Event submitted for campus review.');
+      await loadCampusEventsPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit this event.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campusMarketplaceForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-listing-submit');
+    const message = $('campus-listing-message');
+    button.disabled = true;
+    message.textContent = 'Submitting listing…';
+    try {
+      await window.CampusShieldBackend.createCampusMarketplaceListing({
+        category: $('campus-listing-category').value,
+        title: $('campus-listing-title').value.trim(),
+        priceNgn: $('campus-listing-price').value,
+        description: $('campus-listing-description').value.trim(),
+        contactInstructions: $('campus-listing-contact').value.trim()
+      });
+      $('campusMarketplaceForm').reset();
+      message.textContent = 'Listing submitted for review. CampusShield does not process payments or escrow.';
+      toast('Marketplace listing submitted for campus review.');
+      await loadCampusMarketplacePage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit this listing.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('refresh-campus-groups').addEventListener('click', loadCampusGroupsPage);
+  $('refresh-campus-events').addEventListener('click', loadCampusEventsPage);
+  $('refresh-campus-marketplace').addEventListener('click', loadCampusMarketplacePage);
+  $('refresh-campus-content-moderation').addEventListener('click', loadCampusContentModeration);
+
+  $('page-groups').addEventListener('click', async function(event) {
+    const groupButton = event.target.closest('[data-campus-group-action]');
+    const contentButton = event.target.closest('[data-campus-content-review]');
+    const reportButton = event.target.closest('[data-marketplace-report-review]');
+    if (groupButton) {
+      const action = groupButton.dataset.campusGroupAction;
+      const groupId = groupButton.dataset.campusGroupId;
+      groupButton.disabled = true;
+      try {
+        if (action === 'join') await window.CampusShieldBackend.joinCampusGroup(groupId);
+        else await window.CampusShieldBackend.leaveCampusGroup(groupId);
+        toast(action === 'join' ? 'You joined the campus group.' : 'You left the campus group.');
+        await loadCampusGroupsPage();
+      } catch (err) {
+        toast(err.message || 'Could not update group membership.');
+        groupButton.disabled = false;
+      }
+      return;
+    }
+    if (contentButton) {
+      const decision = contentButton.dataset.campusContentReview;
+      const type = contentButton.dataset.campusContentType;
+      const id = contentButton.dataset.campusContentId;
+      if (!confirm('Are you sure you want to ' + decision + ' this ' + type + '?')) return;
+      contentButton.disabled = true;
+      try {
+        await window.CampusShieldBackend.reviewCampusContent(type,id,decision);
+        toast(type.charAt(0).toUpperCase()+type.slice(1)+' '+(decision==='publish'?'approved':'rejected')+'.');
+        await loadCampusContentModeration();
+        await Promise.all([loadCampusGroupsPage(),loadCampusEventsPage(),loadCampusMarketplacePage()]);
+      } catch (err) {
+        toast(err.message || 'Could not review this campus content.');
+        contentButton.disabled = false;
+      }
+      return;
+    }
+    if (reportButton) {
+      const decision = reportButton.dataset.marketplaceReportReview;
+      const reportId = reportButton.dataset.marketplaceReportId;
+      if (!confirm(decision === 'hide_listing' ? 'Hide this listing and mark its report reviewed?' : 'Dismiss this marketplace report?')) return;
+      reportButton.disabled = true;
+      try {
+        await window.CampusShieldBackend.reviewCampusListingReport(reportId,decision);
+        toast(decision === 'hide_listing' ? 'Listing hidden and report reviewed.' : 'Marketplace report dismissed.');
+        await loadCampusContentModeration();
+        await loadCampusMarketplacePage();
+      } catch (err) {
+        toast(err.message || 'Could not resolve this marketplace report.');
+        reportButton.disabled = false;
+      }
+    }
+  });
+
+  $('page-events').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-campus-event-rsvp]');
+    if (!button) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.setCampusEventRsvp(button.dataset.campusEventId,button.dataset.campusEventRsvp);
+      toast(button.dataset.campusEventRsvp === 'going' ? 'You are marked as going.' : 'Marked as interested.');
+      await loadCampusEventsPage();
+    } catch (err) {
+      toast(err.message || 'Could not save your RSVP.');
+      button.disabled = false;
+    }
+  });
+
+  $('page-marketplace').addEventListener('click', async function(event) {
+    const soldButton = event.target.closest('[data-marketplace-sold]');
+    if (soldButton) {
+      if (!confirm('Mark your listing as sold?')) return;
+      soldButton.disabled = true;
+      try {
+        await window.CampusShieldBackend.markCampusListingSold(soldButton.dataset.marketplaceSold);
+        toast('Listing marked as sold.');
+        await loadCampusMarketplacePage();
+      } catch (err) {
+        toast(err.message || 'Could not update this listing.');
+        soldButton.disabled = false;
+      }
+      return;
+    }
+    const button = event.target.closest('[data-marketplace-report]');
+    if (!button) return;
+    const answer = window.prompt('Why are you reporting this listing?\n1 = Suspected scam\n2 = Spam\n3 = Unsafe item\n4 = Misleading listing\n5 = Harassment\n6 = Other','1');
+    if (answer === null) return;
+    const reasons = {'1':'scam_suspicion','2':'spam','3':'unsafe_item','4':'misleading_listing','5':'harassment','6':'other'};
+    const reason = reasons[String(answer).trim()];
+    if (!reason) { toast('Choose a report reason from 1 to 6.'); return; }
+    const details = window.prompt('Optional details; do not include private information.','') || '';
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.reportCampusListing(button.dataset.marketplaceReport,reason,details.trim());
+      toast('Marketplace report sent to your campus moderators.');
+      await loadCampusMarketplacePage();
+    } catch (err) {
+      toast(err.message || 'Could not report this listing.');
+      button.disabled = false;
+    }
+  });
+
   async function handleSignUp() {
     const backend = window.CampusShieldBackend;
     const email = $('auth-email').value.trim();
@@ -1628,7 +3186,7 @@ td strong{color:#2a464d;font-size:11px}
 
     try {
       msg.textContent = 'Creating account…';
-      const {data, error} = await backend.signUp(email, password, name, username);
+      const {data, error} = await backend.signUp(email, password, name, username, $('auth-university').value || null);
       if (error) throw error;
 
       if (!data?.user) {
@@ -1648,10 +3206,13 @@ if (data.session) {
       }
     } catch (e) {
       console.error('Sign-up failed:', e);
-      if (/database error saving new user/i.test(String(e.message || ''))) {
+      const errorMessage = String(e.message || '');
+      if (/email rate limit exceeded/i.test(errorMessage)) {
+        msg.textContent = 'Supabase has temporarily limited confirmation emails. Wait before trying again; repeated sign-up attempts will not speed this up. Once the limit clears, request a confirmation email for this account instead of registering repeatedly.';
+      } else if (/database error saving new user/i.test(errorMessage)) {
         msg.textContent = 'Sign-up failed. That username may already be taken; choose another username and try again. If it continues, contact the CampusShield administrator.';
       } else {
-        msg.textContent = 'Sign-up failed: ' + e.message;
+        msg.textContent = 'Sign-up failed: ' + errorMessage;
       }
     }
   }
@@ -1695,7 +3256,7 @@ if (data.session) {
 
       const {data:profile, error:profileError} = await backend.client
         .from('profiles')
-        .select('role, verification_status')
+        .select('role, requested_role, verification_status')
         .eq('id', user.id)
         .single();
 
@@ -1713,7 +3274,14 @@ if (data.session) {
 
       const workspaceReady = showWorkspace(profile);
       if (workspaceReady) {
+        campusContext = await backend.getMyCampusContext();
+        syncCampusAccessNavigation();
         await refreshIncidentsFromSupabase();
+        if (!campusContext?.university_id) {
+          navigate('community');
+          await loadCommunityPage();
+          toast('Choose your university to create your private campus space.');
+        }
       }
     } catch (e) {
       console.error('Sign-in failed:', e);
@@ -1905,8 +3473,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   } catch (error) {
     console.error('Resend confirmation failed:', error);
 
-    msg.textContent =
-      'Could not request another email. Please wait and try again later.';
+    msg.textContent = /email rate limit exceeded/i.test(String(error.message || ''))
+      ? 'Supabase has temporarily limited confirmation emails. Please wait before trying again; repeated resend requests will not speed this up.'
+      : 'Could not request another email. Please wait and try again later.';
   } finally {
     button.disabled = false;
   }
@@ -1934,7 +3503,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         if (user) {
           const {data:profile, error} = await backend.client
             .from('profiles')
-            .select('role, verification_status')
+            .select('role, requested_role, verification_status')
             .eq('id', user.id)
             .single();
           if (!error && profile) {
@@ -1947,10 +3516,16 @@ $('resend-confirmation-button').addEventListener('click', async () => {
             }
             const workspaceReady = showWorkspace(profile);
             if (workspaceReady) {
+              campusContext = await backend.getMyCampusContext();
+              syncCampusAccessNavigation();
               await refreshIncidentsFromSupabase();
               $('auth-message').textContent = profile.verification_status === 'verified'
                 ? `Signed in. Your role is ${profile.role}.`
                 : 'Your account is pending verification. You can submit incident reports.';
+              if (!campusContext?.university_id) {
+                navigate('community');
+                await loadCommunityPage();
+              }
             }
           }
         }
@@ -1982,7 +3557,6 @@ $('resend-confirmation-button').addEventListener('click', async () => {
 
       const {error} = await backend.client.auth.signOut();
       if (error) throw error;
-
       $('auth-password').value = '';
       currentProfile = null;
       showLogin('You have signed out.');
