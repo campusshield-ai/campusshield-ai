@@ -5,6 +5,7 @@ const NUC_URL = "https://enuc.nuc.edu.ng/nus";
 const seedPath = "supabase/migrations/20261015110000_import_official_nuc_university_directory.sql";
 const deltaPath = "supabase/migrations/20261016150000_reconcile_nuc_directory_live_deltas.sql";
 const nameDeltaPath = "supabase/migrations/20261016160000_reconcile_nuc_name_variants.sql";
+const stateDeltaPath = "supabase/migrations/20261016170000_reconcile_nuc_state_mismatch.sql";
 const outputDir = "artifacts/nuc-roster-audit";
 
 function decodeHtml(value) {
@@ -170,6 +171,17 @@ function applyNameDelta(roster, sql) {
   return corrections;
 }
 
+function applyStateDelta(roster, sql) {
+  const match = sql.match(/update\\s+public\\.campus_universities\\s+set\\s+name\\s*=\\s*'((?:''|[^'])*)'\\s*,\\s*state\\s*=\\s*'([^']+)'[\\s\\S]*?where\\s+slug\\s*=\\s*'([^']+)'/i);
+  assert.ok(match, "Could not parse state correction migration");
+  const [, rawName, state, slug] = match;
+  const existing = roster.get(slug);
+  assert.ok(existing, `State correction slug absent from seed: ${slug}`);
+  roster.set(slug, { ...existing, name: rawName.replace(/''/g, "'"), state, source: "seed+delta" });
+  assert.equal(slug, "mercy-medical-university-iwo-ogun-state");
+  return 1;
+}
+
 function levenshtein(a, b) {
   const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
   for (let i = 1; i <= a.length; i++) {
@@ -219,9 +231,11 @@ assert.ok(nuc.length >= 300, `Expected a full NUC table, parsed only ${nuc.lengt
 const seed = readFileSync(seedPath, "utf8");
 const delta = readFileSync(deltaPath, "utf8");
 const nameDelta = readFileSync(nameDeltaPath, "utf8");
+const stateDelta = readFileSync(stateDeltaPath, "utf8");
 const roster = readSeedRoster(seed);
 const deltaStats = applyDelta(roster, delta);
 const nameCorrections = applyNameDelta(roster, nameDelta);
+const stateCorrections = applyStateDelta(roster, stateDelta);
 const database = [...roster.values()];
 
 const nucByName = new Map(nuc.map(row => [normalizeName(row.name), row]));
@@ -320,6 +334,8 @@ const report = {
   reconciliationMigration: deltaPath,
   nameVariantMigration: nameDeltaPath,
   nameCorrections,
+  stateCorrectionMigration: stateDeltaPath,
+  stateCorrections,
   sourceCounts: counts(nuc),
   rosterCounts: counts(database),
   sourceTotal: nuc.length,
@@ -346,6 +362,7 @@ const md = [
   `- Current NUC table rows parsed: **${report.sourceTotal}**`,
   `- Reconstructed staging roster rows (seed + deltas): **${report.rosterTotal}**`,
   `- High-confidence name variants corrected by the second delta: **${report.nameCorrections}**`,
+  `- Confirmed state correction(s) in the third delta: **${report.stateCorrections}**`,
   `- Exact normalized-name matches: **${report.exactNameMatches}**`,
   `- Matched records with ownership/state mismatches: **${report.ownershipOrStateMismatches.length}**`,
   `- Database names without exact match: **${report.databaseRowsWithoutExactNameMatch.length}**`,
@@ -396,6 +413,7 @@ console.log(JSON.stringify({
   rosterTotal: report.rosterTotal, rosterCounts: report.rosterCounts,
   exactNameMatches: report.exactNameMatches,
   nameCorrections: report.nameCorrections,
+  stateCorrections: report.stateCorrections,
   ownershipOrStateMismatches: report.ownershipOrStateMismatches.length,
   databaseRowsWithoutExactNameMatch: report.databaseRowsWithoutExactNameMatch.length,
   nucRowsWithoutExactNameMatch: report.nucRowsWithoutExactNameMatch.length,
