@@ -57,6 +57,26 @@ async resendConfirmation(email) {
   });
 },
 
+    async requestPasswordReset(email, redirectTo) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const normalizedEmail = String(email || "").trim();
+      if (!normalizedEmail) throw new Error("Enter the email address for your account.");
+      if (!redirectTo || !/^https?:\/\//i.test(redirectTo)) {
+        throw new Error("The password-reset return URL is not valid.");
+      }
+
+      return client.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
+    },
+
+    async updatePassword(password) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (typeof password !== "string" || password.length < 8) {
+        throw new Error("Choose a password with at least 8 characters.");
+      }
+
+      return client.auth.updateUser({ password });
+    },
+
     async signIn(email, password) {
       if (!client) throw new Error("Supabase is not configured.");
 
