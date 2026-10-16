@@ -8,6 +8,7 @@ const nameDeltaPath = "supabase/migrations/20261016160000_reconcile_nuc_name_var
 const stateDeltaPath = "supabase/migrations/20261016170000_reconcile_nuc_state_mismatch.sql";
 const deactivationDeltaPath = "supabase/migrations/20261016180000_deactivate_duplicate_mewar_alias.sql";
 const manualNameDeltaPath = "supabase/migrations/20261016190000_reconcile_nuc_manual_name_matches.sql";
+const sokotoNameDeltaPath = "supabase/migrations/20261016200000_reconcile_sokoto_state_university_name.sql";
 const outputDir = "artifacts/nuc-roster-audit";
 
 function decodeHtml(value) {
@@ -213,6 +214,17 @@ function applyManualNameDelta(roster, sql) {
   return corrections;
 }
 
+function applySokotoNameDelta(roster, sql) {
+  const match = sql.match(/set\\s+name\\s*=\\s*'((?:''|[^'])*)'[\\s\\S]*?where\\s+slug\\s*=\\s*'([^']+)'/i);
+  assert.ok(match, "Could not parse Sokoto State University name correction");
+  const [, rawName, slug] = match;
+  assert.equal(slug, "sokoto-state-university");
+  const existing = roster.get(slug);
+  assert.ok(existing, `Sokoto correction slug absent from seed: ${slug}`);
+  roster.set(slug, { ...existing, name: rawName.replace(/''/g, "'"), source: "seed+delta" });
+  return 1;
+}
+
 function levenshtein(a, b) {
   const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
   for (let i = 1; i <= a.length; i++) {
@@ -265,12 +277,14 @@ const nameDelta = readFileSync(nameDeltaPath, "utf8");
 const stateDelta = readFileSync(stateDeltaPath, "utf8");
 const deactivationDelta = readFileSync(deactivationDeltaPath, "utf8");
 const manualNameDelta = readFileSync(manualNameDeltaPath, "utf8");
+const sokotoNameDelta = readFileSync(sokotoNameDeltaPath, "utf8");
 const roster = readSeedRoster(seed);
 const deltaStats = applyDelta(roster, delta);
 const nameCorrections = applyNameDelta(roster, nameDelta);
 const stateCorrections = applyStateDelta(roster, stateDelta);
 const deactivatedAliases = applyDeactivationDelta(roster, deactivationDelta);
 const manualNameCorrections = applyManualNameDelta(roster, manualNameDelta);
+const sokotoNameCorrections = applySokotoNameDelta(roster, sokotoNameDelta);
 const allRosterRows = [...roster.values()];
 const inactiveRosterRows = allRosterRows.filter(row => row.isActive === false);
 const database = allRosterRows.filter(row => row.isActive !== false);
@@ -377,6 +391,8 @@ const report = {
   deactivatedAliases,
   manualNameDeltaMigration: manualNameDeltaPath,
   manualNameCorrections,
+  sokotoNameDeltaMigration: sokotoNameDeltaPath,
+  sokotoNameCorrections,
   allRosterTotal: allRosterRows.length,
   inactiveRosterRows: inactiveRosterRows.map(({ slug, name, ownership, state }) => ({ slug, name, ownership, state })),
   sourceCounts: counts(nuc),
@@ -409,6 +425,7 @@ const md = [
   `- High-confidence name variants corrected by the second delta: **${report.nameCorrections}**`,
   `- Confirmed state correction(s) in the third delta: **${report.stateCorrections}**`,
   `- Manually reviewed display-name corrections in the fifth delta: **${report.manualNameCorrections}**`,
+  `- Additional exact-name corrections in the sixth delta: **${report.sokotoNameCorrections}**`,
   `- Exact normalized-name matches: **${report.exactNameMatches}**`,
   `- Matched records with ownership/state mismatches: **${report.ownershipOrStateMismatches.length}**`,
   `- Database names without exact match: **${report.databaseRowsWithoutExactNameMatch.length}**`,
