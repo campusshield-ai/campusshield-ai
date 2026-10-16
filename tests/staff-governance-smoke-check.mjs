@@ -19,6 +19,8 @@ for (const expected of [
   'id="page-staff-review"',
   'id="campusStaffVerificationForm"',
   'id="campus-staff-verification-queue"',
+  'id="platform-admin-admin-requests-table"',
+  'Appoint campus admin',
   'requested_campus_admin',
   'Your title is reviewed and does not automatically grant administrator permissions.'
 ]) assert.ok(html.includes(expected), 'onboarding page must include ' + expected);
@@ -28,7 +30,8 @@ for (const method of [
   'getMyCampusStaffVerification',
   'listCampusStaffVerificationReviews',
   'reviewCampusStaffVerification',
-  'createCampusStaffDocumentUrl'
+  'createCampusStaffDocumentUrl',
+  'listPlatformCampusAdminRequests'
 ]) assert.ok(backend.includes('async ' + method + '('), 'backend must expose ' + method);
 
 assert.match(migration, /create table if not exists public\.campus_staff_verifications/i);
