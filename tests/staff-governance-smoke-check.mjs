@@ -16,6 +16,7 @@ const verifiedSocialRpc = await readFile(new URL('../supabase/migrations/2026101
 const marketplaceSellerGuard = await readFile(new URL('../supabase/migrations/20261016230000_marketplace_seller_update_guard.sql', import.meta.url), 'utf8');
 const profileSelfUpdateGuard = await readFile(new URL('../supabase/migrations/20261016231000_restrict_profile_self_update_columns.sql', import.meta.url), 'utf8');
 const profileTablePrivileges = await readFile(new URL('../supabase/migrations/20261016236000_lock_profile_table_privileges.sql', import.meta.url), 'utf8');
+const anonymousIncidentReadGuard = await readFile(new URL('../supabase/migrations/20261016238000_revoke_anon_incident_read.sql', import.meta.url), 'utf8');
 const evidenceAudit = await readFile(new URL('../supabase/migrations/20261016232000_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 const evidenceAuditHistory = await readFile(new URL('../supabase/migrations/20261016233000_list_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 
@@ -129,6 +130,7 @@ assert.ok(html.includes('data-student-evidence-check'), 'student identity queue 
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 assert.ok(backend.includes('file.type === "application/pdf" ? "pdf" : file.type === "image/jpeg" ? "jpg" : "png"'), 'staff upload extension must be derived from validated MIME type');
 assert.ok(backend.includes('cleanedBase + "." + extension'), 'staff upload object name must end with the MIME-matched extension');
+assert.match(anonymousIncidentReadGuard, /revoke select on table public\\.incidents from anon/i, 'anonymous clients must not have table-level access to sensitive incident reports');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 let parsed = 0;
