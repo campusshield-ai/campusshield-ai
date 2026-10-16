@@ -80,7 +80,7 @@ assert.match(nameMigration, /Nigeria Maritime University Okerenkoko, Delta State
 assert.match(stateMigration, /Mercy Medical University, Iwara, Iwo, Osun State/);
 assert.match(stateMigration, /state = 'Osun'/);
 assert.match(stateMigration, /mercy-medical-university-iwo-ogun-state/);
-assert.doesNotMatch(stateMigration, /\\bdelete\\s+from\\b/i);
-assert.doesNotMatch(stateMigration, /set\\s+id\\s*=|set\\s+slug\\s*=/i);
+assert.doesNotMatch(stateMigration, /\bdelete\s+from\b/i);
+assert.doesNotMatch(stateMigration, /set\s+id\s*=|set\s+slug\s*=/i);
 
 console.log("NUC directory reconciliation smoke checks passed (16 corrections + 1 addition, then 15 name variants and one confirmed state correction; no ID/slug regeneration or deletion).");
