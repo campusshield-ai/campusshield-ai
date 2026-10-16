@@ -215,7 +215,7 @@ function applyManualNameDelta(roster, sql) {
 }
 
 function applySokotoNameDelta(roster, sql) {
-  const match = sql.match(/set\\s+name\\s*=\\s*'((?:''|[^'])*)'[\\s\\S]*?where\\s+slug\\s*=\\s*'([^']+)'/i);
+  const match = sql.match(/set\s+name\s*=\s*'((?:''|[^'])*)'[\s\S]*?where\s+slug\s*=\s*'([^']+)'/i);
   assert.ok(match, "Could not parse Sokoto State University name correction");
   const [, rawName, slug] = match;
   assert.equal(slug, "sokoto-state-university");
