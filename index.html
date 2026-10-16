@@ -1980,7 +1980,7 @@ td strong{color:#2a464d;font-size:11px}
           ? !identity
             ? '<span class="muted">Waiting for student ID submission.</span><br><button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>'
             : identity.status === 'pending'
-              ? `<div class="actions"><button class="btn" type="button" data-identity-review="approve" data-user-id="${esc(row.id)}">Approve ID & account</button><button class="btn danger" type="button" data-identity-review="reject" data-user-id="${esc(row.id)}">Reject ID with reason</button></div>`
+              ? `<div class="actions"><button class="btn secondary" type="button" data-student-evidence-check data-user-id="${esc(row.id)}">Record ID evidence check</button><button class="btn" type="button" data-identity-review="approve" data-user-id="${esc(row.id)}">Approve ID & account</button><button class="btn danger" type="button" data-identity-review="reject" data-user-id="${esc(row.id)}">Reject ID with reason</button></div>`
               : identity.status === 'rejected'
                 ? '<span class="muted">ID rejected; student may resubmit.</span>'
                 : `<div class="actions"><button class="btn" type="button" data-review="approve" data-user-id="${esc(row.id)}">Approve account</button><button class="btn danger" type="button" data-review="reject" data-user-id="${esc(row.id)}">Reject account</button></div>`
@@ -2270,6 +2270,38 @@ td strong{color:#2a464d;font-size:11px}
       toast(err.message || 'Could not open the ID document.');
     } finally {
       openButton.disabled = false;
+    }
+  });
+
+  $('approvals-table').addEventListener('click', async event => {
+    const evidenceButton = event.target.closest('[data-student-evidence-check]');
+    if (!evidenceButton) return;
+    const userId = evidenceButton.dataset.userId;
+    const outcomeChoice = window.prompt('Student ID outcome: 1 = Needs review, 2 = Institution confirmed, 3 = Not confirmed', '1');
+    const outcomeMap = { '1': 'needs_review', '2': 'institution_confirmed', '3': 'not_confirmed' };
+    const outcome = outcomeMap[String(outcomeChoice || '').trim()];
+    if (!outcome) { toast('Choose outcome 1, 2, or 3.'); return; }
+    const sourceChoice = window.prompt('Source: 1 = Visual document review, 2 = Official university email, 3 = University registry, 4 = Direct institution contact, 5 = Official payment portal, 6 = Other', '1');
+    const sourceMap = { '1': 'document_visual_review', '2': 'official_university_email', '3': 'university_registry', '4': 'direct_institution_contact', '5': 'official_payment_portal', '6': 'other' };
+    const sourceKind = sourceMap[String(sourceChoice || '').trim()];
+    if (!sourceKind) { toast('Choose source 1–6.'); return; }
+    const sourceReference = window.prompt('Source reference (required for institution confirmation; never enter passwords or private secrets):', '') || '';
+    if (outcome === 'institution_confirmed' && (!['official_university_email','university_registry','direct_institution_contact','official_payment_portal'].includes(sourceKind) || !sourceReference.trim())) {
+      toast('Institution confirmation requires an authoritative source and traceable reference.');
+      return;
+    }
+    const reviewerNote = window.prompt('Reviewer note (optional; do not include unnecessary sensitive information):', '') || '';
+    evidenceButton.disabled = true;
+    try {
+      await window.CampusShieldBackend.recordCampusIdentityEvidenceCheck({
+        userId, evidenceType: 'student_id', outcome, sourceKind,
+        sourceReference: sourceReference.trim() || null, reviewerNote: reviewerNote.trim() || null
+      });
+      toast('Student ID evidence check recorded in the campus audit.');
+      await loadCampusIdentityEvidenceAudit();
+    } catch (err) {
+      toast(err.message || 'Could not record student ID evidence check.');
+      evidenceButton.disabled = false;
     }
   });
 
