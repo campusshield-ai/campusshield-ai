@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const migrationPath = "supabase/migrations/20261016150000_reconcile_nuc_directory_live_deltas.sql";
+const nameMigrationPath = "supabase/migrations/20261016160000_reconcile_nuc_name_variants.sql";
 const baselinePath = "supabase/migrations/20261015110000_import_official_nuc_university_directory.sql";
 const migration = readFileSync(migrationPath, "utf8");
+const nameMigration = readFileSync(nameMigrationPath, "utf8");
 const baseline = readFileSync(baselinePath, "utf8");
 
 const expectedSlugs = [
@@ -43,4 +45,34 @@ assert.match(migration, /'federal-university-of-health-sciences-katsina', 'Feder
 assert.match(migration, /Mewar University, Masaka, Nasarawa State/);
 assert.match(migration, /on conflict \(slug\) do update/i);
 
-console.log("NUC directory reconciliation smoke checks passed (16 existing slugs; no ID/slug regeneration or deletion).");
+
+const expectedNameSlugs = [
+  "abdulsalam-abubakar-university-of-agriculture-and-climate-action-mokwa-niger-state",
+  "arthur-javis-university-akpoyubo-cross-river-state",
+  "british-canadian-university-obufu-cross-river-state",
+  "federal-university-of-agriculture-bassam-biri-bayelsa",
+  "gerar-university-of-medical-science-imope-ijebu-ogun-state",
+  "huda-university-gusau-zamafara-state",
+  "hillside-university-of-science-and-technology-okemisi-ekiti-state",
+  "lighthouse-university-evbobanosa-edo-state",
+  "tonine-iredia-university-of-communication-benin-city-edo-state",
+  "umar-musa-yar-adua-university-katsina",
+  "west-midlands-open-university-ibadan-oyo-state",
+  "nigerian-maritime-university-okerenkoko-delta-state",
+  "alex-ekwueme-university-ndufu-alike-ebonyi-state",
+  "state-university-of-medical-and-applied-sciences-igbo-eno-enugu",
+  "eko-university-of-medical-and-health-sciences-ijanikin-lagos",
+];
+assert.match(nameMigration, /expected_count integer := 15/);
+assert.match(nameMigration, /begin;/i);
+assert.match(nameMigration, /commit;/i);
+assert.doesNotMatch(nameMigration, /\bdelete\s+from\b/i);
+assert.doesNotMatch(nameMigration, /set\s+id\s*=|set\s+slug\s*=/i);
+for (const slug of expectedNameSlugs) {
+  assert.ok(baseline.includes(slug), `name-correction target slug must exist in baseline: ${slug}`);
+  assert.ok(nameMigration.includes(slug), `name-correction migration must include slug: ${slug}`);
+}
+assert.match(nameMigration, /Arthur Jarvis University, Akpabuyo, Cross River State/);
+assert.match(nameMigration, /Nigeria Maritime University Okerenkoko, Delta State/);
+
+console.log("NUC directory reconciliation smoke checks passed (16 corrections + 1 addition, then 15 name variants; no ID/slug regeneration or deletion).");
