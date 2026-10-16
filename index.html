@@ -420,7 +420,7 @@ td strong{color:#2a464d;font-size:11px}
       <p class="auth-kicker">CAMPUSSHIELD ACCESS</p>
       <h2 id="auth-title">Welcome back</h2>
       <p id="auth-subtitle" class="muted">Sign in to review campus safety reports.</p>
-      <div class="auth-tabs" role="group" aria-label="Account access">
+      <div class="auth-tabs" id="auth-tabs" role="group" aria-label="Account access">
         <button type="button" data-auth-mode="signin" aria-pressed="true">Sign in</button>
         <button type="button" data-auth-mode="signup" aria-pressed="false">Create account</button>
       </div>
@@ -430,9 +430,17 @@ td strong{color:#2a464d;font-size:11px}
           <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
           <div class="field"><label for="auth-role">Account type</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
         </div>
-        <div class="field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
-        <div class="field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div>
-        <div class="remember-field"><label for="remember-email"><input type="checkbox" id="remember-email"> Remember my email address</label></div>
+        <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+        <div class="field" id="auth-password-field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div>
+        <div class="field" id="forgot-password-field">
+          <button type="button" id="forgot-password-button" class="btn secondary">Forgot password?</button>
+        </div>
+        <div id="password-reset-fields" hidden>
+          <div class="field"><label for="new-password">New password *</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></div>
+          <div class="field"><label for="confirm-new-password">Confirm new password *</label><input id="confirm-new-password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the new password again"></div>
+          <p class="muted">Use a password you do not use on other websites.</p>
+        </div>
+        <div class="remember-field" id="remember-email-field"><label for="remember-email"><input type="checkbox" id="remember-email"> Remember my email address</label></div>
         <div class="field" id="resend-field">
           <button type="button" id="resend-confirmation-button" class="btn secondary">Resend confirmation email</button>
         </div>
@@ -674,6 +682,10 @@ td strong{color:#2a464d;font-size:11px}
   let incidentsLastUpdated = null;
   let authMode = 'signin';
   let authBusy = false;
+  const initialRecoveryHash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
+  let passwordRecoveryActive =
+    new URLSearchParams(window.location.search).get('password-reset') === '1' ||
+    initialRecoveryHash.get('type') === 'recovery';
 
   function normalizeSeverity(value) {
     const key = String(value ?? '').trim().toLowerCase();
@@ -767,18 +779,34 @@ td strong{color:#2a464d;font-size:11px}
   }
 
   function setAuthMode(mode) {
-    authMode = mode === 'signup' ? 'signup' : 'signin';
+    authMode = mode === 'signup' ? 'signup' : mode === 'reset' ? 'reset' : 'signin';
     const isSignUp = authMode === 'signup';
+    const isReset = authMode === 'reset';
+
+    $('auth-tabs').hidden = isReset;
     $('signup-fields').hidden = !isSignUp;
+    $('auth-email-field').hidden = isReset;
+    $('auth-email').required = !isReset;
+    $('auth-password-field').hidden = isReset;
+    $('auth-password').required = !isReset;
+    $('password-reset-fields').hidden = !isReset;
+    $('new-password').required = isReset;
+    $('confirm-new-password').required = isReset;
+    $('forgot-password-field').hidden = isSignUp || isReset;
+    $('remember-email-field').hidden = isSignUp || isReset;
     $('auth-role').required = isSignUp;
     $('auth-username').required = isSignUp;
-    $('resend-field').hidden = isSignUp;
-    $('auth-title').textContent = isSignUp ? 'Create your account' : 'Welcome back';
+    $('resend-field').hidden = isSignUp || isReset;
+    $('auth-helper').hidden = isReset;
+    $('install-card').hidden = isReset;
+    $('auth-title').textContent = isSignUp ? 'Create your account' : isReset ? 'Choose a new password' : 'Welcome back';
     $('auth-subtitle').textContent = isSignUp
       ? 'Set up a CampusShield account to submit reports.'
-      : 'Sign in to review campus safety reports.';
+      : isReset
+        ? 'Set a new password to finish recovering your account.'
+        : 'Sign in to review campus safety reports.';
     $('auth-password').autocomplete = isSignUp ? 'new-password' : 'current-password';
-    $('auth-submit').textContent = isSignUp ? 'Create account' : 'Sign in';
+    $('auth-submit').textContent = isSignUp ? 'Create account' : isReset ? 'Update password' : 'Sign in';
     $('auth-helper').textContent = isSignUp
       ? 'Student and teacher accounts require administrator verification for incident management and analysis. Reports can be submitted while verification is pending. This prototype does not contact emergency services.'
       : 'Use fictional information only. This prototype does not contact emergency services.';
@@ -787,7 +815,9 @@ td strong{color:#2a464d;font-size:11px}
     );
     $('auth-message').textContent = isSignUp
       ? 'Create an account to get started.'
-      : 'Please sign in or create an account.';
+      : isReset
+        ? 'Enter and confirm your new password.'
+        : 'Please sign in or create an account.';
   }
 
   document.querySelectorAll('[data-auth-mode]').forEach(button =>
@@ -796,10 +826,115 @@ td strong{color:#2a464d;font-size:11px}
     })
   );
 
+  async function handleForgotPassword() {
+    const backend = window.CampusShieldBackend;
+    const email = $('auth-email').value.trim();
+    const message = $('auth-message');
+    const button = $('forgot-password-button');
+
+    if (!email) {
+      message.textContent = 'Enter your email address first, then choose Forgot password.';
+      $('auth-email').focus();
+      return;
+    }
+    if (!$('auth-email').checkValidity()) {
+      message.textContent = 'Enter a valid email address.';
+      $('auth-email').focus();
+      return;
+    }
+    if (!backend?.isConfigured) {
+      message.textContent = 'Supabase is not connected. Please try again later.';
+      return;
+    }
+    if (authBusy) return;
+
+    authBusy = true;
+    button.disabled = true;
+    const originalLabel = button.textContent;
+    button.textContent = 'Requesting reset link…';
+    try {
+      let redirectUrl;
+      if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+        const target = new URL(window.location.pathname, window.location.origin);
+        target.searchParams.set('password-reset', '1');
+        redirectUrl = target.toString();
+      } else {
+        redirectUrl = 'https://campusshield-ai.github.io/campusshield-ai/?password-reset=1';
+      }
+      const {error} = await backend.requestPasswordReset(email, redirectUrl);
+      if (error) throw error;
+      message.textContent = 'If an account exists for that email address, reset instructions have been requested. Check your inbox and spam folder.';
+    } catch (error) {
+      console.error('Password reset request failed:', error);
+      const text = String(error?.message || '');
+      message.textContent = /rate limit|too many requests/i.test(text)
+        ? 'Too many reset requests. Please wait a while before trying again.'
+        : 'Could not request a reset link right now. Check your connection and try again later.';
+    } finally {
+      authBusy = false;
+      button.disabled = false;
+      button.textContent = originalLabel;
+    }
+  }
+
+  async function handlePasswordReset() {
+    const backend = window.CampusShieldBackend;
+    const password = $('new-password').value;
+    const confirmPassword = $('confirm-new-password').value;
+    const message = $('auth-message');
+    if (!backend?.isConfigured) {
+      message.textContent = 'Supabase is not connected. Please try again later.';
+      return;
+    }
+    if (password.length < 8) {
+      message.textContent = 'Choose a password with at least 8 characters.';
+      $('new-password').focus();
+      return;
+    }
+    if (password !== confirmPassword) {
+      message.textContent = 'The passwords do not match.';
+      $('confirm-new-password').focus();
+      return;
+    }
+
+    message.textContent = 'Updating your password…';
+    const {error} = await backend.updatePassword(password);
+    if (error) throw error;
+
+    $('new-password').value = '';
+    $('confirm-new-password').value = '';
+    $('auth-password').value = '';
+    passwordRecoveryActive = false;
+    try {
+      const {error:signOutError} = await backend.signOut();
+      if (signOutError) console.warn('Password changed, but the recovery session could not be closed automatically.');
+    } catch (signOutError) {
+      console.warn('Password changed, but the recovery session could not be closed automatically.', signOutError);
+    }
+    try {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (urlError) {
+      console.warn('Could not clear the password-reset URL state.', urlError);
+    }
+    setAuthMode('signin');
+    message.textContent = 'Your password has been updated. Sign in with your new password.';
+  }
+
+  $('forgot-password-button').addEventListener('click', handleForgotPassword);
+
   // Keep the visible workspace synchronized with the Supabase session.
   // Avoid asynchronous Supabase calls inside this auth callback.
   if (window.CampusShieldBackend?.client?.auth) {
     window.CampusShieldBackend.client.auth.onAuthStateChange(event => {
+      if (event === 'PASSWORD_RECOVERY') {
+        passwordRecoveryActive = true;
+        currentProfile = null;
+        $('workspace').hidden = true;
+        $('login-screen').hidden = false;
+        setAuthMode('reset');
+        $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
+        return;
+      }
       if (event === 'SIGNED_IN') authSessionVersion += 1;
 
       if (event === 'SIGNED_OUT') {
@@ -1595,11 +1730,17 @@ if (data.session) {
     button.textContent = authMode === 'signup' ? 'Creating account…' : 'Signing in…';
     try {
       if (authMode === 'signup') await handleSignUp();
+      else if (authMode === 'reset') await handlePasswordReset();
       else await handleSignIn();
+    } catch (error) {
+      console.error('Authentication form submission failed:', error);
+      $('auth-message').textContent = authMode === 'reset'
+        ? 'Could not update the password. The reset link may have expired; request a new one and try again.'
+        : 'Could not complete the request. Please try again.';
     } finally {
       authBusy = false;
       button.disabled = false;
-      button.textContent = authMode === 'signup' ? 'Create account' : 'Sign in';
+      button.textContent = authMode === 'signup' ? 'Create account' : authMode === 'reset' ? 'Update password' : 'Sign in';
     }
   });
 
@@ -1776,7 +1917,14 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   setAuthMode('signin');
 
   render();
-  showLogin();
+  if (passwordRecoveryActive) {
+    $('workspace').hidden = true;
+    $('login-screen').hidden = false;
+    setAuthMode('reset');
+    $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
+  } else {
+    showLogin();
+  }
 
   (async () => {
     try {
@@ -1790,6 +1938,13 @@ $('resend-confirmation-button').addEventListener('click', async () => {
             .eq('id', user.id)
             .single();
           if (!error && profile) {
+            if (passwordRecoveryActive) {
+              $('workspace').hidden = true;
+              $('login-screen').hidden = false;
+              setAuthMode('reset');
+              $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
+              return;
+            }
             const workspaceReady = showWorkspace(profile);
             if (workspaceReady) {
               await refreshIncidentsFromSupabase();
