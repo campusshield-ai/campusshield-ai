@@ -77,7 +77,7 @@ assert.match(marketplaceSellerGuard, /using \([\s\S]*seller_id = \(select auth\.
 assert.match(marketplaceSellerGuard, /revoke update \(category, title, description, price_ngn, contact_instructions\)[\s\S]*from authenticated/i, 'sellers must not directly rewrite listing details');
 assert.match(marketplaceSellerGuard, /grant update \(status, updated_at\)[\s\S]*to authenticated/i, 'seller update grant must be limited to status and timestamp');
 assert.ok(marketplaceSellerGuard.includes('drop policy if exists campus_marketplace_update_own_same_campus'), 'old permissive marketplace update policy must be removed');
-assert.match(profileSelfUpdateGuard, /revoke update \(id, role, verification_status, created_at, last_profile_edit_at\)[\s\S]*from authenticated/i, 'profile identity, role, verification state and server timestamps must not be user-updatable');
+assert.match(profileSelfUpdateGuard, /revoke update on public\.profiles from authenticated/i, 'table-level profile update must be revoked before safe column grants');
 assert.match(profileSelfUpdateGuard, /grant update \(display_name, requested_role\)[\s\S]*to authenticated/i, 'self-service profile updates must be limited to display name and requested role');
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 
