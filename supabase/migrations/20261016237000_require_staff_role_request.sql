@@ -19,6 +19,8 @@ declare
   v_university_id uuid := (select private.current_campus_university_id());
   v_document_ok boolean := false;
   v_requested_role text;
+  v_current_role text;
+  v_profile_status text;
 begin
   if v_user_id is null then raise exception 'Sign in before submitting staff verification.'; end if;
   if v_university_id is null then raise exception 'Choose your university during account creation before submitting staff verification.'; end if;
@@ -49,10 +51,13 @@ begin
     if not v_document_ok then raise exception 'The private staff ID document was not found or is not an allowed file.'; end if;
   end if;
 
-  select p.requested_role::text into v_requested_role
+  select p.requested_role::text, p.role::text, p.verification_status::text
+    into v_requested_role, v_current_role, v_profile_status
   from public.profiles p where p.id = v_user_id;
-  if v_requested_role is distinct from 'teacher' then
-    raise exception 'Staff verification is available only to accounts registered for a teacher or staff role.';
+  if v_requested_role is distinct from 'teacher'
+     or v_current_role in ('teacher','security','admin')
+     or v_profile_status is distinct from 'pending' then
+    raise exception 'Staff verification is available only to pending accounts registered for a teacher or staff role.';
   end if;
   if not exists (
     select 1 from public.campus_memberships cm
