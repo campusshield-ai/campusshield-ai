@@ -55,7 +55,21 @@ Unmatched live NUC rows:
 - Ondo State University of Medical Sciences — State / Ondo
 - Rivers State University of Science & Technology, Port Harcourt, Rivers State — State / Rivers
 
-This list deliberately remains unresolved because NUC pages disagree on naming and/or location. Preserve the stable IDs and campus relationships; do not force aliases into merges or rename locations based on a single conflicting source. The 144 fuzzy suggestions remain unverified and require source review before full roster certification.
+The current audit's greedy fuzzy-pair step does not produce a guaranteed one-to-one list: **Rivers State University** is a database row that is missing from the unresolved-database list because the heuristic paired it to another candidate, while **Rivers State University of Science & Technology, Port Harcourt, Rivers State** remains in the NUC-unmatched list. The university's official site confirms that “Rivers State University of Science and Technology” is its former name ([source](https://www.rsu.edu.ng/surveying-and-geomatics/)). Treat this as a confirmed rename alias and a matcher defect, not a ninth separate institution.
+
+Other confirmed identity aliases with conflicting NUC display data:
+- **Bowen University, Iwo:** the university's official site gives Iwo, Osun State ([source](https://bowen.edu.ng/plan-your-visit/)); the live NUC NUS row says Ogun State.
+- **Redeemer's University:** the official university portal gives Ede, Osun State ([source](https://staff.run.edu.ng/index.php?success=0)); the live NUC NUS row says Mowe, Ogun State.
+- **Cross River University of Technology / University of Cross River State:** NUC's live NUS table retains the former name while the NUC state-university list uses the newer name.
+- **David Nweze Umahi Federal University of Medical Sciences / King David Umahi University of Medical Sciences:** NUC's own takeover notice documents the David Nweze Umahi Federal University name ([source](https://www.nuc.edu.ng/fg-takes-over-renames-david-umahi-varsity-uburu/)), while the current NUS row uses “King David Umahi”.
+- **University of Medical Sciences, Ondo / Ondo State University of Medical Sciences:** the official university site uses University of Medical Sciences, Ondo ([source](https://www.unimed.edu.ng/)); the live NUC NUS row uses the older variant.
+- **Lagos State University of Education / Lagos University of Education:** the institution's official site uses Lagos State University of Education ([source](https://lasued.edu.ng/)); the live NUS row has a different variant.
+- **Kashim Ibrahim University / Borno State University:** the official university site and 2025 state gazette confirm the 2025 renaming ([university](https://www.kiu.edu.ng/), [gazette](https://kiu.edu.ng/documents/AMENDMENTS.pdf)); the live NUC NUS row still uses the previous name.
+- **Elrazi Medical University, Kano / Elrazi University of Medical Sciences:** the institution's current official site uses Elrazi Medical University, Kano ([source](https://www.elrazi.edu.ng/)); the live NUC NUS row uses a different name.
+
+The database display names for Kashim Ibrahim University and Elrazi Medical University were corrected to the institutions' official current names with stable slugs preserved; those two rows intentionally still differ from the live NUC display until NUC updates or clarifies its directory. The other conflicting canonical names/locations were not force-changed.
+
+The unmatched lists therefore represent **source and matching conflicts**, not evidence that all listed rows are separate institutions. Preserve stable IDs and campus relationships; do not force aliases into merges or copy contradictory locations into the canonical record. The 144 fuzzy suggestions remain unverified and require source review before full roster certification.
 
 ## Deliberately not changed
 
