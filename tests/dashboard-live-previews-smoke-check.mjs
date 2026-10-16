@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const backend = await readFile(new URL('../campusshield-backend.js', import.meta.url), 'utf8');
+const identityAddon = await readFile(new URL('../campusshield-backend-identity-addon.js', import.meta.url), 'utf8');
 
 function includes(source, value, message = value) {
   assert.ok(source.includes(value), 'Expected source to include: ' + message);
@@ -73,7 +74,10 @@ for (const method of [
   'getMyCampusContext',
   'getCurrentUser',
   'getMyStudentIdentityVerification'
-]) includes(backend, 'async ' + method + '(');
+]) {
+  if (method === 'getMyStudentIdentityVerification') includes(identityAddon, 'backend.getMyStudentIdentityVerification = async function');
+  else includes(backend, 'async ' + method + '(');
+}
 
 // All literal navigation keys have a matching page section; literal IDs are unique.
 const navKeys = [...new Set([...html.matchAll(/data-page=["']([^"'\x60]+)["']/g)].map(match => match[1]).filter(value => !value.includes('${')))];
