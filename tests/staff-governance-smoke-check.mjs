@@ -15,6 +15,7 @@ const verifiedStudentAccess = await readFile(new URL('../supabase/migrations/202
 const verifiedSocialRpc = await readFile(new URL('../supabase/migrations/20261016228000_require_verified_account_for_social_rpc_actions.sql', import.meta.url), 'utf8');
 const marketplaceSellerGuard = await readFile(new URL('../supabase/migrations/20261016230000_marketplace_seller_update_guard.sql', import.meta.url), 'utf8');
 const profileSelfUpdateGuard = await readFile(new URL('../supabase/migrations/20261016231000_restrict_profile_self_update_columns.sql', import.meta.url), 'utf8');
+const profileTablePrivileges = await readFile(new URL('../supabase/migrations/20261016236000_lock_profile_table_privileges.sql', import.meta.url), 'utf8');
 const evidenceAudit = await readFile(new URL('../supabase/migrations/20261016232000_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 const evidenceAuditHistory = await readFile(new URL('../supabase/migrations/20261016233000_list_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 
@@ -99,6 +100,9 @@ assert.match(marketplaceSellerGuard, /grant update \(status, updated_at\)[\s\S]*
 assert.ok(marketplaceSellerGuard.includes('drop policy if exists campus_marketplace_update_own_same_campus'), 'old permissive marketplace update policy must be removed');
 assert.match(profileSelfUpdateGuard, /revoke update on public\.profiles from authenticated/i, 'table-level profile update must be revoked before safe column grants');
 assert.match(profileSelfUpdateGuard, /grant update \(display_name, requested_role\)[\s\S]*to authenticated/i, 'self-service profile updates must be limited to display name and requested role');
+assert.match(profileTablePrivileges, /revoke all privileges on table public\.profiles from anon, authenticated/i, 'broad profile table privileges must be revoked from client roles');
+assert.match(profileTablePrivileges, /grant select on table public\.profiles to authenticated/i, 'authenticated clients retain required profile reads');
+assert.match(profileTablePrivileges, /grant update \(display_name, requested_role\) on table public\.profiles to authenticated/i, 'only approved self-service profile columns are granted back');
 assert.ok(evidenceAudit.includes('create table if not exists public.campus_identity_evidence_checks'), 'evidence checks must be recorded in an audit table');
 assert.ok(evidenceAudit.includes('alter table public.campus_identity_evidence_checks enable row level security'), 'evidence audit table must enforce RLS');
 assert.ok(evidenceAudit.includes('revoke all on table public.campus_identity_evidence_checks from public, anon, authenticated'), 'clients must not read or write audit records directly');
