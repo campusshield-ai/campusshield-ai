@@ -16,6 +16,7 @@ const verifiedSocialRpc = await readFile(new URL('../supabase/migrations/2026101
 const marketplaceSellerGuard = await readFile(new URL('../supabase/migrations/20261016230000_marketplace_seller_update_guard.sql', import.meta.url), 'utf8');
 const profileSelfUpdateGuard = await readFile(new URL('../supabase/migrations/20261016231000_restrict_profile_self_update_columns.sql', import.meta.url), 'utf8');
 const profileTablePrivileges = await readFile(new URL('../supabase/migrations/20261016236000_lock_profile_table_privileges.sql', import.meta.url), 'utf8');
+const staffRoleRequestGuard = await readFile(new URL('../supabase/migrations/20261016237000_require_staff_role_request.sql', import.meta.url), 'utf8');
 const evidenceAudit = await readFile(new URL('../supabase/migrations/20261016232000_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 const evidenceAuditHistory = await readFile(new URL('../supabase/migrations/20261016233000_list_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 
@@ -62,6 +63,10 @@ assert.match(migration, /public\.review_campus_staff_verification/i);
 assert.match(migration, /public = false|values \('campus-staff-documents',[\s\S]{0,80}false/i);
 assert.match(migration, /private\.current_campus_role\(\)[\s\S]{0,80}'admin'/i);
 assert.ok(migration.includes('requested_campus_admin'), 'admin consideration is recorded as a request, not a granted role');
+assert.match(staffRoleRequestGuard, /if v_requested_role is distinct from 'teacher' then/i, 'staff submission must require an explicit teacher/staff onboarding request');
+assert.doesNotMatch(staffRoleRequestGuard, /v_role is distinct from 'teacher' and not exists/i, 'legacy security/admin roles must not bypass the explicit staff request gate');
+assert.match(staffRoleRequestGuard, /revoke all on function public\.submit_campus_staff_verification\(text,text,text,text,boolean\) from public, anon/i, 'staff submission RPC must deny anonymous execution');
+assert.match(staffRoleRequestGuard, /set search_path = ''/i, 'staff submission SECURITY DEFINER function must lock search_path');
 assert.ok(migration.includes('separate decisions'), 'staff review separates identity approval from campus administrator appointment');
 assert.doesNotMatch(migration, /grant execute on function public\.review_campus_staff_verification\([^;]+ to anon/i);
 assert.match(legacyGuard, /v_requested_role\s*=\s*'teacher'\s+or\s+v_role\s*=\s*'teacher'[\s\S]*campus_staff_verifications[\s\S]*v\.status\s*=\s*'approved'/i, 'legacy membership review must require approved staff verification for teacher applicants');
