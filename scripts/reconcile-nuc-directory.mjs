@@ -7,6 +7,7 @@ const deltaPath = "supabase/migrations/20261016150000_reconcile_nuc_directory_li
 const nameDeltaPath = "supabase/migrations/20261016160000_reconcile_nuc_name_variants.sql";
 const stateDeltaPath = "supabase/migrations/20261016170000_reconcile_nuc_state_mismatch.sql";
 const deactivationDeltaPath = "supabase/migrations/20261016180000_deactivate_duplicate_mewar_alias.sql";
+const manualNameDeltaPath = "supabase/migrations/20261016190000_reconcile_nuc_manual_name_matches.sql";
 const outputDir = "artifacts/nuc-roster-audit";
 
 function decodeHtml(value) {
@@ -197,6 +198,21 @@ function applyDeactivationDelta(roster, sql) {
   return 1;
 }
 
+function applyManualNameDelta(roster, sql) {
+  const updateMatch = sql.match(/from\\s*\\(\\s*values([\\s\\S]*?)\\)\\s*as\\s+v\\s*\\(slug\\s*,\\s*name\\s*\\)/i);
+  assert.ok(updateMatch, "Could not parse manually reviewed name corrections");
+  let corrections = 0;
+  for (const row of parseTuples(updateMatch[1])) {
+    const [slug, name] = row;
+    const existing = roster.get(slug);
+    assert.ok(existing, `Manual correction slug absent from seed: ${slug}`);
+    roster.set(slug, { ...existing, name, source: "seed+delta" });
+    corrections++;
+  }
+  assert.equal(corrections, 17, "Expected 17 manually reviewed display-name corrections");
+  return corrections;
+}
+
 function levenshtein(a, b) {
   const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
   for (let i = 1; i <= a.length; i++) {
@@ -248,11 +264,13 @@ const delta = readFileSync(deltaPath, "utf8");
 const nameDelta = readFileSync(nameDeltaPath, "utf8");
 const stateDelta = readFileSync(stateDeltaPath, "utf8");
 const deactivationDelta = readFileSync(deactivationDeltaPath, "utf8");
+const manualNameDelta = readFileSync(manualNameDeltaPath, "utf8");
 const roster = readSeedRoster(seed);
 const deltaStats = applyDelta(roster, delta);
 const nameCorrections = applyNameDelta(roster, nameDelta);
 const stateCorrections = applyStateDelta(roster, stateDelta);
 const deactivatedAliases = applyDeactivationDelta(roster, deactivationDelta);
+const manualNameCorrections = applyManualNameDelta(roster, manualNameDelta);
 const allRosterRows = [...roster.values()];
 const inactiveRosterRows = allRosterRows.filter(row => row.isActive === false);
 const database = allRosterRows.filter(row => row.isActive !== false);
@@ -357,6 +375,8 @@ const report = {
   stateCorrections,
   deactivationMigration: deactivationDeltaPath,
   deactivatedAliases,
+  manualNameDeltaMigration: manualNameDeltaPath,
+  manualNameCorrections,
   allRosterTotal: allRosterRows.length,
   inactiveRosterRows: inactiveRosterRows.map(({ slug, name, ownership, state }) => ({ slug, name, ownership, state })),
   sourceCounts: counts(nuc),
@@ -388,6 +408,7 @@ const md = [
   `- Inactive duplicate aliases preserved by ID: **${report.inactiveRosterRows.length}**`,
   `- High-confidence name variants corrected by the second delta: **${report.nameCorrections}**`,
   `- Confirmed state correction(s) in the third delta: **${report.stateCorrections}**`,
+  `- Manually reviewed display-name corrections in the fifth delta: **${report.manualNameCorrections}**`,
   `- Exact normalized-name matches: **${report.exactNameMatches}**`,
   `- Matched records with ownership/state mismatches: **${report.ownershipOrStateMismatches.length}**`,
   `- Database names without exact match: **${report.databaseRowsWithoutExactNameMatch.length}**`,
