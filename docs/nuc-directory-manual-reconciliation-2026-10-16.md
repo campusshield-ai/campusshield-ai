@@ -26,6 +26,8 @@ A manual identity review confirmed these 17 records are the same institution in 
 
 The live NUC table's full display name is retained, including its own spelling and location wording. This is a source-alignment decision, not a claim that every NUC page is internally consistent.
 
+A follow-up migration, `20261016200000_reconcile_sokoto_state_university_name.sql`, also aligns **Sokoto State University** to the live NUC display name **Sokoto State University, Sokoto**. It is a name-only correction by the existing slug, with ownership/state and all relationships preserved.
+
 ## Deliberately not changed
 
 These records still require authoritative clarification; no automated or guessed change was applied:
