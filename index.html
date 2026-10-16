@@ -2773,7 +2773,7 @@ td strong{color:#2a464d;font-size:11px}
         return;
       }
 
-      status.textContent = 'Loading content for ' + esc(campus.university_name || 'your university') + '…';
+      status.textContent = 'Loading content for ' + String(campus.university_name || 'your university') + '…';
       const [noticesResult, eventsResult, postsResult, ticketsResult] = await Promise.allSettled([
         backend.listCampusNotices(),
         backend.listCampusEvents(),
@@ -2802,7 +2802,9 @@ td strong{color:#2a464d;font-size:11px}
         targets.notices.innerHTML = emptyPreview('Notices are temporarily unavailable.');
       } else {
         const notices = (noticesResult.value || []).filter(function(notice) {
-          return !notice.expires_at || new Date(notice.expires_at).getTime() > Date.now();
+          // Until profile faculty/department targeting is loaded here, only show campus-wide notices.
+          // This avoids surfacing a faculty- or department-restricted notice to the wrong audience.
+          return notice.audience_scope === 'campus' && (!notice.expires_at || new Date(notice.expires_at).getTime() > Date.now());
         }).slice(0, 2);
         targets.notices.innerHTML = notices.length ? notices.map(function(notice) {
           return item(notice.title, notice.body, 'Published ' + dateText(notice.published_at) + ' · ' + (notice.publisher_label || 'Verified campus unit'));
