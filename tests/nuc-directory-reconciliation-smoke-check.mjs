@@ -4,10 +4,12 @@ import { readFileSync } from "node:fs";
 const migrationPath = "supabase/migrations/20261016150000_reconcile_nuc_directory_live_deltas.sql";
 const nameMigrationPath = "supabase/migrations/20261016160000_reconcile_nuc_name_variants.sql";
 const stateMigrationPath = "supabase/migrations/20261016170000_reconcile_nuc_state_mismatch.sql";
+const deactivationMigrationPath = "supabase/migrations/20261016180000_deactivate_duplicate_mewar_alias.sql";
 const baselinePath = "supabase/migrations/20261015110000_import_official_nuc_university_directory.sql";
 const migration = readFileSync(migrationPath, "utf8");
 const nameMigration = readFileSync(nameMigrationPath, "utf8");
 const stateMigration = readFileSync(stateMigrationPath, "utf8");
+const deactivationMigration = readFileSync(deactivationMigrationPath, "utf8");
 const baseline = readFileSync(baselinePath, "utf8");
 
 const expectedSlugs = [
@@ -83,4 +85,10 @@ assert.match(stateMigration, /mercy-medical-university-iwo-ogun-state/);
 assert.doesNotMatch(stateMigration, /\bdelete\s+from\b/i);
 assert.doesNotMatch(stateMigration, /set\s+id\s*=|set\s+slug\s*=/i);
 
-console.log("NUC directory reconciliation smoke checks passed (16 corrections + 1 addition, then 15 name variants and one confirmed state correction; no ID/slug regeneration or deletion).");
+assert.match(deactivationMigration, /mewar-international-university-masaka-nasarawa-state/);
+assert.match(deactivationMigration, /set is_active = false/i);
+assert.match(deactivationMigration, /Mewar University duplicate row is referenced/);
+assert.doesNotMatch(deactivationMigration, /\bdelete\s+from\b/i);
+assert.doesNotMatch(deactivationMigration, /set\s+id\s*=|set\s+slug\s*=/i);
+
+console.log("NUC directory reconciliation smoke checks passed (16 corrections + 1 addition, 15 name variants, one state correction, and one guarded duplicate-alias deactivation; IDs/slugs preserved).");
