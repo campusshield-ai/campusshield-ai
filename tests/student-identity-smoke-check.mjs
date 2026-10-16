@@ -12,6 +12,12 @@ const communityReadGate = await readFile(new URL('../supabase/migrations/2026101
 for (const required of [
   'id="studentIdentityForm"',
   'id="identity-institution"',
+  'id="identity-institution-search"',
+  'id="identity-university-options"',
+  'id="identityUniversityRequestForm"',
+  'id="identity-request-university-name"',
+  'Other / institution not listed',
+  'https://enuc.nuc.edu.ng/nus',
   'id="identity-student-number"',
   'id="identity-document"',
   'data-identity-review="approve"',
@@ -24,6 +30,11 @@ for (const required of [
 ]) assert.ok(html.includes(required), 'index.html should contain ' + required);
 
 assert.ok(html.includes('<script src="./campusshield-backend-identity-addon.js"></script>'), 'identity add-on must load before app code');
+assert.match(html, /listCampusUniversities\(\)/, 'identity form options come from the existing Supabase university directory');
+assert.match(html, /requestCampusUniversity\(\{[\s\S]*?name: \$\('identity-request-university-name'\)/, 'unlisted university uses the existing guarded listing-request RPC');
+assert.match(html, /typedInstitution\.toLocaleLowerCase\(\) !== lockedInstitution\.toLocaleLowerCase\(\)/, 'identity submission rejects a university different from the locked campus');
+assert.match(html, /institutionName: campusContext\.university_name/, 'identity upload still submits the server-linked campus name');
+assert.match(html, /studentIdentityForm[\s\S]*?uploadStudentIdentityDocument/, 'the existing secure identity upload flow remains wired');
 for (const method of ['getMyStudentIdentityVerification', 'uploadStudentIdentityDocument', 'createStudentIdentityDocumentUrl']) {
   assert.ok(addon.includes('backend.' + method + ' = async function'), 'identity add-on should define ' + method);
 }
