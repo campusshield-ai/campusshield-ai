@@ -2888,7 +2888,7 @@ td strong{color:#2a464d;font-size:11px}
         if (error) throw error;
         audienceProfile = data || {};
       }
-      const normalizeAudience = value => String(value || '').trim().toLocaleLowerCase().replace(/\\s+/g, ' ');
+      const normalizeAudience = value => String(value || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
       const activeNotices = notices.filter(function(notice) {
         if (!notice.expires_at) return true;
         const expiryTime = new Date(notice.expires_at).getTime();
