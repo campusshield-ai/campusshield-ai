@@ -38,7 +38,7 @@ assert.match(migration, /public\.review_campus_staff_verification/i);
 assert.match(migration, /public = false|values \('campus-staff-documents',[\s\S]{0,80}false/i);
 assert.match(migration, /private\.current_campus_role\(\)[\s\S]{0,80}'admin'/i);
 assert.ok(migration.includes('requested_campus_admin'), 'admin consideration is recorded as a request, not a granted role');
-assert.ok(migration.includes('separately'), 'staff review separates identity approval from campus administrator appointment');
+assert.ok(migration.includes('separate decisions'), 'staff review separates identity approval from campus administrator appointment');
 assert.doesNotMatch(migration, /grant execute on function public\.review_campus_staff_verification\([^;]+ to anon/i);
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 
