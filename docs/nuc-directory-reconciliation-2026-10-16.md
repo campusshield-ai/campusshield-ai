@@ -7,13 +7,13 @@ The live NUC directory currently reports 77 federal, 69 state and 182 private un
 
 ## Changes in migration `20261016150000_reconcile_nuc_directory_live_deltas.sql`
 
-The first migration corrects 16 high-confidence existing records against the live NUC listing and adds one current NUC-listed university missing from the baseline snapshot:
+The first migration corrects 16 high-confidence existing records and initially added a Mewar alias row that subsequent audit showed was duplicative:
 
 - Corrects the state for Federal University Gashua (Yobe), Federal University Dutsin-Ma (Katsina), Federal University Otuoke (Bayelsa), Federal University Gusau (Zamfara), and Jigawa State University of Allied and Medical Science (Jigawa).
 - Adds Mewar University, Masaka, Nasarawa State, which was present in the live NUC listing but absent from the baseline seed.
 - Corrects current NUC display names for City University, Millennium Crest University, Transatlantic University of Medicine and Health Sciences, Baba-Ahmed University, Modibbo Adama University, Michael Okpara University of Agriculture, Federal University of Health Sciences at Funtua, Federal University of Agriculture and Developmental Studies at Iragbiji, Federal University of Agriculture and Technology at Okeho, Cross River University of Education and Entrepreneurship, and Ebonyi State University of Aeronautics and Aerospace Engineering.
 
-The first migration updates by the existing `slug`, asserts all 16 slugs exist, preserves primary keys and foreign-key relationships, and does not delete or deactivate institutions. A second migration, `20261016160000_reconcile_nuc_name_variants.sql`, corrects 15 high-confidence spelling/location variants by existing slug; it also preserves IDs/relationships. A third migration, `20261016170000_reconcile_nuc_state_mismatch.sql`, corrects the confirmed Mercy Medical University location from Ogun to Osun. All three migrations have been applied to staging only.
+The first migration updates 16 existing rows by slug and initially inserted a second Mewar alias row. The live-page audit then showed that the baseline already had **Mewar International University**, the current NUC name, so the added **Mewar University** row was a duplicate alias rather than a missing institution. A fourth migration, `20261016180000_deactivate_duplicate_mewar_alias.sql`, now marks that added alias inactive while preserving its ID and aborts if any campus/student records reference it. The canonical Mewar International University row remains active. A second migration, `20261016160000_reconcile_nuc_name_variants.sql`, corrects 15 high-confidence spelling/location variants by existing slug. A third migration, `20261016170000_reconcile_nuc_state_mismatch.sql`, corrects the confirmed Mercy Medical University location from Ogun to Osun. All four migrations have been applied to staging only.
 
 ## Important release status
 
@@ -31,15 +31,15 @@ This is a **verified delta, not certification of all 328 rows**. The original mi
 
 ## Automated live-page comparison (16 October 2026)
 
-GitHub Actions run #187 fetched the live NUC HTML table and parsed **328 current rows** (77 Federal, 69 State, 182 Private). Comparing the current NUC names with the checked-in seed plus the staging delta produced:
+GitHub Actions run #196 fetched the live NUC HTML table and parsed **328 current rows** (77 Federal, 69 State, 182 Private). Comparing the current NUC names with the checked-in seed plus the staging delta produced:
 
-- **159 exact normalized-name matches** after the 15 name corrections and one confirmed state/name correction.
-- **143 one-to-one candidate pairs** for manual review; two candidates have state/ownership differences and must not be auto-applied.
+- Exact normalized-name match count is recalculated after each reviewed delta; the latest report includes the Mercy state correction and the inactive Mewar alias.
+- One-to-one candidate pairs and the remaining unresolved rows are listed in the current report. Candidate matches are advisory only; two earlier candidates had state differences and were not auto-applied.
 - **88 database rows and 87 NUC rows** still unresolved after those conservative pairs.
 - **0 duplicate normalized database names** in the reconstructed roster.
-- The reconstructed roster currently has **329 rows** (77 Federal, 69 State, 183 Private), so it is one private record larger than the live NUC table.
+- The initial reconstructed roster had 329 active rows, one private row more than NUC; the duplicate Mewar alias is now inactive, so the active roster should return to the NUC count of 328. The inactive alias remains stored for auditability and keeps its ID.
 
-These counts show why a simple count or exact-name match is insufficient. The detailed row-by-row candidates and unresolved entries are attached to GitHub Actions as the `nuc-roster-audit` artifact (run #187); the audit is deliberately non-destructive and does not auto-merge institutions.
+These counts show why a simple count or exact-name match is insufficient. The detailed row-by-row candidates and unresolved entries are attached to GitHub Actions as the `nuc-roster-audit` artifact (latest successful run: [run #196](https://github.com/campusshield-ai/campusshield-ai/actions/runs/38875105769)); the audit is deliberately non-destructive and does not auto-merge institutions.
 
 ### Conflicting official names requiring human review
 
