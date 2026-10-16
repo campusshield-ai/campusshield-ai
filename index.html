@@ -275,6 +275,13 @@ td strong{color:#2a464d;font-size:11px}
 .community-media-grid img,.community-media-grid video{display:block;width:100%;max-height:420px;object-fit:contain;border:1px solid #e1ebe6;border-radius:12px;background:#f4f7f5}
 .community-media-grid figcaption{margin-top:5px;color:var(--muted);font-size:10px;overflow-wrap:anywhere}
 @media(max-width:900px){.community-layout{grid-template-columns:1fr}.campus-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.campus-ticket-card,.campus-notice-card{overflow-wrap:anywhere}
+.campus-ticket-timeline{margin-top:12px;padding-top:10px;border-top:1px solid #edf1ef}
+.campus-ticket-timeline summary{cursor:pointer;color:#34645d;font-size:11px;font-weight:780}
+.campus-ticket-staff-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 10px;margin-top:12px;padding-top:10px;border-top:1px solid #edf1ef}
+.campus-ticket-staff-controls .field:last-of-type{grid-column:1/-1}
+.campus-ticket-staff-controls textarea{min-height:72px}
+@media(max-width:520px){.campus-ticket-staff-controls{grid-template-columns:1fr}}
 @media(max-width:650px){.community-post{padding:12px}.community-comment-form{flex-direction:column}.community-comment-form .btn{width:100%}}
 .footer{padding:25px 10px 13px;color:#9aa6a5;font-size:9px;letter-spacing:.04em}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
@@ -405,6 +412,8 @@ td strong{color:#2a464d;font-size:11px}
 <div class="nav-label">WORKSPACE</div>
 <nav class="nav">
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
+<button data-page="noticeboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3.5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>Noticeboard</button>
+<button data-page="helpdesk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Helpdesk</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
 <button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>CampusPulse</button>
 <button data-page="groups"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span>Groups</button>
@@ -444,12 +453,14 @@ td strong{color:#2a464d;font-size:11px}
 <section class="panel campus-home-panel" aria-labelledby="campus-home-title">
   <div class="panel-heading"><div><h2 id="campus-home-title">Find your people. Grow your future.</h2><p>Explore useful things happening around your university.</p></div><span class="muted">Your campus only</span></div>
   <div class="grid campus-feature-grid">
+    <article class="campus-feature"><span class="campus-feature-kicker">CAMPUS HELPDESK</span><h3>Get campus problems moving</h3><p>Report broken facilities, Wi-Fi problems and service requests with a reference number and progress history.</p><button class="btn secondary" type="button" data-page="helpdesk">Raise a request</button></article>
+    <article class="campus-feature"><span class="campus-feature-kicker">VERIFIED NOTICES</span><h3>Know what is official</h3><p>Find university announcements, registration dates, academic updates and service notices with expiry dates.</p><button class="btn secondary" type="button" data-page="noticeboard">Open noticeboard</button></article>
     <article class="campus-feature"><span class="campus-feature-kicker">CAMPUSPULSE</span><h3>Join the conversation</h3><p>Campus updates, questions, polls and useful tips from your university community.</p><button class="btn secondary" type="button" data-page="community">Open CampusPulse</button></article>
     <article class="campus-feature"><span class="campus-feature-kicker">STUDY & COMMUNITY</span><h3>Find your people</h3><p>Explore study circles, departments, societies and interest groups.</p><button class="btn secondary" type="button" data-page="groups">Explore groups</button></article>
     <article class="campus-feature"><span class="campus-feature-kicker">EVENTS</span><h3>Take part on campus</h3><p>Discover seminars, society meetups, sports and career events.</p><button class="btn secondary" type="button" data-page="events">Browse events</button></article>
     <article class="campus-feature"><span class="campus-feature-kicker">CAMPUS SERVICES</span><h3>Share and discover</h3><p>Find textbooks, services and other campus listings with community safeguards.</p><button class="btn secondary" type="button" data-page="marketplace">Open marketplace</button></article>
   </div>
-  <p class="campus-roadmap-note"><strong>On the roadmap:</strong> a verified Opportunity Hub for scholarships and internships, plus a Campus AI Companion grounded in approved university information.</p>
+  <p class="campus-roadmap-note"><strong>Next steps:</strong> an AI Academic Companion grounded in approved course materials, a private timetable and deadline planner, and a Student Innovation Network for project teams and campus challenges. These remain roadmap items until their secure data connections are implemented.</p>
 </section>
 <div class="panel">
   <div class="panel-heading"><div><h2>Recent reports</h2><p>Latest records your account can access.</p></div><span class="muted">Sorted newest first</span></div>
@@ -471,6 +482,73 @@ td strong{color:#2a464d;font-size:11px}
 <div class="actions"><button class="btn" type="submit" id="report-submit">Submit report</button><button class="btn secondary" type="reset">Clear form</button></div>
 </form>
 </div>
+</section>
+
+
+<section class="page" id="page-noticeboard">
+  <div class="heading">
+    <div><h1>Verified campus noticeboard</h1><p>Official updates for your university, with a named publishing unit and clear expiry dates.</p></div>
+    <div class="heading-actions"><button class="btn secondary" type="button" id="refresh-campus-notices">Refresh notices</button></div>
+  </div>
+  <div class="notice-inline"><strong>Trust first.</strong> Notices are published only by verified campus staff. Check the publishing unit and expiry date; high-stakes academic or fee details should still be confirmed through the institution's official portal.</div>
+  <section class="panel" id="campus-notice-publisher-panel" hidden aria-labelledby="campus-notice-publisher-title">
+    <div class="panel-heading"><div><h2 id="campus-notice-publisher-title">Publish an official notice</h2><p>Use your department or office as the publisher label. Do not enter a personal email or phone number in public notice content.</p></div></div>
+    <form id="campusNoticeForm">
+      <div class="grid two">
+        <div class="field"><label for="campus-notice-publisher">Publishing unit *</label><input id="campus-notice-publisher" required maxlength="100" placeholder="e.g. ICT Directorate"></div>
+        <div class="field"><label for="campus-notice-category">Notice category *</label><select id="campus-notice-category" required><option value="announcement">General announcement</option><option value="academic">Academic calendar / exams</option><option value="registration">Registration deadline</option><option value="fees">Fees / finance</option><option value="facilities">Facilities / maintenance</option><option value="closure">Closure / disruption</option><option value="events">Campus event</option><option value="safety">Campus safety</option><option value="it_service">ICT service / outage</option><option value="other">Other</option></select></div>
+        <div class="field"><label for="campus-notice-audience">Audience *</label><select id="campus-notice-audience" required><option value="campus">Entire university</option><option value="faculty">Specific faculty / school</option><option value="department">Specific department</option></select></div>
+        <div class="field"><label for="campus-notice-expires">Expiry date (optional)</label><input id="campus-notice-expires" type="datetime-local"><small>Expired notices automatically disappear from the student feed.</small></div>
+      </div>
+      <div class="grid two" id="campus-notice-faculty-wrap" hidden>
+        <div class="field"><label for="campus-notice-faculty">Faculty / school *</label><input id="campus-notice-faculty" maxlength="120" placeholder="e.g. Faculty of Engineering"></div>
+      </div>
+      <div class="grid two" id="campus-notice-department-wrap" hidden>
+        <div class="field"><label for="campus-notice-department">Department *</label><input id="campus-notice-department" maxlength="120" placeholder="e.g. Computer Science"></div>
+      </div>
+      <div class="field"><label for="campus-notice-title">Title *</label><input id="campus-notice-title" required minlength="4" maxlength="140" placeholder="e.g. Second semester registration closes Friday"></div>
+      <div class="field"><label for="campus-notice-body">Notice details *</label><textarea id="campus-notice-body" required minlength="10" maxlength="5000" placeholder="Provide the confirmed details and the next action students should take."></textarea></div>
+      <div class="actions"><button class="btn" type="submit" id="campus-notice-submit">Publish notice</button></div>
+      <p id="campus-notice-publisher-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Latest official updates</h2><p>Filtered to your campus and, where specified, your faculty or department.</p></div></div>
+    <p id="campus-notices-status" class="message" role="status" aria-live="polite">Loading official notices…</p>
+    <div id="campus-noticeboard-feed"><div class="community-empty">Loading official notices…</div></div>
+  </section>
+</section>
+
+<section class="page" id="page-helpdesk">
+  <div class="heading">
+    <div><h1>CampusShield Helpdesk</h1><p>Track everyday campus service issues from submission to resolution.</p></div>
+    <div class="heading-actions"><button class="btn secondary" type="button" id="refresh-campus-helpdesk">Refresh requests</button></div>
+  </div>
+  <div class="notice-inline"><strong>Not an emergency channel.</strong> For immediate danger or sensitive safety concerns, use your university's official emergency process and CampusShield's private incident reporting. Helpdesk response times depend on your institution; the prototype does not promise an SLA.</div>
+  <div class="community-layout">
+    <section class="panel" aria-labelledby="campus-helpdesk-submit-title">
+      <div class="panel-heading"><div><h2 id="campus-helpdesk-submit-title">Report a campus service problem</h2><p>Each request gets a reference number and an update history.</p></div></div>
+      <form id="campusHelpdeskForm">
+        <div class="field"><label for="campus-helpdesk-category">Service area *</label><select id="campus-helpdesk-category" required><option value="facilities">Facilities / repairs</option><option value="hostel">Hostel / accommodation facilities</option><option value="wifi_it">Wi-Fi / ICT services</option><option value="classroom_equipment">Classroom equipment</option><option value="academic_service">Academic service support</option><option value="administration">Administrative service</option><option value="accessibility">Accessibility / walkway</option><option value="other">Other campus service</option></select></div>
+        <div class="field"><label for="campus-helpdesk-title">Short title *</label><input id="campus-helpdesk-title" required minlength="4" maxlength="120" placeholder="e.g. Wi-Fi unavailable in the library"></div>
+        <div class="field"><label for="campus-helpdesk-location">General location (optional)</label><input id="campus-helpdesk-location" maxlength="180" placeholder="e.g. Main library study area; no room or personal details"></div>
+        <div class="field"><label for="campus-helpdesk-priority">Priority *</label><select id="campus-helpdesk-priority"><option value="normal">Normal</option><option value="low">Low</option><option value="high">High</option></select><small>Choose a reasonable service priority; it is not an emergency dispatch signal.</small></div>
+        <div class="field"><label for="campus-helpdesk-description">Describe the problem *</label><textarea id="campus-helpdesk-description" required minlength="10" maxlength="3000" placeholder="What is affected? When did it begin? What action would help? Avoid sensitive personal information."></textarea></div>
+        <button class="btn" type="submit" id="campus-helpdesk-submit">Submit request</button>
+        <p id="campus-helpdesk-submit-message" class="message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="campus-helpdesk-mine-title">
+      <div class="panel-heading"><div><h2 id="campus-helpdesk-mine-title">My requests</h2><p>Follow the reference number, assigned unit and progress notes.</p></div></div>
+      <p id="campus-helpdesk-my-status" class="message" role="status" aria-live="polite">Loading your requests…</p>
+      <div id="campus-helpdesk-my-tickets"><div class="community-empty">Loading your requests…</div></div>
+    </section>
+  </div>
+  <section class="panel" id="campus-helpdesk-staff-panel" hidden aria-labelledby="campus-helpdesk-staff-title">
+    <div class="panel-heading"><div><h2 id="campus-helpdesk-staff-title">Campus service queue</h2><p>Verified staff can assign a responsible unit, update status and leave a note visible to the requester.</p></div></div>
+    <p id="campus-helpdesk-staff-status" class="message" role="status" aria-live="polite">Loading campus queue…</p>
+    <div id="campus-helpdesk-staff-queue"><div class="community-empty">Loading the campus queue…</div></div>
+  </section>
 </section>
 
 <section class="page" id="page-community">
@@ -1035,6 +1113,8 @@ td strong{color:#2a464d;font-size:11px}
       approvals:'Account approvals',
       'identity-verification':'Student identity',
       'platform-admin':'Platform administration',
+      noticeboard:'Verified noticeboard',
+      helpdesk:'Campus Helpdesk',
       community:'CampusPulse',
       groups:'Campus groups',
       events:'Campus events',
@@ -1053,6 +1133,8 @@ td strong{color:#2a464d;font-size:11px}
     navigate(button.dataset.page);
     if (button.dataset.page === 'approvals') loadAccountApprovals();
     if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
+    if (button.dataset.page === 'noticeboard') loadCampusNoticeboardPage();
+    if (button.dataset.page === 'helpdesk') loadCampusHelpdeskPage();
     if (button.dataset.page === 'community') loadCommunityPage();
     if (button.dataset.page === 'groups') loadCampusGroupsPage();
     if (button.dataset.page === 'events') loadCampusEventsPage();
@@ -1944,6 +2026,287 @@ td strong{color:#2a464d;font-size:11px}
       $('community-reports-queue').innerHTML = '<div class="community-empty">Report queue unavailable.</div>';
     }
   }
+
+
+  function campusNoticeAudienceLabel(notice) {
+    if (notice.audience_scope === 'department') return 'Department · ' + (notice.target_department || 'selected department');
+    if (notice.audience_scope === 'faculty') return 'Faculty · ' + (notice.target_faculty || 'selected faculty');
+    return 'Entire university';
+  }
+
+  function helpdeskCategoryLabel(value) {
+    return ({
+      facilities:'Facilities / repairs',
+      hostel:'Hostel facilities',
+      wifi_it:'Wi-Fi / ICT services',
+      classroom_equipment:'Classroom equipment',
+      academic_service:'Academic service',
+      administration:'Administrative service',
+      accessibility:'Accessibility',
+      other:'Other service'
+    })[value] || 'Campus service';
+  }
+
+  function helpdeskStatusLabel(value) {
+    return ({
+      submitted:'Submitted',
+      assigned:'Assigned',
+      in_progress:'In progress',
+      waiting_student:'Waiting for student',
+      resolved:'Resolved',
+      closed:'Closed'
+    })[value] || 'Submitted';
+  }
+
+  function renderHelpdeskTicket(ticket, updates, staffView) {
+    const ticketUpdates = (updates || []).filter(function(item) { return item.ticket_id === ticket.id; });
+    const timeline = ticketUpdates.length
+      ? '<details class="campus-ticket-timeline"><summary>' + ticketUpdates.length + ' progress update(s)</summary>' +
+        ticketUpdates.map(function(item) {
+          return '<div class="community-comment"><div class="community-meta"><strong>' + esc(item.author_label || 'Campus member') + '</strong><span>·</span><time>' + esc(dateText(item.created_at)) + '</time>' +
+            (item.to_status ? '<span class="tag open">' + esc(helpdeskStatusLabel(item.to_status)) + '</span>' : '') +
+            '</div><p>' + esc(item.message) + '</p></div>';
+        }).join('') + '</details>'
+      : '<p class="muted">No progress notes yet.</p>';
+    const staffControls = staffView
+      ? '<div class="campus-ticket-staff-controls">' +
+        '<div class="field"><label for="ticket-status-' + esc(ticket.id) + '">Status</label><select id="ticket-status-' + esc(ticket.id) + '" data-helpdesk-status="' + esc(ticket.id) + '">' +
+        ['submitted','assigned','in_progress','waiting_student','resolved','closed'].map(function(status) {
+          return '<option value="' + status + '"' + (ticket.status === status ? ' selected' : '') + '>' + esc(helpdeskStatusLabel(status)) + '</option>';
+        }).join('') + '</select></div>' +
+        '<div class="field"><label for="ticket-department-' + esc(ticket.id) + '">Responsible unit</label><input id="ticket-department-' + esc(ticket.id) + '" data-helpdesk-department="' + esc(ticket.id) + '" maxlength="100" value="' + esc(ticket.assigned_department || '') + '" placeholder="e.g. Works Department"></div>' +
+        '<div class="field"><label for="ticket-staff-message-' + esc(ticket.id) + '">Progress note (visible to requester)</label><textarea id="ticket-staff-message-' + esc(ticket.id) + '" data-helpdesk-message="' + esc(ticket.id) + '" maxlength="1200" placeholder="Record an action, request more information, or explain the status change."></textarea></div>' +
+        '<button type="button" class="btn" data-helpdesk-save="' + esc(ticket.id) + '">Save update</button></div>'
+      : '<form class="community-comment-form" data-helpdesk-reply data-ticket-id="' + esc(ticket.id) + '">' +
+        '<label class="sr-only" for="ticket-reply-' + esc(ticket.id) + '">Reply to request ' + esc(ticket.reference_code) + '</label>' +
+        '<textarea id="ticket-reply-' + esc(ticket.id) + '" name="message" maxlength="1200" minlength="2" placeholder="Add helpful information or reply to a staff update…" required ' + (['resolved','closed'].includes(ticket.status) ? 'disabled' : '') + '></textarea>' +
+        '<button type="submit" class="btn secondary" ' + (['resolved','closed'].includes(ticket.status) ? 'disabled' : '') + '>Add update</button></form>';
+    const priorityClass = ticket.priority === 'high' ? 'high' : ticket.priority === 'low' ? 'low' : 'medium';
+    return '<article class="community-post campus-ticket-card">' +
+      '<div class="community-meta"><span class="tag open">' + esc(ticket.reference_code) + '</span><span class="tag ' + priorityClass + '">' + esc(ticket.priority) + ' priority</span><span class="tag ' + (['resolved','closed'].includes(ticket.status) ? 'low' : 'open') + '">' + esc(helpdeskStatusLabel(ticket.status)) + '</span></div>' +
+      '<h3 class="community-post-title">' + esc(ticket.title) + '</h3>' +
+      '<p class="community-meta">' + esc(helpdeskCategoryLabel(ticket.category)) + ' · Submitted ' + esc(dateText(ticket.created_at)) + '</p>' +
+      '<p class="community-post-body">' + esc(ticket.description) + '</p>' +
+      (ticket.location ? '<p class="community-meta">Location: ' + esc(ticket.location) + '</p>' : '') +
+      '<p class="community-meta">Responsible unit: <strong>' + esc(ticket.assigned_department || 'Not assigned yet') + '</strong>' +
+      (staffView ? ' · Requested by @' + esc(ticket.created_by_username || 'campus member') : '') + '</p>' +
+      timeline + staffControls + '</article>';
+  }
+
+  async function loadCampusHelpdeskPage() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile) {
+      $('campus-helpdesk-my-status').textContent = 'Sign in to submit and track campus service requests.';
+      $('campus-helpdesk-my-tickets').innerHTML = '<div class="community-empty">Sign in to continue.</div>';
+      return;
+    }
+    $('campus-helpdesk-my-status').textContent = 'Loading your campus service requests…';
+    $('campus-helpdesk-my-tickets').innerHTML = '<div class="community-empty">Loading requests…</div>';
+    $('campus-helpdesk-staff-panel').hidden = true;
+    try {
+      campusContext = await backend.getMyCampusContext();
+      if (!campusContext?.university_id) {
+        $('campus-helpdesk-my-status').textContent = 'Choose your university before using Helpdesk.';
+        $('campus-helpdesk-my-tickets').innerHTML = '<div class="community-empty">Choose your university on CampusPulse first. <button type="button" class="btn secondary" data-page="community">Choose university</button></div>';
+        return;
+      }
+      const user = await backend.getCurrentUser();
+      if (!user) throw new Error('Sign in again to continue.');
+      const tickets = await backend.listCampusHelpdeskTickets();
+      const updates = await backend.listCampusHelpdeskTicketUpdates(tickets.map(function(ticket) { return ticket.id; }));
+      const mine = tickets.filter(function(ticket) { return ticket.created_by === user.id; });
+      $('campus-helpdesk-my-tickets').innerHTML = mine.length
+        ? mine.map(function(ticket) { return renderHelpdeskTicket(ticket, updates, false); }).join('')
+        : '<div class="community-empty"><strong>No service requests yet.</strong><p>Report a Wi-Fi, facilities, hostel or other service problem to create your first trackable ticket.</p></div>';
+      $('campus-helpdesk-my-status').textContent = mine.length + ' request(s) · refresh to check the latest progress.';
+      const staff = canModerateCommunity();
+      $('campus-helpdesk-staff-panel').hidden = !staff;
+      if (staff) {
+        $('campus-helpdesk-staff-status').textContent = tickets.length + ' campus request(s) available to verified staff.';
+        $('campus-helpdesk-staff-queue').innerHTML = tickets.length
+          ? tickets.map(function(ticket) { return renderHelpdeskTicket(ticket, updates, true); }).join('')
+          : '<div class="community-empty">No requests are waiting in this campus queue.</div>';
+      }
+    } catch (err) {
+      console.error('Could not load campus Helpdesk:', err);
+      $('campus-helpdesk-my-status').textContent = err.message || 'Campus requests could not be loaded.';
+      $('campus-helpdesk-my-tickets').innerHTML = '<div class="community-empty">Helpdesk is temporarily unavailable. Please refresh and try again.</div>';
+    }
+  }
+
+  async function loadCampusNoticeboardPage() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile) {
+      $('campus-notices-status').textContent = 'Sign in to read official notices for your university.';
+      $('campus-noticeboard-feed').innerHTML = '<div class="community-empty">Sign in to continue.</div>';
+      $('campus-notice-publisher-panel').hidden = true;
+      return;
+    }
+    $('campus-notices-status').textContent = 'Loading verified campus notices…';
+    $('campus-noticeboard-feed').innerHTML = '<div class="community-empty">Loading notices…</div>';
+    try {
+      campusContext = await backend.getMyCampusContext();
+      if (!campusContext?.university_id) {
+        $('campus-notices-status').textContent = 'Choose your university before reading campus notices.';
+        $('campus-noticeboard-feed').innerHTML = '<div class="community-empty">Choose your university on CampusPulse first. <button type="button" class="btn secondary" data-page="community">Choose university</button></div>';
+        $('campus-notice-publisher-panel').hidden = true;
+        return;
+      }
+      const notices = await backend.listCampusNotices();
+      const staff = canModerateCommunity();
+      $('campus-notice-publisher-panel').hidden = !staff;
+      $('campus-noticeboard-feed').innerHTML = notices.length
+        ? notices.map(function(notice) {
+            const expiry = notice.expires_at ? '<p class="community-meta">Expires ' + esc(dateText(notice.expires_at)) + '</p>' : '';
+            const archiveButton = staff ? '<button type="button" class="btn secondary" data-archive-campus-notice="' + esc(notice.id) + '">Archive notice</button>' : '';
+            return '<article class="community-post campus-notice-card">' +
+              '<div class="community-meta"><span class="community-official">Verified campus notice</span><span class="tag open">' + esc(String(notice.category || 'announcement').replaceAll('_',' ')) + '</span><time>' + esc(dateText(notice.published_at)) + '</time></div>' +
+              '<h3 class="community-post-title">' + esc(notice.title) + '</h3>' +
+              '<p class="community-post-body">' + esc(notice.body) + '</p>' +
+              '<p class="community-meta">Published by <strong>' + esc(notice.publisher_label) + '</strong> · ' + esc(campusNoticeAudienceLabel(notice)) + '</p>' + expiry +
+              (archiveButton ? '<div class="community-post-actions">' + archiveButton + '</div>' : '') +
+              '</article>';
+          }).join('')
+        : '<div class="community-empty"><strong>No active official notices.</strong><p>Check back for verified academic dates, registration deadlines and campus service updates.</p></div>';
+      $('campus-notices-status').textContent = notices.length + ' active notice(s) visible to your campus account.';
+    } catch (err) {
+      console.error('Could not load campus noticeboard:', err);
+      $('campus-notices-status').textContent = err.message || 'Official notices could not be loaded.';
+      $('campus-noticeboard-feed').innerHTML = '<div class="community-empty">The noticeboard is temporarily unavailable.</div>';
+      $('campus-notice-publisher-panel').hidden = true;
+    }
+  }
+
+  function syncCampusNoticeAudienceFields() {
+    const scope = $('campus-notice-audience').value;
+    $('campus-notice-faculty-wrap').hidden = scope === 'campus';
+    $('campus-notice-department-wrap').hidden = scope !== 'department';
+    $('campus-notice-faculty').required = scope !== 'campus';
+    $('campus-notice-department').required = scope === 'department';
+  }
+  $('campus-notice-audience').addEventListener('change', syncCampusNoticeAudienceFields);
+  syncCampusNoticeAudienceFields();
+
+  $('campusHelpdeskForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-helpdesk-submit');
+    const message = $('campus-helpdesk-submit-message');
+    if (!window.CampusShieldBackend?.isConfigured) {
+      message.textContent = 'Supabase is not configured.';
+      return;
+    }
+    button.disabled = true;
+    message.textContent = 'Submitting request and creating reference number…';
+    try {
+      const ticket = await window.CampusShieldBackend.submitCampusHelpdeskTicket({
+        category: $('campus-helpdesk-category').value,
+        title: $('campus-helpdesk-title').value.trim(),
+        location: $('campus-helpdesk-location').value.trim(),
+        priority: $('campus-helpdesk-priority').value,
+        description: $('campus-helpdesk-description').value.trim()
+      });
+      $('campusHelpdeskForm').reset();
+      message.textContent = 'Request submitted. Your reference is ' + (ticket?.reference_code || 'created') + '.';
+      toast('Campus service request submitted.');
+      await loadCampusHelpdeskPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit the campus request.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campus-helpdesk-my-tickets').addEventListener('submit', async function(event) {
+    const form = event.target.closest('[data-helpdesk-reply]');
+    if (!form) return;
+    event.preventDefault();
+    const textarea = form.querySelector('textarea[name="message"]');
+    const button = form.querySelector('button[type="submit"]');
+    const message = textarea.value.trim();
+    if (message.length < 2 || message.length > 1200) {
+      toast('A reply must be 2–1200 characters.');
+      return;
+    }
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.updateCampusHelpdeskTicket(form.dataset.ticketId, null, null, message);
+      toast('Request update added.');
+      await loadCampusHelpdeskPage();
+    } catch (err) {
+      toast(err.message || 'Could not add your request update.');
+      button.disabled = false;
+    }
+  });
+
+  $('campus-helpdesk-staff-queue').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-helpdesk-save]');
+    if (!button) return;
+    const ticketId = button.dataset.helpdeskSave;
+    const status = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-status="' + CSS.escape(ticketId) + '"]');
+    const department = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-department="' + CSS.escape(ticketId) + '"]');
+    const note = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-message="' + CSS.escape(ticketId) + '"]');
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.updateCampusHelpdeskTicket(ticketId, status?.value || null, department?.value ?? null, note?.value || null);
+      toast('Helpdesk request updated.');
+      await loadCampusHelpdeskPage();
+    } catch (err) {
+      toast(err.message || 'Could not update the Helpdesk request.');
+      button.disabled = false;
+    }
+  });
+
+  $('campusNoticeForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-notice-submit');
+    const message = $('campus-notice-publisher-message');
+    if (!window.CampusShieldBackend?.isConfigured) {
+      message.textContent = 'Supabase is not configured.';
+      return;
+    }
+    button.disabled = true;
+    message.textContent = 'Publishing official notice…';
+    try {
+      const expiryValue = $('campus-notice-expires').value;
+      await window.CampusShieldBackend.publishCampusNotice({
+        publisherLabel: $('campus-notice-publisher').value.trim(),
+        title: $('campus-notice-title').value.trim(),
+        body: $('campus-notice-body').value.trim(),
+        category: $('campus-notice-category').value,
+        audienceScope: $('campus-notice-audience').value,
+        targetFaculty: $('campus-notice-audience').value === 'campus' ? null : $('campus-notice-faculty').value.trim(),
+        targetDepartment: $('campus-notice-audience').value === 'department' ? $('campus-notice-department').value.trim() : null,
+        expiresAt: expiryValue ? new Date(expiryValue).toISOString() : null
+      });
+      $('campusNoticeForm').reset();
+      syncCampusNoticeAudienceFields();
+      message.textContent = 'Official notice published. It is visible only to its selected campus audience.';
+      toast('Official notice published.');
+      await loadCampusNoticeboardPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not publish this notice.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campus-noticeboard-feed').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-archive-campus-notice]');
+    if (!button) return;
+    if (!confirm('Archive this official notice? It will no longer appear in the active student noticeboard.')) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.archiveCampusNotice(button.dataset.archiveCampusNotice);
+      toast('Notice archived.');
+      await loadCampusNoticeboardPage();
+    } catch (err) {
+      toast(err.message || 'Could not archive the notice.');
+      button.disabled = false;
+    }
+  });
+
+  $('refresh-campus-helpdesk').addEventListener('click', loadCampusHelpdeskPage);
+  $('refresh-campus-notices').addEventListener('click', loadCampusNoticeboardPage);
 
   async function loadCampusGroupsPage() {
     const backend = window.CampusShieldBackend;
