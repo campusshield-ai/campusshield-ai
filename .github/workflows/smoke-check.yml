@@ -2,11 +2,14 @@ name: CampusShield smoke checks
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - feature/nigerian-multi-university-foundation
   push:
     branches:
       - main
       - feature/nigerian-multi-university-foundation
+      - feature/identity-university-search
 
 permissions:
   contents: read
