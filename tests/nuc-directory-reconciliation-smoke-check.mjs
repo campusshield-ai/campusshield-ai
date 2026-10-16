@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const migrationPath = "supabase/migrations/20261016150000_reconcile_nuc_directory_live_deltas.sql";
+const migrationPath = "supabase/migrations/20261016229000_reconcile_nuc_directory_live_deltas.sql";
 const nameMigrationPath = "supabase/migrations/20261016160000_reconcile_nuc_name_variants.sql";
 const stateMigrationPath = "supabase/migrations/20261016170000_reconcile_nuc_state_mismatch.sql";
 const deactivationMigrationPath = "supabase/migrations/20261016180000_deactivate_duplicate_mewar_alias.sql";
