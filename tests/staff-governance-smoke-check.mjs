@@ -5,6 +5,7 @@ import vm from 'node:vm';
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const backend = await readFile(new URL('../campusshield-backend.js', import.meta.url), 'utf8');
 const migration = await readFile(new URL('../supabase/migrations/20261016220000_campus_staff_identity_and_governance.sql', import.meta.url), 'utf8');
+const legacyGuard = await readFile(new URL('../supabase/migrations/20261016224000_guard_legacy_staff_membership_review.sql', import.meta.url), 'utf8');
 
 for (const expected of [
   'id="auth-role"',
@@ -43,6 +44,8 @@ assert.match(migration, /private\.current_campus_role\(\)[\s\S]{0,80}'admin'/i);
 assert.ok(migration.includes('requested_campus_admin'), 'admin consideration is recorded as a request, not a granted role');
 assert.ok(migration.includes('separate decisions'), 'staff review separates identity approval from campus administrator appointment');
 assert.doesNotMatch(migration, /grant execute on function public\.review_campus_staff_verification\([^;]+ to anon/i);
+assert.match(legacyGuard, /v_requested_role\s*=\s*'teacher'[\s\S]*campus_staff_verifications[\s\S]*v\.status\s*=\s*'approved'/i, 'legacy membership review must require approved staff verification for teacher applicants');
+assert.match(legacyGuard, /revoke all on function public\.review_campus_staff_membership\(uuid,text\) from public, anon/i);
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
