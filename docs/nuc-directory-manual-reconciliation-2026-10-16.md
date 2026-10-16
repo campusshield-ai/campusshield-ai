@@ -28,6 +28,35 @@ The live NUC table's full display name is retained, including its own spelling a
 
 A follow-up migration, `20261016200000_reconcile_sokoto_state_university_name.sql`, also aligns **Sokoto State University** to the live NUC display name **Sokoto State University, Sokoto**. It is a name-only correction by the existing slug, with ownership/state and all relationships preserved.
 
+
+## Latest automated audit result
+
+The successful live audit run [#229](https://github.com/campusshield-ai/campusshield-ai/actions/runs/38877911335) parsed 328 NUC records and reconstructed 328 active roster records (329 stored rows including the inactive Mewar alias). It reports **176 exact normalized-name matches**, including the 17 manually reviewed display-name corrections and the Sokoto correction. Ownership/state mismatches among exact-name matches: 0.
+
+The report still lists **8 unmatched database rows and 8 unmatched NUC rows after the advisory candidate-pair step**. They are not eight certified pairs. The fuzzy candidate pairing is advisory and can consume the wrong row when names are similar but state/location differs; do not treat the candidate count as certification.
+
+Unmatched database rows:
+- Bowen University, Iwo — Private / Osun
+- Redeemer's University, Ede — Private / Osun
+- David Nweze Umahi Federal University of Medical Sciences, Uburu — Federal / Ebonyi
+- University of Cross River State, Calabar — State / Cross River
+- University of Medical Sciences, Ondo City, Ondo State — State / Ondo
+- Kashim Ibrahim (formerly Bornu State) University, Maiduguri — State / Borno
+- Lagos State University of Education, Ijanikin — State / Lagos
+- Elrazi Medical University Yargaya University, Kano State — Private / Kano
+
+Unmatched live NUC rows:
+- Cross River University of Technology, Calabar — State / Cross River
+- King David Umahi University of Medical Sciences, Uburu, Ebonyi State — Federal / Ebonyi
+- Elrazi University of Medical Sciences, Kano, Kano State — Private / Kano
+- Lagos University of Education, LASUED, Oto/Ijanikin, Lagos State — State / Lagos
+- Bowen University, Iwo, Ogun State — Private / Ogun
+- Redeemer's University, Mowe, Ogun State — Private / Ogun
+- Ondo State University of Medical Sciences — State / Ondo
+- Rivers State University of Science & Technology, Port Harcourt, Rivers State — State / Rivers
+
+This list deliberately remains unresolved because NUC pages disagree on naming and/or location. Preserve the stable IDs and campus relationships; do not force aliases into merges or rename locations based on a single conflicting source. The 144 fuzzy suggestions remain unverified and require source review before full roster certification.
+
 ## Deliberately not changed
 
 These records still require authoritative clarification; no automated or guessed change was applied:
