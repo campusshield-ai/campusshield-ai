@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs"
 
 const NUC_URL = "https://enuc.nuc.edu.ng/nus";
 const seedPath = "supabase/migrations/20261015110000_import_official_nuc_university_directory.sql";
-const deltaPath = "supabase/migrations/20261016150000_reconcile_nuc_directory_live_deltas.sql";
+const deltaPath = "supabase/migrations/20261016229000_reconcile_nuc_directory_live_deltas.sql";
 const nameDeltaPath = "supabase/migrations/20261016160000_reconcile_nuc_name_variants.sql";
 const stateDeltaPath = "supabase/migrations/20261016170000_reconcile_nuc_state_mismatch.sql";
 const deactivationDeltaPath = "supabase/migrations/20261016180000_deactivate_duplicate_mewar_alias.sql";
