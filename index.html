@@ -1171,11 +1171,29 @@ td strong{color:#2a464d;font-size:11px}
     $('workspace').hidden = false;
 
     const verified = currentProfile.verification_status === 'verified';
-    document.querySelectorAll('[data-page="noticeboard"], [data-page="helpdesk"], [data-page="community"], [data-page="groups"], [data-page="events"], [data-page="marketplace"], [data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
+    document.querySelectorAll('[data-page="noticeboard"], [data-page="helpdesk"], [data-page="community"], [data-page="groups"], [data-page="events"], [data-page="marketplace"]').forEach(el => {
       el.hidden = !verified;
+    });
+    const canManageIncidents = verified && ['security', 'admin'].includes(currentProfile.role);
+    document.querySelectorAll('[data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
+      el.hidden = !canManageIncidents;
     });
     $('staff-verification-nav').hidden = !isTeacherAccount();
     $('staff-review-nav').hidden = !(verified && currentProfile.role === 'admin' && hasVerifiedCampusStaffMembership());
+    const dashboardTitle = $('page-dashboard h1');
+    const dashboardIntro = $('page-dashboard .heading p');
+    if (dashboardTitle && dashboardIntro) {
+      if (currentProfile.role === 'admin') {
+        dashboardTitle.textContent = 'Your university, governed securely.';
+        dashboardIntro.textContent = 'Review staff access and manage your own university platform. Platform-wide controls remain restricted to trusted CampusShield administrators.';
+      } else if (isTeacherAccount()) {
+        dashboardTitle.textContent = 'Your university staff workspace.';
+        dashboardIntro.textContent = 'Support students, publish approved campus notices, and help your university run smoothly. Administrator powers require a separate appointment.';
+      } else {
+        dashboardTitle.textContent = 'Your campus, in one place.';
+        dashboardIntro.textContent = 'Stay safe, find your people, and make the most of campus life. Your campus space is limited to your university.';
+      }
+    }
     $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
     $('identity-verification-nav').hidden = !isStudentAccount();
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
