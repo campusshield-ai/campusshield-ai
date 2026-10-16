@@ -119,6 +119,8 @@ assert.ok(html.includes('recordCampusIdentityEvidenceCheck({ userId, evidenceTyp
 assert.ok(html.includes("evidenceType: 'student_id'"), 'student identity review must record student ID evidence checks');
 assert.ok(html.includes('data-student-evidence-check'), 'student identity queue must expose the evidence audit action');
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
+assert.ok(backend.includes('file.type === "application/pdf" ? "pdf" : file.type === "image/jpeg" ? "jpg" : "png"'), 'staff upload extension must be derived from validated MIME type');
+assert.ok(backend.includes('cleanedBase + "." + extension'), 'staff upload object name must end with the MIME-matched extension');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 let parsed = 0;
