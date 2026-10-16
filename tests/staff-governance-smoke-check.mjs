@@ -11,6 +11,7 @@ const adminAppointmentGuard = await readFile(new URL('../supabase/migrations/202
 const verifiedSocialGuard = await readFile(new URL('../supabase/migrations/20261016226000_require_verified_account_for_social_interactions.sql', import.meta.url), 'utf8');
 const verifiedInteractionsRls = await readFile(new URL('../supabase/migrations/20261016227000_require_verified_campus_interactions.sql', import.meta.url), 'utf8');
 const verifiedSocialRpc = await readFile(new URL('../supabase/migrations/20261016228000_require_verified_account_for_social_rpc_actions.sql', import.meta.url), 'utf8');
+const marketplaceSellerGuard = await readFile(new URL('../supabase/migrations/20261016230000_marketplace_seller_update_guard.sql', import.meta.url), 'utf8');
 
 for (const expected of [
   'id="auth-role"',
@@ -71,6 +72,10 @@ for (const fn of ['toggle_community_reaction', 'toggle_community_bookmark', 'vot
   assert.match(body, /current_campus_role\(\)/i, fn + ' must require an active verified campus role');
 }
 assert.match(verifiedSocialRpc, /revoke all on function public\.toggle_campus_follow_post_author\(uuid,boolean\) from public, anon/i, 'social RPCs must not be executable by anon');
+assert.match(marketplaceSellerGuard, /using \([\s\S]*seller_id = \(select auth\.uid\(\)\)[\s\S]*status = 'published'[\s\S]*\)\s*with check \([\s\S]*status = 'sold'/i, 'sellers may only transition their own published same-campus listing to sold');
+assert.match(marketplaceSellerGuard, /revoke update \(category, title, description, price_ngn, contact_instructions\)[\s\S]*from authenticated/i, 'sellers must not directly rewrite listing details');
+assert.match(marketplaceSellerGuard, /grant update \(status, updated_at\)[\s\S]*to authenticated/i, 'seller update grant must be limited to status and timestamp');
+assert.ok(marketplaceSellerGuard.includes('drop policy if exists campus_marketplace_update_own_same_campus'), 'old permissive marketplace update policy must be removed');
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 
 const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
