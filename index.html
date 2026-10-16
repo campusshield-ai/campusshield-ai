@@ -1327,34 +1327,28 @@ td strong{color:#2a464d;font-size:11px}
 
     if (!backend?.isConfigured) {
       message.textContent = 'Supabase is not configured.';
-      tbody.innerHTML = '<tr><td colspan="5">Cannot load applications.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6">Cannot load applications.</td></tr>';
       nav.hidden = true;
       return;
     }
 
     message.textContent = 'Checking administrator access…';
-    tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
 
     try {
       const user = await backend.getCurrentUser();
-
-      if (!user) {
-        throw new Error('Please sign in with an administrator account.');
-      }
+      if (!user) throw new Error('Please sign in with an administrator account.');
 
       const {data:me, error:meError} = await backend.client
         .from('profiles')
         .select('role, verification_status')
         .eq('id', user.id)
         .single();
-
       if (meError) throw meError;
-
       if (me?.role !== 'admin' || me?.verification_status !== 'verified') {
         nav.hidden = true;
         throw new Error('Access denied. A verified administrator account is required.');
       }
-
       nav.hidden = false;
 
       const {data:rows, error} = await backend.client
@@ -1363,115 +1357,159 @@ td strong{color:#2a464d;font-size:11px}
         .eq('verification_status', 'pending')
         .in('requested_role', ['student', 'teacher'])
         .order('created_at', {ascending:true});
-
       if (error) throw error;
 
       if (!rows?.length) {
-        tbody.innerHTML = '<tr><td colspan="5">There are no pending student or teacher applications.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6">There are no pending student or teacher applications.</td></tr>';
         message.textContent = 'Administrator access confirmed.';
         return;
       }
 
-      tbody.innerHTML = rows.map(row => `<tr>
-        <td><strong>${esc(row.display_name || 'Name not provided')}</strong></td>
-        <td><code>${esc(row.id)}</code></td>
-        <td><span class="tag open">${esc(row.requested_role || 'Not specified')}</span></td>
-        <td>${esc(dateText(row.created_at))}</td>
-        <td>
-          <div class="actions">
-            <button class="btn" data-review="approve" data-user-id="${esc(row.id)}">Approve</button>
-            <button class="btn danger" data-review="reject" data-user-id="${esc(row.id)}">Reject</button>
-          </div>
-        </td>
-      </tr>`).join('');
+      const studentIds = rows
+        .filter(row => (row.requested_role || row.role) === 'student')
+        .map(row => row.id);
+      const identityRows = await backend.listStudentIdentityVerifications(studentIds);
+      const identityByUser = new Map(identityRows.map(row => [row.user_id, row]));
 
-      message.textContent = `${rows.length} pending application(s).`;
+      tbody.innerHTML = rows.map(row => {
+        const isStudent = (row.requested_role || row.role) === 'student';
+        const identity = identityByUser.get(row.id);
+        let identityCell = '<span class="muted">Not required</span>';
+        let decisionCell = '';
+
+        if (isStudent) {
+          if (!identity) {
+            identityCell = '<span class="tag unknown">Not submitted</span><br><span class="muted">Identity form is required before approval.</span>';
+            decisionCell = '<button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>';
+          } else {
+            const statusToken = identity.status === 'approved' ? 'low' : identity.status === 'rejected' ? 'high' : 'open';
+            identityCell =
+              '<strong>' + esc(identity.institution_name) + '</strong><br>' +
+              '<span class="muted">Matric number: ' + esc(identity.student_number) + '</span><br>' +
+              '<span class="tag ' + statusToken + '">' + esc(identity.status) + '</span>' +
+              (identity.object_path ? '<br><button type="button" class="btn secondary" data-student-document="' + esc(identity.object_path) + '">Open ID document</button>' : '');
+            if (identity.status === 'pending') {
+              decisionCell =
+                '<div class="actions">' +
+                '<button class="btn" type="button" data-identity-review="approve" data-user-id="' + esc(row.id) + '">Approve ID & account</button>' +
+                '<button class="btn danger" type="button" data-identity-review="reject" data-user-id="' + esc(row.id) + '">Reject ID</button>' +
+                '</div>';
+            } else if (identity.status === 'rejected') {
+              decisionCell =
+                '<span class="muted">Student may resubmit the ID with corrected information.</span><br>' +
+                '<button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>';
+            } else {
+              decisionCell =
+                '<button class="btn" type="button" data-review="approve" data-user-id="' + esc(row.id) + '">Approve account</button> ' +
+                '<button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>';
+            }
+          }
+        } else {
+          decisionCell =
+            '<div class="actions">' +
+            '<button class="btn" data-review="approve" data-user-id="' + esc(row.id) + '">Approve</button>' +
+            '<button class="btn danger" data-review="reject" data-user-id="' + esc(row.id) + '">Reject</button>' +
+            '</div>';
+        }
+
+        return '<tr>' +
+          '<td><strong>' + esc(row.display_name || 'Name not provided') + '</strong></td>' +
+          '<td><code>' + esc(row.id) + '</code></td>' +
+          '<td><span class="tag open">' + esc(row.requested_role || 'Not specified') + '</span></td>' +
+          '<td>' + esc(dateText(row.created_at)) + '</td>' +
+          '<td>' + identityCell + '</td>' +
+          '<td>' + decisionCell + '</td>' +
+          '</tr>';
+      }).join('');
+
+      message.textContent = rows.length + ' pending application(s). Student approvals are blocked until the ID document is approved.';
     } catch (err) {
       console.error('Could not load account approvals:', err);
-      tbody.innerHTML = '<tr><td colspan="5">Applications could not be loaded.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6">Applications could not be loaded.</td></tr>';
       message.textContent = err.message || 'Could not load applications.';
     }
   }
 
-  $('studentIdentityForm').addEventListener('submit', async event => {
-    event.preventDefault();
-    if (!isStudentAccount()) {
-      toast('This form is available only to student accounts.');
-      return;
-    }
-    const file = $('identity-document').files?.[0];
-    const institutionName = $('identity-institution').value.trim();
-    const studentNumber = $('identity-student-number').value.trim();
-    const button = $('identity-submit');
-    const status = $('identity-verification-status');
-    if (!file) {
-      status.textContent = 'Choose your student ID card image or PDF first.';
-      return;
-    }
-    button.disabled = true;
-    button.textContent = 'Uploading securely…';
-    status.textContent = 'Uploading your document to private storage and submitting it for review…';
-    try {
-      await window.CampusShieldBackend.uploadStudentIdentityDocument(file, {
-        institutionName: institutionName,
-        studentNumber: studentNumber
-      });
-      $('identity-document').value = '';
-      toast('Student identity submitted for review.');
-      await loadStudentIdentityStatus();
-    } catch (error) {
-      console.error('Student identity submission failed:', error);
-      status.textContent = error.message || 'Could not submit your identity. Please check the file and try again.';
-      button.disabled = false;
-    } finally {
-      button.textContent = 'Submit for verification';
-    }
-  });
-
-  $('identity-refresh-status').addEventListener('click', loadStudentIdentityStatus);
-
   $('refresh-approvals').addEventListener('click', loadAccountApprovals);
 
-  $('approvals-table').addEventListener('click', async e => {
-    const button = e.target.closest('[data-review]');
-    if (!button) return;
+  $('approvals-table').addEventListener('click', async event => {
+    const documentButton = event.target.closest('[data-student-document]');
+    if (documentButton) {
+      const openedWindow = window.open('about:blank', '_blank');
+      if (openedWindow) openedWindow.opener = null;
+      documentButton.disabled = true;
+      try {
+        const url = await window.CampusShieldBackend.createStudentIdentityDocumentUrl(documentButton.dataset.studentDocument);
+        if (openedWindow) openedWindow.location.href = url;
+        else window.location.href = url;
+      } catch (error) {
+        if (openedWindow) openedWindow.close();
+        toast(error.message || 'Could not open the ID document.');
+      } finally {
+        documentButton.disabled = false;
+      }
+      return;
+    }
 
+    const identityButton = event.target.closest('[data-identity-review]');
+    if (identityButton) {
+      const decision = identityButton.dataset.identityReview;
+      const userId = identityButton.dataset.userId;
+      let reason = null;
+      if (decision === 'reject') {
+        reason = window.prompt('Enter a helpful rejection reason (5–1000 characters). The student can see this and resubmit:', '');
+        if (reason === null) return;
+        reason = reason.trim();
+        if (reason.length < 5 || reason.length > 1000) {
+          toast('Provide a rejection reason of 5–1000 characters.');
+          return;
+        }
+      } else if (!confirm('Approve this student ID and activate the student account?')) {
+        return;
+      }
+
+      identityButton.disabled = true;
+      $('approvals-message').textContent = decision === 'approve'
+        ? 'Approving identity and activating account…'
+        : 'Rejecting identity and recording feedback…';
+      try {
+        await window.CampusShieldBackend.reviewStudentIdentityVerification(userId, decision, reason);
+        toast(decision === 'approve'
+          ? 'Student identity approved and account activated.'
+          : 'ID rejected; the student can sign in and resubmit.');
+        await loadAccountApprovals();
+      } catch (error) {
+        console.error('Student identity review failed:', error);
+        $('approvals-message').textContent = error.message || 'Student identity review failed.';
+        identityButton.disabled = false;
+      }
+      return;
+    }
+
+    const button = event.target.closest('[data-review]');
+    if (!button) return;
     const decision = button.dataset.review;
     const userId = button.dataset.userId;
     const actionLabel = decision === 'approve' ? 'approve' : 'reject';
+    if (!confirm('Are you sure you want to ' + actionLabel + ' this account?')) return;
 
-    if (!confirm(`Are you sure you want to ${actionLabel} this account?`)) return;
-
-    const backend = window.CampusShieldBackend;
     const message = $('approvals-message');
-
-    document.querySelectorAll('#approvals-table button').forEach(b => {
-      b.disabled = true;
-    });
-
-    message.textContent = `Attempting to ${actionLabel} account…`;
-
+    document.querySelectorAll('#approvals-table button').forEach(item => { item.disabled = true; });
+    message.textContent = 'Attempting to ' + actionLabel + ' account…';
     try {
-      const {error} = await backend.client.rpc('review_campus_account', {
+      const {error} = await window.CampusShieldBackend.client.rpc('review_campus_account', {
         p_user_id: userId,
         p_decision: decision
       });
-
       if (error) throw error;
-
-      message.textContent =
-        `Account ${decision === 'approve' ? 'approved' : 'rejected'} successfully.`;
-
-      toast(`Account ${decision === 'approve' ? 'approved' : 'rejected'}.`);
+      message.textContent = 'Account ' + (decision === 'approve' ? 'approved' : 'rejected') + ' successfully.';
+      toast('Account ' + (decision === 'approve' ? 'approved' : 'rejected') + '.');
       await loadAccountApprovals();
-    } catch (err) {
-      console.error('Account review failed:', err);
-      message.textContent = 'Review failed: ' + (err.message || 'Unknown error');
+    } catch (error) {
+      console.error('Account review failed:', error);
+      message.textContent = 'Review failed: ' + (error.message || 'Unknown error');
       toast('Could not review account.');
-
-      document.querySelectorAll('#approvals-table button').forEach(b => {
-        b.disabled = false;
-      });
+      document.querySelectorAll('#approvals-table button').forEach(item => { item.disabled = false; });
     }
   });
 
