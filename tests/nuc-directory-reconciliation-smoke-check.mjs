@@ -40,5 +40,7 @@ for (const slug of expectedSlugs) {
 assert.match(migration, /'federal-university-gashua-yobe', 'Federal University, Gashua, Yobe', 'Federal', 'Yobe'/);
 assert.match(migration, /'jigawa-state-university-of-medical-and-allied-health-sciences-majia'.*'Jigawa'/);
 assert.match(migration, /'federal-university-of-health-sciences-katsina', 'Federal University of Health Sciences, Funtua, Katsina State'/);
+assert.match(migration, /Mewar University, Masaka, Nasarawa State/);
+assert.match(migration, /on conflict \(slug\) do update/i);
 
 console.log("NUC directory reconciliation smoke checks passed (16 existing slugs; no ID/slug regeneration or deletion).");
