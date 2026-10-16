@@ -12,7 +12,7 @@ No production database migration, production deployment, PR merge, real student 
 ## Fixes made during this review
 
 ### 0. Broad client table privileges on `public.profiles` (critical)
-The live staging privilege query found table-level grants to `anon` and `authenticated` that included INSERT/UPDATE/DELETE/TRUNCATE (RLS is not a substitute for removing unnecessary table privileges, and TRUNCATE is not row-filtered by RLS). Added migration `20261016236000_lock_profile_table_privileges.sql` and applied it to staging only. Verified after the change: anon has no profile table privileges; authenticated has SELECT only at table level plus UPDATE on `display_name` and `requested_role`; authenticated cannot INSERT/DELETE/TRUNCATE, and cannot update `role` or `verification_status`. Added a regression assertion to the smoke suite. Treat this as a high-priority security correction and verify the latest CI result before release.
+The live staging privilege query found table-level grants to `anon` and `authenticated` that included INSERT/UPDATE/DELETE/TRUNCATE (RLS is not a substitute for removing unnecessary table privileges, and TRUNCATE is not row-filtered by RLS). Added migration `20261016236000_lock_profile_table_privileges.sql` and applied it to staging only. Verified after the change: anon has no profile table privileges; authenticated has SELECT only at table level plus UPDATE on `display_name` and `requested_role`; authenticated cannot INSERT/DELETE/TRUNCATE, and cannot update `role` or `verification_status`. Added a regression assertion to the smoke suite. Verified the staging grants after the migration. The combined latest smoke suite passed in [run #38907714152](https://github.com/campusshield-ai/campusshield-ai/actions/runs/38907714152). Treat this as a high-priority security correction.
 
 
 ### 1. Campus interaction reads were accidentally restricted
@@ -67,7 +67,7 @@ The staging Performance Advisor reports 29 foreign keys without covering indexes
 
 The smoke suite checks expected source text, migration patterns, and JavaScript syntax. It is useful regression protection but is not a SQL integration test and not a browser end-to-end test. Do not treat a passing smoke check as proof that every database function is secure.
 
-Latest prior confirmed pass before this audit's newest commits: [run #38907059735](https://github.com/campusshield-ai/campusshield-ai/actions/runs/38907059735). The latest audit commits add assertions for the staff MIME-derived extension and the verified-student helper; their CI must complete before those new assertions can be marked passed.
+The latest audit commit passed the combined smoke suite in [run #38907714152](https://github.com/campusshield-ai/campusshield-ai/actions/runs/38907714152), including assertions for profile table grants, the staff MIME-derived extension, and the verified-student helper.
 
 ## Required exit criteria
 
