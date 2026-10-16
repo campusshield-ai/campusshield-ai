@@ -172,7 +172,7 @@ function applyNameDelta(roster, sql) {
 }
 
 function applyStateDelta(roster, sql) {
-  const match = sql.match(/update\\s+public\\.campus_universities\\s+set\\s+name\\s*=\\s*'((?:''|[^'])*)'\\s*,\\s*state\\s*=\\s*'([^']+)'[\\s\\S]*?where\\s+slug\\s*=\\s*'([^']+)'/i);
+  const match = sql.match(/update\s+public\.campus_universities\s+set\s+name\s*=\s*'((?:''|[^'])*)'\s*,\s*state\s*=\s*'([^']+)'[\s\S]*?where\s+slug\s*=\s*'([^']+)'/i);
   assert.ok(match, "Could not parse state correction migration");
   const [, rawName, state, slug] = match;
   const existing = roster.get(slug);
