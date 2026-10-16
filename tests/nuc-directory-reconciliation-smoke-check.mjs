@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 
 const migrationPath = "supabase/migrations/20261016151000_reconcile_nuc_directory_live_deltas.sql";
 const nameMigrationPath = "supabase/migrations/20261016160000_reconcile_nuc_name_variants.sql";
@@ -17,6 +17,14 @@ const manualMigration = readFileSync(manualMigrationPath, "utf8");
 const sokotoMigration = readFileSync(sokotoMigrationPath, "utf8");
 const officialNamesMigration = readFileSync(officialNamesMigrationPath, "utf8");
 const baseline = readFileSync(baselinePath, "utf8");
+
+const migrationFiles = readdirSync("supabase/migrations").filter((file) => /^\\d{14}_.+\\.sql$/.test(file));
+const migrationVersions = new Map();
+for (const file of migrationFiles) {
+  const version = file.slice(0, 14);
+  assert.ok(!migrationVersions.has(version), `migration version collision ${version}: ${migrationVersions.get(version)} and ${file}`);
+  migrationVersions.set(version, file);
+}
 
 const expectedSlugs = [
   "federal-university-gashua-yobe",
