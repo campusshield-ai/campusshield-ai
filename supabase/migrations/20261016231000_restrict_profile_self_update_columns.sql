@@ -2,8 +2,8 @@
 -- Account role, verification state, identity, and server-maintained timestamps are server-owned.
 begin;
 
-revoke update (id, role, verification_status, created_at, last_profile_edit_at)
-  on public.profiles from authenticated;
+-- Remove any table-level UPDATE grant first; it overrides column-level restrictions.
+revoke update on public.profiles from authenticated;
 grant update (display_name, requested_role)
   on public.profiles to authenticated;
 
