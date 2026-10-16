@@ -1727,7 +1727,7 @@ if (data.session) {
     authBusy = true;
     const button = $('auth-submit');
     button.disabled = true;
-    button.textContent = authMode === 'signup' ? 'Creating account…' : 'Signing in…';
+    button.textContent = authMode === 'signup' ? 'Creating account…' : authMode === 'reset' ? 'Updating password…' : 'Signing in…';
     try {
       if (authMode === 'signup') await handleSignUp();
       else if (authMode === 'reset') await handlePasswordReset();
