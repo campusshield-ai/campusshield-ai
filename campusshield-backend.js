@@ -24,14 +24,28 @@
     isConfigured: ready,
     client,
  
-async signUp(email, password, displayName, username, universityId) {
+async signUp(email, password, displayName, username, universityId, profileData = {}) {
   if (!client) throw new Error("Supabase is not configured.");
+  const safeProfileData = profileData && typeof profileData === "object" ? profileData : {};
 
   return client.auth.signUp({
     email,
     password,
     options: {
-      data: { display_name: displayName || "", username: String(username || "").trim().toLowerCase(), university_id: universityId || null },
+      data: {
+        display_name: displayName || "",
+        username: String(username || "").trim().toLowerCase(),
+        university_id: universityId || null,
+        requested_role: safeProfileData.requested_role || "student",
+        faculty: safeProfileData.faculty || null,
+        department: safeProfileData.department || null,
+        course: safeProfileData.course || null,
+        year_of_study: safeProfileData.year_of_study || null,
+        campus_position: safeProfileData.campus_position || null,
+        campus_staff_number: safeProfileData.campus_staff_number || null,
+        campus_official_email: safeProfileData.campus_official_email || null,
+        requested_campus_admin: Boolean(safeProfileData.requested_campus_admin)
+      },
       emailRedirectTo: window.location.origin + window.location.pathname
     }
   });
@@ -110,6 +124,81 @@ async getCurrentUser() {
       return client.rpc("save_my_requested_role", {
         p_requested_role: requestedRole
       });
+    },
+
+    async submitCampusStaffVerification(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in before submitting staff verification.");
+      const positionTitle = String(input?.positionTitle || user.user_metadata?.campus_position || "").trim();
+      const staffNumber = String(input?.staffNumber || user.user_metadata?.campus_staff_number || "").trim();
+      const officialEmail = String(input?.officialEmail || user.user_metadata?.campus_official_email || "").trim().toLowerCase();
+      const requestedCampusAdmin = Boolean(input?.requestedCampusAdmin ?? user.user_metadata?.requested_campus_admin);
+      let documentPath = null;
+
+      if (input?.document) {
+        const file = input.document;
+        const allowedTypes = new Set(["application/pdf", "image/jpeg", "image/png"]);
+        if (!allowedTypes.has(file.type)) throw new Error("Use a PDF, JPG, or PNG staff ID document.");
+        if (!file.size || file.size > 5 * 1024 * 1024) throw new Error("Staff ID documents must be 5 MiB or smaller.");
+        const cleanedName = String(file.name || "staff-id")
+          .normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-80) || "staff-id";
+        documentPath = user.id + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 10) + "-" + cleanedName;
+        const { error: uploadError } = await client.storage.from("campus-staff-documents").upload(documentPath, file, {
+          cacheControl: "3600", upsert: false, contentType: file.type
+        });
+        if (uploadError) throw uploadError;
+      }
+
+      try {
+        const { error } = await client.rpc("submit_campus_staff_verification", {
+          p_position_title: positionTitle,
+          p_staff_number: staffNumber || null,
+          p_official_email: officialEmail || null,
+          p_document_path: documentPath,
+          p_requested_campus_admin: requestedCampusAdmin
+        });
+        if (error) throw error;
+      } catch (error) {
+        if (documentPath) await client.storage.from("campus-staff-documents").remove([documentPath]).catch(() => {});
+        throw error;
+      }
+      return { status: "pending", documentPath };
+    },
+
+    async getMyCampusStaffVerification() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in before checking staff verification.");
+      const { data, error } = await client.from("campus_staff_verifications")
+        .select("position_title, staff_number, official_email, requested_campus_admin, status, rejection_reason, created_at")
+        .eq("user_id", user.id).maybeSingle();
+      if (error) throw error;
+      return data || null;
+    },
+
+    async listCampusStaffVerificationReviews() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_staff_verification_reviews");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async reviewCampusStaffVerification(userId, decision, reason = null) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!userId || !["approve", "reject"].includes(decision)) throw new Error("Choose a staff application and a valid decision.");
+      const { error } = await client.rpc("review_campus_staff_verification", {
+        p_user_id: userId, p_decision: decision, p_rejection_reason: reason
+      });
+      if (error) throw error;
+    },
+
+    async createCampusStaffDocumentUrl(path) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!path) return null;
+      const { data, error } = await client.storage.from("campus-staff-documents").createSignedUrl(path, 90);
+      if (error) throw error;
+      return data?.signedUrl || null;
     },
 
     async listCampusUniversities() {
