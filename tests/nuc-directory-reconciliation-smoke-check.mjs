@@ -123,6 +123,6 @@ for (const slug of expectedManualNameSlugs) {
   assert.ok(manualMigration.includes(slug), `manual name migration must include slug: ${slug}`);
 }
 assert.match(manualMigration, /Michael & Cecilia Ibru University, Owhode, Delta State/);
-assert.match(manualMigration, /Glorious Vision University \\(formerly Samuel Adegboyega University\\)/);
+assert.match(manualMigration, /Glorious Vision University \(formerly Samuel Adegboyega University\)/);
 
 console.log("NUC directory reconciliation smoke checks passed (16 corrections + 1 addition, 15 name variants, one state correction, and one guarded duplicate-alias deactivation, and 17 manual name matches; IDs/slugs preserved).");
