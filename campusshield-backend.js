@@ -278,6 +278,13 @@ async getCurrentUser() {
       return data === true;
     },
 
+    async listPlatformCampusAdminRequests() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("platform_list_campus_admin_requests");
+      if (error) throw error;
+      return data || [];
+    },
+
     async listPlatformUniversityRequests() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("platform_list_campus_university_requests");
