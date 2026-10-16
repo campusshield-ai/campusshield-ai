@@ -1,5 +1,6 @@
 -- CampusShield AI staff identity verification and campus-scoped authority.
 -- A claimed title never grants administrator access; campus admin assignment remains a separate trusted action.
+-- Staff identity approval and campus administrator appointment are separate decisions.
 begin;
 
 create table if not exists public.campus_staff_verifications (
