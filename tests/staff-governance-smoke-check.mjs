@@ -11,6 +11,7 @@ const adminAppointmentGuard = await readFile(new URL('../supabase/migrations/202
 const verifiedSocialGuard = await readFile(new URL('../supabase/migrations/20261016226000_require_verified_account_for_social_interactions.sql', import.meta.url), 'utf8');
 const verifiedInteractionsRls = await readFile(new URL('../supabase/migrations/20261016227000_require_verified_campus_interactions.sql', import.meta.url), 'utf8');
 const verifiedInteractionWriteOnly = await readFile(new URL('../supabase/migrations/20261016234000_limit_verified_interaction_policy_to_writes.sql', import.meta.url), 'utf8');
+const verifiedStudentAccess = await readFile(new URL('../supabase/migrations/20261016235000_preserve_verified_student_interactions.sql', import.meta.url), 'utf8');
 const verifiedSocialRpc = await readFile(new URL('../supabase/migrations/20261016228000_require_verified_account_for_social_rpc_actions.sql', import.meta.url), 'utf8');
 const marketplaceSellerGuard = await readFile(new URL('../supabase/migrations/20261016230000_marketplace_seller_update_guard.sql', import.meta.url), 'utf8');
 const profileSelfUpdateGuard = await readFile(new URL('../supabase/migrations/20261016231000_restrict_profile_self_update_columns.sql', import.meta.url), 'utf8');
@@ -79,6 +80,9 @@ assert.ok(verifiedInteractionWriteOnly.includes('as restrictive for insert to au
 assert.ok(verifiedInteractionWriteOnly.includes('as restrictive for update to authenticated using (private.current_user_has_verified_campus_access()) with check (private.current_user_has_verified_campus_access())'), 'direct updates must require verified campus access');
 assert.ok(verifiedInteractionWriteOnly.includes('as restrictive for delete to authenticated using (private.current_user_has_verified_campus_access())'), 'direct deletes must require verified campus access');
 assert.doesNotMatch(verifiedInteractionWriteOnly, /as restrictive for all to authenticated/i, 'verified-only write guard must not block SELECT queries');
+assert.ok(verifiedStudentAccess.includes("coalesce((select private.current_campus_role()), '') = 'student'"), 'verified student interactions require an active verified student campus role');
+assert.ok(verifiedStudentAccess.includes("p.verification_status = 'verified'"), 'legacy student interaction access still requires verified profile status');
+assert.doesNotMatch(verifiedStudentAccess, /student_identity_verifications/i, 'legacy verified student access does not require a duplicate identity row');
 for (const table of ['campus_event_rsvps', 'campus_follows', 'campus_group_members', 'community_poll_votes', 'community_post_bookmarks', 'community_post_reactions']) assert.ok(verifiedInteractionsRls.includes("'" + table + "'"), 'verified interaction policy must cover ' + table);
 for (const fn of ['toggle_community_reaction', 'toggle_community_bookmark', 'vote_community_poll', 'repost_community_post', 'toggle_campus_follow', 'toggle_campus_follow_post_author']) {
   const start = verifiedSocialRpc.indexOf('create or replace function public.' + fn);
