@@ -7,6 +7,7 @@ const migration = await readFile(new URL("../supabase/migrations/20261016120000_
 const wrappers = await readFile(new URL("../supabase/migrations/20261016123000_harden_campus_life_rpc_wrappers.sql", import.meta.url), "utf8");
 const noticeAudience = await readFile(new URL("../supabase/migrations/20261016130000_secure_noticeboard_audience_rls.sql", import.meta.url), "utf8");
 const identityGate = await readFile(new URL("../supabase/migrations/20261016140000_identity_gate_and_resubmission.sql", import.meta.url), "utf8");
+const verifiedNoticeReadGate = await readFile(new URL("../supabase/migrations/20261016240000_require_verified_campus_notice_reads.sql", import.meta.url), "utf8");
 
 assert.match(html, /data-page="noticeboard"/);
 assert.match(html, /id="forgot-password-button"/, "login retains Forgot password");
@@ -64,6 +65,8 @@ assert.match(wrappers, /alter function public\.submit_campus_helpdesk_ticket[\s\
 assert.match(wrappers, /create or replace function public\.publish_campus_notice[\s\S]*?security invoker/i);
 assert.match(noticeAudience, /private\.current_user_matches_notice_audience/i);
 assert.match(noticeAudience, /campus_notices_read_published_for_campus_audience/i);
+assert.match(verifiedNoticeReadGate, /create policy campus_notices_require_verified_campus_access[\\s\\S]*?as restrictive[\\s\\S]*?for select to authenticated/i);
+assert.match(verifiedNoticeReadGate, /current_user_has_verified_campus_access/i);
 assert.match(identityGate, /current_user_has_verified_campus_access/i);
 assert.match(identityGate, /enforce_verified_campus_access_for_interaction/i);
 assert.match(identityGate, /campus_identity_verified_read_gate/i);
