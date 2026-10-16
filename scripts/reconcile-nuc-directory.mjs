@@ -257,37 +257,51 @@ const nucUnmatched = nuc.filter(row => !matchedLive.has(normalizeName(row.name))
   };
 });
 
-// Suggest only mutual best matches with a strong name score and identical ownership/state.
- // These are review candidates, not automatic renames; NUC and university sites can conflict.
-const nucUnmatchedByName = new Map(nucUnmatched.map(row => [row.nucName, row]));
-const suggestedPairs = [];
+// Build one-to-one candidate pairs for review. Candidate matching is deliberately advisory:
+ // exact strings are handled above; here we compare all remaining pairs and prefer same ownership/state.
+const candidateEdges = [];
 for (const dbRow of dbUnmatched) {
-  const top = dbRow.candidates[0];
-  if (!top || top.similarity < 0.72) continue;
-  const nucRow = nucUnmatchedByName.get(top.name);
-  if (!nucRow || !nucRow.candidates[0]) continue;
-  const reverse = nucRow.candidates[0];
-  if (
-    reverse.name === dbRow.databaseName &&
-    reverse.similarity >= 0.72 &&
-    dbRow.ownership === nucRow.ownership &&
-    normalizeState(dbRow.state) === normalizeState(nucRow.state)
-  ) {
-    suggestedPairs.push({
-      databaseSlug: dbRow.slug,
-      databaseName: dbRow.databaseName,
-      nucName: nucRow.nucName,
-      ownership: dbRow.ownership,
-      state: dbRow.state,
-      similarity: Number(top.similarity.toFixed(3))
+  for (const nucRow of nucUnmatched) {
+    const score = similarity(dbRow.databaseName, nucRow.nucName);
+    const sameOwnership = dbRow.ownership === nucRow.ownership;
+    const sameState = normalizeState(dbRow.state) === normalizeState(nucRow.state);
+    const eligible =
+      (sameOwnership && sameState && score >= 0.62) ||
+      ((sameOwnership || sameState) && score >= 0.70) ||
+      (!sameOwnership && !sameState && score >= 0.82);
+    if (!eligible) continue;
+    candidateEdges.push({
+      dbRow, nucRow, similarity: Number(score.toFixed(3)), sameOwnership, sameState,
+      rankScore: score + (sameOwnership ? 0.035 : 0) + (sameState ? 0.035 : 0)
     });
   }
 }
+candidateEdges.sort((a, b) => b.rankScore - a.rankScore || b.similarity - a.similarity);
+const usedDbNames = new Set();
+const usedNucNames = new Set();
+const suggestedPairs = [];
+for (const edge of candidateEdges) {
+  if (usedDbNames.has(edge.dbRow.databaseName) || usedNucNames.has(edge.nucRow.nucName)) continue;
+  usedDbNames.add(edge.dbRow.databaseName);
+  usedNucNames.add(edge.nucRow.nucName);
+  suggestedPairs.push({
+    databaseSlug: edge.dbRow.slug,
+    databaseName: edge.dbRow.databaseName,
+    databaseOwnership: edge.dbRow.ownership,
+    databaseState: edge.dbRow.state,
+    nucName: edge.nucRow.nucName,
+    nucOwnership: edge.nucRow.ownership,
+    nucState: edge.nucRow.state,
+    similarity: edge.similarity,
+    ownershipMismatch: !edge.sameOwnership,
+    stateMismatch: !edge.sameState,
+    confidence: edge.similarity >= 0.82 && edge.sameOwnership && edge.sameState ? "high" :
+      edge.similarity >= 0.72 && (edge.sameOwnership || edge.sameState) ? "medium" : "low"
+  });
+}
 suggestedPairs.sort((a, b) => a.databaseName.localeCompare(b.databaseName));
-const suggestedDbNames = new Set(suggestedPairs.map(row => row.databaseName));
-const suggestedNucNames = new Set(suggestedPairs.map(row => row.nucName));
-const unresolvedDatabaseRows = dbUnmatched.filter(row => !suggestedDbNames.has(row.databaseName));
-const unresolvedNucRows = nucUnmatched.filter(row => !suggestedNucNames.has(row.nucName));
+const unresolvedDatabaseRows = dbUnmatched.filter(row => !usedDbNames.has(row.databaseName));
+const unresolvedNucRows = nucUnmatched.filter(row => !usedNucNames.has(row.nucName));
 
 const duplicateGroups = [];
 const normalized = new Map();
@@ -336,7 +350,7 @@ const md = [
   `- Matched records with ownership/state mismatches: **${report.ownershipOrStateMismatches.length}**`,
   `- Database names without exact match: **${report.databaseRowsWithoutExactNameMatch.length}**`,
   `- NUC names without exact match: **${report.nucRowsWithoutExactNameMatch.length}**`,
-  `- Mutual high-similarity candidate pairs for review: **${report.suggestedSameInstitutionPairs.length}**`,
+  `- One-to-one candidate pairs for manual review: **${report.suggestedSameInstitutionPairs.length}**`,
   `- Database rows still unresolved after candidate pairing: **${report.unresolvedDatabaseRows.length}**`,
   `- NUC rows still unresolved after candidate pairing: **${report.unresolvedNucRows.length}**`,
   `- Duplicate normalized database names: **${report.duplicateNormalizedDatabaseNames.length}**`,
@@ -355,9 +369,9 @@ const md = [
   "",
   "## High-similarity same-ownership/state candidates (manual review required)",
   "",
-  "| Existing database name | Current NUC name | Ownership/state | Name similarity |",
-  "|---|---|---|---:|",
-  ...report.suggestedSameInstitutionPairs.map(r => `| ${r.databaseName} | ${r.nucName} | ${r.ownership} / ${r.state} | ${r.similarity} |`),
+  "| Existing database name | Current NUC name | DB ownership/state | NUC ownership/state | Similarity | Review confidence |",
+  "|---|---|---|---|---:|---|",
+  ...report.suggestedSameInstitutionPairs.map(r => `| ${r.databaseName} | ${r.nucName} | ${r.databaseOwnership} / ${r.databaseState} | ${r.nucOwnership} / ${r.nucState} | ${r.similarity} | ${r.confidence} |`),
   "",
   "## Database rows without exact normalized-name matches",
   "",
@@ -386,6 +400,7 @@ console.log(JSON.stringify({
   databaseRowsWithoutExactNameMatch: report.databaseRowsWithoutExactNameMatch.length,
   nucRowsWithoutExactNameMatch: report.nucRowsWithoutExactNameMatch.length,
   suggestedSameInstitutionPairs: report.suggestedSameInstitutionPairs.length,
+  suggestedPairsWithOwnershipOrStateMismatch: report.suggestedSameInstitutionPairs.filter(r => r.ownershipMismatch || r.stateMismatch).length,
   unresolvedDatabaseRows: report.unresolvedDatabaseRows.length,
   unresolvedNucRows: report.unresolvedNucRows.length,
   duplicateNormalizedDatabaseNames: report.duplicateNormalizedDatabaseNames.length,
