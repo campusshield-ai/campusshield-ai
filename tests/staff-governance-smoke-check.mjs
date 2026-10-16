@@ -10,6 +10,7 @@ const genericTeacherGuard = await readFile(new URL('../supabase/migrations/20261
 const adminAppointmentGuard = await readFile(new URL('../supabase/migrations/20261016225500_require_explicit_approved_campus_admin_request.sql', import.meta.url), 'utf8');
 const verifiedSocialGuard = await readFile(new URL('../supabase/migrations/20261016226000_require_verified_account_for_social_interactions.sql', import.meta.url), 'utf8');
 const verifiedInteractionsRls = await readFile(new URL('../supabase/migrations/20261016227000_require_verified_campus_interactions.sql', import.meta.url), 'utf8');
+const verifiedInteractionWriteOnly = await readFile(new URL('../supabase/migrations/20261016234000_limit_verified_interaction_policy_to_writes.sql', import.meta.url), 'utf8');
 const verifiedSocialRpc = await readFile(new URL('../supabase/migrations/20261016228000_require_verified_account_for_social_rpc_actions.sql', import.meta.url), 'utf8');
 const marketplaceSellerGuard = await readFile(new URL('../supabase/migrations/20261016230000_marketplace_seller_update_guard.sql', import.meta.url), 'utf8');
 const profileSelfUpdateGuard = await readFile(new URL('../supabase/migrations/20261016231000_restrict_profile_self_update_columns.sql', import.meta.url), 'utf8');
@@ -73,6 +74,11 @@ assert.match(verifiedSocialGuard, /create or replace function public\.create_com
 assert.match(verifiedSocialGuard, /create or replace function public\.join_campus_group[\s\S]*current_campus_account_status\(\) is distinct from 'verified'/i, 'only verified accounts may join campus groups');
 assert.match(verifiedSocialGuard, /revoke all on function public\.create_community_comment\(uuid,text\) from public, anon/i);
 assert.match(verifiedInteractionsRls, /create policy[\s\S]*as restrictive for all to authenticated using \(private\.current_user_has_verified_campus_access\(\)\) with check \(private\.current_user_has_verified_campus_access\(\)\)/i, 'direct writes to social and campus-interaction tables must require verified campus access');
+assert.ok(verifiedInteractionWriteOnly.includes("'verified_account_required_for_interactions'"), 'follow-up migration must remove the broad restrictive policy');
+assert.ok(verifiedInteractionWriteOnly.includes('as restrictive for insert to authenticated with check (private.current_user_has_verified_campus_access())'), 'direct inserts must require verified campus access');
+assert.ok(verifiedInteractionWriteOnly.includes('as restrictive for update to authenticated using (private.current_user_has_verified_campus_access()) with check (private.current_user_has_verified_campus_access())'), 'direct updates must require verified campus access');
+assert.ok(verifiedInteractionWriteOnly.includes('as restrictive for delete to authenticated using (private.current_user_has_verified_campus_access())'), 'direct deletes must require verified campus access');
+assert.doesNotMatch(verifiedInteractionWriteOnly, /as restrictive for all to authenticated/i, 'verified-only write guard must not block SELECT queries');
 for (const table of ['campus_event_rsvps', 'campus_follows', 'campus_group_members', 'community_poll_votes', 'community_post_bookmarks', 'community_post_reactions']) assert.ok(verifiedInteractionsRls.includes("'" + table + "'"), 'verified interaction policy must cover ' + table);
 for (const fn of ['toggle_community_reaction', 'toggle_community_bookmark', 'vote_community_poll', 'repost_community_post', 'toggle_campus_follow', 'toggle_campus_follow_post_author']) {
   const start = verifiedSocialRpc.indexOf('create or replace function public.' + fn);
