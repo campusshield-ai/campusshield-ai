@@ -6,12 +6,14 @@ on:
       - main
       - feature/nigerian-multi-university-foundation
       - feature/identity-university-search
+      - feature/onboarding-staff-governance
   push:
     branches:
       - main
       - feature/nigerian-multi-university-foundation
       - feature/identity-university-search
       - feature/onboarding-staff-governance
+      - fix/staff-verification-role-state
 
 permissions:
   contents: read
