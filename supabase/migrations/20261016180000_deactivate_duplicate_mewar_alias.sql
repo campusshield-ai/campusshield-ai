@@ -1,7 +1,9 @@
--- The live NUC NUS table lists Mewar International University, which already exists
--- in the baseline roster. The earlier delta added "Mewar University" as a second active row.
--- Keep that row and its ID for auditability, but deactivate it as a duplicate alias.
--- Abort if any campus or student data has begun referencing the duplicate row.
+-- The current NUC NUS table uses the name "Mewar University", while the NUC private-
+-- universities directory and the institution's own website use "Mewar International University".
+-- The baseline already contains the latter. This is an unresolved official-source naming conflict,
+-- not a confirmed separate institution. Keep the alternate row and its ID for auditability but
+-- inactive pending NUC clarification, so the selector does not present two active entries.
+-- Abort if any campus or student data has begun referencing the alternate row.
 begin;
 
 do $$
@@ -21,7 +23,7 @@ begin
   for update;
 
   if duplicate_id is null then
-    raise exception 'Expected duplicate Mewar University row was not found';
+    raise exception 'Expected inactive Mewar alias candidate row was not found';
   end if;
 
   if canonical_id is null then
@@ -43,7 +45,7 @@ begin
      or exists (select 1 from public.community_posts where university_id = duplicate_id)
      or exists (select 1 from public.incidents where university_id = duplicate_id)
      or exists (select 1 from public.student_identity_verifications where university_id = duplicate_id) then
-    raise exception 'Mewar University duplicate row is referenced; review and migrate references instead of deactivating';
+    raise exception 'Mewar University alias candidate is referenced; review and migrate references instead of deactivating';
   end if;
 
   update public.campus_universities
