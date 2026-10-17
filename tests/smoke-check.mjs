@@ -7,6 +7,7 @@ const identityAddon = await readFile(new URL("../campusshield-backend-identity-a
 const classrooms = await readFile(new URL("../campusshield-classrooms.js", import.meta.url), "utf8");
 const classroomMigration = await readFile(new URL("../supabase/migrations/20261017140000_campus_classrooms_assistant_attendance.sql", import.meta.url), "utf8");
 const classroomJoinCodeMigration = await readFile(new URL("../supabase/migrations/20261017142000_classroom_join_code_privacy.sql", import.meta.url), "utf8");
+const classroomJoinCodeWrapperMigration = await readFile(new URL("../supabase/migrations/20261017143000_private_classroom_join_code_rpc.sql", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
@@ -94,6 +95,9 @@ assert.match(classroomJoinCodeMigration, /grant select \(id, university_id, teac
 assert.match(classroomJoinCodeMigration, /create or replace function public\.get_campus_classroom_join_code/i);
 assert.match(classroomJoinCodeMigration, /grant execute on function public\.get_campus_classroom_join_code\(uuid\) to authenticated/i);
 assert.doesNotMatch(classroomJoinCodeMigration, /grant execute on function public\.get_campus_classroom_join_code\(uuid\) to anon/i);
+assert.match(classroomJoinCodeWrapperMigration, /create or replace function private\.get_campus_classroom_join_code_impl/i);
+assert.match(classroomJoinCodeWrapperMigration, /create or replace function public\.get_campus_classroom_join_code[\s\S]*?security invoker/i);
+assert.match(classroomJoinCodeWrapperMigration, /grant execute on function private\.get_campus_classroom_join_code_impl\(uuid\) to authenticated/i);
 assert.match(html, /does not contact emergency services/i, "the emergency-services prototype warning remains visible");
 
 assert.equal(manifest.name, "CampusShield AI");
