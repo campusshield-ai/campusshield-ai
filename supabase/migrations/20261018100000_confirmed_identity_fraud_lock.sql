@@ -38,7 +38,7 @@ as $function$
       and siv.confirmed_fraud = true
       and siv.fraud_lock_at is not null
       and now() >= siv.fraud_lock_at
-      and siv.status <> 'approved'
+      and siv.status = 'rejected'
   );
 $function$;
 revoke all on function private.current_user_identity_fraud_locked() from public, anon;
@@ -211,7 +211,7 @@ as $function$
       'notice_at', siv.fraud_notice_at,
       'lock_at', siv.fraud_lock_at,
       'locked', siv.confirmed_fraud and siv.fraud_lock_at is not null
-                and now() >= siv.fraud_lock_at and siv.status <> 'approved',
+                and now() >= siv.fraud_lock_at and siv.status = 'rejected',
       'reason', siv.fraud_decision_reason
     )
     from public.student_identity_verifications siv
