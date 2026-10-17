@@ -394,6 +394,33 @@ begin
 end;
 $function$;
 
+create or replace function public.list_my_campus_opportunities()
+returns table (
+  id uuid, title text, category text, description text, eligibility text,
+  provider_name text, source_url text, contact_url text, deadline timestamptz,
+  status text, is_official boolean, created_at timestamptz, updated_at timestamptz
+)
+language plpgsql
+stable
+security definer
+set search_path to ''
+as $function$
+begin
+  if (select auth.uid()) is null or (select private.current_campus_university_id()) is null then
+    raise exception 'A verified campus account is required.' using errcode = '42501';
+  end if;
+  return query
+    select o.id, o.title, o.category, o.description, o.eligibility,
+      o.provider_name, o.source_url, o.contact_url, o.deadline, o.status,
+      o.is_official, o.created_at, o.updated_at
+    from public.campus_opportunities o
+    where o.created_by=(select auth.uid())
+      and o.university_id=(select private.current_campus_university_id())
+    order by o.created_at desc
+    limit 100;
+end;
+$function$;
+
 create or replace function public.review_campus_opportunity(
   p_opportunity_id uuid,
   p_decision text,
@@ -438,6 +465,7 @@ revoke all on function public.create_campus_classroom_material(uuid,text,text,te
 revoke all on function public.create_campus_opportunity(text,text,text,text,text,text,text,timestamptz) from public, anon, authenticated;
 revoke all on function public.update_my_campus_opportunity(uuid,text,text,text,text,text,text,text,timestamptz) from public, anon, authenticated;
 revoke all on function public.submit_campus_opportunity(uuid) from public, anon, authenticated;
+revoke all on function public.list_my_campus_opportunities() from public, anon, authenticated;
 revoke all on function public.review_campus_opportunity(uuid,text,text) from public, anon, authenticated;
 
 grant execute on function public.join_campus_classroom(text) to authenticated;
@@ -446,6 +474,7 @@ grant execute on function public.create_campus_classroom_material(uuid,text,text
 grant execute on function public.create_campus_opportunity(text,text,text,text,text,text,text,timestamptz) to authenticated;
 grant execute on function public.update_my_campus_opportunity(uuid,text,text,text,text,text,text,text,timestamptz) to authenticated;
 grant execute on function public.submit_campus_opportunity(uuid) to authenticated;
+grant execute on function public.list_my_campus_opportunities() to authenticated;
 grant execute on function public.review_campus_opportunity(uuid,text,text) to authenticated;
 
 commit;
