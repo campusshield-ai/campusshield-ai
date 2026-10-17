@@ -6,7 +6,7 @@
 
 ## Gate 1 — Before applying the migration
 
-- [ ] Review the full SQL diff in `supabase/migrations/20261017143000_classroom_opportunity_hub_security.sql`.
+- [ ] Review the full SQL diff in `supabase/migrations/20261017202242_classroom_opportunity_hub_security.sql`.
 - [ ] Confirm the staging migration ledger does not already contain this version.
 - [ ] Confirm latest GitHub Actions smoke checks pass on the current PR head.
 - [ ] Take note of existing staging classroom objects and verify the migration is additive/hardening only; it must not drop class data.
