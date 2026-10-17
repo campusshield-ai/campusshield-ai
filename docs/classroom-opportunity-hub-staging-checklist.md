@@ -4,6 +4,15 @@
 **Production boundary:** Do not apply the migration to production, merge this feature stack, or publish the website as part of testing.
 **Test data:** Fictional users and dummy learning links only. Never upload real student/staff IDs or real student records.
 
+## Recorded staging results (17 Oct 2026)
+
+- [x] Migration chain applied to staging only; production untouched.
+- [x] RLS enabled on classroom, attendance, and Opportunity Hub tables.
+- [x] `anon` and `authenticated` have no table-level INSERT/TRUNCATE privileges on the guarded tables.
+- [x] Rollback-only synthetic authorization test passed 6/6 assertions: teacher class creation/private code retrieval; student join/role restrictions; cross-campus class isolation; student-own-attendance-only reads; private draft/pending opportunity isolation; and same-campus publish versus cross-campus denial.
+- [x] Post-test cleanup verification found zero synthetic users, classes, opportunities, or attendance sessions remaining.
+- [ ] Signed-in browser walkthrough and visual UI acceptance are still outstanding.
+
 ## Gate 1 — Before applying the migration
 
 - [ ] Review the full SQL diff in `supabase/migrations/20261017202242_classroom_opportunity_hub_security.sql`.
