@@ -32,4 +32,6 @@ assert.match(migration, /set search_path to ''/i, "Security-definer functions lo
 assert.match(migration, /revoke all on function public\.review_campus_opportunity\(uuid,text,text\) from public, anon, authenticated/i, "Review RPC defaults are revoked before explicit grants");
 assert.match(migration, /grant execute on function public\.review_campus_opportunity\(uuid,text,text\) to authenticated/i, "Review RPC is explicitly available only to authenticated callers");
 
+assert.match(migration, /create or replace function public\\.list_my_campus_opportunities/i, "Owners can safely retrieve only their own submissions");
+assert.match(migration, /Only the verified teacher who owns this class can view its roster/i, "Student rosters are private to the class-owning teacher");
 console.log("Classroom and Opportunity Hub migration smoke checks passed.");
