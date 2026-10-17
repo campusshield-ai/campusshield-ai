@@ -5,6 +5,9 @@
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const backend = () => window.CampusShieldBackend;
+  // Launch gate: keep Classrooms disabled while the rest of CampusShield is finalized.
+  // After staging tests pass and launch is approved, change this to true.
+  const CLASSROOMS_ENABLED = false;
   let selectedClass = null;
   let currentProfile = null;
   let currentSession = null;
@@ -53,6 +56,7 @@
     const button = document.getElementById("classrooms-nav");
     if (!button) return;
     button.hidden = true;
+    if (!CLASSROOMS_ENABLED) return;
     currentProfile = null;
     selectedClass = null;
     const b = backend();
@@ -237,6 +241,7 @@
   document.addEventListener("click", async event => {
     const navButton=event.target.closest('[data-page="classrooms"]');
     if(navButton){
+      if (!CLASSROOMS_ENABLED) return;
       window.setTimeout(async()=>{
         if($("sectionTitle")) $("sectionTitle").textContent="My Classrooms";
         try{
