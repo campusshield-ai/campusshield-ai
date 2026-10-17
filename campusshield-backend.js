@@ -32,8 +32,7 @@ async signUp(email, password, displayName, username) {
     password,
     options: {
       data: { display_name: displayName || "", username: String(username || "").trim().toLowerCase() },
-      emailRedirectTo:
-        "https://campusshield-ai.github.io/campusshield-ai/"
+      emailRedirectTo: new URL(window.location.pathname, window.location.origin).toString()
     }
   });
 },
