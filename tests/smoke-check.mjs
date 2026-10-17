@@ -11,6 +11,7 @@ const staffProfileMigration = await readFile(new URL("../supabase/migrations/202
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
+const fraudLockMigration = await readFile(new URL("../supabase/migrations/20261018100000_confirmed_identity_fraud_lock.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -154,6 +155,18 @@ assert.match(html, /if \(profile\.verification_status === 'rejected'\)/);
 assert.match(html, /ordinary dashboard access remain available/i);
 assert.match(html, /never persist ID files in browser storage|Do not persist ID files in browser storage/i);
 
+// Confirmed fraud must be an explicit verified-admin decision, distinct from normal rejection.
+assert.match(fraudLockMigration, /p_decision not in \('approve','reject','fraud'\)/);
+assert.match(fraudLockMigration, /fraud_lock_at = now\(\) \+ interval '48 hours'/);
+assert.match(fraudLockMigration, /current_user_identity_fraud_locked/);
+assert.match(fraudLockMigration, /now\(\) >= siv\.fraud_lock_at/);
+assert.match(fraudLockMigration, /Only a verified administrator can review student identity/);
+assert.match(fraudLockMigration, /Ordinary rejection allows correction\/resubmission; no fraud timer is set/);
+assert.match(backend, /\["approve", "reject", "fraud"\]/);
+assert.match(backend, /my_identity_fraud_lock_status/);
+assert.match(html, /data-identity-review="fraud"/);
+assert.match(html, /loadIdentityFraudLockStatus/);
+console.log("PASS confirmed fraud is separately audited with a 48-hour server-side deadline; normal rejection does not start a lock");
 console.log("PASS student identity details are collected during signup and uploaded through the private backend helper");
 console.log("PASS sign-in keeps pending/rejected users on the ordinary dashboard while restricted actions remain gated");
 console.log(`PASS ${inlineScripts.length} inline script(s), backend, and config parse`);
