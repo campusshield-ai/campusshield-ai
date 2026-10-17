@@ -630,14 +630,14 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 <section class="page" id="page-identity-verification">
-  <div class="heading"><div><h1>Student identity verification</h1><p>Verify that you belong to the institution you name. Your ID is private and is not shown on your public profile.</p></div></div>
-  <div class="notice-inline"><strong>Private document handling.</strong> Upload only your own student ID card or official matriculation document. Verified CampusShield administrators can review it. Do not upload bank, medical or unrelated personal documents. Ordinary student pages remain available while your submission is pending; restricted actions stay protected until approval.</div>
+  <div class="heading"><div><h1>Student verification status</h1><p>Your ID is private and is not shown on your public profile. This page is for status updates and resubmission, not the normal sign-in route.</p></div></div>
+  <div class="notice-inline"><strong>Review timeline.</strong> Student identity submissions may take up to 7 working days to review. You can sign in and view ordinary dashboard pages while pending; restricted student features unlock only after approval. If a reviewer records suspected fraud, the account remains reviewable and any 48-hour lock must be based on a documented decision and clear notice.</div>
   <div class="panel">
     <p id="identity-verification-status" class="message" role="status" aria-live="polite">Checking your identity submission…</p>
     <form id="studentIdentityForm" hidden>
-      <div class="field"><label for="identity-institution">University / institution name *</label><input id="identity-institution" required minlength="2" maxlength="180" autocomplete="organization" placeholder="Enter the official institution name"></div>
-      <div class="field"><label for="identity-student-number">Student / matriculation number *</label><input id="identity-student-number" required minlength="2" maxlength="80" autocomplete="off" placeholder="Enter your student number"></div>
-      <div class="field"><label for="identity-document">Student ID card image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><p class="muted">JPEG, PNG or PDF · Maximum 5 MiB. Use a clear image of your own student ID. Do not upload anyone else’s document.</p></div>
+      <div class="field"><label for="identity-institution">University / institution name *</label><input id="identity-institution" minlength="2" maxlength="180" autocomplete="organization" placeholder="Enter the official institution name"></div>
+      <div class="field"><label for="identity-student-number">Student / matriculation number *</label><input id="identity-student-number" minlength="2" maxlength="80" autocomplete="off" placeholder="Enter your student number"></div>
+      <div class="field"><label for="identity-document">Student ID card image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf"><p class="muted">JPEG, PNG or PDF · Maximum 5 MiB. Use a clear image of your own student ID. Do not upload anyone else’s document.</p></div>
       <button class="btn" type="submit" id="identity-submit">Submit for verification</button>
     </form>
     <button class="btn secondary" type="button" id="identity-refresh-status">Refresh verification status</button>
@@ -832,7 +832,7 @@ td strong{color:#2a464d;font-size:11px}
       if (!submission) {
         $('identity-institution').value = '';
         $('identity-student-number').value = '';
-        status.textContent = 'Submit your institution, matriculation number and your own student ID document for review. Ordinary student pages remain available while verification is pending.';
+        status.textContent = 'No identity submission is on file yet. You can submit your institution, matriculation number and your own ID document here. Reviews may take up to 7 working days; ordinary dashboard access remains available while pending.';
         form.hidden = false;
         submit.disabled = false;
       } else if (submission.status === 'approved') {
@@ -859,7 +859,7 @@ td strong{color:#2a464d;font-size:11px}
       } else if (submission.status === 'pending') {
         $('identity-institution').value = submission.institution_name || '';
         $('identity-student-number').value = submission.student_number || '';
-        status.textContent = 'Your ID submission is pending administrator review. You can continue using ordinary student pages while the review is underway. Restricted actions remain protected until approval.';
+        status.textContent = 'Your ID submission is being processed. Reviews may take up to 7 working days. You can sign in and view ordinary dashboard pages; student features requiring approval remain restricted until an administrator approves your identity.';
         form.hidden = true;
         submit.disabled = true;
       } else {
@@ -867,7 +867,7 @@ td strong{color:#2a464d;font-size:11px}
         $('identity-student-number').value = submission.student_number || '';
         status.textContent = 'Your previous ID submission was rejected. Reason: ' +
           (submission.rejection_reason || 'Please contact your campus administrator for clarification.') +
-          ' Sign-in and ordinary dashboard access remain available. Correct the details and resubmit accurate information with your own valid document. Any 48-hour lock must follow a documented fraud decision and a clear notice.';
+          ' Sign-in and ordinary dashboard access remain available. Correct the details and resubmit accurate information with your own valid document. If an administrator documents a fraudulent ID or false information, a 48-hour correction notice should be issued before account restriction; this message does not itself lock the account.';
         form.hidden = false;
         submit.disabled = false;
       }
