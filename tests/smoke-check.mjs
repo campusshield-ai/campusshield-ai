@@ -136,6 +136,22 @@ for (const [profile, expected] of rolePermissionCases) {
 }
 assert.match(html, /canAccessStaffPages\(\)/, "staff routes use the shared role predicate");
 
+
+ // Account creation and review timeline: identity fields are within the signup section,
+ // submission uses the private Storage helper, and pending users aren't redirected to the ID page on every login.
+assert.match(html, /id="signup-student-identity-fields"/);
+assert.match(html, /id="signup-institution"/);
+assert.match(html, /id="signup-student-number"/);
+assert.match(html, /id="signup-student-document"/);
+assert.match(html, /backend\.uploadStudentIdentityDocument\(studentDocument, \{ institutionName, studentNumber \}\)/);
+assert.match(html, /up to 7 working days/i);
+assert.match(html, /studentIdentityForm'\)\.addEventListener\('submit'/);
+assert.match(html, /if \(profile\.verification_status === 'rejected'\)/);
+assert.match(html, /ordinary dashboard access remain available/i);
+assert.match(html, /never persist ID files in browser storage|Do not persist ID files in browser storage/i);
+
+console.log("PASS student identity details are collected during signup and uploaded through the private backend helper");
+console.log("PASS sign-in keeps pending/rejected users on the ordinary dashboard while restricted actions remain gated");
 console.log(`PASS ${inlineScripts.length} inline script(s), backend, and config parse`);
 console.log("PASS browser config uses the Supabase project URL and publishable key only");
 console.log("PASS incident reads, submissions, status updates, and dashboard metrics use Supabase data");
