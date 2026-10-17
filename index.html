@@ -816,6 +816,46 @@ td strong{color:#2a464d;font-size:11px}
     );
   }
 
+  function syncDashboardVerificationNotice(submission = studentIdentitySubmission) {
+    const container = $('dashboard-verification-status');
+    if (!container) return;
+    container.replaceChildren();
+    if (!currentProfile || !isStudentAccount()) {
+      container.hidden = true;
+      return;
+    }
+
+    let message = '';
+    let actionLabel = 'View identity status';
+    if (!submission) {
+      message = 'Student ID not submitted yet. You can view your dashboard, but student features that require identity approval remain restricted.';
+      actionLabel = 'Complete ID submission';
+    } else if (submission.status === 'pending') {
+      message = 'Student identity is being reviewed. Allow up to 7 working days. Full student access begins after administrator approval.';
+    } else if (submission.status === 'rejected') {
+      message = 'Student identity was rejected: ' + (submission.rejection_reason || 'review the rejection details and resubmit accurate information.');
+      actionLabel = 'Resubmit ID';
+    } else if (submission.status === 'approved' && currentProfile.verification_status === 'verified') {
+      container.hidden = true;
+      return;
+    } else {
+      message = 'Your student ID was approved and your account status is being refreshed. Sign in again if access has not updated.';
+    }
+
+    const copy = document.createElement('span');
+    copy.textContent = message;
+    container.append(copy);
+    if (actionLabel) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn secondary';
+      button.dataset.page = 'identity-verification';
+      button.textContent = actionLabel;
+      container.append(button);
+    }
+    container.hidden = false;
+  }
+
   async function loadStudentIdentityStatus() {
     const status = $('identity-verification-status');
     const form = $('studentIdentityForm');
@@ -873,6 +913,7 @@ td strong{color:#2a464d;font-size:11px}
         submit.disabled = false;
       }
       syncIdentityNavigation();
+      syncDashboardVerificationNotice(submission);
     } catch (error) {
       console.error('Could not load student identity status:', error);
       status.textContent = error.message || 'Could not load identity status. Please refresh and try again.';
@@ -2286,6 +2327,20 @@ $('resend-confirmation-button').addEventListener('click', async () => {
             const workspaceReady = showWorkspace(profile);
             if (workspaceReady) {
               await refreshIncidentsFromSupabase();
+              if (isStudentAccount()) {
+                await loadStudentIdentityStatus();
+                const pendingIdentity = sessionStorage.getItem('campusshield_pending_identity');
+                if (pendingIdentity) {
+                  try {
+                    const details = JSON.parse(pendingIdentity);
+                    $('identity-institution').value = details.institutionName || '';
+                    $('identity-student-number').value = details.studentNumber || '';
+                    $('studentIdentityForm').hidden = false;
+                  } catch (pendingError) {
+                    console.warn('Could not restore pending student form details:', pendingError);
+                  }
+                }
+              }
               $('auth-message').textContent = profile.verification_status === 'verified'
                 ? `Signed in. Your role is ${profile.role}.`
                 : profile.verification_status === 'rejected'
