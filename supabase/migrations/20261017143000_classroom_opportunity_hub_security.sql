@@ -247,7 +247,10 @@ create policy campus_opportunities_read_same_campus
     and (
       (status = 'published' and (deadline is null or deadline > now()))
       or created_by = (select auth.uid())
-      or private.current_campus_role() = any (array['admin','security','teacher'])
+      or (
+        status = 'pending'
+        and private.current_campus_role() = any (array['admin','security','teacher'])
+      )
     )
   );
 
