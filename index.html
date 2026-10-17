@@ -1,1 +1,2215 @@
-/* test-write */
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102b35">
+<meta name="description" content="CampusShield AI campus safety incident reporting and review prototype.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CampusShield">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<title>CampusShield AI | Intelligent Campus Safety</title>
+<style>
+:root{--navy:#07172d;--navy2:#0d2442;--blue:#1687f8;--teal:#19d3b0;--ink:#17263d;--muted:#6d7c91;--bg:#f3f6fb;--card:#fff;--line:#e2e9f2;--red:#e24d63;--amber:#d99520;--shadow:0 12px 34px rgba(16,37,68,.07)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh}
+.sidebar{position:fixed;inset:0 auto 0 0;width:235px;background:linear-gradient(180deg,#07172d,#0a2140);color:#eaf3ff;padding:24px 16px;display:flex;flex-direction:column;z-index:5}
+.brand{font-size:18px;font-weight:850;padding:0 8px 26px}
+.brand span{color:var(--teal)}
+.nav-label{font-size:10px;color:#91a9c8;letter-spacing:1.5px;padding:8px}
+.nav{display:grid;gap:6px}
+.nav button{border:0;background:transparent;color:#a9bdd7;text-align:left;padding:12px;border-radius:10px;font-weight:650}
+.nav button:hover,.nav button.active{background:#1687f82e;color:#fff}
+.sidebar-bottom{margin-top:auto;border:1px solid #ffffff20;border-radius:12px;padding:12px;font-size:12px}
+.main{margin-left:235px}
+.topbar{height:68px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:4}
+.pill{background:#e9fbf5;color:#137c62;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800}
+.content{max-width:1400px;margin:auto;padding:25px}
+.panel,.stat{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);padding:20px;margin-bottom:17px}
+.page{display:none}
+.page.active{display:block}
+.heading{margin-bottom:20px}
+.heading h1{margin:0 0 5px;font-size:30px}
+.heading p,.muted{color:var(--muted);font-size:13px}
+.grid{display:grid;gap:15px}
+.stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.stat{margin:0}
+.stat-label{color:var(--muted);font-size:12px}
+.stat-num{font-size:30px;font-weight:850;margin-top:8px}
+.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.btn{border:0;border-radius:9px;padding:10px 14px;background:linear-gradient(135deg,#1687f8,#1761d8);color:#fff;font-size:12px;font-weight:800}
+.btn.secondary{background:#edf3fa;color:#243955;border:1px solid var(--line)}
+.btn.danger{background:#fff0f2;color:#b3263b}
+.field{margin:12px 0}
+.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;border:1px solid #d8e1ec;border-radius:9px;padding:11px;background:white;color:var(--ink)}
+textarea{min-height:100px;resize:vertical}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.message{font-size:13px;margin:10px 0}
+.notice{background:#fff8e9;border:1px solid #f4e2b9;color:#7d5b1a;border-radius:10px;padding:12px;margin-bottom:18px;font-size:12px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th,td{text-align:left;padding:11px;border-bottom:1px solid #edf1f6;font-size:12px}
+th{color:var(--muted);background:#f8fafd}
+.tag{display:inline-block;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:800}
+.high{background:#fff0f1;color:#bd2f46}
+.medium{background:#fff5df;color:#98600a}
+.low{background:#e6f9ef;color:#168154}
+.open{background:#e8f2ff;color:#235eb2}
+.resolved{background:#e6f9ef;color:#168154}
+.empty{padding:20px;color:var(--muted);font-size:13px}
+.toast{position:fixed;right:20px;bottom:20px;background:#0c2440;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:10}
+.toast.show{display:block}
+.footer{text-align:center;color:#8491a4;font-size:10px;padding:12px}
+
+/* CampusShield AI official branding and social profiles */
+.campus-social-block{margin-top:28px}
+.campus-social-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.official-badge{display:inline-flex;align-items:center;gap:9px;min-height:48px;padding:8px 17px;border-radius:999px;background:#142832;color:#eef6fc;font-size:16px;font-weight:800;letter-spacing:.2px}
+.official-badge svg{width:25px;height:25px;flex:none}
+.social-link{width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#142832;color:#f7fbff;border:1px solid #ffffff12;text-decoration:none;transition:transform .18s ease,background .18s ease}
+.social-link svg{width:22px;height:22px;display:block;fill:currentColor}
+.social-link.is-pending{opacity:.86;cursor:default}
+.social-link:not(.is-pending):hover{background:#203d4a;transform:translateY(-2px)}
+.social-link:focus-visible{outline:3px solid #19d3b0;outline-offset:3px}
+.social-caption{margin:10px 0 0;color:#9eb4c8;font-size:11px}
+.workspace-social{display:flex;justify-content:center;margin:8px auto 2px}
+.workspace-social .social-caption{color:#8491a4;text-align:center}
+@media(max-width:650px){.campus-social-row{gap:7px}.official-badge{min-height:44px;padding:7px 13px;font-size:14px}.social-link{width:44px;height:44px}.social-link svg{width:20px;height:20px}}
+
+@media(max-width:900px){.sidebar{width:200px}.main{margin-left:200px}.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
+@media(max-width:650px){.sidebar{position:static;width:auto;height:auto;padding:12px}.brand{padding:4px 8px 10px}.nav{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar-bottom{display:none}.main{margin-left:0}.topbar{padding:0 14px}.content{padding:13px}.stats{gap:9px}.stat,.panel{padding:14px}.heading h1{font-size:25px}}
+
+[hidden]{display:none!important}
+.login-screen{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(360px,.9fr);background:#f3f6fb}
+.login-intro{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:clamp(32px,7vw,100px);color:#eef7ff;background:radial-gradient(circle at 80% 20%,#174d79 0,transparent 35%),linear-gradient(145deg,#061326,#0b2949 70%,#0b3b50)}
+.login-brand{font-size:23px;font-weight:900;letter-spacing:-.5px;margin-bottom:54px}
+.login-brand span{color:#19d3b0}
+.eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:#65e5cd}
+.login-intro h1{max-width:650px;font-size:clamp(36px,4.5vw,64px);line-height:1.04;letter-spacing:-1.8px;margin:14px 0}
+.login-intro>p:not(.eyebrow):not(.login-footnote){max-width:520px;color:#c1d4e8;font-size:17px}
+.login-points{display:grid;gap:18px;margin-top:32px;max-width:520px}
+.login-points>div{display:grid;grid-template-columns:38px 1fr;column-gap:12px;align-items:center}
+.login-points span{grid-row:span 2;color:#19d3b0;font-size:12px;font-weight:900}
+.login-points strong{font-size:14px}
+.login-points small{color:#a9bfd6;font-size:12px}
+.login-footnote{margin-top:45px;color:#8fa8c2;font-size:11px}
+.login-form-wrap{display:flex;align-items:center;justify-content:center;padding:clamp(20px,4vw,64px)}
+.auth-panel{width:100%;max-width:540px;margin:0;padding:clamp(22px,3vw,38px);border-radius:20px}
+.auth-panel h2{font-size:26px;margin:0 0 4px}
+.auth-panel .actions .btn{flex:1;min-height:44px}
+#auth-message{min-height:20px}
+@media(max-width:850px){.login-screen{grid-template-columns:1fr}.login-intro{padding:30px 24px}.login-brand{margin-bottom:24px}.login-intro h1{font-size:40px}.login-points{grid-template-columns:1fr;gap:12px}.login-footnote{margin-top:25px}.login-form-wrap{padding:22px 14px 32px}}
+
+/* CampusShield's visual system: calm, legible, and deliberately distinct from a generic admin template. */
+:root{
+  color-scheme:light;
+  --navy:#102b35;
+  --navy2:#173e48;
+  --blue:#237f8d;
+  --teal:#79e0c4;
+  --ink:#17313a;
+  --muted:#71828a;
+  --bg:#f4f7f5;
+  --card:#fff;
+  --line:#e2eae6;
+  --red:#c94855;
+  --amber:#bd7d20;
+  --green:#187b61;
+  --shadow:0 18px 44px rgba(18,49,58,.065);
+  --shadow-soft:0 7px 22px rgba(18,49,58,.045);
+  --radius:18px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #61cdb5;outline-offset:3px}
+.app{min-height:100vh}
+.sidebar{width:254px;padding:25px 17px 18px;background:linear-gradient(168deg,#102b35 0%,#143943 58%,#102b35 100%);box-shadow:12px 0 36px rgba(16,43,53,.08)}
+.brand{display:flex;align-items:center;gap:11px;padding:0 7px 27px;color:#f7fbf9;font-size:16px;letter-spacing:-.03em}
+.brand-mark{width:37px;height:37px;display:grid;place-items:center;border-radius:12px;background:#79e0c4;color:#102b35;font-size:13px;font-weight:950;letter-spacing:-.07em;box-shadow:0 5px 16px #0a171c50}
+.brand-copy{display:grid;gap:1px}
+.brand .brand-copy{color:#f7fbf9}
+.brand-copy strong{color:#79e0c4}
+.brand-copy small{color:#a1bcb8;font-size:8px;font-weight:800;letter-spacing:.19em}
+.nav-label{padding:8px 10px;color:#92b2b2;font-size:9px;font-weight:850;letter-spacing:.2em}
+.nav{display:grid;gap:5px}
+.nav button{position:relative;display:flex;align-items:center;gap:11px;border:1px solid transparent;background:transparent;color:#b5c9c9;text-align:left;padding:11px 12px;border-radius:11px;font-size:13px;font-weight:680;transition:background .18s ease,color .18s ease,transform .18s ease}
+.nav button:hover{background:#ffffff10;color:#fff;transform:translateX(2px)}
+.nav button.active{background:#ffffff14;border-color:#ffffff14;color:#fff}
+.nav button.active::before{content:"";position:absolute;left:-18px;top:11px;bottom:11px;width:3px;border-radius:0 4px 4px 0;background:#79e0c4}
+.nav-icon{width:18px;height:18px;display:grid;place-items:center;color:#8bdcc9;flex:0 0 18px}
+.nav-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.sidebar-status{margin-top:auto;border:1px solid #ffffff1c;border-radius:14px;padding:13px;background:#ffffff09;color:#dce9e5;font-size:11px}
+.sidebar-status strong{display:flex;align-items:center;gap:8px;font-size:11px}
+.sidebar-status p{margin:5px 0 0;color:#a1b9b6;font-size:10px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#79e0c4;box-shadow:0 0 0 4px #79e0c41e}
+.main{margin-left:254px;min-width:0}
+.topbar{height:auto;min-height:76px;padding:13px clamp(18px,3vw,40px);gap:20px;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid #e3ebe7}
+.topbar-title{display:grid;gap:1px}
+.topbar-title small{color:#85949a;font-size:9px;font-weight:850;letter-spacing:.17em;text-transform:uppercase}
+.topbar-title strong{color:#183840;font-size:15px;letter-spacing:-.02em}
+.topbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.sync-state{display:inline-flex;align-items:center;gap:7px;color:#536970;font-size:11px;font-weight:650}
+.sync-state::before{content:"";width:7px;height:7px;border-radius:50%;background:#b4c2bf}
+.sync-state[data-state="ready"]::before{background:#27896c;box-shadow:0 0 0 3px #27896c1b}
+.sync-state[data-state="loading"]::before{background:#ca8c2d;box-shadow:0 0 0 3px #ca8c2d1b}
+.sync-state[data-state="error"]::before{background:#c94855;box-shadow:0 0 0 3px #c948551b}
+.demo-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #d9e9e3;border-radius:999px;background:#f4faf7;color:#44685f;font-size:9px;font-weight:850;letter-spacing:.09em}
+.demo-pill .status-dot{width:6px;height:6px;box-shadow:none}
+.content{width:min(100%,1390px);margin:0 auto;padding:clamp(18px,3vw,38px)}
+.notice{position:relative;display:flex;align-items:flex-start;gap:11px;padding:13px 16px;margin:0 0 27px;border:1px solid #f0dfbd;border-left:4px solid #d79a3c;border-radius:12px;background:#fffaf0;color:#705622;font-size:12px;line-height:1.55}
+.notice-icon{width:22px;height:22px;display:grid;place-items:center;flex:0 0 22px;border-radius:50%;background:#f7e8c6;color:#986a20;font-size:12px;font-weight:900}
+.notice strong{color:#563d12}
+.page{display:none}
+.page.active{display:block;animation:page-in .3s ease both}
+@keyframes page-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px}
+.heading h1{margin:0;color:#183840;font-size:clamp(25px,3vw,34px);font-weight:790;letter-spacing:-.055em;line-height:1.14}
+.heading p,.muted{color:var(--muted);font-size:12px}
+.heading p{margin:8px 0 0;max-width:650px}
+.heading-actions{display:flex;gap:9px;flex-wrap:wrap}
+.grid{display:grid;gap:14px}
+.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:22px}
+.stat,.panel{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-soft)}
+.stat{overflow:hidden;margin:0;padding:19px 19px 16px;transition:transform .18s ease,box-shadow .18s ease}
+.stat:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.stat::after{content:"";position:absolute;right:-28px;top:-39px;width:104px;height:104px;border:1px solid #dcece6;border-radius:50%;box-shadow:0 0 0 13px #f6faf8,0 0 0 14px #e8f1ed}
+.stat:nth-child(2)::after{border-color:#f4e2c5;box-shadow:0 0 0 13px #fdf9f1,0 0 0 14px #f8edd9}
+.stat:nth-child(3)::after{border-color:#d9e9f5;box-shadow:0 0 0 13px #f6fafc,0 0 0 14px #e6f0f6}
+.stat:nth-child(4)::after{border-color:#dfdff1;box-shadow:0 0 0 13px #f8f8fc,0 0 0 14px #eeeeF7}
+.stat-label{position:relative;z-index:1;color:#647980;font-size:11px;font-weight:730}
+.stat-num{position:relative;z-index:1;margin-top:9px;color:#173b43;font-size:clamp(27px,3vw,34px);font-weight:820;letter-spacing:-.055em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat-note{position:relative;z-index:1;margin:9px 0 0;color:#8b999d;font-size:10px}
+.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.panel{padding:clamp(17px,2vw,24px);margin-bottom:16px}
+.panel h2{margin:0;color:#203b43;font-size:16px;letter-spacing:-.03em}
+.panel-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:15px}
+.panel-heading p{margin:4px 0 0;color:#829095;font-size:11px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:9px 14px;border:1px solid transparent;border-radius:10px;background:linear-gradient(135deg,#267f8b,#206d78);box-shadow:0 5px 13px #196c7819;color:#fff;font-size:11px;font-weight:780;letter-spacing:.005em;transition:transform .16s ease,box-shadow .16s ease,background .16s ease}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 17px #196c7829}
+.btn:active:not(:disabled){transform:translateY(0)}
+.btn:disabled{cursor:wait;opacity:.62}
+.btn.secondary{background:#fff;border-color:#dfe8e4;box-shadow:none;color:#38535b}
+.btn.secondary:hover:not(:disabled){background:#f5faf7;border-color:#c7d9d2;box-shadow:none}
+.btn.danger{background:#fff4f3;border-color:#f1d8d5;color:#a93c42}
+.field{margin:14px 0}
+.field label{display:block;margin-bottom:6px;color:#334e55;font-size:11px;font-weight:760}
+.field input,.field select,.field textarea{width:100%;min-height:43px;border:1px solid #d9e4df;border-radius:10px;padding:10px 12px;background:#fff;color:#1a363e;font-size:13px;transition:border-color .16s ease,box-shadow .16s ease}
+.field input::placeholder,.field textarea::placeholder{color:#9aa8a9}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#5db7a3;box-shadow:0 0 0 3px #68c8b31c;outline:none}
+.field textarea{min-height:128px;resize:vertical}
+.field select{appearance:auto}
+.actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.message{min-height:20px;color:#61777d;font-size:12px}
+.empty{padding:24px;color:#7e8d92;font-size:12px}
+.empty-state{display:flex;align-items:center;gap:14px;padding:21px;border:1px dashed #d7e5df;border-radius:14px;background:#f9fcfa}
+.empty-state-mark{width:42px;height:42px;display:grid;place-items:center;flex:0 0 42px;border-radius:13px;background:#e7f4ee;color:#27816c;font-size:19px}
+.empty-state strong{display:block;color:#38555c;font-size:12px}
+.empty-state p{margin:3px 0 0;color:#849399;font-size:11px}
+.empty-state .btn{margin-left:auto;white-space:nowrap}
+.recent-list{display:grid;gap:9px}
+.recent-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 18px;padding:13px 14px;border:1px solid #e7eeea;border-radius:13px;background:#fff;transition:border-color .15s ease,background .15s ease}
+.recent-item:hover{border-color:#cde1d8;background:#fcfefc}
+.recent-title{display:flex;align-items:center;gap:8px;min-width:0;color:#2c4850;font-size:12px;font-weight:760}
+.recent-time{color:#85949a;font-size:10px;white-space:nowrap}
+.recent-description{grid-column:1/-1;margin:0;color:#6d8086;font-size:11px;overflow-wrap:anywhere}
+.table-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 180px auto;align-items:end;gap:12px;margin-bottom:14px}
+.table-toolbar .field{margin:0}
+.table-count{padding-bottom:11px;color:#7b8b90;font-size:10px;white-space:nowrap}
+.table-wrap{overflow:auto;border:1px solid #e6ede9;border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:720px;background:#fff}
+th,td{text-align:left;padding:12px 13px;border-bottom:1px solid #edf1ef;font-size:11px;vertical-align:top}
+th{position:sticky;top:0;background:#f7faf8;color:#6e8186;font-size:9px;font-weight:850;letter-spacing:.1em;text-transform:uppercase}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fbfdfb}
+td strong{color:#2a464d;font-size:11px}
+.tag{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 8px;font-size:9px;font-weight:840;letter-spacing:.02em;white-space:nowrap}
+.tag::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.75}
+.high{background:#fff0ef;color:#b74649}
+.medium{background:#fff6e6;color:#a36b13}
+.low{background:#eaf7f0;color:#287756}
+.unknown{background:#f0f2f1;color:#68787b}
+.open{background:#eef4f5;color:#476970}
+.resolved{background:#eaf7f0;color:#287756}
+.analytics-summary{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;background:#f5faf7;color:#44615e;font-size:12px}
+.analytics-mark{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:#e3f3ec;color:#267b68;font-size:16px}
+.notice-inline{margin:0 0 16px;padding:12px 14px;border:1px solid #e8e6d7;border-radius:11px;background:#fbfaf4;color:#68705b;font-size:11px}
+.risk-output{margin-top:15px;padding:13px 15px;border-radius:12px;background:#f3f8f6;color:#345c51;font-weight:680}
+.community-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:16px;margin-bottom:18px;align-items:start}
+.community-post{border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;background:#fff}
+.community-post-header,.community-comment-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.community-post-title{margin:9px 0 6px;font-size:17px;line-height:1.35}
+.community-post-body{white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0;color:#30445f}
+.community-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:11px}
+.community-handle{color:#0d8478;font-weight:850}
+.community-official{display:inline-flex;border-radius:99px;padding:4px 8px;background:#e4faf3;color:#087b60;font-size:10px;font-weight:850}
+.community-comment{padding:11px 0;border-top:1px solid #edf1f6}
+.community-comment p{margin:6px 0 8px;white-space:pre-wrap;overflow-wrap:anywhere}
+.community-comments{margin-top:14px}
+.community-comment-form{display:flex;gap:8px;margin-top:10px;align-items:flex-start}
+.community-comment-form textarea{min-height:44px;max-height:120px;flex:1}
+.community-post-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.community-moderation-item,.community-report-item{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:#fbfcfe}
+.community-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.community-empty{padding:24px;border:1px dashed #cad5e4;border-radius:12px;text-align:center;color:var(--muted)}
+@media(max-width:900px){.community-layout{grid-template-columns:1fr}}
+@media(max-width:650px){.community-post{padding:12px}.community-comment-form{flex-direction:column}.community-comment-form .btn{width:100%}}
+.footer{padding:25px 10px 13px;color:#9aa6a5;font-size:9px;letter-spacing:.04em}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.toast{right:22px;bottom:22px;max-width:min(440px,calc(100vw - 32px));padding:13px 16px;border:1px solid #ffffff22;border-radius:12px;background:#17363d;box-shadow:0 12px 35px #102b3530;color:#fff;font-size:12px;line-height:1.45}
+
+/* Sign-in surface */
+.login-screen{min-height:100vh;grid-template-columns:minmax(0,1.15fr) minmax(400px,.85fr);background:#f4f7f5}
+.login-intro{isolation:isolate;min-height:100vh;padding:clamp(36px,7vw,106px);background:radial-gradient(circle at 84% 23%,#2a6468 0,transparent 27%),radial-gradient(circle at 18% 90%,#1c5553 0,transparent 30%),linear-gradient(145deg,#102b35 0%,#133b44 62%,#102b35 100%)}
+.login-intro::before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:52px 52px;mask-image:linear-gradient(135deg,#0008,transparent 74%)}
+.login-intro::after{content:"";position:absolute;z-index:-1;right:-110px;bottom:-160px;width:min(44vw,520px);aspect-ratio:1;border:1px solid #ffffff20;border-radius:50%;box-shadow:0 0 0 24px #ffffff08,0 0 0 72px #ffffff06,0 0 0 128px #ffffff04}
+.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:clamp(42px,8vh,90px);font-size:20px;letter-spacing:-.04em}
+.login-brand .brand-mark{width:42px;height:42px;font-size:14px}
+.login-brand .brand-mark{color:#102b35}
+.login-brand .login-brand-name{color:#f3faf8}
+.login-brand-name strong{color:#79e0c4}
+.eyebrow{color:#8ee6d0;font-size:9px;font-weight:900;letter-spacing:.22em}
+.login-intro h1{max-width:620px;margin:15px 0 13px;color:#f3faf8;font-size:clamp(38px,5.2vw,67px);font-weight:760;line-height:1.02;letter-spacing:-.07em}
+.login-intro>p:not(.eyebrow):not(.login-footnote){max-width:500px;color:#c0d6d4;font-size:15px;line-height:1.7}
+.login-points{gap:13px;margin-top:30px}
+.login-points>div{grid-template-columns:31px 1fr;column-gap:11px;padding:12px 14px;border:1px solid #ffffff13;border-radius:12px;background:#ffffff08}
+.login-points span{grid-row:span 2;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:#79e0c419;color:#8ee6d0;font-size:9px}
+.login-points strong{color:#f2f9f7;font-size:11px}
+.login-points small{color:#aec8c6;font-size:10px}
+.login-footnote{margin-top:35px;color:#9dbab7;font-size:10px}
+.login-form-wrap{padding:clamp(22px,4vw,70px)}
+.auth-panel{max-width:480px;padding:clamp(23px,3vw,38px);border:1px solid #e3eae6;border-radius:20px;box-shadow:0 24px 65px #18384012}
+.auth-kicker{margin:0 0 6px;color:#388775;font-size:9px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+.auth-panel h2{color:#1b3b43;font-size:25px;letter-spacing:-.045em}
+.auth-panel>p.muted{margin:0 0 19px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:18px 0 19px;border:1px solid #e3ebe7;border-radius:12px;background:#f4f8f6}
+.auth-tabs button{min-height:37px;border:0;border-radius:8px;background:transparent;color:#708188;font-size:11px;font-weight:760}
+.auth-tabs button[aria-pressed="true"]{background:#fff;box-shadow:0 2px 8px #15343d12;color:#1b5155}
+.auth-panel .actions .btn{width:100%;min-height:44px}
+#auth-message{min-height:20px;margin:12px 0 0}
+.auth-footnote{margin:12px 0 0;color:#849398;font-size:10px;line-height:1.55}
+.remember-field{margin:11px 0;color:#5f757b;font-size:10px}
+.remember-field label{display:flex;align-items:center;gap:8px;font-weight:600}
+.remember-field input{width:15px;height:15px;min-height:15px;accent-color:#278473}
+.install-card{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:11px;margin-top:17px;padding:12px;border:1px solid #dceae4;border-radius:13px;background:#f7fbf8}
+.install-mark{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:#e2f4ec;color:#247866;font-size:17px;font-weight:850}
+.install-copy strong{display:block;color:#284850;font-size:11px}
+.install-copy p{margin:3px 0 0;color:#71848a;font-size:10px;line-height:1.45}
+.install-card .btn{min-height:36px;padding:8px 11px;white-space:nowrap}
+@media(max-width:520px){.install-card{grid-template-columns:34px minmax(0,1fr);gap:9px}.install-mark{width:32px;height:32px}.install-card .btn{grid-column:2;justify-self:start}}
+
+@media(max-width:1120px){.sidebar{width:226px}.main{margin-left:226px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.login-screen{grid-template-columns:minmax(0,1fr) minmax(370px,.95fr)}.login-intro{padding:clamp(32px,5vw,64px)}}
+@media(max-width:850px){.login-screen{grid-template-columns:1fr}.login-intro{min-height:auto;padding:34px 25px}.login-brand{margin-bottom:30px}.login-intro h1{font-size:clamp(38px,8vw,54px)}.login-points{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.login-points>div{grid-template-columns:1fr;gap:6px}.login-points span{grid-row:auto}.login-footnote{margin-top:20px}.login-form-wrap{padding:25px 16px 36px}}
+@media(max-width:760px){.sidebar{position:sticky;top:0;width:auto;height:auto;padding:11px 13px 9px;box-shadow:0 8px 20px #102b3510}.brand{padding:0 4px 8px}.brand-mark{width:32px;height:32px;border-radius:10px}.brand-copy{font-size:14px}.brand-copy small{display:none}.nav-label,.sidebar-status{display:none}.nav{display:flex;gap:5px;overflow-x:auto;padding:1px 0 2px;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav button{flex:0 0 auto;padding:9px 10px;font-size:10px}.nav button.active::before{left:9px;right:9px;top:auto;bottom:-2px;width:auto;height:2px}.nav-icon{width:15px;height:15px;flex-basis:15px}.nav-icon svg{width:15px;height:15px}.main{margin-left:0}.topbar{position:sticky;top:79px;z-index:4;min-height:64px;padding:10px 16px;gap:10px}.content{padding:17px 14px}.heading{align-items:flex-start;flex-direction:column;gap:12px}.heading-actions{width:100%}.table-toolbar{grid-template-columns:1fr 145px}.table-count{grid-column:1/-1;padding:0}}
+@media(max-width:520px){.nav button{gap:7px}.nav-icon{display:none}.topbar{top:73px;align-items:flex-start;flex-direction:column}.topbar-actions{justify-content:flex-start;gap:7px}.sync-state{font-size:10px}.demo-pill{font-size:8px;padding:6px 8px}.content{padding:15px 12px}.notice{margin-bottom:20px;padding:11px 12px;font-size:11px}.stats{gap:9px;margin-bottom:16px}.stat{padding:14px 13px 12px;border-radius:14px}.stat-num{font-size:26px}.stat-label{font-size:10px}.stat-note{font-size:9px}.panel{padding:15px;border-radius:15px}.empty-state{align-items:flex-start;flex-wrap:wrap;padding:14px}.empty-state .btn{margin-left:56px}.recent-item{grid-template-columns:1fr;gap:5px}.recent-time{grid-row:2}.recent-description{grid-column:1}.table-toolbar{grid-template-columns:1fr}.table-count{grid-column:auto}.login-intro{padding:27px 19px}.login-points{grid-template-columns:1fr}.login-points>div{grid-template-columns:26px 1fr;gap:4px 9px}.login-points span{grid-row:span 2}.login-intro h1{font-size:38px}.auth-panel{padding:22px 18px}.footer{text-align:left}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+
+/* Official CampusShield hub — safe to show before social URLs are configured. */
+.campus-hub{width:100%;max-width:920px;margin:28px auto 0;padding:clamp(17px,2.3vw,24px);border:1px solid #285461;border-radius:22px;background:linear-gradient(145deg,#0c3040 0%,#103b48 100%);color:#eff8f7;box-shadow:0 18px 42px #061a2422}
+.campus-hub *{box-sizing:border-box}
+.campus-hub-head{display:flex;align-items:center;gap:14px;min-width:0}
+.campus-hub-mark{width:48px;height:48px;display:grid;place-items:center;flex:0 0 48px;border:1px solid #2e6670;border-radius:15px;background:#174451}
+.campus-hub-mark svg{width:28px;height:28px}
+.campus-hub-brand{min-width:0;flex:1}
+.campus-hub-eyebrow,.campus-hub-section-title,.campus-hub-series-kicker{display:block;color:#71e7d1;font-size:9px;font-weight:900;letter-spacing:.15em}
+.campus-hub-brand h2{margin:5px 0 2px;color:#f5fbfa;font-size:clamp(16px,1.6vw,19px);line-height:1.25;letter-spacing:-.035em}
+.campus-hub-brand p{margin:0;color:#b6d0d1;font-size:11px}
+.campus-hub-official{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;padding:10px 13px;border:1px solid #3a6973;border-radius:999px;background:#ffffff08;color:#f0faf8;text-decoration:none;font-size:10px;font-weight:850}
+.campus-hub-official:hover{background:#ffffff12}
+.campus-hub-section-title{margin:22px 0 10px;color:#8dbac9}
+.campus-hub-series-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.campus-hub-series{min-width:0;padding:13px;border:1px solid #2a5260;border-radius:13px;background:#ffffff06}
+.campus-hub-series-kicker{font-size:8px;letter-spacing:.09em}
+.campus-hub-series strong{display:block;margin:8px 0 4px;color:#f3faf8;font-size:11px;line-height:1.35}
+.campus-hub-series p{margin:0;color:#b7cbcd;font-size:10px;line-height:1.5}
+.campus-hub-social{display:flex;align-items:flex-start;gap:12px;margin-top:15px}
+.campus-hub-social-label{padding-top:9px;color:#b2cbd1;font-size:8px;font-weight:900;letter-spacing:.13em;white-space:nowrap}
+.campus-hub-channel-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;flex:1;min-width:0}
+.campus-hub-channel{display:flex;align-items:center;gap:7px;min-width:0;padding:8px;border:1px solid #2c5360;border-radius:12px;background:#ffffff07}
+.campus-hub-channel-icon{width:29px;height:29px;display:grid;place-items:center;flex:0 0 29px;border-radius:9px;background:#233f50;color:#f5f9fa;font-size:15px;font-weight:850}
+.channel-tiktok{background:#22525b;color:#78e6dc}
+.channel-instagram{background:#593f58;color:#f3a0bb}
+.channel-linkedin{background:#204b69;color:#a9dcff;font-size:11px}
+.campus-hub-channel-copy{display:grid;gap:2px;min-width:0;flex:1}
+.campus-hub-channel-copy strong{color:#f3faf8;font-size:9px}
+.campus-hub-channel-copy small{overflow-wrap:anywhere;color:#b2c7cc;font-size:8px;line-height:1.25}
+.campus-hub-soon{padding:4px 5px;border:1px solid #2d6771;border-radius:999px;color:#8ce8d8;font-size:7px;font-weight:900}
+.campus-hub-note{margin:10px 0 0;color:#9dbcc4;font-size:9px;line-height:1.45}
+.workspace-social .campus-hub{margin-top:8px}
+@media(max-width:1050px){.campus-hub-channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.campus-hub{padding:15px;border-radius:17px}.campus-hub-head{align-items:flex-start;gap:10px;flex-wrap:wrap}.campus-hub-mark{width:41px;height:41px;flex-basis:41px;border-radius:12px}.campus-hub-brand{width:calc(100% - 55px);flex:1}.campus-hub-official{margin-left:51px}.campus-hub-series-grid{grid-template-columns:1fr}.campus-hub-series{padding:12px}.campus-hub-social{display:block}.campus-hub-social-label{display:block;margin-bottom:8px}.campus-hub-channel-grid{grid-template-columns:1fr 1fr}.campus-hub-channel{padding:7px}.campus-hub-soon{display:none}}
+@media(max-width:390px){.campus-hub-channel-grid{grid-template-columns:1fr}}
+
+
+/* The X profile is live; other social channels remain placeholders until official URLs are configured. */
+.campus-hub-channel-link{position:relative;z-index:2;pointer-events:auto;cursor:pointer;color:inherit;text-decoration:none;transition:border-color .16s ease,background .16s ease}
+.campus-hub-channel-link:hover{border-color:#71e7d1;background:#ffffff12}
+.campus-hub-channel-link:focus-visible{outline:3px solid #71e7d1;outline-offset:2px}
+.campus-hub-live{padding:4px 5px;border:1px solid #2d8d78;border-radius:999px;color:#8ce8d8;font-size:7px;font-weight:900}
+
+</style>
+</head>
+<body>
+<section id="login-screen" class="login-screen">
+  <div class="login-intro">
+    <div class="login-brand"><span class="brand-mark" aria-hidden="true">CS</span><span class="login-brand-name">Campus<strong>Shield</strong> AI</span></div>
+    <p class="eyebrow">A CLEARER VIEW OF CAMPUS SAFETY</p>
+    <h1>Make every report easier to understand.</h1>
+    <p>Bring reports, review status, and safety patterns into one calm, focused workspace.</p>
+    <div class="login-points">
+      <div><span>01</span><strong>Report with context</strong><small>Capture the category, place, and what happened.</small></div>
+      <div><span>02</span><strong>Review activity</strong><small>See status and records your account can access.</small></div>
+      <div><span>03</span><strong>Spot patterns</strong><small>Use simple summaries to guide human review.</small></div>
+    </div>
+    <p class="login-footnote">Demonstration prototype · Does not contact emergency services</p>
+
+    <div class="campus-hub" aria-label="Official CampusShield AI hub">
+  <div class="campus-hub-head">
+    <span class="campus-hub-mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32"><path fill="#34d399" d="M16 1.5l4.1 3 5.1-.1 1.4 4.9 4.1 3-1.2 5 1.2 5-4.1 3-1.4 4.9-5.1-.1-4.1 3-4.1-3-5.1.1-1.4-4.9-4.1-3 1.2-5-1.2-5 4.1-3 1.4-4.9 5.1.1z"/><path d="M10 16.2l3.7 3.7L22.3 11" fill="none" stroke="#073b32" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div class="campus-hub-brand">
+      <span class="campus-hub-eyebrow">THE OFFICIAL CAMPUSSHIELD HUB</span>
+      <h2>Good campus ideas start here.</h2>
+      <p>Safety insights · student voices · ideas in action</p>
+    </div>
+    <a class="campus-hub-official" href="https://campusshield-ai.github.io/campusshield-ai/" target="_blank" rel="noopener noreferrer">Official site <span aria-hidden="true">↗</span></a>
+  </div>
+  <div class="campus-hub-section-title">UPCOMING CONTENT SERIES</div>
+  <div class="campus-hub-series-grid">
+    <article class="campus-hub-series">
+      <span class="campus-hub-series-kicker">01 / SHIELD NOTES</span>
+      <strong>Small steps. Safer days.</strong>
+      <p>Practical, student-friendly safety explainers.</p>
+    </article>
+    <article class="campus-hub-series">
+      <span class="campus-hub-series-kicker">02 / CAMPUS VOICES</span>
+      <strong>Stories from student life.</strong>
+      <p>Student stories shared with care and consent.</p>
+    </article>
+    <article class="campus-hub-series">
+      <span class="campus-hub-series-kicker">03 / BUILD LAB</span>
+      <strong>Ideas made together.</strong>
+      <p>Projects, collaborators and campus innovation.</p>
+    </article>
+  </div>
+  <div class="campus-hub-social">
+    <span class="campus-hub-social-label">FIND US ON</span>
+    <div class="campus-hub-channel-grid">
+      <a class="campus-hub-channel campus-hub-channel-link" href="https://x.com/CampusShieldAI" aria-label="Open the official CampusShield AI X profile"><span class="campus-hub-channel-icon channel-x" aria-hidden="true">X</span><span class="campus-hub-channel-copy"><strong>X</strong><small>Campus updates</small></span><span class="campus-hub-live">OPEN X ↗</span></a>
+      <div class="campus-hub-channel"><span class="campus-hub-channel-icon channel-tiktok" aria-hidden="true">♪</span><span class="campus-hub-channel-copy"><strong>TikTok</strong><small>Quick safety tips</small></span><span class="campus-hub-soon">SOON</span></div>
+      <div class="campus-hub-channel"><span class="campus-hub-channel-icon channel-instagram" aria-hidden="true">◎</span><span class="campus-hub-channel-copy"><strong>Instagram</strong><small>Campus voices</small></span><span class="campus-hub-soon">SOON</span></div>
+      <div class="campus-hub-channel"><span class="campus-hub-channel-icon channel-linkedin" aria-hidden="true">in</span><span class="campus-hub-channel-copy"><strong>LinkedIn</strong><small>Campus partnerships</small></span><span class="campus-hub-soon">SOON</span></div>
+    </div>
+  </div>
+  <p class="campus-hub-note">Follow CampusShield on X now; more official profile links will appear as each account is ready.</p>
+</div>
+  </div>
+  <div class="login-form-wrap">
+    <section class="panel auth-panel">
+      <p class="auth-kicker">CAMPUSSHIELD ACCESS</p>
+      <h2 id="auth-title">Welcome back</h2>
+      <p id="auth-subtitle" class="muted">Sign in to review campus safety reports.</p>
+      <div class="auth-tabs" id="auth-tabs" role="group" aria-label="Account access">
+        <button type="button" data-auth-mode="signin" aria-pressed="true">Sign in</button>
+        <button type="button" data-auth-mode="signup" aria-pressed="false">Create account</button>
+      </div>
+      <form id="auth-form">
+        <div id="signup-fields" hidden>
+          <div class="field"><label for="auth-name">Full name <span class="muted">(private)</span></label><input id="auth-name" autocomplete="name" placeholder="Your official name; not shown to other students"></div>
+          <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
+          <div class="field"><label for="auth-role">Account type</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
+          <p class="muted">Student accounts must submit a student ID card or matriculation document after email confirmation. Student features stay locked until a verified administrator approves the identity.</p>
+        </div>
+        <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+        <div class="field" id="auth-password-field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div>
+        <div class="field" id="forgot-password-field">
+          <button type="button" id="forgot-password-button" class="btn secondary">Forgot password?</button>
+        </div>
+        <div id="password-reset-fields" hidden>
+          <div class="field"><label for="new-password">New password *</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></div>
+          <div class="field"><label for="confirm-new-password">Confirm new password *</label><input id="confirm-new-password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the new password again"></div>
+          <p class="muted">Use a password you do not use on other websites.</p>
+        </div>
+        <div class="remember-field" id="remember-email-field"><label for="remember-email"><input type="checkbox" id="remember-email"> Remember my email address</label></div>
+        <div class="field" id="resend-field">
+          <button type="button" id="resend-confirmation-button" class="btn secondary">Resend confirmation email</button>
+        </div>
+        <p id="auth-helper" class="auth-footnote">Student and teacher accounts require administrator verification before they can review incidents. This prototype does not contact emergency services.</p>
+        <div class="install-card" id="install-card" hidden aria-live="polite">
+          <span class="install-mark" aria-hidden="true">↓</span>
+          <div class="install-copy"><strong id="install-title">Install CampusShield</strong><p id="install-guidance"></p></div>
+          <button type="button" class="btn secondary" id="install-app" hidden>Install</button>
+        </div>
+        <div class="actions"><button class="btn" type="submit" id="auth-submit">Sign in</button></div>
+        <p id="auth-message" class="message" role="status" aria-live="polite">Please sign in or create an account.</p>
+      </form>
+    </section>
+  </div>
+</section>
+
+<div class="app" id="workspace" hidden>
+<aside class="sidebar">
+<div class="brand"><span class="brand-mark" aria-hidden="true">CS</span><span class="brand-copy">Campus<strong>Shield</strong> AI<small>SAFETY WORKSPACE</small></span></div>
+<div class="nav-label">WORKSPACE</div>
+<nav class="nav">
+<button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
+<button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
+<button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus community</button>
+<button data-page="manage"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button>
+<button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
+<button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
+<button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button>
+<button data-page="identity-verification" id="identity-verification-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M5.8 16a3.2 3.2 0 0 1 6.4 0M14 9h4M14 13h4"/></svg></span>Student identity</button>
+</nav>
+<div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
+</aside>
+<div class="main">
+<header class="topbar">
+  <div class="topbar-title"><small>CampusShield AI</small><strong id="sectionTitle">Overview</strong></div>
+  <div class="topbar-actions"><span id="incidentSyncStatus" class="sync-state" role="status" aria-live="polite">Incident data not loaded</span><button class="btn secondary" type="button" id="refresh-incidents" aria-label="Refresh incident data"><span aria-hidden="true">↻</span>Refresh data</button><button class="btn secondary" type="button" id="workspace-install-app" hidden>Install app</button><span class="demo-pill"><span class="status-dot" aria-hidden="true"></span>PROTOTYPE</span><button class="btn secondary" type="button" id="signout-button">Sign out</button></div>
+</header>
+<main class="content">
+
+
+
+<div class="notice"><span class="notice-icon" aria-hidden="true">!</span><span><strong>Demonstration prototype.</strong> Use fictional information only. Reports are stored in the connected Supabase project when available. This prototype does not contact emergency services.</span></div>
+
+<section class="page active" id="page-dashboard">
+<div class="heading">
+  <div><h1>Campus safety overview</h1><p>A measured view of incident records available to your signed-in account.</p></div>
+  <div class="heading-actions"><button class="btn" type="button" data-page="report"><span aria-hidden="true">＋</span>New report</button></div>
+</div>
+<div class="grid stats" aria-label="Incident statistics">
+  <div class="stat"><div class="stat-label">Reports in view</div><div class="stat-num" id="totalStat">—</div><p class="stat-note">Records available to this account</p></div>
+  <div class="stat"><div class="stat-label">Unresolved · high severity</div><div class="stat-num" id="highStat">—</div><p class="stat-note">Review priority, not a prediction</p></div>
+  <div class="stat"><div class="stat-label">Resolved reports</div><div class="stat-num" id="resolvedStat">—</div><p class="stat-note">Marked resolved in the records</p></div>
+  <div class="stat"><div class="stat-label">Resolution rate</div><div class="stat-num" id="rateStat">—</div><p class="stat-note">Resolved reports ÷ reports in view</p></div>
+</div>
+<div class="panel">
+  <div class="panel-heading"><div><h2>Recent reports</h2><p>Latest records your account can access.</p></div><span class="muted">Sorted newest first</span></div>
+  <div id="recentList" class="recent-list"><div class="empty-state"><span class="empty-state-mark" aria-hidden="true">＋</span><div><strong>No reports in view yet</strong><p>Submit a report to start the activity list.</p></div><button class="btn secondary" type="button" data-page="report">Create a report</button></div></div>
+</div>
+</section>
+
+<section class="page" id="page-report">
+<div class="heading"><h1>Report an incident</h1><p>Submit a safety report to your configured Supabase project.</p></div>
+<div class="panel">
+<form id="reportForm">
+<div class="grid two">
+<div class="field"><label for="category">Incident category *</label><select id="category" required><option value="">Select category</option><option>Medical emergency</option><option>Fire or smoke</option><option>Security concern</option><option>Accident or injury</option><option>Harassment or misconduct</option><option>Facility hazard</option><option>Theft or property</option><option>Other</option></select></div>
+<div class="field"><label for="severity">Severity *</label><select id="severity" required><option value="">Select severity</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+<div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" required placeholder="e.g. Main library entrance"></div>
+<div class="field" style="align-self:end"><span class="muted">Your signed-in account is linked to this report automatically.</span></div>
+</div>
+<div class="field"><label for="description">Description *</label><textarea id="description" maxlength="800" required placeholder="Describe what happened and any immediate concerns..."></textarea></div>
+<div class="actions"><button class="btn" type="submit" id="report-submit">Submit report</button><button class="btn secondary" type="reset">Clear form</button></div>
+</form>
+</div>
+</section>
+
+<section class="page" id="page-community">
+<div class="heading"><h1>Campus community</h1><p>Share public-safe campus issues and suggestions, discuss approved posts, and see verified staff announcements.</p></div>
+<div class="notice-inline"><strong>Protect your privacy.</strong> Community posts are separate from private incident reports and require review before other students can see them. Do not post real names, email addresses, room numbers, medical details, harassment allegations, threats, evidence, or other identifying information. Use <button type="button" class="btn secondary" data-page="report">private incident reporting</button> for sensitive concerns.</div>
+<div class="community-layout">
+  <section class="panel" aria-labelledby="community-profile-title">
+    <div class="panel-heading"><div><h2 id="community-profile-title">Your public profile</h2><p>Students see your username only.</p></div></div>
+    <p class="community-meta">Your current handle <strong id="community-username-current" class="community-handle">@loading</strong></p>
+    <form id="communityUsernameForm">
+      <div class="field"><label for="community-username">Change username</label><input id="community-username" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" autocomplete="nickname" placeholder="Choose a unique username"><p class="muted">Lowercase letters, numbers, and underscores only. Usernames can be changed once every 7 days.</p></div>
+      <button class="btn secondary" type="submit" id="community-username-save">Save username</button>
+      <p id="community-profile-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="panel" aria-labelledby="community-post-title">
+    <div class="panel-heading"><div><h2 id="community-post-title">Share with campus</h2><p>Student posts are reviewed before publication.</p></div></div>
+    <form id="communityPostForm">
+      <div class="field"><label for="community-post-type">Post type</label><select id="community-post-type"><option value="safety_issue">Campus safety issue</option><option value="suggestion">Safety improvement suggestion</option><option id="community-announcement-option" value="announcement" disabled>Official staff announcement</option></select></div>
+      <div class="field"><label for="community-post-title-input">Title *</label><input id="community-post-title-input" required minlength="3" maxlength="100" placeholder="e.g. Broken light near the library"></div>
+      <div class="field"><label for="community-post-location">General location <span class="muted">(optional)</span></label><input id="community-post-location" maxlength="120" placeholder="e.g. Main library entrance; no room numbers"></div>
+      <div class="field"><label for="community-post-body">Description *</label><textarea id="community-post-body" required minlength="10" maxlength="2000" placeholder="Describe the issue or suggestion without naming or identifying anyone."></textarea></div>
+      <div class="actions"><button class="btn" type="submit" id="community-post-submit">Submit for review</button></div>
+      <p id="community-post-message" class="message" role="status" aria-live="polite">Official announcements are reserved for verified staff.</p>
+    </form>
+  </section>
+</div>
+<section class="panel" id="community-moderation" hidden aria-labelledby="community-moderation-title">
+  <div class="panel-heading"><div><h2 id="community-moderation-title">Community moderation</h2><p>Review student submissions and reports. Moderation actions are checked again by Supabase.</p></div><button type="button" class="btn secondary" id="refresh-community-moderation">Refresh queue</button></div>
+  <h3>Posts awaiting review</h3>
+  <div id="community-moderation-posts"><p class="muted">Loading moderation queue…</p></div>
+  <h3>Reports from the community</h3>
+  <div id="community-reports-queue"><p class="muted">Loading reports…</p></div>
+  <p id="community-moderation-message" class="message" role="status" aria-live="polite"></p>
+</section>
+<section class="panel" aria-labelledby="community-feed-title">
+  <div class="community-section-title"><div><h2 id="community-feed-title">Latest campus updates</h2><p class="muted">Only published posts appear here. Usernames are public; real names and emails are not.</p></div><button type="button" class="btn secondary" id="refresh-community">Refresh feed</button></div>
+  <p id="community-feed-status" class="message" role="status" aria-live="polite">Loading campus community…</p>
+  <div id="community-feed"><div class="community-empty">Loading campus updates…</div></div>
+</section>
+</section>
+
+<section class="page" id="page-manage">
+<div class="heading"><div><h1>Incident management</h1><p>Search and review reports available to your account. Verified security and administrator accounts can mark reports resolved, subject to database policies.</p></div></div>
+<div class="panel">
+<div class="table-toolbar"><div class="field"><label for="searchIncidents">Search reports</label><input id="searchIncidents" type="search" placeholder="Category, location, or description"></div><div class="field"><label for="statusFilter">Status</label><select id="statusFilter"><option value="all">All statuses</option><option value="open">Unresolved</option><option value="resolved">Resolved</option></select></div><span class="table-count" id="incidentResultCount" aria-live="polite">0 reports</span></div>
+<div class="table-wrap"><table><caption class="sr-only">Incident reports available to your account</caption><thead><tr><th scope="col">Incident</th><th scope="col">Location</th><th scope="col">Severity</th><th scope="col">Status</th><th scope="col">Reported</th><th scope="col">Action</th></tr></thead><tbody id="incidentTable"></tbody></table></div>
+</div>
+</section>
+
+<section class="page" id="page-risk">
+<div class="heading"><div><h1>Risk analysis</h1><p>Illustrative triage aid only. This rule-based score is not validated, is not a probability, and does not predict incidents.</p></div></div>
+<div class="panel">
+<div class="notice-inline">Use official campus procedures for urgent situations. A score here cannot assess a real emergency or contact responders.</div>
+<form id="riskForm">
+<div class="grid two">
+<div class="field"><label for="riskType">Incident type</label><select id="riskType"><option value="2">Facility hazard</option><option value="3">Security concern</option><option value="4">Medical emergency</option><option value="5">Fire or smoke</option></select></div>
+<div class="field"><label for="riskPeople">People affected</label><select id="riskPeople"><option value="1">One person</option><option value="2">2–5 people</option><option value="3">6–20 people</option><option value="4">More than 20 people</option></select></div>
+<div class="field"><label for="riskUrgency">Urgency</label><select id="riskUrgency"><option value="1">Routine review</option><option value="2">Needs attention soon</option><option value="4">Immediate attention may be needed</option></select></div>
+<div class="field"><label for="riskEnvironment">Location exposure</label><select id="riskEnvironment"><option value="1">Low traffic</option><option value="2">Shared campus area</option><option value="3">Busy public area</option></select></div>
+</div>
+<button class="btn" type="submit">Calculate illustrative score</button>
+</form>
+<div id="riskOutput" class="message risk-output" aria-live="polite"></div>
+</div>
+</section>
+
+<section class="page" id="page-analytics">
+<div class="heading"><h1>Analytics & reports</h1><p>Summaries are calculated from currently loaded incident records.</p></div>
+<div class="panel"><div class="panel-heading"><div><h2>Incident summary</h2><p>Counts use records available to your signed-in account.</p></div></div><div class="analytics-summary"><span class="analytics-mark" aria-hidden="true">▥</span><p id="analyticsSummary">No data loaded.</p></div><div style="margin-top:16px"><button class="btn" id="exportCsv" type="button">Export visible records as CSV</button></div></div>
+</section>
+
+<section class="page" id="page-approvals">
+<div class="heading"><h1>Account approvals</h1><p>Review student IDs and pending student/teacher requests. Student approvals require a valid identity review.</p></div>
+<div class="panel">
+<div class="actions" style="justify-content:space-between;align-items:center"><strong>Pending applications</strong><button class="btn secondary" type="button" id="refresh-approvals">Refresh list</button></div>
+<p id="approvals-message" class="message" role="status">Checking administrator access…</p>
+<div class="table-wrap"><table><caption class="sr-only">Pending student and teacher account requests and private student identity reviews</caption><thead><tr><th scope="col">Applicant</th><th scope="col">Account ID</th><th scope="col">Requested role</th><th scope="col">Submitted</th><th scope="col">Student identity</th><th scope="col">Decision</th></tr></thead><tbody id="approvals-table"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
+<p class="muted">ID documents and student numbers are visible only to the account owner and verified administrators. Temporary document links expire after 90 seconds.</p>
+</div>
+</section>
+
+<section class="page" id="page-identity-verification">
+  <div class="heading"><div><h1>Student identity verification</h1><p>Verify that you belong to the institution you name. Your ID is private and is not shown on your public profile.</p></div></div>
+  <div class="notice-inline"><strong>Private document handling.</strong> Upload only your own student ID card or official matriculation document. Verified CampusShield administrators can review it. Do not upload bank, medical or unrelated personal documents. Ordinary student pages remain available while your submission is pending; restricted actions stay protected until approval.</div>
+  <div class="panel">
+    <p id="identity-verification-status" class="message" role="status" aria-live="polite">Checking your identity submission…</p>
+    <form id="studentIdentityForm" hidden>
+      <div class="field"><label for="identity-institution">University / institution name *</label><input id="identity-institution" required minlength="2" maxlength="180" autocomplete="organization" placeholder="Enter the official institution name"></div>
+      <div class="field"><label for="identity-student-number">Student / matriculation number *</label><input id="identity-student-number" required minlength="2" maxlength="80" autocomplete="off" placeholder="Enter your student number"></div>
+      <div class="field"><label for="identity-document">Student ID card image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><p class="muted">JPEG, PNG or PDF · Maximum 5 MiB. Use a clear image of your own student ID. Do not upload anyone else’s document.</p></div>
+      <button class="btn" type="submit" id="identity-submit">Submit for verification</button>
+    </form>
+    <button class="btn secondary" type="button" id="identity-refresh-status">Refresh verification status</button>
+  </div>
+</section>
+
+
+<div class="footer">CampusShield AI · Demonstration only</div>
+</main>
+</div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<!-- Load dependencies BEFORE the application code. Keep these files beside this HTML file. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script src="./campusshield-backend.js"></script>
+<script>
+
+(() => {
+  const $ = id => document.getElementById(id);
+  let deferredInstallPrompt = null;
+  const installCard = $('install-card');
+  const installButton = $('install-app');
+  const workspaceInstallButton = $('workspace-install-app');
+  const installGuidance = $('install-guidance');
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+  if (!isInstalled && isIOS) {
+    installGuidance.textContent = 'On iPhone or iPad, open this page in Safari, tap Share, then choose “Add to Home Screen”.';
+    installCard.hidden = false;
+    workspaceInstallButton.textContent = 'Install app';
+    workspaceInstallButton.hidden = false;
+  } else if (!isInstalled && /android/i.test(navigator.userAgent)) {
+    installGuidance.textContent = 'Open your browser’s menu (⋮), then choose “Install app” or “Add to Home screen”.';
+    installCard.hidden = false;
+    workspaceInstallButton.textContent = 'Install app';
+    workspaceInstallButton.hidden = false;
+  }
+
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    installGuidance.textContent = 'Install CampusShield on this device for quick, full-screen access.';
+    installCard.hidden = false;
+    installButton.hidden = false;
+    workspaceInstallButton.textContent = 'Install app';
+    workspaceInstallButton.hidden = false;
+  });
+
+  async function promptInstall() {
+    if (!deferredInstallPrompt) return;
+    const promptEvent = deferredInstallPrompt;
+    deferredInstallPrompt = null;
+    installButton.disabled = true;
+    try {
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+      if (choice.outcome === 'accepted') {
+        installCard.hidden = true;
+      } else {
+        installButton.hidden = true;
+        installGuidance.textContent = 'You can install later from your browser’s menu.';
+      }
+    } catch {
+      installButton.hidden = true;
+      installGuidance.textContent = 'Open your browser’s menu and choose “Install app” or “Add to Home screen”.';
+      workspaceInstallButton.textContent = 'Install app';
+    } finally {
+      installButton.disabled = false;
+    }
+  }
+
+  installButton.addEventListener('click', promptInstall);
+  workspaceInstallButton.addEventListener('click', () => {
+    if (deferredInstallPrompt) promptInstall();
+    else toast(installGuidance.textContent || 'Use your browser’s menu to add CampusShield to your home screen.');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installCard.hidden = true;
+    workspaceInstallButton.hidden = true;
+    deferredInstallPrompt = null;
+  });
+
+  let incidents = [];
+  let incidentRefreshInProgress = false;
+  let incidentRefreshQueued = false;
+  let authSessionVersion = 0;
+  let incidentsLastUpdated = null;
+  let authMode = 'signin';
+  let authBusy = false;
+  const initialRecoveryHash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
+  let passwordRecoveryActive =
+    new URLSearchParams(window.location.search).get('password-reset') === '1' ||
+    initialRecoveryHash.get('type') === 'recovery';
+
+  function normalizeSeverity(value) {
+    const key = String(value ?? '').trim().toLowerCase();
+    const known = {high:'High', medium:'Medium', low:'Low'};
+    return known[key] || (key ? key.charAt(0).toUpperCase() + key.slice(1) : 'Unspecified');
+  }
+
+  function normalizeStatus(value) {
+    const key = String(value ?? '').trim().replace(/[_-]+/g, ' ').toLowerCase();
+    const known = {open:'Open', resolved:'Resolved', 'in progress':'In progress', 'under review':'Under review'};
+    return known[key] || (key ? key.charAt(0).toUpperCase() + key.slice(1) : 'Open');
+  }
+
+  function isResolvedStatus(value) {
+    return normalizeStatus(value).toLowerCase() === 'resolved';
+  }
+
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[ch]));
+
+  const dateText = value => {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? 'Unknown date' : d.toLocaleString();
+  };
+
+  function toast(msg) {
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3500);
+  }
+
+  function tagSeverity(s) {
+    const label = normalizeSeverity(s);
+    const token = ['High', 'Medium', 'Low'].includes(label) ? label.toLowerCase() : 'unknown';
+    return `<span class="tag ${token}">${esc(label)}</span>`;
+  }
+
+  function tagStatus(s) {
+    const label = normalizeStatus(s);
+    return `<span class="tag ${isResolvedStatus(label) ? 'resolved' : 'open'}">${esc(label)}</span>`;
+  }
+
+  let currentProfile = null;
+  let communityProfile = null;
+  let communityLoading = false;
+  let studentIdentitySubmission = null;
+
+  function isStudentAccount() {
+    const requestedRole = currentProfile?.requested_role;
+    if (requestedRole) return requestedRole === 'student';
+    return currentProfile?.role === 'student';
+  }
+
+  function hasApprovedStudentIdentity() {
+    return isStudentAccount() &&
+      currentProfile?.verification_status === 'verified' &&
+      studentIdentitySubmission?.status === 'approved';
+  }
+
+  function syncIdentityNavigation() {
+    const isStudent = isStudentAccount();
+    $('identity-verification-nav').hidden = !isStudent;
+    document.querySelectorAll('.nav button[data-page]').forEach(button => {
+      if (button.id === 'identity-verification-nav') return;
+      if (['manage','risk','analytics'].includes(button.dataset.page)) {
+        button.hidden = currentProfile?.verification_status !== 'verified';
+      }
+    });
+    $('approvals-nav').hidden = !(
+      currentProfile?.role === 'admin' &&
+      currentProfile?.verification_status === 'verified'
+    );
+  }
+
+  async function loadStudentIdentityStatus() {
+    const status = $('identity-verification-status');
+    const form = $('studentIdentityForm');
+    const submit = $('identity-submit');
+    if (!currentProfile || !isStudentAccount()) {
+      form.hidden = true;
+      status.textContent = 'Student identity verification is available only to student accounts.';
+      return;
+    }
+    status.textContent = 'Checking your private identity submission…';
+    form.hidden = true;
+    try {
+      const submission = await window.CampusShieldBackend.getMyStudentIdentityVerification();
+      studentIdentitySubmission = submission;
+      if (!submission) {
+        $('identity-institution').value = '';
+        $('identity-student-number').value = '';
+        status.textContent = 'Submit your institution, matriculation number and your own student ID document for review. Ordinary student pages remain available while verification is pending.';
+        form.hidden = false;
+        submit.disabled = false;
+      } else if (submission.status === 'approved') {
+        $('identity-institution').value = submission.institution_name || '';
+        $('identity-student-number').value = submission.student_number || '';
+        const user = await window.CampusShieldBackend.getCurrentUser();
+        if (user) {
+          const { data: profile, error } = await window.CampusShieldBackend.client
+            .from('profiles')
+            .select('role,requested_role,verification_status')
+            .eq('id', user.id)
+            .single();
+          if (!error && profile) currentProfile = profile;
+        }
+        status.textContent = currentProfile?.verification_status === 'verified'
+          ? 'Identity verified on ' + dateText(submission.reviewed_at || submission.created_at) + '. Your student access is active.'
+          : 'Your identity was approved. Refresh or sign in again to load your account status.';
+        form.hidden = true;
+        syncIdentityNavigation();
+        if ($('page-identity-verification').classList.contains('active') &&
+            currentProfile?.verification_status === 'verified') {
+          navigate('dashboard');
+        }
+      } else if (submission.status === 'pending') {
+        $('identity-institution').value = submission.institution_name || '';
+        $('identity-student-number').value = submission.student_number || '';
+        status.textContent = 'Your ID submission is pending administrator review. You can continue using ordinary student pages while the review is underway. Restricted actions remain protected until approval.';
+        form.hidden = true;
+        submit.disabled = true;
+      } else {
+        $('identity-institution').value = submission.institution_name || '';
+        $('identity-student-number').value = submission.student_number || '';
+        status.textContent = 'Your previous ID submission was rejected. Reason: ' +
+          (submission.rejection_reason || 'Please contact your campus administrator for clarification.') +
+          ' You can correct the details or upload a clearer document and resubmit.';
+        form.hidden = false;
+        submit.disabled = false;
+      }
+      syncIdentityNavigation();
+    } catch (error) {
+      console.error('Could not load student identity status:', error);
+      status.textContent = error.message || 'Could not load identity status. Please refresh and try again.';
+      form.hidden = true;
+    }
+  }
+
+
+
+  function canManageIncidents() {
+    return currentProfile?.verification_status === 'verified' &&
+      ['security', 'admin'].includes(currentProfile.role);
+  }
+
+  function showWorkspace(profile) {
+    if (!profile) {
+      currentProfile = null;
+      showLogin('Your account profile could not be loaded. Please sign in again or contact support.');
+      return false;
+    }
+
+    if (profile.verification_status === 'rejected') {
+      currentProfile = profile;
+      studentIdentitySubmission = null;
+      $('login-screen').hidden = true;
+      $('workspace').hidden = false;
+      $('community-announcement-option').disabled = true;
+      syncIdentityNavigation();
+      navigate('dashboard');
+      return true;
+    }
+
+    currentProfile = profile;
+    studentIdentitySubmission = null;
+    $('login-screen').hidden = true;
+    $('workspace').hidden = false;
+
+    const verified = currentProfile.verification_status === 'verified';
+    document.querySelectorAll('[data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
+      el.hidden = !verified;
+    });
+    $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
+    const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
+    $('community-announcement-option').disabled = !canPublishOfficial;
+    syncIdentityNavigation();
+    navigate('dashboard');
+    return true;
+  }
+
+  function showLogin(message) {
+    $('workspace').hidden = true;
+    $('login-screen').hidden = false;
+    setAuthMode('signin');
+    if (message) $('auth-message').textContent = message;
+  }
+
+  function setAuthMode(mode) {
+    authMode = mode === 'signup' ? 'signup' : mode === 'reset' ? 'reset' : 'signin';
+    const isSignUp = authMode === 'signup';
+    const isReset = authMode === 'reset';
+
+    $('auth-tabs').hidden = isReset;
+    $('signup-fields').hidden = !isSignUp;
+    $('auth-email-field').hidden = isReset;
+    $('auth-email').required = !isReset;
+    $('auth-password-field').hidden = isReset;
+    $('auth-password').required = !isReset;
+    $('password-reset-fields').hidden = !isReset;
+    $('new-password').required = isReset;
+    $('confirm-new-password').required = isReset;
+    $('forgot-password-field').hidden = isSignUp || isReset;
+    $('remember-email-field').hidden = isSignUp || isReset;
+    $('auth-role').required = isSignUp;
+    $('auth-username').required = isSignUp;
+    $('resend-field').hidden = isSignUp || isReset;
+    $('auth-helper').hidden = isReset;
+    $('install-card').hidden = isReset;
+    $('auth-title').textContent = isSignUp ? 'Create your account' : isReset ? 'Choose a new password' : 'Welcome back';
+    $('auth-subtitle').textContent = isSignUp
+      ? 'Set up a CampusShield account to submit reports.'
+      : isReset
+        ? 'Set a new password to finish recovering your account.'
+        : 'Sign in to review campus safety reports.';
+    $('auth-password').autocomplete = isSignUp ? 'new-password' : 'current-password';
+    $('auth-name').required = isSignUp && $('auth-role').value === 'student';
+    $('auth-submit').textContent = isSignUp ? 'Create account' : isReset ? 'Update password' : 'Sign in';
+    $('auth-helper').textContent = isSignUp
+      ? 'Student accounts must submit a private student ID after email confirmation. A verified administrator must approve identity before student features unlock. Teacher accounts remain subject to staff verification. This prototype does not contact emergency services.'
+      : 'Use fictional information only. This prototype does not contact emergency services.';
+    document.querySelectorAll('[data-auth-mode]').forEach(button =>
+      button.setAttribute('aria-pressed', String(button.dataset.authMode === authMode))
+    );
+    $('auth-message').textContent = isSignUp
+      ? 'Create an account to get started.'
+      : isReset
+        ? 'Enter and confirm your new password.'
+        : 'Please sign in or create an account.';
+  }
+
+  document.querySelectorAll('[data-auth-mode]').forEach(button =>
+    button.addEventListener('click', () => {
+      if (!authBusy) setAuthMode(button.dataset.authMode);
+    })
+  );
+  $('auth-role').addEventListener('change', () => {
+    $('auth-name').required = authMode === 'signup' && $('auth-role').value === 'student';
+  });
+
+  async function handleForgotPassword() {
+    const backend = window.CampusShieldBackend;
+    const email = $('auth-email').value.trim();
+    const message = $('auth-message');
+    const button = $('forgot-password-button');
+
+    if (!email) {
+      message.textContent = 'Enter your email address first, then choose Forgot password.';
+      $('auth-email').focus();
+      return;
+    }
+    if (!$('auth-email').checkValidity()) {
+      message.textContent = 'Enter a valid email address.';
+      $('auth-email').focus();
+      return;
+    }
+    if (!backend?.isConfigured) {
+      message.textContent = 'Supabase is not connected. Please try again later.';
+      return;
+    }
+    if (authBusy) return;
+
+    authBusy = true;
+    button.disabled = true;
+    const originalLabel = button.textContent;
+    button.textContent = 'Requesting reset link…';
+    try {
+      let redirectUrl;
+      if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+        const target = new URL(window.location.pathname, window.location.origin);
+        target.searchParams.set('password-reset', '1');
+        redirectUrl = target.toString();
+      } else {
+        redirectUrl = 'https://campusshield-ai.github.io/campusshield-ai/?password-reset=1';
+      }
+      const {error} = await backend.requestPasswordReset(email, redirectUrl);
+      if (error) throw error;
+      message.textContent = 'If an account exists for that email address, reset instructions have been requested. Check your inbox and spam folder.';
+    } catch (error) {
+      console.error('Password reset request failed:', error);
+      const text = String(error?.message || '');
+      message.textContent = /rate limit|too many requests/i.test(text)
+        ? 'Too many reset requests. Please wait a while before trying again.'
+        : 'Could not request a reset link right now. Check your connection and try again later.';
+    } finally {
+      authBusy = false;
+      button.disabled = false;
+      button.textContent = originalLabel;
+    }
+  }
+
+  async function handlePasswordReset() {
+    const backend = window.CampusShieldBackend;
+    const password = $('new-password').value;
+    const confirmPassword = $('confirm-new-password').value;
+    const message = $('auth-message');
+    if (!backend?.isConfigured) {
+      message.textContent = 'Supabase is not connected. Please try again later.';
+      return;
+    }
+    if (password.length < 8) {
+      message.textContent = 'Choose a password with at least 8 characters.';
+      $('new-password').focus();
+      return;
+    }
+    if (password !== confirmPassword) {
+      message.textContent = 'The passwords do not match.';
+      $('confirm-new-password').focus();
+      return;
+    }
+
+    message.textContent = 'Updating your password…';
+    const {error} = await backend.updatePassword(password);
+    if (error) throw error;
+
+    $('new-password').value = '';
+    $('confirm-new-password').value = '';
+    $('auth-password').value = '';
+    passwordRecoveryActive = false;
+    try {
+      const {error:signOutError} = await backend.signOut();
+      if (signOutError) console.warn('Password changed, but the recovery session could not be closed automatically.');
+    } catch (signOutError) {
+      console.warn('Password changed, but the recovery session could not be closed automatically.', signOutError);
+    }
+    try {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (urlError) {
+      console.warn('Could not clear the password-reset URL state.', urlError);
+    }
+    setAuthMode('signin');
+    message.textContent = 'Your password has been updated. Sign in with your new password.';
+  }
+
+  $('forgot-password-button').addEventListener('click', handleForgotPassword);
+
+  // Keep the visible workspace synchronized with the Supabase session.
+  // Avoid asynchronous Supabase calls inside this auth callback.
+  if (window.CampusShieldBackend?.client?.auth) {
+    window.CampusShieldBackend.client.auth.onAuthStateChange(event => {
+      if (event === 'PASSWORD_RECOVERY') {
+        passwordRecoveryActive = true;
+        currentProfile = null;
+        $('workspace').hidden = true;
+        $('login-screen').hidden = false;
+        setAuthMode('reset');
+        $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
+        return;
+      }
+      if (event === 'SIGNED_IN') authSessionVersion += 1;
+
+      if (event === 'SIGNED_OUT') {
+        authSessionVersion += 1;
+        currentProfile = null;
+        communityProfile = null;
+        studentIdentitySubmission = null;
+        $('community-username-current').textContent = 'Not signed in';
+        $('community-feed').innerHTML = '<div class="community-empty">Sign in to view campus updates.</div>';
+        incidents = [];
+        incidentsLastUpdated = null;
+        $('incidentSyncStatus').textContent = 'Signed out';
+        $('incidentSyncStatus').dataset.state = 'idle';
+        render();
+        showLogin('You have signed out. Please sign in to continue.');
+      }
+    });
+  }
+
+  function navigate(page) {
+    if (!currentProfile) {
+      showLogin('Please sign in to access CampusShield.');
+      return;
+    }
+
+    const verified = currentProfile.verification_status === 'verified';
+    const verifiedAdmin = verified && currentProfile.role === 'admin';
+    const studentNeedsIdentity = isStudentAccount() && !hasApprovedStudentIdentity();
+
+    if (page === 'identity-verification' && !isStudentAccount()) {
+      page = 'dashboard';
+      toast('Student identity verification is available to student accounts.');
+    }
+
+    if (!verified && ['manage', 'risk', 'analytics'].includes(page)) {
+      page = 'dashboard';
+      toast('This area is available after account verification.');
+    }
+
+    if (page === 'approvals' && !verifiedAdmin) {
+      page = 'dashboard';
+      toast('Only verified administrators can access account approvals.');
+    }
+
+    document.querySelectorAll('.page').forEach(el =>
+      el.classList.toggle('active', el.id === 'page-' + page)
+    );
+
+    document.querySelectorAll('[data-page]').forEach(el => {
+      const active = el.dataset.page === page;
+      el.classList.toggle('active', active);
+      if (active) el.setAttribute('aria-current', 'page');
+      else el.removeAttribute('aria-current');
+    });
+
+    const names = {
+      dashboard:'Overview',
+      report:'Report incident',
+      manage:'Incident management',
+      risk:'Risk analysis',
+      analytics:'Analytics & reports',
+      approvals:'Account approvals',
+      'identity-verification':'Student identity verification',
+      community:'Campus community'
+    };
+
+    $('sectionTitle').textContent = names[page] || 'Overview';
+
+    if (page === 'analytics') renderAnalytics();
+    if (page === 'identity-verification') loadStudentIdentityStatus();
+  }
+
+  document.addEventListener('click', e => {
+    const button = e.target.closest('[data-page]');
+    if (!button) return;
+    navigate(button.dataset.page);
+    if (button.dataset.page === 'approvals') loadAccountApprovals();
+    if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
+    if (button.dataset.page === 'community') loadCommunityPage();
+  });
+
+  function render() {
+    const total = incidents.length;
+    const resolved = incidents.filter(i => isResolvedStatus(i.status)).length;
+    const high = incidents.filter(i =>
+      normalizeSeverity(i.severity) === 'High' && !isResolvedStatus(i.status)
+    ).length;
+
+    $('totalStat').textContent = total;
+    $('highStat').textContent = high;
+    $('resolvedStat').textContent = resolved;
+    $('rateStat').textContent = total ? Math.round(resolved / total * 100) + '%' : '—';
+
+    $('recentList').innerHTML = incidents.slice(0, 5).map(i =>
+      `<article class="recent-item">
+        <div class="recent-title"><strong>${esc(i.category)}</strong>${tagSeverity(i.severity)}${tagStatus(i.status)}</div>
+        <time class="recent-time" datetime="${esc(i.createdAt)}">${esc(dateText(i.createdAt))}</time>
+        <p class="recent-description">${esc(i.location)} · ${esc(i.description)}</p>
+      </article>`
+    ).join('') || `<div class="empty-state"><span class="empty-state-mark" aria-hidden="true">＋</span><div><strong>No reports in view yet</strong><p>Submit a report to start the activity list.</p></div><button class="btn secondary" type="button" data-page="report">Create a report</button></div>`;
+
+    renderTable();
+    renderAnalytics();
+  }
+
+  function renderTable() {
+    const q = ($('searchIncidents').value || '').trim().toLocaleLowerCase();
+    const statusFilter = $('statusFilter').value;
+
+    const list = incidents.filter(i =>
+      (statusFilter === 'all' ||
+        (statusFilter === 'resolved' ? isResolvedStatus(i.status) : !isResolvedStatus(i.status))) &&
+      [i.category, i.location, i.description, i.status, i.severity].some(v =>
+        String(v || '').toLocaleLowerCase().includes(q)
+      )
+    );
+
+    $('incidentTable').innerHTML = list.map(i =>
+      `<tr>
+        <td><strong>${esc(i.category)}</strong><br>${esc(i.description)}</td>
+        <td>${esc(i.location)}</td>
+        <td>${tagSeverity(i.severity)}</td>
+        <td>${tagStatus(i.status)}</td>
+        <td>${esc(dateText(i.createdAt))}</td>
+        <td>${canManageIncidents() && !isResolvedStatus(i.status)
+          ? `<button class="btn secondary" data-resolve="${esc(i.id)}">Resolve</button>`
+          : '<span class="muted">—</span>'}</td>
+      </tr>`
+    ).join('') || '<tr><td colspan="6">No matching incidents.</td></tr>';
+    $('incidentResultCount').textContent = `${list.length} ${list.length === 1 ? 'report' : 'reports'}`;
+  }
+
+  $('searchIncidents').addEventListener('input', renderTable);
+  $('statusFilter').addEventListener('change', renderTable);
+
+  $('refresh-incidents').addEventListener('click', () => {
+    refreshIncidentsFromSupabase({quiet:false});
+  });
+
+  $('incidentTable').addEventListener('click', async e => {
+    const b = e.target.closest('[data-resolve]');
+    if (!b) return;
+
+    if (!canManageIncidents()) {
+      toast('Only verified security staff or administrators can update incidents.');
+      renderTable();
+      return;
+    }
+
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured || typeof backend.updateIncidentStatus !== 'function') {
+        throw new Error('Incident status updates are not configured.');
+      }
+      b.disabled = true;
+      const updated = await backend.updateIncidentStatus(
+        b.dataset.resolve,
+        'Resolved'
+      );
+
+      incidents = incidents.map(i =>
+        i.id === updated.id ? {...i, status:updated.status || 'Resolved'} : i
+      );
+
+      render();
+      toast('Incident status updated.');
+    } catch (err) {
+      console.error(err);
+      toast('Could not update status: ' + err.message);
+    } finally {
+      renderTable();
+    }
+  });
+
+  function renderAnalytics() {
+    $('analyticsSummary').textContent =
+      `${incidents.length} total incident(s), ` +
+      `${incidents.filter(i => normalizeSeverity(i.severity) === 'High').length} high-severity, ` +
+      `${incidents.filter(i => isResolvedStatus(i.status)).length} resolved.`;
+  }
+
+  async function refreshIncidentsFromSupabase({quiet = true} = {}) {
+    const backend = window.CampusShieldBackend;
+    const status = $('incidentSyncStatus');
+    const refreshButton = $('refresh-incidents');
+
+    if (!backend?.isConfigured) {
+      status.textContent = 'Supabase is not connected';
+      status.dataset.state = 'error';
+      return false;
+    }
+
+    if (!currentProfile) {
+      status.textContent = 'Sign in to load incident data';
+      status.dataset.state = 'idle';
+      return false;
+    }
+
+    if (incidentRefreshInProgress) {
+      incidentRefreshQueued = true;
+      return false;
+    }
+
+    incidentRefreshInProgress = true;
+    const requestSessionVersion = authSessionVersion;
+    refreshButton.disabled = true;
+    if (!quiet) {
+      status.textContent = 'Refreshing incident data…';
+      status.dataset.state = 'loading';
+    }
+
+    try {
+      const rows = await backend.listIncidents();
+      if (requestSessionVersion !== authSessionVersion || !currentProfile) return false;
+
+      incidents = rows.map(i => ({
+        id:i.id,
+        category:i.category,
+        severity:normalizeSeverity(i.severity),
+        location:i.location,
+        description:i.description,
+        status:normalizeStatus(i.status),
+        createdAt:i.created_at
+      }));
+
+      incidentsLastUpdated = new Date();
+      status.textContent = `Updated ${incidentsLastUpdated.toLocaleTimeString()}`;
+      status.dataset.state = 'ready';
+      render();
+      return true;
+    } catch (e) {
+      if (requestSessionVersion !== authSessionVersion || !currentProfile) return false;
+      console.error('Could not refresh incidents:', e);
+      status.textContent = incidentsLastUpdated
+        ? `Refresh failed · last updated ${incidentsLastUpdated.toLocaleTimeString()}`
+        : 'Incident data could not be loaded';
+      status.dataset.state = 'error';
+      if (!quiet) toast('Could not refresh incident data. Check your connection and account access.');
+      return false;
+    } finally {
+      incidentRefreshInProgress = false;
+      refreshButton.disabled = false;
+      if (incidentRefreshQueued) {
+        incidentRefreshQueued = false;
+        window.setTimeout(() => refreshIncidentsFromSupabase({quiet:true}), 0);
+      }
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && currentProfile) {
+      refreshIncidentsFromSupabase({quiet:true});
+    }
+  });
+
+  window.setInterval(() => {
+    if (document.visibilityState === 'visible' && currentProfile) {
+      refreshIncidentsFromSupabase({quiet:true});
+    }
+  }, 60000);
+
+  async function loadAccountApprovals() {
+    const backend = window.CampusShieldBackend;
+    const message = $('approvals-message');
+    const tbody = $('approvals-table');
+    const nav = $('approvals-nav');
+
+    if (!backend?.isConfigured) {
+      message.textContent = 'Supabase is not configured.';
+      tbody.innerHTML = '<tr><td colspan="6">Cannot load applications.</td></tr>';
+      nav.hidden = true;
+      return;
+    }
+
+    message.textContent = 'Checking administrator access…';
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+
+    try {
+      const user = await backend.getCurrentUser();
+      if (!user) throw new Error('Please sign in with an administrator account.');
+
+      const {data:me, error:meError} = await backend.client
+        .from('profiles')
+        .select('role, verification_status')
+        .eq('id', user.id)
+        .single();
+      if (meError) throw meError;
+      if (me?.role !== 'admin' || me?.verification_status !== 'verified') {
+        nav.hidden = true;
+        throw new Error('Access denied. A verified administrator account is required.');
+      }
+      nav.hidden = false;
+
+      const {data:rows, error} = await backend.client
+        .from('profiles')
+        .select('id, display_name, role, requested_role, verification_status, created_at')
+        .eq('verification_status', 'pending')
+        .in('requested_role', ['student', 'teacher'])
+        .order('created_at', {ascending:true});
+      if (error) throw error;
+
+      if (!rows?.length) {
+        tbody.innerHTML = '<tr><td colspan="6">There are no pending student or teacher applications.</td></tr>';
+        message.textContent = 'Administrator access confirmed.';
+        return;
+      }
+
+      const studentIds = rows
+        .filter(row => (row.requested_role || row.role) === 'student')
+        .map(row => row.id);
+      const identityRows = await backend.listStudentIdentityVerifications(studentIds);
+      const identityByUser = new Map(identityRows.map(row => [row.user_id, row]));
+
+      tbody.innerHTML = rows.map(row => {
+        const isStudent = (row.requested_role || row.role) === 'student';
+        const identity = identityByUser.get(row.id);
+        let identityCell = '<span class="muted">Not required</span>';
+        let decisionCell = '';
+
+        if (isStudent) {
+          if (!identity) {
+            identityCell = '<span class="tag unknown">Not submitted</span><br><span class="muted">Identity form is required before approval.</span>';
+            decisionCell = '<button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>';
+          } else {
+            const statusToken = identity.status === 'approved' ? 'low' : identity.status === 'rejected' ? 'high' : 'open';
+            identityCell =
+              '<strong>' + esc(identity.institution_name) + '</strong><br>' +
+              '<span class="muted">Matric number: ' + esc(identity.student_number) + '</span><br>' +
+              '<span class="tag ' + statusToken + '">' + esc(identity.status) + '</span>' +
+              (identity.object_path ? '<br><button type="button" class="btn secondary" data-student-document="' + esc(identity.object_path) + '">Open ID document</button>' : '');
+            if (identity.status === 'pending') {
+              decisionCell =
+                '<div class="actions">' +
+                '<button class="btn" type="button" data-identity-review="approve" data-user-id="' + esc(row.id) + '">Approve ID & account</button>' +
+                '<button class="btn danger" type="button" data-identity-review="reject" data-user-id="' + esc(row.id) + '">Reject ID</button>' +
+                '</div>';
+            } else if (identity.status === 'rejected') {
+              decisionCell =
+                '<span class="muted">Student may resubmit the ID with corrected information.</span><br>' +
+                '<button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>';
+            } else {
+              decisionCell =
+                '<button class="btn" type="button" data-review="approve" data-user-id="' + esc(row.id) + '">Approve account</button> ' +
+                '<button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>';
+            }
+          }
+        } else {
+          decisionCell =
+            '<div class="actions">' +
+            '<button class="btn" data-review="approve" data-user-id="' + esc(row.id) + '">Approve</button>' +
+            '<button class="btn danger" data-review="reject" data-user-id="' + esc(row.id) + '">Reject</button>' +
+            '</div>';
+        }
+
+        return '<tr>' +
+          '<td><strong>' + esc(row.display_name || 'Name not provided') + '</strong></td>' +
+          '<td><code>' + esc(row.id) + '</code></td>' +
+          '<td><span class="tag open">' + esc(row.requested_role || 'Not specified') + '</span></td>' +
+          '<td>' + esc(dateText(row.created_at)) + '</td>' +
+          '<td>' + identityCell + '</td>' +
+          '<td>' + decisionCell + '</td>' +
+          '</tr>';
+      }).join('');
+
+      message.textContent = rows.length + ' pending application(s). Student approvals are blocked until the ID document is approved.';
+    } catch (err) {
+      console.error('Could not load account approvals:', err);
+      tbody.innerHTML = '<tr><td colspan="6">Applications could not be loaded.</td></tr>';
+      message.textContent = err.message || 'Could not load applications.';
+    }
+  }
+
+  $('refresh-approvals').addEventListener('click', loadAccountApprovals);
+
+  $('approvals-table').addEventListener('click', async event => {
+    const documentButton = event.target.closest('[data-student-document]');
+    if (documentButton) {
+      const openedWindow = window.open('about:blank', '_blank');
+      if (openedWindow) openedWindow.opener = null;
+      documentButton.disabled = true;
+      try {
+        const url = await window.CampusShieldBackend.createStudentIdentityDocumentUrl(documentButton.dataset.studentDocument);
+        if (openedWindow) openedWindow.location.href = url;
+        else window.location.href = url;
+      } catch (error) {
+        if (openedWindow) openedWindow.close();
+        toast(error.message || 'Could not open the ID document.');
+      } finally {
+        documentButton.disabled = false;
+      }
+      return;
+    }
+
+    const identityButton = event.target.closest('[data-identity-review]');
+    if (identityButton) {
+      const decision = identityButton.dataset.identityReview;
+      const userId = identityButton.dataset.userId;
+      let reason = null;
+      if (decision === 'reject') {
+        reason = window.prompt('Enter a helpful rejection reason (5–1000 characters). The student can see this and resubmit:', '');
+        if (reason === null) return;
+        reason = reason.trim();
+        if (reason.length < 5 || reason.length > 1000) {
+          toast('Provide a rejection reason of 5–1000 characters.');
+          return;
+        }
+      } else if (!confirm('Approve this student ID and activate the student account?')) {
+        return;
+      }
+
+      identityButton.disabled = true;
+      $('approvals-message').textContent = decision === 'approve'
+        ? 'Approving identity and activating account…'
+        : 'Rejecting identity and recording feedback…';
+      try {
+        await window.CampusShieldBackend.reviewStudentIdentityVerification(userId, decision, reason);
+        toast(decision === 'approve'
+          ? 'Student identity approved and account activated.'
+          : 'ID rejected; the student can sign in and resubmit.');
+        await loadAccountApprovals();
+      } catch (error) {
+        console.error('Student identity review failed:', error);
+        $('approvals-message').textContent = error.message || 'Student identity review failed.';
+        identityButton.disabled = false;
+      }
+      return;
+    }
+
+    const button = event.target.closest('[data-review]');
+    if (!button) return;
+    const decision = button.dataset.review;
+    const userId = button.dataset.userId;
+    const actionLabel = decision === 'approve' ? 'approve' : 'reject';
+    if (!confirm('Are you sure you want to ' + actionLabel + ' this account?')) return;
+
+    const message = $('approvals-message');
+    document.querySelectorAll('#approvals-table button').forEach(item => { item.disabled = true; });
+    message.textContent = 'Attempting to ' + actionLabel + ' account…';
+    try {
+      const {error} = await window.CampusShieldBackend.client.rpc('review_campus_account', {
+        p_user_id: userId,
+        p_decision: decision
+      });
+      if (error) throw error;
+      message.textContent = 'Account ' + (decision === 'approve' ? 'approved' : 'rejected') + ' successfully.';
+      toast('Account ' + (decision === 'approve' ? 'approved' : 'rejected') + '.');
+      await loadAccountApprovals();
+    } catch (error) {
+      console.error('Account review failed:', error);
+      message.textContent = 'Review failed: ' + (error.message || 'Unknown error');
+      toast('Could not review account.');
+      document.querySelectorAll('#approvals-table button').forEach(item => { item.disabled = false; });
+    }
+  });
+
+  function canModerateCommunity() {
+    return currentProfile?.verification_status === 'verified' &&
+      ['admin', 'security', 'teacher'].includes(currentProfile.role);
+  }
+
+  function communityPostTypeLabel(type) {
+    return ({
+      safety_issue: 'Campus safety issue',
+      suggestion: 'Safety improvement suggestion',
+      announcement: 'Official staff announcement'
+    })[type] || 'Campus update';
+  }
+
+  async function loadCommunityPage() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile) {
+      $('community-feed-status').textContent = 'Sign in to use the campus community.';
+      return;
+    }
+    if (communityLoading) return;
+    communityLoading = true;
+    $('community-feed-status').textContent = 'Loading campus updates…';
+    $('community-feed').innerHTML = '<div class="community-empty">Loading campus updates…</div>';
+
+    try {
+      const profile = await backend.getMyCommunityProfile();
+      communityProfile = profile;
+      $('community-username-current').textContent = profile?.username ? '@' + profile.username : 'Username unavailable';
+      $('community-username').value = profile?.username || '';
+      $('community-announcement-option').disabled = !canModerateCommunity();
+
+      const posts = await backend.listCommunityPosts();
+      const comments = await backend.listCommunityComments(posts.map(function(post) { return post.id; }));
+      renderCommunityFeed(posts, comments);
+      $('community-feed-status').textContent = posts.length + (posts.length === 1 ? ' published post' : ' published posts') + ' · refreshed ' + new Date().toLocaleTimeString();
+
+      $('community-moderation').hidden = !canModerateCommunity();
+      if (canModerateCommunity()) await loadCommunityModeration();
+    } catch (err) {
+      console.error('Could not load the community:', err);
+      $('community-feed-status').textContent = 'The community could not be loaded. Check the database migration and try refreshing.';
+      $('community-feed').innerHTML = '<div class="community-empty">Campus updates are temporarily unavailable.</div>';
+      if (canModerateCommunity()) $('community-moderation').hidden = false;
+    } finally {
+      communityLoading = false;
+    }
+  }
+
+  function renderCommunityFeed(posts, comments) {
+    const list = Array.isArray(posts) ? posts : [];
+    const commentList = Array.isArray(comments) ? comments : [];
+    if (!list.length) {
+      $('community-feed').innerHTML = '<div class="community-empty"><strong>No published campus updates yet.</strong><p>Share a public-safe safety issue or suggestion. A moderator will review student posts before publication.</p></div>';
+      return;
+    }
+
+    const commentsByPost = {};
+    commentList.forEach(function(comment) {
+      if (!commentsByPost[comment.post_id]) commentsByPost[comment.post_id] = [];
+      commentsByPost[comment.post_id].push(comment);
+    });
+
+    $('community-feed').innerHTML = list.map(function(post) {
+      const postComments = commentsByPost[post.id] || [];
+      const commentsHtml = postComments.map(function(comment) {
+        return '<article class="community-comment">' +
+          '<div class="community-comment-header"><div class="community-meta"><strong class="community-handle">@' + esc(comment.author_username) + '</strong><span>·</span><time>' + esc(dateText(comment.created_at)) + '</time></div>' +
+          '<button type="button" class="btn secondary" data-report-community-type="comment" data-report-community-id="' + esc(comment.id) + '">Report</button></div>' +
+          '<p>' + esc(comment.body) + '</p>' +
+          '</article>';
+      }).join('');
+
+      return '<article class="community-post" id="community-post-' + esc(post.id) + '">' +
+        '<div class="community-post-header"><div class="community-meta">' +
+        (post.is_official ? '<span class="community-official">Verified staff update</span>' : '<span class="tag open">' + esc(communityPostTypeLabel(post.post_type)) + '</span>') +
+        '<strong class="community-handle">@' + esc(post.author_username) + '</strong><span>·</span><time>' + esc(dateText(post.created_at)) + '</time></div>' +
+        '<button type="button" class="btn secondary" data-report-community-type="post" data-report-community-id="' + esc(post.id) + '">Report</button></div>' +
+        '<h3 class="community-post-title">' + esc(post.title) + '</h3>' +
+        '<p class="community-post-body">' + esc(post.body) + '</p>' +
+        (post.location ? '<p class="community-meta"><span aria-hidden="true">⌖</span> ' + esc(post.location) + '</p>' : '') +
+        '<div class="community-comments"><div class="community-meta"><strong>' + postComments.length + (postComments.length === 1 ? ' comment' : ' comments') + '</strong></div>' +
+        commentsHtml +
+        '<form class="community-comment-form" data-community-comment-form data-post-id="' + esc(post.id) + '">' +
+        '<label class="sr-only" for="comment-' + esc(post.id) + '">Write a comment</label>' +
+        '<textarea id="comment-' + esc(post.id) + '" name="comment" maxlength="800" required placeholder="Write a helpful, respectful reply…"></textarea>' +
+        '<button type="submit" class="btn">Comment</button>' +
+        '</form></div></article>';
+    }).join('');
+  }
+
+  async function loadCommunityModeration() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !canModerateCommunity()) return;
+
+    $('community-moderation-message').textContent = 'Loading moderation queue…';
+    try {
+      const posts = await backend.listCommunityModerationPosts();
+      const reports = await backend.listCommunityReports();
+
+      $('community-moderation-posts').innerHTML = posts.length ? posts.map(function(post) {
+        return '<article class="community-moderation-item">' +
+          '<div class="community-meta"><strong>@' + esc(post.author_username) + '</strong><span>·</span>' + esc(communityPostTypeLabel(post.post_type)) + '<span>·</span>' + esc(dateText(post.created_at)) + '</div>' +
+          '<h4>' + esc(post.title) + '</h4><p class="community-post-body">' + esc(post.body) + '</p>' +
+          (post.location ? '<p class="community-meta">Location: ' + esc(post.location) + '</p>' : '') +
+          '<div class="community-post-actions"><button type="button" class="btn" data-moderate-community-post="publish" data-community-post-id="' + esc(post.id) + '">Publish</button><button type="button" class="btn danger" data-moderate-community-post="reject" data-community-post-id="' + esc(post.id) + '">Reject</button></div></article>';
+      }).join('') : '<div class="community-empty">No posts are waiting for review.</div>';
+
+      $('community-reports-queue').innerHTML = reports.length ? reports.map(function(report) {
+        const targetId = report.target_type === 'post' ? report.post_id : report.comment_id;
+        return '<article class="community-report-item">' +
+          '<div class="community-meta"><strong>' + esc(report.target_type === 'post' ? 'Reported post' : 'Reported comment') + '</strong><span>·</span>' + esc(report.reason.replaceAll('_', ' ')) + '<span>·</span>' + esc(dateText(report.created_at)) + '</div>' +
+          '<p>' + esc(report.details || 'No extra details provided.') + '</p>' +
+          '<p class="community-meta">Content reference: ' + esc(String(targetId || '').slice(0, 12)) + '…</p>' +
+          '<div class="community-post-actions"><button type="button" class="btn danger" data-community-report-action="hide" data-community-report-id="' + esc(report.id) + '" data-community-report-type="' + esc(report.target_type) + '" data-community-target-id="' + esc(targetId) + '">Hide content & review</button><button type="button" class="btn secondary" data-community-report-action="dismiss" data-community-report-id="' + esc(report.id) + '">Dismiss report</button></div></article>';
+      }).join('') : '<div class="community-empty">No new community reports.</div>';
+
+      $('community-moderation-message').textContent = posts.length + ' post(s) awaiting review · ' + reports.length + ' report(s) to review.';
+    } catch (err) {
+      console.error('Could not load community moderation:', err);
+      $('community-moderation-message').textContent = 'The moderation queue could not be loaded: ' + (err.message || 'unknown error');
+      $('community-moderation-posts').innerHTML = '<div class="community-empty">Moderation queue unavailable.</div>';
+      $('community-reports-queue').innerHTML = '<div class="community-empty">Report queue unavailable.</div>';
+    }
+  }
+
+  $('communityUsernameForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const input = $('community-username');
+    const message = $('community-profile-message');
+    const username = input.value.trim().toLowerCase();
+
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+      message.textContent = 'Use 3–20 lowercase letters, numbers, or underscores.';
+      return;
+    }
+    if (!backend?.isConfigured) {
+      message.textContent = 'Supabase is not configured.';
+      return;
+    }
+
+    const button = $('community-username-save');
+    button.disabled = true;
+    message.textContent = 'Saving username…';
+    try {
+      const savedUsername = await backend.setMyCommunityUsername(username);
+      communityProfile = Object.assign({}, communityProfile || {}, { username: savedUsername });
+      $('community-username-current').textContent = '@' + savedUsername;
+      input.value = savedUsername;
+      message.textContent = 'Your public username has been updated.';
+      toast('Username updated.');
+    } catch (err) {
+      message.textContent = err.message || 'Could not save username.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('communityPostForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const button = $('community-post-submit');
+    const message = $('community-post-message');
+    if (!backend?.isConfigured) {
+      message.textContent = 'Supabase is not configured.';
+      return;
+    }
+    if (button.disabled) return;
+
+    const postType = $('community-post-type').value;
+    const title = $('community-post-title-input').value.trim();
+    const body = $('community-post-body').value.trim();
+    const location = $('community-post-location').value.trim();
+    button.disabled = true;
+    button.textContent = postType === 'announcement' ? 'Publishing announcement…' : 'Submitting for review…';
+    message.textContent = 'Sending your post…';
+    try {
+      await backend.createCommunityPost({ postType: postType, title: title, body: body, location: location });
+      $('communityPostForm').reset();
+      message.textContent = postType === 'announcement'
+        ? 'Official announcement published.'
+        : 'Submitted. Your post will appear to other students after moderation.';
+      toast(postType === 'announcement' ? 'Official announcement published.' : 'Community post submitted for review.');
+      await loadCommunityPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not submit your post.';
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Submit for review';
+    }
+  });
+
+  $('community-feed').addEventListener('submit', async function(event) {
+    const form = event.target.closest('[data-community-comment-form]');
+    if (!form) return;
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const button = form.querySelector('button[type="submit"]');
+    const textarea = form.querySelector('textarea[name="comment"]');
+    const postId = form.dataset.postId;
+    const body = textarea.value.trim();
+    if (!backend?.isConfigured) {
+      toast('Supabase is not configured.');
+      return;
+    }
+    if (body.length < 2 || body.length > 800) {
+      toast('Comments must be 2–800 characters.');
+      return;
+    }
+    button.disabled = true;
+    try {
+      await backend.createCommunityComment(postId, body);
+      toast('Comment added.');
+      await loadCommunityPage();
+    } catch (err) {
+      toast(err.message || 'Could not add comment.');
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('community-feed').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-report-community-type]');
+    if (!button) return;
+    const targetType = button.dataset.reportCommunityType;
+    const targetId = button.dataset.reportCommunityId;
+    const answer = window.prompt('Why are you reporting this ' + targetType + '?\n1 = Spam\n2 = Harassment\n3 = Personal information\n4 = Misinformation\n5 = Other', '5');
+    if (answer === null) return;
+    const reasons = { '1': 'spam', '2': 'harassment', '3': 'personal_information', '4': 'misinformation', '5': 'other' };
+    const reason = reasons[String(answer).trim()];
+    if (!reason) {
+      toast('Choose a reason from 1 to 5.');
+      return;
+    }
+    const details = window.prompt('Optional details (do not include private information):', '') || '';
+    try {
+      await window.CampusShieldBackend.reportCommunityContent(targetType, targetId, reason, details.trim());
+      toast('Report sent to the moderation team.');
+    } catch (err) {
+      toast(err.message || 'Could not report this content.');
+    }
+  });
+
+  $('community-moderation').addEventListener('click', async function(event) {
+    const postButton = event.target.closest('[data-moderate-community-post]');
+    const reportButton = event.target.closest('[data-community-report-action]');
+    const backend = window.CampusShieldBackend;
+    if (postButton) {
+      const decision = postButton.dataset.moderateCommunityPost;
+      const postId = postButton.dataset.communityPostId;
+      if (!confirm('Are you sure you want to ' + decision + ' this community post?')) return;
+      postButton.disabled = true;
+      try {
+        await backend.moderateCommunityPost(postId, decision);
+        toast(decision === 'publish' ? 'Community post published.' : 'Community post rejected.');
+        await loadCommunityPage();
+      } catch (err) {
+        toast(err.message || 'Moderation failed.');
+        postButton.disabled = false;
+      }
+      return;
+    }
+
+    if (!reportButton) return;
+    const action = reportButton.dataset.communityReportAction;
+    const reportId = reportButton.dataset.communityReportId;
+    reportButton.disabled = true;
+    try {
+      if (action === 'hide') {
+        const targetType = reportButton.dataset.communityReportType;
+        const targetId = reportButton.dataset.communityTargetId;
+        if (!confirm('Hide this content and mark the report as reviewed?')) {
+          reportButton.disabled = false;
+          return;
+        }
+        if (targetType === 'post') await backend.moderateCommunityPost(targetId, 'hide');
+        else await backend.moderateCommunityComment(targetId, 'hide');
+        await backend.resolveCommunityReport(reportId, 'reviewed');
+      } else {
+        await backend.resolveCommunityReport(reportId, 'dismissed');
+      }
+      toast(action === 'hide' ? 'Content hidden and report reviewed.' : 'Report dismissed.');
+      await loadCommunityPage();
+    } catch (err) {
+      toast(err.message || 'Could not update the report.');
+      reportButton.disabled = false;
+    }
+  });
+
+  $('refresh-community').addEventListener('click', loadCommunityPage);
+  $('refresh-community-moderation').addEventListener('click', loadCommunityPage);
+
+  async function handleSignUp() {
+    const backend = window.CampusShieldBackend;
+    const email = $('auth-email').value.trim();
+    const password = $('auth-password').value;
+    const name = $('auth-name').value.trim();
+    const username = $('auth-username').value.trim().toLowerCase();
+    const requestedRole = $('auth-role').value;
+    const msg = $('auth-message');
+
+    if (!['student', 'teacher'].includes(requestedRole)) {
+      msg.textContent = 'Select a valid account role.';
+      return;
+    }
+
+    if (!email || !password) {
+      msg.textContent = 'Enter your email and password.';
+      return;
+    }
+
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+      msg.textContent = 'Choose a username with 3–20 lowercase letters, numbers, or underscores.';
+      return;
+    }
+
+    if (!backend?.isConfigured) {
+      msg.textContent = 'Supabase is not connected. Check configuration and script loading.';
+      return;
+    }
+
+    try {
+      msg.textContent = 'Creating account…';
+      const {data, error} = await backend.signUp(email, password, name, username);
+      if (error) throw error;
+
+      if (!data?.user) {
+  throw new Error('Supabase did not return a user.');
+}
+
+if (data.session) {
+        const result = await backend.saveRequestedRole(requestedRole);
+        if (result.error) throw result.error;
+
+        msg.textContent = 'Account created. Your role request is pending verification. Other students will see @' + username + ', not your real name or email.';
+      } else {
+        sessionStorage.setItem('campusshield_requested_role', requestedRole);
+
+        msg.textContent =
+          'Account created. Check your email to confirm it, then sign in using this browser to submit your role request. Other students will see @' + username + ', not your real name or email.';
+      }
+    } catch (e) {
+      console.error('Sign-up failed:', e);
+      if (/database error saving new user/i.test(String(e.message || ''))) {
+        msg.textContent = 'Sign-up failed. That username may already be taken; choose another username and try again. If it continues, contact the CampusShield administrator.';
+      } else {
+        msg.textContent = 'Sign-up failed: ' + e.message;
+      }
+    }
+  }
+
+  async function handleSignIn() {
+    const backend = window.CampusShieldBackend;
+    const email = $('auth-email').value.trim();
+    const password = $('auth-password').value;
+    const msg = $('auth-message');
+
+    if (!email || !password) {
+      msg.textContent = 'Enter your email and password.';
+      return;
+    }
+
+    if (!backend?.isConfigured) {
+      msg.textContent = 'Supabase is not connected. Check configuration and script loading.';
+      return;
+    }
+
+    try {
+      msg.textContent = 'Signing in...';
+
+      const {error} = await backend.signIn(email, password);
+      if (error) throw error;
+
+      const pendingRole = sessionStorage.getItem('campusshield_requested_role');
+
+      if (pendingRole && ['student', 'teacher'].includes(pendingRole)) {
+        const {error:roleError} = await backend.saveRequestedRole(pendingRole);
+        if (roleError) throw roleError;
+
+        sessionStorage.removeItem('campusshield_requested_role');
+      }
+
+      const user = await backend.getCurrentUser();
+
+      if (!user) {
+        throw new Error('No active user session was found.');
+      }
+
+      const {data:profile, error:profileError} = await backend.client
+        .from('profiles')
+        .select('role, verification_status')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      if (profile.verification_status === 'verified') {
+        msg.textContent = `Signed in successfully. Your role is ${profile.role}.`;
+      } else if (profile.verification_status === 'rejected') {
+        msg.textContent =
+          'Your account verification was rejected. Please contact an administrator.';
+      } else {
+        msg.textContent =
+          'Signed in successfully. Your account is pending verification.';
+      }
+
+      const workspaceReady = showWorkspace(profile);
+      if (workspaceReady) {
+        await refreshIncidentsFromSupabase();
+      }
+    } catch (e) {
+      console.error('Sign-in failed:', e);
+      msg.textContent = 'Sign-in failed: ' + e.message;
+    }
+  }
+
+  $('auth-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (authBusy) return;
+    authBusy = true;
+    const button = $('auth-submit');
+    button.disabled = true;
+    button.textContent = authMode === 'signup' ? 'Creating account…' : authMode === 'reset' ? 'Updating password…' : 'Signing in…';
+    try {
+      if (authMode === 'signup') await handleSignUp();
+      else if (authMode === 'reset') await handlePasswordReset();
+      else await handleSignIn();
+    } catch (error) {
+      console.error('Authentication form submission failed:', error);
+      $('auth-message').textContent = authMode === 'reset'
+        ? 'Could not update the password. The reset link may have expired; request a new one and try again.'
+        : 'Could not complete the request. Please try again.';
+    } finally {
+      authBusy = false;
+      button.disabled = false;
+      button.textContent = authMode === 'signup' ? 'Create account' : authMode === 'reset' ? 'Update password' : 'Sign in';
+    }
+  });
+
+  $('reportForm').addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const backend = window.CampusShieldBackend;
+    const submitButton = $('report-submit');
+
+    if (!backend?.isConfigured) {
+      toast('Supabase is not configured.');
+      return;
+    }
+
+    if (submitButton.disabled) return;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Saving report…';
+
+    try {
+      const saved = await backend.createIncident({
+        category: $('category').value,
+        severity: $('severity').value,
+        location: $('location').value.trim(),
+        description: $('description').value.trim()
+      });
+
+      incidents.unshift({
+        id: saved.id,
+        category: saved.category,
+        severity: normalizeSeverity(saved.severity),
+        location: saved.location,
+        description: saved.description,
+        status: normalizeStatus(saved.status),
+        createdAt: saved.created_at
+      });
+
+      $('reportForm').reset();
+      render();
+      navigate('manage');
+      toast('Incident saved to Supabase.');
+    } catch (err) {
+      console.error('Incident submission failed:', err);
+      toast('Could not save report: ' + err.message);
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Submit report';
+    }
+  });
+
+  $('riskForm').addEventListener('submit', e => {
+    e.preventDefault();
+
+    const t = +$('riskType').value;
+    const p = +$('riskPeople').value;
+    const u = +$('riskUrgency').value;
+    const v = +$('riskEnvironment').value;
+
+    const weightedScore = t * 4 + p * 3 + u * 5 + v * 2;
+    const score = Math.round((weightedScore - 18) / (58 - 18) * 100);
+
+    const band = score >= 75 ? 'Critical priority'
+      : score >= 50 ? 'High priority'
+      : score >= 30 ? 'Moderate priority'
+      : 'Lower priority';
+
+    $('riskOutput').textContent =
+      `${band}: ${score}/100. Illustrative triage score only, not a probability or validated prediction. Follow official emergency procedures for urgent situations.`;
+  });
+
+  $('exportCsv').addEventListener('click', () => {
+    if (!incidents.length) {
+      toast('No incident records to export.');
+      return;
+    }
+
+    const cols = [
+      'id', 'category', 'severity', 'location',
+      'description', 'status', 'createdAt'
+    ];
+
+    const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+
+    const csv = [
+      cols.join(','),
+      ...incidents.map(i => cols.map(c => q(i[c])).join(','))
+    ].join('\r\n');
+
+    const url = URL.createObjectURL(
+      new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8;'})
+    );
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'campusshield-incidents.csv';
+    a.click();
+
+    URL.revokeObjectURL(url);
+  });
+
+
+  // Remember the email address, never the password.
+  const emailInput = $('auth-email');
+  const rememberCheckbox = $('remember-email');
+
+  try {
+    const savedEmail = localStorage.getItem('campusshield_saved_email');
+
+    if (savedEmail) {
+      emailInput.value = savedEmail;
+      rememberCheckbox.checked = true;
+    }
+  } catch (err) {
+    console.warn('Email remembering is unavailable in this browser.');
+  }
+
+  function saveEmailPreference() {
+    try {
+      if (rememberCheckbox.checked) {
+        localStorage.setItem(
+          'campusshield_saved_email',
+          emailInput.value.trim()
+        );
+      } else {
+        localStorage.removeItem('campusshield_saved_email');
+      }
+    } catch (err) {
+      console.warn('Could not save email preference.');
+    }
+  }
+
+  emailInput.addEventListener('input', saveEmailPreference);
+  rememberCheckbox.addEventListener('change', saveEmailPreference);
+
+$('resend-confirmation-button').addEventListener('click', async () => {
+  const backend = window.CampusShieldBackend;
+  const email = $('auth-email').value.trim();
+  const msg = $('auth-message');
+  const button = $('resend-confirmation-button');
+
+  if (!email) {
+    msg.textContent = 'Enter your email address first.';
+    $('auth-email').focus();
+    return;
+  }
+
+  if (!backend?.isConfigured) {
+    msg.textContent = 'Supabase is not connected.';
+    return;
+  }
+
+  button.disabled = true;
+
+  try {
+    msg.textContent = 'Sending confirmation email...';
+
+    const { error } = await backend.resendConfirmation(email);
+
+    if (error) throw error;
+
+    msg.textContent =
+      'If this account requires confirmation, a new email has been requested. Check your inbox and spam folder.';
+  } catch (error) {
+    console.error('Resend confirmation failed:', error);
+
+    msg.textContent =
+      'Could not request another email. Please wait and try again later.';
+  } finally {
+    button.disabled = false;
+  }
+});
+
+  // Keep render() as the app's rendering function.
+  $('approvals-nav').hidden = true;
+  setAuthMode('signin');
+
+  render();
+  if (passwordRecoveryActive) {
+    $('workspace').hidden = true;
+    $('login-screen').hidden = false;
+    setAuthMode('reset');
+    $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
+  } else {
+    showLogin();
+  }
+
+  (async () => {
+    try {
+      const backend = window.CampusShieldBackend;
+      if (backend?.isConfigured) {
+        const user = await backend.getCurrentUser();
+        if (user) {
+          const {data:profile, error} = await backend.client
+            .from('profiles')
+            .select('role, verification_status')
+            .eq('id', user.id)
+            .single();
+          if (!error && profile) {
+            if (passwordRecoveryActive) {
+              $('workspace').hidden = true;
+              $('login-screen').hidden = false;
+              setAuthMode('reset');
+              $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
+              return;
+            }
+            const workspaceReady = showWorkspace(profile);
+            if (workspaceReady) {
+              await refreshIncidentsFromSupabase();
+              $('auth-message').textContent = profile.verification_status === 'verified'
+                ? `Signed in. Your role is ${profile.role}.`
+                : 'Your account is pending verification. You can submit incident reports.';
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Could not restore previous session:', err.message);
+    }
+  })();
+
+  if (!window.CampusShieldBackend) {
+    console.error(
+      'CampusShieldBackend is undefined. Check script paths and loading order.'
+    );
+  } else {
+    console.log(
+      'CampusShieldBackend loaded:',
+      typeof window.CampusShieldBackend.signIn,
+      'Configured:',
+      window.CampusShieldBackend.isConfigured
+    );
+  }
+  
+  $('signout-button').addEventListener('click', async () => {
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.client) {
+        throw new Error('Supabase client is unavailable.');
+      }
+
+      const {error} = await backend.client.auth.signOut();
+      if (error) throw error;
+
+      $('auth-password').value = '';
+      currentProfile = null;
+      showLogin('You have signed out.');
+      toast('Signed out successfully.');
+    } catch (err) {
+      $('auth-message').textContent = 'Sign-out failed: ' + err.message;
+    }
+  });
+
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator && window.isSecureContext) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js', { scope: './' }).catch(error => {
+      console.info('CampusShield install support is unavailable in this browser.', error);
+    });
+  });
+}
+</script>
+</body>
+</html>
