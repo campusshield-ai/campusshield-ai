@@ -160,6 +160,7 @@ assert.match(fraudLockMigration, /p_decision not in \('approve','reject','fraud'
 assert.match(fraudLockMigration, /fraud_lock_at = now\(\) \+ interval '48 hours'/);
 assert.match(fraudLockMigration, /current_user_identity_fraud_locked/);
 assert.match(fraudLockMigration, /now\(\) >= siv\.fraud_lock_at/);
+assert.match(fraudLockMigration, /'confirmed_fraud', siv\.confirmed_fraud and siv\.status = 'rejected'/);
 assert.match(fraudLockMigration, /Only a verified administrator can review student identity/);
 assert.match(fraudLockMigration, /Ordinary rejection allows correction\/resubmission; no fraud timer is set/);
 assert.match(backend, /\["approve", "reject", "fraud"\]/);
