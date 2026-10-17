@@ -1951,7 +1951,7 @@ td strong{color:#2a464d;font-size:11px}
         // Do not persist ID files in browser storage.
         sessionStorage.setItem('campusshield_requested_role', requestedRole);
         if (requestedRole === 'student') {
-          sessionStorage.setItem('campusshield_pending_identity', JSON.stringify({ institutionName, studentNumber }));
+          sessionStorage.setItem('campusshield_pending_identity', 'true');
           msg.textContent = 'Account created. Confirm your email, then sign in using this browser and re-select your ID to finish secure submission. Reviews may take up to 7 working days.';
         } else {
           msg.textContent = 'Account created. Confirm your email, then sign in to finish your teacher account request.';
@@ -2041,9 +2041,6 @@ td strong{color:#2a464d;font-size:11px}
           const pendingIdentity = sessionStorage.getItem('campusshield_pending_identity');
           if (pendingIdentity) {
             try {
-              const details = JSON.parse(pendingIdentity);
-              $('identity-institution').value = details.institutionName || '';
-              $('identity-student-number').value = details.studentNumber || '';
               const { data: existingIdentity } = await backend.client
                 .from('student_identity_verifications')
                 .select('status')
@@ -2055,12 +2052,12 @@ td strong{color:#2a464d;font-size:11px}
                 const dashboardStatus = $('dashboard-verification-status');
                 dashboardStatus.hidden = false;
                 dashboardStatus.innerHTML = '<strong>Finish student verification.</strong> Your account is created. Your email is confirmed, but your student ID still needs to be uploaded. <button type="button" class="btn secondary" data-page="identity-verification">Complete ID submission</button>';
-                $('identity-verification-status').textContent = 'Your email is confirmed. Select your own ID document when you are ready to finish secure submission. Reviews may take up to 7 working days.';
+                $('identity-verification-status').textContent = 'Your email is confirmed. Re-enter your institution and matriculation number, then re-select your own ID document to finish secure submission. Reviews may take up to 7 working days.';
                 $('studentIdentityForm').hidden = false;
                 $('identity-submit').disabled = false;
               }
             } catch (pendingError) {
-              console.warn('Could not restore pending student form details:', pendingError);
+              console.warn('Could not restore pending identity workflow:', pendingError);
             }
           }
         }
@@ -2331,14 +2328,8 @@ $('resend-confirmation-button').addEventListener('click', async () => {
                 await loadStudentIdentityStatus();
                 const pendingIdentity = sessionStorage.getItem('campusshield_pending_identity');
                 if (pendingIdentity) {
-                  try {
-                    const details = JSON.parse(pendingIdentity);
-                    $('identity-institution').value = details.institutionName || '';
-                    $('identity-student-number').value = details.studentNumber || '';
-                    $('studentIdentityForm').hidden = false;
-                  } catch (pendingError) {
-                    console.warn('Could not restore pending student form details:', pendingError);
-                  }
+                  $('identity-verification-status').textContent = 'Your email is confirmed. Re-enter your institution and matriculation number, then re-select your own ID document to finish secure submission.';
+                  $('studentIdentityForm').hidden = false;
                 }
               }
               $('auth-message').textContent = profile.verification_status === 'verified'
