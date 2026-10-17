@@ -6,6 +6,19 @@ const migration = await readFile(
   "utf8"
 );
 
+
+const classroomSchema = await readFile(
+  new URL("../supabase/migrations/20261017140000_campus_classrooms_assistant_attendance.sql", import.meta.url),
+  "utf8"
+);
+const classroomAccess = await readFile(
+  new URL("../supabase/migrations/20261017141000_enforce_active_campus_class_access.sql", import.meta.url),
+  "utf8"
+);
+const classroomJoinCode = await readFile(
+  new URL("../supabase/migrations/20261017143000_private_classroom_join_code_rpc.sql", import.meta.url),
+  "utf8"
+);
 assert.match(migration, /create table if not exists public\.campus_opportunities/i, "Opportunity Hub table is present");
 assert.match(migration, /alter table public\.campus_opportunities enable row level security/i, "Opportunity Hub RLS is enabled");
 assert.match(migration, /private\.current_campus_university_id\(\)/i, "Opportunity access is scoped to the authenticated campus");
@@ -38,4 +51,10 @@ assert.match(migration, /Only the verified teacher who owns this class can view 
 assert.match(migration, /revoke all on table public\.campus_class_attendance_audit from public, anon, authenticated/i, "Attendance audit grants are removed");
 assert.match(migration, /create policy campus_class_attendance_select_authorized[\s\S]*?campus_class_attendance\.student_id = \(select auth\.uid\(\)\)/i, "Students can read only their own attendance; teachers can manage their class");
 assert.match(migration, /grant select \(id, session_id, status, marked_at, updated_at\)[\s\S]*?on table public\.campus_class_attendance to authenticated/i, "Attendance SELECT grants omit student and marker IDs");
+assert.match(classroomSchema, /create table if not exists public\.campus_classrooms/i, "Classroom base schema is idempotent for existing staging objects");
+assert.match(classroomSchema, /alter table public\.campus_class_attendance_audit enable row level security/i, "Class attendance audit RLS is enabled");
+assert.match(classroomAccess, /create or replace function private\.can_access_classroom/i, "Classroom access helper exists before hardening");
+assert.match(classroomJoinCode, /private\.get_campus_classroom_join_code_impl/i, "Join codes are retrieved through a private implementation");
+assert.match(migration, /create or replace function private\.can_manage_class_attendance/i, "Attendance management checks active verified membership");
+assert.match(migration, /create or replace function public\.set_campus_class_assistant/i, "Class assistant assignment is guarded");
 console.log("Classroom and Opportunity Hub migration smoke checks passed.");
