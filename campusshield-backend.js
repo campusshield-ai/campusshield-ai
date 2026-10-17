@@ -996,6 +996,13 @@ async getCurrentUser() {
       return data || [];
     },
 
+    async listMyCampusOpportunities() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_my_campus_opportunities");
+      if (error) throw error;
+      return data || [];
+    },
+
     async createCampusOpportunity(input) {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("create_campus_opportunity", {
