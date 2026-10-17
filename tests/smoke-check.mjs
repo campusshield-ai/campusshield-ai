@@ -120,9 +120,19 @@ assert.match(html, /if \(page === 'approvals' && !verifiedAdmin\)/);
 
 // Explicitly assert the role allowlist and verified-status requirement.
 assert.match(html, /return profile\?\.verification_status === 'verified' &&\s*\['security', 'admin'\]\.includes\(profile\.role\)/);
-for (const deniedRole of ["student", "teacher"]) {
-  assert.match(html, new RegExp("\\['security', 'admin'\\]\\.includes\\(profile\\.role\\)"));
-  assert.ok(["student", "teacher"].includes(deniedRole), `${deniedRole} remains outside the staff allowlist`);
+const rolePermissionCases = [
+  [{ role: "student", verification_status: "verified" }, false],
+  [{ role: "teacher", verification_status: "verified" }, false],
+  [{ role: "security", verification_status: "verified" }, true],
+  [{ role: "admin", verification_status: "verified" }, true],
+  [{ role: "security", verification_status: "pending" }, false],
+  [{ role: "admin", verification_status: "rejected" }, false],
+  [null, false],
+];
+const expectedStaffAccess = (profile) =>
+  profile?.verification_status === "verified" && ["security", "admin"].includes(profile.role);
+for (const [profile, expected] of rolePermissionCases) {
+  assert.equal(expectedStaffAccess(profile), expected, `staff access policy for ${profile?.role || "signed-out"}`);
 }
 assert.match(html, /canAccessStaffPages\(\)/, "staff routes use the shared role predicate");
 
