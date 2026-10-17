@@ -31,7 +31,7 @@ assert.match(backend, /reporter_id:\s*user\.id/);
 assert.match(backend, /client\.auth\.getUser\(\)/);
 assert.match(backend, /update\(\{\s*status\s*\}/);
 assert.match(html, /function canManageIncidents\(\)/);
-assert.match(html, /\['security', 'admin'\]\.includes\(currentProfile\.role\)/);
+assert.match(html, /\['security', 'admin'\]\.includes\(profile\.role\)/);
 assert.match(html, /if \(!canManageIncidents\(\)\)/);
 assert.match(html, /const total = incidents\.length/);
 assert.match(html, /await refreshIncidentsFromSupabase\(\)/);
