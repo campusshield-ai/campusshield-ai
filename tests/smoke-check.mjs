@@ -110,7 +110,8 @@ for (const [filename, size] of [["apple-touch-icon.png", 180], ["campusshield-19
 assert.match(html, /function syncIdentityNavigation\(\)/);
 assert.doesNotMatch(html, /if \(needsIdentity\) button\.hidden = true/);
 assert.doesNotMatch(html, /if \(studentNeedsIdentity && page !== 'identity-verification'\)/);
-assert.match(html, /Ordinary student pages remain available while verification is pending/i);
+assert.match(html, /ordinary dashboard pages remain available while pending|ordinary dashboard access remain available/i);
+assert.doesNotMatch(html, /JSON\.stringify\(\{\s*institutionName,\s*studentNumber\s*\}\)/, "identity details are not stored in browser session storage");
 assert.match(html, /Your ID submission is being processed/i);
 assert.match(html, /id="dashboard-verification-status"/);
 assert.match(html, /function syncDashboardVerificationNotice\(/);
