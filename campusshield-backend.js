@@ -50,8 +50,7 @@ async resendConfirmation(email) {
     type: "signup",
     email: email.trim(),
     options: {
-      emailRedirectTo:
-        "https://campusshield-ai.github.io/campusshield-ai/"
+      emailRedirectTo: new URL(window.location.pathname, window.location.origin).toString()
     }
   });
 },
