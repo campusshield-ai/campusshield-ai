@@ -517,6 +517,7 @@ td strong{color:#2a464d;font-size:11px}
 <div class="notice"><span class="notice-icon" aria-hidden="true">!</span><span><strong>Demonstration prototype.</strong> Use fictional information only. Reports are stored in the connected Supabase project when available. This prototype does not contact emergency services.</span></div>
 
 <section class="page active" id="page-dashboard">
+<div class="notice-inline" id="dashboard-fraud-lock-status" hidden role="status" aria-live="polite"></div>
 <div class="notice-inline" id="dashboard-verification-status" hidden role="status" aria-live="polite"></div>
 <div class="heading">
   <div><h1>Campus safety overview</h1><p>A measured view of incident records available to your signed-in account.</p></div>
@@ -854,6 +855,34 @@ td strong{color:#2a464d;font-size:11px}
       container.append(button);
     }
     container.hidden = false;
+  }
+
+  async function loadIdentityFraudLockStatus() {
+    const container = $('dashboard-fraud-lock-status');
+    if (!container || !currentProfile || !isStudentAccount()) {
+      if (container) container.hidden = true;
+      return;
+    }
+    try {
+      const status = await window.CampusShieldBackend.getMyIdentityFraudLockStatus();
+      container.replaceChildren();
+      if (!status?.confirmed_fraud) {
+        container.hidden = true;
+        return;
+      }
+      const paragraph = document.createElement('p');
+      paragraph.textContent = status.locked
+        ? 'ACCOUNT RESTRICTION ACTIVE: your 48-hour correction deadline passed without an accepted resubmission. Restricted student features are blocked. Sign-in remains available to view this notice and contact your campus administrator.'
+        : 'IMPORTANT: an administrator recorded a confirmed-fraud decision. Correct your information and resubmit your own valid ID before ' +
+          (status.lock_at ? new Date(status.lock_at).toLocaleString() : 'the 48-hour deadline') +
+          '. If you believe this decision is wrong, contact your campus administrator. Reason: ' +
+          (status.reason || 'See your identity review details.');
+      container.append(paragraph);
+      container.hidden = false;
+    } catch (error) {
+      console.warn('Could not load identity fraud-lock status:', error);
+      container.hidden = true;
+    }
   }
 
   async function loadStudentIdentityStatus() {
@@ -1467,6 +1496,7 @@ td strong{color:#2a464d;font-size:11px}
                 '<div class="actions">' +
                 '<button class="btn" type="button" data-identity-review="approve" data-user-id="' + esc(row.id) + '">Approve ID & account</button>' +
                 '<button class="btn danger" type="button" data-identity-review="reject" data-user-id="' + esc(row.id) + '">Reject ID</button>' +
+                '<button class="btn danger" type="button" data-identity-review="fraud" data-user-id="' + esc(row.id) + '">Confirm fraud · 48h notice</button>' +
                 '</div>';
             } else if (identity.status === 'rejected') {
               decisionCell =
@@ -1530,14 +1560,18 @@ td strong{color:#2a464d;font-size:11px}
       const decision = identityButton.dataset.identityReview;
       const userId = identityButton.dataset.userId;
       let reason = null;
-      if (decision === 'reject') {
-        reason = window.prompt('Enter a helpful rejection reason (5–1000 characters). The student can see this and resubmit:', '');
+      if (decision === 'reject' || decision === 'fraud') {
+        const promptLabel = decision === 'fraud'
+          ? 'Record the evidence and reason for a CONFIRMED fraud decision. This sends a notice and starts a 48-hour correction window before restricted account features are locked:'
+          : 'Enter a helpful rejection reason (5–1000 characters). The student can see this and resubmit:';
+        reason = window.prompt(promptLabel, '');
         if (reason === null) return;
         reason = reason.trim();
         if (reason.length < 5 || reason.length > 1000) {
-          toast('Provide a rejection reason of 5–1000 characters.');
+          toast('Provide a reason of 5–1000 characters.');
           return;
         }
+        if (decision === 'fraud' && !confirm('Confirm that you have reviewed the evidence and this is a confirmed fraudulent ID or false-information case. The student will receive a 48-hour correction notice. Continue?')) return;
       } else if (!confirm('Approve this student ID and activate the student account?')) {
         return;
       }
@@ -1545,12 +1579,16 @@ td strong{color:#2a464d;font-size:11px}
       identityButton.disabled = true;
       $('approvals-message').textContent = decision === 'approve'
         ? 'Approving identity and activating account…'
-        : 'Rejecting identity and recording feedback…';
+        : decision === 'fraud'
+          ? 'Recording the confirmed-fraud decision and 48-hour notice…'
+          : 'Rejecting identity and recording feedback…';
       try {
         await window.CampusShieldBackend.reviewStudentIdentityVerification(userId, decision, reason);
         toast(decision === 'approve'
           ? 'Student identity approved and account activated.'
-          : 'ID rejected; the student can sign in and resubmit.');
+          : decision === 'fraud'
+            ? 'Fraud decision recorded. The 48-hour correction deadline is now active on the server.'
+            : 'ID rejected; the student can sign in and resubmit.');
         await loadAccountApprovals();
       } catch (error) {
         console.error('Student identity review failed:', error);
@@ -2038,6 +2076,7 @@ td strong{color:#2a464d;font-size:11px}
         await refreshIncidentsFromSupabase();
         if (isStudentAccount()) {
           await loadStudentIdentityStatus();
+          await loadIdentityFraudLockStatus();
           const pendingIdentity = sessionStorage.getItem('campusshield_pending_identity');
           if (pendingIdentity) {
             try {
@@ -2326,6 +2365,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
               await refreshIncidentsFromSupabase();
               if (isStudentAccount()) {
                 await loadStudentIdentityStatus();
+                await loadIdentityFraudLockStatus();
                 const pendingIdentity = sessionStorage.getItem('campusshield_pending_identity');
                 if (pendingIdentity) {
                   $('identity-verification-status').textContent = 'Your email is confirmed. Re-enter your institution and matriculation number, then re-select your own ID document to finish secure submission.';
