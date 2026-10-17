@@ -24,7 +24,8 @@ const requiredFiles = [
   'supabase-config.js',
   'campusshield-backend.js',
   'manifest.webmanifest',
-  'offline.html'
+  'offline.html',
+  'service-worker.js'
 ];
 
 for (const file of requiredFiles) {
