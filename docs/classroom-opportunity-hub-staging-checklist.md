@@ -10,7 +10,7 @@
 - [x] RLS enabled on classroom, attendance, and Opportunity Hub tables.
 - [x] `anon` and `authenticated` have no table-level INSERT/TRUNCATE privileges on the guarded tables.
 - [x] Rollback-only synthetic authorization test passed 6/6 assertions: teacher class creation/private code retrieval; student join/role restrictions; cross-campus class isolation; student-own-attendance-only reads; private draft/pending opportunity isolation; and same-campus publish versus cross-campus denial.
-- [x] Post-test cleanup verification found zero synthetic users, classes, opportunities, or attendance sessions remaining.
+- [x] Second rollback-only test passed 2/2 read-RPC checks: joined students read authorized class announcements/materials; pending opportunities stay hidden from students until approved; published listings are visible to verified same-campus members and hidden from other campuses.\n- [x] Post-test cleanup verification found zero synthetic users, classes, opportunities, or attendance sessions remaining.
 - [ ] Signed-in browser walkthrough and visual UI acceptance are still outstanding.
 
 ## Gate 1 — Before applying the migration
