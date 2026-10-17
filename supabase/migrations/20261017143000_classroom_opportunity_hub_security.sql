@@ -273,6 +273,37 @@ grant select (id, classroom_id, title, body, created_at)
 grant select (id, classroom_id, title, description, resource_url, created_at)
   on table public.campus_classroom_materials to authenticated;
 
+-- Attendance is sensitive student information. Keep direct access read-only and column-limited,
+-- and let only the class-owning teacher or the individual student read an attendance row.
+revoke all on table public.campus_class_sessions from public, anon, authenticated;
+revoke all on table public.campus_class_attendance from public, anon, authenticated;
+revoke all on table public.campus_class_attendance_audit from public, anon, authenticated;
+
+grant select (id, classroom_id, session_date, title, created_at)
+  on table public.campus_class_sessions to authenticated;
+grant select (id, session_id, status, marked_at, updated_at)
+  on table public.campus_class_attendance to authenticated;
+grant select (id, attendance_id, session_id, old_status, new_status, changed_at)
+  on table public.campus_class_attendance_audit to authenticated;
+
+drop policy if exists campus_class_attendance_select_members on public.campus_class_attendance;
+create policy campus_class_attendance_select_authorized
+  on public.campus_class_attendance for select to authenticated
+  using (
+    exists (
+      select 1
+      from public.campus_class_sessions s
+      where s.id = campus_class_attendance.session_id
+        and (
+          private.is_verified_classroom_teacher(s.classroom_id)
+          or (
+            campus_class_attendance.student_id = (select auth.uid())
+            and private.can_access_classroom(s.classroom_id)
+          )
+        )
+    )
+  );
+
 -- A class roster contains student names and internal IDs; only the verified class-owning teacher may read it.
 create or replace function public.list_campus_classroom_roster(p_classroom_id uuid)
 returns table(student_id uuid, display_name text, is_assistant boolean)
