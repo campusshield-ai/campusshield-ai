@@ -2269,7 +2269,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         if (user) {
           const {data:profile, error} = await backend.client
             .from('profiles')
-            .select('role, verification_status')
+.select('role, requested_role, verification_status')
             .eq('id', user.id)
             .single();
           if (!error && profile) {
