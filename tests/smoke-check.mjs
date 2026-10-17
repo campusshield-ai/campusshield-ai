@@ -107,14 +107,24 @@ for (const [filename, size] of [["apple-touch-icon.png", 180], ["campusshield-19
 
 
  // Pending/rejected student menus remain usable while restricted destinations remain protected.
- assert.match(html, /function syncIdentityNavigation\(\)/);
- assert.doesNotMatch(html, /if \(needsIdentity\) button\.hidden = true/);
- assert.doesNotMatch(html, /if \(studentNeedsIdentity && page !== 'identity-verification'\)/);
- assert.match(html, /Ordinary student pages remain available while verification is pending/i);
- assert.match(html, /Your ID submission is pending administrator review/i);
- assert.match(html, /currentProfile = profile;[\s\S]{0,180}studentIdentitySubmission = null;[\s\S]{0,180}\$\('workspace'\)\.hidden = false/);
- assert.match(html, /if \(!verified && \['manage', 'risk', 'analytics'\]\.includes\(page\)\)/);
- assert.match(html, /if \(page === 'approvals' && !verifiedAdmin\)/);
+assert.match(html, /function syncIdentityNavigation\(\)/);
+assert.doesNotMatch(html, /if \(needsIdentity\) button\.hidden = true/);
+assert.doesNotMatch(html, /if \(studentNeedsIdentity && page !== 'identity-verification'\)/);
+assert.match(html, /Ordinary student pages remain available while verification is pending/i);
+assert.match(html, /Your ID submission is pending administrator review/i);
+assert.match(html, /currentProfile = profile;[\s\S]{0,180}studentIdentitySubmission = null;[\s\S]{0,180}\$\('workspace'\)\.hidden = false/);
+assert.match(html, /function canAccessStaffPages\(profile = currentProfile\)/);
+assert.match(html, /button\.hidden = !canAccessStaffPages\(\)/);
+assert.match(html, /if \(!canAccessStaffPages\(\) && \['manage', 'risk', 'analytics'\]\.includes\(page\)\)/);
+assert.match(html, /if \(page === 'approvals' && !verifiedAdmin\)/);
+
+// Explicitly assert the role allowlist and verified-status requirement.
+assert.match(html, /return profile\?\.verification_status === 'verified' &&\s*\['security', 'admin'\]\.includes\(profile\.role\)/);
+for (const deniedRole of ["student", "teacher"]) {
+  assert.match(html, new RegExp("\\['security', 'admin'\\]\\.includes\\(profile\\.role\\)"));
+  assert.ok(["student", "teacher"].includes(deniedRole), `${deniedRole} remains outside the staff allowlist`);
+}
+assert.match(html, /canAccessStaffPages\(\)/, "staff routes use the shared role predicate");
 
 console.log(`PASS ${inlineScripts.length} inline script(s), backend, and config parse`);
 console.log("PASS browser config uses the Supabase project URL and publishable key only");
