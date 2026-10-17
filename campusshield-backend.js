@@ -906,6 +906,149 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    // Classroom API: table reads are RLS-scoped; all writes use guarded database RPCs.
+    async listCampusClassrooms() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_my_campus_classrooms");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async createCampusClassroom(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_campus_classroom", {
+        p_name: String(input.name || "").trim(),
+        p_subject: String(input.subject || "").trim(),
+        p_description: String(input.description || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async getCampusClassroomJoinCode(classroomId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("get_campus_classroom_join_code", {
+        p_classroom_id: classroomId
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async joinCampusClassroom(joinCode) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("join_campus_classroom", {
+        p_join_code: String(joinCode || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusClassroomAnnouncements(classroomId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_classroom_announcements", {
+        p_classroom_id: classroomId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async createCampusClassroomAnnouncement(classroomId, title, body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_campus_classroom_announcement", {
+        p_classroom_id: classroomId,
+        p_title: String(title || "").trim(),
+        p_body: String(body || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusClassroomMaterials(classroomId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_classroom_materials", {
+        p_classroom_id: classroomId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async createCampusClassroomMaterial(classroomId, title, description, resourceUrl) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_campus_classroom_material", {
+        p_classroom_id: classroomId,
+        p_title: String(title || "").trim(),
+        p_description: String(description || "").trim(),
+        p_resource_url: String(resourceUrl || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    // Opportunity Hub API: direct reads are limited to safe columns by PostgreSQL grants/RLS.
+    async listCampusOpportunities() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_opportunities");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async listMyCampusOpportunities() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_my_campus_opportunities");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async createCampusOpportunity(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_campus_opportunity", {
+        p_title: String(input.title || "").trim(),
+        p_category: input.category,
+        p_description: String(input.description || "").trim(),
+        p_eligibility: String(input.eligibility || "").trim(),
+        p_provider_name: String(input.providerName || "").trim(),
+        p_source_url: String(input.sourceUrl || "").trim(),
+        p_contact_url: String(input.contactUrl || "").trim() || null,
+        p_deadline: input.deadline || null
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async updateMyCampusOpportunity(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("update_my_campus_opportunity", {
+        p_opportunity_id: input.id,
+        p_title: String(input.title || "").trim(),
+        p_category: input.category,
+        p_description: String(input.description || "").trim(),
+        p_eligibility: String(input.eligibility || "").trim(),
+        p_provider_name: String(input.providerName || "").trim(),
+        p_source_url: String(input.sourceUrl || "").trim(),
+        p_contact_url: String(input.contactUrl || "").trim() || null,
+        p_deadline: input.deadline || null
+      });
+      if (error) throw error;
+    },
+
+    async submitCampusOpportunity(opportunityId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("submit_campus_opportunity", {
+        p_opportunity_id: opportunityId
+      });
+      if (error) throw error;
+    },
+
+    async reviewCampusOpportunity(opportunityId, decision, notes = null) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("review_campus_opportunity", {
+        p_opportunity_id: opportunityId,
+        p_decision: decision,
+        p_review_notes: notes
+      });
+      if (error) throw error;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
