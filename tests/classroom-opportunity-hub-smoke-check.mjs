@@ -12,7 +12,7 @@ assert.match(migration, /private\.current_campus_university_id\(\)/i, "Opportuni
 assert.match(migration, /created_by = \(select auth\.uid\(\)\)/i, "Private drafts are owner-scoped");
 assert.match(migration, /status = 'published' and \(deadline is null or deadline > now\(\)\)/i, "Expired opportunities are excluded from the ordinary published feed");
 assert.match(migration, /review_notes text/i, "Review notes are stored separately from public listing fields");
-assert.match(migration, /grant select \([\s\S]*?source_url, contact_url, deadline, status, is_official, created_at, updated_at\)[\s\S]*?on table public\.campus_opportunities to authenticated/i, "Opportunity select grants omit internal author and review fields");
+assert.match(migration, /grant select \([\s\S]*?source_url, contact_url, deadline, status, is_official, created_at, updated_at\s*\)[\s\S]*?on table public\.campus_opportunities to authenticated/i, "Opportunity select grants omit internal author and review fields");
 assert.match(migration, /revoke all on table public\.campus_opportunities from public, anon, authenticated/i, "Opportunity table has no broad default grants");
 assert.match(migration, /revoke all on table public\.campus_classrooms from public, anon, authenticated/i, "Classroom table broad grants are removed");
 assert.match(migration, /revoke all on table public\.campus_classroom_enrollments from public, anon, authenticated/i, "Enrollment table broad grants are removed");
