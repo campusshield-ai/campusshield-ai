@@ -273,6 +273,30 @@ grant select (id, classroom_id, title, body, created_at)
 grant select (id, classroom_id, title, description, resource_url, created_at)
   on table public.campus_classroom_materials to authenticated;
 
+-- A class roster contains student names and internal IDs; only the verified class-owning teacher may read it.
+create or replace function public.list_campus_classroom_roster(p_classroom_id uuid)
+returns table(student_id uuid, display_name text, is_assistant boolean)
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+begin
+  if not private.is_verified_classroom_teacher(p_classroom_id) then
+    raise exception 'Only the verified teacher who owns this class can view its roster.'
+      using errcode = '42501';
+  end if;
+  return query
+    select p.id,
+      coalesce(nullif(btrim(p.display_name), ''), 'Student'),
+      (c.assistant_student_id = p.id)
+    from public.campus_classroom_enrollments e
+    join public.profiles p on p.id = e.student_id
+    join public.campus_classrooms c on c.id = e.classroom_id
+    where e.classroom_id = p_classroom_id
+    order by coalesce(nullif(btrim(p.display_name), ''), 'Student');
+end;
+$function$;
+
 -- Keep existing classroom entry points authenticated-only as well.
 revoke all on function public.create_campus_classroom(text,text,text) from public, anon;
 revoke all on function public.get_campus_classroom_join_code(uuid) from public, anon;
