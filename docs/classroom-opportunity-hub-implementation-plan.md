@@ -59,7 +59,7 @@ Potential additive improvements after the new feature foundations are stable:
 ## Current implementation status (17 Oct 2026)
 
 - Read-only inspection of staging (`hywcpnoqqhxvujnimhxl`) found existing classroom tables and guarded class create/join functions, but no `campus_opportunities` table. No staging DDL was applied by this implementation.
-- Added repository migration `supabase/migrations/20261017143000_classroom_opportunity_hub_security.sql`. It tightens verified campus/role checks for classroom access, restricts roster access to the verified class-owning teacher, removes broad direct grants from the core classroom tables, and adds campus-scoped Opportunity Hub storage/RLS plus owner-only create/edit/submit and staff review RPCs.
+- Ported the four idempotent classroom schema/access migrations from the existing classroom staging branch into this release stack (`20261017140000`–`20261017143000`) so a future clean environment can create the same classroom objects before hardening them. Added `supabase/migrations/20261017144000_classroom_opportunity_hub_security.sql` to tighten verified campus/role checks, restrict roster/attendance privacy, remove broad direct grants, and add the campus-scoped Opportunity Hub with RLS and guarded RPCs.
 - Added backend methods in `campusshield-backend.js` for classroom reads/writes and Opportunity Hub operations. Database writes are routed through guarded RPCs.
 - Added Teacher Classroom and Gift & Opportunity Hub pages/forms to `index.html`, including class join/create, announcements and resource links, opportunity drafts, submit-for-review, and staff review controls.
 - Added `tests/classroom-opportunity-hub-smoke-check.mjs` and wired it into `.github/workflows/smoke-check.yml`.
