@@ -357,8 +357,12 @@ async getCurrentUser() {
 
     async reviewStudentIdentityVerification(userId, decision, rejectionReason) {
       if (!client) throw new Error("Supabase is not configured.");
-      if (!["approve", "reject"].includes(decision)) {
-        throw new Error("Choose approve or reject.");
+      if (!["approve", "reject", "fraud"].includes(decision)) {
+        throw new Error("Choose approve, reject, or confirm fraud.");
+      }
+      if (["reject", "fraud"].includes(decision) &&
+          String(rejectionReason || "").trim().length < 5) {
+        throw new Error("Provide a reason of at least 5 characters.");
       }
       const { error } = await client.rpc("review_student_identity_verification", {
         p_user_id: userId,
@@ -366,6 +370,13 @@ async getCurrentUser() {
         p_rejection_reason: rejectionReason || null
       });
       if (error) throw error;
+    },
+
+    async getMyIdentityFraudLockStatus() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("my_identity_fraud_lock_status");
+      if (error) throw error;
+      return data || { confirmed_fraud: false, locked: false };
     },
 
     async listIncidents() {
