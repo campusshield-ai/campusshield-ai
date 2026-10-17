@@ -15,6 +15,10 @@ const classroomAccess = await readFile(
   new URL("../supabase/migrations/20261017202224_enforce_active_campus_class_access.sql", import.meta.url),
   "utf8"
 );
+const readRpcs = await readFile(
+  new URL("../supabase/migrations/20261017202616_classroom_opportunity_read_rpcs.sql", import.meta.url),
+  "utf8"
+);
 const classroomJoinCode = await readFile(
   new URL("../supabase/migrations/20261017202236_private_classroom_join_code_rpc.sql", import.meta.url),
   "utf8"
@@ -35,6 +39,9 @@ assert.match(migration, /revoke all on table public\.campus_classroom_materials 
 assert.match(migration, /m\.verification_status = 'verified'/i, "Classroom access requires verified campus membership");
 assert.match(migration, /m\.campus_role = 'teacher'/i, "Teacher actions require the campus-specific teacher role");
 assert.match(migration, /m\.campus_role = 'student'/i, "Student access requires the campus-specific student role");
+assert.match(readRpcs, /create or replace function public\.list_campus_opportunities/i, "Opportunity reads use an authenticated RPC without exposing the table endpoint");
+assert.match(readRpcs, /create or replace function public\.list_my_campus_classrooms/i, "Classroom reads use an authenticated RPC");
+assert.match(readRpcs, /revoke all on function public\.list_campus_opportunities\(\) from public, anon, authenticated/i, "Opportunity read RPC defaults are revoked");
 assert.match(migration, /create or replace function public\.create_campus_classroom_announcement/i, "Announcement writes use a guarded RPC");
 assert.match(migration, /create or replace function public\.create_campus_classroom_material/i, "Material writes use a guarded RPC");
 assert.match(migration, /create or replace function public\.create_campus_opportunity/i, "Opportunity creation uses a guarded RPC");
