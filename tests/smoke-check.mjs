@@ -114,3 +114,14 @@ console.log("PASS emergency-services prototype warning remains visible");
 console.log("PASS Android and iOS install metadata and guidance are present");
 console.log("PASS Android and Apple launcher icons are valid PNGs at the required sizes");
 console.log("PASS offline fallback stores no app, authentication, or incident responses");
+
+
+// Pending/rejected student menus remain usable while restricted destinations remain protected.
+assert.match(html, /function syncIdentityNavigation\(\)/);
+assert.doesNotMatch(html, /if \(needsIdentity\) button\.hidden = true/);
+assert.doesNotMatch(html, /if \(studentNeedsIdentity && page !== 'identity-verification'\)/);
+assert.match(html, /Ordinary student pages remain available while verification is pending/i);
+assert.match(html, /Your ID submission is pending administrator review/i);
+assert.match(html, /currentProfile = profile;[\s\S]{0,180}studentIdentitySubmission = null;[\s\S]{0,180}\$\('workspace'\)\.hidden = false/);
+assert.match(html, /if \(!verified && \['manage', 'risk', 'analytics'\]\.includes\(page\)\)/);
+assert.match(html, /if \(page === 'approvals' && !verifiedAdmin\)/);
