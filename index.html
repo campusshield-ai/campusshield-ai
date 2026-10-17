@@ -801,7 +801,7 @@ td strong{color:#2a464d;font-size:11px}
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
       if (button.id === 'identity-verification-nav') return;
       if (['manage','risk','analytics'].includes(button.dataset.page)) {
-        button.hidden = currentProfile?.verification_status !== 'verified';
+        button.hidden = !canAccessStaffPages();
       }
     });
     $('approvals-nav').hidden = !(
@@ -876,9 +876,13 @@ td strong{color:#2a464d;font-size:11px}
 
 
 
+  function canAccessStaffPages(profile = currentProfile) {
+    return profile?.verification_status === 'verified' &&
+      ['security', 'admin'].includes(profile.role);
+  }
+
   function canManageIncidents() {
-    return currentProfile?.verification_status === 'verified' &&
-      ['security', 'admin'].includes(currentProfile.role);
+    return canAccessStaffPages();
   }
 
   function showWorkspace(profile) {
@@ -906,7 +910,7 @@ td strong{color:#2a464d;font-size:11px}
 
     const verified = currentProfile.verification_status === 'verified';
     document.querySelectorAll('[data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
-      el.hidden = !verified;
+      el.hidden = !canAccessStaffPages();
     });
     $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
@@ -1111,16 +1115,14 @@ td strong{color:#2a464d;font-size:11px}
 
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
-    const studentNeedsIdentity = isStudentAccount() && !hasApprovedStudentIdentity();
-
     if (page === 'identity-verification' && !isStudentAccount()) {
       page = 'dashboard';
       toast('Student identity verification is available to student accounts.');
     }
 
-    if (!verified && ['manage', 'risk', 'analytics'].includes(page)) {
+    if (!canAccessStaffPages() && ['manage', 'risk', 'analytics'].includes(page)) {
       page = 'dashboard';
-      toast('This area is available after account verification.');
+      toast('This area is available to verified security staff or administrators.');
     }
 
     if (page === 'approvals' && !verifiedAdmin) {
