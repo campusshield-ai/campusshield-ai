@@ -32,16 +32,45 @@
   document.head.appendChild(style);
 
   const nav = document.querySelector(".nav");
-  if (nav && !document.querySelector('[data-page="classrooms"]')) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.dataset.page = "classrooms";
-    button.id = "classrooms-nav";
-    button.hidden = true;
-    button.innerHTML = '<span class="nav-icon" aria-hidden="true">▦</span>Classrooms';
+  let classroomNav = document.querySelector('[data-page="classrooms"]');
+  if (nav && !classroomNav) {
+    classroomNav = document.createElement("button");
+    classroomNav.type = "button";
+    classroomNav.dataset.page = "classrooms";
+    classroomNav.id = "classrooms-nav";
+    classroomNav.hidden = true;
+    classroomNav.innerHTML = '<span class="nav-icon" aria-hidden="true">▦</span>Classrooms';
     const community = document.getElementById("community-nav");
-    if (community) community.insertAdjacentElement("afterend", button);
-    else nav.appendChild(button);
+    if (community) community.insertAdjacentElement("afterend", classroomNav);
+    else nav.appendChild(classroomNav);
+  }
+
+  // Reveal the menu only for a verified teacher or student. Database RLS/RPCs
+  // remain the security boundary; this is only navigation visibility.
+  let navCheck = 0;
+  async function syncClassroomNav() {
+    const check = ++navCheck;
+    const button = document.getElementById("classrooms-nav");
+    if (!button) return;
+    button.hidden = true;
+    currentProfile = null;
+    selectedClass = null;
+    const b = backend();
+    if (!b?.isConfigured || !b.client?.auth) return;
+    try {
+      const { data: { user } = {} } = await b.client.auth.getUser();
+      if (!user || check !== navCheck) return;
+      const { data, error } = await b.client.from("profiles")
+        .select("id,role,verification_status").eq("id", user.id).single();
+      if (error) throw error;
+      if (check !== navCheck) return;
+      currentProfile = data;
+      button.hidden = !(data.verification_status === "verified" &&
+        ["teacher", "student"].includes(data.role));
+    } catch (error) {
+      if (check === navCheck) button.hidden = true;
+      console.warn("Classroom navigation remains hidden until access can be verified.", error);
+    }
   }
 
   const content = document.querySelector("main.content");
@@ -276,7 +305,17 @@
   $("classroom-session-picker")?.addEventListener("change",async e=>{currentSession=e.target.value;try{await loadAttendance();}catch(err){message(err.message);}});
   $("classroom-refresh")?.addEventListener("click",refreshClasses);
   // Keep the workspace UI responsive after sign-in; page access is still enforced by RLS/RPCs.
-  if (backend()?.client?.auth) backend().client.auth.onAuthStateChange(event=>{
-    if(event==="SIGNED_OUT"){currentProfile=null;selectedClass=null;if($("page-classrooms")){$("classroom-list").innerHTML='<div class="empty">Sign in to view classes.</div>';$("classroom-detail").hidden=true;}}
-  });
+  if (backend()?.client?.auth) {
+    backend().client.auth.onAuthStateChange(() => {
+      // Defer Supabase reads outside the auth callback to avoid holding its auth lock.
+      window.setTimeout(() => {
+        syncClassroomNav();
+        if (!$("classrooms-nav") || $("classrooms-nav").hidden) {
+          if ($("classroom-list")) $("classroom-list").innerHTML = '<div class="empty">Sign in with a verified student or teacher account to view classes.</div>';
+          if ($("classroom-detail")) $("classroom-detail").hidden = true;
+        }
+      }, 0);
+    });
+    window.setTimeout(syncClassroomNav, 0);
+  }
 })();
