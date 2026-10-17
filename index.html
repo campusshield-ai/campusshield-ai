@@ -1586,6 +1586,18 @@ td strong{color:#2a464d;font-size:11px}
     }
   }
 
+  function escapeHubHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
+  }
+
+  function formatHubDate(value) {
+    if (!value) return 'No deadline';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? 'Date not specified' : date.toLocaleString();
+  }
+
   async function refreshPlatformAdminAccess() {
     const nav = $('platform-admin-nav');
     const backend = window.CampusShieldBackend;
@@ -3047,6 +3059,173 @@ td strong{color:#2a464d;font-size:11px}
     } catch (err) {
       status.textContent = err.message || 'Could not load the campus marketplace.';
       $('campus-marketplace-feed').innerHTML = '<div class="community-empty">The marketplace is temporarily unavailable.</div>';
+    }
+  }
+
+  async function loadCampusClassroomsPage() {
+    const status = $('campus-classrooms-status');
+    const feed = $('campus-classrooms-feed');
+    const teacherAccess = currentProfile?.role === 'teacher' && hasVerifiedCampusStaffMembership();
+    $('classroom-create-panel').hidden = !teacherAccess;
+    $('classroom-join-panel').hidden = !isStudentAccount();
+    if (!hasVerifiedCampusStaffMembership()) {
+      status.textContent = 'A verified account and active verified campus membership are required.';
+      feed.innerHTML = '<div class="community-empty">Classrooms are unavailable until your campus membership is verified.</div>';
+      return;
+    }
+    status.textContent = 'Loading your authorized classrooms…';
+    try {
+      const rows = await window.CampusShieldBackend.listCampusClassrooms();
+      status.textContent = rows.length ? rows.length + ' classroom(s) available to your account.' : 'No classrooms are available yet.';
+      feed.innerHTML = rows.length ? rows.map(row => `
+        <article class="panel">
+          <div class="panel-heading"><div><h3>${escapeHubHtml(row.name)}</h3><p class="muted">${escapeHubHtml(row.subject)}</p></div><button class="btn secondary" type="button" data-classroom-open="${escapeHubHtml(row.id)}">Open classroom</button></div>
+          <p>${escapeHubHtml(row.description || 'No class description provided.')}</p>
+          <p class="muted">Created ${escapeHubHtml(formatHubDate(row.created_at))}</p>
+        </article>`).join('') : '<div class="community-empty">No classes yet. A verified teacher can create one, or a student can join using a teacher-provided code.</div>';
+    } catch (err) {
+      status.textContent = err.message || 'Could not load classrooms.';
+      feed.innerHTML = '<div class="community-empty">Classroom data could not be loaded. Check the staging migration and campus access.</div>';
+    }
+  }
+
+  async function loadCampusClassroomDetail(classroomId) {
+    const panel = $('classroom-detail-panel');
+    const content = $('classroom-detail-content');
+    const status = $('classroom-detail-message');
+    panel.hidden = false;
+    content.innerHTML = '<div class="community-empty">Loading private class content…</div>';
+    status.textContent = '';
+    try {
+      const classes = await window.CampusShieldBackend.listCampusClassrooms();
+      const classroom = classes.find(item => item.id === classroomId);
+      if (!classroom) throw new Error('This classroom is not available to your account.');
+      const [announcements, materials] = await Promise.all([
+        window.CampusShieldBackend.listCampusClassroomAnnouncements(classroomId),
+        window.CampusShieldBackend.listCampusClassroomMaterials(classroomId)
+      ]);
+      const teacherAccess = currentProfile?.role === 'teacher' && hasVerifiedCampusStaffMembership();
+      $('classroom-detail-title').textContent = classroom.name;
+      $('classroom-detail-subtitle').textContent = classroom.subject + (classroom.description ? ' · ' + classroom.description : '');
+      content.innerHTML = `
+        <section class="panel"><h3>Announcements</h3>
+          ${announcements.length ? announcements.map(item => `<article class="panel"><h4>${escapeHubHtml(item.title)}</h4><p>${escapeHubHtml(item.body)}</p><p class="muted">${escapeHubHtml(formatHubDate(item.created_at))}</p></article>`).join('') : '<p class="muted">No announcements yet.</p>'}
+        </section>
+        <section class="panel"><h3>Learning links</h3>
+          ${materials.length ? materials.map(item => { const url = safeHttpUrl(item.resource_url); return `<article class="panel"><h4>${escapeHubHtml(item.title)}</h4><p>${escapeHubHtml(item.description || '')}</p>${url ? `<p><a href="${escapeHubHtml(url)}" target="_blank" rel="noopener noreferrer">Open learning resource</a></p>` : '<p class="muted">This link is not valid and cannot be opened.</p>'}<p class="muted">${escapeHubHtml(formatHubDate(item.created_at))}</p></article>`; }).join('') : '<p class="muted">No learning links have been shared yet.</p>'}
+        </section>
+        ${teacherAccess ? `
+          <section class="panel"><div class="panel-heading"><div><h3>Teacher tools</h3><p class="muted">These actions are checked again by Supabase.</p></div><button type="button" class="btn secondary" data-classroom-code="${escapeHubHtml(classroomId)}">Show join code</button></div>
+            <p id="classroom-join-code-output" class="message" role="status" aria-live="polite"></p>
+            <form id="classroomAnnouncementForm" data-classroom-id="${escapeHubHtml(classroomId)}">
+              <div class="field"><label for="classroom-announcement-title">Announcement title *</label><input id="classroom-announcement-title" required minlength="3" maxlength="120"></div>
+              <div class="field"><label for="classroom-announcement-body">Announcement *</label><textarea id="classroom-announcement-body" required minlength="5" maxlength="4000"></textarea></div>
+              <button class="btn" type="submit">Publish announcement</button>
+            </form>
+            <form id="classroomMaterialForm" data-classroom-id="${escapeHubHtml(classroomId)}" style="margin-top:18px">
+              <div class="field"><label for="classroom-material-title">Resource title *</label><input id="classroom-material-title" required minlength="2" maxlength="160"></div>
+              <div class="field"><label for="classroom-material-description">Description (optional)</label><textarea id="classroom-material-description" maxlength="1000"></textarea></div>
+              <div class="field"><label for="classroom-material-url">Resource link *</label><input id="classroom-material-url" type="url" required maxlength="2048" placeholder="https://..."></div>
+              <button class="btn" type="submit">Add learning link</button>
+            </form>
+          </section>` : ''}
+      `;
+    } catch (err) {
+      content.innerHTML = '<div class="community-empty">Private class content could not be loaded.</div>';
+      status.textContent = err.message || 'Could not open this classroom.';
+    }
+  }
+
+  function resetOpportunityForm() {
+    $('campusOpportunityForm').reset();
+    $('opportunity-edit-id').value = '';
+    $('opportunity-form-heading').textContent = 'Submit an opportunity';
+    $('opportunity-save-submit').textContent = 'Save draft';
+    $('opportunity-form-cancel').hidden = true;
+  }
+
+  function startOpportunityEdit(item) {
+    $('opportunity-edit-id').value = item.id;
+    $('opportunity-title').value = item.title || '';
+    $('opportunity-category').value = item.category || 'other';
+    $('opportunity-provider').value = item.provider_name || '';
+    $('opportunity-source-url').value = item.source_url || '';
+    $('opportunity-contact-url').value = item.contact_url || '';
+    if (item.deadline) {
+      const date = new Date(item.deadline);
+      date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+      $('opportunity-deadline').value = date.toISOString().slice(0, 16);
+    } else $('opportunity-deadline').value = '';
+    $('opportunity-eligibility').value = item.eligibility || '';
+    $('opportunity-description').value = item.description || '';
+    $('opportunity-form-heading').textContent = 'Edit your opportunity';
+    $('opportunity-save-submit').textContent = 'Save changes';
+    $('opportunity-form-cancel').hidden = false;
+    $('opportunity-form-message').textContent = 'Edit your draft or rejected submission, then save before resubmitting.';
+    $('campusOpportunityForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderOpportunityCard(item, ownerActions = false, reviewActions = false) {
+    const sourceUrl = safeHttpUrl(item.source_url);
+    const contactUrl = safeHttpUrl(item.contact_url);
+    const status = String(item.status || 'published');
+    const statusTag = status === 'published' ? 'Published' : status.charAt(0).toUpperCase() + status.slice(1);
+    return `
+      <article class="panel">
+        <div class="panel-heading"><div><h3>${escapeHubHtml(item.title)}</h3><p class="muted">${escapeHubHtml(item.category.replaceAll('_',' '))} · ${escapeHubHtml(item.provider_name)}</p></div><span class="tag ${status === 'published' ? 'resolved' : 'open'}">${escapeHubHtml(statusTag)}</span></div>
+        <p>${escapeHubHtml(item.description)}</p>
+        ${item.eligibility ? `<p><strong>Eligibility:</strong> ${escapeHubHtml(item.eligibility)}</p>` : ''}
+        <p class="muted">Deadline: ${escapeHubHtml(formatHubDate(item.deadline))}</p>
+        <p>${sourceUrl ? `<a href="${escapeHubHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Check source</a>` : '<span class="muted">Source link unavailable</span>'}
+        ${contactUrl ? ` · <a href="${escapeHubHtml(contactUrl)}" target="_blank" rel="noopener noreferrer">Application / contact</a>` : ''}</p>
+        <p class="muted">${item.is_official ? 'Officially verified publisher' : 'Community-submitted · verify the source independently'}</p>
+        ${ownerActions && ['draft','rejected'].includes(status) ? `
+          <div class="actions"><button type="button" class="btn secondary" data-opportunity-edit="${escapeHubHtml(item.id)}">Edit</button><button type="button" class="btn" data-opportunity-submit="${escapeHubHtml(item.id)}" ${item.deadline && new Date(item.deadline).getTime() <= Date.now() ? 'disabled' : ''}>Submit for review</button></div>
+        ` : ''}
+        ${reviewActions && status === 'pending' ? `
+          <div class="field"><label for="opportunity-review-notes-${escapeHubHtml(item.id)}">Rejection reason (required when rejecting)</label><textarea id="opportunity-review-notes-${escapeHubHtml(item.id)}" data-opportunity-review-notes maxlength="1000" placeholder="Explain what needs correction"></textarea></div>
+          <div class="actions"><button type="button" class="btn" data-opportunity-review="publish" data-opportunity-id="${escapeHubHtml(item.id)}">Approve & publish</button><button type="button" class="btn danger" data-opportunity-review="reject" data-opportunity-id="${escapeHubHtml(item.id)}">Reject</button></div>
+        ` : ''}
+      </article>`;
+  }
+
+  async function loadCampusOpportunitiesPage() {
+    const status = $('campus-opportunities-status');
+    const feed = $('campus-opportunities-feed');
+    const myStatus = $('my-opportunities-status');
+    const myFeed = $('my-opportunities-feed');
+    const staffAccess = hasVerifiedCampusStaffMembership() && ['teacher','security','admin'].includes(currentProfile?.role);
+    $('opportunity-review-panel').hidden = !staffAccess;
+    $('opportunity-create-panel').hidden = !hasVerifiedCampusStaffMembership();
+    if (!hasVerifiedCampusStaffMembership()) {
+      status.textContent = 'A verified account and active verified campus membership are required.';
+      feed.innerHTML = '<div class="community-empty">The Opportunity Hub is unavailable until your campus membership is verified.</div>';
+      myStatus.textContent = 'Verify your campus membership to manage submissions.';
+      myFeed.innerHTML = '<div class="community-empty">No submissions are available.</div>';
+      return;
+    }
+    status.textContent = 'Loading published opportunities…';
+    myStatus.textContent = 'Loading your submissions…';
+    try {
+      const [allRows, myRows] = await Promise.all([
+        window.CampusShieldBackend.listCampusOpportunities(),
+        window.CampusShieldBackend.listMyCampusOpportunities()
+      ]);
+      const published = allRows.filter(item => item.status === 'published' && (!item.deadline || new Date(item.deadline).getTime() > Date.now()));
+      const pending = allRows.filter(item => item.status === 'pending');
+      status.textContent = published.length ? published.length + ' published opportunity(ies).' : 'No published opportunities yet.';
+      feed.innerHTML = published.length ? published.map(item => renderOpportunityCard(item)).join('') : '<div class="community-empty">No approved opportunities yet. Check back after campus review.</div>';
+      myStatus.textContent = myRows.length ? myRows.length + ' submission(s) created by your account.' : 'You have not submitted an opportunity yet.';
+      myFeed.innerHTML = myRows.length ? myRows.map(item => renderOpportunityCard(item, true)).join('') : '<div class="community-empty">Your drafts and submissions will appear here.</div>';
+      if (staffAccess) {
+        $('opportunity-review-status').textContent = pending.length ? pending.length + ' listing(s) awaiting review in your campus.' : 'No pending listings in your campus review queue.';
+        $('opportunity-review-feed').innerHTML = pending.length ? pending.map(item => renderOpportunityCard(item, false, true)).join('') : '<div class="community-empty">No opportunities are waiting for review.</div>';
+      }
+    } catch (err) {
+      status.textContent = err.message || 'Could not load opportunities.';
+      myStatus.textContent = 'Could not load your submissions.';
+      feed.innerHTML = '<div class="community-empty">Opportunity data could not be loaded. Confirm the staging migration has been reviewed and applied.</div>';
+      myFeed.innerHTML = '<div class="community-empty">Your submissions could not be loaded.</div>';
     }
   }
 
