@@ -1,6 +1,6 @@
 # CampusShield AI — Classroom, Opportunity Hub, and Campus-Life Expansion
 
-Status: implementation plan on `codex/classroom-opportunity-hub`
+Status: implementation in progress on `codex/classroom-opportunity-hub`
 Base: `feature/onboarding-staff-governance` (stacked on PR #14 → PR #13 → PR #8)
 Environment: staging-first. No production database, site, or deployment changes.
 
@@ -55,6 +55,16 @@ Potential additive improvements after the new feature foundations are stable:
 - Add clear entry points and empty states for Classroom and the Opportunity Hub.
 - Reuse existing campus identity, username privacy, moderation patterns, and design tokens.
 - Keep the safety incident-reporting path clearly separate from Helpdesk, classroom and community features.
+
+## Current implementation status (17 Oct 2026)
+
+- Read-only inspection of staging (`hywcpnoqqhxvujnimhxl`) found existing classroom tables and guarded class create/join functions, but no `campus_opportunities` table. No staging DDL was applied by this implementation.
+- Added repository migration `supabase/migrations/20261017143000_classroom_opportunity_hub_security.sql`. It tightens verified campus/role checks for classroom access, restricts roster access to the verified class-owning teacher, removes broad direct grants from the core classroom tables, and adds campus-scoped Opportunity Hub storage/RLS plus owner-only create/edit/submit and staff review RPCs.
+- Added backend methods in `campusshield-backend.js` for classroom reads/writes and Opportunity Hub operations. Database writes are routed through guarded RPCs.
+- Added Teacher Classroom and Gift & Opportunity Hub pages/forms to `index.html`, including class join/create, announcements and resource links, opportunity drafts, submit-for-review, and staff review controls.
+- Added `tests/classroom-opportunity-hub-smoke-check.mjs` and wired it into `.github/workflows/smoke-check.yml`.
+- Local parse check performed through the GitHub source: both inline scripts and `campusshield-backend.js` parse successfully. Static assertions for the migration's main access controls passed. This is not a substitute for CI, PostgreSQL migration validation, or signed-in browser testing.
+- Production remains untouched. The migration is repository-only and must not be applied to staging until the branch review/CI gates pass; then apply it to staging only and run negative authorization tests with fictional accounts.
 
 ## Required implementation order
 
