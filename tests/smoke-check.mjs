@@ -8,6 +8,7 @@ const classrooms = await readFile(new URL("../campusshield-classrooms.js", impor
 const classroomMigration = await readFile(new URL("../supabase/migrations/20261017140000_campus_classrooms_assistant_attendance.sql", import.meta.url), "utf8");
 const classroomJoinCodeMigration = await readFile(new URL("../supabase/migrations/20261017142000_classroom_join_code_privacy.sql", import.meta.url), "utf8");
 const classroomJoinCodeWrapperMigration = await readFile(new URL("../supabase/migrations/20261017143000_private_classroom_join_code_rpc.sql", import.meta.url), "utf8");
+const classroomE2E = await readFile(new URL("./classroom-staging-e2e.mjs", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
@@ -98,6 +99,13 @@ assert.doesNotMatch(classroomJoinCodeMigration, /grant execute on function publi
 assert.match(classroomJoinCodeWrapperMigration, /create or replace function private\.get_campus_classroom_join_code_impl/i);
 assert.match(classroomJoinCodeWrapperMigration, /create or replace function public\.get_campus_classroom_join_code[\s\S]*?security invoker/i);
 assert.match(classroomJoinCodeWrapperMigration, /grant execute on function private\.get_campus_classroom_join_code_impl\(uuid\) to authenticated/i);
+assert.match(classroomE2E, /CAMPUSSHIELD_TEST_TEACHER_EMAIL/);
+assert.match(classroomE2E, /@example\.com/);
+assert.match(classroomE2E, /cross-campus student joining with a valid join code/);
+assert.match(classroomE2E, /assistant publishing a teacher-only announcement/);
+assert.match(classroomE2E, /removing assistant revokes attendance-session access/);
+assert.match(classroomE2E, /hywcpnoqqhxvujnimhxl\.supabase\.co/);
+assert.doesNotMatch(classroomE2E, /fvgtnujjnvdkhzqqcaqe/, "E2E test must not point at production");
 assert.match(html, /does not contact emergency services/i, "the emergency-services prototype warning remains visible");
 
 assert.equal(manifest.name, "CampusShield AI");
