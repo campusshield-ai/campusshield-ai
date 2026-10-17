@@ -34,4 +34,7 @@ assert.match(migration, /grant execute on function public\.review_campus_opportu
 
 assert.match(migration, /create or replace function public\\.list_my_campus_opportunities/i, "Owners can safely retrieve only their own submissions");
 assert.match(migration, /Only the verified teacher who owns this class can view its roster/i, "Student rosters are private to the class-owning teacher");
+assert.match(migration, /revoke all on table public\\.campus_class_attendance_audit from public, anon, authenticated/i, "Attendance audit grants are removed");
+assert.match(migration, /create policy campus_class_attendance_select_authorized[\\s\\S]*?campus_class_attendance\\.student_id = \\(select auth\\.uid\\(\\)\\)/i, "Students can read only their own attendance; teachers can manage their class");
+assert.match(migration, /grant select \\(id, session_id, status, marked_at, updated_at\\)[\\s\\S]*?on table public\\.campus_class_attendance to authenticated/i, "Attendance SELECT grants omit student and marker IDs");
 console.log("Classroom and Opportunity Hub migration smoke checks passed.");
