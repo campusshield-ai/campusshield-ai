@@ -455,7 +455,12 @@ td strong{color:#2a464d;font-size:11px}
           <div class="field"><label for="auth-name">Full name <span class="muted">(private)</span></label><input id="auth-name" autocomplete="name" placeholder="Your official name; not shown to other students"></div>
           <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
           <div class="field"><label for="auth-role">Account type</label><select id="auth-role"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
-          <p class="muted">Student accounts must submit a student ID card or matriculation document after email confirmation. Student features stay locked until a verified administrator approves the identity.</p>
+          <div id="signup-student-identity-fields" hidden>
+            <div class="notice-inline"><strong>Student verification.</strong> Submit your institution, matriculation number and your own student ID during account creation. Reviews may take up to 7 working days. You can sign in and view your ordinary dashboard while review is in progress; approval is required for restricted student features.</div>
+            <div class="field"><label for="signup-institution">University / institution name *</label><input id="signup-institution" minlength="2" maxlength="180" autocomplete="organization" placeholder="Enter the official institution name"></div>
+            <div class="field"><label for="signup-student-number">Student / matriculation number *</label><input id="signup-student-number" minlength="2" maxlength="80" autocomplete="off" placeholder="Enter your student number"></div>
+            <div class="field"><label for="signup-student-document">Student ID card image or PDF *</label><input id="signup-student-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf"><p class="muted">JPEG, PNG or PDF · Maximum 5 MiB. Upload only your own valid ID. Use fictional documents during this demonstration.</p></div>
+          </div>
         </div>
         <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
         <div class="field" id="auth-password-field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div>
@@ -797,7 +802,7 @@ td strong{color:#2a464d;font-size:11px}
 
   function syncIdentityNavigation() {
     const isStudent = isStudentAccount();
-    $('identity-verification-nav').hidden = !isStudent;
+    $('identity-verification-nav').hidden = !isStudent || currentProfile?.verification_status === 'verified';
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
       if (button.id === 'identity-verification-nav') return;
       if (['manage','risk','analytics'].includes(button.dataset.page)) {
@@ -862,7 +867,7 @@ td strong{color:#2a464d;font-size:11px}
         $('identity-student-number').value = submission.student_number || '';
         status.textContent = 'Your previous ID submission was rejected. Reason: ' +
           (submission.rejection_reason || 'Please contact your campus administrator for clarification.') +
-          ' You can correct the details or upload a clearer document and resubmit.';
+          ' Sign-in and ordinary dashboard access remain available. Correct the details and resubmit accurate information with your own valid document. Any 48-hour lock must follow a documented fraud decision and a clear notice.';
         form.hidden = false;
         submit.disabled = false;
       }
@@ -890,17 +895,6 @@ td strong{color:#2a464d;font-size:11px}
       currentProfile = null;
       showLogin('Your account profile could not be loaded. Please sign in again or contact support.');
       return false;
-    }
-
-    if (profile.verification_status === 'rejected') {
-      currentProfile = profile;
-      studentIdentitySubmission = null;
-      $('login-screen').hidden = true;
-      $('workspace').hidden = false;
-      $('community-announcement-option').disabled = true;
-      syncIdentityNavigation();
-      navigate('dashboard');
-      return true;
     }
 
     currentProfile = profile;
@@ -958,8 +952,13 @@ td strong{color:#2a464d;font-size:11px}
     $('auth-name').required = isSignUp && $('auth-role').value === 'student';
     $('auth-submit').textContent = isSignUp ? 'Create account' : isReset ? 'Update password' : 'Sign in';
     $('auth-helper').textContent = isSignUp
-      ? 'Student accounts must submit a private student ID after email confirmation. A verified administrator must approve identity before student features unlock. Teacher accounts remain subject to staff verification. This prototype does not contact emergency services.'
+      ? 'Students submit private identity details and their ID during account creation. Reviews may take up to 7 working days. Sign-in and ordinary dashboard access remain available while pending; restricted student features unlock after verified approval.'
       : 'Use fictional information only. This prototype does not contact emergency services.';
+    const isStudentSignup = isSignUp && $('auth-role').value === 'student';
+    $('signup-student-identity-fields').hidden = !isStudentSignup;
+    $('signup-institution').required = isStudentSignup;
+    $('signup-student-number').required = isStudentSignup;
+    $('signup-student-document').required = isStudentSignup;
     document.querySelectorAll('[data-auth-mode]').forEach(button =>
       button.setAttribute('aria-pressed', String(button.dataset.authMode === authMode))
     );
@@ -976,7 +975,12 @@ td strong{color:#2a464d;font-size:11px}
     })
   );
   $('auth-role').addEventListener('change', () => {
-    $('auth-name').required = authMode === 'signup' && $('auth-role').value === 'student';
+    const isStudentSignup = authMode === 'signup' && $('auth-role').value === 'student';
+    $('auth-name').required = isStudentSignup;
+    $('signup-student-identity-fields').hidden = !isStudentSignup;
+    $('signup-institution').required = isStudentSignup;
+    $('signup-student-number').required = isStudentSignup;
+    $('signup-student-document').required = isStudentSignup;
   });
 
   async function handleForgotPassword() {
@@ -1840,6 +1844,9 @@ td strong{color:#2a464d;font-size:11px}
     const name = $('auth-name').value.trim();
     const username = $('auth-username').value.trim().toLowerCase();
     const requestedRole = $('auth-role').value;
+    const institutionName = $('signup-institution').value.trim();
+    const studentNumber = $('signup-student-number').value.trim();
+    const studentDocument = $('signup-student-document').files?.[0] || null;
     const msg = $('auth-message');
 
     if (!['student', 'teacher'].includes(requestedRole)) {
@@ -1850,6 +1857,35 @@ td strong{color:#2a464d;font-size:11px}
     if (!email || !password) {
       msg.textContent = 'Enter your email and password.';
       return;
+    }
+    if (requestedRole === 'student') {
+      if (institutionName.length < 2 || institutionName.length > 180) {
+        msg.textContent = 'Enter your official institution name (2–180 characters).';
+        $('signup-institution').focus();
+        return;
+      }
+      if (studentNumber.length < 2 || studentNumber.length > 80) {
+        msg.textContent = 'Enter your student or matriculation number (2–80 characters).';
+        $('signup-student-number').focus();
+        return;
+      }
+      if (!studentDocument) {
+        msg.textContent = 'Choose your own student ID card image or PDF before creating the account.';
+        $('signup-student-document').focus();
+        return;
+      }
+      if (studentDocument.size < 1 || studentDocument.size > 5 * 1024 * 1024) {
+        msg.textContent = 'Student ID files must be no larger than 5 MiB.';
+        $('signup-student-document').focus();
+        return;
+      }
+      const ext = String(studentDocument.name || '').split('.').pop().toLowerCase();
+      const expectedMime = { jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', pdf:'application/pdf' }[ext];
+      if (!expectedMime || (studentDocument.type && studentDocument.type !== expectedMime)) {
+        msg.textContent = 'Upload a JPEG, PNG, or PDF student ID document.';
+        $('signup-student-document').focus();
+        return;
+      }
     }
 
     if (!/^[a-z0-9_]{3,20}$/.test(username)) {
@@ -1867,21 +1903,31 @@ td strong{color:#2a464d;font-size:11px}
       const {data, error} = await backend.signUp(email, password, name, username);
       if (error) throw error;
 
-      if (!data?.user) {
-  throw new Error('Supabase did not return a user.');
-}
+      if (!data?.user) throw new Error('Supabase did not return a user.');
 
-if (data.session) {
-        const result = await backend.saveRequestedRole(requestedRole);
-        if (result.error) throw result.error;
-
-        msg.textContent = 'Account created. Your role request is pending verification. Other students will see @' + username + ', not your real name or email.';
-      } else {
+      if (!data.session) {
+        // Do not persist ID files in browser storage.
         sessionStorage.setItem('campusshield_requested_role', requestedRole);
-
-        msg.textContent =
-          'Account created. Check your email to confirm it, then sign in using this browser to submit your role request. Other students will see @' + username + ', not your real name or email.';
+        if (requestedRole === 'student') {
+          sessionStorage.setItem('campusshield_pending_identity', JSON.stringify({ institutionName, studentNumber }));
+          msg.textContent = 'Account created. Confirm your email, then sign in using this browser and re-select your ID to finish secure submission. Reviews may take up to 7 working days.';
+        } else {
+          msg.textContent = 'Account created. Confirm your email, then sign in to finish your teacher account request.';
+        }
+        msg.textContent += ' Other students will see @' + username + ', not your real name or email.';
+        return;
       }
+
+      const result = await backend.saveRequestedRole(requestedRole);
+      if (result.error) throw result.error;
+      if (requestedRole === 'student') {
+        await backend.uploadStudentIdentityDocument(studentDocument, { institutionName, studentNumber });
+        sessionStorage.removeItem('campusshield_pending_identity');
+        msg.textContent = 'Account created and ID submitted securely. Review may take up to 7 working days. You can sign in anytime to see your dashboard while pending.';
+      } else {
+        msg.textContent = 'Account created. Your teacher request is pending administrator verification. You can sign in to view your dashboard while it is reviewed.';
+      }
+      msg.textContent += ' Other students will see @' + username + ', not your real name or email.';
     } catch (e) {
       console.error('Sign-up failed:', e);
       if (/database error saving new user/i.test(String(e.message || ''))) {
@@ -1940,16 +1986,40 @@ if (data.session) {
       if (profile.verification_status === 'verified') {
         msg.textContent = `Signed in successfully. Your role is ${profile.role}.`;
       } else if (profile.verification_status === 'rejected') {
-        msg.textContent =
-          'Your account verification was rejected. Please contact an administrator.';
+        msg.textContent = 'Signed in. Your verification needs attention; check the dashboard for review status and resubmission instructions.';
       } else {
-        msg.textContent =
-          'Signed in successfully. Your account is pending verification.';
+        msg.textContent = 'Signed in. Your dashboard is available while verification is processed (up to 7 working days).';
       }
 
       const workspaceReady = showWorkspace(profile);
       if (workspaceReady) {
         await refreshIncidentsFromSupabase();
+        if (isStudentAccount()) {
+          await loadStudentIdentityStatus();
+          const pendingIdentity = sessionStorage.getItem('campusshield_pending_identity');
+          if (pendingIdentity) {
+            try {
+              const details = JSON.parse(pendingIdentity);
+              $('identity-institution').value = details.institutionName || '';
+              $('identity-student-number').value = details.studentNumber || '';
+              const { data: existingIdentity } = await backend.client
+                .from('student_identity_verifications')
+                .select('status')
+                .eq('user_id', user.id)
+                .maybeSingle();
+              if (existingIdentity) {
+                sessionStorage.removeItem('campusshield_pending_identity');
+              } else {
+                navigate('identity-verification');
+                $('studentIdentityForm').hidden = false;
+                $('identity-submit').disabled = false;
+                $('identity-verification-status').textContent = 'Your email is confirmed. Re-select your ID document here to complete secure submission.';
+              }
+            } catch (pendingError) {
+              console.warn('Could not restore pending student form details:', pendingError);
+            }
+          }
+        }
       }
     } catch (e) {
       console.error('Sign-in failed:', e);
@@ -2150,6 +2220,35 @@ $('resend-confirmation-button').addEventListener('click', async () => {
 
   // Keep render() as the app's rendering function.
   $('approvals-nav').hidden = true;
+  $('identity-verification-nav').hidden = true;
+  $('identity-refresh-status').addEventListener('click', loadStudentIdentityStatus);
+  $('studentIdentityForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const submit = $('identity-submit');
+    const file = $('identity-document').files?.[0];
+    if (!file || !currentProfile || !isStudentAccount()) {
+      $('identity-verification-status').textContent = 'Sign in as a student and choose your own ID document.';
+      return;
+    }
+    submit.disabled = true;
+    submit.textContent = 'Submitting securely…';
+    try {
+      const submission = await window.CampusShieldBackend.uploadStudentIdentityDocument(file, {
+        institutionName: $('identity-institution').value.trim(),
+        studentNumber: $('identity-student-number').value.trim()
+      });
+      studentIdentitySubmission = submission;
+      sessionStorage.removeItem('campusshield_pending_identity');
+      $('identity-document').value = '';
+      await loadStudentIdentityStatus();
+      toast('Student ID submitted. Review may take up to 7 working days.');
+    } catch (error) {
+      $('identity-verification-status').textContent = error.message || 'Could not submit student identity.';
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Submit for verification';
+    }
+  });
   setAuthMode('signin');
 
   render();
@@ -2186,7 +2285,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
               await refreshIncidentsFromSupabase();
               $('auth-message').textContent = profile.verification_status === 'verified'
                 ? `Signed in. Your role is ${profile.role}.`
-                : 'Your account is pending verification. You can submit incident reports.';
+                : profile.verification_status === 'rejected'
+                  ? 'Signed in. Your verification needs attention; check your dashboard for review status and resubmission instructions.'
+                  : 'Your dashboard is available while verification is processed (up to 7 working days).';
             }
           }
         }
