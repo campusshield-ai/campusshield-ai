@@ -909,9 +909,7 @@ async getCurrentUser() {
     // Classroom API: table reads are RLS-scoped; all writes use guarded database RPCs.
     async listCampusClassrooms() {
       if (!client) throw new Error("Supabase is not configured.");
-      const { data, error } = await client.from("campus_classrooms")
-        .select("id,university_id,name,subject,description,created_at,updated_at")
-        .order("created_at", { ascending: false }).limit(100);
+      const { data, error } = await client.rpc("list_my_campus_classrooms");
       if (error) throw error;
       return data || [];
     },
@@ -947,9 +945,9 @@ async getCurrentUser() {
 
     async listCampusClassroomAnnouncements(classroomId) {
       if (!client) throw new Error("Supabase is not configured.");
-      const { data, error } = await client.from("campus_classroom_announcements")
-        .select("id,classroom_id,title,body,created_at")
-        .eq("classroom_id", classroomId).order("created_at", { ascending: false }).limit(50);
+      const { data, error } = await client.rpc("list_campus_classroom_announcements", {
+        p_classroom_id: classroomId
+      });
       if (error) throw error;
       return data || [];
     },
@@ -967,9 +965,9 @@ async getCurrentUser() {
 
     async listCampusClassroomMaterials(classroomId) {
       if (!client) throw new Error("Supabase is not configured.");
-      const { data, error } = await client.from("campus_classroom_materials")
-        .select("id,classroom_id,title,description,resource_url,created_at")
-        .eq("classroom_id", classroomId).order("created_at", { ascending: false }).limit(100);
+      const { data, error } = await client.rpc("list_campus_classroom_materials", {
+        p_classroom_id: classroomId
+      });
       if (error) throw error;
       return data || [];
     },
@@ -989,9 +987,7 @@ async getCurrentUser() {
     // Opportunity Hub API: direct reads are limited to safe columns by PostgreSQL grants/RLS.
     async listCampusOpportunities() {
       if (!client) throw new Error("Supabase is not configured.");
-      const { data, error } = await client.from("campus_opportunities")
-        .select("id,university_id,title,category,description,eligibility,provider_name,source_url,contact_url,deadline,status,is_official,created_at,updated_at")
-        .order("created_at", { ascending: false }).limit(100);
+      const { data, error } = await client.rpc("list_campus_opportunities");
       if (error) throw error;
       return data || [];
     },
