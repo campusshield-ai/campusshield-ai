@@ -1179,6 +1179,10 @@ td strong{color:#2a464d;font-size:11px}
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
       if (button.id === 'identity-verification-nav') return;
       if (button.id === 'platform-admin-nav') return;
+      if (['classroom','opportunities'].includes(button.dataset.page)) {
+        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && !studentLocked);
+        return;
+      }
 
       if (!student) {
         if (button.id === 'approvals-nav') {
@@ -1514,6 +1518,11 @@ td strong{color:#2a464d;font-size:11px}
       page = 'dashboard';
       toast('Student identity verification is available to student accounts.');
     }
+    if (['classroom','opportunities'].includes(page) &&
+        (!verified || !hasVerifiedCampusStaffMembership())) {
+      page = 'dashboard';
+      toast('This feature requires a verified account and verified membership at your university.');
+    }
 
     document.querySelectorAll('.page').forEach(el =>
       el.classList.toggle('active', el.id === 'page-' + page)
@@ -1540,7 +1549,9 @@ td strong{color:#2a464d;font-size:11px}
       community:'CampusPulse',
       groups:'Campus groups',
       events:'Campus events',
-      marketplace:'Campus marketplace'
+      marketplace:'Campus marketplace',
+      classroom:'Teacher Classroom',
+      opportunities:'Gift & Opportunity Hub'
     };
 
     $('sectionTitle').textContent = names[page] || 'Overview';
@@ -1555,6 +1566,8 @@ td strong{color:#2a464d;font-size:11px}
     navigate(button.dataset.page);
     if (button.dataset.page === 'approvals') loadAccountApprovals();
     if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
+    if (button.dataset.page === 'classroom') loadCampusClassroomsPage();
+    if (button.dataset.page === 'opportunities') loadCampusOpportunitiesPage();
     if (button.dataset.page === 'noticeboard') loadCampusNoticeboardPage();
     if (button.dataset.page === 'helpdesk') loadCampusHelpdeskPage();
     if (button.dataset.page === 'community') loadCommunityPage();
