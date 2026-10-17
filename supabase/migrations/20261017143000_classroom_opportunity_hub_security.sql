@@ -273,6 +273,14 @@ grant select (id, classroom_id, title, body, created_at)
 grant select (id, classroom_id, title, description, resource_url, created_at)
   on table public.campus_classroom_materials to authenticated;
 
+-- Keep existing classroom entry points authenticated-only as well.
+revoke all on function public.create_campus_classroom(text,text,text) from public, anon;
+revoke all on function public.get_campus_classroom_join_code(uuid) from public, anon;
+revoke all on function public.list_campus_classroom_roster(uuid) from public, anon;
+grant execute on function public.create_campus_classroom(text,text,text) to authenticated;
+grant execute on function public.get_campus_classroom_join_code(uuid) to authenticated;
+grant execute on function public.list_campus_classroom_roster(uuid) to authenticated;
+
 -- Guarded opportunity RPCs. User/campus IDs are derived from auth and verified membership, never client-supplied.
 create or replace function public.create_campus_opportunity(
   p_title text,
@@ -400,10 +408,10 @@ declare
   v_user uuid := (select auth.uid());
   v_role text := (select private.current_campus_role());
 begin
-  if v_user is null or v_role not in ('admin','security','teacher') then
+  if v_user is null or coalesce(v_role, '') not in ('admin','security','teacher') then
     raise exception 'Verified campus staff access is required.' using errcode = '42501';
   end if;
-  if p_decision not in ('publish','reject') then
+  if p_decision is null or p_decision not in ('publish','reject') then
     raise exception 'Decision must be publish or reject.' using errcode = '22023';
   end if;
   if p_decision='reject' and char_length(btrim(coalesce(p_review_notes, ''))) < 3 then
