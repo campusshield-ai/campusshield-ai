@@ -36,6 +36,8 @@
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.page = "classrooms";
+    button.id = "classrooms-nav";
+    button.hidden = true;
     button.innerHTML = '<span class="nav-icon" aria-hidden="true">▦</span>Classrooms';
     const community = document.getElementById("community-nav");
     if (community) community.insertAdjacentElement("afterend", button);
@@ -94,6 +96,13 @@
 
   function message(text) { const el = $("classroom-detail-message"); if (el) el.textContent = text || ""; }
   function roleIs(role) { return currentProfile?.role === role && currentProfile?.verification_status === "verified"; }
+  async function loadTeacherJoinCode(classroomId) {
+    const { data, error } = await backend().client.rpc("get_campus_classroom_join_code", {
+      p_classroom_id: classroomId
+    });
+    if (error) throw error;
+    return typeof data === "string" ? data : (data?.get_campus_classroom_join_code || null);
+  }
   async function refreshClasses() {
     const b = backend();
     const list = $("classroom-list");
@@ -101,11 +110,22 @@
     list.innerHTML = '<div class="empty">Loading classes…</div>';
     try {
       const {data,error} = await b.client.from("campus_classrooms")
-        .select("id,name,subject,description,join_code,teacher_id,assistant_student_id,created_at")
+        .select("id,university_id,name,subject,description,teacher_id,assistant_student_id,created_at")
         .order("created_at",{ascending:false});
       if (error) throw error;
       if (!data?.length) { list.innerHTML = '<div class="empty-state"><span class="empty-state-mark">▦</span><div><strong>No classes yet</strong><p>Create a class or join using a code from your teacher.</p></div></div>'; return; }
-      list.innerHTML = data.map(c => `<article class="classroom-card"><h3>${esc(c.name)}</h3><p>${esc(c.subject)}</p><p>${esc(c.description || "No description provided.")}</p>${roleIs("teacher") && c.teacher_id === currentProfile.id ? `<p>Join code <span class="classroom-code">${esc(c.join_code)}</span></p>` : ""}<div class="actions" style="margin-top:12px"><button type="button" class="btn" data-open-class="${esc(c.id)}">Open classroom</button>${roleIs("teacher") && c.teacher_id === currentProfile.id ? `<button type="button" class="btn secondary" data-copy-code="${esc(c.join_code)}">Copy code</button>` : ""}</div></article>`).join("");
+      const cards = await Promise.all(data.map(async c => {
+        const teacherOwner = roleIs("teacher") && c.teacher_id === currentProfile.id;
+        let code = null;
+        if (teacherOwner) {
+          try { code = await loadTeacherJoinCode(c.id); }
+          catch (codeError) { console.warn("Could not retrieve this classroom's join code.", codeError); }
+        }
+        const codeMarkup = teacherOwner && code ? `<p>Join code <span class="classroom-code">${esc(code)}</span></p>` : "";
+        const copyMarkup = teacherOwner && code ? `<button type="button" class="btn secondary" data-copy-code="${esc(code)}">Copy code</button>` : "";
+        return `<article class="classroom-card"><h3>${esc(c.name)}</h3><p>${esc(c.subject)}</p><p>${esc(c.description || "No description provided.")}</p>${codeMarkup}<div class="actions" style="margin-top:12px"><button type="button" class="btn" data-open-class="${esc(c.id)}">Open classroom</button>${copyMarkup}</div></article>`;
+      }));
+      list.innerHTML = cards.join("");
     } catch (e) { console.error(e); list.innerHTML = '<div class="empty">Classes could not be loaded. Your account may not have classroom access yet.</div>'; }
   }
 
@@ -113,11 +133,15 @@
     const b = backend();
     try {
       const {data:row,error} = await b.client.from("campus_classrooms")
-        .select("id,name,subject,description,join_code,teacher_id,assistant_student_id,created_at")
+        .select("id,university_id,name,subject,description,teacher_id,assistant_student_id,created_at")
         .eq("id",id).single();
       if (error) throw error;
-      selectedClass = row;
       const teacher = roleIs("teacher") && row.teacher_id === currentProfile.id;
+      if (teacher) {
+        try { row.join_code = await loadTeacherJoinCode(id); }
+        catch (codeError) { console.warn("Could not retrieve this classroom's join code.", codeError); row.join_code = null; }
+      }
+      selectedClass = row;
       const assistant = row.assistant_student_id === currentProfile.id;
       $("classroom-detail").hidden = false;
       $("classroom-list").parentElement.hidden = true;
@@ -125,7 +149,7 @@
       $("classroom-join-panel").hidden = true;
       $("classroom-detail-name").textContent = row.name;
       $("classroom-detail-subtitle").textContent = row.subject + (row.description ? " · " + row.description : "");
-      $("classroom-code-wrap").innerHTML = teacher ? 'Class code <span class="classroom-code">' + esc(row.join_code) + '</span> <button type="button" class="btn secondary" data-copy-code="' + esc(row.join_code) + '">Copy code</button>' : (assistant ? '<span class="tag low">Class Assistant</span> You can help record attendance.' : 'Class resources and announcements');
+      $("classroom-code-wrap").innerHTML = teacher ? (row.join_code ? 'Class code <span class="classroom-code">' + esc(row.join_code) + '</span> <button type="button" class="btn secondary" data-copy-code="' + esc(row.join_code) + '">Copy code</button>' : 'Join code is temporarily unavailable. Refresh and try again.') : (assistant ? '<span class="tag low">Class Assistant</span> You can help record attendance.' : 'Class resources and announcements');
       $("classroom-announcement-form").hidden = !teacher;
       $("classroom-material-form").hidden = !teacher;
       $("classroom-assistant-controls").hidden = !teacher;
