@@ -1977,7 +1977,7 @@ td strong{color:#2a464d;font-size:11px}
 
       const {data:profile, error:profileError} = await backend.client
         .from('profiles')
-        .select('role, verification_status')
+        .select('role, requested_role, verification_status')
         .eq('id', user.id)
         .single();
 
