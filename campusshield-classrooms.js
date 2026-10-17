@@ -215,7 +215,7 @@
       const status=$("classroom-attendance").querySelector('[data-attendance-status="'+studentId+'"]').value;
       if(!status){message("Choose Present, Absent, or Late first.");return;}
       save.disabled=true;
-      try{await backend().client.rpc("mark_campus_class_attendance",{p_session_id:currentSession,p_student_id:studentId,p_status:status});await loadAttendance();message("Attendance saved with an audit record.");}
+      try{const {error}=await backend().client.rpc("mark_campus_class_attendance",{p_session_id:currentSession,p_student_id:studentId,p_status:status});if(error)throw error;await loadAttendance();message("Attendance saved with an audit record.");}
       catch(e){message(e.message||"Could not save attendance.");}finally{save.disabled=false;}
     }
   });
