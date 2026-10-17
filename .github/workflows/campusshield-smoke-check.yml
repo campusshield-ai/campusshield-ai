@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - codex/pr22-staff-role-gate-audit
+      - codex/signup-identity-review-staging
   pull_request:
     branches:
       - codex/campuspulse-mobile-spacing-staging
+      - codex/signup-identity-review-staging
 
 permissions:
   contents: read
