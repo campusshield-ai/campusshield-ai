@@ -207,7 +207,7 @@ set search_path = ''
 as $function$
   select coalesce((
     select jsonb_build_object(
-      'confirmed_fraud', siv.confirmed_fraud,
+      'confirmed_fraud', siv.confirmed_fraud and siv.status = 'rejected',
       'notice_at', siv.fraud_notice_at,
       'lock_at', siv.fraud_lock_at,
       'locked', siv.confirmed_fraud and siv.fraud_lock_at is not null
