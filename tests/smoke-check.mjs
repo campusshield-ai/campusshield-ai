@@ -21,7 +21,7 @@ assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
 assert.doesNotThrow(() => new Function(config), "Supabase config parses");
 
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
-assert.match(config, /https:\/\/fvgtnujjnvdkhzqqcaqe\.supabase\.co/);
+assert.match(config, /https:\/\/hywcpnoqqhxvujnimhxl\.supabase\.co/);
 const publicKey = config.match(/publishableKey:\s*"([^"]+)"/)?.[1];
 assert.ok(publicKey?.startsWith("sb_publishable_"), "uses a publishable browser key");
 assert.doesNotMatch(publicKey, /secret|service_role/i);
