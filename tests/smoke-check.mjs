@@ -3,6 +3,10 @@ import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
+const identityAddon = await readFile(new URL("../campusshield-backend-identity-addon.js", import.meta.url), "utf8");
+const classrooms = await readFile(new URL("../campusshield-classrooms.js", import.meta.url), "utf8");
+const classroomMigration = await readFile(new URL("../supabase/migrations/20261017140000_campus_classrooms_assistant_attendance.sql", import.meta.url), "utf8");
+const classroomJoinCodeMigration = await readFile(new URL("../supabase/migrations/20261017142000_classroom_join_code_privacy.sql", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
@@ -18,10 +22,13 @@ for (const [index, source] of inlineScripts.entries()) {
   assert.doesNotThrow(() => new Function(source), `inline script ${index + 1} parses`);
 }
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
+assert.doesNotThrow(() => new Function(identityAddon), "student identity add-on parses");
+assert.doesNotThrow(() => new Function(classrooms), "classroom module parses");
 assert.doesNotThrow(() => new Function(config), "Supabase config parses");
 
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
-assert.match(config, /https:\/\/fvgtnujjnvdkhzqqcaqe\.supabase\.co/);
+assert.match(config, /https:\/\/hywcpnoqqhxvujnimhxl\.supabase\.co/);
+assert.doesNotMatch(config, /fvgtnujjnvdkhzqqcaqe/, "staging branch must not point at production");
 const publicKey = config.match(/publishableKey:\s*"([^"]+)"/)?.[1];
 assert.ok(publicKey?.startsWith("sb_publishable_"), "uses a publishable browser key");
 assert.doesNotMatch(publicKey, /secret|service_role/i);
@@ -73,6 +80,20 @@ assert.match(usernameSyncMigration, /update public\.community_posts/i);
 assert.match(usernameSyncMigration, /update public\.community_comments/i);
 assert.match(usernameLookupRemovalMigration, /drop function if exists public\.check_community_username_available\(text\)/i);
 assert.match(staffProfileMigration, /private\.current_campus_role\(\) = any \(array\[\x27admin\x27, \x27security\x27, \x27teacher\x27\]\)/i);
+assert.match(html, /<script src="\.\/campusshield-backend-identity-addon\.js"><\/script>/);
+assert.match(html, /<script src="\.\/campusshield-classrooms\.js"><\/script>/);
+assert.match(html, /Classrooms are available to verified teacher/);
+assert.match(classrooms, /get_campus_classroom_join_code/);
+assert.doesNotMatch(classrooms, /select\([^)]*join_code/i, "class lists must not directly select join codes");
+assert.match(classrooms, /data-page = "classrooms"/);
+assert.match(classroomMigration, /alter table public\.campus_classrooms enable row level security/i);
+assert.match(classroomMigration, /create or replace function public\.join_campus_classroom/i);
+assert.match(classroomMigration, /create or replace function public\.mark_campus_class_attendance/i);
+assert.match(classroomJoinCodeMigration, /revoke all privileges on table public\.campus_classrooms from public, anon, authenticated/i);
+assert.match(classroomJoinCodeMigration, /grant select \(id, university_id, teacher_id, name, subject, description, assistant_student_id, created_at, updated_at\)/i);
+assert.match(classroomJoinCodeMigration, /create or replace function public\.get_campus_classroom_join_code/i);
+assert.match(classroomJoinCodeMigration, /grant execute on function public\.get_campus_classroom_join_code\(uuid\) to authenticated/i);
+assert.doesNotMatch(classroomJoinCodeMigration, /grant execute on function public\.get_campus_classroom_join_code\(uuid\) to anon/i);
 assert.match(html, /does not contact emergency services/i, "the emergency-services prototype warning remains visible");
 
 assert.equal(manifest.name, "CampusShield AI");
@@ -105,8 +126,10 @@ for (const [filename, size] of [["apple-touch-icon.png", 180], ["campusshield-19
   assert.equal(icon.readUInt32BE(20), size, `${filename} has the expected height`);
 }
 
-console.log(`PASS ${inlineScripts.length} inline script(s), backend, and config parse`);
-console.log("PASS browser config uses the Supabase project URL and publishable key only");
+console.log(`PASS ${inlineScripts.length} inline script(s), backend, identity add-on, classroom module, and config parse`);
+console.log("PASS staging branch uses the staging Supabase URL and publishable key only");
+console.log("PASS classroom UI uses the secure join-code RPC and does not query join codes directly");
+console.log("PASS classroom RLS, attendance RPCs, and join-code column grants are represented in migrations");
 console.log("PASS incident reads, submissions, status updates, and dashboard metrics use Supabase data");
 console.log("PASS incident data can be refreshed manually, on tab return, and every minute");
 console.log("PASS resolve controls are shown only to verified security/admin users");
