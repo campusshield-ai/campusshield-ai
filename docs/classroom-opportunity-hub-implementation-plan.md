@@ -58,13 +58,13 @@ Potential additive improvements after the new feature foundations are stable:
 
 ## Current implementation status (17 Oct 2026)
 
-- Read-only inspection of staging (`hywcpnoqqhxvujnimhxl`) found existing classroom tables and guarded class create/join functions, but no `campus_opportunities` table. No staging DDL was applied by this implementation.
+- Read-only inspection of staging (`hywcpnoqqhxvujnimhxl`) found existing classroom tables and guarded class create/join functions, but no `campus_opportunities` table. The migration chain was made idempotent, validated in a rollback-only PostgreSQL transaction, then applied to staging only. The recorded staging migration versions are `20261017202216`, `20261017202224`, `20261017202230`, `20261017202236`, and `20261017202242`.
 - Ported the four idempotent classroom schema/access migrations from the existing classroom staging branch into this release stack (`20261017202216`–`20261017202236`) so a future clean environment can create the same classroom objects before hardening them. Added `supabase/migrations/20261017202242_classroom_opportunity_hub_security.sql` to tighten verified campus/role checks, restrict roster/attendance privacy, remove broad direct grants, and add the campus-scoped Opportunity Hub with RLS and guarded RPCs.
 - Added backend methods in `campusshield-backend.js` for classroom reads/writes and Opportunity Hub operations. Database writes are routed through guarded RPCs.
 - Added Teacher Classroom and Gift & Opportunity Hub pages/forms to `index.html`, including class join/create, announcements and resource links, opportunity drafts, submit-for-review, and staff review controls.
 - Added `tests/classroom-opportunity-hub-smoke-check.mjs` and wired it into `.github/workflows/smoke-check.yml`.
 - Local parse check performed through the GitHub source: both inline scripts and `campusshield-backend.js` parse successfully. Static assertions for the migration's main access controls passed. This is not a substitute for CI, PostgreSQL migration validation, or signed-in browser testing.
-- Production remains untouched. The migration is repository-only and must not be applied to staging until the branch review/CI gates pass; then apply it to staging only and run negative authorization tests with fictional accounts.
+- Production remains untouched. Staging checks confirm RLS is enabled on the classroom and opportunity tables, anonymous and authenticated table-level INSERT/TRUNCATE privileges are absent, the private opportunity policy exposes pending items to same-campus staff only, and the new RPCs are not executable by `anon`. Signed-in browser acceptance and full role/cross-campus negative tests are still outstanding.
 
 ## Required implementation order
 
