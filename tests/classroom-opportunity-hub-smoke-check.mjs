@@ -2,21 +2,21 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const migration = await readFile(
-  new URL("../supabase/migrations/20261017144000_classroom_opportunity_hub_security.sql", import.meta.url),
+  new URL("../supabase/migrations/20261017202242_classroom_opportunity_hub_security.sql", import.meta.url),
   "utf8"
 );
 
 
 const classroomSchema = await readFile(
-  new URL("../supabase/migrations/20261017140000_campus_classrooms_assistant_attendance.sql", import.meta.url),
+  new URL("../supabase/migrations/20261017202216_campus_classrooms_assistant_attendance.sql", import.meta.url),
   "utf8"
 );
 const classroomAccess = await readFile(
-  new URL("../supabase/migrations/20261017141000_enforce_active_campus_class_access.sql", import.meta.url),
+  new URL("../supabase/migrations/20261017202224_enforce_active_campus_class_access.sql", import.meta.url),
   "utf8"
 );
 const classroomJoinCode = await readFile(
-  new URL("../supabase/migrations/20261017143000_private_classroom_join_code_rpc.sql", import.meta.url),
+  new URL("../supabase/migrations/20261017202236_private_classroom_join_code_rpc.sql", import.meta.url),
   "utf8"
 );
 assert.match(migration, /create table if not exists public\.campus_opportunities/i, "Opportunity Hub table is present");
