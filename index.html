@@ -626,7 +626,7 @@ td strong{color:#2a464d;font-size:11px}
 
 <section class="page" id="page-identity-verification">
   <div class="heading"><div><h1>Student identity verification</h1><p>Verify that you belong to the institution you name. Your ID is private and is not shown on your public profile.</p></div></div>
-  <div class="notice-inline"><strong>Private document handling.</strong> Upload only your own student ID card or official matriculation document. Verified CampusShield administrators can review it. Do not upload bank, medical or unrelated personal documents. Student access remains locked while your submission is pending.</div>
+  <div class="notice-inline"><strong>Private document handling.</strong> Upload only your own student ID card or official matriculation document. Verified CampusShield administrators can review it. Do not upload bank, medical or unrelated personal documents. Ordinary student pages remain available while your submission is pending; restricted actions stay protected until approval.</div>
   <div class="panel">
     <p id="identity-verification-status" class="message" role="status" aria-live="polite">Checking your identity submission…</p>
     <form id="studentIdentityForm" hidden>
@@ -797,13 +797,11 @@ td strong{color:#2a464d;font-size:11px}
 
   function syncIdentityNavigation() {
     const isStudent = isStudentAccount();
-    const needsIdentity = isStudent && !hasApprovedStudentIdentity();
     $('identity-verification-nav').hidden = !isStudent;
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
       if (button.id === 'identity-verification-nav') return;
-      if (needsIdentity) button.hidden = true;
-      else if (['manage','risk','analytics'].includes(button.dataset.page)) {
-        button.hidden = currentProfile?.verification_status !== 'verified';
+      if (['manage','risk','analytics'].includes(button.dataset.page)) {
+        button.hidden = !canAccessStaffPages();
       }
     });
     $('approvals-nav').hidden = !(
@@ -829,7 +827,7 @@ td strong{color:#2a464d;font-size:11px}
       if (!submission) {
         $('identity-institution').value = '';
         $('identity-student-number').value = '';
-        status.textContent = 'Required before student features can be used: enter your institution and matriculation number, then upload your own student ID card.';
+        status.textContent = 'Submit your institution, matriculation number and your own student ID document for review. Ordinary student pages remain available while verification is pending.';
         form.hidden = false;
         submit.disabled = false;
       } else if (submission.status === 'approved') {
@@ -856,7 +854,7 @@ td strong{color:#2a464d;font-size:11px}
       } else if (submission.status === 'pending') {
         $('identity-institution').value = submission.institution_name || '';
         $('identity-student-number').value = submission.student_number || '';
-        status.textContent = 'Your ID is awaiting administrator review. Student incidents and community participation remain locked until approval.';
+        status.textContent = 'Your ID submission is pending administrator review. You can continue using ordinary student pages while the review is underway. Restricted actions remain protected until approval.';
         form.hidden = true;
         submit.disabled = true;
       } else {
@@ -878,9 +876,13 @@ td strong{color:#2a464d;font-size:11px}
 
 
 
+  function canAccessStaffPages(profile = currentProfile) {
+    return profile?.verification_status === 'verified' &&
+      ['security', 'admin'].includes(profile.role);
+  }
+
   function canManageIncidents() {
-    return currentProfile?.verification_status === 'verified' &&
-      ['security', 'admin'].includes(currentProfile.role);
+    return canAccessStaffPages();
   }
 
   function showWorkspace(profile) {
@@ -891,9 +893,14 @@ td strong{color:#2a464d;font-size:11px}
     }
 
     if (profile.verification_status === 'rejected') {
-      currentProfile = null;
-      showLogin('Your account verification was rejected. Please contact a CampusShield administrator.');
-      return false;
+      currentProfile = profile;
+      studentIdentitySubmission = null;
+      $('login-screen').hidden = true;
+      $('workspace').hidden = false;
+      $('community-announcement-option').disabled = true;
+      syncIdentityNavigation();
+      navigate('dashboard');
+      return true;
     }
 
     currentProfile = profile;
@@ -903,7 +910,7 @@ td strong{color:#2a464d;font-size:11px}
 
     const verified = currentProfile.verification_status === 'verified';
     document.querySelectorAll('[data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
-      el.hidden = !verified;
+      el.hidden = !canAccessStaffPages();
     });
     $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
@@ -1108,19 +1115,14 @@ td strong{color:#2a464d;font-size:11px}
 
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
-    const studentNeedsIdentity = isStudentAccount() && !hasApprovedStudentIdentity();
-
-    if (studentNeedsIdentity && page !== 'identity-verification') {
-      page = 'identity-verification';
-    }
     if (page === 'identity-verification' && !isStudentAccount()) {
       page = 'dashboard';
       toast('Student identity verification is available to student accounts.');
     }
 
-    if (!verified && ['manage', 'risk', 'analytics'].includes(page)) {
+    if (!canAccessStaffPages() && ['manage', 'risk', 'analytics'].includes(page)) {
       page = 'dashboard';
-      toast('This area is available after account verification.');
+      toast('This area is available to verified security staff or administrators.');
     }
 
     if (page === 'approvals' && !verifiedAdmin) {

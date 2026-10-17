@@ -31,7 +31,7 @@ assert.match(backend, /reporter_id:\s*user\.id/);
 assert.match(backend, /client\.auth\.getUser\(\)/);
 assert.match(backend, /update\(\{\s*status\s*\}/);
 assert.match(html, /function canManageIncidents\(\)/);
-assert.match(html, /\['security', 'admin'\]\.includes\(currentProfile\.role\)/);
+assert.match(html, /\['security', 'admin'\]\.includes\(profile\.role\)/);
 assert.match(html, /if \(!canManageIncidents\(\)\)/);
 assert.match(html, /const total = incidents\.length/);
 assert.match(html, /await refreshIncidentsFromSupabase\(\)/);
@@ -104,6 +104,37 @@ for (const [filename, size] of [["apple-touch-icon.png", 180], ["campusshield-19
   assert.equal(icon.readUInt32BE(16), size, `${filename} has the expected width`);
   assert.equal(icon.readUInt32BE(20), size, `${filename} has the expected height`);
 }
+
+
+ // Pending/rejected student menus remain usable while restricted destinations remain protected.
+assert.match(html, /function syncIdentityNavigation\(\)/);
+assert.doesNotMatch(html, /if \(needsIdentity\) button\.hidden = true/);
+assert.doesNotMatch(html, /if \(studentNeedsIdentity && page !== 'identity-verification'\)/);
+assert.match(html, /Ordinary student pages remain available while verification is pending/i);
+assert.match(html, /Your ID submission is pending administrator review/i);
+assert.match(html, /currentProfile = profile;[\s\S]{0,180}studentIdentitySubmission = null;[\s\S]{0,180}\$\('workspace'\)\.hidden = false/);
+assert.match(html, /function canAccessStaffPages\(profile = currentProfile\)/);
+assert.match(html, /button\.hidden = !canAccessStaffPages\(\)/);
+assert.match(html, /if \(!canAccessStaffPages\(\) && \['manage', 'risk', 'analytics'\]\.includes\(page\)\)/);
+assert.match(html, /if \(page === 'approvals' && !verifiedAdmin\)/);
+
+// Explicitly assert the role allowlist and verified-status requirement.
+assert.match(html, /return profile\?\.verification_status === 'verified' &&\s*\['security', 'admin'\]\.includes\(profile\.role\)/);
+const rolePermissionCases = [
+  [{ role: "student", verification_status: "verified" }, false],
+  [{ role: "teacher", verification_status: "verified" }, false],
+  [{ role: "security", verification_status: "verified" }, true],
+  [{ role: "admin", verification_status: "verified" }, true],
+  [{ role: "security", verification_status: "pending" }, false],
+  [{ role: "admin", verification_status: "rejected" }, false],
+  [null, false],
+];
+const expectedStaffAccess = (profile) =>
+  profile?.verification_status === "verified" && ["security", "admin"].includes(profile.role);
+for (const [profile, expected] of rolePermissionCases) {
+  assert.equal(expectedStaffAccess(profile), expected, `staff access policy for ${profile?.role || "signed-out"}`);
+}
+assert.match(html, /canAccessStaffPages\(\)/, "staff routes use the shared role predicate");
 
 console.log(`PASS ${inlineScripts.length} inline script(s), backend, and config parse`);
 console.log("PASS browser config uses the Supabase project URL and publishable key only");
