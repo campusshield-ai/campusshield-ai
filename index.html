@@ -3599,6 +3599,212 @@ td strong{color:#2a464d;font-size:11px}
     }
   });
 
+  $('campusClassroomCreateForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('classroom-create-submit');
+    const message = $('classroom-create-message');
+    button.disabled = true;
+    message.textContent = 'Creating classroom…';
+    try {
+      await window.CampusShieldBackend.createCampusClassroom({
+        name: $('classroom-name').value.trim(),
+        subject: $('classroom-subject').value.trim(),
+        description: $('classroom-description').value.trim()
+      });
+      $('campusClassroomCreateForm').reset();
+      message.textContent = 'Classroom created. Open it below to retrieve the private join code and add learning content.';
+      await loadCampusClassroomsPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not create this classroom.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campusClassroomJoinForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('classroom-join-submit');
+    const message = $('classroom-join-message');
+    button.disabled = true;
+    message.textContent = 'Checking the class code…';
+    try {
+      const classroomId = await window.CampusShieldBackend.joinCampusClassroom($('classroom-join-code').value.trim());
+      $('campusClassroomJoinForm').reset();
+      message.textContent = 'You joined the classroom.';
+      await loadCampusClassroomsPage();
+      if (classroomId) await loadCampusClassroomDetail(classroomId);
+    } catch (err) {
+      message.textContent = err.message || 'Could not join this classroom. Check the code and your verified campus membership.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('page-classroom').addEventListener('click', async function(event) {
+    const openButton = event.target.closest('[data-classroom-open]');
+    const codeButton = event.target.closest('[data-classroom-code]');
+    if (openButton) {
+      await loadCampusClassroomDetail(openButton.dataset.classroomOpen);
+      return;
+    }
+    if (codeButton) {
+      const output = $('classroom-join-code-output');
+      codeButton.disabled = true;
+      output.textContent = 'Retrieving the private class code…';
+      try {
+        const code = await window.CampusShieldBackend.getCampusClassroomJoinCode(codeButton.dataset.classroomCode);
+        output.textContent = 'Share this code only with verified students at your university: ' + String(code || '');
+      } catch (err) {
+        output.textContent = err.message || 'Only the verified teacher who owns this class can retrieve its code.';
+      } finally {
+        codeButton.disabled = false;
+      }
+    }
+  });
+
+  $('page-classroom').addEventListener('submit', async function(event) {
+    const form = event.target;
+    if (form.id === 'classroomAnnouncementForm') {
+      event.preventDefault();
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      $('classroom-detail-message').textContent = 'Publishing announcement…';
+      try {
+        await window.CampusShieldBackend.createCampusClassroomAnnouncement(
+          form.dataset.classroomId,
+          $('classroom-announcement-title').value.trim(),
+          $('classroom-announcement-body').value.trim()
+        );
+        await loadCampusClassroomDetail(form.dataset.classroomId);
+        $('classroom-detail-message').textContent = 'Announcement published to this class.';
+      } catch (err) {
+        $('classroom-detail-message').textContent = err.message || 'Could not publish this announcement.';
+        button.disabled = false;
+      }
+    }
+    if (form.id === 'classroomMaterialForm') {
+      event.preventDefault();
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      $('classroom-detail-message').textContent = 'Adding learning link…';
+      try {
+        await window.CampusShieldBackend.createCampusClassroomMaterial(
+          form.dataset.classroomId,
+          $('classroom-material-title').value.trim(),
+          $('classroom-material-description').value.trim(),
+          $('classroom-material-url').value.trim()
+        );
+        await loadCampusClassroomDetail(form.dataset.classroomId);
+        $('classroom-detail-message').textContent = 'Learning link added to this class.';
+      } catch (err) {
+        $('classroom-detail-message').textContent = err.message || 'Could not add this learning link.';
+        button.disabled = false;
+      }
+    }
+  });
+
+  $('close-classroom-detail').addEventListener('click', function() {
+    $('classroom-detail-panel').hidden = true;
+    $('classroom-detail-content').replaceChildren();
+    $('classroom-detail-message').textContent = '';
+  });
+
+  $('campusOpportunityForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('opportunity-save-submit');
+    const message = $('opportunity-form-message');
+    const editId = $('opportunity-edit-id').value;
+    const deadlineInput = $('opportunity-deadline').value;
+    const input = {
+      id: editId || null,
+      title: $('opportunity-title').value.trim(),
+      category: $('opportunity-category').value,
+      providerName: $('opportunity-provider').value.trim(),
+      sourceUrl: $('opportunity-source-url').value.trim(),
+      contactUrl: $('opportunity-contact-url').value.trim(),
+      deadline: deadlineInput ? new Date(deadlineInput).toISOString() : null,
+      eligibility: $('opportunity-eligibility').value.trim(),
+      description: $('opportunity-description').value.trim()
+    };
+    button.disabled = true;
+    message.textContent = editId ? 'Saving your changes…' : 'Saving your draft…';
+    try {
+      if (editId) {
+        await window.CampusShieldBackend.updateMyCampusOpportunity(input);
+        message.textContent = 'Changes saved. You can submit the listing again when ready.';
+      } else {
+        await window.CampusShieldBackend.createCampusOpportunity(input);
+        message.textContent = 'Draft saved. Review it under My submissions and submit it when ready.';
+      }
+      resetOpportunityForm();
+      await loadCampusOpportunitiesPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not save this opportunity.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('opportunity-form-cancel').addEventListener('click', function() {
+    resetOpportunityForm();
+    $('opportunity-form-message').textContent = 'Editing cancelled.';
+  });
+
+  $('page-opportunities').addEventListener('click', async function(event) {
+    const editButton = event.target.closest('[data-opportunity-edit]');
+    const submitButton = event.target.closest('[data-opportunity-submit]');
+    const reviewButton = event.target.closest('[data-opportunity-review]');
+    if (editButton) {
+      try {
+        const rows = await window.CampusShieldBackend.listMyCampusOpportunities();
+        const item = rows.find(row => row.id === editButton.dataset.opportunityEdit);
+        if (!item) throw new Error('This draft is not available to your account.');
+        startOpportunityEdit(item);
+      } catch (err) {
+        $('my-opportunities-status').textContent = err.message || 'Could not open this draft.';
+      }
+      return;
+    }
+    if (submitButton) {
+      submitButton.disabled = true;
+      $('my-opportunities-status').textContent = 'Submitting for campus review…';
+      try {
+        await window.CampusShieldBackend.submitCampusOpportunity(submitButton.dataset.opportunitySubmit);
+        $('my-opportunities-status').textContent = 'Submitted for campus review.';
+        await loadCampusOpportunitiesPage();
+      } catch (err) {
+        $('my-opportunities-status').textContent = err.message || 'Could not submit this opportunity.';
+        submitButton.disabled = false;
+      }
+      return;
+    }
+    if (reviewButton) {
+      const decision = reviewButton.dataset.opportunityReview;
+      const card = reviewButton.closest('article');
+      const notes = card?.querySelector('[data-opportunity-review-notes]')?.value.trim() || '';
+      if (decision === 'reject' && notes.length < 3) {
+        $('opportunity-review-status').textContent = 'Enter a short rejection reason before rejecting this listing.';
+        return;
+      }
+      reviewButton.disabled = true;
+      $('opportunity-review-status').textContent = decision === 'publish' ? 'Publishing opportunity…' : 'Recording rejection…';
+      try {
+        await window.CampusShieldBackend.reviewCampusOpportunity(
+          reviewButton.dataset.opportunityId, decision, decision === 'reject' ? notes : null
+        );
+        $('opportunity-review-status').textContent = decision === 'publish' ? 'Opportunity approved and published.' : 'Opportunity rejected with a review reason.';
+        await loadCampusOpportunitiesPage();
+      } catch (err) {
+        $('opportunity-review-status').textContent = err.message || 'Could not review this opportunity.';
+        reviewButton.disabled = false;
+      }
+    }
+  });
+
+  $('refresh-campus-classrooms').addEventListener('click', loadCampusClassroomsPage);
+  $('refresh-campus-opportunities').addEventListener('click', loadCampusOpportunitiesPage);
+  $('refresh-my-opportunities').addEventListener('click', loadCampusOpportunitiesPage);
+
   $('campusGroupForm').addEventListener('submit', async function(event) {
     event.preventDefault();
     const button = $('campus-group-submit');
