@@ -155,19 +155,31 @@ assert.match(html, /if \(profile\.verification_status === 'rejected'\)/);
 assert.match(html, /ordinary dashboard access remain available/i);
 assert.match(html, /never persist ID files in browser storage|Do not persist ID files in browser storage/i);
 
-// Confirmed fraud must be an explicit verified-admin decision, distinct from normal rejection.
-assert.match(fraudLockMigration, /p_decision not in \('approve','reject','fraud'\)/);
+// Confirmed fraud remains distinct from ordinary rejection and is enforced by the
+// real multi-campus gate while campus-scoped reviewer checks stay in place.
+assert.match(fraudLockMigration, /p_decision is null or p_decision not in \('approve','reject','fraud'\)/);
 assert.match(fraudLockMigration, /fraud_lock_at = now\(\) \+ interval '48 hours'/);
-assert.match(fraudLockMigration, /current_user_identity_fraud_locked/);
+assert.match(fraudLockMigration, /private\.current_user_has_verified_campus_access\(\)/);
 assert.match(fraudLockMigration, /now\(\) >= siv\.fraud_lock_at/);
-assert.match(fraudLockMigration, /'confirmed_fraud', siv\.confirmed_fraud and siv\.status = 'rejected'/);
-assert.match(fraudLockMigration, /Only a verified administrator can review student identity/);
-assert.match(fraudLockMigration, /Ordinary rejection allows correction\/resubmission; no fraud timer is set/);
+assert.match(fraudLockMigration, /private\.current_campus_role\(\)/);
+assert.match(fraudLockMigration, /private\.user_has_current_campus\(p_user_id\)/);
+assert.match(fraudLockMigration, /fraud_decision_reason = btrim\(p_rejection_reason\)/);
+assert.match(fraudLockMigration, /status = 'rejected',[\s\S]*confirmed_fraud = false,[\s\S]*fraud_lock_at = null/);
+assert.match(fraudLockMigration, /status = 'approved'[\s\S]*and student_identity_verifications\.confirmed_fraud = true/);
+assert.match(fraudLockMigration, /v_verified_fraud_resubmission/);
+assert.match(fraudLockMigration, /set verification_status = 'pending'/);
+assert.match(fraudLockMigration, /set university_id = excluded\.university_id,[\s\S]*confirmed_fraud = false,[\s\S]*fraud_lock_at = null/);
+assert.match(fraudLockMigration, /owner_id = v_user_id::text/);
+assert.match(fraudLockMigration, /student_identity_documents/);
 assert.match(backend, /\["approve", "reject", "fraud"\]/);
 assert.match(backend, /my_identity_fraud_lock_status/);
+assert.match(backend, /listApprovedStudentIdentityVerifications/);
+assert.match(backend, /confirmedFraudResubmission/);
 assert.match(html, /data-identity-review="fraud"/);
-assert.match(html, /loadIdentityFraudLockStatus/);
-console.log("PASS confirmed fraud is separately audited with a 48-hour server-side deadline; normal rejection does not start a lock");
+assert.match(html, /identityFraudStatus\?\.confirmed_fraud/);
+assert.match(html, /listApprovedStudentIdentityVerifications/);
+assert.match(html, /A confirmed-fraud notice is active/);
+assert.match(html, /correction\/appeal notice/);
 console.log("PASS student identity details are collected during signup and uploaded through the private backend helper");
 console.log("PASS sign-in keeps pending/rejected users on the ordinary dashboard while restricted actions remain gated");
 console.log(`PASS ${inlineScripts.length} inline script(s), backend, and config parse`);
