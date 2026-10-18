@@ -170,7 +170,7 @@ assert.match(fraudLockMigration, /v_verified_fraud_resubmission/);
 assert.match(fraudLockMigration, /set verification_status = 'pending'/);
 assert.match(fraudLockMigration, /set university_id = excluded\.university_id,[\s\S]*confirmed_fraud = false,[\s\S]*fraud_lock_at = null/);
 assert.match(fraudLockMigration, /owner_id = v_user_id::text/);
-assert.match(fraudLockMigration, /student_identity_documents/);
+assert.match(fraudLockMigration, /student-identity-documents/);
 assert.match(backend, /\["approve", "reject", "fraud"\]/);
 assert.match(backend, /my_identity_fraud_lock_status/);
 assert.match(backend, /listApprovedStudentIdentityVerifications/);
