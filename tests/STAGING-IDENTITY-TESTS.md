@@ -26,13 +26,13 @@ Configure these in repository Settings → Environments → `campusshield-stagin
 **Environment variables**
 - `CAMPUSSHIELD_STAGING_CAMPUS_A_ID`, `CAMPUSSHIELD_STAGING_CAMPUS_B_ID` — distinct staging campus UUIDs.
 - `CAMPUSSHIELD_STAGING_CAMPUS_A_NAME` — exact staging campus A name.
-- `CAMPUSSHIELD_STAGING_STUDENT_OBJECT_PATH` — path to a synthetic JPEG/PNG/PDF upload belonging to the temporary student; only create this through the student-authenticated Storage upload flow. Never point to a real identity file.
+- `CAMPUSSHIELD_STAGING_CAMPUS_B_NAME` — exact staging campus B name.
 
 The service-role key can bypass RLS and must be scoped only to staging. If any listed fixture is missing, stop and configure the staging fixture; do not bypass RLS or manufacture identity rows with privileged SQL to make tests pass.
 
 ## Run
 
-Install dependencies with the repository's pinned Node dependency setup, then run:
+The runner uses only Node.js built-ins and Supabase REST/Auth/Storage APIs; it does not require an npm package or lockfile.
 ```sh
 node tests/staging-identity-auth-matrix.mjs
 ```
@@ -41,4 +41,4 @@ CI is gated by configured environment secrets and manual dispatch. On a successf
 
 ## Coverage boundaries
 
-The runner performs authenticated probes for self-only fraud status, peer-row privacy, cross-campus review denial, ordinary rejection vs confirmed fraud, and the 48-hour notice interval. Correction/resubmission and the final protected-access outcome need a valid synthetic uploaded object and proper app-created campus memberships. The workflow will only call this suite “passed” if the runner exits successfully; it must not infer completion from the static smoke test. Keep PR #26 draft until all four critical behaviors are exercised against the authenticated staging project and the synthetic-user cleanup is verified.
+The runner uses the real authenticated campus-membership RPC, uploads a tiny synthetic PDF to the private storage bucket, submits identity through the real RPC, and checks ordinary rejection, correction/resubmission, approval, confirmed-fraud grace/deadline handling, blocked protected interaction after deadline, peer-row privacy, and cross-campus review denial. To fast-forward the deadline, it uses a service-key REST update filtered to the unique synthetic user's identity row only; no other row should be touched. Cleanup deletes only paths and Auth user IDs recorded during the run, in a `finally` path, then verifies Auth user deletion. The workflow only reports passing if the test runner exits successfully and cleanup succeeds. Keep PR #26 draft until the protected workflow has actually run and output is reviewed.
