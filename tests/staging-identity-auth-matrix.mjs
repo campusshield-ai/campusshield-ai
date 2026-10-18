@@ -243,15 +243,7 @@ async function main() {
   // Fast-forward only this synthetic user's deadline through the server-only
   // staging admin API. This is tightly scoped to the run-created user and reset by
   // Auth deletion in finally; regular clients are separately proven unable to update it.
-  const forceDeadline = await request("/rest/v1/student_identity_verifications", {
-    key: serviceKey, bearer: serviceKey, method: "PATCH",
-    headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
-    body: { fraud_lock_at: new Date(Date.now() - 1000).toISOString() },
-  });
-  // Use a filtered PATCH to prevent any broad data change.
-  if (forceDeadline.response.ok) {
-    throw new Error("Safety guard: unfiltered deadline PATCH unexpectedly succeeded; expected scoped request");
-  }
+  // Only the run-created synthetic student's row may be changed; never issue an unfiltered PATCH.
   const forceScopedDeadline = await request(`/rest/v1/student_identity_verifications?user_id=eq.${studentA.id}`, {
     key: serviceKey, bearer: serviceKey, method: "PATCH",
     headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
