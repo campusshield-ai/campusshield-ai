@@ -1,0 +1,75 @@
+name: CampusShield staging identity auth matrix
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-staging-identity-auth-matrix
+  cancel-in-progress: false
+
+jobs:
+  authenticated-staging-matrix:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/signup-identity-review-staging'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: campusshield-staging-identity-tests
+    steps:
+      - name: Check out the staging review branch
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Require configured staging-only environment
+        env:
+          CAMPUSSHIELD_STAGING_SUPABASE_URL: ${{ secrets.CAMPUSSHIELD_STAGING_SUPABASE_URL }}
+          CAMPUSSHIELD_STAGING_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.CAMPUSSHIELD_STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+          CAMPUSSHIELD_STAGING_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.CAMPUSSHIELD_STAGING_SUPABASE_PUBLISHABLE_KEY }}
+          CAMPUSSHIELD_STAGING_SUPABASE_ANON_KEY: ${{ secrets.CAMPUSSHIELD_STAGING_SUPABASE_ANON_KEY }}
+          CAMPUSSHIELD_STAGING_TEST_CONFIRM: ${{ secrets.CAMPUSSHIELD_STAGING_TEST_CONFIRM }}
+          CAMPUSSHIELD_STAGING_ADMIN_A_EMAIL: ${{ secrets.CAMPUSSHIELD_STAGING_ADMIN_A_EMAIL }}
+          CAMPUSSHIELD_STAGING_ADMIN_A_PASSWORD: ${{ secrets.CAMPUSSHIELD_STAGING_ADMIN_A_PASSWORD }}
+          CAMPUSSHIELD_STAGING_ADMIN_B_EMAIL: ${{ secrets.CAMPUSSHIELD_STAGING_ADMIN_B_EMAIL }}
+          CAMPUSSHIELD_STAGING_ADMIN_B_PASSWORD: ${{ secrets.CAMPUSSHIELD_STAGING_ADMIN_B_PASSWORD }}
+          CAMPUSSHIELD_STAGING_CAMPUS_A_ID: ${{ vars.CAMPUSSHIELD_STAGING_CAMPUS_A_ID }}
+          CAMPUSSHIELD_STAGING_CAMPUS_B_ID: ${{ vars.CAMPUSSHIELD_STAGING_CAMPUS_B_ID }}
+          CAMPUSSHIELD_STAGING_CAMPUS_A_NAME: ${{ vars.CAMPUSSHIELD_STAGING_CAMPUS_A_NAME }}
+          CAMPUSSHIELD_STAGING_STUDENT_OBJECT_PATH: ${{ vars.CAMPUSSHIELD_STAGING_STUDENT_OBJECT_PATH }}
+        run: |
+          set -euo pipefail
+          test -n "$CAMPUSSHIELD_STAGING_SUPABASE_URL"
+          test -n "$CAMPUSSHIELD_STAGING_SUPABASE_SERVICE_ROLE_KEY"
+          test -n "$CAMPUSSHIELD_STAGING_TEST_CONFIRM"
+          test -n "$CAMPUSSHIELD_STAGING_ADMIN_A_EMAIL"
+          test -n "$CAMPUSSHIELD_STAGING_ADMIN_A_PASSWORD"
+          test -n "$CAMPUSSHIELD_STAGING_ADMIN_B_EMAIL"
+          test -n "$CAMPUSSHIELD_STAGING_ADMIN_B_PASSWORD"
+          test -n "$CAMPUSSHIELD_STAGING_CAMPUS_A_ID"
+          test -n "$CAMPUSSHIELD_STAGING_CAMPUS_B_ID"
+          test -n "$CAMPUSSHIELD_STAGING_CAMPUS_A_NAME"
+          test -n "$CAMPUSSHIELD_STAGING_STUDENT_OBJECT_PATH"
+          test -n "$CAMPUSSHIELD_STAGING_SUPABASE_PUBLISHABLE_KEY" || test -n "$CAMPUSSHIELD_STAGING_SUPABASE_ANON_KEY"
+          test "$CAMPUSSHIELD_STAGING_SUPABASE_URL" = "https://hywcpnoqqhxvujnimhxl.supabase.co"
+          test "$CAMPUSSHIELD_STAGING_TEST_CONFIRM" = "hywcpnoqqhxvujnimhxl"
+      - name: Install pinned dependencies
+        run: npm ci
+      - name: Run authenticated staging identity matrix
+        env:
+          CAMPUSSHIELD_STAGING_SUPABASE_URL: ${{ secrets.CAMPUSSHIELD_STAGING_SUPABASE_URL }}
+          CAMPUSSHIELD_STAGING_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.CAMPUSSHIELD_STAGING_SUPABASE_SERVICE_ROLE_KEY }}
+          CAMPUSSHIELD_STAGING_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.CAMPUSSHIELD_STAGING_SUPABASE_PUBLISHABLE_KEY }}
+          CAMPUSSHIELD_STAGING_SUPABASE_ANON_KEY: ${{ secrets.CAMPUSSHIELD_STAGING_SUPABASE_ANON_KEY }}
+          CAMPUSSHIELD_STAGING_TEST_CONFIRM: ${{ secrets.CAMPUSSHIELD_STAGING_TEST_CONFIRM }}
+          CAMPUSSHIELD_STAGING_ADMIN_A_EMAIL: ${{ secrets.CAMPUSSHIELD_STAGING_ADMIN_A_EMAIL }}
+          CAMPUSSHIELD_STAGING_ADMIN_A_PASSWORD: ${{ secrets.CAMPUSSHIELD_STAGING_ADMIN_A_PASSWORD }}
+          CAMPUSSHIELD_STAGING_ADMIN_B_EMAIL: ${{ secrets.CAMPUSSHIELD_STAGING_ADMIN_B_EMAIL }}
+          CAMPUSSHIELD_STAGING_ADMIN_B_PASSWORD: ${{ secrets.CAMPUSSHIELD_STAGING_ADMIN_B_PASSWORD }}
+          CAMPUSSHIELD_STAGING_CAMPUS_A_ID: ${{ vars.CAMPUSSHIELD_STAGING_CAMPUS_A_ID }}
+          CAMPUSSHIELD_STAGING_CAMPUS_B_ID: ${{ vars.CAMPUSSHIELD_STAGING_CAMPUS_B_ID }}
+          CAMPUSSHIELD_STAGING_CAMPUS_A_NAME: ${{ vars.CAMPUSSHIELD_STAGING_CAMPUS_A_NAME }}
+          CAMPUSSHIELD_STAGING_STUDENT_OBJECT_PATH: ${{ vars.CAMPUSSHIELD_STAGING_STUDENT_OBJECT_PATH }}
+        run: node tests/staging-identity-auth-matrix.mjs
