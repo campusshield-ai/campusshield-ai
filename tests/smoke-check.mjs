@@ -11,6 +11,7 @@ const staffProfileMigration = await readFile(new URL("../supabase/migrations/202
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
+const fraudLockMigration = await readFile(new URL("../supabase/migrations/20261018100000_confirmed_identity_fraud_lock.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -31,7 +32,7 @@ assert.match(backend, /reporter_id:\s*user\.id/);
 assert.match(backend, /client\.auth\.getUser\(\)/);
 assert.match(backend, /update\(\{\s*status\s*\}/);
 assert.match(html, /function canManageIncidents\(\)/);
-assert.match(html, /\['security', 'admin'\]\.includes\(currentProfile\.role\)/);
+assert.match(html, /\['security', 'admin'\]\.includes\(profile\.role\)/);
 assert.match(html, /if \(!canManageIncidents\(\)\)/);
 assert.match(html, /const total = incidents\.length/);
 assert.match(html, /await refreshIncidentsFromSupabase\(\)/);
@@ -105,6 +106,82 @@ for (const [filename, size] of [["apple-touch-icon.png", 180], ["campusshield-19
   assert.equal(icon.readUInt32BE(20), size, `${filename} has the expected height`);
 }
 
+
+ // Pending/rejected student menus remain usable while restricted destinations remain protected.
+assert.match(html, /function syncIdentityNavigation\(\)/);
+assert.doesNotMatch(html, /if \(needsIdentity\) button\.hidden = true/);
+assert.doesNotMatch(html, /if \(studentNeedsIdentity && page !== 'identity-verification'\)/);
+assert.match(html, /ordinary dashboard pages remain available while pending|ordinary dashboard access remain available/i);
+assert.doesNotMatch(html, /JSON\.stringify\(\{\s*institutionName,\s*studentNumber\s*\}\)/, "identity details are not stored in browser session storage");
+assert.match(html, /Your ID submission is being processed/i);
+assert.match(html, /id="dashboard-verification-status"/);
+assert.match(html, /function syncDashboardVerificationNotice\(/);
+assert.match(html, /Full student access begins after administrator approval/i);
+assert.match(html, /currentProfile = profile;[\s\S]{0,180}studentIdentitySubmission = null;[\s\S]{0,180}\$\('workspace'\)\.hidden = false/);
+assert.match(html, /function canAccessStaffPages\(profile = currentProfile\)/);
+assert.match(html, /button\.hidden = !canAccessStaffPages\(\)/);
+assert.match(html, /if \(!canAccessStaffPages\(\) && \['manage', 'risk', 'analytics'\]\.includes\(page\)\)/);
+assert.match(html, /if \(page === 'approvals' && !verifiedAdmin\)/);
+
+// Explicitly assert the role allowlist and verified-status requirement.
+assert.match(html, /return profile\?\.verification_status === 'verified' &&\s*\['security', 'admin'\]\.includes\(profile\.role\)/);
+const rolePermissionCases = [
+  [{ role: "student", verification_status: "verified" }, false],
+  [{ role: "teacher", verification_status: "verified" }, false],
+  [{ role: "security", verification_status: "verified" }, true],
+  [{ role: "admin", verification_status: "verified" }, true],
+  [{ role: "security", verification_status: "pending" }, false],
+  [{ role: "admin", verification_status: "rejected" }, false],
+  [null, false],
+];
+const expectedStaffAccess = (profile) =>
+  profile?.verification_status === "verified" && ["security", "admin"].includes(profile.role);
+for (const [profile, expected] of rolePermissionCases) {
+  assert.equal(expectedStaffAccess(profile), expected, `staff access policy for ${profile?.role || "signed-out"}`);
+}
+assert.match(html, /canAccessStaffPages\(\)/, "staff routes use the shared role predicate");
+
+
+ // Account creation and review timeline: identity fields are within the signup section,
+ // submission uses the private Storage helper, and pending users aren't redirected to the ID page on every login.
+assert.match(html, /id="signup-student-identity-fields"/);
+assert.match(html, /id="signup-institution"/);
+assert.match(html, /id="signup-student-number"/);
+assert.match(html, /id="signup-student-document"/);
+assert.match(html, /backend\.uploadStudentIdentityDocument\(studentDocument, \{ institutionName, studentNumber \}\)/);
+assert.match(html, /up to 7 working days/i);
+assert.match(html, /studentIdentityForm'\)\.addEventListener\('submit'/);
+assert.match(html, /if \(profile\.verification_status === 'rejected'\)/);
+assert.match(html, /ordinary dashboard access remain available/i);
+assert.match(html, /never persist ID files in browser storage|Do not persist ID files in browser storage/i);
+
+// Confirmed fraud remains distinct from ordinary rejection and is enforced by the
+// real multi-campus gate while campus-scoped reviewer checks stay in place.
+assert.match(fraudLockMigration, /p_decision is null or p_decision not in \('approve','reject','fraud'\)/);
+assert.match(fraudLockMigration, /fraud_lock_at = now\(\) \+ interval '48 hours'/);
+assert.match(fraudLockMigration, /private\.current_user_has_verified_campus_access\(\)/);
+assert.match(fraudLockMigration, /now\(\) >= siv\.fraud_lock_at/);
+assert.match(fraudLockMigration, /private\.current_campus_role\(\)/);
+assert.match(fraudLockMigration, /private\.user_has_current_campus\(p_user_id\)/);
+assert.match(fraudLockMigration, /fraud_decision_reason = btrim\(p_rejection_reason\)/);
+assert.match(fraudLockMigration, /status = 'rejected',[\s\S]*confirmed_fraud = false,[\s\S]*fraud_lock_at = null/);
+assert.match(fraudLockMigration, /status = 'approved'[\s\S]*and student_identity_verifications\.confirmed_fraud = true/);
+assert.match(fraudLockMigration, /v_verified_fraud_resubmission/);
+assert.match(fraudLockMigration, /set verification_status = 'pending'/);
+assert.match(fraudLockMigration, /set university_id = excluded\.university_id,[\s\S]*confirmed_fraud = false,[\s\S]*fraud_lock_at = null/);
+assert.match(fraudLockMigration, /owner_id = v_user_id::text/);
+assert.match(fraudLockMigration, /student-identity-documents/);
+assert.match(backend, /\["approve", "reject", "fraud"\]/);
+assert.match(backend, /my_identity_fraud_lock_status/);
+assert.match(backend, /listApprovedStudentIdentityVerifications/);
+assert.match(backend, /confirmedFraudResubmission/);
+assert.match(html, /data-identity-review="fraud"/);
+assert.match(html, /identityFraudStatus\?\.confirmed_fraud/);
+assert.match(html, /listApprovedStudentIdentityVerifications/);
+assert.match(html, /A confirmed-fraud notice is active/);
+assert.match(html, /correction\/appeal notice/);
+console.log("PASS student identity details are collected during signup and uploaded through the private backend helper");
+console.log("PASS sign-in keeps pending/rejected users on the ordinary dashboard while restricted actions remain gated");
 console.log(`PASS ${inlineScripts.length} inline script(s), backend, and config parse`);
 console.log("PASS browser config uses the Supabase project URL and publishable key only");
 console.log("PASS incident reads, submissions, status updates, and dashboard metrics use Supabase data");

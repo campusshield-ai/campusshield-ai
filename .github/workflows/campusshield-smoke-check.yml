@@ -1,0 +1,29 @@
+name: CampusShield smoke check
+
+on:
+  push:
+    branches:
+      - codex/pr22-staff-role-gate-audit
+      - codex/signup-identity-review-staging
+  pull_request:
+    branches:
+      - codex/campuspulse-mobile-spacing-staging
+      - codex/signup-identity-review-staging
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Parse staging authenticated test runner
+        run: node --check tests/staging-identity-auth-matrix.mjs
+      - name: Run smoke checks
+        run: node tests/smoke-check.mjs

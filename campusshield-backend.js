@@ -255,7 +255,7 @@ async getCurrentUser() {
       if (!user) throw new Error("Sign in before checking student identity.");
       const { data, error } = await client
         .from("student_identity_verifications")
-        .select("user_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at")
+        .select("user_id,university_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at,confirmed_fraud,fraud_decision_reason,fraud_decided_at,fraud_notice_at,fraud_lock_at")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
@@ -268,8 +268,22 @@ async getCurrentUser() {
       if (!ids.length) return [];
       const { data, error } = await client
         .from("student_identity_verifications")
-        .select("user_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at")
+        .select("user_id,university_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at,confirmed_fraud,fraud_decision_reason,fraud_decided_at,fraud_notice_at,fraud_lock_at")
         .in("user_id", ids);
+      if (error) throw error;
+      return data || [];
+    },
+
+    // RLS restricts this to the owner or a verified administrator of the same campus.
+    // The UI uses this list only to offer an explicit, evidence-backed re-review action.
+    async listApprovedStudentIdentityVerifications() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client
+        .from("student_identity_verifications")
+        .select("user_id,university_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at,confirmed_fraud,fraud_decision_reason,fraud_decided_at,fraud_notice_at,fraud_lock_at")
+        .eq("status", "approved")
+        .order("updated_at", { ascending: false })
+        .limit(200);
       if (error) throw error;
       return data || [];
     },
@@ -304,7 +318,12 @@ async getCurrentUser() {
       const user = await this.getCurrentUser();
       if (!user) throw new Error("Sign in before submitting student identity.");
       const previous = await this.getMyStudentIdentityVerification();
-      if (previous?.status === "approved") {
+      const fraudStatus = previous?.status === "approved"
+        ? await this.getMyIdentityFraudLockStatus()
+        : null;
+      const confirmedFraudResubmission =
+        previous?.status === "approved" && fraudStatus?.confirmed_fraud === true;
+      if (previous?.status === "approved" && !confirmedFraudResubmission) {
         throw new Error("Your student identity is already approved.");
       }
       if (previous?.status === "pending") {
@@ -344,7 +363,7 @@ async getCurrentUser() {
     async createStudentIdentityDocumentUrl(objectPath) {
       if (!client) throw new Error("Supabase is not configured.");
       const safePath = String(objectPath || "");
-      if (!/^[0-9a-fA-F-]{36}\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|pdf)$/.test(safePath)) {
+      if (!/^[0-9a-fA-F-]{36}\/(?:[0-9a-fA-F-]{36}\.(jpg|jpeg|png|pdf)|student-identity-document)$/.test(safePath)) {
         throw new Error("The student document path is invalid.");
       }
       const { data, error } = await client.storage
@@ -357,8 +376,12 @@ async getCurrentUser() {
 
     async reviewStudentIdentityVerification(userId, decision, rejectionReason) {
       if (!client) throw new Error("Supabase is not configured.");
-      if (!["approve", "reject"].includes(decision)) {
-        throw new Error("Choose approve or reject.");
+      if (!["approve", "reject", "fraud"].includes(decision)) {
+        throw new Error("Choose approve, reject, or confirm fraud.");
+      }
+      if (["reject", "fraud"].includes(decision) &&
+          String(rejectionReason || "").trim().length < 5) {
+        throw new Error("Provide a reason of at least 5 characters.");
       }
       const { error } = await client.rpc("review_student_identity_verification", {
         p_user_id: userId,
@@ -366,6 +389,13 @@ async getCurrentUser() {
         p_rejection_reason: rejectionReason || null
       });
       if (error) throw error;
+    },
+
+    async getMyIdentityFraudLockStatus() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("my_identity_fraud_lock_status");
+      if (error) throw error;
+      return data || { confirmed_fraud: false, locked: false };
     },
 
     async listIncidents() {
