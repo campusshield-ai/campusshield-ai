@@ -268,7 +268,7 @@ async getCurrentUser() {
       if (!ids.length) return [];
       const { data, error } = await client
         .from("student_identity_verifications")
-        .select("user_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at")
+        .select("user_id,university_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at,confirmed_fraud,fraud_decision_reason,fraud_decided_at,fraud_notice_at,fraud_lock_at")
         .in("user_id", ids);
       if (error) throw error;
       return data || [];
