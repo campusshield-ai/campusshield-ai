@@ -789,6 +789,7 @@ td strong{color:#2a464d;font-size:11px}
   let communityProfile = null;
   let communityLoading = false;
   let studentIdentitySubmission = null;
+  let identityFraudStatus = null;
 
   function isStudentAccount() {
     const requestedRole = currentProfile?.requested_role;
@@ -804,7 +805,8 @@ td strong{color:#2a464d;font-size:11px}
 
   function syncIdentityNavigation() {
     const isStudent = isStudentAccount();
-    $('identity-verification-nav').hidden = !isStudent || currentProfile?.verification_status === 'verified';
+    $('identity-verification-nav').hidden = !isStudent ||
+      (currentProfile?.verification_status === 'verified' && !identityFraudStatus?.confirmed_fraud);
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
       if (button.id === 'identity-verification-nav') return;
       if (['manage','risk','analytics'].includes(button.dataset.page)) {
@@ -865,6 +867,8 @@ td strong{color:#2a464d;font-size:11px}
     }
     try {
       const status = await window.CampusShieldBackend.getMyIdentityFraudLockStatus();
+      identityFraudStatus = status || null;
+      syncIdentityNavigation();
       container.replaceChildren();
       if (!status?.confirmed_fraud) {
         container.hidden = true;
@@ -880,6 +884,8 @@ td strong{color:#2a464d;font-size:11px}
       container.append(paragraph);
       container.hidden = false;
     } catch (error) {
+      identityFraudStatus = null;
+      syncIdentityNavigation();
       console.warn('Could not load identity fraud-lock status:', error);
       container.hidden = true;
     }
@@ -916,6 +922,17 @@ td strong{color:#2a464d;font-size:11px}
             .eq('id', user.id)
             .single();
           if (!error && profile) currentProfile = profile;
+        }
+        if (currentProfile?.verification_status === 'verified' && identityFraudStatus?.confirmed_fraud) {
+          status.textContent = (identityFraudStatus.locked
+            ? 'The 48-hour correction deadline has passed and restricted campus features are blocked. You can still submit corrected information and your own ID for review.'
+            : 'A confirmed-fraud notice is active until ' +
+              (identityFraudStatus.lock_at ? new Date(identityFraudStatus.lock_at).toLocaleString() : 'the 48-hour deadline') +
+              '. Submit corrected information and your own valid ID to return the account to pending review. You may also contact your campus administrator to appeal.');
+          form.hidden = false;
+          submit.disabled = false;
+          syncIdentityNavigation();
+          return;
         }
         status.textContent = currentProfile?.verification_status === 'verified'
           ? 'Identity verified on ' + dateText(submission.reviewed_at || submission.created_at) + '. Your student access is active.'
@@ -1454,7 +1471,7 @@ td strong{color:#2a464d;font-size:11px}
       }
       nav.hidden = false;
 
-      const {data:rows, error} = await backend.client
+      const {data:pendingRows, error} = await backend.client
         .from('profiles')
         .select('id, display_name, role, requested_role, verification_status, created_at')
         .eq('verification_status', 'pending')
@@ -1462,17 +1479,38 @@ td strong{color:#2a464d;font-size:11px}
         .order('created_at', {ascending:true});
       if (error) throw error;
 
-      if (!rows?.length) {
-        tbody.innerHTML = '<tr><td colspan="6">There are no pending student or teacher applications.</td></tr>';
+      // Approved identity records are already filtered by same-campus RLS. They
+      // let a verified campus admin record a documented fraud re-review later.
+      const approvedIdentityRows = await backend.listApprovedStudentIdentityVerifications();
+      const activeIdentityIds = [...new Set(approvedIdentityRows.map(row => row.user_id))];
+      let activeStudentRows = [];
+      if (activeIdentityIds.length) {
+        const {data:verifiedProfiles, error:verifiedProfilesError} = await backend.client
+          .from('profiles')
+          .select('id, display_name, role, requested_role, verification_status, created_at')
+          .in('id', activeIdentityIds)
+          .eq('role', 'student')
+          .eq('requested_role', 'student')
+          .eq('verification_status', 'verified')
+          .order('created_at', {ascending:true});
+        if (verifiedProfilesError) throw verifiedProfilesError;
+        activeStudentRows = verifiedProfiles || [];
+      }
+      const pendingList = pendingRows || [];
+      const pendingIds = new Set(pendingList.map(row => row.id));
+      const rows = [...pendingList, ...activeStudentRows.filter(row => !pendingIds.has(row.id))];
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6">No pending applications or verified student identities are available for review at your campus.</td></tr>';
         message.textContent = 'Administrator access confirmed.';
         return;
       }
 
-      const studentIds = rows
+      const pendingStudentIds = pendingList
         .filter(row => (row.requested_role || row.role) === 'student')
         .map(row => row.id);
-      const identityRows = await backend.listStudentIdentityVerifications(studentIds);
-      const identityByUser = new Map(identityRows.map(row => [row.user_id, row]));
+      const identityRows = await backend.listStudentIdentityVerifications(pendingStudentIds);
+      const identityByUser = new Map([...approvedIdentityRows, ...identityRows].map(row => [row.user_id, row]));
 
       tbody.innerHTML = rows.map(row => {
         const isStudent = (row.requested_role || row.role) === 'student';
@@ -1485,13 +1523,23 @@ td strong{color:#2a464d;font-size:11px}
             identityCell = '<span class="tag unknown">Not submitted</span><br><span class="muted">Identity form is required before approval.</span>';
             decisionCell = '<button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>';
           } else {
-            const statusToken = identity.status === 'approved' ? 'low' : identity.status === 'rejected' ? 'high' : 'open';
+            const statusToken = identity.confirmed_fraud ? 'high' : identity.status === 'approved' ? 'low' : identity.status === 'rejected' ? 'high' : 'open';
             identityCell =
               '<strong>' + esc(identity.institution_name) + '</strong><br>' +
               '<span class="muted">Matric number: ' + esc(identity.student_number) + '</span><br>' +
-              '<span class="tag ' + statusToken + '">' + esc(identity.status) + '</span>' +
+              '<span class="tag ' + statusToken + '">' + esc(identity.confirmed_fraud ? 'confirmed fraud' : identity.status) + '</span>' +
               (identity.object_path ? '<br><button type="button" class="btn secondary" data-student-document="' + esc(identity.object_path) + '">Open ID document</button>' : '');
-            if (identity.status === 'pending') {
+            if (row.verification_status === 'verified' && identity.status === 'approved') {
+              if (identity.confirmed_fraud) {
+                decisionCell =
+                  '<span class="muted">Confirmed-fraud notice active. Deadline: ' + esc(dateText(identity.fraud_lock_at)) +
+                  '. Reason: ' + esc(identity.fraud_decision_reason || 'Recorded by campus administrator.') + '</span>';
+              } else {
+                decisionCell =
+                  '<button class="btn danger" type="button" data-identity-review="fraud" data-user-id="' + esc(row.id) + '">Confirm fraud · 48h notice</button><br>' +
+                  '<span class="muted">Use only after reviewing documented evidence.</span>';
+              }
+            } else if (identity.status === 'pending') {
               decisionCell =
                 '<div class="actions">' +
                 '<button class="btn" type="button" data-identity-review="approve" data-user-id="' + esc(row.id) + '">Approve ID & account</button>' +
@@ -1501,7 +1549,9 @@ td strong{color:#2a464d;font-size:11px}
             } else if (identity.status === 'rejected') {
               decisionCell =
                 '<span class="muted">Student may resubmit the ID with corrected information.</span><br>' +
-                '<button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>';
+                (identity.confirmed_fraud
+                  ? '<span class="muted">Fraud notice deadline: ' + esc(dateText(identity.fraud_lock_at)) + '</span>'
+                  : '<button class="btn danger" type="button" data-review="reject" data-user-id="' + esc(row.id) + '">Reject account</button>');
             } else {
               decisionCell =
                 '<button class="btn" type="button" data-review="approve" data-user-id="' + esc(row.id) + '">Approve account</button> ' +
@@ -1519,14 +1569,14 @@ td strong{color:#2a464d;font-size:11px}
         return '<tr>' +
           '<td><strong>' + esc(row.display_name || 'Name not provided') + '</strong></td>' +
           '<td><code>' + esc(row.id) + '</code></td>' +
-          '<td><span class="tag open">' + esc(row.requested_role || 'Not specified') + '</span></td>' +
+          '<td><span class="tag open">' + esc(row.requested_role || 'Not specified') + ' · ' + esc(row.verification_status) + '</span></td>' +
           '<td>' + esc(dateText(row.created_at)) + '</td>' +
           '<td>' + identityCell + '</td>' +
           '<td>' + decisionCell + '</td>' +
           '</tr>';
       }).join('');
 
-      message.textContent = rows.length + ' pending application(s). Student approvals are blocked until the ID document is approved.';
+      message.textContent = pendingList.length + ' pending application(s), plus ' + activeStudentRows.length + ' verified student identity record(s) for evidence-backed fraud re-review. Actions remain campus-scoped on the server.';
     } catch (err) {
       console.error('Could not load account approvals:', err);
       tbody.innerHTML = '<tr><td colspan="6">Applications could not be loaded.</td></tr>';
@@ -1562,7 +1612,7 @@ td strong{color:#2a464d;font-size:11px}
       let reason = null;
       if (decision === 'reject' || decision === 'fraud') {
         const promptLabel = decision === 'fraud'
-          ? 'Record the evidence and reason for a CONFIRMED fraud decision. This sends a notice and starts a 48-hour correction window before restricted account features are locked:'
+          ? 'Record the evidence and reason for a CONFIRMED fraud decision. This sends the student a 48-hour correction/appeal notice. If the student is already verified, protected campus features remain available during the notice period and are blocked after the deadline unless they resubmit; pending applicants remain restricted until approved:'
           : 'Enter a helpful rejection reason (5–1000 characters). The student can see this and resubmit:';
         reason = window.prompt(promptLabel, '');
         if (reason === null) return;
@@ -1571,7 +1621,7 @@ td strong{color:#2a464d;font-size:11px}
           toast('Provide a reason of 5–1000 characters.');
           return;
         }
-        if (decision === 'fraud' && !confirm('Confirm that you have reviewed the evidence and this is a confirmed fraudulent ID or false-information case. The student will receive a 48-hour correction notice. Continue?')) return;
+        if (decision === 'fraud' && !confirm('Confirm that you reviewed the evidence and this is a confirmed fraudulent ID or false-information case. The same-campus student will receive a 48-hour correction/appeal notice. Protected campus features are restricted after the deadline unless corrected information is resubmitted. Continue?')) return;
       } else if (!confirm('Approve this student ID and activate the student account?')) {
         return;
       }
@@ -1587,7 +1637,7 @@ td strong{color:#2a464d;font-size:11px}
         toast(decision === 'approve'
           ? 'Student identity approved and account activated.'
           : decision === 'fraud'
-            ? 'Fraud decision recorded. The 48-hour correction deadline is now active on the server.'
+            ? 'Fraud decision recorded. The 48-hour correction deadline is active on the server.'
             : 'ID rejected; the student can sign in and resubmit.');
         await loadAccountApprovals();
       } catch (error) {
@@ -2320,7 +2370,19 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       studentIdentitySubmission = submission;
       sessionStorage.removeItem('campusshield_pending_identity');
       $('identity-document').value = '';
+      const user = await window.CampusShieldBackend.getCurrentUser();
+      if (user) {
+        const {data:profile, error:profileError} = await window.CampusShieldBackend.client
+          .from('profiles')
+          .select('role, requested_role, verification_status')
+          .eq('id', user.id)
+          .single();
+        if (profileError) throw profileError;
+        if (profile) currentProfile = profile;
+      }
+      await loadIdentityFraudLockStatus();
       await loadStudentIdentityStatus();
+      syncIdentityNavigation();
       toast('Student ID submitted. Review may take up to 7 working days.');
     } catch (error) {
       $('identity-verification-status').textContent = error.message || 'Could not submit student identity.';
