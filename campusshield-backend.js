@@ -255,7 +255,7 @@ async getCurrentUser() {
       if (!user) throw new Error("Sign in before checking student identity.");
       const { data, error } = await client
         .from("student_identity_verifications")
-        .select("user_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at")
+        .select("user_id,university_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at,confirmed_fraud,fraud_decision_reason,fraud_decided_at,fraud_notice_at,fraud_lock_at")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
@@ -270,6 +270,20 @@ async getCurrentUser() {
         .from("student_identity_verifications")
         .select("user_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at")
         .in("user_id", ids);
+      if (error) throw error;
+      return data || [];
+    },
+
+    // RLS restricts this to the owner or a verified administrator of the same campus.
+    // The UI uses this list only to offer an explicit, evidence-backed re-review action.
+    async listApprovedStudentIdentityVerifications() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client
+        .from("student_identity_verifications")
+        .select("user_id,university_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at,confirmed_fraud,fraud_decision_reason,fraud_decided_at,fraud_notice_at,fraud_lock_at")
+        .eq("status", "approved")
+        .order("updated_at", { ascending: false })
+        .limit(200);
       if (error) throw error;
       return data || [];
     },
@@ -304,7 +318,12 @@ async getCurrentUser() {
       const user = await this.getCurrentUser();
       if (!user) throw new Error("Sign in before submitting student identity.");
       const previous = await this.getMyStudentIdentityVerification();
-      if (previous?.status === "approved") {
+      const fraudStatus = previous?.status === "approved"
+        ? await this.getMyIdentityFraudLockStatus()
+        : null;
+      const confirmedFraudResubmission =
+        previous?.status === "approved" && fraudStatus?.confirmed_fraud === true;
+      if (previous?.status === "approved" && !confirmedFraudResubmission) {
         throw new Error("Your student identity is already approved.");
       }
       if (previous?.status === "pending") {
