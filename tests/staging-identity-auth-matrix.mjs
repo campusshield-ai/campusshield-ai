@@ -29,6 +29,7 @@ const runId = randomUUID();
 const randomPassword = () => `CsStage!${randomUUID()}aA9`;
 const users = [];
 const objects = [];
+const incidents = [];
 let failed = null;
 
 async function request(path, { key = publishableKey, bearer = key, method = "GET", body, headers = {}, raw = false } = {}) {
@@ -133,6 +134,15 @@ async function inspectSelf(token, userId) {
 }
 async function cleanUp() {
   const failures = [];
+  for (const id of [...incidents].reverse()) {
+    try {
+      const result = await request(`/rest/v1/incidents?id=eq.${id}`, {
+        key: serviceKey, bearer: serviceKey, method: "DELETE",
+        headers: { Prefer: "return=minimal" },
+      });
+      if (!result.response.ok && result.response.status !== 404) failures.push(`Synthetic incident ${id}: HTTP ${result.response.status} ${result.text}`);
+    } catch (error) { failures.push(`Synthetic incident ${id}: ${error.message}`); }
+  }
   for (const path of [...objects].reverse()) {
     try {
       const result = await request(`/storage/v1/object/student-identity-documents/${path.split("/").map(encodeURIComponent).join("/")}`, {
@@ -187,10 +197,16 @@ async function main() {
   const studentB = await createUser("student-b");
   const tokenA = await signIn(studentA);
   const tokenB = await signIn(studentB);
-  await onboardAndSubmit(studentA, tokenA, campusA, campusAName, "A");
+  const initialObjectA = await onboardAndSubmit(studentA, tokenA, campusA, campusAName, "A");
   await onboardAndSubmit(studentB, tokenB, campusB, campusBName, "B");
 
-  // 1) Cross-account identity and notice privacy.
+  // 1) Cross-account identity and notice and document privacy. Private Storage
+  // must not let the second campus student download the first student's file.
+  const foreignObject = await request(`/storage/v1/object/student-identity-documents/${initialObjectA.split("/").map(encodeURIComponent).join("/")}`, {
+    bearer: tokenB,
+  });
+  assert.ok(!foreignObject.response.ok, "another student cannot download a private identity document");
+
   const peerA = await request(`/rest/v1/student_identity_verifications?select=user_id&user_id=eq.${studentB.id}`, { bearer: tokenA });
   assertOk(peerA, "peer identity query");
   assert.deepEqual(peerA.data, [], "campus A student cannot read campus B student's identity row");
@@ -240,6 +256,25 @@ async function main() {
   assert.equal(activeNotice.confirmed_fraud, true);
   assert.equal(activeNotice.locked, false, "student still has grace-period status before the deadline");
 
+  // Prove protected campus interactions still work during the grace period by
+  // inserting a clearly fictional incident. It is tracked and deleted in finally.
+  const graceInsert = await request("/rest/v1/incidents", {
+    bearer: tokenA,
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: {
+      reporter_id: studentA.id,
+      university_id: campusA,
+      category: "Other",
+      severity: "Low",
+      location: "Synthetic staging-only test location",
+      description: `Synthetic grace-period access test ${runId}; not a real incident.`,
+    },
+  });
+  assertOk(graceInsert, "protected incident insert during fraud notice grace period");
+  assert.ok(Array.isArray(graceInsert.data) && graceInsert.data[0]?.id, "grace-period incident insert returns ID");
+  incidents.push(graceInsert.data[0].id);
+
   // Fast-forward only this synthetic user's deadline through the server-only
   // staging admin API. This is tightly scoped to the run-created user and reset by
   // Auth deletion in finally; regular clients are separately proven unable to update it.
@@ -253,13 +288,23 @@ async function main() {
   const overdue = assertOk(await rpc(tokenA, "my_identity_fraud_lock_status"), "student status after deadline");
   assert.equal(overdue.locked, true, "status RPC must report deadline passed");
   // Protected operations fail via the actual verified campus-access gate.
-  const restricted = await rpc(tokenA, "create_community_post", {
-    p_post_type: "safety_issue",
-    p_title: "Synthetic deadline gate test",
-    p_body: "Fictional staging test content only, no real incident reported.",
-    p_location: "Synthetic test location",
+  const restricted = await request("/rest/v1/incidents", {
+    bearer: tokenA,
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: {
+      reporter_id: studentA.id,
+      university_id: campusA,
+      category: "Other",
+      severity: "Low",
+      location: "Synthetic staging-only test location",
+      description: `Synthetic overdue access test ${runId}; not a real incident.`,
+    },
   });
-  assert.ok(!restricted.response.ok, "protected community interaction must be blocked after deadline");
+  assert.ok(!restricted.response.ok, "protected incident insert must be blocked after deadline");
+  if (Array.isArray(restricted.data)) {
+    for (const row of restricted.data) if (row?.id) incidents.push(row.id);
+  }
 
   // 5) Fraud correction clears lock metadata and requires renewed approval.
   await onboardAndSubmit(studentA, tokenA, campusA, campusAName, "A-fraud-correction");
@@ -287,8 +332,8 @@ async function main() {
   console.log("PASS ordinary rejection creates no confirmed-fraud metadata/deadline");
   console.log("PASS correction/resubmission clears prior rejection and returns identity to pending");
   console.log("PASS same-campus admin approval and renewed approval succeed");
-  console.log("PASS confirmed fraud records a 48-hour deadline and grace-period status remains unlocked");
-  console.log("PASS after deadline, self status reports locked and protected community write is denied");
+  console.log("PASS confirmed fraud records a 48-hour deadline and protected incident submission succeeds during grace period");
+  console.log("PASS after deadline, self status reports locked and protected incident submission is denied");
   console.log("PASS cross-account identity rows and fraud status remain private");
   console.log("PASS cross-campus administrator cannot review another campus identity");
 }
