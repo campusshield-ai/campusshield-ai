@@ -23,7 +23,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - name: Require configured staging-only environment
         env:
           CAMPUSSHIELD_STAGING_SUPABASE_URL: ${{ secrets.CAMPUSSHIELD_STAGING_SUPABASE_URL }}
@@ -38,7 +37,7 @@ jobs:
           CAMPUSSHIELD_STAGING_CAMPUS_A_ID: ${{ vars.CAMPUSSHIELD_STAGING_CAMPUS_A_ID }}
           CAMPUSSHIELD_STAGING_CAMPUS_B_ID: ${{ vars.CAMPUSSHIELD_STAGING_CAMPUS_B_ID }}
           CAMPUSSHIELD_STAGING_CAMPUS_A_NAME: ${{ vars.CAMPUSSHIELD_STAGING_CAMPUS_A_NAME }}
-          CAMPUSSHIELD_STAGING_STUDENT_OBJECT_PATH: ${{ vars.CAMPUSSHIELD_STAGING_STUDENT_OBJECT_PATH }}
+          CAMPUSSHIELD_STAGING_CAMPUS_B_NAME: ${{ vars.CAMPUSSHIELD_STAGING_CAMPUS_B_NAME }}
         run: |
           set -euo pipefail
           test -n "$CAMPUSSHIELD_STAGING_SUPABASE_URL"
@@ -51,12 +50,12 @@ jobs:
           test -n "$CAMPUSSHIELD_STAGING_CAMPUS_A_ID"
           test -n "$CAMPUSSHIELD_STAGING_CAMPUS_B_ID"
           test -n "$CAMPUSSHIELD_STAGING_CAMPUS_A_NAME"
-          test -n "$CAMPUSSHIELD_STAGING_STUDENT_OBJECT_PATH"
+          test -n "$CAMPUSSHIELD_STAGING_CAMPUS_B_NAME"
           test -n "$CAMPUSSHIELD_STAGING_SUPABASE_PUBLISHABLE_KEY" || test -n "$CAMPUSSHIELD_STAGING_SUPABASE_ANON_KEY"
           test "$CAMPUSSHIELD_STAGING_SUPABASE_URL" = "https://hywcpnoqqhxvujnimhxl.supabase.co"
           test "$CAMPUSSHIELD_STAGING_TEST_CONFIRM" = "hywcpnoqqhxvujnimhxl"
-      - name: Install pinned dependencies
-        run: npm ci
+      - name: Confirm dependency-free Node test runner
+        run: node --version
       - name: Run authenticated staging identity matrix
         env:
           CAMPUSSHIELD_STAGING_SUPABASE_URL: ${{ secrets.CAMPUSSHIELD_STAGING_SUPABASE_URL }}
