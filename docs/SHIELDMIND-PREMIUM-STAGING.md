@@ -33,8 +33,8 @@ Add server-side Edge Function secrets in staging only:
 Never put secret keys in HTML, browser config, GitHub, chat, or logs. Configure the Paystack webhook URL to the deployed staging paystack-webhook function. Use Paystack test mode and test credentials only.
 
 ## Security and acceptance checklist
-- [ ] Apply 20261019140000_shieldmind_tiered_entitlements.sql to staging only.
-- [ ] Deploy updated shieldmind-chat, shieldmind-billing-checkout, and paystack-webhook to staging only.
+- [x] Applied 20261019140000_shieldmind_tiered_entitlements.sql to staging only.
+- [x] Deployed shieldmind-billing-checkout and paystack-webhook to staging; shieldmind-chat already calls the quota RPC. End-to-end session/payment tests remain pending.
 - [ ] Configure Paystack test secret and webhook in the staging/test dashboard.
 - [ ] Verify every price is enforced server-side: ₦2,000 / ₦5,000 / ₦10,000 / ₦15,000 / ₦28,000 monthly.
 - [ ] Verify invalid signature, wrong amount, wrong currency, mismatched user/plan, duplicate webhook, and unknown reference do not grant access.
