@@ -1,38 +1,46 @@
-# ShieldMind Premium — staging only
+# ShieldMind AI tiers — staging only
 
-## Pricing proposal
-- Free: 5 requests/minute and 80 requests/day, subject to current server-side quota.
-- Premium monthly access: NGN 2,000 for 30 days.
-- Premium annual access: NGN 20,000 for 365 days.
-- Payments are one-time prepaid access periods, not auto-renewing subscriptions. The user must renew manually.
-- Core campus safety and incident-reporting features remain free.
+## Proposed monthly plans
 
-Prices are a proposed pilot, not market-validated. Provider/API costs and affordability should be reviewed before public launch.
+| Plan | Monthly price | Requests/minute | Requests/day | Image allowance |
+|---|---:|---:|---:|---:|
+| Free | ₦0 | 5 | 80 | No paid allowance |
+| Starter | ₦2,000 | 10 | 250 | 20/month |
+| Plus | ₦5,000 | 15 | 700 | 60/month |
+| Pro | ₦10,000 | 25 | 1,500 | 150/month |
+| Ultra | ₦15,000 | 35 | 2,500 | 300/month |
+| Max | ₦28,000 | 50 | 4,000 | 600/month |
+
+All paid plans provide 30 days of prepaid access and require manual renewal. There is no auto-renewal. Pro is intended to unlock all standard ShieldMind features; higher plans primarily increase capacity and priority where available. Core campus safety and incident-reporting remain free.
+
+## Session rules
+- The server starts a session on the first accepted AI request.
+- A session lasts at most eight hours from that start.
+- After eight hours, the user must wait one hour before starting another session.
+- Session state is stored server-side in private.shieldmind_session_windows, not in browser storage, so refreshing or changing the device clock cannot bypass it.
+- Per-minute and per-UTC-day quotas apply in addition to the session window.
+
+## Important feature status
+The current ShieldMind chat endpoint accepts text questions only. The image allowances above are entitlement targets, not an active image-upload feature; image upload and processing must be implemented and connected to server-side allowance accounting before launch. Priority processing is also a product target, not yet a separate scheduling guarantee. Do not advertise these as working until tested.
 
 ## Staging-only setup
-Project: `hywcpnoqqhxvujnimhxl`. Never set these secrets in production as part of this work.
-Add server-side Edge Function secrets in the staging project only:
-- `PAYSTACK_SECRET_KEY`: Paystack **test** secret key (`sk_test_...`).
-- The existing `OPENAI_API_KEY` and optional `SHIELDMIND_MODEL` remain server-side only.
+Project: hywcpnoqqhxvujnimhxl. Do not configure production as part of this work.
 
-Never put secret keys in HTML, browser config, GitHub, chat, or logs. Configure the Paystack webhook URL to the deployed staging `paystack-webhook` function. For test-mode acceptance, use Paystack's official test card and test credentials from the Paystack dashboard; do not use real card details.
+Add server-side Edge Function secrets in staging only:
+- PAYSTACK_SECRET_KEY: Paystack test secret key (sk_test_...).
+- Existing OPENAI_API_KEY and optional SHIELDMIND_MODEL remain server-side only.
 
-## Security
-- Checkout requires a verified signed-in user, active verified campus membership, and approved student identity for student accounts.
-- The browser cannot grant itself Premium. Only a server-side verified Paystack transaction can activate entitlements.
-- Webhook signature is HMAC SHA-512 checked, and each reference is independently verified against Paystack before activation.
-- The subscriptions table has RLS and users can only select their own row. No client write policy exists.
-- Safety/incident features are not paywalled. Do not treat the institution/role selector as authority; server-side profile and membership checks are authoritative.
+Never put secret keys in HTML, browser config, GitHub, chat, or logs. Configure the Paystack webhook URL to the deployed staging paystack-webhook function. Use Paystack test mode and test credentials only.
 
-## Acceptance checklist
-- [ ] Configure Paystack test secret in staging Supabase Edge Function secrets.
-- [ ] Deploy checkout and webhook functions to staging only; configure webhook in Paystack test dashboard.
-- [ ] Test rejected requests for anonymous, pending, unverified, and unapproved student accounts.
-- [ ] Verify checkout amount, currency, and period are enforced server-side.
-- [ ] Verify cancelled checkout never grants Premium.
-- [ ] Verify valid webhook + server-side transaction verification grants the exact 30/365-day entitlement.
-- [ ] Verify invalid signature, wrong amount, wrong currency, duplicate webhook, and unknown reference do not grant Premium.
-- [ ] Verify expired Premium falls back to Free; no automatic renewal.
-- [ ] Verify Free and Premium AI quotas are enforced server-side and cannot be bypassed by changing the browser.
-- [ ] Keep all tests fictional and staging-only.
-- [ ] Do not merge to main or publish until the owner reviews and approves.
+## Security and acceptance checklist
+- [ ] Apply 20261019140000_shieldmind_tiered_entitlements.sql to staging only.
+- [ ] Deploy updated shieldmind-chat, shieldmind-billing-checkout, and paystack-webhook to staging only.
+- [ ] Configure Paystack test secret and webhook in the staging/test dashboard.
+- [ ] Verify every price is enforced server-side: ₦2,000 / ₦5,000 / ₦10,000 / ₦15,000 / ₦28,000 monthly.
+- [ ] Verify invalid signature, wrong amount, wrong currency, mismatched user/plan, duplicate webhook, and unknown reference do not grant access.
+- [ ] Verify checkout requires verified campus account, active campus membership, and approved student identity for student accounts.
+- [ ] Verify session starts once, ends after eight hours, imposes a one-hour cooldown, then allows a new session.
+- [ ] Verify refreshes and device/browser clock changes do not bypass the session cooldown.
+- [ ] Verify minute/day quotas by tier and expired subscriptions fall back to Free.
+- [ ] Connect image uploads to server-side allowance tracking before representing image quotas as usable.
+- [ ] Keep tests fictional and staging-only. Do not merge to main, publish, or change production until the owner reviews and approves.
