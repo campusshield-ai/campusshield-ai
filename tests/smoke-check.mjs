@@ -114,3 +114,16 @@ console.log("PASS emergency-services prototype warning remains visible");
 console.log("PASS Android and iOS install metadata and guidance are present");
 console.log("PASS Android and Apple launcher icons are valid PNGs at the required sizes");
 console.log("PASS offline fallback stores no app, authentication, or incident responses");
+
+ 
+// ShieldMind staging checks. Static checks do not replace signed-in cross-campus tests.
+assert.match(config, /https:\/\/hywcpnoqqhxvujnimhxl\.supabase\.co/, "feature branch must target staging Supabase");
+assert.doesNotMatch(config, /fvgtnujjnvdkhzqqcaqe/, "staging feature branch must not point at production");
+assert.match(html, /id="page-shieldmind"/);
+assert.match(html, /id="shieldmind-form"/);
+assert.match(html, /id="shieldmind-question"/);
+assert.match(html, /function resetShieldMindForSession\(\)/);
+assert.match(html, /page === 'shieldmind' &&/);
+assert.match(backend, /async askShieldMind\(question, history = \[\]\)/);
+assert.match(backend, /functions\.invoke\("shieldmind-chat"/);
+assert.match(html, /ShieldMind does not receive CampusShield incident reports, identity documents, attendance, or private Helpdesk records/);
