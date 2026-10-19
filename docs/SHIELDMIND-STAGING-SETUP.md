@@ -38,3 +38,6 @@ Do not run live-provider tests until a valid staging-only key is saved. Do not u
 ## 4. Release boundary
 
 This remains a draft PR targeting `codex/signup-identity-review-staging`, not `main`. Do not merge or publish without explicit owner approval and a signed-in browser walkthrough.
+
+
+The staging Edge Function `shieldmind-chat` is currently deployed as version 6 with JWT verification enabled. Never add OpenAI keys to browser code or commit provider secrets to this repository.
