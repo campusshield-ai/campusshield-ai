@@ -10,6 +10,12 @@ const listEligibility=await readFile(new URL("../supabase/migrations/20261019214
 const chat=await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts",import.meta.url),"utf8");
 const checkout=await readFile(new URL("../supabase/functions/shieldmind-billing-checkout/index.ts",import.meta.url),"utf8");
 assert.match(html,/id="page-shieldmind"/);assert.match(html,/data-page="shieldmind"/);
+assert.match(html,/id="signin-role-picker"/);assert.match(html,/data-signin-role="administrator"/);
+assert.match(html,/id="signin-institution-field"/);assert.match(html,/data-toggle-password="auth-password"/);
+assert.doesNotMatch(html,/channel-tiktok[^<]*|<strong>TikTok<\/strong>/i);
+assert.match(html,/id="campus-dashboard-panel"/);assert.match(html,/id="campus-dashboard-classes"/);
+assert.match(html,/id="campus-dashboard-announcements"/);assert.match(html,/id="campus-dashboard-updates"/);
+assert.match(backend,/listCampusClassroomRoster/);
 assert.match(html,/data-shieldmind-prompt=.*quiz/i);assert.match(html,/data-shieldmind-prompt=.*study notes/i);
 assert.match(html,/id="shieldmind-planner-form"/);assert.match(html,/data-shieldmind-buy="starter"/);assert.match(html,/₦2,000/);
 assert.match(html,/20 image uploads\/month/i);assert.match(backend,/functions\.invoke\("shieldmind-chat"/);assert.match(backend,/data_base64/);
