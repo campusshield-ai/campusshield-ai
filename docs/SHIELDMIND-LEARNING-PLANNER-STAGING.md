@@ -25,3 +25,6 @@ Paid plans are prepaid for 30 days and do not auto-renew. Core safety and incide
 - No approved official campus source catalog is connected, so ShieldMind responses are not official university policy.
 - Test own-row planner RLS, free-plan image rejection, image monthly caps, message quotas, the 8-hour/1-hour session cycle, signed Paystack callbacks, expiration and duplicate webhook handling.
 - Keep production unchanged. Do not merge or publicly release without explicit owner approval.
+
+
+All timetable planner RPCs also verify a verified profile, active verified campus membership, and approved student identity for student accounts at the database layer. The browser gate is not the security boundary.
