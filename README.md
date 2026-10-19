@@ -13,6 +13,15 @@ CampusShield AI aims to make campus environments safer by combining interactive 
 The project is being developed with Nigerian university campuses in mind.
 
 
+## Google sign-in — staging setup required
+
+- The sign-in page includes a Google OAuth button only when the browser-safe Supabase configuration selects staging project `hywcpnoqqhxvujnimhxl`.
+- The click handler checks the staging Auth settings endpoint before redirecting; if Google is disabled it gives setup guidance instead of starting a broken OAuth redirect.
+- OAuth uses the current app URL as the return address. Role and institution selections are hints only; they never change roles, campus membership or verification.
+- New Google accounts are created as pending student profiles by the existing auth trigger; they must complete campus onboarding and student identity approval. Staff/admin permissions remain separately verified.
+- Before testing, create a Google OAuth Web client, add the Supabase staging callback URL in Google Cloud, configure the Google provider in staging Supabase Auth, and allow the local staging preview URLs in Auth URL Configuration.
+- No Google OAuth client secret should be committed to GitHub or pasted into chat. Production Auth is not configured by this staging change.
+
 ## Student and teacher login/dashboard experience
 
 - Refreshed sign-in page with Administrator, Teacher and Student selection hints, an optional institution-name check, and show/hide password controls.
