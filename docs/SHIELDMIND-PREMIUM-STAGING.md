@@ -44,3 +44,6 @@ Never put secret keys in HTML, browser config, GitHub, chat, or logs. Configure 
 - [ ] Verify minute/day quotas by tier and expired subscriptions fall back to Free.
 - [ ] Connect image uploads to server-side allowance tracking before representing image quotas as usable.
 - [ ] Keep tests fictional and staging-only. Do not merge to main, publish, or change production until the owner reviews and approves.
+
+
+Current staging status (2026-10-19): `shieldmind-chat` version 6 is active with JWT verification enabled. Planner access is exposed only through authenticated owner-scoped RPCs and requires an eligible campus account. The private image usage counter is enforced server-side; image processing and payment acceptance still require signed-in browser and Paystack test-mode acceptance checks.
