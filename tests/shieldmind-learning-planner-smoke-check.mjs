@@ -6,7 +6,7 @@ const planner=await readFile(new URL("../shieldmind-planner.js",import.meta.url)
 const migration=await readFile(new URL("../supabase/migrations/20261019213735_shieldmind_learning_planner_and_image_quota.sql",import.meta.url),"utf8");
 const hardening=await readFile(new URL("../supabase/migrations/20261019213833_shieldmind_planner_rpc_hardening.sql",import.meta.url),"utf8");
 const eligibility=await readFile(new URL("../supabase/migrations/20261019214152_shieldmind_planner_require_verified_campus.sql",import.meta.url),"utf8");
-const listEligibility=await readFile(new URL("../supabase/migrations/20261019214230_shieldmind_planner_list_eligibility_fix.sql",import.meta.url),"utf8");
+const listEligibility=await readFile(new URL("../supabase/migrations/20261019214204_shieldmind_planner_list_eligibility_fix.sql",import.meta.url),"utf8");
 const chat=await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts",import.meta.url),"utf8");
 const checkout=await readFile(new URL("../supabase/functions/shieldmind-billing-checkout/index.ts",import.meta.url),"utf8");
 assert.match(html,/id="page-shieldmind"/);assert.match(html,/data-page="shieldmind"/);
