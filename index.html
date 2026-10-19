@@ -363,7 +363,6 @@ td strong{color:#2a464d;font-size:11px}
 .campus-hub-channel-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;flex:1;min-width:0}
 .campus-hub-channel{display:flex;align-items:center;gap:7px;min-width:0;padding:8px;border:1px solid #2c5360;border-radius:12px;background:#ffffff07}
 .campus-hub-channel-icon{width:29px;height:29px;display:grid;place-items:center;flex:0 0 29px;border-radius:9px;background:#233f50;color:#f5f9fa;font-size:15px;font-weight:850}
-.channel-tiktok{background:#22525b;color:#78e6dc}
 .channel-instagram{background:#593f58;color:#f3a0bb}
 .channel-linkedin{background:#204b69;color:#a9dcff;font-size:11px}
 .campus-hub-channel-copy{display:grid;gap:2px;min-width:0;flex:1}
@@ -2650,6 +2649,7 @@ td strong{color:#2a464d;font-size:11px}
         syncIdentityNavigation();
         if ($('page-identity-verification').classList.contains('active') && currentProfile?.verification_status === 'verified') {
           navigate('dashboard');
+          loadCampusDashboardInsights();
         }
       } else if (submission.status === 'pending') {
         $('identity-student-number').value = submission.student_number || '';
