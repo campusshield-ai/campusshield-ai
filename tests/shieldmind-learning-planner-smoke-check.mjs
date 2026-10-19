@@ -15,7 +15,7 @@ assert.match(html,/id="shieldmind-planner-form"/);assert.match(html,/data-shield
 assert.match(html,/20 image uploads\/month/i);assert.match(backend,/functions\.invoke\("shieldmind-chat"/);assert.match(backend,/data_base64/);
 assert.match(planner,/list_my_shieldmind_planner_items/);assert.match(planner,/create_my_shieldmind_planner_item/);assert.match(planner,/update_my_shieldmind_planner_item/);assert.match(planner,/delete_my_shieldmind_planner_item/);assert.doesNotMatch(planner,/\.from\(["']shieldmind_planner_items/);
 assert.match(migration,/alter table public\.shieldmind_planner_items enable row level security/i);
-assert.match(eligibility,/profiles p where p\.id = v_uid and p\.verification_status = 'verified'/i);
+assert.match(eligibility,/profiles p[\\s\\S]*?where p\\.id = v_uid and p\\.verification_status = 'verified'/i);
 assert.match(eligibility,/membership_status <> 'active'/i);
 assert.match(eligibility,/v_identity_status <> 'approved'/i);
 assert.match(listEligibility,/perform private\.shieldmind_require_eligible_caller\(\)/i);
