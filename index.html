@@ -383,6 +383,40 @@ td strong{color:#2a464d;font-size:11px}
 .campus-hub-channel-link:focus-visible{outline:3px solid #71e7d1;outline-offset:2px}
 .campus-hub-live{padding:4px 5px;border:1px solid #2d8d78;border-radius:999px;color:#8ce8d8;font-size:7px;font-weight:900}
 
+/* ShieldMind Premium staging interface */
+.shieldmind-plan{margin:0 0 18px}.shieldmind-plan-copy h2{margin:12px 0 5px}.shieldmind-plan-copy p{margin:4px 0 12px}.shieldmind-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}.shieldmind-price{display:flex;flex-direction:column;gap:8px;padding:15px;border:1px solid #dfe9e5;border-radius:14px;background:#fbfdfc}.shieldmind-price.premium{border-color:#b8ded1;background:linear-gradient(150deg,#f1fbf6,#f8fbff)}.shieldmind-price strong{font-size:12px;color:#365b54}.shieldmind-price b{font-size:25px;color:#183f48}.shieldmind-price span,.shieldmind-price small{font-size:10px;color:#667c7b}.shieldmind-price .btn{margin-top:auto}.shieldmind-plan-note{margin:12px 0 0;font-size:10px;line-height:1.5;color:#718480}@media(max-width:800px){.shieldmind-prices{grid-template-columns:1fr}.shieldmind-price{gap:7px}}
+
+/* ShieldMind AI staging interface */
+.shieldmind-hero{display:flex;align-items:center;gap:16px;padding:22px;margin:0 0 17px;border:1px solid #cde8df;border-radius:18px;background:linear-gradient(120deg,#f0fbf6,#f7fbff)}
+.shieldmind-mark{display:grid;place-items:center;width:54px;height:54px;flex:0 0 54px;border-radius:16px;background:#143e48;color:#8cf0d2;font-size:29px}
+.shieldmind-hero h2{margin:0 0 5px;font-size:18px;color:#173d46}.shieldmind-hero p{margin:0;color:#547078;font-size:12px}
+.shieldmind-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr);gap:16px;align-items:start}
+.shieldmind-pill{padding:6px 9px;border-radius:99px;background:#e8f8f0;color:#24745d;font-size:8px;font-weight:900;letter-spacing:.12em}
+.shieldmind-messages{display:grid;gap:12px;min-height:190px;max-height:480px;overflow:auto;padding:15px;border:1px solid #e3ece7;border-radius:14px;background:#f8fbf9}
+.shieldmind-message{max-width:94%;padding:12px 14px;border:1px solid #e1eae5;border-radius:13px;background:#fff}.shieldmind-message.user{justify-self:end;background:#e9f7f3;border-color:#d0e9df}
+.shieldmind-message strong{display:block;color:#2d655b;font-size:10px}.shieldmind-message p{margin:6px 0 0;color:#304b52;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.shieldmind-tool{width:100%;display:flex;align-items:center;gap:11px;padding:12px 0;border:0;border-bottom:1px solid #e7efeb;background:transparent;text-align:left}
+.shieldmind-tool>span{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:10px;background:#e9f6f0;color:#287761;font-size:10px;font-weight:900}
+.shieldmind-tool>div{display:grid;gap:3px;flex:1}.shieldmind-tool strong{color:#2b4950;font-size:11px}.shieldmind-tool small{color:#7e8d91;font-size:10px}.shieldmind-tool>b{color:#3d8e7a;font-size:20px;font-weight:500}
+.shieldmind-guardrail{margin-top:17px;padding:13px;border:1px solid #d8ece2;border-radius:13px;background:#f3faf6}.shieldmind-guardrail strong{color:#27755f;font-size:11px}.shieldmind-guardrail p{margin:5px 0 0;color:#607c76;font-size:10px;line-height:1.55}
+.shieldmind-disclaimer{margin:5px 0 18px;color:#788b90;font-size:10px;line-height:1.6}@media(max-width:900px){.shieldmind-grid{grid-template-columns:1fr}}
+
+
+/* ShieldMind personal timetable and cloud-synced reminders */
+.shieldmind-planner-panel{margin-top:18px}
+.shieldmind-planner-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.shieldmind-planner-fields .field{min-width:0}
+.shieldmind-planner-fields input,.shieldmind-planner-fields select,.shieldmind-planner-fields textarea{width:100%;box-sizing:border-box}
+.shieldmind-planner-feed{display:grid;gap:10px;margin-top:14px}
+.shieldmind-planner-item{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:13px;border:1px solid var(--border,#dfe9e5);border-radius:12px;background:var(--panel,#fff)}
+.shieldmind-planner-item h3{margin:0 0 5px;font-size:14px}
+.shieldmind-planner-item p{margin:4px 0;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.shieldmind-planner-actions{display:flex;gap:8px;flex-wrap:wrap}
+.shieldmind-planner-meta{font-size:11px;color:var(--muted,#64748b)}
+.shieldmind-image-confirm{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.5}
+.shieldmind-image-confirm input{margin-top:3px}
+@media(max-width:700px){.shieldmind-planner-fields{grid-template-columns:1fr}.shieldmind-planner-item{flex-direction:column}}
+
 </style>
 </head>
 <body>
@@ -510,6 +544,7 @@ td strong{color:#2a464d;font-size:11px}
 <button data-page="marketplace"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16l-1.5-5h-13L4 8ZM5 8v13h14V8M9 21v-7h6v7M3 8a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg></span>Marketplace</button>
 <button data-page="classroom" id="classroom-nav">Teacher Classroom</button>
 <button data-page="opportunities" id="opportunities-nav">Gift & Opportunity Hub</button>
+<button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button>
 <button data-page="manage"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button>
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
@@ -807,6 +842,58 @@ td strong{color:#2a464d;font-size:11px}
   </div>
 </section>
 
+<section class="page" id="page-shieldmind">
+  <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · LEARNING ASSISTANT</span><h1>Meet ShieldMind AI</h1><p>Study support for campus life. Official university answers will only appear when trusted campus sources are available.</p></div></div>
+  <div class="shieldmind-hero"><div class="shieldmind-mark" aria-hidden="true">✦</div><div><h2>Your campus learning companion</h2><p>Ask an academic question, explore a topic, or get a study plan. This staging prototype does not present unverified content as official university policy.</p></div></div>
+
+  <section class="shieldmind-plan panel" aria-labelledby="shieldmind-plan-title">
+    <div class="shieldmind-plan-copy"><span class="shieldmind-pill">FREE + PREMIUM</span><h2 id="shieldmind-plan-title">Choose how much AI support you need</h2><p>Core campus safety stays free. Premium adds higher AI limits for study support.</p><p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p></div>
+    <div class="shieldmind-prices">
+      <article class="shieldmind-price"><strong>Free</strong><b>₦0</b><span>5 requests/min · 80/day</span><small>Core academic Q&amp;A and study prompts</small><button class="btn secondary" type="button" disabled>Included</button></article>
+      <article class="shieldmind-price premium"><strong>Starter</strong><b>₦2,000</b><span>10 requests/min · 250/day</span><small>Target: 20 image uploads/month · 8-hour sessions, then 1-hour rest</small><button class="btn" type="button" data-shieldmind-buy="starter">Choose Starter</button></article>
+      <article class="shieldmind-price premium"><strong>Plus</strong><b>₦5,000</b><span>15 requests/min · 700/day</span><small>Target: 60 image uploads/month · expanded study workloads</small><button class="btn" type="button" data-shieldmind-buy="plus">Choose Plus</button></article>
+      <article class="shieldmind-price premium"><strong>Pro · Full standard access</strong><b>₦10,000</b><span>25 requests/min · 1,500/day</span><small>Target: 150 image uploads/month · all standard ShieldMind features</small><button class="btn" type="button" data-shieldmind-buy="pro">Choose Pro</button></article>
+      <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦15,000</b><span>35 requests/min · 2,500/day</span><small>Target: 300 image uploads/month · higher capacity and priority where available</small><button class="btn" type="button" data-shieldmind-buy="ultra">Choose Ultra</button></article>
+      <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>50 requests/min · 4,000/day</span><small>Target: 600 image uploads/month · highest planned usage tier</small><button class="btn" type="button" data-shieldmind-buy="max">Choose Max</button></article>
+    </div>
+    <p class="shieldmind-plan-note">All paid plans are 30-day prepaid access, not auto-renewing. The 8-hour session / 1-hour cooldown is enforced by the staging AI endpoint. Image allowances are planned entitlement limits; image-upload processing must be connected before those allowances can be used. Checkout is staging-only and requires Paystack test credentials. Prices and limits need cost testing before launch.</p>
+  </section>
+  <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Start with a general academic question.</p></div><span class="shieldmind-pill">STAGING</span></div>
+    <div class="notice-inline">The approved campus source catalog is not connected yet, so ShieldMind will not guess official university policies or deadlines.</div>
+    <div id="shieldmind-messages" class="shieldmind-messages" aria-live="polite"><article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Hi! Ask a general academic question. Verified campus-policy answers are unavailable until approved official sources are connected.</p></article></div>
+    <form id="shieldmind-form"><div class="field"><label for="shieldmind-question">Your question</label><textarea id="shieldmind-question" required maxlength="1200" placeholder="e.g. Explain photosynthesis in simple steps…" rows="3"></textarea><p class="muted">Do not enter safety reports, ID details, passwords, medical details, or other private student information.</p></div>
+      <div class="field">
+        <label for="shieldmind-image">Optional study image (JPG, PNG or WebP · max 2.5 MB)</label>
+        <input id="shieldmind-image" type="file" accept="image/jpeg,image/png,image/webp">
+        <label class="shieldmind-image-confirm"><input id="shieldmind-image-confirm" type="checkbox"> I confirm this image contains only academic learning material and no student IDs, passwords, private records, medical details or other personal information.</label>
+        <p class="muted">Images are sent to the AI provider for the answer and are not saved in CampusShield storage. Paid monthly image limits are enforced by the staging server.</p>
+      </div><div class="actions"><button class="btn" type="submit" id="shieldmind-submit">Ask ShieldMind</button><button class="btn secondary" type="button" id="shieldmind-clear">Clear chat</button></div><p id="shieldmind-status" class="message" role="status" aria-live="polite">Ready for a general academic question.</p></form></section>
+    <aside class="panel"><h2>Study tools</h2><p class="muted">Quick prompts for the next rollout stage.</p>
+      <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Create a one-week revision plan for a subject I name. Ask me for the subject and available study hours."><span>01</span><div><strong>Revision planner</strong><small>Turn study goals into manageable sessions</small></div><b>›</b></button>
+      <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me create practice quiz questions from a topic I provide. Ask me the subject, level, and number of questions."><span>02</span><div><strong>Practice quizzes</strong><small>Review a topic with self-test questions</small></div><b>›</b></button>
+      <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me produce structured study notes for a topic I provide. Ask me the subject and level."><span>03</span><div><strong>Study notes</strong><small>Organise key ideas and definitions</small></div><b>›</b></button>
+      <div class="shieldmind-guardrail"><strong>✓ Privacy boundary</strong><p>ShieldMind does not receive CampusShield incident reports, identity documents, attendance, or private Helpdesk records.</p></div>
+    </aside></div>
+  <section class="panel shieldmind-planner-panel" aria-labelledby="shieldmind-planner-title">
+    <div class="panel-heading"><div><h2 id="shieldmind-planner-title">My timetable & reminders</h2><p>Private, cloud-synced study sessions, classes, assignments, exams and reminders.</p></div><button class="btn secondary" type="button" id="shieldmind-planner-refresh">Refresh</button></div>
+    <div class="notice-inline">Your items are restricted to your signed-in account. Reminders can notify you while this app is open; background push notifications are not enabled yet.</div>
+    <form id="shieldmind-planner-form">
+      <div class="shieldmind-planner-fields">
+        <div class="field"><label for="shieldmind-plan-title">Title *</label><input id="shieldmind-plan-title" required minlength="2" maxlength="120" placeholder="e.g. Revise CSC 201"></div>
+        <div class="field"><label for="shieldmind-plan-kind">Type</label><select id="shieldmind-plan-kind"><option value="revision">Revision</option><option value="class">Class / lecture</option><option value="assignment">Assignment</option><option value="exam">Exam</option><option value="reminder">Reminder</option></select></div>
+        <div class="field"><label for="shieldmind-plan-start">Start date and time</label><input id="shieldmind-plan-start" type="datetime-local"></div>
+        <div class="field"><label for="shieldmind-plan-remind">Remind me at</label><input id="shieldmind-plan-remind" type="datetime-local"></div>
+        <div class="field" style="grid-column:1/-1"><label for="shieldmind-plan-details">Notes (optional)</label><textarea id="shieldmind-plan-details" maxlength="1000" rows="2" placeholder="Study goals, room, or preparation notes. Do not add passwords or private student records."></textarea></div>
+      </div>
+      <div class="actions"><button class="btn" type="submit" id="shieldmind-plan-save">Save to my timetable</button><button class="btn secondary" type="button" id="shieldmind-plan-notifications">Enable browser reminders</button></div>
+      <p id="shieldmind-planner-status" class="message" role="status" aria-live="polite">Sign in to sync your timetable.</p>
+    </form>
+    <div id="shieldmind-planner-feed" class="shieldmind-planner-feed"><div class="community-empty">Your private timetable will appear here.</div></div>
+  </section>
+  <p class="shieldmind-disclaimer">Educational support only. Check course materials and ask your lecturer when accuracy matters. ShieldMind is not an emergency service or official university decision-maker.</p>
+</section>
+
+
 <section class="page" id="page-classroom">
   <div class="heading"><h1>Teacher Classroom</h1><p>Private course spaces for verified teachers and students at the same university.</p></div>
   <div class="notice-inline"><strong>Private by design.</strong> Only verified campus members who own or have joined a class can read its announcements and learning links. Do not post student IDs, passwords, or private records.</div>
@@ -1024,6 +1111,7 @@ td strong{color:#2a464d;font-size:11px}
 <script src="./supabase-config.js"></script>
 <script src="./campusshield-backend.js"></script>
 <script src="./campusshield-backend-identity-addon.js"></script>
+<script src="./shieldmind-planner.js"></script>
 <script>
 
 (() => {
@@ -1523,6 +1611,14 @@ td strong{color:#2a464d;font-size:11px}
       page = 'dashboard';
       toast('This feature requires a verified account and verified membership at your university.');
     }
+    if (page === 'shieldmind' &&
+        (!verified || !campusContext?.university_id ||
+         campusContext.membership_status !== 'active' ||
+         campusContext.verification_status !== 'verified' ||
+         (isStudentAccount() && !hasApprovedStudentIdentity()))) {
+      page = 'dashboard';
+      toast('ShieldMind requires a verified campus membership and approved student identity where applicable.');
+    }
 
     document.querySelectorAll('.page').forEach(el =>
       el.classList.toggle('active', el.id === 'page-' + page)
@@ -1552,6 +1648,7 @@ td strong{color:#2a464d;font-size:11px}
       marketplace:'Campus marketplace',
       classroom:'Teacher Classroom',
       opportunities:'Gift & Opportunity Hub'
+      shieldmind:'ShieldMind AI',
     };
 
     $('sectionTitle').textContent = names[page] || 'Overview';
@@ -1568,6 +1665,7 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
     if (button.dataset.page === 'classroom') loadCampusClassroomsPage();
     if (button.dataset.page === 'opportunities') loadCampusOpportunitiesPage();
+    if (button.dataset.page === 'shieldmind') { resetShieldMindForSession(); refreshShieldMindPlan(); window.CampusShieldPlanner?.load(); }
     if (button.dataset.page === 'noticeboard') loadCampusNoticeboardPage();
     if (button.dataset.page === 'helpdesk') loadCampusHelpdeskPage();
     if (button.dataset.page === 'community') loadCommunityPage();
@@ -4145,6 +4243,7 @@ td strong{color:#2a464d;font-size:11px}
       }
 
       const workspaceReady = showWorkspace(profile);
+            if (workspaceReady && typeof resetShieldMindForSession === 'function') resetShieldMindForSession();
       if (workspaceReady) {
         campusContext = await backend.getMyCampusContext();
         syncCampusAccessNavigation();
@@ -4603,6 +4702,90 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     );
   }
   
+  let shieldMindSessionUserId = null, shieldMindHistory = [];
+  function resetShieldMindForSession() {
+    if (!currentProfile) { shieldMindSessionUserId=null; shieldMindHistory=[]; return; }
+    const allowed=currentProfile.verification_status==='verified' && (!isStudentAccount() || hasApprovedStudentIdentity());
+    if ($('shieldmind-submit')) $('shieldmind-submit').disabled=!allowed;
+    if (shieldMindSessionUserId!==currentProfile.id) { shieldMindSessionUserId=currentProfile.id; shieldMindHistory=[]; if ($('shieldmind-messages')) $('shieldmind-messages').innerHTML='<article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Chat ready. General academic questions only in this initial staging build.</p></article>'; }
+    if ($('shieldmind-status')&&!allowed) $('shieldmind-status').textContent='Verified campus access is required to use ShieldMind.';
+  }
+  async function refreshShieldMindPlan() {
+    const status = $('shieldmind-plan-status');
+    if (!status) return;
+    const backend = window.CampusShieldBackend;
+    if (!currentProfile || !backend?.isConfigured) { status.textContent='Sign in with a verified campus account to check your plan.'; return; }
+    status.textContent='Checking your plan…';
+    try {
+      const {data:{user},error:userError}=await backend.client.auth.getUser();
+      if (userError || !user) { status.textContent='Sign in to view or upgrade your plan.'; return; }
+      const {data,error}=await backend.client.rpc('get_my_shieldmind_plan');
+      if (error) throw error;
+      const plan=Array.isArray(data)?data[0]:data;
+      if (['starter','plus','pro','ultra','max','premium'].includes(plan?.plan) && plan?.status==='active' && plan?.expires_at && new Date(plan.expires_at).getTime()>Date.now()) {
+        status.textContent=plan.plan.toUpperCase()+' active until '+new Date(plan.expires_at).toLocaleDateString()+'. Your tier limits are enabled.';
+        document.querySelectorAll('[data-shieldmind-buy]').forEach(button=>{button.disabled=true;button.textContent='Premium active';});
+      } else {
+        status.textContent='You are on ShieldMind Free. Upgrade for higher AI usage; payment must be confirmed by the server before Premium activates.';
+      }
+    } catch (_error) { status.textContent='Plan status could not be loaded. Try refreshing this page.'; }
+  }
+  document.querySelectorAll('[data-shieldmind-buy]').forEach(button=>button.addEventListener('click',async()=>{
+    const backend=window.CampusShieldBackend, plan=button.dataset.shieldmindBuy;
+    if(!currentProfile||!backend?.isConfigured){$('shieldmind-plan-status').textContent='Sign in before upgrading.';return;}
+    const oldText=button.textContent;button.disabled=true;button.textContent='Opening secure checkout…';
+    try {
+      const {data:{user},error:userError}=await backend.client.auth.getUser();
+      if(userError||!user)throw new Error('Sign in again before checkout.');
+      const {data,error}=await backend.client.functions.invoke('shieldmind-billing-checkout',{body:{plan}});
+      if(error)throw error;
+      if(!data?.checkout_url||!/^https:\/\/checkout\.paystack\.com\//.test(data.checkout_url))throw new Error(data?.error||'Secure checkout is not configured in staging yet.');
+      window.location.assign(data.checkout_url);
+    } catch(error) {
+      $('shieldmind-plan-status').textContent=error?.message||'Checkout could not start. Please try again.';
+      button.disabled=false;button.textContent=oldText;
+    }
+  }));
+  function addShieldMindMessage(role,message) {
+    const article=document.createElement('article'); article.className='shieldmind-message '+(role==='user'?'user':'assistant');
+    const title=document.createElement('strong'); title.textContent=role==='user'?'You':'ShieldMind AI';
+    const body=document.createElement('p'); body.textContent=message; article.append(title,body);
+    $('shieldmind-messages').appendChild(article); $('shieldmind-messages').scrollTop=$('shieldmind-messages').scrollHeight;
+  }
+  $('shieldmind-clear').addEventListener('click',()=>{shieldMindHistory=[];$('shieldmind-messages').innerHTML='';addShieldMindMessage('assistant','Chat cleared. Official campus policy answers remain unavailable until approved sources are configured.');$('shieldmind-status').textContent='Chat cleared. This interface does not save your conversation.';});
+  document.querySelectorAll('[data-shieldmind-prompt]').forEach(button=>button.addEventListener('click',()=>{$('shieldmind-question').value=button.dataset.shieldmindPrompt;$('shieldmind-question').focus();}));
+  $('shieldmind-form').addEventListener('submit',async event=>{
+    event.preventDefault(); const question=String($('shieldmind-question').value||'').trim(),backend=window.CampusShieldBackend,imageFile=$('shieldmind-image')?.files?.[0]||null;
+    const allowed=Boolean(currentProfile&&currentProfile.verification_status==='verified'&&(!isStudentAccount()||hasApprovedStudentIdentity()));
+    if(!question||question.length>1200)return;
+    if(imageFile && !['image/jpeg','image/png','image/webp'].includes(imageFile.type)){$('shieldmind-status').textContent='Use a JPG, PNG or WebP study image.';return;}
+    if(imageFile && imageFile.size>2.5*1024*1024){$('shieldmind-status').textContent='The image must be 2.5 MB or smaller.';return;}
+    if(imageFile && !$('shieldmind-image-confirm')?.checked){$('shieldmind-status').textContent='Confirm that the image contains only academic material and no private personal information.';return;}
+    if(!backend?.isConfigured||!allowed){$('shieldmind-status').textContent='Verified campus access is required to use ShieldMind.';return;}
+    const {data:{user},error:userError}=await backend.client.auth.getUser();
+    if(userError||!user){$('shieldmind-status').textContent='Your session could not be confirmed. Sign in again.';return;}
+    if (!currentProfile.id) currentProfile={...currentProfile,id:user.id};
+    const profileAtRequest=currentProfile,userId=user.id,button=$('shieldmind-submit');
+    if (currentProfile.id !== userId) { $('shieldmind-status').textContent='Your session and account profile do not match. Please sign in again.'; return; }
+    shieldMindSessionUserId=user.id;
+    button.disabled=true;$('shieldmind-status').textContent='ShieldMind is checking your request…';addShieldMindMessage('user',question);$('shieldmind-question').value='';
+    try{
+      let imagePayload=null;
+      if(imageFile){
+        imagePayload=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const dataUrl=String(reader.result||'');const split=dataUrl.indexOf(',');if(split<0){reject(new Error('Image could not be prepared.'));return;}resolve({mime_type:imageFile.type,data_base64:dataUrl.slice(split+1)});};reader.onerror=()=>reject(new Error('Image could not be read.'));reader.readAsDataURL(imageFile);});
+      }
+      const result=await backend.askShieldMind(question,shieldMindHistory,imagePayload);
+      if($('shieldmind-image')) $('shieldmind-image').value='';
+      if($('shieldmind-image-confirm')) $('shieldmind-image-confirm').checked=false;
+      if(currentProfile!==profileAtRequest||currentProfile?.id!==userId){shieldMindHistory=[];$('shieldmind-messages').innerHTML='';resetShieldMindForSession();return;}
+      addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'));
+      shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-8);
+      $('shieldmind-status').textContent=result?.mode==='provider'?'Study support · Verify important facts against your course materials.':'Safe response · AI provider/source catalog is not configured.';
+    }catch(error){console.warn('ShieldMind request failed:',error?.message||'unknown');$('shieldmind-status').textContent='ShieldMind is not available right now. Your question was not saved; please try again later.';addShieldMindMessage('assistant','I could not complete that request. Please try again later. For urgent campus or safety matters, use official university channels.');}
+    finally{button.disabled=false;}
+  });
+
+
   $('signout-button').addEventListener('click', async () => {
     try {
       const backend = window.CampusShieldBackend;
