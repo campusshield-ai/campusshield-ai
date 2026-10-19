@@ -452,6 +452,16 @@ td strong{color:#2a464d;font-size:11px}
 @media(max-width:1050px){.campus-dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.campus-dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.campus-dashboard-grid{grid-template-columns:1fr}.campus-dashboard-panel .panel-heading{align-items:flex-start}}
 
+
+/* Google OAuth button — staging preview only */
+.google-auth-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted,#718096);font-size:11px;font-weight:750;letter-spacing:1px}
+.google-auth-divider::before,.google-auth-divider::after{content:"";height:1px;flex:1;background:var(--line,#e2e9f2)}
+.google-auth-button{width:100%;min-height:46px;display:flex;align-items:center;justify-content:center;gap:11px;border:1px solid #d6e0e7;border-radius:11px;background:#fff;color:#203344;font-weight:750}
+.google-auth-button:hover{background:#f7fafc;border-color:#9eb2bf}
+.google-auth-button:disabled{cursor:wait;opacity:.65}
+.google-auth-button svg{width:19px;height:19px;flex:0 0 19px}
+.google-auth-note{font-size:11px;line-height:1.55;margin:8px 0 0;color:var(--muted,#6d7c91)}
+
 </style>
 </head>
 <body>
@@ -565,6 +575,14 @@ td strong{color:#2a464d;font-size:11px}
         </div>
         <div class="actions"><button class="btn" type="submit" id="auth-submit">Sign in</button></div>
         <p id="auth-message" class="message" role="status" aria-live="polite">Please sign in or create an account.</p>
+        <div id="google-signin-wrap" hidden>
+          <div class="google-auth-divider" aria-hidden="true"><span>OR CONTINUE WITH</span></div>
+          <button type="button" id="google-signin-button" class="google-auth-button">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.76 7.18l7.73 6C44.42 37.96 46.98 31.8 46.98 24.55Z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.88 23.88 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.97-6.19Z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.14 1.44-4.88 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z"/></svg>
+            Continue with Google
+          </button>
+          <p class="google-auth-note" id="google-signin-note">Uses Google to authenticate your account. New accounts remain pending and must complete campus and identity verification. This option is available only in the staging preview.</p>
+        </div>
       </form>
     </section>
   </div>
@@ -1472,12 +1490,36 @@ td strong{color:#2a464d;font-size:11px}
     if (message) $('auth-message').textContent = message;
   }
 
+  function isStagingGoogleAuthEnvironment() {
+    try {
+      const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
+      return new URL(String(config.url || "")).hostname === "hywcpnoqqhxvujnimhxl.supabase.co";
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  async function isGoogleProviderEnabled() {
+    const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
+    const publishableKey = String(config.publishableKey || "");
+    if (!isStagingGoogleAuthEnvironment() || !publishableKey) return false;
+    const response = await fetch(String(config.url).replace(/\/$/, "") + "/auth/v1/settings", {
+      method: "GET",
+      headers: { apikey: publishableKey, Accept: "application/json" },
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error("Could not verify the Google sign-in provider status.");
+    const settings = await response.json();
+    return settings?.external?.google === true;
+  }
+
   function setAuthMode(mode) {
     authMode = mode === 'signup' ? 'signup' : mode === 'reset' ? 'reset' : 'signin';
     const isSignUp = authMode === 'signup';
     const isReset = authMode === 'reset';
 
     $('auth-tabs').hidden = isReset;
+    $('google-signin-wrap').hidden = isSignUp || isReset || !isStagingGoogleAuthEnvironment();
     $('signin-institution-field').hidden = isSignUp || isReset;
     $('signin-role-picker').hidden = isSignUp || isReset;
     $('signin-role-note').hidden = isSignUp || isReset;
@@ -1749,6 +1791,37 @@ td strong{color:#2a464d;font-size:11px}
 
     if (page === 'analytics') renderAnalytics();
     if (page === 'identity-verification') loadStudentIdentityStatus();
+  }
+
+  function consumeGoogleOAuthHints(profile, context) {
+    let pending = false, expectedRole = "student", institutionHint = "";
+    try {
+      pending = sessionStorage.getItem("campusshield_google_oauth_pending") === "true";
+      if (!pending) return;
+      expectedRole = sessionStorage.getItem("campusshield_google_expected_role") || "student";
+      institutionHint = sessionStorage.getItem("campusshield_google_institution_hint") || "";
+      sessionStorage.removeItem("campusshield_google_oauth_pending");
+      sessionStorage.removeItem("campusshield_google_expected_role");
+      sessionStorage.removeItem("campusshield_google_institution_hint");
+    } catch (_error) {
+      return;
+    }
+    const normalize = value => String(value || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const wantedRole = expectedRole === "administrator" ? "admin" : expectedRole;
+    const actualRole = profile?.requested_role || profile?.role || "student";
+    if (wantedRole && actualRole !== wantedRole) {
+      toast("Google sign-in succeeded. Your verified/requested role is " + actualRole + "; the selected role is only a hint and does not change permissions.");
+    }
+    if (institutionHint && context?.university_name && normalize(institutionHint) !== normalize(context.university_name)) {
+      toast("Google sign-in succeeded, but your verified campus is " + context.university_name + ". The institution field does not change campus membership.");
+    } else if (institutionHint && !context?.university_id) {
+      toast("Google sign-in succeeded. Select and verify " + institutionHint + " from the campus directory to finish campus onboarding.");
+    }
+    if (profile?.verification_status !== "verified") {
+      $('auth-message').textContent = "Google sign-in succeeded. Your account remains pending until the required campus and identity verification is complete.";
+    } else {
+      $('auth-message').textContent = "Google sign-in succeeded. Your account permissions are based on its verified CampusShield profile.";
+    }
   }
 
   async function loadCampusDashboardInsights() {
@@ -4602,6 +4675,52 @@ td strong{color:#2a464d;font-size:11px}
     });
   });
 
+  $('google-signin-button')?.addEventListener('click', async () => {
+    const backend = window.CampusShieldBackend;
+    const button = $('google-signin-button');
+    const message = $('auth-message');
+    const institutionHint = String($('signin-institution')?.value || '').trim();
+    if (!isStagingGoogleAuthEnvironment()) {
+      message.textContent = 'Google sign-in is available in the staging preview only. Production has not been changed.';
+      return;
+    }
+    if (!backend?.isConfigured || typeof backend.signInWithGoogle !== 'function') {
+      message.textContent = 'Supabase is not configured for Google sign-in.';
+      return;
+    }
+    const oldText = button.textContent.trim();
+    button.disabled = true;
+    button.textContent = 'Checking Google sign-in…';
+    try {
+      const providerEnabled = await isGoogleProviderEnabled();
+      if (!providerEnabled) {
+        message.textContent = 'Google sign-in is not configured in staging yet. Add a Google OAuth Web client ID and secret in Supabase Authentication → Sign In / Providers before retrying.';
+        return;
+      }
+      try {
+        sessionStorage.setItem('campusshield_google_oauth_pending', 'true');
+        sessionStorage.setItem('campusshield_google_expected_role', selectedSignInRole || 'student');
+        sessionStorage.setItem('campusshield_google_institution_hint', institutionHint);
+      } catch (_error) {
+        message.textContent = 'This browser cannot preserve the sign-in handoff. Enable session storage and try again.';
+        return;
+      }
+      message.textContent = 'Redirecting to Google securely…';
+      const redirectTo = window.location.origin + window.location.pathname;
+      const { error } = await backend.signInWithGoogle(redirectTo);
+      if (error) throw error;
+    } catch (error) {
+      try {
+        sessionStorage.removeItem('campusshield_google_oauth_pending');
+      } catch (_error) {}
+      console.error('Google sign-in could not start:', error);
+      message.textContent = error?.message || 'Google sign-in could not start. Check the staging OAuth setup and try again.';
+    } finally {
+      button.disabled = false;
+      button.innerHTML = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.76 7.18l7.73 6C44.42 37.96 46.98 31.8 46.98 24.55Z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.88 23.88 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.97-6.19Z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.14 1.44-4.88 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z"/></svg> Continue with Google';
+    }
+  });
+
   $('auth-form').addEventListener('submit', async e => {
     e.preventDefault();
     if (authBusy) return;
@@ -5005,10 +5124,13 @@ $('resend-confirmation-button').addEventListener('click', async () => {
             if (workspaceReady) {
               campusContext = await backend.getMyCampusContext();
               syncCampusAccessNavigation();
+              consumeGoogleOAuthHints(profile, campusContext);
               await refreshIncidentsFromSupabase();
-              $('auth-message').textContent = profile.verification_status === 'verified'
-                ? `Signed in. Your role is ${profile.role}.`
-                : 'Your account is pending verification. You can submit incident reports.';
+              if (sessionStorage.getItem('campusshield_google_oauth_pending') !== 'true') {
+                $('auth-message').textContent = profile.verification_status === 'verified'
+                  ? `Signed in. Your role is ${profile.role}.`
+                  : 'Your account is pending verification. You can submit incident reports.';
+              }
               if (!campusContext?.university_id) {
                 navigate('community');
                 await loadCommunityPage();
