@@ -1797,7 +1797,7 @@ td strong{color:#2a464d;font-size:11px}
     let pending = false, expectedRole = "student", institutionHint = "";
     try {
       pending = sessionStorage.getItem("campusshield_google_oauth_pending") === "true";
-      if (!pending) return;
+      if (!pending) return false;
       expectedRole = sessionStorage.getItem("campusshield_google_expected_role") || "student";
       institutionHint = sessionStorage.getItem("campusshield_google_institution_hint") || "";
       sessionStorage.removeItem("campusshield_google_oauth_pending");
@@ -1822,6 +1822,7 @@ td strong{color:#2a464d;font-size:11px}
     } else {
       $('auth-message').textContent = "Google sign-in succeeded. Your account permissions are based on its verified CampusShield profile.";
     }
+    return true;
   }
 
   async function loadCampusDashboardInsights() {
@@ -5124,9 +5125,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
             if (workspaceReady) {
               campusContext = await backend.getMyCampusContext();
               syncCampusAccessNavigation();
-              consumeGoogleOAuthHints(profile, campusContext);
+              const completedGoogleOAuth = consumeGoogleOAuthHints(profile, campusContext);
               await refreshIncidentsFromSupabase();
-              if (sessionStorage.getItem('campusshield_google_oauth_pending') !== 'true') {
+              if (!completedGoogleOAuth) {
                 $('auth-message').textContent = profile.verification_status === 'verified'
                   ? `Signed in. Your role is ${profile.role}.`
                   : 'Your account is pending verification. You can submit incident reports.';
