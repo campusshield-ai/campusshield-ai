@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+const html=await readFile(new URL("../index.html",import.meta.url),"utf8");
+const backend=await readFile(new URL("../campusshield-backend.js",import.meta.url),"utf8");
+const planner=await readFile(new URL("../shieldmind-planner.js",import.meta.url),"utf8");
+const migration=await readFile(new URL("../supabase/migrations/20261019214000_shieldmind_learning_planner_and_image_quota.sql",import.meta.url),"utf8");
+const chat=await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts",import.meta.url),"utf8");
+const checkout=await readFile(new URL("../supabase/functions/shieldmind-billing-checkout/index.ts",import.meta.url),"utf8");
+assert.match(html,/id="page-shieldmind"/);assert.match(html,/data-page="shieldmind"/);
+assert.match(html,/data-shieldmind-prompt=.*quiz/i);assert.match(html,/data-shieldmind-prompt=.*study notes/i);
+assert.match(html,/id="shieldmind-planner-form"/);assert.match(html,/data-shieldmind-buy="starter"/);assert.match(html,/₦2,000/);
+assert.match(html,/20 image uploads\/month/i);assert.match(backend,/functions\.invoke\("shieldmind-chat"/);assert.match(backend,/data_base64/);
+assert.match(planner,/shieldmind_planner_items/);assert.match(planner,/eq\("user_id",user\.id\)/);
+assert.match(migration,/alter table public\.shieldmind_planner_items enable row level security/i);
+assert.match(migration,/user_id = \(select auth\.uid\(\)\)/i);assert.match(migration,/consume_shieldmind_image_upload/i);
+assert.match(chat,/looksLikeSensitiveRequest\(item\.content\)/);assert.match(chat,/consume_shieldmind_image_upload/);assert.match(chat,/image_url/);
+assert.match(checkout,/api\.paystack\.co\/transaction\/initialize/);assert.doesNotMatch(html,/sk-[A-Za-z0-9]{20,}/);
+console.log("ShieldMind learning/planner smoke checks passed.");
