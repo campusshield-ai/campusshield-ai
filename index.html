@@ -88,6 +88,16 @@ th{color:var(--muted);background:#f8fafd}
 @media(max-width:650px){.sidebar{position:static;width:auto;height:auto;padding:12px}.brand{padding:4px 8px 10px}.nav{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar-bottom{display:none}.main{margin-left:0}.topbar{padding:0 14px}.content{padding:13px}.stats{gap:9px}.stat,.panel{padding:14px}.heading h1{font-size:25px}}
 
 [hidden]{display:none!important}
+.password-input-wrap{position:relative;display:flex;align-items:center}
+.password-input-wrap input{width:100%;padding-right:52px!important}
+.password-toggle{position:absolute;right:7px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:38px;height:38px;border:0;border-radius:9px;background:transparent;color:#647980}
+.password-toggle:hover{background:#edf5f1;color:#206d78}
+.password-toggle svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.auth-role-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:18px 0}
+.auth-role-option{min-height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid #dfe8e4;border-radius:12px;background:#fff;color:#52696e;font-size:11px;font-weight:750}
+.auth-role-option svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.auth-role-option[aria-pressed="true"]{border-color:#58b59f;background:#eff9f4;color:#176d5b;box-shadow:inset 0 0 0 1px #58b59f}
+@media(max-width:420px){.auth-role-picker{gap:5px}.auth-role-option{font-size:10px}}
 .login-screen{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(360px,.9fr);background:#f3f6fb}
 .login-intro{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:clamp(32px,7vw,100px);color:#eef7ff;background:radial-gradient(circle at 80% 20%,#174d79 0,transparent 35%),linear-gradient(145deg,#061326,#0b2949 70%,#0b3b50)}
 .login-brand{font-size:23px;font-weight:900;letter-spacing:-.5px;margin-bottom:54px}
@@ -433,7 +443,6 @@ td strong{color:#2a464d;font-size:11px}
     <span class="campus-hub-social-label">FIND US ON</span>
     <div class="campus-hub-channel-grid">
       <a class="campus-hub-channel campus-hub-channel-link" href="https://x.com/CampusShieldAI" aria-label="Open the official CampusShield AI X profile"><span class="campus-hub-channel-icon channel-x" aria-hidden="true">X</span><span class="campus-hub-channel-copy"><strong>X</strong><small>Campus updates</small></span><span class="campus-hub-live">OPEN X ↗</span></a>
-      <div class="campus-hub-channel"><span class="campus-hub-channel-icon channel-tiktok" aria-hidden="true">♪</span><span class="campus-hub-channel-copy"><strong>TikTok</strong><small>Quick safety tips</small></span><span class="campus-hub-soon">SOON</span></div>
       <div class="campus-hub-channel"><span class="campus-hub-channel-icon channel-instagram" aria-hidden="true">◎</span><span class="campus-hub-channel-copy"><strong>Instagram</strong><small>Campus voices</small></span><span class="campus-hub-soon">SOON</span></div>
       <div class="campus-hub-channel"><span class="campus-hub-channel-icon channel-linkedin" aria-hidden="true">in</span><span class="campus-hub-channel-copy"><strong>LinkedIn</strong><small>Campus partnerships</small></span><span class="campus-hub-soon">SOON</span></div>
     </div>
@@ -446,6 +455,12 @@ td strong{color:#2a464d;font-size:11px}
       <p class="auth-kicker">CAMPUSSHIELD ACCESS</p>
       <h2 id="auth-title">Welcome back</h2>
       <p id="auth-subtitle" class="muted">Sign in to review campus safety reports.</p>
+      <div class="auth-role-picker" id="signin-role-picker" role="group" aria-label="Choose your account type">
+        <button type="button" class="auth-role-option" data-signin-role="administrator" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></svg>Administrator</button>
+        <button type="button" class="auth-role-option" data-signin-role="teacher" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg>Teacher</button>
+        <button type="button" class="auth-role-option" data-signin-role="student" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11v5c3.5 3 8.5 3 12 0v-5M22 9v6"/></svg>Student</button>
+      </div>
+      <p class="muted" id="signin-role-note">Your actual account role and permissions are verified securely after sign-in.</p>
       <div class="auth-tabs" id="auth-tabs" role="group" aria-label="Account access">
         <button type="button" data-auth-mode="signin" aria-pressed="true">Sign in</button>
         <button type="button" data-auth-mode="signup" aria-pressed="false">Create account</button>
@@ -463,13 +478,13 @@ td strong{color:#2a464d;font-size:11px}
           </div>
         </div>
         <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
-        <div class="field" id="auth-password-field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div>
+        <div class="field" id="auth-password-field"><label for="auth-password">Password</label><div class="password-input-wrap"><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"><button type="button" class="password-toggle" data-toggle-password="auth-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
         <div class="field" id="forgot-password-field">
           <button type="button" id="forgot-password-button" class="btn secondary">Forgot password?</button>
         </div>
         <div id="password-reset-fields" hidden>
-          <div class="field"><label for="new-password">New password *</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></div>
-          <div class="field"><label for="confirm-new-password">Confirm new password *</label><input id="confirm-new-password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the new password again"></div>
+          <div class="field"><label for="new-password">New password *</label><div class="password-input-wrap"><input id="new-password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"><button type="button" class="password-toggle" data-toggle-password="new-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+          <div class="field"><label for="confirm-new-password">Confirm new password *</label><div class="password-input-wrap"><input id="confirm-new-password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the new password again"><button type="button" class="password-toggle" data-toggle-password="confirm-new-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
           <p class="muted">Use a password you do not use on other websites.</p>
         </div>
         <div class="remember-field" id="remember-email-field"><label for="remember-email"><input type="checkbox" id="remember-email"> Remember my email address</label></div>
@@ -2156,6 +2171,34 @@ td strong{color:#2a464d;font-size:11px}
       msg.textContent = 'Sign-in failed: ' + e.message;
     }
   }
+
+  // Password visibility controls: each tap toggles show/hide without changing the value.
+  document.querySelectorAll('[data-toggle-password]').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const input = $(toggle.dataset.togglePassword);
+      if (!input) return;
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      toggle.setAttribute('aria-pressed', String(show));
+      toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      toggle.innerHTML = show
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a15 15 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/></svg>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+    });
+  });
+
+  // Role selection is a sign-in hint only; Supabase profile permissions remain authoritative.
+  let selectedSignInRole = 'student';
+  document.querySelectorAll('[data-signin-role]').forEach(button => {
+    button.addEventListener('click', () => {
+      selectedSignInRole = button.dataset.signinRole;
+      document.querySelectorAll('[data-signin-role]').forEach(option => {
+        option.setAttribute('aria-pressed', String(option === button));
+      });
+      const note = $('signin-role-note');
+      if (note) note.textContent = 'Selected: ' + selectedSignInRole.charAt(0).toUpperCase() + selectedSignInRole.slice(1) + '. Your actual account role and permissions are verified securely after sign-in.';
+    });
+  });
 
   $('auth-form').addEventListener('submit', async e => {
     e.preventDefault();
