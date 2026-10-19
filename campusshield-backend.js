@@ -1129,7 +1129,7 @@ async getCurrentUser() {
       if (sessionError) throw sessionError;
       if (!session?.access_token) throw new Error("Sign in to use ShieldMind.");
       const { data, error } = await client.functions.invoke("shieldmind-chat", {
-        body: { question: cleanQuestion, history: safeHistory, ...(safeImage ? { image: safeImage } : {}) }
+        body: { question: cleanQuestion, history: safeHistory, ...(safeImage ? { image: safeImage, image_attested: true } : {}) }
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
