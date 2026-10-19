@@ -12,25 +12,21 @@ Deno.serve(async (req: Request) => {
     const key = await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),{name:"HMAC",hash:"SHA-512"},false,["sign"]);
     const digest = new Uint8Array(await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(raw)));
     const expected = Array.from(digest).map(b=>b.toString(16).padStart(2,"0")).join("");
-    if (signature.length !== expected.length || !crypto.subtle || !constantTimeEqual(signature,expected)) return json({error:"Invalid signature"},401);
+    if (!constantTimeEqual(signature,expected)) return json({error:"Invalid signature"},401);
     const event = JSON.parse(raw);
     if (event?.event !== "charge.success" || !event?.data?.reference) return json({received:true});
     const reference = String(event.data.reference);
     const admin = createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
-    const {data:pending,error:pendingError} = await admin.from("shieldmind_subscriptions").select("user_id,billing_period,amount_kobo,currency,status").eq("provider_reference",reference).maybeSingle();
-    if (pendingError || !pending || pending.status !== "pending") return json({received:true});
-    // Never trust the webhook payload alone: independently verify the transaction with Paystack.
+    const {data:pending,error:pendingError} = await admin.from("shieldmind_subscriptions").select("user_id,plan,billing_period,amount_kobo,currency,status,image_upload_limit").eq("provider_reference",reference).maybeSingle();
+    if (pendingError || !pending || pending.status !== "pending" || !["starter","plus","pro","ultra","max"].includes(pending.plan)) return json({received:true});
     const verification = await fetch("https://api.paystack.co/transaction/verify/"+encodeURIComponent(reference),{headers:{"Authorization":`Bearer ${secret}`}});
     const verified = await verification.json().catch(()=>null);
     const tx = verified?.data;
-    if (!verification.ok || verified?.status !== true || tx?.status !== "success" || tx?.reference !== reference || tx?.currency !== "NGN" || tx?.amount !== pending.amount_kobo || tx?.customer?.email == null || tx?.metadata?.user_id !== pending.user_id || tx?.metadata?.period !== pending.billing_period) return json({received:true});
-    const period = pending.billing_period;
-    const now = new Date();
-    const expires = new Date(now);
-    if (period === "monthly") expires.setUTCDate(expires.getUTCDate()+30);
-    else if (period === "annual") expires.setUTCDate(expires.getUTCDate()+365);
-    else return json({received:true});
-    const {error:updateError} = await admin.from("shieldmind_subscriptions").update({plan:"premium",status:"active",provider:"paystack",started_at:now.toISOString(),expires_at:expires.toISOString(),updated_at:now.toISOString()}).eq("user_id",pending.user_id).eq("provider_reference",reference).eq("status","pending");
+    if (!verification.ok || verified?.status !== true || tx?.status !== "success" || tx?.reference !== reference || tx?.currency !== "NGN" || tx?.amount !== pending.amount_kobo || tx?.customer?.email == null || tx?.metadata?.user_id !== pending.user_id || tx?.metadata?.plan !== pending.plan || tx?.metadata?.period !== pending.billing_period) return json({received:true});
+    const now = new Date(), expires = new Date(now);
+    if (pending.billing_period !== "monthly") return json({received:true});
+    expires.setUTCDate(expires.getUTCDate()+30);
+    const {error:updateError} = await admin.from("shieldmind_subscriptions").update({status:"active",provider:"paystack",started_at:now.toISOString(),expires_at:expires.toISOString(),updated_at:now.toISOString()}).eq("user_id",pending.user_id).eq("provider_reference",reference).eq("status","pending");
     if (updateError) return json({error:"Could not record entitlement"},500);
     return json({received:true});
   } catch (_e) { return json({error:"Invalid webhook payload"},400); }
