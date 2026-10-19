@@ -11,6 +11,12 @@ const chat=await readFile(new URL("../supabase/functions/shieldmind-chat/index.t
 const checkout=await readFile(new URL("../supabase/functions/shieldmind-billing-checkout/index.ts",import.meta.url),"utf8");
 assert.match(html,/id="page-shieldmind"/);assert.match(html,/data-page="shieldmind"/);
 assert.match(html,/id="signin-role-picker"/);assert.match(html,/data-signin-role="administrator"/);
+assert.match(html,/id="google-signin-button"/);assert.match(html,/signInWithGoogle/);
+assert.match(html,/isStagingGoogleAuthEnvironment/);assert.match(html,/auth\/v1\/settings/);
+assert.match(backend,/signInWithOAuth\(\{\s*provider: "google"/);
+assert.match(backend,/hywcpnoqqhxvujnimhxl\.supabase\.co/);
+assert.match(html,/campusshield_google_oauth_pending/);
+assert.match(html,/selected role is only a hint/);
 assert.match(html,/id="signin-institution-field"/);assert.match(html,/data-toggle-password="auth-password"/);
 assert.doesNotMatch(html,/TikTok/i);
 assert.match(html,/id="campus-dashboard-panel"/);assert.match(html,/id="campus-dashboard-classes"/);
