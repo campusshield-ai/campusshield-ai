@@ -23,7 +23,7 @@ Deno.serve(async (req: Request) => {
     const verification = await fetch("https://api.paystack.co/transaction/verify/"+encodeURIComponent(reference),{headers:{"Authorization":`Bearer ${secret}`}});
     const verified = await verification.json().catch(()=>null);
     const tx = verified?.data;
-    if (!verification.ok || verified?.status !== true || tx?.status !== "success" || tx?.reference !== reference || tx?.currency !== "NGN" || tx?.amount !== pending.amount_kobo || tx?.customer?.email == null) return json({received:true});
+    if (!verification.ok || verified?.status !== true || tx?.status !== "success" || tx?.reference !== reference || tx?.currency !== "NGN" || tx?.amount !== pending.amount_kobo || tx?.customer?.email == null || tx?.metadata?.user_id !== pending.user_id || tx?.metadata?.period !== pending.billing_period) return json({received:true});
     const period = pending.billing_period;
     const now = new Date();
     const expires = new Date(now);
