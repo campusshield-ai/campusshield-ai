@@ -13,6 +13,14 @@ CampusShield AI aims to make campus environments safer by combining interactive 
 The project is being developed with Nigerian university campuses in mind.
 
 
+## Student and teacher login/dashboard experience
+
+- Refreshed sign-in page with Administrator, Teacher and Student selection hints, an optional institution-name check, and show/hide password controls.
+- The selected role and typed institution are convenience hints only. Verified Supabase profile role, approved student identity and active verified campus membership remain authoritative; a mismatch is reported after sign-in rather than used to grant access.
+- Role-aware dashboard overview summarizes the signed-in user's accessible classes/classrooms, recent classroom announcements, published same-campus notices, upcoming campus events and open incidents.
+- Teacher overview includes a classroom roster count only for classrooms where the signed-in verified teacher is authorized to view the roster. Class and campus content is fetched through existing access-controlled APIs/RPCs and inserted into the page as text.
+- The saved student/teacher dashboard storyboard's major information areas are represented in the staging workspace. A full signed-in browser walkthrough remains required before any release.
+
 ## ShieldMind AI — study support and premium pilot
 
 - Academic Q&A, structured study notes, practice quizzes and revision-plan prompts run through the signed-in, JWT-protected `shieldmind-chat` Edge Function.
