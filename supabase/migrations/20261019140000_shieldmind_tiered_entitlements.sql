@@ -22,7 +22,8 @@ create table if not exists private.shieldmind_session_windows (
 );
 revoke all on private.shieldmind_session_windows from public, anon, authenticated;
 
-create or replace function public.get_my_shieldmind_plan()
+drop function if exists public.get_my_shieldmind_plan();
+create function public.get_my_shieldmind_plan()
 returns table(plan text, status text, billing_period text, expires_at timestamptz, image_upload_limit integer)
 language sql stable security invoker set search_path = ''
 as $$
