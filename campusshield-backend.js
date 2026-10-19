@@ -89,6 +89,26 @@ async resendConfirmation(email) {
       return client.auth.updateUser({ password });
     },
 
+    async signInWithGoogle(redirectTo) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
+      const configuredUrl = new URL(String(config.url || ""));
+      if (configuredUrl.hostname !== "hywcpnoqqhxvujnimhxl.supabase.co") {
+        throw new Error("Google sign-in is enabled for the staging preview only. Production has not been changed.");
+      }
+      const safeRedirect = new URL(String(redirectTo || (window.location.origin + window.location.pathname)));
+      if (safeRedirect.origin !== window.location.origin || !/^https?:$/.test(safeRedirect.protocol)) {
+        throw new Error("The Google sign-in return address is not allowed.");
+      }
+      return client.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: safeRedirect.href,
+          queryParams: { prompt: "select_account" }
+        }
+      });
+    },
+
     async signIn(email, password) {
       if (!client) throw new Error("Supabase is not configured.");
 
