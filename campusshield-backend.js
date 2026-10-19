@@ -420,6 +420,20 @@ async getCurrentUser() {
       return data;
     },
 
+
+    async askShieldMind(question, history = []) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const cleanQuestion = String(question || "").trim();
+      if (!cleanQuestion || cleanQuestion.length > 1200) throw new Error("Enter a question up to 1,200 characters.");
+      const safeHistory = Array.isArray(history) ? history.slice(-6).filter(item => item && ["user", "assistant"].includes(item.role) && typeof item.content === "string" && item.content.length <= 1200).map(item => ({role:item.role,content:item.content})) : [];
+      const { data: { session }, error: sessionError } = await client.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session?.access_token) throw new Error("Sign in to use ShieldMind.");
+      const { data, error } = await client.functions.invoke("shieldmind-chat", { body: { question: cleanQuestion, history: safeHistory } });
+      if (error) throw error;
+      return data;
+    },
+
     async deleteIncident(id) {
       if (!client) throw new Error("Supabase is not configured.");
 
