@@ -9,11 +9,16 @@ const eligibility=await readFile(new URL("../supabase/migrations/20261019214152_
 const listEligibility=await readFile(new URL("../supabase/migrations/20261019214204_shieldmind_planner_list_eligibility_fix.sql",import.meta.url),"utf8");
 const chat=await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts",import.meta.url),"utf8");
 const checkout=await readFile(new URL("../supabase/functions/shieldmind-billing-checkout/index.ts",import.meta.url),"utf8");
+const googleProfileMigration=await readFile(new URL("../supabase/migrations/20261019220000_google_oauth_profile_name_fallback.sql",import.meta.url),"utf8");
 assert.match(html,/id="page-shieldmind"/);assert.match(html,/data-page="shieldmind"/);
 assert.match(html,/id="signin-role-picker"/);assert.match(html,/data-signin-role="administrator"/);
 assert.match(html,/id="google-signin-button"/);assert.match(html,/signInWithGoogle/);
 assert.match(html,/isStagingGoogleAuthEnvironment/);assert.match(html,/auth\/v1\/settings/);
 assert.match(backend,/signInWithOAuth\(\{\s*provider: "google"/);
+assert.match(googleProfileMigration,/raw_user_meta_data ->> 'full_name'/);
+assert.match(googleProfileMigration,/raw_user_meta_data ->> 'name'/);
+assert.match(googleProfileMigration,/\n    'student',\n    'student',\n    'pending'/);
+assert.doesNotMatch(googleProfileMigration,/raw_user_meta_data ->> 'requested_role'/);
 assert.match(backend,/hywcpnoqqhxvujnimhxl\.supabase\.co/);
 assert.match(html,/campusshield_google_oauth_pending/);
 assert.match(html,/selected role is only a hint/);
