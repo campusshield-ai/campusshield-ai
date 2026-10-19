@@ -12,6 +12,19 @@ CampusShield AI aims to make campus environments safer by combining interactive 
 
 The project is being developed with Nigerian university campuses in mind.
 
+
+## ShieldMind AI — study support and premium pilot
+
+- Academic Q&A, structured study notes, practice quizzes and revision-plan prompts run through the signed-in, JWT-protected `shieldmind-chat` Edge Function.
+- Private personal timetable entries support class/lecture sessions, assignments, exams, revision sessions and reminders, synchronized to the user's own row-scoped database records.
+- Reminder notifications currently work only while the app is open and browser permission is granted; background push notifications are not configured.
+- Monthly prepaid Paystack test-mode tiers: Free ₦0; Starter ₦2,000 (20 study-image uses/month); Plus ₦5,000 (60); Pro ₦10,000 (150); Ultra ₦15,000 (300); Max ₦28,000 (600). Per-minute/daily requests and the 8-hour session followed by a 1-hour cooldown are enforced server-side in staging. Paid plans do not auto-renew.
+- Core safety and incident-reporting features remain free. Paid tiers are for ShieldMind AI capacity, not safety access.
+- Study images are sent to the external AI provider for processing and are not saved in CampusShield storage. The image monthly allowance is server-enforced. Do not upload identity documents, incident records, attendance records, passwords, or private campus information.
+- No approved official campus source catalog is connected, so ShieldMind must not be treated as a source of official university rules, fees, or deadlines.
+- Paystack checkout remains staging-only and requires the Paystack test secret to be configured in Supabase Edge Function secrets. Do not publish or enable production billing until test payments, expiry, duplicate webhooks, quotas and privacy are verified.
+- All work remains on a feature branch. Do not deploy to production or merge without explicit owner approval.
+
 ## ✨ Current Features
 
 - **Incident reporting** — Submit categorized reports to the configured Supabase project.
