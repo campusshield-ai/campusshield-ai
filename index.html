@@ -383,6 +383,22 @@ td strong{color:#2a464d;font-size:11px}
   #communityPostForm .field textarea{min-height:82px}
 }
 
+
+/* ShieldMind AI staging interface */
+.shieldmind-hero{display:flex;align-items:center;gap:16px;padding:22px;margin:0 0 17px;border:1px solid #cde8df;border-radius:18px;background:linear-gradient(120deg,#f0fbf6,#f7fbff)}
+.shieldmind-mark{display:grid;place-items:center;width:54px;height:54px;flex:0 0 54px;border-radius:16px;background:#143e48;color:#8cf0d2;font-size:29px}
+.shieldmind-hero h2{margin:0 0 5px;font-size:18px;color:#173d46}.shieldmind-hero p{margin:0;color:#547078;font-size:12px}
+.shieldmind-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr);gap:16px;align-items:start}
+.shieldmind-pill{padding:6px 9px;border-radius:99px;background:#e8f8f0;color:#24745d;font-size:8px;font-weight:900;letter-spacing:.12em}
+.shieldmind-messages{display:grid;gap:12px;min-height:190px;max-height:480px;overflow:auto;padding:15px;border:1px solid #e3ece7;border-radius:14px;background:#f8fbf9}
+.shieldmind-message{max-width:94%;padding:12px 14px;border:1px solid #e1eae5;border-radius:13px;background:#fff}.shieldmind-message.user{justify-self:end;background:#e9f7f3;border-color:#d0e9df}
+.shieldmind-message strong{display:block;color:#2d655b;font-size:10px}.shieldmind-message p{margin:6px 0 0;color:#304b52;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.shieldmind-tool{width:100%;display:flex;align-items:center;gap:11px;padding:12px 0;border:0;border-bottom:1px solid #e7efeb;background:transparent;text-align:left}
+.shieldmind-tool>span{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:10px;background:#e9f6f0;color:#287761;font-size:10px;font-weight:900}
+.shieldmind-tool>div{display:grid;gap:3px;flex:1}.shieldmind-tool strong{color:#2b4950;font-size:11px}.shieldmind-tool small{color:#7e8d91;font-size:10px}.shieldmind-tool>b{color:#3d8e7a;font-size:20px;font-weight:500}
+.shieldmind-guardrail{margin-top:17px;padding:13px;border:1px solid #d8ece2;border-radius:13px;background:#f3faf6}.shieldmind-guardrail strong{color:#27755f;font-size:11px}.shieldmind-guardrail p{margin:5px 0 0;color:#607c76;font-size:10px;line-height:1.55}
+.shieldmind-disclaimer{margin:5px 0 18px;color:#788b90;font-size:10px;line-height:1.6}@media(max-width:900px){.shieldmind-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -496,6 +512,7 @@ td strong{color:#2a464d;font-size:11px}
 <nav class="nav">
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
+<button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button>
 <button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus community</button>
 <button data-page="manage"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button>
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
@@ -549,6 +566,22 @@ td strong{color:#2a464d;font-size:11px}
 <div class="actions"><button class="btn" type="submit" id="report-submit">Submit report</button><button class="btn secondary" type="reset">Clear form</button></div>
 </form>
 </div>
+</section>
+
+
+<section class="page" id="page-shieldmind">
+  <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · LEARNING ASSISTANT</span><h1>Meet ShieldMind AI</h1><p>Study support for campus life. Official university answers will only appear when trusted campus sources are available.</p></div></div>
+  <div class="shieldmind-hero"><div class="shieldmind-mark" aria-hidden="true">✦</div><div><h2>Your campus learning companion</h2><p>Ask an academic question, explore a topic, or get a study plan. This staging prototype does not present unverified content as official university policy.</p></div></div>
+  <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Start with a general academic question.</p></div><span class="shieldmind-pill">STAGING</span></div>
+    <div class="notice-inline">Official campus source catalog and AI provider are not configured yet. ShieldMind will not guess official policies or deadlines.</div>
+    <div id="shieldmind-messages" class="shieldmind-messages" aria-live="polite"><article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Hi! Ask a general academic question. Verified campus-policy answers are unavailable until approved official sources are connected.</p></article></div>
+    <form id="shieldmind-form"><div class="field"><label for="shieldmind-question">Your question</label><textarea id="shieldmind-question" required maxlength="1200" placeholder="e.g. Explain photosynthesis in simple steps…" rows="3"></textarea><p class="muted">Do not enter safety reports, ID details, passwords, medical details, or other private student information.</p></div><div class="actions"><button class="btn" type="submit" id="shieldmind-submit">Ask ShieldMind</button><button class="btn secondary" type="button" id="shieldmind-clear">Clear chat</button></div><p id="shieldmind-status" class="message" role="status" aria-live="polite">Ready for a general academic question.</p></form></section>
+    <aside class="panel"><h2>Study tools</h2><p class="muted">Quick prompts for the next rollout stage.</p>
+      <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Create a one-week revision plan for a subject I name. Ask me for the subject and available study hours."><span>01</span><div><strong>Revision planner</strong><small>Turn study goals into manageable sessions</small></div><b>›</b></button>
+      <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me create practice quiz questions from a topic I provide. Ask me the subject, level, and number of questions."><span>02</span><div><strong>Practice quizzes</strong><small>Review a topic with self-test questions</small></div><b>›</b></button>
+      <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me produce structured study notes for a topic I provide. Ask me the subject and level."><span>03</span><div><strong>Study notes</strong><small>Organise key ideas and definitions</small></div><b>›</b></button>
+      <div class="shieldmind-guardrail"><strong>✓ Privacy boundary</strong><p>ShieldMind does not receive CampusShield incident reports, identity documents, attendance, or private Helpdesk records.</p></div>
+    </aside></div><p class="shieldmind-disclaimer">Educational support only. Check course materials and ask your lecturer when accuracy matters. Not an emergency service or official university decision-maker.</p>
 </section>
 
 <section class="page" id="page-community">
@@ -985,7 +1018,7 @@ td strong{color:#2a464d;font-size:11px}
       return false;
     }
 
-    currentProfile = profile;
+    currentProfile = {...profile, id: profile.id || null};
     studentIdentitySubmission = null;
     $('login-screen').hidden = true;
     $('workspace').hidden = false;
@@ -1187,6 +1220,8 @@ td strong{color:#2a464d;font-size:11px}
         currentProfile = null;
         communityProfile = null;
         studentIdentitySubmission = null;
+        shieldMindSessionUserId = null;
+        shieldMindHistory = [];
         $('community-username-current').textContent = 'Not signed in';
         $('community-feed').innerHTML = '<div class="community-empty">Sign in to view campus updates.</div>';
         incidents = [];
@@ -1211,6 +1246,8 @@ td strong{color:#2a464d;font-size:11px}
       page = 'dashboard';
       toast('Student identity verification is available to student accounts.');
     }
+
+    if (page === 'shieldmind' && (!verified || (isStudentAccount() && !hasApprovedStudentIdentity()))) { page = 'dashboard'; toast('ShieldMind requires verified campus access.'); }
 
     if (!canAccessStaffPages() && ['manage', 'risk', 'analytics'].includes(page)) {
       page = 'dashboard';
@@ -1241,12 +1278,14 @@ td strong{color:#2a464d;font-size:11px}
       analytics:'Analytics & reports',
       approvals:'Account approvals',
       'identity-verification':'Student identity verification',
-      community:'Campus community'
+      community:'Campus community',
+      shieldmind:'ShieldMind AI'
     };
 
     $('sectionTitle').textContent = names[page] || 'Overview';
 
     if (page === 'analytics') renderAnalytics();
+    if (page === 'shieldmind') resetShieldMindForSession();
     if (page === 'identity-verification') loadStudentIdentityStatus();
   }
 
@@ -1257,6 +1296,7 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'approvals') loadAccountApprovals();
     if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
     if (button.dataset.page === 'community') loadCommunityPage();
+    if (button.dataset.page === 'shieldmind') resetShieldMindForSession();
   });
 
   function render() {
@@ -2461,6 +2501,45 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     );
   }
   
+
+  let shieldMindSessionUserId = null, shieldMindHistory = [];
+  function resetShieldMindForSession() {
+    if (!currentProfile) { shieldMindSessionUserId=null; shieldMindHistory=[]; return; }
+    const allowed=currentProfile.verification_status==='verified' && (!isStudentAccount() || hasApprovedStudentIdentity());
+    if ($('shieldmind-submit')) $('shieldmind-submit').disabled=!allowed;
+    if (shieldMindSessionUserId!==currentProfile.id) { shieldMindSessionUserId=currentProfile.id; shieldMindHistory=[]; if ($('shieldmind-messages')) $('shieldmind-messages').innerHTML='<article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Chat ready. General academic questions only in this initial staging build.</p></article>'; }
+    if ($('shieldmind-status')&&!allowed) $('shieldmind-status').textContent='Verified campus access is required to use ShieldMind.';
+  }
+  function addShieldMindMessage(role,message) {
+    const article=document.createElement('article'); article.className='shieldmind-message '+(role==='user'?'user':'assistant');
+    const title=document.createElement('strong'); title.textContent=role==='user'?'You':'ShieldMind AI';
+    const body=document.createElement('p'); body.textContent=message; article.append(title,body);
+    $('shieldmind-messages').appendChild(article); $('shieldmind-messages').scrollTop=$('shieldmind-messages').scrollHeight;
+  }
+  $('shieldmind-clear').addEventListener('click',()=>{shieldMindHistory=[];$('shieldmind-messages').innerHTML='';addShieldMindMessage('assistant','Chat cleared. Official campus policy answers remain unavailable until approved sources are configured.');$('shieldmind-status').textContent='Chat cleared. This interface does not save your conversation.';});
+  document.querySelectorAll('[data-shieldmind-prompt]').forEach(button=>button.addEventListener('click',()=>{$('shieldmind-question').value=button.dataset.shieldmindPrompt;$('shieldmind-question').focus();}));
+  $('shieldmind-form').addEventListener('submit',async event=>{
+    event.preventDefault(); const question=String($('shieldmind-question').value||'').trim(),backend=window.CampusShieldBackend;
+    const allowed=Boolean(currentProfile&&currentProfile.verification_status==='verified'&&(!isStudentAccount()||hasApprovedStudentIdentity()));
+    if(!question||question.length>1200)return;
+    if(!backend?.isConfigured||!allowed){$('shieldmind-status').textContent='Verified campus access is required to use ShieldMind.';return;}
+    const {data:{user},error:userError}=await backend.client.auth.getUser();
+    if(userError||!user){$('shieldmind-status').textContent='Your session could not be confirmed. Sign in again.';return;}
+    if (!currentProfile.id) currentProfile={...currentProfile,id:user.id};
+    const profileAtRequest=currentProfile,userId=user.id,button=$('shieldmind-submit');
+    if (currentProfile.id !== userId) { $('shieldmind-status').textContent='Your session and account profile do not match. Please sign in again.'; return; }
+    shieldMindSessionUserId=user.id;
+    button.disabled=true;$('shieldmind-status').textContent='ShieldMind is checking your request…';addShieldMindMessage('user',question);$('shieldmind-question').value='';
+    try{
+      const result=await backend.askShieldMind(question,shieldMindHistory);
+      if(currentProfile!==profileAtRequest||currentProfile?.id!==userId){shieldMindHistory=[];$('shieldmind-messages').innerHTML='';resetShieldMindForSession();return;}
+      addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'));
+      shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-8);
+      $('shieldmind-status').textContent=result?.mode==='provider'?'Study support · Verify important facts against your course materials.':'Safe response · AI provider/source catalog is not configured.';
+    }catch(error){console.warn('ShieldMind request failed:',error?.message||'unknown');$('shieldmind-status').textContent='ShieldMind is not available right now. Your question was not saved; please try again later.';addShieldMindMessage('assistant','I could not complete that request. Please try again later. For urgent campus or safety matters, use official university channels.');}
+    finally{button.disabled=false;}
+  });
+
   $('signout-button').addEventListener('click', async () => {
     try {
       const backend = window.CampusShieldBackend;
