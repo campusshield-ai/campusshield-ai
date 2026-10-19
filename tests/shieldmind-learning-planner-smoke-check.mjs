@@ -10,7 +10,7 @@ assert.match(html,/id="page-shieldmind"/);assert.match(html,/data-page="shieldmi
 assert.match(html,/data-shieldmind-prompt=.*quiz/i);assert.match(html,/data-shieldmind-prompt=.*study notes/i);
 assert.match(html,/id="shieldmind-planner-form"/);assert.match(html,/data-shieldmind-buy="starter"/);assert.match(html,/₦2,000/);
 assert.match(html,/20 image uploads\/month/i);assert.match(backend,/functions\.invoke\("shieldmind-chat"/);assert.match(backend,/data_base64/);
-assert.match(planner,/shieldmind_planner_items/);assert.match(planner,/eq\("user_id",user\.id\)/);
+assert.match(planner,/list_my_shieldmind_planner_items/);assert.match(planner,/create_my_shieldmind_planner_item/);assert.match(planner,/update_my_shieldmind_planner_item/);assert.match(planner,/delete_my_shieldmind_planner_item/);assert.doesNotMatch(planner,/\.from\(["']shieldmind_planner_items/);
 assert.match(migration,/alter table public\.shieldmind_planner_items enable row level security/i);
 assert.match(migration,/user_id = \(select auth\.uid\(\)\)/i);assert.match(migration,/consume_shieldmind_image_upload/i);
 assert.match(chat,/looksLikeSensitiveRequest\(item\.content\)/);assert.match(chat,/consume_shieldmind_image_upload/);assert.match(chat,/image_url/);
