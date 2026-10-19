@@ -417,6 +417,42 @@ td strong{color:#2a464d;font-size:11px}
 .shieldmind-image-confirm input{margin-top:3px}
 @media(max-width:700px){.shieldmind-planner-fields{grid-template-columns:1fr}.shieldmind-planner-item{flex-direction:column}}
 
+
+/* Accessible sign-in improvements from the login-refresh concept */
+.password-input-wrap{position:relative;display:flex;align-items:center}
+.password-input-wrap input{width:100%;padding-right:52px!important}
+.password-toggle{position:absolute;right:7px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:38px;height:38px;border:0;border-radius:9px;background:transparent;color:#647980}
+.password-toggle:hover{background:#edf5f1;color:#206d78}
+.password-toggle svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.auth-role-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:14px 0}
+.auth-role-option{min-height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid #dfe8e4;border-radius:12px;background:#fff;color:#52696e;font-size:11px;font-weight:750}
+.auth-role-option svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.auth-role-option[aria-pressed="true"]{border-color:#58b59f;background:#eff9f4;color:#176d5b;box-shadow:inset 0 0 0 1px #58b59f}
+@media(max-width:420px){.auth-role-picker{gap:5px}.auth-role-option{font-size:10px}}
+/* Student and teacher workspace overview */
+.campus-dashboard-panel{margin:18px 0}
+.campus-dashboard-role{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #cde8df;border-radius:999px;background:#eff9f4;color:#176d5b;font-size:11px;font-weight:800;white-space:nowrap}
+.campus-dashboard-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:15px 0}
+.campus-dashboard-metric{min-width:0;padding:14px;border:1px solid var(--border,#dfe8e4);border-radius:14px;background:var(--panel,#fff)}
+.campus-dashboard-metric span{display:block;color:var(--muted,#61777d);font-size:11px;font-weight:700}
+.campus-dashboard-metric strong{display:block;margin:8px 0 4px;color:var(--text,#13343c);font-size:25px;line-height:1.1}
+.campus-dashboard-metric small{display:block;color:var(--muted,#71848a);font-size:10px;line-height:1.4}
+.campus-dashboard-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;align-items:start}
+.campus-dashboard-card{min-width:0;padding:14px;border:1px solid var(--border,#dfe8e4);border-radius:14px;background:var(--panel,#fff)}
+.campus-dashboard-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.campus-dashboard-card-head h3{margin:0;font-size:14px}
+.campus-dashboard-list{display:grid;gap:9px}
+.campus-dashboard-list-item{padding:10px 0;border-bottom:1px solid var(--border,#e6eeea)}
+.campus-dashboard-list-item:last-child{border-bottom:0}
+.campus-dashboard-list-item strong{display:block;color:var(--text,#13343c);font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.campus-dashboard-list-item p{margin:4px 0 0;color:var(--muted,#61777d);font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.campus-dashboard-list-item .btn{margin-top:8px}
+.campus-dashboard-empty{padding:12px 8px;border:1px dashed var(--border,#d8e5df);border-radius:10px;color:var(--muted,#61777d);font-size:11px;line-height:1.5}
+.campus-dashboard-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.campus-dashboard-status{margin:12px 0 0;font-size:11px}
+@media(max-width:1050px){.campus-dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.campus-dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.campus-dashboard-grid{grid-template-columns:1fr}.campus-dashboard-panel .panel-heading{align-items:flex-start}}
+
 </style>
 </head>
 <body>
@@ -467,7 +503,6 @@ td strong{color:#2a464d;font-size:11px}
     <span class="campus-hub-social-label">FIND US ON</span>
     <div class="campus-hub-channel-grid">
       <a class="campus-hub-channel campus-hub-channel-link" href="https://x.com/CampusShieldAI" aria-label="Open the official CampusShield AI X profile"><span class="campus-hub-channel-icon channel-x" aria-hidden="true">X</span><span class="campus-hub-channel-copy"><strong>X</strong><small>Campus updates</small></span><span class="campus-hub-live">OPEN X ↗</span></a>
-      <div class="campus-hub-channel"><span class="campus-hub-channel-icon channel-tiktok" aria-hidden="true">♪</span><span class="campus-hub-channel-copy"><strong>TikTok</strong><small>Quick safety tips</small></span><span class="campus-hub-soon">SOON</span></div>
       <div class="campus-hub-channel"><span class="campus-hub-channel-icon channel-instagram" aria-hidden="true">◎</span><span class="campus-hub-channel-copy"><strong>Instagram</strong><small>Campus voices</small></span><span class="campus-hub-soon">SOON</span></div>
       <div class="campus-hub-channel"><span class="campus-hub-channel-icon channel-linkedin" aria-hidden="true">in</span><span class="campus-hub-channel-copy"><strong>LinkedIn</strong><small>Campus partnerships</small></span><span class="campus-hub-soon">SOON</span></div>
     </div>
@@ -479,7 +514,14 @@ td strong{color:#2a464d;font-size:11px}
     <section class="panel auth-panel">
       <p class="auth-kicker">CAMPUSSHIELD ACCESS</p>
       <h2 id="auth-title">Welcome back</h2>
-      <p id="auth-subtitle" class="muted">Sign in to review campus safety reports.</p>
+      <p id="auth-subtitle" class="muted">Sign in to your university's CampusShield workspace.</p>
+      <div class="field" id="signin-institution-field"><label for="signin-institution">Institution name</label><input id="signin-institution" autocomplete="organization" maxlength="180" placeholder="Enter your university or institution name"><p class="muted">Optional sign-in hint. Your verified campus membership remains authoritative.</p></div>
+      <div class="auth-role-picker" id="signin-role-picker" role="group" aria-label="Choose your account type">
+        <button type="button" class="auth-role-option" data-signin-role="administrator" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></svg>Administrator</button>
+        <button type="button" class="auth-role-option" data-signin-role="teacher" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg>Teacher</button>
+        <button type="button" class="auth-role-option" data-signin-role="student" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11v5c3.5 3 8.5 3 12 0v-5M22 9v6"/></svg>Student</button>
+      </div>
+      <p class="muted" id="signin-role-note">Your actual account role and permissions are verified securely after sign-in.</p>
       <div class="auth-tabs" id="auth-tabs" role="group" aria-label="Account access">
         <button type="button" data-auth-mode="signin" aria-pressed="true">Sign in</button>
         <button type="button" data-auth-mode="signup" aria-pressed="false">Create account</button>
@@ -505,11 +547,11 @@ td strong{color:#2a464d;font-size:11px}
           </div>
         </div>
         <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
-        <div class="field" id="auth-password-field"><label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"></div>
+        <div class="field" id="auth-password-field"><label for="auth-password">Password</label><div class="password-input-wrap"><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"><button type="button" class="password-toggle" data-toggle-password="auth-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
         <div class="field" id="forgot-password-field"><button type="button" id="forgot-password-button" class="btn secondary">Forgot password?</button></div>
         <div id="password-reset-fields" hidden>
-          <div class="field"><label for="new-password">New password *</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></div>
-          <div class="field"><label for="confirm-new-password">Confirm new password *</label><input id="confirm-new-password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the new password again"></div>
+          <div class="field"><label for="new-password">New password *</label><div class="password-input-wrap"><input id="new-password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"><button type="button" class="password-toggle" data-toggle-password="new-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+          <div class="field"><label for="confirm-new-password">Confirm new password *</label><div class="password-input-wrap"><input id="confirm-new-password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the new password again"><button type="button" class="password-toggle" data-toggle-password="confirm-new-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
           <p class="muted">Use a password you do not use on other websites.</p>
         </div>
         <div class="remember-field" id="remember-email-field"><label for="remember-email"><input type="checkbox" id="remember-email"> Remember my email address</label></div>
@@ -578,6 +620,44 @@ td strong{color:#2a464d;font-size:11px}
   <div class="stat"><div class="stat-label">Resolved reports</div><div class="stat-num" id="resolvedStat">—</div><p class="stat-note">Marked resolved in the records</p></div>
   <div class="stat"><div class="stat-label">Resolution rate</div><div class="stat-num" id="rateStat">—</div><p class="stat-note">Resolved reports ÷ reports in view</p></div>
 </div>
+<section class="panel campus-dashboard-panel" id="campus-dashboard-panel" aria-labelledby="campus-dashboard-heading">
+  <div class="panel-heading"><div><h2 id="campus-dashboard-heading">Your campus at a glance</h2><p id="campus-dashboard-description">Your private classes, verified announcements and upcoming campus activity.</p></div><span id="campus-dashboard-role" class="campus-dashboard-role">Campus member</span></div>
+  <div class="campus-dashboard-metrics" aria-label="Campus learning and activity summary">
+    <div class="campus-dashboard-metric"><span id="campus-metric-classes-label">My Classes</span><strong id="campus-metric-classes">—</strong><small id="campus-metric-classes-note">Classes available to your account</small></div>
+    <div class="campus-dashboard-metric"><span id="campus-metric-secondary-label">Announcements</span><strong id="campus-metric-secondary">—</strong><small id="campus-metric-secondary-note">Recent learning updates</small></div>
+    <div class="campus-dashboard-metric"><span>Upcoming Events</span><strong id="campus-metric-events">—</strong><small>Published campus events</small></div>
+    <div class="campus-dashboard-metric"><span>Open Incidents</span><strong id="campus-metric-incidents">—</strong><small>Reports your account may access</small></div>
+  </div>
+  <div class="campus-dashboard-grid">
+    <section class="campus-dashboard-card" aria-labelledby="campus-dashboard-classes-title">
+      <div class="campus-dashboard-card-head"><h3 id="campus-dashboard-classes-title">My Classes</h3><button class="btn secondary" type="button" data-page="classroom">View all</button></div>
+      <div id="campus-dashboard-classes" class="campus-dashboard-list"><div class="campus-dashboard-empty">Sign in with a verified campus account to load classes.</div></div>
+    </section>
+    <section class="campus-dashboard-card" aria-labelledby="campus-dashboard-announcements-title">
+      <div class="campus-dashboard-card-head"><h3 id="campus-dashboard-announcements-title">Latest Announcements</h3><button class="btn secondary" type="button" data-page="classroom">View all</button></div>
+      <div id="campus-dashboard-announcements" class="campus-dashboard-list"><div class="campus-dashboard-empty">Class announcements appear when available.</div></div>
+    </section>
+    <section class="campus-dashboard-card" aria-labelledby="campus-dashboard-updates-title">
+      <div class="campus-dashboard-card-head"><h3 id="campus-dashboard-updates-title">Campus Updates</h3><button class="btn secondary" type="button" data-page="noticeboard">View all</button></div>
+      <div id="campus-dashboard-updates" class="campus-dashboard-list"><div class="campus-dashboard-empty">Verified notices and upcoming events will appear here.</div></div>
+    </section>
+  </div>
+  <div class="campus-dashboard-actions" id="campus-dashboard-actions">
+    <button class="btn secondary" type="button" data-page="classroom">Open classrooms</button>
+    <button class="btn secondary" type="button" data-page="events">Browse events</button>
+    <button class="btn secondary" type="button" data-page="shieldmind">Ask ShieldMind AI</button>
+  </div>
+  <section class="campus-dashboard-card" id="campus-dashboard-teacher-actions" hidden style="margin-top:14px" aria-labelledby="campus-dashboard-teacher-actions-title">
+    <div class="campus-dashboard-card-head"><h3 id="campus-dashboard-teacher-actions-title">Teacher Quick Actions</h3></div>
+    <p class="muted">Manage your own classrooms and publish updates for enrolled students.</p>
+    <div class="campus-dashboard-actions">
+      <button class="btn" type="button" data-page="classroom">Create / manage classes</button>
+      <button class="btn secondary" type="button" data-page="noticeboard">Publish verified notice</button>
+      <button class="btn secondary" type="button" data-page="opportunities">Review opportunities</button>
+    </div>
+  </section>
+  <p id="campus-dashboard-status" class="campus-dashboard-status message" role="status" aria-live="polite">Checking your verified campus access…</p>
+</section>
 <section class="panel campus-home-panel" aria-labelledby="campus-home-title">
   <div class="panel-heading"><div><h2 id="campus-home-title">Find your people. Grow your future.</h2><p>Explore useful things happening around your university.</p></div><span class="muted">Your campus only</span></div>
   <div class="grid campus-feature-grid">
@@ -588,7 +668,7 @@ td strong{color:#2a464d;font-size:11px}
     <article class="campus-feature"><span class="campus-feature-kicker">EVENTS</span><h3>Take part on campus</h3><p>Discover seminars, society meetups, sports and career events.</p><button class="btn secondary" type="button" data-page="events">Browse events</button></article>
     <article class="campus-feature"><span class="campus-feature-kicker">CAMPUS SERVICES</span><h3>Share and discover</h3><p>Find textbooks, services and other campus listings with community safeguards.</p><button class="btn secondary" type="button" data-page="marketplace">Open marketplace</button></article>
   </div>
-  <p class="campus-roadmap-note"><strong>Next steps:</strong> an AI Academic Companion grounded in approved course materials, a private timetable and deadline planner, and a Student Innovation Network for project teams and campus challenges. These remain roadmap items until their secure data connections are implemented.</p>
+  <p class="campus-roadmap-note"><strong>Staging pilot:</strong> ShieldMind AI now offers academic help prompts, and a private timetable/reminder planner is being tested. Official university policy answers still require approved source connections. Student Innovation Network features remain a future expansion.</p>
 </section>
 <div class="panel">
   <div class="panel-heading"><div><h2>Recent reports</h2><p>Latest records your account can access.</p></div><span class="muted">Sorted newest first</span></div>
@@ -1399,6 +1479,9 @@ td strong{color:#2a464d;font-size:11px}
     const isReset = authMode === 'reset';
 
     $('auth-tabs').hidden = isReset;
+    $('signin-institution-field').hidden = isSignUp || isReset;
+    $('signin-role-picker').hidden = isSignUp || isReset;
+    $('signin-role-note').hidden = isSignUp || isReset;
     $('signup-fields').hidden = !isSignUp;
     $('auth-email-field').hidden = isReset;
     $('auth-email').required = !isReset;
@@ -1422,7 +1505,7 @@ td strong{color:#2a464d;font-size:11px}
       ? 'Set up a CampusShield account to submit reports.'
       : isReset
         ? 'Set a new password to finish recovering your account.'
-        : 'Sign in to review campus safety reports.';
+        : "Sign in to your university's CampusShield workspace.";
     $('auth-password').autocomplete = isSignUp ? 'new-password' : 'current-password';
     $('auth-submit').textContent = isSignUp ? 'Create account' : isReset ? 'Update password' : 'Sign in';
     $('auth-helper').textContent = isSignUp
@@ -1665,6 +1748,199 @@ td strong{color:#2a464d;font-size:11px}
     if (page === 'identity-verification') loadStudentIdentityStatus();
   }
 
+  async function loadCampusDashboardInsights() {
+    const panel = $('campus-dashboard-panel');
+    if (!panel || !currentProfile) return;
+    const status = $('campus-dashboard-status');
+    const role = String(currentProfile.role || 'student').toLowerCase();
+    const isTeacher = role === 'teacher';
+    const isAdmin = role === 'admin';
+    const isVerified = currentProfile.verification_status === 'verified';
+    $('campus-dashboard-role').textContent = (isAdmin ? 'Administrator' : isTeacher ? 'Teacher' : 'Student') + (isVerified ? ' · Verified' : ' · Pending');
+    $('campus-dashboard-heading').textContent = isTeacher ? 'Your teaching workspace' : isAdmin ? 'Your university workspace' : 'Your student dashboard';
+    $('campus-dashboard-description').textContent = isTeacher
+      ? 'Manage your classrooms, see recent learning activity and keep students informed.'
+      : isAdmin
+        ? 'Review campus activity and stay on top of trusted university updates.'
+        : 'Your classes, learning announcements, campus events and safety activity in one place.';
+    $('campus-dashboard-classes-title').textContent = isTeacher ? 'My Classrooms' : 'My Classes';
+    $('campus-metric-classes-label').textContent = isTeacher ? 'My Classrooms' : 'My Classes';
+    $('campus-metric-classes-note').textContent = isTeacher ? 'Classes you manage' : 'Classes available to your account';
+    $('campus-metric-secondary-label').textContent = isTeacher ? 'Students in my classes' : 'Class Announcements';
+    $('campus-metric-secondary-note').textContent = isTeacher ? 'Roster totals for classes you own' : 'Recent updates from your classes';
+    $('campus-dashboard-teacher-actions').hidden = !isTeacher;
+
+    const clearFeed = (id, message) => {
+      const feed = $(id);
+      if (!feed) return;
+      feed.replaceChildren();
+      const empty = document.createElement('div');
+      empty.className = 'campus-dashboard-empty';
+      empty.textContent = message;
+      feed.appendChild(empty);
+    };
+    const appendItem = (parent, title, meta, body, actionLabel, action) => {
+      const item = document.createElement('article');
+      item.className = 'campus-dashboard-list-item';
+      const strong = document.createElement('strong');
+      strong.textContent = String(title || 'Untitled');
+      item.appendChild(strong);
+      if (meta) {
+        const metaNode = document.createElement('p');
+        metaNode.textContent = String(meta);
+        item.appendChild(metaNode);
+      }
+      if (body) {
+        const bodyNode = document.createElement('p');
+        bodyNode.textContent = String(body);
+        item.appendChild(bodyNode);
+      }
+      if (actionLabel && action) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn secondary';
+        button.textContent = actionLabel;
+        button.addEventListener('click', action);
+        item.appendChild(button);
+      }
+      parent.appendChild(item);
+    };
+    const backend = window.CampusShieldBackend;
+    if (!isVerified || !backend?.isConfigured) {
+      status.textContent = 'Verify your CampusShield account to load a personalized campus overview.';
+      clearFeed('campus-dashboard-classes', 'Your classes appear after campus verification.');
+      clearFeed('campus-dashboard-announcements', 'Class announcements appear after campus verification.');
+      clearFeed('campus-dashboard-updates', 'Verified notices and events appear after campus verification.');
+      $('campus-metric-classes').textContent = '—';
+      $('campus-metric-secondary').textContent = '—';
+      $('campus-metric-events').textContent = '—';
+      $('campus-metric-incidents').textContent = String((incidents || []).filter(i => !isResolvedStatus(i.status)).length);
+      return;
+    }
+    try {
+      const context = await backend.getMyCampusContext();
+      campusContext = context;
+      if (!context?.university_id || context.membership_status !== 'active' || context.verification_status !== 'verified') {
+        status.textContent = 'Choose and verify your university membership to load campus-specific learning information.';
+        clearFeed('campus-dashboard-classes', 'A verified campus membership is required.');
+        clearFeed('campus-dashboard-announcements', 'A verified campus membership is required.');
+        clearFeed('campus-dashboard-updates', 'A verified campus membership is required.');
+        $('campus-metric-classes').textContent = '—';
+        $('campus-metric-secondary').textContent = '—';
+        $('campus-metric-events').textContent = '—';
+        $('campus-metric-incidents').textContent = String((incidents || []).filter(i => !isResolvedStatus(i.status)).length);
+        return;
+      }
+      if (isStudentAccount() && !hasApprovedStudentIdentity()) {
+        status.textContent = 'Your personalized learning dashboard unlocks after student identity approval. You can check your status in Student Identity.';
+        clearFeed('campus-dashboard-classes', 'Classes appear after student identity approval.');
+        clearFeed('campus-dashboard-announcements', 'Class announcements appear after student identity approval.');
+        clearFeed('campus-dashboard-updates', 'Verified campus notices and events remain available after identity approval.');
+        $('campus-metric-classes').textContent = '—';
+        $('campus-metric-secondary').textContent = '—';
+        $('campus-metric-events').textContent = '—';
+        $('campus-metric-incidents').textContent = String((incidents || []).filter(i => !isResolvedStatus(i.status)).length);
+        return;
+      }
+
+      status.textContent = 'Loading your campus data…';
+      const campusId = context.university_id;
+      const results = await Promise.all([
+        backend.listCampusClassrooms().catch(() => []),
+        backend.listCampusNotices().catch(() => []),
+        backend.listCampusEvents().catch(() => [])
+      ]);
+      const classes = (results[0] || []).filter(row => row.university_id === campusId);
+      const notices = (results[1] || []).filter(row => row.university_id === campusId &&
+        (!row.expires_at || new Date(row.expires_at).getTime() > Date.now()));
+      const allEvents = (results[2] || []).filter(row => row.university_id === campusId);
+      const upcomingEvents = allEvents.filter(row => row.starts_at && new Date(row.starts_at).getTime() >= Date.now())
+        .sort((a,b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+      const now = Date.now();
+      const classroomAnnouncements = [];
+      const rosterCounts = [];
+      for (const classroom of classes.slice(0, 30)) {
+        try {
+          const rows = await backend.listCampusClassroomAnnouncements(classroom.id);
+          (rows || []).forEach(row => classroomAnnouncements.push({
+            id: row.id, classroom_id: classroom.id, classroom_name: classroom.name,
+            title: row.title, body: row.body, created_at: row.created_at, kind: 'class'
+          }));
+        } catch (_error) {
+          // An inaccessible class contributes no announcement content.
+        }
+        if (isTeacher) {
+          try {
+            const roster = await backend.listCampusClassroomRoster(classroom.id);
+            rosterCounts.push({classroom_id:classroom.id, count:(roster||[]).length});
+          } catch (_error) {
+            // The roster RPC permits only the verified teacher who owns the class.
+          }
+        }
+      }
+      classroomAnnouncements.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const visibleAnnouncements = classroomAnnouncements.slice(0, 5);
+      const totalStudents = new Map();
+      // Each classroom roster is owner-protected; sum only those authorized responses.
+      rosterCounts.forEach(item => totalStudents.set(item.classroom_id, item.count));
+      const studentCount = Array.from(totalStudents.values()).reduce((sum,value) => sum + value, 0);
+
+      $('campus-metric-classes').textContent = String(classes.length);
+      $('campus-metric-secondary').textContent = String(isTeacher ? studentCount : classroomAnnouncements.length);
+      $('campus-metric-events').textContent = String(upcomingEvents.length);
+      $('campus-metric-incidents').textContent = String((incidents || []).filter(i => !isResolvedStatus(i.status)).length);
+      if (isTeacher && !rosterCounts.length) $('campus-metric-secondary-note').textContent = 'Owned class rosters are available to their verified teacher';
+      else if (isTeacher) $('campus-metric-secondary-note').textContent = 'Across classrooms you own';
+      else $('campus-metric-secondary-note').textContent = 'Updates from your authorized classrooms';
+      const classFeed = $('campus-dashboard-classes');
+      classFeed.replaceChildren();
+      if (!classes.length) clearFeed('campus-dashboard-classes', isTeacher ? 'Create your first classroom to share announcements and course materials.' : 'Join a classroom with the private code provided by your verified teacher.');
+      else classes.slice(0,4).forEach(row => appendItem(
+        classFeed, row.name, row.subject, row.description || 'Private class space for announcements and learning links.',
+        'Open class', () => { navigate('classroom'); loadCampusClassroomsPage(); loadCampusClassroomDetail(row.id); }
+      ));
+
+      const announcementFeed = $('campus-dashboard-announcements');
+      announcementFeed.replaceChildren();
+      if (!visibleAnnouncements.length) clearFeed('campus-dashboard-announcements', 'No class announcements are available to your account yet.');
+      else visibleAnnouncements.forEach(row => appendItem(
+        announcementFeed, row.title, row.classroom_name + ' · ' + dateText(row.created_at), row.body,
+        'Open class', () => { navigate('classroom'); loadCampusClassroomsPage(); loadCampusClassroomDetail(row.classroom_id); }
+      ));
+
+      const updateFeed = $('campus-dashboard-updates');
+      updateFeed.replaceChildren();
+      const updateCards = [];
+      notices.slice().sort((a,b) => new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime())
+        .slice(0,3).forEach(row => updateCards.push({
+          title: row.title, meta: 'Verified notice · ' + String(row.category || 'Campus update'),
+          body: row.body, type: 'notice'
+        }));
+      upcomingEvents.slice(0,3).forEach(row => updateCards.push({
+        title: row.title, meta: 'Upcoming event · ' + dateText(row.starts_at),
+        body: row.location || row.description || 'Published campus event', type: 'event'
+      }));
+      updateCards.sort((a,b) => 0); // Preserve official notices first, then nearest events.
+      if (!updateCards.length) clearFeed('campus-dashboard-updates', 'No active notices or upcoming events are published for your campus.');
+      else updateCards.slice(0,5).forEach(row => appendItem(
+        updateFeed, row.title, row.meta, row.body,
+        row.type === 'notice' ? 'Open noticeboard' : 'View events',
+        () => { navigate(row.type === 'notice' ? 'noticeboard' : 'events'); if (row.type === 'notice') loadCampusNoticeboardPage(); else loadCampusEventsPage(); }
+      ));
+
+      if (isTeacher && currentProfile?.role === 'teacher') {
+        $('campus-dashboard-actions').hidden = true;
+        $('campus-dashboard-teacher-actions').hidden = false;
+      } else {
+        $('campus-dashboard-actions').hidden = false;
+        $('campus-dashboard-teacher-actions').hidden = true;
+      }
+      status.textContent = 'Updated ' + new Date().toLocaleTimeString() + '. Campus content is limited to your authorized university and classrooms.';
+    } catch (_error) {
+      status.textContent = 'Your campus overview could not be loaded. Use the Refresh data button or try again.';
+    }
+  }
+
   document.addEventListener('click', e => {
     const button = e.target.closest('[data-page]');
     if (!button) return;
@@ -1680,6 +1956,7 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'groups') loadCampusGroupsPage();
     if (button.dataset.page === 'events') loadCampusEventsPage();
     if (button.dataset.page === 'marketplace') loadCampusMarketplacePage();
+    if (button.dataset.page === 'dashboard') loadCampusDashboardInsights();
     if (button.dataset.page === 'platform-admin') loadPlatformAdminPage();
   });
 
@@ -2076,6 +2353,7 @@ td strong{color:#2a464d;font-size:11px}
       status.textContent = `Updated ${incidentsLastUpdated.toLocaleTimeString()}`;
       status.dataset.state = 'ready';
       render();
+      if (typeof loadCampusDashboardInsights === 'function') loadCampusDashboardInsights();
       return true;
     } catch (e) {
       if (requestSessionVersion !== authSessionVersion || !currentProfile) return false;
@@ -4240,8 +4518,12 @@ td strong{color:#2a464d;font-size:11px}
 
       if (profileError) throw profileError;
 
+      const desiredRole = selectedSignInRole === 'administrator' ? 'admin' : selectedSignInRole;
+      const roleMismatch = selectedSignInRole && profile.role !== desiredRole;
       if (profile.verification_status === 'verified') {
-        msg.textContent = `Signed in successfully. Your role is ${profile.role}.`;
+        msg.textContent = roleMismatch
+          ? 'Signed in. Your verified account role is ' + profile.role + '; the sign-in choice does not change permissions.'
+          : 'Signed in successfully. Your role is ' + profile.role + '.';
       } else if (profile.verification_status === 'rejected') {
         msg.textContent =
           'Your account verification was rejected. Please contact an administrator.';
@@ -4251,11 +4533,19 @@ td strong{color:#2a464d;font-size:11px}
       }
 
       const workspaceReady = showWorkspace(profile);
+            if (workspaceReady) loadCampusDashboardInsights();
             if (workspaceReady && typeof resetShieldMindForSession === 'function') resetShieldMindForSession();
       if (workspaceReady) {
         campusContext = await backend.getMyCampusContext();
         syncCampusAccessNavigation();
+        const institutionHint = String($('signin-institution')?.value || '').trim();
+        const normalizeInstitution = value => String(value || '').normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        if (authMode === 'signin' && institutionHint && campusContext?.university_name &&
+            normalizeInstitution(institutionHint) !== normalizeInstitution(campusContext.university_name)) {
+          toast('Signed in, but your verified campus is ' + campusContext.university_name + '. Your verified campus membership remains authoritative.');
+        }
         await refreshIncidentsFromSupabase();
+        loadCampusDashboardInsights();
         if (!campusContext?.university_id) {
           navigate('community');
           await loadCommunityPage();
@@ -4273,6 +4563,34 @@ td strong{color:#2a464d;font-size:11px}
       msg.textContent = 'Sign-in failed: ' + e.message;
     }
   }
+
+  // Password visibility controls; this only changes the local input display.
+  document.querySelectorAll('[data-toggle-password]').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const input = $(toggle.dataset.togglePassword);
+      if (!input) return;
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      toggle.setAttribute('aria-pressed', String(show));
+      toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      toggle.innerHTML = show
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a15 15 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/></svg>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+    });
+  });
+
+  // Role choice is only a sign-in hint; it never changes Supabase authorization.
+  let selectedSignInRole = 'student';
+  document.querySelectorAll('[data-signin-role]').forEach(button => {
+    button.addEventListener('click', () => {
+      selectedSignInRole = button.dataset.signinRole;
+      document.querySelectorAll('[data-signin-role]').forEach(option => {
+        option.setAttribute('aria-pressed', String(option === button));
+      });
+      const note = $('signin-role-note');
+      if (note) note.textContent = 'Selected: ' + selectedSignInRole.charAt(0).toUpperCase() + selectedSignInRole.slice(1) + '. Your actual account role and permissions are verified securely after sign-in.';
+    });
+  });
 
   $('auth-form').addEventListener('submit', async e => {
     e.preventDefault();
