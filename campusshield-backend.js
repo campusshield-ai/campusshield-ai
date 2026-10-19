@@ -943,6 +943,15 @@ async getCurrentUser() {
       return data;
     },
 
+    async listCampusClassroomRoster(classroomId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_classroom_roster", {
+        p_classroom_id: classroomId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
     async listCampusClassroomAnnouncements(classroomId) {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("list_campus_classroom_announcements", {
