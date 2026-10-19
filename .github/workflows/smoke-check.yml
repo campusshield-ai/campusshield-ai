@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - codex/classroom-opportunity-hub
       - feature/nigerian-multi-university-foundation
       - feature/identity-university-search
       - feature/onboarding-staff-governance
