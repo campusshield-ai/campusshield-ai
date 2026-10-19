@@ -120,6 +120,7 @@ Deno.serve(async (req: Request) => {
       }
       const mimeType=(imageValue as {mime_type:string}).mime_type;
       const base64=(imageValue as {data_base64:string}).data_base64;
+      if (body.image_attested !== true) return json({error:"Confirm that the image contains academic material only and no private personal information."},400);
       if (!base64 || base64.length>3500000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(base64)) return json({error:"The study image is invalid or larger than 2.5 MB."},400);
       studyImage={mime_type:mimeType,data_base64:base64};
     }
