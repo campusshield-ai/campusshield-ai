@@ -99,6 +99,17 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    // Durable server-side quotas: five requests per minute and eighty per UTC day.
+    // A failure to verify quota fails closed before any provider call.
+    const { data: quotaData, error: quotaError } = await client.rpc("consume_shieldmind_quota");
+    const quota = Array.isArray(quotaData) ? quotaData[0] : quotaData;
+    if (quotaError || !quota) {
+      return json({ error: "ShieldMind usage controls could not be verified. Please try again later." }, 503);
+    }
+    if (quota.allowed !== true) {
+      return json({ error: "You have reached ShieldMind's usage limit. Please try again later." }, 429);
+    }
+
     const history = Array.isArray(body.history)
       ? body.history.slice(-6).filter((item: unknown) =>
           !!item && typeof item === "object" &&
