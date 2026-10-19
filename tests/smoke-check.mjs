@@ -12,6 +12,7 @@ const config = await readFile(new URL("../supabase-config.js", import.meta.url),
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
 const fraudLockMigration = await readFile(new URL("../supabase/migrations/20261018100000_confirmed_identity_fraud_lock.sql", import.meta.url), "utf8");
+const shieldmindQuotaMigration = await readFile(new URL("../supabase/migrations/20261019111812_shieldmind_usage_limits.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -191,3 +192,18 @@ console.log("PASS emergency-services prototype warning remains visible");
 console.log("PASS Android and iOS install metadata and guidance are present");
 console.log("PASS Android and Apple launcher icons are valid PNGs at the required sizes");
 console.log("PASS offline fallback stores no app, authentication, or incident responses");
+
+ 
+// ShieldMind AI must remain staging-scoped, verified-campus-only and independent of private incident data.
+assert.match(config, /https:\/\/hywcpnoqqhxvujnimhxl\.supabase\.co/);
+assert.doesNotMatch(config, /fvgtnujjnvdkhzqqcaqe/);
+assert.match(html, /id="page-shieldmind"/);
+assert.match(html, /id="shieldmind-form"/);
+assert.match(html, /function resetShieldMindForSession\(\)/);
+assert.match(html, /page === 'shieldmind' &&/);
+assert.match(backend, /async askShieldMind\(question, history = \[\]\)/);
+assert.match(backend, /functions\.invoke\("shieldmind-chat"/);
+assert.match(html, /ShieldMind does not receive CampusShield incident reports, identity documents, attendance, or private Helpdesk records/);
+assert.match(shieldmindQuotaMigration, /request_count < 5/);
+assert.match(shieldmindQuotaMigration, /request_count < 80/);
+assert.match(shieldmindQuotaMigration, /revoke all on table private\.shieldmind_usage_windows from public, anon, authenticated/i);
