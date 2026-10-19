@@ -1106,6 +1106,36 @@ async getCurrentUser() {
       return data;
     },
 
+
+    async askShieldMind(question, history = [], image = null) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const cleanQuestion = String(question || "").trim();
+      if (!cleanQuestion || cleanQuestion.length > 1200) throw new Error("Enter a question up to 1,200 characters.");
+      const safeHistory = Array.isArray(history) ? history.slice(-6).filter(item =>
+        item && ["user", "assistant"].includes(item.role) &&
+        typeof item.content === "string" && item.content.length <= 1200
+      ).map(item => ({ role: item.role, content: item.content })) : [];
+      let safeImage = null;
+      if (image !== null) {
+        if (!image || !["image/jpeg", "image/png", "image/webp"].includes(image.mime_type) ||
+            typeof image.data_base64 !== "string" || !image.data_base64 ||
+            image.data_base64.length > 3500000 ||
+            !/^[A-Za-z0-9+/]+={0,2}$/.test(image.data_base64)) {
+          throw new Error("The study image is invalid or too large.");
+        }
+        safeImage = { mime_type: image.mime_type, data_base64: image.data_base64 };
+      }
+      const { data: { session }, error: sessionError } = await client.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session?.access_token) throw new Error("Sign in to use ShieldMind.");
+      const { data, error } = await client.functions.invoke("shieldmind-chat", {
+        body: { question: cleanQuestion, history: safeHistory, ...(safeImage ? { image: safeImage } : {}) }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+
     async deleteIncident(id) {
       if (!client) throw new Error("Supabase is not configured.");
 
