@@ -1267,6 +1267,13 @@ td strong{color:#2a464d;font-size:11px}
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
       if (button.id === 'identity-verification-nav') return;
       if (button.id === 'platform-admin-nav') return;
+      if (button.dataset.page === 'shieldmind') {
+        button.hidden = !(verified && !!campusContext?.university_id &&
+          campusContext.membership_status === 'active' &&
+          campusContext.verification_status === 'verified' &&
+          (!student || hasApprovedStudentIdentity()));
+        return;
+      }
       if (['classroom','opportunities'].includes(button.dataset.page)) {
         button.hidden = !(verified && hasVerifiedCampusStaffMembership() && !studentLocked);
         return;
@@ -1563,6 +1570,7 @@ td strong{color:#2a464d;font-size:11px}
       if (event === 'SIGNED_OUT') {
         authSessionVersion += 1;
         currentProfile = null;
+        if (typeof resetShieldMindForSession === 'function') resetShieldMindForSession();
         communityProfile = null;
         campusContext = null;
         $('platform-admin-nav').hidden = true;
@@ -1647,7 +1655,7 @@ td strong{color:#2a464d;font-size:11px}
       events:'Campus events',
       marketplace:'Campus marketplace',
       classroom:'Teacher Classroom',
-      opportunities:'Gift & Opportunity Hub'
+      opportunities:'Gift & Opportunity Hub',
       shieldmind:'ShieldMind AI',
     };
 
