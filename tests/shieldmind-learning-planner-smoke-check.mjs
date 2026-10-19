@@ -12,7 +12,7 @@ const checkout=await readFile(new URL("../supabase/functions/shieldmind-billing-
 assert.match(html,/id="page-shieldmind"/);assert.match(html,/data-page="shieldmind"/);
 assert.match(html,/id="signin-role-picker"/);assert.match(html,/data-signin-role="administrator"/);
 assert.match(html,/id="signin-institution-field"/);assert.match(html,/data-toggle-password="auth-password"/);
-assert.doesNotMatch(html,/channel-tiktok[^<]*|<strong>TikTok<\/strong>/i);
+assert.doesNotMatch(html,/TikTok/i);
 assert.match(html,/id="campus-dashboard-panel"/);assert.match(html,/id="campus-dashboard-classes"/);
 assert.match(html,/id="campus-dashboard-announcements"/);assert.match(html,/id="campus-dashboard-updates"/);
 assert.match(backend,/listCampusClassroomRoster/);
