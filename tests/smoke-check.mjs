@@ -12,7 +12,7 @@ const config = await readFile(new URL("../supabase-config.js", import.meta.url),
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
 const fraudLockMigration = await readFile(new URL("../supabase/migrations/20261018100000_confirmed_identity_fraud_lock.sql", import.meta.url), "utf8");
-const shieldmindQuotaMigration = await readFile(new URL("../supabase/migrations/20261019123000_shieldmind_usage_limits.sql", import.meta.url), "utf8");
+const shieldmindQuotaMigration = await readFile(new URL("../supabase/migrations/20261019111812_shieldmind_usage_limits.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
