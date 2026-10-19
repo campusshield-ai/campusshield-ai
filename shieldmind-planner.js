@@ -58,17 +58,17 @@
     if(loading)return;loading=true;
     try{
       const {b,user}=await userContext();
-      const {data,error}=await b.client.from("shieldmind_planner_items").select("id,user_id,title,kind,details,starts_at,remind_at,completed,created_at").eq("user_id",user.id).order("starts_at",{ascending:true,nullsFirst:false}).limit(100);
+      const {data,error}=await b.client.rpc("list_my_shieldmind_planner_items");
       if(error)throw error;items=data||[];status("Timetable synced. Only your account can read these entries.");render();
     }catch(e){items=[];render();status(e?.message||"Your timetable could not be loaded.");}
     finally{loading=false;}
   }
   async function change(id,patch){
-    try{const {b,user}=await userContext();const {error}=await b.client.from("shieldmind_planner_items").update({...patch,updated_at:new Date().toISOString()}).eq("id",id).eq("user_id",user.id);if(error)throw error;await load();}
+    try{const {b,user}=await userContext();const {data,error}=await b.client.rpc("update_my_shieldmind_planner_item",{p_item_id:id,p_completed:patch.completed});if(error)throw error;if(data!==true)throw new Error("That planner item is no longer available.");await load();}
     catch(e){status(e?.message||"Could not update this item.");}
   }
   async function remove(id){
-    try{const {b,user}=await userContext();const {error}=await b.client.from("shieldmind_planner_items").delete().eq("id",id).eq("user_id",user.id);if(error)throw error;items=items.filter(x=>x.id!==id);notified.delete(id);render();status("Timetable item deleted.");}
+    try{const {b,user}=await userContext();const {data,error}=await b.client.rpc("delete_my_shieldmind_planner_item",{p_item_id:id});if(error)throw error;if(data!==true)throw new Error("That planner item is no longer available.");items=items.filter(x=>x.id!==id);notified.delete(id);render();status("Timetable item deleted.");}
     catch(e){status(e?.message||"Could not delete this item.");}
   }
   async function save(event){
@@ -82,7 +82,7 @@
     const button=$("shieldmind-plan-save");if(button){button.disabled=true;button.textContent="Saving privately…";}
     try{
       const {b,user}=await userContext();
-      const {error}=await b.client.from("shieldmind_planner_items").insert({user_id:user.id,title,kind,details,starts_at,remind_at});
+      const {error}=await b.client.rpc("create_my_shieldmind_planner_item",{p_title:title,p_kind:kind,p_details:details,p_starts_at:starts_at,p_remind_at:remind_at});
       if(error)throw error;$("shieldmind-planner-form").reset();notified.clear();await load();status("Saved and synced to your private account.");
     }catch(e){status(e?.message||"Could not save this timetable item.");}
     finally{if(button){button.disabled=false;button.textContent="Save to my timetable";}}
