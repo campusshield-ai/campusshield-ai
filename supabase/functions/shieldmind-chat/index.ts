@@ -64,6 +64,19 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
     if (profileError || !profile) return json({ error: "Your campus account could not be verified." }, 403);
     if (profile.verification_status !== "verified") return json({ error: "ShieldMind requires a verified campus account." }, 403);
+
+    // Verify that this signed-in user currently has an active, verified campus membership.
+    // The RPC is user-scoped (auth.uid()) and returns only this user's campus context.
+    const { data: campusContexts, error: campusContextError } = await client.rpc("get_my_campus_context");
+    const campusContext = Array.isArray(campusContexts) ? campusContexts[0] : null;
+    if (
+      campusContextError ||
+      !campusContext ||
+      campusContext.membership_status !== "active" ||
+      campusContext.verification_status !== "verified"
+    ) {
+      return json({ error: "ShieldMind requires an active, verified campus membership." }, 403);
+    }
     const isStudent = (profile.requested_role || profile.role) === "student";
     if (isStudent) {
       const { data: identity, error: identityError } = await client
