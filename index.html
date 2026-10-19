@@ -1661,6 +1661,10 @@ td strong{color:#2a464d;font-size:11px}
         $('community-feed').innerHTML = '<div class="community-empty">Sign in to view campus updates.</div>';
         incidents = [];
         incidentsLastUpdated = null;
+        if ($('campus-dashboard-classes')) $('campus-dashboard-classes').replaceChildren();
+        if ($('campus-dashboard-announcements')) $('campus-dashboard-announcements').replaceChildren();
+        if ($('campus-dashboard-updates')) $('campus-dashboard-updates').replaceChildren();
+        if ($('campus-dashboard-status')) $('campus-dashboard-status').textContent = 'Sign in to load campus insights.';
         $('incidentSyncStatus').textContent = 'Signed out';
         $('incidentSyncStatus').dataset.state = 'idle';
         render();
@@ -1750,6 +1754,10 @@ td strong{color:#2a464d;font-size:11px}
   async function loadCampusDashboardInsights() {
     const panel = $('campus-dashboard-panel');
     if (!panel || !currentProfile) return;
+    const requestId = (loadCampusDashboardInsights.requestId || 0) + 1;
+    loadCampusDashboardInsights.requestId = requestId;
+    const requestSessionVersion = authSessionVersion;
+    const requestProfile = currentProfile;
     const status = $('campus-dashboard-status');
     const role = String(currentProfile.role || 'student').toLowerCase();
     const isTeacher = role === 'teacher';
@@ -1818,6 +1826,7 @@ td strong{color:#2a464d;font-size:11px}
     }
     try {
       const context = await backend.getMyCampusContext();
+      if (requestId !== loadCampusDashboardInsights.requestId || requestSessionVersion !== authSessionVersion || currentProfile !== requestProfile) return;
       campusContext = context;
       if (!context?.university_id || context.membership_status !== 'active' || context.verification_status !== 'verified') {
         status.textContent = 'Choose and verify your university membership to load campus-specific learning information.';
@@ -1852,6 +1861,7 @@ td strong{color:#2a464d;font-size:11px}
       const classes = (results[0] || []).filter(row => row.university_id === campusId);
       const notices = (results[1] || []).filter(row => row.university_id === campusId &&
         (!row.expires_at || new Date(row.expires_at).getTime() > Date.now()));
+      if (requestId !== loadCampusDashboardInsights.requestId || requestSessionVersion !== authSessionVersion || currentProfile !== requestProfile) return;
       const allEvents = (results[2] || []).filter(row => row.university_id === campusId);
       const upcomingEvents = allEvents.filter(row => row.starts_at && new Date(row.starts_at).getTime() >= Date.now())
         .sort((a,b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
@@ -1882,6 +1892,7 @@ td strong{color:#2a464d;font-size:11px}
       const totalStudents = new Map();
       // Each classroom roster is owner-protected; sum only those authorized responses.
       rosterCounts.forEach(item => totalStudents.set(item.classroom_id, item.count));
+      if (requestId !== loadCampusDashboardInsights.requestId || requestSessionVersion !== authSessionVersion || currentProfile !== requestProfile) return;
       const studentCount = Array.from(totalStudents.values()).reduce((sum,value) => sum + value, 0);
 
       $('campus-metric-classes').textContent = String(classes.length);
@@ -1919,7 +1930,6 @@ td strong{color:#2a464d;font-size:11px}
         title: row.title, meta: 'Upcoming event · ' + dateText(row.starts_at),
         body: row.location || row.description || 'Published campus event', type: 'event'
       }));
-      updateCards.sort((a,b) => 0); // Preserve official notices first, then nearest events.
       if (!updateCards.length) clearFeed('campus-dashboard-updates', 'No active notices or upcoming events are published for your campus.');
       else updateCards.slice(0,5).forEach(row => appendItem(
         updateFeed, row.title, row.meta, row.body,
@@ -4539,7 +4549,7 @@ td strong{color:#2a464d;font-size:11px}
         campusContext = await backend.getMyCampusContext();
         syncCampusAccessNavigation();
         const institutionHint = String($('signin-institution')?.value || '').trim();
-        const normalizeInstitution = value => String(value || '').normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        const normalizeInstitution = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
         if (authMode === 'signin' && institutionHint && campusContext?.university_name &&
             normalizeInstitution(institutionHint) !== normalizeInstitution(campusContext.university_name)) {
           toast('Signed in, but your verified campus is ' + campusContext.university_name + '. Your verified campus membership remains authoritative.');
