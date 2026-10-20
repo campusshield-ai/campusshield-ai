@@ -69,3 +69,11 @@ The latest flattened release commit passed all configured GitHub smoke-check scr
 - Added live institution name suggestions backed by the active campus directory already loaded by the app. Choosing an exact institution maps back to its existing university record ID; typing a name alone does not create membership or grant permissions.
 - The owner reports Google/Gmail sign-in now works in their browser. This is owner-reported acceptance and has not been independently reproduced here. Continue to ensure OAuth hints never grant role or campus privileges.
 - The UI changes are on the release-prep branch for review only. Re-run configured smoke checks and do a signed-in desktop/mobile browser walkthrough before merge or release. No production Supabase settings were changed.
+
+
+## Sidebar logo and interaction polish (2026-10-20)
+
+- Added `assets/campusshield-logo.svg`, a lightweight custom shield mark using CampusShield's mint/teal and deep-navy palette. The sidebar now displays the logo before the brand name; the collapse control sits below the brand instead of above it.
+- Refined sidebar spacing, scrolling, icon sizing, focus states, collapsed icon rail, accessible labels/tooltips and mobile drawer behavior. Desktop collapse and mobile drawer remain separate modes.
+- Smoke checks now assert the logo asset reference, accessible logo label, brand/control order and accessible icon labels.
+- Browser visual QA across desktop and mobile plus CI confirmation are still required. These commits remain on the draft release-prep branch; no deployment or production Supabase changes were made.
