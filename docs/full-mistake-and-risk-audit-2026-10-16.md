@@ -9,17 +9,6 @@ Scope: current PR #14 branch and its stacked PR #13 / PR #8 dependencies, migrat
 
 No production database migration, production deployment, PR merge, real student ID upload, or real test-account creation was performed as part of this audit. Database changes described below were applied to CampusShield AI staging only (`hywcpnoqqhxvujnimhxl`).
 
-## Earlier issues recorded during the project history
-
-- **Community media upload failure:** earlier uploads returned Storage HTTP 400 / `permission denied for table community_posts` because the media flow lacked the needed safe author-row access. The project added a guarded private-media approach; verify upload, signed access, and cross-campus denial in the browser.
-- **Account approval display:** an earlier UI review found missing status/rejected read-only rows and a mismatch between local and GitHub copies. The current branch has an approval queue, but visually verify pending/approved/rejected states and confirm local files match the branch before any manual deployment.
-- **Pending-user feature bypass:** Helpdesk submission and CampusPulse posting previously allowed pending accounts. Database/RPC gates were added across community, Helpdesk and campus interactions. These are security-sensitive and still need direct endpoint and signed-in browser tests; UI hiding alone is not enough.
-- **Rejected student ID resubmission:** the earlier upload flow had a resubmission conflict. The current add-on allows resubmission only when the existing identity record is rejected, reuses a fixed per-user object path, and attempts cleanup after submission failure. Verify reject → resubmit, upload failure, and cleanup end-to-end.
-- **Student identity add-on loading:** the add-on once appeared unavailable because script loading order was wrong; the current smoke suite asserts it loads before the inline app. Confirm the live local browser console has no add-on load errors.
-- **Campus context / 401 debugging:** earlier Supabase checks returned 401 before configuration was corrected; later read-only queries returned HTTP 200 with an empty incidents array. Do not treat that historical success as proof that current registration, identity, or campus-life RPCs work.
-
-These historical items are treated as prior fixes with browser regression checks still outstanding, not as independently re-proven working features.
-
 ## Fixes made during this review
 
 ### 0. Broad client table privileges on `public.profiles` (critical)

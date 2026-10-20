@@ -12,6 +12,36 @@ CampusShield AI aims to make campus environments safer by combining interactive 
 
 The project is being developed with Nigerian university campuses in mind.
 
+
+## Google sign-in — staging setup required
+
+- The sign-in page includes a Google OAuth button only when the browser-safe Supabase configuration selects staging project `hywcpnoqqhxvujnimhxl`.
+- The click handler checks the staging Auth settings endpoint before redirecting; if Google is disabled it gives setup guidance instead of starting a broken OAuth redirect.
+- OAuth uses the current app URL as the return address. Role and institution selections are hints only; they never change roles, campus membership or verification.
+- New Google accounts are created as pending student profiles by the existing auth trigger; they must complete campus onboarding and student identity approval. Staff/admin permissions remain separately verified.
+- Before testing, create a Google OAuth Web client, add the Supabase staging callback URL in Google Cloud, configure the Google provider in staging Supabase Auth, and allow the local staging preview URLs in Auth URL Configuration.
+- No Google OAuth client secret should be committed to GitHub or pasted into chat. Production Auth is not configured by this staging change.
+
+## Student and teacher login/dashboard experience
+
+- Refreshed sign-in page with Administrator, Teacher and Student selection hints, an optional institution-name check, and show/hide password controls.
+- The selected role and typed institution are convenience hints only. Verified Supabase profile role, approved student identity and active verified campus membership remain authoritative; a mismatch is reported after sign-in rather than used to grant access.
+- Role-aware dashboard overview summarizes the signed-in user's accessible classes/classrooms, recent classroom announcements, published same-campus notices, upcoming campus events and open incidents.
+- Teacher overview includes a classroom roster count only for classrooms where the signed-in verified teacher is authorized to view the roster. Class and campus content is fetched through existing access-controlled APIs/RPCs and inserted into the page as text.
+- The saved student/teacher dashboard storyboard's major information areas are represented in the staging workspace. A full signed-in browser walkthrough remains required before any release.
+
+## ShieldMind AI — study support and premium pilot
+
+- Academic Q&A, structured study notes, practice quizzes and revision-plan prompts run through the signed-in, JWT-protected `shieldmind-chat` Edge Function.
+- Private personal timetable entries support class/lecture sessions, assignments, exams, revision sessions and reminders, synchronized to the user's own row-scoped database records.
+- Reminder notifications currently work only while the app is open and browser permission is granted; background push notifications are not configured.
+- Monthly prepaid Paystack test-mode tiers: Free ₦0; Starter ₦2,000 (20 study-image uses/month); Plus ₦5,000 (60); Pro ₦10,000 (150); Ultra ₦15,000 (300); Max ₦28,000 (600). Per-minute/daily requests and the 8-hour session followed by a 1-hour cooldown are enforced server-side in staging. Paid plans do not auto-renew.
+- Core safety and incident-reporting features remain free. Paid tiers are for ShieldMind AI capacity, not safety access.
+- Study images are sent to the external AI provider for processing and are not saved in CampusShield storage. The image monthly allowance is server-enforced. Do not upload identity documents, incident records, attendance records, passwords, or private campus information.
+- No approved official campus source catalog is connected, so ShieldMind must not be treated as a source of official university rules, fees, or deadlines.
+- Paystack checkout remains staging-only and requires the Paystack test secret to be configured in Supabase Edge Function secrets. Do not publish or enable production billing until test payments, expiry, duplicate webhooks, quotas and privacy are verified.
+- All work remains on a feature branch. Do not deploy to production or merge without explicit owner approval.
+
 ## ✨ Current Features
 
 - **Incident reporting** — Submit categorized reports to the configured Supabase project.
@@ -29,8 +59,31 @@ The project is being developed with Nigerian university campuses in mind.
 - **Comments and replies** — Students can discuss published community posts using their public handles.
 - **Verified staff announcements** — Approved teacher, security, and administrator accounts can publish clearly labelled official updates.
 - **Community moderation** — Authorized staff can publish or reject submissions, hide reported content, and review user reports.
+- **CampusShield Helpdesk (staging-first)** — Students can submit facilities, hostel, Wi-Fi/ICT, classroom equipment and administrative service requests with a reference number, status history and visible staff updates. Verified campus staff can assign the responsible unit and update progress.
+- **Verified Campus Noticeboard (staging-first)** — Verified teacher, security and administrator accounts can publish official notices with a publishing-unit label, campus/faculty/department audience and optional expiry. Row Level Security restricts notices to the intended campus audience.
+- **University service design** — The Helpdesk and noticeboard follow common campus-system patterns: trackable service tickets with progress updates, and centralized official academic/service notices. These do not replace a university’s official student portal, SIS, LMS or emergency process.
 
 The current app does not include an interactive campus map. Map-based views remain a future feature.
+
+## 🏫 Campus Life Operating System roadmap
+
+The first practical expansion pairs service delivery with trusted information:
+
+1. **Helpdesk:** reference numbers, responsible units, status history, student-visible progress and staff-only queue controls.
+2. **Verified noticeboard:** notices with issuer unit, audience scope and expiry.
+3. **CampusPulse:** moderated conversations, groups and events.
+4. **Academic Companion (planned):** study plans, assignments, quiz generation and approved-material search; this must be connected only to material the student is authorized to access.
+5. **Student Innovation Network (planned):** team discovery, project portfolios, hackathons and collaboration opportunities.
+
+Personal timetables, course materials, assignment data, AI answers, notifications and university system integrations remain roadmap work until a secure, authorized source of data is connected. Do not treat generated AI content as an official university notice.
+
+### University-system patterns reviewed
+
+- [University of Lagos student portal](https://unilag.edu.ng/student-portal/) — central links to academic calendars, exam/lecture timetables and student services.
+- [Babcock University Support Portal](https://support.babcock.edu.ng/doc/experience-management-system/overview) — support tickets, progress tracking, team responses and self-service support.
+- [University of Sunderland helpdesk case study](https://www.casestudies.com/company/engage2serve/case-study/enhance-student-experience-using-e2s-retain-raise-the-bar-on-student-support-and-service) — centralized student support with case management and routing.
+
+These are design references, not claims of endorsement, partnership or direct integration.
 
 ## 🎯 Our Mission
 
@@ -78,6 +131,30 @@ The campus community is intentionally separate from private incident reporting. 
 
 The additive database migrations, applied in order to the connected CampusShield Supabase project, are `supabase/migrations/20261014230000_add_community_privacy_feed.sql`, `supabase/migrations/20261014233000_sync_community_username_snapshots.sql`, `supabase/migrations/20261014234000_restrict_username_availability.sql`, `supabase/migrations/20261014235000_remove_username_availability_rpc.sql`, and `supabase/migrations/20261014240000_allow_verified_teachers_to_read_profiles.sql`. Apply all five in order when setting up another environment before deploying the updated frontend/backend files.
 
+## 🏫 Multi-university foundation
+
+CampusShield is being designed as separate university spaces on one platform. A signed-in account has one campus membership at a time, and database-enforced university IDs scope community posts, comments, moderation queues, events, groups, marketplace listings and incident records. Campus selection is locked after joining; transfers need support review. The national directory is for choosing the institution only, never a cross-university social feed.
+
+The feature branch includes UI for campus posts, questions, polls, likes, threaded replies, reposts, bookmarks, same-campus follows, course/department groups, events and RSVPs, marketplace listings, campus-only moderation, trusted platform-admin university-request review and campus-admin assignment. Private photo/video upload and signed-URL rendering are wired to the private storage bucket, but still need browser-level verification against staging before release.
+
+A separate project named CampusShield AI Staging was created in eu-west-1. The schema-only baseline and all 14 feature migrations, including legacy-content backfill, were applied in staging only; production remains unchanged. Staging has 328 active university rows from a NUC-sourced reference snapshot, with 77 Federal, 69 State and 182 Private universities and no missing state values. Available websites were added only where matched to the directory source data; some newer institutions still have no website value. The source snapshot was fetched 2026-09-05 from a NUC reference compilation, and the live eNUC page reports the same category totals (https://enuc.nuc.edu.ng/nus). Re-verify institution names and current approval status row-by-row against the live NUC register before public launch. Staging SQL tests with fictional users confirmed that a second university cannot read the first university's incidents, posts, groups, events or marketplace listings, and cross-campus comment, follow, report and RSVP attempts are rejected. Incident submission, staff resolution, post moderation, account approval, university-request review and the trusted-admin bootstrap guard passed SQL-level checks. These tests simulate authenticated database claims; a rollback-only staging test also verified that older unassigned incidents and community posts are attached only to the author's selected campus, and the temporary test records were rolled back. This is not a full browser login test. The migration files are:
+- `20261015000000_multi_university_foundation.sql` — campus membership, university-scoped RLS and core social schemas
+- `20261015010000_campus_staff_membership_review.sql` — first campus-admin bootstrap and campus-specific staff verification
+- `20261015020000_campus_social_actions.sql` — reactions, follows, polls, reposts, bookmarks and replies
+- `20261015030000_private_campus_media.sql` — private media storage schema and campus-scoped storage policies (browser upload/playback test pending)
+- `20261015040000_campus_groups_events_marketplace.sql` — group, event and marketplace permissions/moderation
+- `20261015050000_marketplace_reporting.sql` — campus-only scam/listing reports
+- `20261015060000_social_directory_helpers.sql` — private listing-ownership status helper
+- `20261015070000_campus_role_scoping.sql` — campus-specific staff roles and a trusted platform-admin assignment function
+- `20261015080000_harden_campus_rpc_permissions.sql` — restricts privileged campus RPC execution to authenticated users
+- `20261015090000_require_preprovisioned_platform_admin.sql` — requires database-owner provisioning before a user can exercise platform-admin bootstrap
+- `20261015100000_platform_admin_console_rpcs.sql` — trusted platform-admin RPCs for reviewing university requests and listing eligible staff
+- `20261015110000_import_official_nuc_university_directory.sql` — imports 328 NUC-sourced university entries while preserving IDs/slugs for the initial starter rows
+- `20261015120000_require_verified_campus_staff_for_admin.sql` — only allows campus-admin assignment for staff with verified accounts and verified campus membership
+- `20261015130000_backfill_legacy_content_after_campus_selection.sql` — assigns only a user's older unassigned incidents and community posts to the campus they select, without moving content already assigned elsewhere
+
+Supabase Advisor on staging currently reports 39 authenticated-executable SECURITY DEFINER functions (including RPCs intentionally used to enforce tenant checks) and leaked-password protection disabled; audit the authorization guard for each exposed RPC and enable compromised-password protection before production rollout. The private platform-admin registry has RLS enabled with no direct policies intentionally, so user access must remain through guarded RPCs only. The source smoke-check workflow runs on GitHub Actions and passed on the current PR head. Staging SQL syntax, key permission checks and two-university isolation tests have been completed. The remaining release gate is a real browser test using the updated frontend pointed at staging Auth and Storage, including sign-in/signup, campus onboarding, incident workflows, read-only display of rejected account applications, platform-admin screens, photo/video upload and signed-media playback. Do not merge or deploy until the browser checks pass. The database owner must explicitly insert the trusted platform administrator's user ID into `private.platform_admins` in a controlled SQL session before the platform-admin console can be used; the public bootstrap RPC cannot let a user add themselves. Campus-admin assignment now requires both the staff account and that university membership to be verified.
+
 ## 🔮 Future Plans
 
 - Interactive campus map
@@ -103,3 +180,12 @@ CampusShield AI is a technology development project. Any risk indicators or anal
 ---
 
 **CampusShield AI — Building Safer Campuses Through Technology.**
+
+
+## Student identity verification in staging
+
+The current test branch includes a student identity form and a companion browser helper that uploads JPEG, PNG, or PDF files (max 5 MiB) to the private `student-identity-documents` bucket using the fixed per-user object path. Student identity records are protected by RLS; only the owner or a verified administrator at the same university can read the metadata/document. Approval and rejection use server-side RPC checks, and a student account cannot be approved until identity is approved.
+
+The browser configuration on this branch is intentionally set to the separate staging project `hywcpnoqqhxvujnimhxl` with a publishable key only. Do not use it for production. Use synthetic data and dummy files only; do not upload real student IDs.
+
+The SQL/RLS/RPC rollback-only workflow passed 15/15 assertions on staging. The transaction was rolled back and a post-check found no test identity rows or Storage objects left behind. The actual browser upload and signed-link click test still needs to be completed in Live Server. Current Security Advisor findings are documented in the update package: 40 warnings and one informational notice remain.

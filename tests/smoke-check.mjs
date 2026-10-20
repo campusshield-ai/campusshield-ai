@@ -8,6 +8,21 @@ const usernameSyncMigration = await readFile(new URL("../supabase/migrations/202
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
 const usernameLookupRemovalMigration = await readFile(new URL("../supabase/migrations/20261014235000_remove_username_availability_rpc.sql", import.meta.url), "utf8");
 const staffProfileMigration = await readFile(new URL("../supabase/migrations/20261014240000_allow_verified_teachers_to_read_profiles.sql", import.meta.url), "utf8");
+const multiUniversityMigration = await readFile(new URL("../supabase/migrations/20261015000000_multi_university_foundation.sql", import.meta.url), "utf8");
+const campusStaffMigration = await readFile(new URL("../supabase/migrations/20261015010000_campus_staff_membership_review.sql", import.meta.url), "utf8");
+const campusSocialMigration = await readFile(new URL("../supabase/migrations/20261015020000_campus_social_actions.sql", import.meta.url), "utf8");
+const privateCampusMediaMigration = await readFile(new URL("../supabase/migrations/20261015030000_private_campus_media.sql", import.meta.url), "utf8");
+const securePrivateMediaPolicyMigration = await readFile(new URL("../supabase/migrations/20261015140000_secure_private_media_policy_checks.sql", import.meta.url), "utf8");
+const campusGroupsEventsMarketplaceMigration = await readFile(new URL("../supabase/migrations/20261015040000_campus_groups_events_marketplace.sql", import.meta.url), "utf8");
+const marketplaceReportingMigration = await readFile(new URL("../supabase/migrations/20261015050000_marketplace_reporting.sql", import.meta.url), "utf8");
+const socialDirectoryMigration = await readFile(new URL("../supabase/migrations/20261015060000_social_directory_helpers.sql", import.meta.url), "utf8");
+const campusRoleScopingMigration = await readFile(new URL("../supabase/migrations/20261015070000_campus_role_scoping.sql", import.meta.url), "utf8");
+const rpcPermissionsMigration = await readFile(new URL("../supabase/migrations/20261015080000_harden_campus_rpc_permissions.sql", import.meta.url), "utf8");
+const platformAdminProvisioningMigration = await readFile(new URL("../supabase/migrations/20261015090000_require_preprovisioned_platform_admin.sql", import.meta.url), "utf8");
+const platformAdminConsoleMigration = await readFile(new URL("../supabase/migrations/20261015100000_platform_admin_console_rpcs.sql", import.meta.url), "utf8");
+const nucDirectoryMigration = await readFile(new URL("../supabase/migrations/20261015110000_import_official_nuc_university_directory.sql", import.meta.url), "utf8");
+const verifiedCampusAdminMigration = await readFile(new URL("../supabase/migrations/20261015120000_require_verified_campus_staff_for_admin.sql", import.meta.url), "utf8");
+const legacyCampusBackfillMigration = await readFile(new URL("../supabase/migrations/20261015130000_backfill_legacy_content_after_campus_selection.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -19,9 +34,36 @@ for (const [index, source] of inlineScripts.entries()) {
 }
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
 assert.doesNotThrow(() => new Function(config), "Supabase config parses");
+assert.match(backend, /emailRedirectTo:\s*window\.location\.origin\s*\+\s*window\.location\.pathname/);
+assert.doesNotMatch(backend, /emailRedirectTo:\s*["']https:\/\/campusshield-ai\.github\.io\/campusshield-ai\//);
+assert.ok(
+  html.includes(".in('verification_status', ['pending', 'rejected'])"),
+  "account approvals query includes pending and rejected applications"
+);
+assert.ok(
+  html.includes(".or('requested_role.in.(student,teacher),role.in.(student,teacher)')"),
+  "account approvals query includes student/teacher applicants by requested or current role"
+);
+assert.ok(
+  html.includes("row.verification_status === 'pending'"),
+  "review actions are shown only for pending applications"
+);
+assert.ok(
+  html.includes("ID rejected; student may resubmit.") &&
+  html.includes("Your ID was rejected"),
+  "rejected student identity submissions can be corrected and resubmitted"
+);
+assert.match(html, /<th scope="col">Status<\/th>/, "account approvals table includes a Status column");
+assert.match(html, /row\.verification_status === 'rejected' \? 'high' : 'open'/, "approval status styling distinguishes rejected applications");
+assert.match(html, /colspan="6"/, "account approvals placeholders span all six columns");
+assert.doesNotMatch(
+  html,
+  /\.eq\('verification_status', 'pending'\)/,
+  "no pending-only status filter remains in the approvals query"
+);
 
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
-assert.match(config, /https:\/\/fvgtnujjnvdkhzqqcaqe\.supabase\.co/);
+assert.match(config, /https:\/\/hywcpnoqqhxvujnimhxl\.supabase\.co/, "feature branch must target the separate staging project");
 const publicKey = config.match(/publishableKey:\s*"([^"]+)"/)?.[1];
 assert.ok(publicKey?.startsWith("sb_publishable_"), "uses a publishable browser key");
 assert.doesNotMatch(publicKey, /secret|service_role/i);
@@ -42,10 +84,14 @@ assert.match(html, /requestSessionVersion !== authSessionVersion/);
 assert.match(html, /id="incidentSyncStatus"/);
 assert.doesNotMatch(html, /id="reporter"/);
 assert.match(html, /does not contact emergency services/i);
+assert.match(html, /temporarily limited confirmation emails/i, "signup/resend explains Supabase email rate limits");
+assert.match(html, /repeated sign-up attempts will not speed this up/i, "rate-limit guidance discourages repeated signup retries");
 
 // Campus community and public-identity privacy.
 assert.match(html, /id="auth-username"/);
 assert.match(html, /id="page-community"/);
+assert.match(html, /function renderCommunityFeed\(posts, comments, socialRows, pollsByPost, mediaByPost\)/);
+assert.match(html, /renderCommunityFeed\(posts, comments, socialRows, pollsByPost, mediaByPost\)/);
 assert.match(html, /id="communityUsernameForm"/);
 assert.match(html, /id="communityPostForm"/);
 assert.match(html, /id="community-moderation"/);
@@ -73,6 +119,120 @@ assert.match(usernameSyncMigration, /update public\.community_posts/i);
 assert.match(usernameSyncMigration, /update public\.community_comments/i);
 assert.match(usernameLookupRemovalMigration, /drop function if exists public\.check_community_username_available\(text\)/i);
 assert.match(staffProfileMigration, /private\.current_campus_role\(\) = any \(array\[\x27admin\x27, \x27security\x27, \x27teacher\x27\]\)/i);
+assert.match(backend, /listCampusUniversities/);
+assert.match(backend, /get_my_campus_context/);
+assert.match(backend, /set_my_campus_membership/);
+assert.match(backend, /university_id: campus\.university_id/);
+assert.match(html, /id="campusOnboardingForm"/);
+assert.match(html, /id="campusUniversityRequestForm"/);
+assert.match(html, /locked after joining/i);
+assert.match(multiUniversityMigration, /private\.current_campus_university_id\(\)/i);
+assert.match(multiUniversityMigration, /create policy community_posts_read_same_campus/i);
+assert.match(multiUniversityMigration, /create policy incidents_read_own_or_same_campus_staff/i);
+assert.match(multiUniversityMigration, /create or replace function public\.set_my_campus_membership/i);
+assert.match(multiUniversityMigration, /Your university is locked to protect campus privacy/i);
+assert.match(multiUniversityMigration, /create table if not exists public\.campus_groups/i);
+assert.match(multiUniversityMigration, /create table if not exists public\.campus_events/i);
+assert.match(multiUniversityMigration, /create table if not exists public\.campus_marketplace_listings/i);
+assert.match(campusStaffMigration, /create or replace function public\.bootstrap_first_campus_admin/i);
+assert.match(campusStaffMigration, /create or replace function public\.list_campus_staff_membership_reviews/i);
+assert.match(campusStaffMigration, /create or replace function public\.review_campus_staff_membership/i);
+assert.match(campusStaffMigration, /private\.current_campus_role\(\)/i);
+assert.match(backend, /bootstrapFirstCampusAdmin/);
+assert.match(backend, /listCampusStaffMembershipReviews/);
+assert.match(backend, /reviewCampusStaffMembership/);
+assert.match(html, /id="campus-membership-review-panel"/);
+assert.match(html, /id="page-groups"/);
+assert.match(html, /id="page-events"/);
+assert.match(html, /id="page-marketplace"/);
+assert.match(html, /id="campusGroupForm"/);
+assert.match(html, /id="campusEventForm"/);
+assert.match(html, /id="campusMarketplaceForm"/);
+assert.match(html, /One university, one private community/i);
+assert.match(html, /data-community-reaction/);
+assert.match(html, /data-community-bookmark/);
+assert.match(html, /data-community-repost/);
+assert.match(html, /data-community-follow/);
+assert.match(html, /data-community-poll-vote/);
+assert.match(html, /data-campus-event-rsvp/);
+assert.match(html, /data-marketplace-report/);
+assert.match(backend, /listCampusGroups/);
+assert.match(backend, /join_campus_group/);
+assert.match(backend, /createCampusEvent/);
+assert.match(backend, /createCampusMarketplaceListing/);
+assert.match(backend, /report_campus_marketplace_listing/);
+assert.match(backend, /list_campus_content_moderation/);
+assert.match(campusSocialMigration, /create or replace function public\.toggle_community_reaction/i);
+assert.match(campusSocialMigration, /create or replace function public\.create_community_poll/i);
+assert.match(campusSocialMigration, /create or replace function public\.create_community_reply/i);
+assert.match(campusSocialMigration, /You can only follow students from your own university/i);
+assert.match(privateCampusMediaMigration, /values \([\s\S]*?'campus-community-media',[\s\S]*?false/i);
+assert.match(privateCampusMediaMigration, /split_part\(name,'\/',1\)/i);
+assert.match(campusGroupsEventsMarketplaceMigration, /create or replace function public\.review_campus_content/i);
+assert.match(campusGroupsEventsMarketplaceMigration, /create policy campus_groups_create_same_campus/i);
+assert.match(multiUniversityMigration, /create policy campus_events_create_same_campus/i);
+assert.match(multiUniversityMigration, /create policy campus_marketplace_create_same_campus/i);
+assert.match(marketplaceReportingMigration, /create or replace function public\.report_campus_marketplace_listing/i);
+assert.match(marketplaceReportingMigration, /create or replace function public\.review_campus_marketplace_report/i);
+assert.match(socialDirectoryMigration, /list_my_campus_marketplace_listings/i);
+assert.match(campusRoleScopingMigration, /add column if not exists campus_role/i);
+assert.match(campusRoleScopingMigration, /create table if not exists private\.platform_admins/i);
+assert.match(campusRoleScopingMigration, /create or replace function private\.current_campus_role/i);
+assert.match(campusRoleScopingMigration, /create or replace function public\.platform_assign_campus_admin/i);
+assert.match(campusRoleScopingMigration, /campus_role='admin'/i);
+assert.match(rpcPermissionsMigration, /revoke all on function public\.get_my_campus_context\(\) from public, anon/i);
+assert.match(rpcPermissionsMigration, /grant execute on function public\.get_my_campus_context\(\) to authenticated/i);
+assert.match(rpcPermissionsMigration, /revoke all on function public\.review_campus_account\(uuid,text\) from public, anon/i);
+assert.match(rpcPermissionsMigration, /grant execute on function public\.review_campus_staff_membership\(uuid,text\) to authenticated/i);
+assert.doesNotMatch(rpcPermissionsMigration, /grant execute on function public\.[^;]+ to anon/i, "campus RPCs are never granted to anon");
+assert.match(platformAdminProvisioningMigration, /select 1 from private\.platform_admins pa where pa\.user_id=v_user_id/i);
+assert.doesNotMatch(platformAdminProvisioningMigration, /insert into private\.platform_admins/i, "users cannot self-register as platform administrators");
+assert.match(platformAdminConsoleMigration, /create or replace function public\.platform_is_admin/i);
+assert.match(platformAdminConsoleMigration, /create or replace function public\.platform_list_campus_university_requests/i);
+assert.match(platformAdminConsoleMigration, /create or replace function public\.platform_review_campus_university_request/i);
+assert.match(platformAdminConsoleMigration, /from private\.platform_admins/i);
+assert.match(platformAdminConsoleMigration, /grant execute on function public\.platform_review_campus_university_request\(uuid,text\) to authenticated/i);
+assert.doesNotMatch(platformAdminConsoleMigration, /grant execute on function public\.platform_review_campus_university_request\(uuid,text\) to anon/i);
+assert.match(nucDirectoryMigration, /Import the 328-entry NUC university roster/i);
+assert.match(nucDirectoryMigration, /77 Federal, 69 State, 182 Private/i);
+assert.match(nucDirectoryMigration, /https:\/\/enuc\.nuc\.edu\.ng\/nus/i);
+assert.match(nucDirectoryMigration, /Kwara State University, Ilorin/i);
+assert.match(nucDirectoryMigration, /Aliko Dangote University of Science & Technology, Wudil/i);
+assert.match(nucDirectoryMigration, /on conflict \(slug\) do update/i);
+assert.doesNotMatch(nucDirectoryMigration, /Pearl University[\s\S]{0,160}crutech\.edu\.ng/i, "do not assign another university's URL to Pearl University");
+assert.match(html, /id="community-post-media-alt"/);
+assert.match(html, /media\.media_kind === 'video'/);
+
+assert.match(html, /id="platform-admin-nav"/);
+assert.match(html, /id="page-platform-admin"/);
+assert.match(html, /id="platform-admin-requests-table"/);
+assert.match(html, /id="platform-admin-candidates-table"/);
+assert.match(backend, /listPlatformUniversityRequests/);
+assert.match(backend, /reviewPlatformUniversityRequest/);
+assert.match(backend, /listPlatformCampusStaffCandidates/);
+assert.match(backend, /assignCampusAdmin/);
+assert.match(html, /id="community-post-media"/);
+assert.match(backend, /uploadCommunityPostMedia/);
+assert.match(backend, /createSignedUrl/);
+assert.match(privateCampusMediaMigration, /create policy campus_media_read_same_campus/i);
+assert.match(securePrivateMediaPolicyMigration, /create or replace function private\.can_read_community_post_for_media/i);
+assert.match(securePrivateMediaPolicyMigration, /create or replace function private\.owns_community_post_for_media/i);
+assert.match(securePrivateMediaPolicyMigration, /create policy campus_media_upload_same_campus[\s\S]*?private\.owns_community_post_for_media/i);
+assert.match(securePrivateMediaPolicyMigration, /create or replace function private\.can_read_community_post_for_media/i);
+assert.doesNotMatch(securePrivateMediaPolicyMigration, /grant select \([^)]*author_id/i, "private media fix does not expose author_id through direct SELECT grants");
+assert.match(verifiedCampusAdminMigration, /cm\.verification_status='verified'/i);
+assert.match(verifiedCampusAdminMigration, /Choose staff whose account and membership are verified/i);
+assert.match(verifiedCampusAdminMigration, /grant execute on function public\.platform_assign_campus_admin\(uuid,uuid\) to authenticated/i);
+assert.match(legacyCampusBackfillMigration, /where reporter_id = v_user_id\s+and university_id is null/i);
+assert.match(legacyCampusBackfillMigration, /where author_id = v_user_id\s+and university_id is null/i);
+assert.match(legacyCampusBackfillMigration, /Your university is locked to protect campus privacy/i);
+
+
+
+assert.doesNotMatch(html, /national feed/i, "the app must not imply cross-university interaction");
+
+
+
 assert.match(html, /does not contact emergency services/i, "the emergency-services prototype warning remains visible");
 
 assert.equal(manifest.name, "CampusShield AI");
