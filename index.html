@@ -462,6 +462,58 @@ td strong{color:#2a464d;font-size:11px}
 .google-auth-button svg{width:19px;height:19px;flex:0 0 19px}
 .google-auth-note{font-size:11px;line-height:1.55;margin:8px 0 0;color:var(--muted,#6d7c91)}
 
+
+/* Collapsible, responsive navigation and live institution typeahead */
+.sidebar{transition:width .24s ease,transform .24s ease,padding .24s ease;overflow-x:hidden}
+.sidebar-toggle{display:flex;align-items:center;justify-content:flex-end;gap:8px;width:100%;min-height:36px;margin:0 0 12px;padding:7px 10px;border:1px solid #ffffff1c;border-radius:10px;background:#ffffff08;color:#d8e9e5;font-size:11px;font-weight:750}
+.sidebar-toggle:hover{background:#ffffff14;color:#fff}
+.sidebar-toggle>span:first-child{font-size:22px;line-height:1}
+.sidebar-toggle-label{white-space:nowrap}
+.app.sidebar-collapsed .sidebar{width:84px;padding-inline:12px}
+.app.sidebar-collapsed .main{margin-left:84px}
+.app.sidebar-collapsed .brand{justify-content:center;padding-inline:0}
+.app.sidebar-collapsed .brand-copy,.app.sidebar-collapsed .nav-label,.app.sidebar-collapsed .nav button:not(.active)::after,.app.sidebar-collapsed .sidebar-status p,.app.sidebar-collapsed .sidebar-status strong{display:none}
+.app.sidebar-collapsed .nav{gap:8px}
+.app.sidebar-collapsed .nav button{justify-content:center;padding:12px 8px;font-size:0}
+.app.sidebar-collapsed .nav button .nav-icon{margin:0}
+.app.sidebar-collapsed .nav button[data-page="classroom"],.app.sidebar-collapsed .nav button[data-page="opportunities"],.app.sidebar-collapsed .nav button[data-page="staff-verification"],.app.sidebar-collapsed .nav button[data-page="staff-review"]{font-size:0}
+.app.sidebar-collapsed .nav button[data-page="classroom"]::before{content:"TC";font-size:10px;font-weight:900}
+.app.sidebar-collapsed .nav button[data-page="opportunities"]::before{content:"GH";font-size:10px;font-weight:900}
+.app.sidebar-collapsed .nav button[data-page="staff-verification"]::before{content:"SV";font-size:10px;font-weight:900}
+.app.sidebar-collapsed .nav button[data-page="staff-review"]::before{content:"SR";font-size:10px;font-weight:900}
+.app.sidebar-collapsed .sidebar-toggle{justify-content:center;padding:7px 4px}
+.app.sidebar-collapsed .sidebar-toggle-label{display:none}
+.app.sidebar-collapsed .sidebar-toggle>span:first-child{transform:rotate(180deg)}
+.sidebar-backdrop{display:none}
+.mobile-nav-toggle{display:none;flex:0 0 auto;width:40px;height:40px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-size:18px}
+.institution-id-select{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;clip-path:inset(50%)!important}
+.institution-picker-field input[list]{width:100%;min-height:45px;border:1px solid #d9e4df;border-radius:10px;padding:11px 13px;background:#fff;color:#1a363e;font-size:13px}
+.institution-picker-field input[list]:focus{border-color:#5dafa0;box-shadow:0 0 0 3px #79e0c426;outline:none}
+#auth-university-search[aria-invalid="true"]{border-color:#c94855}
+#auth-university-search[aria-invalid="false"]{border-color:#58a88e}
+#auth-university-search-status:empty{display:none}
+@media(max-width:900px){.app.sidebar-collapsed .sidebar{width:74px}.app.sidebar-collapsed .main{margin-left:74px}}
+@media(max-width:650px){
+ .sidebar{position:fixed;inset:0 auto 0 0;width:min(300px,86vw);height:100dvh;overflow-y:auto;transform:translateX(-105%);padding:20px 16px;z-index:30;box-shadow:18px 0 48px #102b3540}
+ .app.mobile-nav-open .sidebar{transform:translateX(0)}
+ .app.sidebar-collapsed .sidebar{width:min(300px,86vw);padding:20px 16px}
+ .app.sidebar-collapsed .main{margin-left:0}
+ .app.sidebar-collapsed .brand{justify-content:flex-start}
+ .app.sidebar-collapsed .brand-copy,.app.sidebar-collapsed .nav-label,.app.sidebar-collapsed .sidebar-status p,.app.sidebar-collapsed .sidebar-status strong,.app.sidebar-collapsed .sidebar-toggle-label{display:initial}
+ .app.sidebar-collapsed .nav button{justify-content:flex-start;font-size:13px;padding:11px 12px}
+ .app.sidebar-collapsed .nav button[data-page="classroom"],.app.sidebar-collapsed .nav button[data-page="opportunities"],.app.sidebar-collapsed .nav button[data-page="staff-verification"],.app.sidebar-collapsed .nav button[data-page="staff-review"]{font-size:13px}
+ .app.sidebar-collapsed .nav button[data-page="classroom"]::before,.app.sidebar-collapsed .nav button[data-page="opportunities"]::before,.app.sidebar-collapsed .nav button[data-page="staff-verification"]::before,.app.sidebar-collapsed .nav button[data-page="staff-review"]::before{content:none}
+ .app.sidebar-collapsed .sidebar-toggle{justify-content:flex-end}
+ .app.sidebar-collapsed .sidebar-toggle-label{display:inline}
+ .sidebar-backdrop{position:fixed;inset:0;background:#0c2029a6;z-index:29}
+ .app.mobile-nav-open .sidebar-backdrop{display:block}
+ .mobile-nav-toggle{display:inline-grid;place-items:center}
+ .topbar{justify-content:flex-start;gap:12px}
+ .topbar-title{flex:1}
+ .topbar-actions{gap:6px}
+}
+@media(prefers-reduced-motion:reduce){.sidebar,.sidebar .nav button,.page{transition:none!important;animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -542,7 +594,7 @@ td strong{color:#2a464d;font-size:11px}
           <div class="field"><label for="auth-name">Full name *</label><input id="auth-name" autocomplete="name" required maxlength="120" placeholder="Your official full name"></div>
           <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
           <div class="field"><label for="auth-role">Campus account type *</label><select id="auth-role" required><option value="student">Student</option><option value="teacher">Teacher / university staff</option></select><p class="muted">Choose the role that matches your institution. Staff applications require separate verification.</p></div>
-          <div class="field"><label for="auth-university">University or institution *</label><select id="auth-university" required><option value="">Loading university directory…</option></select><p class="muted">Your campus is locked after joining to protect university privacy and prevent cross-campus mixing. If it is missing, request a listing through the platform support process.</p></div>
+          <div class="field institution-picker-field"><label for="auth-university-search">University or institution *</label><input id="auth-university-search" type="search" list="auth-university-suggestions" autocomplete="off" placeholder="Start typing your university name…" aria-describedby="auth-university-help" required><datalist id="auth-university-suggestions"></datalist><select id="auth-university" class="institution-id-select" aria-label="Selected university record" tabindex="-1" aria-hidden="true"><option value="">Loading university directory…</option></select><p class="muted" id="auth-university-help">Type to search the campus directory, then choose an exact match. Your campus membership is verified separately.</p><p class="message" id="auth-university-search-status" role="status" aria-live="polite"></p></div>
           <div id="signup-student-fields">
             <div class="field"><label for="auth-faculty">Faculty / school *</label><input id="auth-faculty" maxlength="120" required placeholder="e.g. Faculty of Engineering"></div>
             <div class="field"><label for="auth-department">Department *</label><input id="auth-department" maxlength="120" required placeholder="e.g. Computer Engineering"></div>
@@ -623,7 +675,8 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 <div class="app" id="workspace" hidden>
-<aside class="sidebar">
+<aside class="sidebar" id="app-sidebar" aria-label="Main navigation">
+<button type="button" class="sidebar-toggle" id="sidebar-collapse-toggle" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar"><span aria-hidden="true">‹</span><span class="sidebar-toggle-label">Collapse menu</span></button>
 <div class="brand"><span class="brand-mark" aria-hidden="true">CS</span><span class="brand-copy">Campus<strong>Shield</strong> AI<small>SAFETY WORKSPACE</small></span></div>
 <div class="nav-label">WORKSPACE</div>
 <nav class="nav">
@@ -649,8 +702,10 @@ td strong{color:#2a464d;font-size:11px}
 </nav>
 <div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
 </aside>
+<div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
 <div class="main">
 <header class="topbar">
+  <button type="button" class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="app-sidebar"><span aria-hidden="true">☰</span></button>
   <div class="topbar-title"><small>CampusShield AI</small><strong id="sectionTitle">Overview</strong></div>
   <div class="topbar-actions"><span id="incidentSyncStatus" class="sync-state" role="status" aria-live="polite">Incident data not loaded</span><button class="btn secondary" type="button" id="refresh-incidents" aria-label="Refresh incident data"><span aria-hidden="true">↻</span>Refresh data</button><button class="btn secondary" type="button" id="workspace-install-app" hidden>Install app</button><span class="demo-pill"><span class="status-dot" aria-hidden="true"></span>PROTOTYPE</span><button class="btn secondary" type="button" id="signout-button">Sign out</button></div>
 </header>
@@ -1582,6 +1637,60 @@ td strong{color:#2a464d;font-size:11px}
     $('identity-institution-search').value = institution;
     $('identity-institution').value = institution;
   });
+
+  // Live directory search. The existing university ID select remains the authoritative submitted value.
+  (() => {
+    const search = $('auth-university-search');
+    const select = $('auth-university');
+    const list = $('auth-university-suggestions');
+    const status = $('auth-university-search-status');
+    if (!search || !select || !list || !status) return;
+    const options = () => Array.from(select.options).filter(option => option.value);
+    const syncDirectory = () => {
+      const current = options();
+      list.replaceChildren();
+      current.forEach(option => {
+        const item = document.createElement('option');
+        item.value = option.textContent.split(' · ')[0].trim();
+        list.appendChild(item);
+      });
+    };
+    const resolveExact = () => {
+      const query = search.value.trim().toLocaleLowerCase();
+      const matches = options().filter(option => option.textContent.split(' · ')[0].trim().toLocaleLowerCase() === query);
+      if (matches.length === 1) {
+        select.value = matches[0].value;
+        search.setAttribute('aria-invalid', 'false');
+        status.textContent = 'Selected: ' + matches[0].textContent.split(' · ')[0].trim();
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
+      select.value = '';
+      search.setAttribute('aria-invalid', 'true');
+      if (!query) status.textContent = 'Start typing to find your institution.';
+      else {
+        const count = options().filter(option => option.textContent.split(' · ')[0].trim().toLocaleLowerCase().includes(query)).length;
+        status.textContent = count ? 'Choose an institution from the suggestions to continue.' : 'No exact match yet. Check the spelling or request that your institution be listed.';
+      }
+      return false;
+    };
+    search.addEventListener('input', () => {
+      const query = search.value.trim().toLocaleLowerCase();
+      const matches = options().filter(option => option.textContent.split(' · ')[0].trim().toLocaleLowerCase().includes(query));
+      if (query && matches.length === 1 && matches[0].textContent.split(' · ')[0].trim().toLocaleLowerCase() === query) resolveExact();
+      else {
+        select.value = '';
+        search.setAttribute('aria-invalid', query ? 'true' : 'false');
+        status.textContent = query ? (matches.length ? matches.length + ' matching institution(s). Choose the exact name from the suggestions.' : 'No matches found in the campus directory yet.') : '';
+      }
+    });
+    search.addEventListener('change', resolveExact);
+    search.addEventListener('blur', () => { if (search.value.trim()) resolveExact(); });
+    const observer = new MutationObserver(syncDirectory);
+    observer.observe(select, { childList: true, subtree: true });
+    syncDirectory();
+  })();
+
   $('auth-university').addEventListener('change', () => {
     const selected = $('auth-university').selectedOptions?.[0];
     const institution = $('auth-university').value && selected ? selected.textContent.split(' · ')[0] : '';
@@ -1729,6 +1838,42 @@ td strong{color:#2a464d;font-size:11px}
       }
     });
   }
+
+
+  // Sidebar controls: remember desktop collapse preference, while mobile uses a modal drawer.
+  (() => {
+    const app = document.querySelector('.app');
+    const sidebar = $('app-sidebar');
+    const collapseButton = $('sidebar-collapse-toggle');
+    const mobileButton = $('mobile-nav-toggle');
+    const backdrop = $('sidebar-backdrop');
+    if (!app || !sidebar || !collapseButton || !mobileButton || !backdrop) return;
+    const mobile = () => window.matchMedia('(max-width: 650px)').matches;
+    try { if (localStorage.getItem('campusshield-sidebar-collapsed') === 'true' && !mobile()) app.classList.add('sidebar-collapsed'); } catch (_) {}
+    const sync = () => {
+      const collapsed = app.classList.contains('sidebar-collapsed');
+      collapseButton.setAttribute('aria-expanded', String(!collapsed));
+      collapseButton.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+      collapseButton.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+      collapseButton.querySelector('span:first-child').textContent = collapsed ? '›' : '‹';
+      mobileButton.setAttribute('aria-expanded', String(app.classList.contains('mobile-nav-open')));
+      mobileButton.setAttribute('aria-label', app.classList.contains('mobile-nav-open') ? 'Close navigation menu' : 'Open navigation menu');
+      backdrop.hidden = !app.classList.contains('mobile-nav-open');
+    };
+    const closeMobile = () => { app.classList.remove('mobile-nav-open'); sync(); };
+    collapseButton.addEventListener('click', () => {
+      if (mobile()) { closeMobile(); return; }
+      app.classList.toggle('sidebar-collapsed');
+      try { localStorage.setItem('campusshield-sidebar-collapsed', String(app.classList.contains('sidebar-collapsed'))); } catch (_) {}
+      sync();
+    });
+    mobileButton.addEventListener('click', () => { app.classList.toggle('mobile-nav-open'); sync(); });
+    backdrop.addEventListener('click', closeMobile);
+    sidebar.querySelectorAll('button[data-page]').forEach(button => button.addEventListener('click', () => { if (mobile()) closeMobile(); }));
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeMobile(); });
+    window.addEventListener('resize', () => { if (!mobile()) closeMobile(); sync(); });
+    sync();
+  })();
 
   function navigate(page) {
     if (!currentProfile) {
