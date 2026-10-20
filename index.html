@@ -589,7 +589,7 @@ td strong{color:#2a464d;font-size:11px}
       <p class="auth-kicker">CAMPUSSHIELD ACCESS</p>
       <h2 id="auth-title">Welcome back</h2>
       <p id="auth-subtitle" class="muted">Sign in to your university's CampusShield workspace.</p>
-      <div class="field" id="signin-institution-field"><label for="signin-institution">Institution name</label><input id="signin-institution" autocomplete="organization" maxlength="180" placeholder="Enter your university or institution name"><p class="muted">Optional sign-in hint. Your verified campus membership remains authoritative.</p></div>
+      <div class="field institution-picker-field" id="signin-institution-field"><label for="signin-institution">Institution name</label><input id="signin-institution" type="search" list="signin-institution-suggestions" autocomplete="organization" maxlength="180" placeholder="Start typing your university name…" aria-describedby="signin-institution-help"><datalist id="signin-institution-suggestions"></datalist><p class="muted" id="signin-institution-help">Search the Nigerian university directory as you type. This is an optional hint; your verified campus membership remains authoritative.</p><p class="message" id="signin-institution-search-status" role="status" aria-live="polite"></p></div>
       <div class="auth-role-picker" id="signin-role-picker" role="group" aria-label="Choose your account type">
         <button type="button" class="auth-role-option" data-signin-role="administrator" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></svg>Administrator</button>
         <button type="button" class="auth-role-option" data-signin-role="teacher" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg>Teacher</button>
@@ -1651,59 +1651,6 @@ td strong{color:#2a464d;font-size:11px}
     $('identity-institution-search').value = institution;
     $('identity-institution').value = institution;
   });
-
-  // Live directory search. The existing university ID select remains the authoritative submitted value.
-  (() => {
-    const search = $('auth-university-search');
-    const select = $('auth-university');
-    const list = $('auth-university-suggestions');
-    const status = $('auth-university-search-status');
-    if (!search || !select || !list || !status) return;
-    const options = () => Array.from(select.options).filter(option => option.value);
-    const syncDirectory = () => {
-      const current = options();
-      list.replaceChildren();
-      current.forEach(option => {
-        const item = document.createElement('option');
-        item.value = option.textContent.split(' · ')[0].trim();
-        list.appendChild(item);
-      });
-    };
-    const resolveExact = () => {
-      const query = search.value.trim().toLocaleLowerCase();
-      const matches = options().filter(option => option.textContent.split(' · ')[0].trim().toLocaleLowerCase() === query);
-      if (matches.length === 1) {
-        select.value = matches[0].value;
-        search.setAttribute('aria-invalid', 'false');
-        status.textContent = 'Selected: ' + matches[0].textContent.split(' · ')[0].trim();
-        select.dispatchEvent(new Event('change', { bubbles: true }));
-        return true;
-      }
-      select.value = '';
-      search.setAttribute('aria-invalid', 'true');
-      if (!query) status.textContent = 'Start typing to find your institution.';
-      else {
-        const count = options().filter(option => option.textContent.split(' · ')[0].trim().toLocaleLowerCase().includes(query)).length;
-        status.textContent = count ? 'Choose an institution from the suggestions to continue.' : 'No exact match yet. Check the spelling or request that your institution be listed.';
-      }
-      return false;
-    };
-    search.addEventListener('input', () => {
-      const query = search.value.trim().toLocaleLowerCase();
-      const matches = options().filter(option => option.textContent.split(' · ')[0].trim().toLocaleLowerCase().includes(query));
-      if (query && matches.length === 1 && matches[0].textContent.split(' · ')[0].trim().toLocaleLowerCase() === query) resolveExact();
-      else {
-        select.value = '';
-        search.setAttribute('aria-invalid', query ? 'true' : 'false');
-        status.textContent = query ? (matches.length ? matches.length + ' matching institution(s). Choose the exact name from the suggestions.' : 'No matches found in the campus directory yet.') : '';
-      }
-    });
-    search.addEventListener('change', resolveExact);
-    search.addEventListener('blur', () => { if (search.value.trim()) resolveExact(); });
-    const observer = new MutationObserver(syncDirectory);
-    observer.observe(select, { childList: true, subtree: true });
-    syncDirectory();
-  })();
 
   $('auth-university').addEventListener('change', () => {
     const selected = $('auth-university').selectedOptions?.[0];
@@ -4174,25 +4121,113 @@ td strong{color:#2a464d;font-size:11px}
 
   async function populateCampusSelectors() {
     const backend = window.CampusShieldBackend;
-    if (!backend?.isConfigured) return;
+    if (!backend?.isConfigured) {
+      setInstitutionSearchStatus('The university directory is unavailable. You can still sign in; try again later for campus search.');
+      return;
+    }
     try {
       if (!campusUniversitiesCache) campusUniversitiesCache = await backend.listCampusUniversities();
       const selects = [$('auth-university'), $('campus-university')];
       selects.forEach(function(select) {
         if (!select) return;
         const previous = select.value;
-        const firstText = select.id === 'auth-university' ? 'Choose your university' : 'Choose your university';
-        select.innerHTML = '<option value="">' + firstText + '</option>' + campusUniversitiesCache.map(function(university) {
-          return '<option value="' + esc(university.id) + '">' + esc(university.name) + ' · ' + esc(university.state) + '</option>';
+        select.innerHTML = '<option value="">Choose your university</option>' + campusUniversitiesCache.map(function(university) {
+          return '<option value="' + esc(university.id) + '">' + esc(university.name) + ' · ' + esc(university.state || '') + '</option>';
         }).join('');
         if (previous && campusUniversitiesCache.some(u => u.id === previous)) select.value = previous;
       });
+      refreshInstitutionSuggestions();
     } catch (err) {
       console.error('Could not load university directory:', err);
       const select = $('campus-university');
       if (select) select.innerHTML = '<option value="">University directory unavailable</option>';
+      setInstitutionSearchStatus('Could not load the university directory. Sign-in remains available.');
     }
   }
+
+  function normalizeInstitutionSearch(value) {
+    return String(value || '').normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+
+  function setInstitutionSearchStatus(message) {
+    ['signin-institution-search-status', 'auth-university-search-status'].forEach(function(id) {
+      const node = $(id);
+      if (node) node.textContent = message || '';
+    });
+  }
+
+  function refreshInstitutionSuggestions() {
+    const directory = Array.isArray(campusUniversitiesCache) ? campusUniversitiesCache : [];
+    [
+      { input: $('signin-institution'), list: $('signin-institution-suggestions'), mode: 'hint' },
+      { input: $('auth-university-search'), list: $('auth-university-suggestions'), mode: 'signup' }
+    ].forEach(function(pair) {
+      if (!pair.input || !pair.list) return;
+      const query = normalizeInstitutionSearch(pair.input.value);
+      const matches = query
+        ? directory.filter(function(university) {
+            const name = normalizeInstitutionSearch(university.name);
+            const state = normalizeInstitutionSearch(university.state);
+            return name.includes(query) || state.includes(query);
+          }).slice(0, 40)
+        : directory.slice(0, 40);
+      pair.list.replaceChildren();
+      matches.forEach(function(university) {
+        const option = document.createElement('option');
+        option.value = university.name;
+        option.label = [university.state, university.ownership].filter(Boolean).join(' · ');
+        pair.list.appendChild(option);
+      });
+      if (pair.mode === 'hint') {
+        const status = $('signin-institution-search-status');
+        if (status && query) status.textContent = matches.length
+          ? matches.length + ' matching institution(s) in the CampusShield directory.'
+          : 'No match in the current CampusShield directory. You can still sign in; this field is only a hint.';
+      }
+    });
+  }
+
+  function resolveSignupInstitutionSearch() {
+    const search = $('auth-university-search');
+    const select = $('auth-university');
+    const status = $('auth-university-search-status');
+    if (!search || !select) return false;
+    const query = normalizeInstitutionSearch(search.value);
+    const matches = (campusUniversitiesCache || []).filter(function(university) {
+      return normalizeInstitutionSearch(university.name) === query;
+    });
+    if (matches.length === 1) {
+      select.value = matches[0].id;
+      search.setAttribute('aria-invalid', 'false');
+      if (status) status.textContent = 'Selected: ' + matches[0].name + (matches[0].state ? ' · ' + matches[0].state : '');
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    }
+    select.value = '';
+    search.setAttribute('aria-invalid', query ? 'true' : 'false');
+    if (status) status.textContent = query
+      ? 'Choose an exact institution name from the suggestions. If it is not listed, request that it be added.'
+      : 'Start typing to search the directory.';
+    return false;
+  }
+
+  function bindInstitutionTypeahead() {
+    const loginSearch = $('signin-institution');
+    if (loginSearch) {
+      loginSearch.addEventListener('input', refreshInstitutionSuggestions);
+      loginSearch.addEventListener('change', refreshInstitutionSuggestions);
+    }
+    const signupSearch = $('auth-university-search');
+    if (signupSearch) {
+      signupSearch.addEventListener('input', function() {
+        refreshInstitutionSuggestions();
+        resolveSignupInstitutionSearch();
+      });
+      signupSearch.addEventListener('change', resolveSignupInstitutionSearch);
+      signupSearch.addEventListener('blur', resolveSignupInstitutionSearch);
+    }
+  }
+  bindInstitutionTypeahead();
 
   populateCampusSelectors();
 
@@ -4934,6 +4969,13 @@ td strong{color:#2a464d;font-size:11px}
     e.preventDefault();
     if (identityCompletionMode) { await submitStudentIdentityDocument(); return; }
     if (authBusy) return;
+    // Sign-in should never be blocked by fields belonging to the hidden signup form.
+    if (authMode === 'signin') {
+      ['auth-name','auth-username','auth-role','auth-university-search','auth-faculty','auth-department','auth-course','auth-year-of-study','auth-staff-position','identity-student-number','identity-document','identity-institution-search'].forEach(function(id) {
+        const field = $(id);
+        if (field) field.required = false;
+      });
+    }
     authBusy = true;
     const button = $('auth-submit');
     button.disabled = true;
