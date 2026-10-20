@@ -635,7 +635,9 @@ td strong{color:#2a464d;font-size:11px}
                     <small id="identity-university-help">This value is set from your account setup and must match the campus membership enforced by Supabase.</small>
             </div>
             <div class="field"><label for="identity-student-number">Student / matric number *</label><input id="identity-student-number" required maxlength="80" autocomplete="off"></div>
-            <div class="field"><label for="identity-document">Student ID image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>JPEG, PNG, or PDF; maximum 5 MB. Use synthetic data only.</small></div>
+            <div class="field"><label for="identity-document">Student ID image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>Choose a JPG, PNG, or PDF file up to 5 MiB. CampusShield creates the secure filename automatically. Use synthetic test data only.</small></div>
+            <label class="remember-field"><input id="identity-original-document-confirmation" type="checkbox" required> I confirm this is a genuine university-issued document and has not been AI-generated or digitally altered.</label>
+            <p class="muted">AI-generated or edited identity images are not accepted. Documents are reviewed by authorized campus staff; this checkbox is an attestation, not an automated AI detector.</p>
             <button class="btn" type="button" id="identity-submit" hidden>Submit for review</button>
           </div>
           <details id="identity-university-request" style="margin-top:16px">
@@ -1602,7 +1604,7 @@ td strong{color:#2a464d;font-size:11px}
     $('remember-email-field').hidden = isSignUp || isReset || identityCompletionMode;
     // Required controls in hidden signup panels must never block normal sign-in.
     if (!isSignUp || identityCompletionMode) {
-      ['auth-name','auth-username','auth-role','auth-university-search','auth-faculty','auth-department','auth-course','auth-year-of-study','auth-staff-position','auth-staff-number','identity-student-number','identity-document','identity-institution-search'].forEach(function(id) {
+      ['auth-name','auth-username','auth-role','auth-university-search','auth-faculty','auth-department','auth-course','auth-year-of-study','auth-staff-position','auth-staff-number','identity-student-number','identity-document','identity-institution-search','identity-original-document-confirmation'].forEach(function(id) {
         const field = $(id);
         if (field) field.required = false;
       });
@@ -1648,6 +1650,7 @@ td strong{color:#2a464d;font-size:11px}
     $('identity-student-number').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
     $('identity-document').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
     $('identity-institution-search').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
+    $('identity-original-document-confirmation').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
   }
 
   $('auth-role').addEventListener('change', () => {
@@ -2920,9 +2923,10 @@ td strong{color:#2a464d;font-size:11px}
       const file = $('identity-document').files?.[0];
       if (!lockedInstitution || typedInstitution.toLocaleLowerCase() !== lockedInstitution.toLocaleLowerCase()) throw new Error('The university must match your signed-in campus.');
       if (!campusContext?.university_id || studentNumber.length < 2 || studentNumber.length > 80 || !file) throw new Error('Enter a valid student/matric number and choose a JPEG, PNG, or PDF ID document.');
+      if (!$('identity-original-document-confirmation').checked) throw new Error('Confirm that this is a genuine university-issued document and has not been AI-generated or digitally altered.');
       submit.disabled = true;
       status.textContent = 'Uploading your document securely…';
-      await backend.uploadStudentIdentityDocument(file, { institutionName: lockedInstitution, studentNumber });
+      await backend.uploadStudentIdentityDocument(file, { institutionName: lockedInstitution, studentNumber, attestOriginalDocument: $('identity-original-document-confirmation').checked });
       $('identity-document').value = '';
       studentIdentitySubmission = await backend.getMyStudentIdentityVerification();
       status.textContent = 'Identity document submitted for administrator review.';
@@ -4725,6 +4729,10 @@ td strong{color:#2a464d;font-size:11px}
       msg.textContent = 'Enter your student/matric number and choose a JPEG, PNG, or PDF student ID document.';
       return;
     }
+    if (!isTeacher && !$('identity-original-document-confirmation').checked) {
+      msg.textContent = 'Confirm that your university-issued document is genuine and has not been AI-generated or digitally altered.';
+      return;
+    }
     if (isTeacher && !$('auth-staff-position').value) {
       msg.textContent = 'Choose your official position in the university.';
       return;
@@ -4768,7 +4776,7 @@ td strong{color:#2a464d;font-size:11px}
         });
         if (!isTeacher) {
           try {
-            await backend.uploadStudentIdentityDocument(studentDocument, { institutionName, studentNumber });
+            await backend.uploadStudentIdentityDocument(studentDocument, { institutionName, studentNumber, attestOriginalDocument: $('identity-original-document-confirmation').checked });
             studentIdentitySubmission = await backend.getMyStudentIdentityVerification();
             $('identity-document').value = '';
             msg.textContent = 'Account created. Your student ID was uploaded privately and is awaiting administrator review.';
