@@ -72,6 +72,13 @@ assert.match(html, /button\.title = label; button\.setAttribute\('aria-label', l
 assert.match(html, /id="mobile-nav-toggle"/, "mobile navigation has a drawer toggle");
 assert.match(html, /campusshield-sidebar-collapsed/, "desktop sidebar collapse preference is remembered");
 assert.match(html, /id="auth-university-search"/, "signup has a live institution search field");
+assert.match(html, /id="signin-institution-suggestions"/, "sign-in institution hint has its own autocomplete list");
+assert.match(html, /function normalizeInstitutionSearch\(value\)/, "institution search normalizes accents and partial names");
+assert.match(html, /queryTokens\.every\(function\(token\)/, "institution search supports multi-word prefix matching");
+assert.match(html, /directory\.filter\(function\(university\)/, "institution suggestions filter the loaded university directory");
+assert.match(html, /addEventListener\('invalid'/, "login form surfaces validation and avoids hidden signup fields blocking sign-in");
+assert.match(html, /type="submit" id="auth-submit"/, "login button is explicitly a form submit button");
+
 assert.match(html, /id="auth-university-suggestions"/, "institution typeahead uses suggestions from the campus directory");
 assert.match(html, /The existing university ID select remains the authoritative submitted value/, "institution name typing does not replace the verified campus record");
 
