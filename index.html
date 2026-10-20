@@ -2928,6 +2928,7 @@ td strong{color:#2a464d;font-size:11px}
       status.textContent = 'Uploading your document securely…';
       await backend.uploadStudentIdentityDocument(file, { institutionName: lockedInstitution, studentNumber, attestOriginalDocument: $('identity-original-document-confirmation').checked });
       $('identity-document').value = '';
+      $('identity-original-document-confirmation').checked = false;
       studentIdentitySubmission = await backend.getMyStudentIdentityVerification();
       status.textContent = 'Identity document submitted for administrator review.';
       identityCompletionMode = false;
@@ -4779,6 +4780,7 @@ td strong{color:#2a464d;font-size:11px}
             await backend.uploadStudentIdentityDocument(studentDocument, { institutionName, studentNumber, attestOriginalDocument: $('identity-original-document-confirmation').checked });
             studentIdentitySubmission = await backend.getMyStudentIdentityVerification();
             $('identity-document').value = '';
+            $('identity-original-document-confirmation').checked = false;
             msg.textContent = 'Account created. Your student ID was uploaded privately and is awaiting administrator review.';
           } catch (uploadError) {
             msg.textContent = 'Account created, but the ID upload did not complete: ' + (uploadError?.message || 'sign in and use Complete student setup to retry.');
