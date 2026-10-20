@@ -112,8 +112,9 @@ Deno.serve(async (req: Request) => {
       }
       scanStatus = result.status;
     } catch {
-      await admin.from("student_identity_upload_scans").update({ status: "scan_unavailable", failure_code: "scanner_unreachable_or_invalid_response", updated_at: new Date().toISOString() }).eq("id", job.id);
-      return reply({ error: "The scanner could not confirm the file is clean. It remains quarantined and is not available for review.", status: "scan_unavailable" }, 503);
+      await admin.storage.from("student-identity-quarantine").remove([quarantinePath]);
+      await admin.from("student_identity_upload_scans").update({ status: "scan_unavailable", quarantine_path: null, failure_code: "scanner_unreachable_or_invalid_response", updated_at: new Date().toISOString() }).eq("id", job.id);
+      return reply({ error: "The scanner could not confirm the file is clean. The upload was discarded and was not submitted for review.", status: "scan_unavailable" }, 503);
     }
 
     if (scanStatus !== "clean") {
@@ -128,16 +129,18 @@ Deno.serve(async (req: Request) => {
       contentType: mime, cacheControl: "0", upsert: false,
     });
     if (moveError) {
-      await admin.from("student_identity_upload_scans").update({ status: "error", failure_code: "clean_file_promotion_failed", updated_at: new Date().toISOString() }).eq("id", job.id);
-      return reply({ error: "The file scanned clean, but secure promotion failed. It remains unavailable for identity review; contact an administrator.", status: "error" }, 503);
+      await admin.storage.from("student-identity-quarantine").remove([quarantinePath]);
+      await admin.from("student_identity_upload_scans").update({ status: "error", quarantine_path: null, failure_code: "clean_file_promotion_failed", updated_at: new Date().toISOString() }).eq("id", job.id);
+      return reply({ error: "The file scanned clean, but secure promotion failed. The upload was discarded and is not available for review; try again later.", status: "error" }, 503);
     }
     const { error: submitError } = await userClient.rpc("submit_student_identity_verification", {
       p_institution_name: institutionName, p_student_number: studentNumber, p_object_path: finalPath,
     });
     if (submitError) {
       await admin.storage.from("student-identity-documents").remove([finalPath]);
-      await admin.from("student_identity_upload_scans").update({ status: "error", failure_code: "identity_submission_rejected", updated_at: new Date().toISOString() }).eq("id", job.id);
-      return reply({ error: "The file scanned clean, but the identity submission was rejected by the database. No identity record was created.", status: "error" }, 403);
+      await admin.storage.from("student-identity-quarantine").remove([quarantinePath]);
+      await admin.from("student_identity_upload_scans").update({ status: "error", quarantine_path: null, failure_code: "identity_submission_rejected", updated_at: new Date().toISOString() }).eq("id", job.id);
+      return reply({ error: "The file scanned clean, but the identity submission was rejected by the database. The file was discarded and no identity record was created.", status: "error" }, 403);
     }
     if (previous?.object_path && previous.object_path !== finalPath) {
       const { error: oldFileError } = await admin.storage.from("student-identity-documents").remove([previous.object_path]);
