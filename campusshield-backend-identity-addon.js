@@ -68,6 +68,10 @@
       throw new Error("The identity document must be smaller than or equal to 5 MiB.");
     }
 
+    if (details?.attestOriginalDocument !== true) {
+      throw new Error("Confirm that this is a genuine, unaltered university-issued document. AI-generated or digitally altered images are not accepted.");
+    }
+
     const existing = await backend.getMyStudentIdentityVerification();
     if (existing && existing.status !== "rejected") {
       throw new Error("Your identity is already submitted. Wait for review before taking another action.");
@@ -83,13 +87,18 @@
       throw new Error("A pending student account is required to submit a student ID.");
     }
 
-    // The private bucket path is fixed by the database to the signed-in user's own folder.
-    const objectPath = user.id + "/student-identity-document";
+    // Students choose only a file. Create a UUID filename internally and keep it
+    // inside the authenticated user's private folder; never use the uploaded name.
+    if (!globalThis.crypto?.randomUUID) {
+      throw new Error("This browser cannot create a secure upload filename. Update your browser and try again.");
+    }
+    const extension = file.type === "application/pdf" ? "pdf" : file.type === "image/jpeg" ? "jpg" : "png";
+    const objectPath = user.id + "/" + globalThis.crypto.randomUUID() + "." + extension;
     const bucket = client.storage.from(bucketName);
 
-    if (existing?.status === "rejected") {
-      // Delete is permitted only for the owner of a rejected document.
-      const { error: removeError } = await bucket.remove([objectPath]);
+    if (existing?.status === "rejected" && existing.object_path) {
+      // A rejected document may be removed by its owner before resubmission.
+      const { error: removeError } = await bucket.remove([existing.object_path]);
       if (removeError && !/not found|does not exist|no such object/i.test(removeError.message || "")) {
         throw removeError;
       }
