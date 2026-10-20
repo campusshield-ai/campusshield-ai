@@ -100,15 +100,13 @@ Deno.serve(async (req: Request) => {
     await admin.from("student_identity_upload_scans").update({ status: "scanning", updated_at: new Date().toISOString() }).eq("id", job.id);
     let scanStatus = "";
     try {
-      const scanForm = new FormData();
-      scanForm.append("file", new Blob([input], { type: mime }), "identity-upload." + MIME_EXT[mime]);
-      scanForm.append("sha256", fileHash);
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 25000);
       let response: Response;
       try {
         response = await fetch(scanEndpoint, { method: "POST", redirect: "error", signal: controller.signal,
-          headers: { "Authorization": "Bearer " + scannerToken, "Accept": "application/json" }, body: scanForm });
+          headers: { "Authorization": "Bearer " + scannerToken, "Accept": "application/json",
+            "Content-Type": mime, "X-File-SHA256": fileHash }, body: input });
       } finally { clearTimeout(timer); }
       if (!response.ok) throw new Error("scanner_http_error");
       const result = await response.json().catch(() => null);
