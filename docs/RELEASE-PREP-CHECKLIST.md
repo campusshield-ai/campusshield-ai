@@ -93,3 +93,12 @@ The latest flattened release commit passed all configured GitHub smoke-check scr
 - The form requires an explicit confirmation that the document is genuine and has not been AI-generated or digitally altered. This is an attestation and a review signal, **not** an AI-image detector; reviewers must continue to assess evidence and can reject suspicious or unverifiable documents.
 - Uploads remain limited to JPEG, PNG, and PDF, use the private `student-identity-documents` bucket, and rely on Supabase RPC/RLS enforcement. No storage policy was weakened and no production changes were made.
 - Before merging, run both `node tests/smoke-check.mjs` and `node tests/student-identity-smoke-check.mjs`, then test upload/rejection/resubmission in staging with fictional test files. Confirm that the currently deployed staging RPC and Storage policies accept UUID filenames in the user's folder; do not apply or replay migrations against production.
+
+
+## Staging identity upload validation (2026-10-20, follow-up)
+
+- Confirmed the staging project is active and healthy.
+- Applied forward-only migration `allow_uuid_student_identity_uploads` to staging project `hywcpnoqqhxvujnimhxl`. Read-back checks confirm the identity bucket is private, is limited to 5 MiB and JPEG/PNG/PDF, and has an INSERT policy requiring the authenticated user's own UUID folder plus pending student status and active campus membership. The identity submission RPC is executable by authenticated users, not anon.
+- Read-back count: 329 active campus directory records. The identity verification table currently has zero rows; no synthetic or real ID document was uploaded by this database-only verification.
+- The GitHub smoke-check workflow run #640 passed.
+- End-to-end upload/review remains unverified until a signed-in staging browser test can upload a harmless synthetic sample file. Automated checks do not prove the no-AI attestation is truthful; reviewers still need to review submitted evidence. Production remains unchanged.
