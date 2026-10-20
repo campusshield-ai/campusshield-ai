@@ -144,10 +144,10 @@ Deno.serve(async (req: Request) => {
       if (knowledgeSources.length >= 4) break;
     }
     const knowledgeContext = knowledgeSources.length
-      ? "\\n\\nAPPROVED CAMPUS SOURCES (public pages from this user's verified campus; cite with the exact [n] marker):\\n" +
-        knowledgeSources.map((source, index) => `[${index + 1}] ${source.title}\\nURL: ${source.url}\\nRetrieved: ${source.fetched_at}\\nExcerpt: ${source.excerpt}`).join("\\n\\n") +
-        "\\nUse only the sources that directly support the answer. If they do not answer the question, say so. Never infer current policies or deadlines beyond the text."
-      : "\\n\\nNo relevant approved campus pages were found for this question. Do not guess official campus details; ask the user to consult the official university site or office.";
+      ? "\n\nAPPROVED CAMPUS SOURCES (public pages from this user's verified campus; cite with the exact [n] marker):\n" +
+        knowledgeSources.map((source, index) => `[${index + 1}] ${source.title}\nURL: ${source.url}\nRetrieved: ${source.fetched_at}\nExcerpt: ${source.excerpt}`).join("\n\n") +
+        "\nUse only the sources that directly support the answer. If they do not answer the question, say so. Never infer current policies or deadlines beyond the text."
+      : "\n\nNo relevant approved campus pages were found for this question. Do not guess official campus details; ask the user to consult the official university site or office.";
     const responseSources = knowledgeSources.map((source, index) => ({
       title: source.title, url: source.url, fetched_at: source.fetched_at, marker: `[${index + 1}]`,
     }));
