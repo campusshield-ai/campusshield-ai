@@ -64,6 +64,11 @@ assert.doesNotMatch(
 
 
 assert.match(html, /id="sidebar-collapse-toggle"/, "desktop sidebar has a collapse/expand control");
+assert.match(html, /src="\.\/assets\/campusshield-logo\.svg"/, "sidebar uses the dedicated CampusShield logo asset");
+assert.match(html, /class="brand-logo"[^>]*alt="CampusShield AI logo"/, "sidebar logo has meaningful accessible alt text");
+assert.ok(html.indexOf('<div class="brand">') < html.indexOf('id="sidebar-collapse-toggle"'), "brand/logo appears before the sidebar collapse control");
+assert.match(html, /button\.title = label; button\.setAttribute\('aria-label', label\)/, "collapsed navigation icons retain accessible names and tooltips");
+
 assert.match(html, /id="mobile-nav-toggle"/, "mobile navigation has a drawer toggle");
 assert.match(html, /campusshield-sidebar-collapsed/, "desktop sidebar collapse preference is remembered");
 assert.match(html, /id="auth-university-search"/, "signup has a live institution search field");
