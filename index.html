@@ -1590,7 +1590,8 @@ td strong{color:#2a464d;font-size:11px}
     $('auth-role').required = isSignUp && !identityCompletionMode;
     $('auth-username').required = isSignUp && !identityCompletionMode;
     $('auth-name').required = isSignUp && !identityCompletionMode;
-    $('auth-university').required = isSignUp && !identityCompletionMode;
+    $('auth-university').required = false; // hidden ID select is populated only after an exact directory match
+    if ($('auth-university-search')) $('auth-university-search').required = isSignUp && !identityCompletionMode;
     syncSignupRoleFields(isSignUp && !identityCompletionMode);
     $('resend-field').hidden = isSignUp || isReset;
     $('auth-helper').hidden = isReset;
