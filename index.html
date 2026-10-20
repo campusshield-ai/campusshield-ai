@@ -2284,7 +2284,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     }
     $('shieldmind-messages').appendChild(article); $('shieldmind-messages').scrollTop=$('shieldmind-messages').scrollHeight;
   }
-  $('shieldmind-clear').addEventListener('click',()=>{shieldMindHistory=[];$('shieldmind-messages').innerHTML='';addShieldMindMessage('assistant','Chat cleared. Official campus policy answers remain unavailable until approved sources are configured.');$('shieldmind-status').textContent='Chat cleared. This interface does not save your conversation.';});
+  $('shieldmind-clear').addEventListener('click',()=>{shieldMindHistory=[];$('shieldmind-messages').innerHTML='';addShieldMindMessage('assistant','Chat cleared. Official campus answers require relevant approved source pages.');$('shieldmind-status').textContent='Chat cleared. This interface does not save your conversation.';});
   document.querySelectorAll('[data-shieldmind-prompt]').forEach(button=>button.addEventListener('click',()=>{$('shieldmind-question').value=button.dataset.shieldmindPrompt;$('shieldmind-question').focus();}));
   $('shieldmind-form').addEventListener('submit',async event=>{
     event.preventDefault(); const question=String($('shieldmind-question').value||'').trim(),backend=window.CampusShieldBackend;
@@ -2301,7 +2301,11 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if(currentProfile!==profileAtRequest||currentProfile?.id!==userId){shieldMindHistory=[];$('shieldmind-messages').innerHTML='';resetShieldMindForSession();return;}
       addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'),Array.isArray(result?.sources)?result.sources:[]);
       shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-8);
-      $('shieldmind-status').textContent=result?.mode==='provider'?'Study support · Verify important facts against your course materials.':'Safe response · AI provider/source catalog is not configured.';
+      $('shieldmind-status').textContent=result?.mode==='provider'
+        ? 'Study support · Verify important facts against your course materials.'
+        : (Array.isArray(result?.sources)&&result.sources.length
+          ? 'Source links available · AI answer provider is not configured in staging.'
+          : 'Safe response · no relevant approved source or AI provider is available.');
     }catch(error){console.warn('ShieldMind request failed:',error?.message||'unknown');$('shieldmind-status').textContent='ShieldMind is not available right now. Your question was not saved; please try again later.';addShieldMindMessage('assistant','I could not complete that request. Please try again later. For urgent campus or safety matters, use official university channels.');}
     finally{button.disabled=false;}
   });
