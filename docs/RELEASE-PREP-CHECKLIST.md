@@ -26,11 +26,11 @@ This branch is based on `codex/campusshield-all-ideas-staging` (commit `bc244369
 
 ## Google sign-in — staging progress (2026-10-20)
 
-- **Reported complete by the owner:** Google sign-in is enabled in Supabase Staging, and the owner's Google account has been added as a test user in Google Auth Platform → Audience. This is owner-reported progress; the account email is intentionally not recorded in the repository.
-- **Next manual step — not yet confirmed complete:** In Supabase Staging project `hywcpnoqqhxvujnimhxl`, open **Authentication → URL Configuration** and add this exact pattern under **Redirect URLs**: `http://127.0.0.1:5500/**`. Save it there. Do **not** replace the existing Site URL.
-- Then capture a screenshot of the saved URL Configuration page for review before clicking the Google sign-in button in the local Live Server preview at `http://127.0.0.1:5500`.
+- **Owner reports setup completed:** Google sign-in is enabled in Supabase Staging, the owner's Google account has been added as an OAuth test user, and the local redirect allowlist pattern `http://127.0.0.1:5500/**` has been added under **Authentication → URL Configuration → Redirect URLs** and saved. The account email is intentionally not recorded in the repository.
+- This setup is **not independently verified here** because no screenshot or browser test result has been provided in this conversation. Do not treat OAuth acceptance as passed yet.
+- **Next test:** open the local Live Server preview at `http://127.0.0.1:5500`, click Google sign-in, choose the approved test account, and confirm that the browser returns to CampusShield with a valid signed-in session. Check that a new Google account remains a pending student and that OAuth role/institution hints do not grant privileges.
+- If sign-in fails, capture the exact on-screen error and a screenshot of the staging URL Configuration page; redact email addresses, tokens, client secrets and other credentials before sharing.
 - Use staging only. Do not change production Auth settings. Do not put the Google account email, OAuth client secret, or other credentials in GitHub or chat.
-- **Acceptance remains pending:** The redirect allowlist entry has not been independently verified here, and Google sign-in has not yet been browser-tested. After the screenshot confirms the saved redirect entry, test with the approved test account and verify the returned session and pending-student onboarding without granting privileges from OAuth hints alone.
 
 ## Migration-history reconciliation blocker
 
