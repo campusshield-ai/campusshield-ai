@@ -8,6 +8,7 @@ const migration = await readFile(new URL('../supabase/migrations/20261015220432_
 const identityGateMigration = await readFile(new URL('../supabase/migrations/20261016140000_identity_gate_and_resubmission.sql', import.meta.url), 'utf8');
 const config = await readFile(new URL('../supabase-config.js', import.meta.url), 'utf8');
 const communityReadGate = await readFile(new URL('../supabase/migrations/20261016150000_gate_community_read_rpcs.sql', import.meta.url), 'utf8');
+const identityUploadRlsFix = await readFile(new URL('../supabase/migrations/20261020130000_fix_student_identity_upload_rls.sql', import.meta.url), 'utf8');
 
 for (const required of [
   'id="studentIdentityForm"',
@@ -64,6 +65,41 @@ assert.ok(identityGateMigration.includes("where student_identity_verifications.s
 assert.ok(identityGateMigration.includes('p_rejection_reason text default null'), 'identity rejection can record a resubmission reason');
 assert.ok(identityGateMigration.includes('student_identity_delete_unsubmitted_or_rejected_own'), 'only unsubmitted or rejected own ID objects can be deleted');
 assert.ok(config.includes('campusshield-ai.github.io') && config.includes('isProductionHost'), 'production hostname selects production while development uses staging');
+assert.ok(identityUploadRlsFix.includes('student_identity_upload_own_pending'), 'follow-up migration fixes the student identity storage insert policy');
+assert.ok(identityUploadRlsFix.includes('storage.foldername(name))[1]'), 'identity upload policy keeps uploads inside the signed-in user folder');
+assert.ok(identityUploadRlsFix.includes("p.verification_status::text = 'pending'"), 'identity upload policy only permits pending students');
+assert.ok(identityUploadRlsFix.includes("'/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}[.](jpg|png|pdf)
+assert.match(communityReadGate, /create or replace function public\.get_community_poll_data/i);
+assert.match(communityReadGate, /create or replace function public\.get_community_post_social/i);
+assert.equal((communityReadGate.match(/current_user_has_verified_campus_access\(\)/g) || []).length, 2,
+  'both SECURITY DEFINER community read RPCs enforce approved campus access');
+assert.doesNotMatch(config, /service_role|sb_secret_/i, 'browser config must not contain privileged keys');
+
+for (const requirement of [
+  'enable row level security',
+  'student_identity_read_owner_or_campus_admin',
+  'student_identity_upload_own_pending',
+  'student_identity_read_own_or_campus_admin',
+  'student_identity_delete_unsubmitted_own',
+  'submit_student_identity_verification',
+  'review_student_identity_verification',
+  'Approve the student identity document before approving this account.',
+  'public = false'
+]) assert.ok(migration.toLowerCase().includes(requirement.toLowerCase()), 'migration should contain ' + requirement);
+
+// Parse JavaScript without running browser code or touching Supabase.
+const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+let parsedInlineScripts = 0;
+for (const match of html.matchAll(scriptRe)) {
+  if (/\bsrc\s*=/.test(match[1])) continue;
+  vm.createScript(match[2], {filename:'index-inline-' + (++parsedInlineScripts) + '.js'});
+}
+vm.createScript(addon, {filename:'campusshield-backend-identity-addon.js'});
+
+console.log('CampusShield identity static smoke check passed (' + parsedInlineScripts + ' inline scripts parsed).');
+console.log('No database writes, identity uploads, or live account actions were performed.');
+"), 'identity upload policy restricts the object name to a UUID and safe document types');
+assert.doesNotMatch(identityUploadRlsFix, /user_has_current_campus/, 'campus authorization remains enforced by the submission RPC rather than duplicating the storage gate');
 assert.match(communityReadGate, /create or replace function public\.get_community_poll_data/i);
 assert.match(communityReadGate, /create or replace function public\.get_community_post_social/i);
 assert.equal((communityReadGate.match(/current_user_has_verified_campus_access\(\)/g) || []).length, 2,
