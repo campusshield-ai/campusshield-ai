@@ -80,7 +80,8 @@ assert.match(html, /addEventListener\('invalid'/, "login form surfaces validatio
 assert.match(html, /type="submit" id="auth-submit"/, "login button is explicitly a form submit button");
 
 assert.match(html, /id="auth-university-suggestions"/, "institution typeahead uses suggestions from the campus directory");
-assert.match(html, /The existing university ID select remains the authoritative submitted value/, "institution name typing does not replace the verified campus record");
+assert.match(html, /function resolveSignupInstitutionSearch\(\)/, "signup institution text must resolve to an exact directory record");
+assert.match(html, /const universityId = \$\('auth-university'\)\.value;/, "signup submits the selected existing university ID rather than the typed label");
 
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
 assert.match(config, /https:\/\/hywcpnoqqhxvujnimhxl\.supabase\.co/, "feature branch must target the separate staging project");
