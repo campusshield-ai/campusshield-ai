@@ -114,7 +114,7 @@ Deno.serve(async (req: Request) => {
     // authenticated user's campus membership remain the access boundary.
     const knowledgeSources: { title: string; url: string; fetched_at: string; excerpt: string }[] = [];
     const seenKnowledgeUrls = new Set<string>();
-    const keywords = [...new Set((question.toLowerCase().match(/[\\p{L}\\p{N}]{3,}/gu) || [])
+    const keywords = [...new Set((question.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) || [])
       .filter((word: string) => !["the","and","for","with","what","when","where","how","can","does","from","about"].includes(word)))].slice(0, 4);
     for (const keyword of keywords) {
       const { data: pages, error: knowledgeError } = await client
