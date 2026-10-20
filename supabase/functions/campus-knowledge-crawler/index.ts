@@ -18,7 +18,7 @@ function reply(body: Record<string, unknown>, status = 200) {
 }
 function normalizeUrl(raw: string, base?: string): URL {
   const url = new URL(raw, base);
-  if (url.protocol !== "https:" || url.username || url.password) throw new Error("Only public HTTPS URLs are allowed.");
+  if (url.protocol !== "https:" || url.username || url.password || (url.port && url.port !== "443")) throw new Error("Only public HTTPS URLs on the standard port are allowed.");
   const host = url.hostname.toLowerCase();
   if (
     host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") ||
@@ -59,6 +59,26 @@ async function sha256(text: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
+async function readLimitedText(response: Response, maxBytes: number): Promise<string> {
+  const reader = response.body?.getReader();
+  if (!reader) return "";
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      throw new Error("Page exceeds the configured crawl size limit.");
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  return new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+}
 async function fetchText(url: URL, expectedHost: string): Promise<{ html: string; finalUrl: URL }> {
   if (url.hostname.toLowerCase() !== expectedHost) throw new Error("Cross-domain crawl blocked.");
   const controller = new AbortController();
@@ -80,8 +100,7 @@ async function fetchText(url: URL, expectedHost: string): Promise<{ html: string
     if (!type.includes("text/html") && !type.includes("application/xhtml+xml")) throw new Error("Only HTML pages are indexed.");
     const declaredLength = Number(response.headers.get("content-length") || 0);
     if (declaredLength > MAX_HTML_BYTES) throw new Error("Page exceeds the 1 MB crawl limit.");
-    const html = await response.text();
-    if (new TextEncoder().encode(html).byteLength > MAX_HTML_BYTES) throw new Error("Page exceeds the 1 MB crawl limit.");
+    const html = await readLimitedText(response, MAX_HTML_BYTES);
     return { html, finalUrl: url };
   } finally {
     clearTimeout(timeout);
@@ -96,7 +115,7 @@ async function allowedByRobots(base: URL, candidate: URL): Promise<boolean> {
     });
     if (response.status === 404) return true;
     if (!response.ok || [301,302,303,307,308].includes(response.status)) return false;
-    const text = (await response.text()).slice(0, 100000);
+    const text = await readLimitedText(response, 100000);
     let applies = false;
     let blocked = false;
     for (const line of text.split(/\r?\n/)) {
