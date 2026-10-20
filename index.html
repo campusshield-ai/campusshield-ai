@@ -373,6 +373,9 @@ td strong{color:#2a464d;font-size:11px}
 .shieldmind-guardrail{margin-top:17px;padding:13px;border:1px solid #d8ece2;border-radius:13px;background:#f3faf6}.shieldmind-guardrail strong{color:#27755f;font-size:11px}.shieldmind-guardrail p{margin:5px 0 0;color:#607c76;font-size:10px;line-height:1.55}
 .shieldmind-disclaimer{margin:5px 0 18px;color:#788b90;font-size:10px;line-height:1.6}@media(max-width:900px){.shieldmind-grid{grid-template-columns:1fr}}
 
+
+/* Campus knowledge crawler */
+#page-crawler .panel-heading{margin-bottom:12px}#page-crawler .field input[type=checkbox]{accent-color:#247f70}#crawler-search-results{display:grid;gap:10px;margin-top:14px}#crawler-search-results article{padding:12px;border:1px solid var(--line);border-radius:10px;background:#fbfdfc}#crawler-search-results a{color:#176d60;font-weight:800;overflow-wrap:anywhere}#crawler-search-results p{margin:6px 0 0;font-size:12px;color:var(--muted)}#crawler-source-rows button{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -482,6 +485,7 @@ td strong{color:#2a464d;font-size:11px}
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
 <button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button>
+<button data-page="crawler" id="crawler-nav" hidden><span class="nav-icon" aria-hidden="true">⌕</span>Campus knowledge crawler</button>
 <button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus community</button>
 <button data-page="manage"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button>
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
@@ -549,6 +553,34 @@ td strong{color:#2a464d;font-size:11px}
       <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me produce structured study notes for a topic I provide. Ask me the subject and level."><span>03</span><div><strong>Study notes</strong><small>Organise key ideas and definitions</small></div><b>›</b></button>
       <div class="shieldmind-guardrail"><strong>✓ Privacy boundary</strong><p>ShieldMind does not receive CampusShield incident reports, identity documents, attendance, or private Helpdesk records.</p></div>
     </aside></div><p class="shieldmind-disclaimer">Educational support only. Check course materials and ask your lecturer when accuracy matters. Not an emergency service or official university decision-maker.</p>
+</section>
+
+<section class="page" id="page-crawler">
+  <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">SHIELDMIND AI · SOURCE MANAGEMENT</span><h1>Campus knowledge crawler</h1><p>Index public pages from your university's official website. Only verified campus administrators can manage sources.</p></div></div>
+  <div class="notice"><strong>Safety rules:</strong> HTTPS websites only, same-domain crawling, robots.txt checks, a maximum of 8 pages per run, and a 1 MB limit per page. Do not add login pages or private student/campus systems.</div>
+  <div class="grid two">
+    <section class="panel">
+      <div class="panel-heading"><div><h2>Add an official source</h2><p>Use the root URL of a university website you are authorised to index.</p></div></div>
+      <form id="crawler-source-form">
+        <div class="field"><label for="crawler-source-title">University / source name</label><input id="crawler-source-title" required maxlength="160" placeholder="e.g. Official University Website"></div>
+        <div class="field"><label for="crawler-source-url">Official HTTPS website root</label><input id="crawler-source-url" type="url" required maxlength="500" placeholder="https://www.university.edu.ng/"></div>
+        <div class="field"><label><input id="crawler-source-confirm" type="checkbox" required style="width:auto;margin-right:8px">I confirm this is an official public source and I am authorised to add it.</label></div>
+        <div class="actions"><button class="btn" id="crawler-add-button" type="submit">Add source</button><button class="btn secondary" id="crawler-refresh-button" type="button">Refresh sources</button></div>
+      </form>
+      <p id="crawler-status" class="message" role="status" aria-live="polite">Crawler is ready when staging database migration and Edge Function are installed.</p>
+    </section>
+    <section class="panel">
+      <div class="panel-heading"><div><h2>Knowledge index</h2><p>Search the cleaned public text currently indexed for this campus.</p></div></div>
+      <div class="field"><label for="crawler-search-query">Search indexed pages</label><input id="crawler-search-query" maxlength="120" placeholder="e.g. academic calendar"></div>
+      <button class="btn secondary" id="crawler-search-button" type="button">Search knowledge</button>
+      <div id="crawler-search-results" class="empty-state">Search results will include the original source link.</div>
+      <p id="crawler-index-count" class="muted">Indexed pages: —</p>
+    </section>
+  </div>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Approved official sources</h2><p>Run a limited crawl and check its result before relying on the content.</p></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Source</th><th>Status</th><th>Last crawl</th><th>Action</th></tr></thead><tbody id="crawler-source-rows"><tr><td colspan="4">Loading sources…</td></tr></tbody></table></div>
+  </section>
 </section>
 
 <section class="page" id="page-community">
@@ -913,6 +945,7 @@ td strong{color:#2a464d;font-size:11px}
       el.hidden = !verified;
     });
     $('approvals-nav').hidden = !(currentProfile.role === 'admin' && verified);
+    $('crawler-nav').hidden = !(currentProfile.role === 'admin' && verified);
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
     $('community-announcement-option').disabled = !canPublishOfficial;
     syncIdentityNavigation();
@@ -1158,7 +1191,8 @@ td strong{color:#2a464d;font-size:11px}
       approvals:'Account approvals',
       'identity-verification':'Student identity verification',
       community:'Campus community',
-      shieldmind:'ShieldMind AI'
+      shieldmind:'ShieldMind AI',
+      crawler:'Campus knowledge crawler'
     };
 
     $('sectionTitle').textContent = names[page] || 'Overview';
@@ -1176,6 +1210,7 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
     if (button.dataset.page === 'community') loadCommunityPage();
     if (button.dataset.page === 'shieldmind') resetShieldMindForSession();
+    if (button.dataset.page === 'crawler') loadCrawlerSources();
   });
 
   function render() {
@@ -2255,6 +2290,92 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       $('shieldmind-status').textContent=result?.mode==='provider'?'Study support · Verify important facts against your course materials.':'Safe response · AI provider/source catalog is not configured.';
     }catch(error){console.warn('ShieldMind request failed:',error?.message||'unknown');$('shieldmind-status').textContent='ShieldMind is not available right now. Your question was not saved; please try again later.';addShieldMindMessage('assistant','I could not complete that request. Please try again later. For urgent campus or safety matters, use official university channels.');}
     finally{button.disabled=false;}
+  });
+
+  async function callCampusCrawler(payload) {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.client) throw new Error('Supabase staging is not configured.');
+    const { data, error } = await backend.client.functions.invoke('campus-knowledge-crawler', { body: payload });
+    if (error) throw new Error(data?.error || error.message || 'Crawler request failed.');
+    if (data?.error) throw new Error(data.error);
+    return data || {};
+  }
+
+  function crawlerMessage(message, isError = false) {
+    const node = $('crawler-status');
+    if (!node) return;
+    node.textContent = message;
+    node.style.color = isError ? '#b3263b' : '';
+  }
+
+  async function loadCrawlerSources() {
+    if (!currentProfile || currentProfile.role !== 'admin' || currentProfile.verification_status !== 'verified') {
+      crawlerMessage('A verified campus administrator account is required.', true);
+      return;
+    }
+    $('crawler-source-rows').innerHTML = '<tr><td colspan="4">Loading approved sources…</td></tr>';
+    try {
+      const data = await callCampusCrawler({ action: 'list_sources' });
+      $('crawler-index-count').textContent = 'Indexed pages: ' + Number(data.indexed_pages || 0);
+      $('crawler-source-rows').innerHTML = (data.sources || []).map(source => {
+        const status = String(source.last_crawl_status || source.status || 'Not crawled');
+        const time = source.last_crawled_at ? dateText(source.last_crawled_at) : 'Not crawled yet';
+        return '<tr><td><strong>' + esc(source.title) + '</strong><br><a href="' + esc(source.base_url) + '" target="_blank" rel="noopener noreferrer">' + esc(source.domain) + '</a></td><td>' + esc(status) + '</td><td>' + esc(time) + '</td><td><button class="btn secondary" type="button" data-crawl-source="' + esc(source.id) + '">Crawl now</button></td></tr>';
+      }).join('') || '<tr><td colspan="4">No sources yet. Add an official public website above.</td></tr>';
+      crawlerMessage('Loaded ' + (data.sources || []).length + ' source(s). Crawling is manual; no background schedule has been enabled.');
+    } catch (error) {
+      $('crawler-source-rows').innerHTML = '<tr><td colspan="4">Sources could not be loaded.</td></tr>';
+      crawlerMessage(error?.message || 'Crawler is not configured yet.', true);
+    }
+  }
+
+  $('crawler-source-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = $('crawler-add-button');
+    button.disabled = true;
+    try {
+      const data = await callCampusCrawler({
+        action: 'add_source',
+        title: $('crawler-source-title').value.trim(),
+        url: $('crawler-source-url').value.trim(),
+        confirm_official: $('crawler-source-confirm').checked
+      });
+      $('crawler-source-form').reset();
+      crawlerMessage('Added ' + String(data.source?.title || 'official source') + '. Use Crawl now to index up to 8 public pages.');
+      await loadCrawlerSources();
+    } catch (error) {
+      crawlerMessage(error?.message || 'Could not add the source.', true);
+    } finally { button.disabled = false; }
+  });
+
+  $('crawler-refresh-button').addEventListener('click', loadCrawlerSources);
+  $('crawler-source-rows').addEventListener('click', async event => {
+    const button = event.target.closest('[data-crawl-source]');
+    if (!button) return;
+    button.disabled = true;
+    crawlerMessage('Checking robots.txt and crawling up to 8 pages…');
+    try {
+      const data = await callCampusCrawler({ action: 'crawl_source', source_id: button.dataset.crawlSource });
+      crawlerMessage(data.message || 'Crawl finished: ' + Number(data.saved || 0) + ' page(s) indexed.');
+      await loadCrawlerSources();
+    } catch (error) {
+      crawlerMessage(error?.message || 'Crawl failed.', true);
+    } finally { button.disabled = false; }
+  });
+
+  $('crawler-search-button').addEventListener('click', async () => {
+    const query = $('crawler-search-query').value.trim();
+    if (query.length < 2) { $('crawler-search-results').textContent = 'Enter at least two characters.'; return; }
+    $('crawler-search-results').textContent = 'Searching…';
+    try {
+      const data = await callCampusCrawler({ action: 'search', query });
+      const results = data.results || [];
+      $('crawler-search-results').innerHTML = results.map(item =>
+        '<article><a href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">' + esc(item.title || item.url) + '</a><p>' + esc(item.excerpt || '') + '</p><small>Retrieved: ' + esc(item.fetched_at ? dateText(item.fetched_at) : 'unknown') + '</small></article>'
+      ).join('') || '<p>No matching indexed pages. Add and crawl an approved official source first.</p>';
+    } catch (error) {
+      $('crawler-search-results').textContent = error?.message || 'Search failed.';
+    }
   });
 
   $('signout-button').addEventListener('click', async () => {
