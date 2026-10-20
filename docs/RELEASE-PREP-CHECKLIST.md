@@ -61,3 +61,11 @@ The latest flattened release commit passed all configured GitHub smoke-check scr
 - Do not expose service-role keys, AI provider secrets, or Paystack secret keys in browser code or Git.
 - Keep student ID cards, incident reports, private Helpdesk data, and real personal data out of tests.
 - This branch and its draft pull request are for review only; no merge, live deployment, or payment activation is authorized.
+
+
+## Navigation and institution search update (2026-10-20)
+
+- Added a desktop sidebar collapse/expand control with an icon-rail layout and a remembered local preference; mobile uses a slide-in drawer, backdrop, Escape-to-close, and a visible menu button. Navigation entries and existing role checks remain in place.
+- Added live institution name suggestions backed by the active campus directory already loaded by the app. Choosing an exact institution maps back to its existing university record ID; typing a name alone does not create membership or grant permissions.
+- The owner reports Google/Gmail sign-in now works in their browser. This is owner-reported acceptance and has not been independently reproduced here. Continue to ensure OAuth hints never grant role or campus privileges.
+- The UI changes are on the release-prep branch for review only. Re-run configured smoke checks and do a signed-in desktop/mobile browser walkthrough before merge or release. No production Supabase settings were changed.
