@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">CampusShield AI</title>
+  <desc id="desc">A mint and teal shield with a protected campus path.</desc>
+  <defs>
+    <linearGradient id="shield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8bf0d5"/>
+      <stop offset="1" stop-color="#3ac4a5"/>
+    </linearGradient>
+  </defs>
+  <path d="M64 7 108 24v31c0 29-17 50-44 66C37 105 20 84 20 55V24L64 7Z" fill="url(#shield)"/>
+  <path d="M64 20 95 32v23c0 21-11 37-31 49V20Z" fill="#103943" opacity=".95"/>
+  <path d="m43 62 13 13 28-30" fill="none" stroke="#f5fffb" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M64 20v84" stroke="#eafff8" stroke-opacity=".38" stroke-width="2"/>
+</svg>
