@@ -77,3 +77,11 @@ The latest flattened release commit passed all configured GitHub smoke-check scr
 - Refined sidebar spacing, scrolling, icon sizing, focus states, collapsed icon rail, accessible labels/tooltips and mobile drawer behavior. Desktop collapse and mobile drawer remain separate modes.
 - Smoke checks now assert the logo asset reference, accessible logo label, brand/control order and accessible icon labels.
 - Browser visual QA across desktop and mobile plus CI confirmation are still required. These commits remain on the draft release-prep branch; no deployment or production Supabase changes were made.
+
+
+## Institution search and sign-in fix (2026-10-20)
+
+- Fixed the sign-in institution hint: it now has its own live suggestions list backed by the full university directory loaded by `listCampusUniversities()`. Partial names, accents and multi-word prefixes are normalized for matching. This hint remains optional and does not change verified campus membership.
+- Signup suggestions use the same directory; selecting an exact institution maps to its existing directory ID. All matching records are considered rather than truncating results to the first 40. The staging migration snapshot documents a 328-entry NUC-sourced roster; verify the live staging directory contents against the current NUC directory before launch.
+- Hardened auth mode validation so hidden signup-only required fields cannot block sign-in, made the sign-in button explicitly submit the form, and added a useful validation message for invalid fields.
+- The latest changes are committed on the review branch. CI and browser acceptance still need confirmation; no production Supabase settings were changed.
