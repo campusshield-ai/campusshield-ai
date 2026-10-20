@@ -24,6 +24,14 @@ This branch is based on `codex/campusshield-all-ideas-staging` (commit `bc244369
 7. The configured GitHub Actions smoke-check job passed on the identity-fix commit. Review the complete release diff and all migration diffs before any production release. Never apply staging migrations to production automatically.
 
 
+## Google sign-in — staging progress (2026-10-20)
+
+- **Reported complete by the owner:** Google sign-in is enabled in Supabase Staging, and the owner's Google account has been added as a test user in Google Auth Platform → Audience. This is owner-reported progress; the account email is intentionally not recorded in the repository.
+- **Next manual step — not yet confirmed complete:** In Supabase Staging project `hywcpnoqqhxvujnimhxl`, open **Authentication → URL Configuration** and add this exact pattern under **Redirect URLs**: `http://127.0.0.1:5500/**`. Save it there. Do **not** replace the existing Site URL.
+- Then capture a screenshot of the saved URL Configuration page for review before clicking the Google sign-in button in the local Live Server preview at `http://127.0.0.1:5500`.
+- Use staging only. Do not change production Auth settings. Do not put the Google account email, OAuth client secret, or other credentials in GitHub or chat.
+- **Acceptance remains pending:** The redirect allowlist entry has not been independently verified here, and Google sign-in has not yet been browser-tested. After the screenshot confirms the saved redirect entry, test with the approved test account and verify the returned session and pending-student onboarding without granting privileges from OAuth hints alone.
+
 ## Migration-history reconciliation blocker
 
 A read-only comparison on 2026-10-20 found that the staging Supabase ledger has **87 applied migration entries**, while the release snapshot contains **66** files under `supabase/migrations`. Of those source files, **45 names appear in the staging ledger under different version timestamps**, **3 source migration names are not in the staging ledger**, and **20 applied staging migration names do not exist in the release snapshot**.
