@@ -310,7 +310,15 @@ async getCurrentUser() {
       form.append("student_number", studentNumber);
       const { data, error } = await client.functions.invoke("student-identity-upload-scan", { body: form });
       if (error) {
-        const message = data?.error || error.message || "Secure identity upload failed.";
+        let message = data?.error || error.message || "Secure identity upload failed.";
+        // Supabase may place a non-2xx Edge Function body on error.context instead of data.
+        try {
+          const response = error.context;
+          if (response && typeof response.clone === "function") {
+            const body = await response.clone().json();
+            if (typeof body?.error === "string") message = body.error;
+          }
+        } catch { /* keep the safe generic error */ }
         throw new Error(message);
       }
       if (data?.status !== "clean") {
