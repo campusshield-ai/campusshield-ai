@@ -80,8 +80,8 @@ const server = http.createServer(async (req, res) => {
     const bytes = Buffer.concat(chunks);
     if (!bytes.length || bytes.length !== declared || !hasValidSignature(bytes, mime)) return send(res, 415, { error: "file_signature_mismatch" });
     const actualHash = createHash("sha256").update(bytes).digest("hex");
-    const claimedHash = String(req.headers["x-file-sha256"] || "");
-    if (claimedHash && !/^[a-f0-9]{64}$/i.test(claimedHash)) return send(res, 400, { error: "invalid_hash" });
+    const claimedHash = String(req.headers["x-file-sha256"] || "").toLowerCase();
+    if (!/^[a-f0-9]{64}$/.test(claimedHash) || claimedHash !== actualHash) return send(res, 400, { error: "hash_mismatch" });
     const result = await scanWithClamAV(bytes);
     // Return only the clean/infected decision; do not expose signatures or raw scanner output.
     return send(res, 200, { status: result.status, sha256: actualHash });
