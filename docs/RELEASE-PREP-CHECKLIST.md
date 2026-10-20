@@ -102,3 +102,12 @@ The latest flattened release commit passed all configured GitHub smoke-check scr
 - Read-back count: 329 active campus directory records. The identity verification table currently has zero rows; no synthetic or real ID document was uploaded by this database-only verification.
 - The GitHub smoke-check workflow run #640 passed.
 - End-to-end upload/review remains unverified until a signed-in staging browser test can upload a harmless synthetic sample file. Automated checks do not prove the no-AI attestation is truthful; reviewers still need to review submitted evidence. Production remains unchanged.
+
+
+## Student identity upload RLS error follow-up (2026-10-20)
+
+- The owner reported the Storage upload failed with `new row violates row-level security policy`. Read-only inspection showed the Storage INSERT policy duplicated the active-campus membership check before the guarded submission RPC could perform its authorization checks.
+- Added forward-only migration `20261020130000_fix_student_identity_upload_rls.sql` and applied it to staging project `hywcpnoqqhxvujnimhxl` only. Storage INSERT still requires the private identity bucket, the authenticated user's own UUID folder, a UUID filename with JPG/PNG/PDF extension, and a pending student profile. The submission RPC continues to require active campus membership and checks the uploaded object's owner, MIME type, size, and campus/institution match.
+- Verified the new Storage policy and confirmed the bucket is still private, capped at 5 MiB, and limited to JPEG, PNG, and PDF. Production remains unchanged.
+- Do not allow arbitrary file types in the identity bucket until a real quarantine-and-malware-scanning service is integrated and tested. Client MIME/extension checks alone are not antivirus scanning. The checkbox against AI-generated or altered evidence is an attestation, not automated detection.
+- Retest with a synthetic PDF/JPG in the signed-in staging browser. If the error persists, capture the exact operation/error and inspect the authenticated test account's pending status and active campus membership; do not weaken the server-side RPC authorization to silence an RLS error.
