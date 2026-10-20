@@ -110,7 +110,9 @@ Deno.serve(async (req: Request) => {
       } finally { clearTimeout(timer); }
       if (!response.ok) throw new Error("scanner_http_error");
       const result = await response.json().catch(() => null);
-      if (result?.status !== "clean" && result?.status !== "infected") throw new Error("scanner_invalid_result");
+      if ((result?.status !== "clean" && result?.status !== "infected") || result?.sha256 !== fileHash) {
+        throw new Error("scanner_invalid_result");
+      }
       scanStatus = result.status;
     } catch {
       await admin.from("student_identity_upload_scans").update({ status: "scan_unavailable", failure_code: "scanner_unreachable_or_invalid_response", updated_at: new Date().toISOString() }).eq("id", job.id);
