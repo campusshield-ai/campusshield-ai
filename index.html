@@ -376,6 +376,7 @@ td strong{color:#2a464d;font-size:11px}
 
 /* Campus knowledge crawler */
 #page-crawler .panel-heading{margin-bottom:12px}#page-crawler .field input[type=checkbox]{accent-color:#247f70}#crawler-search-results{display:grid;gap:10px;margin-top:14px}#crawler-search-results article{padding:12px;border:1px solid var(--line);border-radius:10px;background:#fbfdfc}#crawler-search-results a{color:#176d60;font-weight:800;overflow-wrap:anywhere}#crawler-search-results p{margin:6px 0 0;font-size:12px;color:var(--muted)}#crawler-source-rows button{white-space:nowrap}
+.shieldmind-sources{display:grid;gap:5px;margin-top:10px;padding-top:9px;border-top:1px solid #e3ece7}.shieldmind-sources strong{font-size:10px;color:#287761}.shieldmind-sources a{font-size:11px;color:#176d60;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -2264,10 +2265,23 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     if (shieldMindSessionUserId!==currentProfile.id) { shieldMindSessionUserId=currentProfile.id; shieldMindHistory=[]; if ($('shieldmind-messages')) $('shieldmind-messages').innerHTML='<article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Chat ready. General academic questions only in this initial staging build.</p></article>'; }
     if ($('shieldmind-status')&&!allowed) $('shieldmind-status').textContent='Verified campus access is required to use ShieldMind.';
   }
-  function addShieldMindMessage(role,message) {
+  function addShieldMindMessage(role,message,sources=[]) {
     const article=document.createElement('article'); article.className='shieldmind-message '+(role==='user'?'user':'assistant');
     const title=document.createElement('strong'); title.textContent=role==='user'?'You':'ShieldMind AI';
     const body=document.createElement('p'); body.textContent=message; article.append(title,body);
+    if(role!=='user'&&Array.isArray(sources)&&sources.length){
+      const list=document.createElement('div'); list.className='shieldmind-sources';
+      const label=document.createElement('strong'); label.textContent='Campus sources'; list.appendChild(label);
+      sources.slice(0,4).forEach(source=>{
+        try{
+          const url=new URL(String(source.url||''));
+          if(url.protocol!=='https:')return;
+          const link=document.createElement('a'); link.href=url.href; link.target='_blank'; link.rel='noopener noreferrer';
+          link.textContent=String(source.title||url.hostname)+' · '+url.hostname; list.appendChild(link);
+        }catch{/* Ignore malformed source URLs. */}
+      });
+      if(list.querySelector('a'))article.appendChild(list);
+    }
     $('shieldmind-messages').appendChild(article); $('shieldmind-messages').scrollTop=$('shieldmind-messages').scrollHeight;
   }
   $('shieldmind-clear').addEventListener('click',()=>{shieldMindHistory=[];$('shieldmind-messages').innerHTML='';addShieldMindMessage('assistant','Chat cleared. Official campus policy answers remain unavailable until approved sources are configured.');$('shieldmind-status').textContent='Chat cleared. This interface does not save your conversation.';});
@@ -2285,7 +2299,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     try{
       const result=await backend.askShieldMind(question,shieldMindHistory);
       if(currentProfile!==profileAtRequest||currentProfile?.id!==userId){shieldMindHistory=[];$('shieldmind-messages').innerHTML='';resetShieldMindForSession();return;}
-      addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'));
+      addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'),Array.isArray(result?.sources)?result.sources:[]);
       shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-8);
       $('shieldmind-status').textContent=result?.mode==='provider'?'Study support · Verify important facts against your course materials.':'Safe response · AI provider/source catalog is not configured.';
     }catch(error){console.warn('ShieldMind request failed:',error?.message||'unknown');$('shieldmind-status').textContent='ShieldMind is not available right now. Your question was not saved; please try again later.';addShieldMindMessage('assistant','I could not complete that request. Please try again later. For urgent campus or safety matters, use official university channels.');}
