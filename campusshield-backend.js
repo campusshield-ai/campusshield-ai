@@ -282,12 +282,7 @@ async getCurrentUser() {
         throw new Error("Student ID files must be no larger than 5 MiB.");
       }
       const extension = String(file.name || "").split(".").pop().toLowerCase();
-      const mimeByExtension = {
-        jpg: "image/jpeg",
-        jpeg: "image/jpeg",
-        png: "image/png",
-        pdf: "application/pdf"
-      };
+      const mimeByExtension = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", pdf: "application/pdf" };
       const expectedMime = mimeByExtension[extension];
       if (!expectedMime || (file.type && file.type !== expectedMime)) {
         throw new Error("Upload a JPEG, PNG, or PDF student ID document.");
@@ -300,43 +295,26 @@ async getCurrentUser() {
       if (studentNumber.length < 2 || studentNumber.length > 80) {
         throw new Error("Student or matric number must be 2–80 characters.");
       }
-
       const user = await this.getCurrentUser();
       if (!user) throw new Error("Sign in before submitting student identity.");
       const previous = await this.getMyStudentIdentityVerification();
-      if (previous?.status === "approved") {
-        throw new Error("Your student identity is already approved.");
-      }
-      if (previous?.status === "pending") {
-        throw new Error("Your current identity submission is awaiting review.");
-      }
+      if (previous?.status === "approved") throw new Error("Your student identity is already approved.");
+      if (previous?.status === "pending") throw new Error("Your current identity submission is awaiting review.");
 
-      const safeFilename = crypto.randomUUID() + "." + extension;
-      const objectPath = user.id + "/" + safeFilename;
-      const bucket = client.storage.from("student-identity-documents");
-      const { error: uploadError } = await bucket.upload(objectPath, file, {
-        contentType: expectedMime,
-        cacheControl: "3600",
-        upsert: false
-      });
-      if (uploadError) throw uploadError;
-
-      try {
-        const { error: submitError } = await client.rpc("submit_student_identity_verification", {
-          p_institution_name: institutionName,
-          p_student_number: studentNumber,
-          p_object_path: objectPath
-        });
-        if (submitError) throw submitError;
-      } catch (error) {
-        const { error: cleanupError } = await bucket.remove([objectPath]);
-        if (cleanupError) console.warn("Could not remove an unsubmitted identity upload:", cleanupError.message);
-        throw error;
+      // Send the file to the authenticated Edge Function. The browser never writes
+      // directly to Storage: server-side byte-signature validation and malware scanning
+      // must succeed before the document can enter the identity-review bucket.
+      const form = new FormData();
+      form.append("file", file, file.name || ("identity." + extension));
+      form.append("institution_name", institutionName);
+      form.append("student_number", studentNumber);
+      const { data, error } = await client.functions.invoke("student-identity-upload-scan", { body: form });
+      if (error) {
+        const message = data?.error || error.message || "Secure identity upload failed.";
+        throw new Error(message);
       }
-
-      if (previous?.object_path && previous.object_path !== objectPath) {
-        const { error: cleanupError } = await bucket.remove([previous.object_path]);
-        if (cleanupError) console.warn("The replaced rejected document could not be removed:", cleanupError.message);
+      if (data?.status !== "clean") {
+        throw new Error(data?.error || "The file has not passed malware scanning and was not submitted for review.");
       }
       return this.getMyStudentIdentityVerification();
     },
