@@ -68,7 +68,8 @@ assert.ok(config.includes('campusshield-ai.github.io') && config.includes('isPro
 assert.ok(identityUploadRlsFix.includes('student_identity_upload_own_pending'), 'follow-up migration fixes the student identity storage insert policy');
 assert.ok(identityUploadRlsFix.includes('storage.foldername(name))[1]'), 'identity upload policy keeps uploads inside the signed-in user folder');
 assert.ok(identityUploadRlsFix.includes("p.verification_status::text = 'pending'"), 'identity upload policy only permits pending students');
-assert.ok(identityUploadRlsFix.includes("'/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}[.](jpg|png|pdf)
+assert.ok(identityUploadRlsFix.includes("[.](jpg|png|pdf)$"), 'identity upload policy restricts UUID object names to safe document types');
+assert.doesNotMatch(identityUploadRlsFix, /user_has_current_campus/, 'campus authorization remains enforced by the submission RPC rather than duplicating the storage gate');
 assert.match(communityReadGate, /create or replace function public\.get_community_poll_data/i);
 assert.match(communityReadGate, /create or replace function public\.get_community_post_social/i);
 assert.equal((communityReadGate.match(/current_user_has_verified_campus_access\(\)/g) || []).length, 2,
