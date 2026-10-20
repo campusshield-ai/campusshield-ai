@@ -36,18 +36,18 @@ function scanWithClamAV(bytes) {
     socket.on("data", (chunk) => {
       chunks.push(chunk);
       const response = Buffer.concat(chunks).toString("utf8");
-      if (response.includes("\\0") || /(?:OK|FOUND|ERROR)\\s*$/.test(response)) {
+      if (response.includes("\0") || /(?:OK|FOUND|ERROR)\s*$/.test(response)) {
         if (finished) return;
         finished = true;
         socket.end();
-        const line = response.replace(/\\0/g, "").trim();
-        if (/\\bFOUND$/.test(line)) resolve({ status: "infected", signature: line.slice(0, 180) });
-        else if (/\\bOK$/.test(line)) resolve({ status: "clean" });
+        const line = response.replace(/\0/g, "").trim();
+        if (/\bFOUND$/.test(line)) resolve({ status: "infected", signature: line.slice(0, 180) });
+        else if (/\bOK$/.test(line)) resolve({ status: "clean" });
         else reject(new Error("clamav_scan_error"));
       }
     });
     socket.on("connect", () => {
-      socket.write(Buffer.from("zINSTREAM\\0", "utf8"));
+      socket.write(Buffer.from("zINSTREAM\0", "utf8"));
       const chunkSize = 64 * 1024;
       for (let offset = 0; offset < bytes.length; offset += chunkSize) {
         const chunk = bytes.subarray(offset, Math.min(bytes.length, offset + chunkSize));
