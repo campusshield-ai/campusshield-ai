@@ -21,5 +21,7 @@ jobs:
           node-version: "22"
       - name: Check ClamAV gateway syntax
         run: node --check services/clamav-scanner/server.mjs
+      - name: Run synthetic ClamAV gateway tests
+        run: node services/clamav-scanner/test-gateway.mjs
       - name: Run CampusShield smoke checks
         run: node tests/smoke-check.mjs
