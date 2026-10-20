@@ -12,6 +12,36 @@ CampusShield AI aims to make campus environments safer by combining interactive 
 
 The project is being developed with Nigerian university campuses in mind.
 
+
+## Google sign-in — staging setup required
+
+- The sign-in page includes a Google OAuth button only when the browser-safe Supabase configuration selects staging project `hywcpnoqqhxvujnimhxl`.
+- The click handler checks the staging Auth settings endpoint before redirecting; if Google is disabled it gives setup guidance instead of starting a broken OAuth redirect.
+- OAuth uses the current app URL as the return address. Role and institution selections are hints only; they never change roles, campus membership or verification.
+- New Google accounts are created as pending student profiles by the existing auth trigger; they must complete campus onboarding and student identity approval. Staff/admin permissions remain separately verified.
+- Before testing, create a Google OAuth Web client, add the Supabase staging callback URL in Google Cloud, configure the Google provider in staging Supabase Auth, and allow the local staging preview URLs in Auth URL Configuration.
+- No Google OAuth client secret should be committed to GitHub or pasted into chat. Production Auth is not configured by this staging change.
+
+## Student and teacher login/dashboard experience
+
+- Refreshed sign-in page with Administrator, Teacher and Student selection hints, an optional institution-name check, and show/hide password controls.
+- The selected role and typed institution are convenience hints only. Verified Supabase profile role, approved student identity and active verified campus membership remain authoritative; a mismatch is reported after sign-in rather than used to grant access.
+- Role-aware dashboard overview summarizes the signed-in user's accessible classes/classrooms, recent classroom announcements, published same-campus notices, upcoming campus events and open incidents.
+- Teacher overview includes a classroom roster count only for classrooms where the signed-in verified teacher is authorized to view the roster. Class and campus content is fetched through existing access-controlled APIs/RPCs and inserted into the page as text.
+- The saved student/teacher dashboard storyboard's major information areas are represented in the staging workspace. A full signed-in browser walkthrough remains required before any release.
+
+## ShieldMind AI — study support and premium pilot
+
+- Academic Q&A, structured study notes, practice quizzes and revision-plan prompts run through the signed-in, JWT-protected `shieldmind-chat` Edge Function.
+- Private personal timetable entries support class/lecture sessions, assignments, exams, revision sessions and reminders, synchronized to the user's own row-scoped database records.
+- Reminder notifications currently work only while the app is open and browser permission is granted; background push notifications are not configured.
+- Monthly prepaid Paystack test-mode tiers: Free ₦0; Starter ₦2,000 (20 study-image uses/month); Plus ₦5,000 (60); Pro ₦10,000 (150); Ultra ₦15,000 (300); Max ₦28,000 (600). Per-minute/daily requests and the 8-hour session followed by a 1-hour cooldown are enforced server-side in staging. Paid plans do not auto-renew.
+- Core safety and incident-reporting features remain free. Paid tiers are for ShieldMind AI capacity, not safety access.
+- Study images are sent to the external AI provider for processing and are not saved in CampusShield storage. The image monthly allowance is server-enforced. Do not upload identity documents, incident records, attendance records, passwords, or private campus information.
+- No approved official campus source catalog is connected, so ShieldMind must not be treated as a source of official university rules, fees, or deadlines.
+- Paystack checkout remains staging-only and requires the Paystack test secret to be configured in Supabase Edge Function secrets. Do not publish or enable production billing until test payments, expiry, duplicate webhooks, quotas and privacy are verified.
+- All work remains on a feature branch. Do not deploy to production or merge without explicit owner approval.
+
 ## ✨ Current Features
 
 - **Incident reporting** — Submit categorized reports to the configured Supabase project.

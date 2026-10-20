@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - codex/classroom-opportunity-hub
       - feature/nigerian-multi-university-foundation
       - feature/identity-university-search
       - feature/onboarding-staff-governance
@@ -15,6 +16,7 @@ on:
       - feature/onboarding-staff-governance
       - fix/staff-verification-role-state
       - codex/classroom-opportunity-hub
+      - codex/campusshield-all-ideas-staging
 
 permissions:
   contents: read
@@ -37,6 +39,7 @@ jobs:
           node tests/nuc-directory-reconciliation-smoke-check.mjs
           node tests/staff-governance-smoke-check.mjs
           node tests/classroom-opportunity-hub-smoke-check.mjs
+          node tests/shieldmind-learning-planner-smoke-check.mjs
           node scripts/reconcile-nuc-directory.mjs
       - name: Upload live NUC roster audit
         uses: actions/upload-artifact@v4
