@@ -99,8 +99,33 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Durable server-side quotas: five requests per minute and eighty per UTC day.
-    // A failure to verify quota fails closed before any provider call.
+    const history = Array.isArray(body.history)
+      ? body.history.slice(-6).filter((item: unknown) =>
+          !!item && typeof item === "object" &&
+          ["user", "assistant"].includes((item as {role?: string}).role || "") &&
+          typeof (item as {content?: unknown}).content === "string" &&
+          ((item as {content: string}).content.length <= 1200)
+        ).map((item: {role: "user" | "assistant", content: string}) => ({ role: item.role, content: item.content }))
+      : [];
+    if (history.some(item => looksLikeSensitiveRequest(item.content))) {
+      return json({mode:"safe_fallback",answer:"Please clear private details from chat history and ask a general academic question. ShieldMind does not process private incident, identity, attendance, Helpdesk, medical or password information.",sources:[]});
+    }
+    const imageValue = body.image;
+    let studyImage: { mime_type: string; data_base64: string } | null = null;
+    if (imageValue !== undefined && imageValue !== null) {
+      if (typeof imageValue !== "object" ||
+          !["image/jpeg","image/png","image/webp"].includes((imageValue as {mime_type?:string}).mime_type || "") ||
+          typeof (imageValue as {data_base64?:unknown}).data_base64 !== "string") {
+        return json({error:"Use a JPG, PNG or WebP study image."},400);
+      }
+      const mimeType=(imageValue as {mime_type:string}).mime_type;
+      const base64=(imageValue as {data_base64:string}).data_base64;
+      if (body.image_attested !== true) return json({error:"Confirm that the image contains academic material only and no private personal information."},400);
+      if (!base64 || base64.length>3500000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(base64)) return json({error:"The study image is invalid or larger than 2.5 MB."},400);
+      studyImage={mime_type:mimeType,data_base64:base64};
+    }
+    // The authenticated RPC enforces plan tier and monthly image count. It is called only after the user and text quota have passed.
+    // Durable server-side request quotas are verified before any provider call.
     const { data: quotaData, error: quotaError } = await client.rpc("consume_shieldmind_quota");
     const quota = Array.isArray(quotaData) ? quotaData[0] : quotaData;
     if (quotaError || !quota) {
@@ -109,18 +134,6 @@ Deno.serve(async (req: Request) => {
     if (quota.allowed !== true) {
       return json({ error: "You have reached ShieldMind's usage limit. Please try again later." }, 429);
     }
-
-    const history = Array.isArray(body.history)
-      ? body.history.slice(-6).filter((item: unknown) =>
-          !!item && typeof item === "object" &&
-          ["user", "assistant"].includes((item as {role?: string}).role || "") &&
-          typeof (item as {content?: unknown}).content === "string" &&
-          ((item as {content: string}).content.length <= 1200)
-        ).map((item: {role: "user" | "assistant", content: string}) => ({
-          role: item.role,
-          content: item.content,
-        }))
-      : [];
 
     // The function remains useful before AI vendor credentials are configured, but will not
     // pretend a static fallback is an LLM answer. Add a provider only after owner configures
@@ -138,10 +151,19 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (studyImage) {
+      const {data:imageQuotaData,error:imageQuotaError}=await client.rpc("consume_shieldmind_image_upload");
+      const imageQuota=Array.isArray(imageQuotaData)?imageQuotaData[0]:imageQuotaData;
+      if(imageQuotaError||!imageQuota)return json({error:"Image allowance could not be verified. Please try again later."},503);
+      if(imageQuota.allowed!==true)return json({error:"No remaining study-image allowance. A paid ShieldMind plan is required."},429);
+    }
+    const userContent=studyImage
+      ? [{type:"text",text:question},{type:"image_url",image_url:{url:`data:${studyImage.mime_type};base64,${studyImage.data_base64}`}}]
+      : question;
     const messages = [
       { role: "system", content: systemMessage },
       ...history,
-      { role: "user", content: question },
+      { role: "user", content: userContent },
     ];
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000);
