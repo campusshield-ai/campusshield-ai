@@ -48,7 +48,7 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "Only a pending student account can submit identity verification." }, 403);
     }
     const { data: previous, error: previousError } = await userClient.from("student_identity_verifications")
-      .select("status").eq("user_id", user.id).maybeSingle();
+      .select("status,object_path").eq("user_id", user.id).maybeSingle();
     if (previousError) return reply({ error: "Current identity status could not be checked." }, 503);
     if (previous?.status === "approved") return reply({ error: "Your student identity is already approved." }, 409);
     if (previous?.status === "pending") return reply({ error: "Your current identity submission is awaiting review." }, 409);
@@ -138,6 +138,10 @@ Deno.serve(async (req: Request) => {
       await admin.storage.from("student-identity-documents").remove([finalPath]);
       await admin.from("student_identity_upload_scans").update({ status: "error", failure_code: "identity_submission_rejected", updated_at: new Date().toISOString() }).eq("id", job.id);
       return reply({ error: "The file scanned clean, but the identity submission was rejected by the database. No identity record was created.", status: "error" }, 403);
+    }
+    if (previous?.object_path && previous.object_path !== finalPath) {
+      const { error: oldFileError } = await admin.storage.from("student-identity-documents").remove([previous.object_path]);
+      if (oldFileError) console.warn("A replaced rejected identity file could not be removed.");
     }
     await admin.storage.from("student-identity-quarantine").remove([quarantinePath]);
     await admin.from("student_identity_upload_scans").update({ status: "clean", quarantine_path: null, updated_at: new Date().toISOString() }).eq("id", job.id);
