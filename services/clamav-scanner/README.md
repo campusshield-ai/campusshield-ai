@@ -8,7 +8,7 @@ This service is designed to run under your control. Student identity documents a
 - Accepts only JPEG, PNG, and PDF bytes up to 5 MiB.
 - Validates file signatures independently of the browser's filename/MIME claims.
 - Sends the file to a ClamAV daemon using the INSTREAM protocol.
-- Returns `{"status":"clean"}` only when ClamAV returns `OK`, or `{"status":"infected"}` when ClamAV returns `FOUND`.
+- Returns `{"status":"clean","sha256":"..."}` only when ClamAV returns `OK`, or `{"status":"infected","sha256":"..."}` when ClamAV returns `FOUND`. The Edge Function verifies the response hash matches the submitted bytes.
 - Returns an error when the scanner is unavailable; the Supabase function fails closed and leaves the file quarantined.
 - Does not publish the ClamAV port. Put the scanner API behind an HTTPS reverse proxy or a private, authenticated network path before connecting Supabase to it.
 
@@ -29,7 +29,7 @@ The Edge Function sends raw bytes with `Content-Type` and `X-File-SHA256` header
 ## Verification checklist
 
 - A valid synthetic JPEG/PNG/PDF with ClamAV running returns `status: clean` only if ClamAV says `OK`.
-- The standard EICAR antivirus test string packaged as a test file must return `status: infected` (use only the standard harmless test signature; never use live malware).
+- The standard harmless EICAR test signature embedded inside a synthetic, valid-header PDF must return `status: infected` (use only the standard test signature; never use live malware).
 - Wrong bearer token returns 401.
 - Unsupported MIME, invalid signature, empty file, and files over 5 MiB are rejected.
 - Stop ClamAV and confirm the API returns 503; the Supabase function must not promote the quarantined file.
