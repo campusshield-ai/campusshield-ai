@@ -62,6 +62,14 @@ assert.doesNotMatch(
   "no pending-only status filter remains in the approvals query"
 );
 
+
+assert.match(html, /id="sidebar-collapse-toggle"/, "desktop sidebar has a collapse/expand control");
+assert.match(html, /id="mobile-nav-toggle"/, "mobile navigation has a drawer toggle");
+assert.match(html, /campusshield-sidebar-collapsed/, "desktop sidebar collapse preference is remembered");
+assert.match(html, /id="auth-university-search"/, "signup has a live institution search field");
+assert.match(html, /id="auth-university-suggestions"/, "institution typeahead uses suggestions from the campus directory");
+assert.match(html, /The existing university ID select remains the authoritative submitted value/, "institution name typing does not replace the verified campus record");
+
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
 assert.match(config, /https:\/\/hywcpnoqqhxvujnimhxl\.supabase\.co/, "feature branch must target the separate staging project");
 const publicKey = config.match(/publishableKey:\s*"([^"]+)"/)?.[1];
