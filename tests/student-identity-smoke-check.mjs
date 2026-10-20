@@ -22,6 +22,9 @@ for (const required of [
   'https://enuc.nuc.edu.ng/nus',
   'id="identity-student-number"',
   'id="identity-document"',
+  'id="identity-original-document-confirmation"',
+  'AI-generated or edited identity images are not accepted.',
+  'CampusShield creates the secure filename automatically.',
   'data-identity-review="approve"',
   'data-identity-review="reject"',
   'Your ID was rejected',
@@ -36,6 +39,7 @@ assert.match(html, /listCampusUniversities\(\)/, 'identity form options come fro
 assert.match(html, /requestCampusUniversity\(\{[\s\S]*?name: \$\('identity-request-university-name'\)/, 'unlisted university uses the existing guarded listing-request RPC');
 assert.match(html, /typedInstitution\.toLocaleLowerCase\(\) !== lockedInstitution\.toLocaleLowerCase\(\)/, 'identity submission rejects a university different from the locked campus');
 assert.match(html, /institutionName: lockedInstitution/, 'identity upload uses the authenticated campus context');
+assert.match(html, /attestOriginalDocument: \$\('identity-original-document-confirmation'\)\.checked/, 'identity upload passes the no-AI attestation');
 assert.match(html, /async function submitStudentIdentityDocument\(\)[\s\S]*?backend\.uploadStudentIdentityDocument\(file/, 'secure ID upload remains wired');
 assert.match(html, /async function handleSignUp\(\)[\s\S]*?backend\.uploadStudentIdentityDocument\(studentDocument/, 'signup attempts private upload only when authenticated');
 assert.ok(!html.includes('id="page-identity-verification"'), 'no standalone identity workspace page remains');
@@ -47,7 +51,10 @@ for (const method of ['getMyStudentIdentityVerification', 'uploadStudentIdentity
 }
 assert.ok(addon.includes('student-identity-documents'), 'uploads use the private identity bucket');
 assert.ok(addon.includes('5 * 1024 * 1024'), 'uploads are limited to 5 MiB in the client');
-assert.ok(addon.includes('student-identity-document'), 'upload path uses the safe staging object name');
+assert.ok(addon.includes('globalThis.crypto?.randomUUID'), 'upload creates a UUID filename automatically');
+assert.ok(addon.includes('user.id + "/" + globalThis.crypto.randomUUID() + "." + extension'), 'upload filename is generated inside the signed-in user folder');
+assert.ok(addon.includes('details?.attestOriginalDocument !== true'), 'upload requires an explicit genuine-document attestation');
+assert.ok(addon.includes('AI-generated or digitally altered'), 'upload rejects submissions without the no-AI/unaltered-document attestation');
 assert.ok(addon.includes('p_institution_name: institutionName'), 'identity submission includes institution name');
 assert.ok(addon.includes('existing?.status === "rejected"'), 'rejected identity can be resubmitted');
 assert.ok(addon.includes('rejection_reason'), 'student identity status returns rejection reason');
