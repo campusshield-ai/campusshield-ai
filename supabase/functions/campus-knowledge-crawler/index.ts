@@ -179,6 +179,15 @@ Deno.serve(async (req: Request) => {
       try { url = normalizeUrl(String(body.url || "")); } catch (e) { return reply({ error: e instanceof Error ? e.message : "Invalid URL." }, 400); }
       if (url.pathname !== "/" && url.pathname !== "") return reply({ error: "Add the official website root (for example https://university.edu.ng/). The crawler will follow same-domain links." }, 400);
       const domain = url.hostname.toLowerCase();
+      const { data: university, error: universityError } = await client.from("campus_universities")
+        .select("official_website,source_url").eq("id", campus.university_id).maybeSingle();
+      if (universityError || !university) return reply({ error: "The campus official website could not be verified." }, 503);
+      const registeredDomains = [university.official_website, university.source_url].filter(Boolean).map((value: string) => {
+        try { return new URL(value).hostname.toLowerCase(); } catch { return ""; }
+      });
+      if (!registeredDomains.includes(domain)) {
+        return reply({ error: "For safety, only the official website already registered for this university can be added. Ask a verified campus administrator to update the university's official website first." }, 400);
+      }
       const { data, error } = await client.from("campus_knowledge_sources").insert({
         university_id: campus.university_id, title, base_url: url.toString(), domain, created_by: user.id, status: "approved",
       }).select("id,title,base_url,domain,status,last_crawled_at,last_crawl_status").single();
