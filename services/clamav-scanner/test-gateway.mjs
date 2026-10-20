@@ -5,7 +5,7 @@ import { once } from "node:events";
 import { createHash } from "node:crypto";
 
 const TOKEN = "campusshield-test-token-not-for-production";
-const EICAR = String.raw`X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*`;
+const EICAR = "X5O!P%@AP[4" + String.fromCharCode(92) + "PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
 
 async function freePort() {
   const server = net.createServer();
@@ -24,7 +24,7 @@ function startMockClamd(port) {
     socket.on("data", (chunk) => {
       buffered = Buffer.concat([buffered, chunk]);
       if (!started) {
-        const marker = Buffer.from("zINSTREAM\\0", "utf8");
+        const marker = Buffer.from("zINSTREAM\0", "utf8");
         const index = buffered.indexOf(marker);
         if (index < 0) return;
         buffered = buffered.subarray(index + marker.length);
@@ -36,8 +36,8 @@ function startMockClamd(port) {
         buffered = buffered.subarray(4);
         if (size === 0) {
           const response = payload.includes(Buffer.from(EICAR, "ascii"))
-            ? "stream: Eicar-Test-Signature FOUND\\0"
-            : "stream: OK\\0";
+            ? "stream: Eicar-Test-Signature FOUND\0"
+            : "stream: OK\0";
           socket.end(response);
           return;
         }
@@ -67,7 +67,6 @@ async function runGatewayTest({ mockMode = "normal" } = {}) {
   const clamdPort = await freePort();
   const mock = mockMode === "unavailable" ? null : startMockClamd(clamdPort);
   if (mockMode === "unavailable") {
-    // Reserve then release a port to ensure no ClamAV listener is present.
     const reservation = net.createServer();
     reservation.listen(clamdPort, "127.0.0.1");
     await once(reservation, "listening");
@@ -83,7 +82,7 @@ async function runGatewayTest({ mockMode = "normal" } = {}) {
   const base = "http://127.0.0.1:" + apiPort;
   try {
     await waitForHealth(base, child);
-    const cleanBytes = Buffer.from("%PDF-1.7\\nCampusShield synthetic clean test document\\n%%EOF\\n", "ascii");
+    const cleanBytes = Buffer.from("%PDF-1.7\nCampusShield synthetic clean test document\n%%EOF\n", "ascii");
     const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
     const post = (bytes, options = {}) => fetch(base + "/scan", {
       method: "POST",
@@ -109,7 +108,7 @@ async function runGatewayTest({ mockMode = "normal" } = {}) {
       const cleanResult = await cleanResponse.json();
       assert.equal(cleanResult.status, "clean", "synthetic clean PDF should return clean from mock ClamAV");
       assert.equal(cleanResult.sha256, hash(cleanBytes), "scanner response must echo exact SHA-256");
-      const infectedBytes = Buffer.from("%PDF-1.7\\n" + EICAR + "\\n%%EOF\\n", "ascii");
+      const infectedBytes = Buffer.from("%PDF-1.7\n" + EICAR + "\n%%EOF\n", "ascii");
       const infectedResponse = await post(infectedBytes);
       assert.equal(infectedResponse.status, 200);
       const infectedResult = await infectedResponse.json();
