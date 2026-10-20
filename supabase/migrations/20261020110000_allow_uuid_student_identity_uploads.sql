@@ -2,21 +2,8 @@
 -- Staging-forward-only fix: no production migration has been applied.
 begin;
 
--- The earlier function definition escaped the filename dot twice, which does not
--- match a normal ".jpg/.png/.pdf" filename with PostgreSQL's regex engine.
-do $migration$
-declare
-  v_definition text;
-begin
-  v_definition := pg_get_functiondef('private.submit_student_identity_verification(text,text,text)'::regprocedure);
-  v_definition := replace(v_definition, chr(92) || chr(92) || '.', '[.]');
-  if v_definition = pg_get_functiondef('private.submit_student_identity_verification(text,text,text)'::regprocedure) then
-    raise exception 'Expected filename regex pattern was not found; stop and review the staging function definition.';
-  end if;
-  execute v_definition;
-end;
-$migration$;
-
+-- The server-side submission RPC already validates the UUID filename and upload metadata.
+-- Update the table constraint and Storage insert policy to allow the same generated path.
 alter table public.student_identity_verifications
   drop constraint if exists student_identity_path_matches_user;
 
