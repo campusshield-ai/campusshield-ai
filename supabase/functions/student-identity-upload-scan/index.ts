@@ -67,6 +67,18 @@ Deno.serve(async (req: Request) => {
     const mime = await detectMime(input);
     if (!mime || (file.type && file.type !== mime)) return reply({ error: "The file content does not match a supported JPEG, PNG, or PDF. Renaming a file does not change its type." }, 415);
     const fileHash = await hash(input);
+    const scannerUrl = Deno.env.get("MALWARE_SCANNER_URL");
+    const scannerToken = Deno.env.get("MALWARE_SCANNER_TOKEN");
+    if (!scannerUrl || !scannerToken) {
+      return reply({ error: "Malware scanning is not configured in staging yet. No file was uploaded or submitted. Configure the trusted private ClamAV scanner first.", status: "scan_unavailable" }, 503);
+    }
+    let scanEndpoint: URL;
+    try { scanEndpoint = new URL(scannerUrl); } catch {
+      return reply({ error: "The malware scanner configuration is invalid. No file was uploaded.", status: "scan_unavailable" }, 503);
+    }
+    if (scanEndpoint.protocol !== "https:" || scanEndpoint.username || scanEndpoint.password) {
+      return reply({ error: "The malware scanner must use HTTPS. No file was uploaded.", status: "scan_unavailable" }, 503);
+    }
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const quarantinePath = randomPath(user.id, mime);
     const { error: uploadError } = await admin.storage.from("student-identity-quarantine").upload(quarantinePath, input, {
@@ -82,21 +94,6 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "A secure scan record could not be created." }, 503);
     }
 
-    const scannerUrl = Deno.env.get("MALWARE_SCANNER_URL");
-    const scannerToken = Deno.env.get("MALWARE_SCANNER_TOKEN");
-    if (!scannerUrl || !scannerToken) {
-      await admin.from("student_identity_upload_scans").update({ status: "scan_unavailable", failure_code: "scanner_not_configured", updated_at: new Date().toISOString() }).eq("id", job.id);
-      return reply({ error: "The file is safely quarantined, but malware scanning is not configured yet. It has NOT been approved or sent for identity review. Contact the administrator after a trusted scanner is configured.", status: "scan_unavailable" }, 503);
-    }
-    let scanEndpoint: URL;
-    try { scanEndpoint = new URL(scannerUrl); } catch {
-      await admin.from("student_identity_upload_scans").update({ status: "scan_unavailable", failure_code: "invalid_scanner_url", updated_at: new Date().toISOString() }).eq("id", job.id);
-      return reply({ error: "The malware scanner configuration is invalid. File remains quarantined.", status: "scan_unavailable" }, 503);
-    }
-    if (scanEndpoint.protocol !== "https:" || scanEndpoint.username || scanEndpoint.password) {
-      await admin.from("student_identity_upload_scans").update({ status: "scan_unavailable", failure_code: "scanner_must_use_https", updated_at: new Date().toISOString() }).eq("id", job.id);
-      return reply({ error: "The malware scanner must use HTTPS. File remains quarantined.", status: "scan_unavailable" }, 503);
-    }
     await admin.from("student_identity_upload_scans").update({ status: "scanning", updated_at: new Date().toISOString() }).eq("id", job.id);
     let scanStatus = "";
     try {
