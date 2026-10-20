@@ -85,3 +85,11 @@ The latest flattened release commit passed all configured GitHub smoke-check scr
 - Signup suggestions use the same directory; selecting an exact institution maps to its existing directory ID. All matching records are considered rather than truncating results to the first 40. The staging migration snapshot documents a 328-entry NUC-sourced roster; verify the live staging directory contents against the current NUC directory before launch.
 - Hardened auth mode validation so hidden signup-only required fields cannot block sign-in, made the sign-in button explicitly submit the form, and added a useful validation message for invalid fields.
 - The latest changes are committed on the review branch. CI and browser acceptance still need confirmation; no production Supabase settings were changed.
+
+
+## Student identity upload usability and authenticity notice (2026-10-20)
+
+- The student-facing form now asks users to select a JPG, PNG, or PDF (maximum 5 MiB); it no longer asks them to enter or choose a storage path. The browser helper generates a random UUID filename and places it under the authenticated user's private storage folder.
+- The form requires an explicit confirmation that the document is genuine and has not been AI-generated or digitally altered. This is an attestation and a review signal, **not** an AI-image detector; reviewers must continue to assess evidence and can reject suspicious or unverifiable documents.
+- Uploads remain limited to JPEG, PNG, and PDF, use the private `student-identity-documents` bucket, and rely on Supabase RPC/RLS enforcement. No storage policy was weakened and no production changes were made.
+- Before merging, run both `node tests/smoke-check.mjs` and `node tests/student-identity-smoke-check.mjs`, then test upload/rejection/resubmission in staging with fictional test files. Confirm that the currently deployed staging RPC and Storage policies accept UUID filenames in the user's folder; do not apply or replay migrations against production.
