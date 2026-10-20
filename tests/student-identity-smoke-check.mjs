@@ -99,34 +99,3 @@ vm.createScript(addon, {filename:'campusshield-backend-identity-addon.js'});
 
 console.log('CampusShield identity static smoke check passed (' + parsedInlineScripts + ' inline scripts parsed).');
 console.log('No database writes, identity uploads, or live account actions were performed.');
-"), 'identity upload policy restricts the object name to a UUID and safe document types');
-assert.doesNotMatch(identityUploadRlsFix, /user_has_current_campus/, 'campus authorization remains enforced by the submission RPC rather than duplicating the storage gate');
-assert.match(communityReadGate, /create or replace function public\.get_community_poll_data/i);
-assert.match(communityReadGate, /create or replace function public\.get_community_post_social/i);
-assert.equal((communityReadGate.match(/current_user_has_verified_campus_access\(\)/g) || []).length, 2,
-  'both SECURITY DEFINER community read RPCs enforce approved campus access');
-assert.doesNotMatch(config, /service_role|sb_secret_/i, 'browser config must not contain privileged keys');
-
-for (const requirement of [
-  'enable row level security',
-  'student_identity_read_owner_or_campus_admin',
-  'student_identity_upload_own_pending',
-  'student_identity_read_own_or_campus_admin',
-  'student_identity_delete_unsubmitted_own',
-  'submit_student_identity_verification',
-  'review_student_identity_verification',
-  'Approve the student identity document before approving this account.',
-  'public = false'
-]) assert.ok(migration.toLowerCase().includes(requirement.toLowerCase()), 'migration should contain ' + requirement);
-
-// Parse JavaScript without running browser code or touching Supabase.
-const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
-let parsedInlineScripts = 0;
-for (const match of html.matchAll(scriptRe)) {
-  if (/\bsrc\s*=/.test(match[1])) continue;
-  vm.createScript(match[2], {filename:'index-inline-' + (++parsedInlineScripts) + '.js'});
-}
-vm.createScript(addon, {filename:'campusshield-backend-identity-addon.js'});
-
-console.log('CampusShield identity static smoke check passed (' + parsedInlineScripts + ' inline scripts parsed).');
-console.log('No database writes, identity uploads, or live account actions were performed.');
