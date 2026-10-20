@@ -4175,7 +4175,8 @@ td strong{color:#2a464d;font-size:11px}
         ? directory.filter(function(university) {
             const name = normalizeInstitutionSearch(university.name);
             const state = normalizeInstitutionSearch(university.state);
-            const queryTokens = query.split(' ').filter(Boolean);\n            const nameTokens = name.split(' ');\n            return name.includes(query) || state.includes(query) || queryTokens.every(function(token) { return nameTokens.some(function(nameToken) { return nameToken.startsWith(token); }); });
+            const queryTokens = query.split(' ').filter(Boolean);
+            const nameTokens = name.split(' ');\n            return name.includes(query) || state.includes(query) || queryTokens.every(function(token) { return nameTokens.some(function(nameToken) { return nameToken.startsWith(token); }); });
           }).slice(0, 40)
         : directory.slice(0, 40);
       pair.list.replaceChildren();
