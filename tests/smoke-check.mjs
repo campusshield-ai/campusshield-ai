@@ -132,7 +132,7 @@ assert.match(html, /id="shieldmind-form"/);
 assert.match(html, /id="shieldmind-question"/);
 assert.match(html, /function resetShieldMindForSession\(\)/);
 assert.match(html, /page === 'shieldmind' &&/);
-assert.match(backend, /async askShieldMind\\(question, history = \\[\\](?:, image = null)?\\)/, "ShieldMind supports standard and optional image questions");
+assert.ok(backend.includes("async askShieldMind(question, history = [], image = null)") || backend.includes("async askShieldMind(question, history = [])"), "ShieldMind supports standard and optional image questions");
 assert.match(backend, /functions\.invoke\("shieldmind-chat"/);
 assert.match(html, /ShieldMind does not receive CampusShield incident reports, identity documents, attendance, or private Helpdesk records/);
 
