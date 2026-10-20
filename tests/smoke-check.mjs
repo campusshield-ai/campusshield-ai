@@ -13,6 +13,14 @@ const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", im
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
+const crawlerFunction = await readFile(new URL("../supabase/functions/campus-knowledge-crawler/index.ts", import.meta.url), "utf8");
+const shieldMindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
+const identityScanFunction = await readFile(new URL("../supabase/functions/student-identity-upload-scan/index.ts", import.meta.url), "utf8");
+const crawlerMigration = await readFile(new URL("../supabase/migrations/20261020120000_campus_knowledge_crawler.sql", import.meta.url), "utf8");
+const quarantineMigration = await readFile(new URL("../supabase/migrations/20261020130000_identity_upload_quarantine.sql", import.meta.url), "utf8");
+const domainMigration = await readFile(new URL("../supabase/migrations/20261020160000_require_registered_university_website.sql", import.meta.url), "utf8");
+const clamavGateway = await readFile(new URL("../services/clamav-scanner/server.mjs", import.meta.url), "utf8");
+
 
 for (const [index, source] of inlineScripts.entries()) {
   assert.doesNotThrow(() => new Function(source), `inline script ${index + 1} parses`);
@@ -127,3 +135,28 @@ assert.match(html, /page === 'shieldmind' &&/);
 assert.match(backend, /async askShieldMind\(question, history = \[\]\)/);
 assert.match(backend, /functions\.invoke\("shieldmind-chat"/);
 assert.match(html, /ShieldMind does not receive CampusShield incident reports, identity documents, attendance, or private Helpdesk records/);
+
+assert.match(html, /id="crawler-source-form"/, "campus crawler admin form is present");
+assert.match(html, /callCampusCrawler\(\{ action: 'search'/, "crawler UI can search the index");
+assert.match(crawlerFunction, /auth\.getUser\(\)/, "crawler verifies the signed-in user");
+assert.match(crawlerFunction, /official_website/, "crawler only accepts the registered official university hostname");
+assert.match(crawlerFunction, /allowedByRobots/, "crawler checks robots.txt");
+assert.match(crawlerFunction, /MAX_PAGES_PER_RUN = 8/, "crawler run is bounded");
+assert.match(crawlerFunction, /campus_knowledge_pages/, "crawler stores searchable public page text");
+assert.match(shieldMindFunction, /APPROVED CAMPUS SOURCES/, "ShieldMind receives source-grounded campus context");
+assert.match(shieldMindFunction, /sources: responseSources/, "ShieldMind returns source citations");
+assert.match(backend, /functions\.invoke\("student-identity-upload-scan"/, "identity upload goes through the scan function");
+assert.doesNotMatch(backend.slice(backend.indexOf("async uploadStudentIdentityDocument"), backend.indexOf("async createStudentIdentityDocumentUrl")), /student-identity-documents"\)\.upload/, "browser cannot bypass quarantine by directly uploading identity documents");
+assert.match(identityScanFunction, /student-identity-quarantine/, "identity uploads are stored in private quarantine");
+assert.match(identityScanFunction, /detectMime/, "server validates file signatures");
+assert.match(identityScanFunction, /MALWARE_SCANNER_URL/, "scanner endpoint is configured through server-side secrets");
+assert.match(identityScanFunction, /result\?\.sha256 !== fileHash/, "scanner result must match the uploaded file hash");
+assert.match(identityScanFunction, /status: "scan_unavailable"/, "missing/unavailable scanner fails closed");
+assert.match(crawlerMigration, /enable row level security/i);
+assert.match(quarantineMigration, /student_identity_upload_scans/);
+assert.match(quarantineMigration, /public = false/);
+assert.match(domainMigration, /u\.official_website is not null/i);
+assert.match(clamavGateway, /scanWithClamAV/);
+assert.match(clamavGateway, /zINSTREAM\\0/, "gateway uses ClamAV's INSTREAM protocol");
+assert.match(clamavGateway, /timingSafeEqual/, "gateway compares the bearer token in constant time");
+
