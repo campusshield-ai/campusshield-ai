@@ -69,7 +69,7 @@ Deno.serve(async (req: Request) => {
         } else if(eventType==="charge.success") {
           const reference=String(payload.reference||"");
           if(!reference||payload.currency!=="NGN"||Number(payload.amount)!==amount) throw new Error("Recurring charge amount or currency mismatch");
-          const vr=await fetch("https://api.paystack.co/transaction/verify/"+encodeURIComponent(reference),{headers:{"Authorization":`Bearer ${secret}`});
+          const vr=await fetch("https://api.paystack.co/transaction/verify/"+encodeURIComponent(reference),{headers:{"Authorization":`Bearer ${secret}`}});
           const vj=await vr.json().catch(()=>null),tx=vj?.data;
           if(!vr.ok||vj?.status!==true||tx?.status!=="success"||tx?.reference!==reference||tx?.currency!=="NGN"||Number(tx?.amount)!==amount||lower(tx?.customer?.email)!==customerEmail||tx?.subscription_code!==code) throw new Error("Recurring transaction verification failed");
           const {data:row,error:rowError}=await admin.from("shieldmind_subscriptions").select("user_id,plan,status,expires_at,amount_kobo,currency,last_payment_reference").eq("provider_subscription_code",code).maybeSingle();
