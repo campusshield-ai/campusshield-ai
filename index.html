@@ -2542,15 +2542,19 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       const plan=Array.isArray(data)?data[0]:data;
       if (['starter','plus','pro','ultra','max','premium'].includes(plan?.plan) && plan?.status==='active' && plan?.expires_at && new Date(plan.expires_at).getTime()>Date.now()) {
         status.textContent=plan.plan.toUpperCase()+' active until '+new Date(plan.expires_at).toLocaleDateString()+'. Your tier limits are enabled.';
-        // Hosted recurring pages open only after the signed-in user has met the existing account gates.
-  // Paystack return URLs are not proof of payment and never grant entitlements.
+        document.querySelectorAll('[data-shieldmind-hosted]').forEach(link=>{link.setAttribute('aria-disabled','true');link.textContent='Premium active';});
+      } else {
+        status.textContent='You are on ShieldMind Free. Upgrade for higher AI usage; payment must be confirmed by the server before Premium activates.';
+      }
+    } catch (_error) { status.textContent='Plan status could not be loaded. Try refreshing this page.'; }
+  }
   document.querySelectorAll('[data-shieldmind-hosted]').forEach(link=>link.addEventListener('click',async event=>{
-    if(link.getAttribute('aria-disabled')==='true'){event.preventDefault();return;}
+    event.preventDefault();
+    if(link.getAttribute('aria-disabled')==='true'){return;}
     if(!currentProfile||!window.CampusShieldBackend?.isConfigured){
-      event.preventDefault();$('shieldmind-plan-status').textContent='Sign in before opening checkout.';return;
+      $('shieldmind-plan-status').textContent='Sign in before opening checkout.';return;
     }
-    const backend=window.CampusShieldBackend;
-    const oldText=link.textContent;
+    const backend=window.CampusShieldBackend, oldText=link.textContent;
     link.setAttribute('aria-disabled','true');link.textContent='Checking account…';
     try {
       const {data:{user},error:userError}=await backend.client.auth.getUser();
@@ -2566,11 +2570,10 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       }
       const {data:intent,error:intentError}=await backend.client.functions.invoke('shieldmind-hosted-subscription-intent',{body:{plan:link.dataset.shieldmindHosted}});
       if(intentError||!intent?.ready)throw new Error(intent?.error||'Secure subscription setup is unavailable. Please try again later.');
-      // Hosted-page redirects never grant access; only the verified recurring webhook can do that.
+      // Redirects do not grant access. The signed webhook verifies the subscription and each charge.
       window.location.assign(link.href);
     } catch(error) {
       $('shieldmind-plan-status').textContent=error?.message||'Checkout could not start. Please try again.';
-    } finally {
       link.removeAttribute('aria-disabled');link.textContent=oldText;
     }
   }));
