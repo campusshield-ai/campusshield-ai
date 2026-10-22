@@ -357,6 +357,39 @@ td strong{color:#2a464d;font-size:11px}
 .campus-hub-channel-link:focus-visible{outline:3px solid #71e7d1;outline-offset:2px}
 .campus-hub-live{padding:4px 5px;border:1px solid #2d8d78;border-radius:999px;color:#8ce8d8;font-size:7px;font-weight:900}
 
+
+/* Smooth UI polish: subtle motion, clearer states, and responsive comfort. */
+@media (prefers-reduced-motion: no-preference) {
+  .panel, .stat { transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease; }
+  .panel:hover, .stat:hover { box-shadow: 0 14px 34px rgba(18,49,58,.075); border-color: #d4e4dd; }
+  .btn, .nav button, .field input, .field select, .field textarea { transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+  .btn:not(:disabled):hover { transform: translateY(-1px); }
+  .page.active { animation: cs-page-in .22s ease both; }
+  @keyframes cs-page-in { from { opacity: .65; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+}
+.btn:disabled, button:disabled { cursor: wait; opacity: .62; transform: none; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: #48a997;
+  box-shadow: 0 0 0 4px rgba(72,169,151,.13);
+  outline: none;
+}
+tbody tr:hover td { background: #f7fbf9; }
+.panel h2, .panel h3 { letter-spacing: -.025em; }
+.empty { border: 1px dashed #dce7e2; border-radius: 12px; background: #fafcfb; }
+.toast { max-width: min(440px, calc(100vw - 32px)); box-shadow: 0 12px 35px rgba(8,28,36,.22); }
+@media (max-width: 650px) {
+  .topbar { align-items: flex-start; gap: 12px; }
+  .topbar-actions { gap: 6px; }
+  .sync-state { font-size: 10px; }
+  .content { padding-bottom: 28px; }
+  .heading { margin-bottom: 15px; }
+  .heading p { max-width: 60ch; }
+  .table-wrap { border-radius: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
 </style>
 </head>
 <body>
