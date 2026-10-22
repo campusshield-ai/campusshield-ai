@@ -207,3 +207,21 @@ assert.match(html, /ShieldMind does not receive CampusShield incident reports, i
 assert.match(shieldmindQuotaMigration, /request_count < 5/);
 assert.match(shieldmindQuotaMigration, /request_count < 80/);
 assert.match(shieldmindQuotaMigration, /revoke all on table private\.shieldmind_usage_windows from public, anon, authenticated/i);
+
+/* Hosted recurring Paystack links: tier mapping is explicit and a browser return never grants premium. */
+const hostedCheckoutLinks = {
+  starter: "https://paystack.shop/pay/8d8uqv-424",
+  plus: "https://paystack.shop/pay/cw4e6yy3b2",
+  pro: "https://paystack.shop/pay/dqmxy-jpge",
+  ultra: "https://paystack.shop/pay/er98helke2",
+  max: "https://paystack.shop/pay/lh62pcokf9",
+};
+for (const [plan, url] of Object.entries(hostedCheckoutLinks)) {
+  assert.match(html, new RegExp('data-shieldmind-hosted="' + plan + '"'));
+  assert.ok(html.includes(url), 'missing hosted Paystack URL for ' + plan);
+}
+assert.match(html, /Paystack opened in a new tab\. Premium stays unchanged until the server verifies the subscription/);
+assert.match(html, /returning from Paystack does not activate or renew Premium access/);
+assert.doesNotMatch(html, /data-shieldmind-buy=/);
+console.log("PASS hosted Paystack plan URLs map to their intended ShieldMind tier buttons");
+console.log("PASS hosted Paystack return never grants Premium without server verification");
