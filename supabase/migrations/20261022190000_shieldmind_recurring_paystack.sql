@@ -33,4 +33,7 @@ create table if not exists private.paystack_billing_event_receipts (
 );
 alter table private.paystack_billing_event_receipts enable row level security;
 revoke all on table private.paystack_billing_event_receipts from public,anon,authenticated;
+grant usage on schema private to service_role;
+grant select,insert,update on table private.shieldmind_billing_intents to service_role;
+grant select,insert,update on table private.paystack_billing_event_receipts to service_role;
 commit;
