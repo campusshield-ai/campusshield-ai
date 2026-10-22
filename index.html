@@ -317,6 +317,54 @@ td strong{color:#2a464d;font-size:11px}
 @media(max-width:520px){.nav button{gap:7px}.nav-icon{display:none}.topbar{top:73px;align-items:flex-start;flex-direction:column}.topbar-actions{justify-content:flex-start;gap:7px}.sync-state{font-size:10px}.demo-pill{font-size:8px;padding:6px 8px}.content{padding:15px 12px}.notice{margin-bottom:20px;padding:11px 12px;font-size:11px}.stats{gap:9px;margin-bottom:16px}.stat{padding:14px 13px 12px;border-radius:14px}.stat-num{font-size:26px}.stat-label{font-size:10px}.stat-note{font-size:9px}.panel{padding:15px;border-radius:15px}.empty-state{align-items:flex-start;flex-wrap:wrap;padding:14px}.empty-state .btn{margin-left:56px}.recent-item{grid-template-columns:1fr;gap:5px}.recent-time{grid-row:2}.recent-description{grid-column:1}.table-toolbar{grid-template-columns:1fr}.table-count{grid-column:auto}.login-intro{padding:27px 19px}.login-points{grid-template-columns:1fr}.login-points>div{grid-template-columns:26px 1fr;gap:4px 9px}.login-points span{grid-row:span 2}.login-intro h1{font-size:38px}.auth-panel{padding:22px 18px}.footer{text-align:left}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
 
+
+/* Premium dashboard navigation: mobile drawer and polished workspace rhythm. */
+.topbar-leading{display:flex;align-items:center;gap:12px;min-width:0}
+.menu-toggle{display:none;align-items:center;justify-content:center;width:42px;height:42px;flex:0 0 42px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--navy);font-size:20px;line-height:1}
+.menu-toggle:hover{background:#f0f8f5;border-color:#c8dfd6}
+.sidebar-backdrop{display:none}
+.heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.heading h1{letter-spacing:-.04em}
+.heading p{max-width:68ch}
+.stats .stat{position:relative;overflow:hidden}
+.stats .stat::after{content:"";position:absolute;right:-22px;top:-26px;width:78px;height:78px;border:14px solid rgba(121,224,196,.12);border-radius:50%;pointer-events:none}
+.stat-num{font-variant-numeric:tabular-nums;letter-spacing:-.045em}
+.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav button:focus-visible,.menu-toggle:focus-visible{outline:3px solid #79e0c4;outline-offset:3px}
+@media(max-width:650px){
+  .topbar{position:sticky;top:0;z-index:30;align-items:center;min-height:70px;padding:10px 13px;gap:10px}
+  .topbar-leading{gap:9px}
+  .menu-toggle{display:inline-flex}
+  .topbar-title small{font-size:8px}
+  .topbar-title strong{font-size:14px}
+  .topbar-actions{gap:6px}
+  #incidentSyncStatus,.demo-pill{display:none}
+  #refresh-incidents{padding:9px 10px;font-size:0;min-width:38px}
+  #refresh-incidents span{font-size:18px}
+  #signout-button{padding:9px 10px}
+  .sidebar{position:fixed;inset:0 auto 0 0;width:min(300px,86vw);height:100dvh;max-height:100dvh;overflow-y:auto;overscroll-behavior:contain;z-index:50;padding:20px 16px 16px;transform:translateX(-105%);visibility:hidden;transition:transform .22s ease,visibility .22s ease;box-shadow:22px 0 60px rgba(8,31,37,.22)}
+  body.sidebar-open .sidebar{transform:translateX(0);visibility:visible}
+  .sidebar-backdrop{position:fixed;inset:0;z-index:40;display:block;width:100%;height:100%;border:0;border-radius:0;background:rgba(6,22,29,.46);backdrop-filter:blur(2px)}
+  .main{margin-left:0;min-width:0}
+  .nav{grid-template-columns:1fr;gap:4px}
+  .nav button{min-height:44px}
+  .brand{padding-bottom:22px}
+  .sidebar-status{display:block;margin-top:20px}
+  .content{padding:17px 13px 30px}
+  .heading{gap:12px}
+  .heading h1{font-size:clamp(23px,6vw,29px);line-height:1.15}
+  .heading-actions .btn{white-space:nowrap}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .stat{min-width:0;padding:13px}
+  .stat-num{font-size:clamp(24px,7vw,30px)}
+  .stat-label{font-size:11px}
+  .stat-note{font-size:10px}
+  .panel{padding:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  .sidebar{transition:none}
+}
+
 </style>
 </head>
 <body>
@@ -391,7 +439,7 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 <div class="app" id="workspace" hidden>
-<aside class="sidebar">
+<aside class="sidebar" id="workspace-sidebar">
 <div class="brand"><span class="brand-mark" aria-hidden="true">CS</span><span class="brand-copy">Campus<strong>Shield</strong> AI<small>SAFETY WORKSPACE</small></span></div>
 <div class="nav-label">WORKSPACE</div>
 <nav class="nav">
@@ -409,9 +457,10 @@ td strong{color:#2a464d;font-size:11px}
 </nav>
 <div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
 </aside>
+<button class="sidebar-backdrop" id="sidebar-backdrop" type="button" aria-label="Close navigation" tabindex="-1" hidden></button>
 <div class="main">
 <header class="topbar">
-  <div class="topbar-title"><small>CampusShield AI</small><strong id="sectionTitle">Overview</strong></div>
+  <div class="topbar-leading"><button class="menu-toggle" id="sidebar-toggle" type="button" aria-label="Open navigation" aria-controls="workspace-sidebar" aria-expanded="false"><span aria-hidden="true">☰</span></button><div class="topbar-title"><small>CampusShield AI</small><strong id="sectionTitle">Overview</strong></div></div>
   <div class="topbar-actions"><span id="incidentSyncStatus" class="sync-state" role="status" aria-live="polite">Incident data not loaded</span><button class="btn secondary" type="button" id="refresh-incidents" aria-label="Refresh incident data"><span aria-hidden="true">↻</span>Refresh data</button><button class="btn secondary" type="button" id="workspace-install-app" hidden>Install app</button><span class="demo-pill"><span class="status-dot" aria-hidden="true"></span>PROTOTYPE</span><button class="btn secondary" type="button" id="signout-button">Sign out</button></div>
 </header>
 <main class="content">
@@ -953,6 +1002,36 @@ td strong{color:#2a464d;font-size:11px}
     });
   }
 
+
+  // Responsive navigation drawer: keep the full navigation available on small screens.
+  const sidebarToggle = $('sidebar-toggle');
+  const sidebarBackdrop = $('sidebar-backdrop');
+  const sidebarElement = $('workspace-sidebar');
+
+  function setSidebarOpen(open) {
+    document.body.classList.toggle('sidebar-open', open);
+    if (sidebarToggle) {
+      sidebarToggle.setAttribute('aria-expanded', String(open));
+      sidebarToggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    }
+    if (sidebarBackdrop) sidebarBackdrop.hidden = !open;
+    if (sidebarElement) sidebarElement.setAttribute('aria-hidden', String(!open && window.matchMedia('(max-width: 650px)').matches));
+  }
+
+  sidebarToggle?.addEventListener('click', () => {
+    setSidebarOpen(!document.body.classList.contains('sidebar-open'));
+  });
+  sidebarBackdrop?.addEventListener('click', () => setSidebarOpen(false));
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && document.body.classList.contains('sidebar-open')) {
+      setSidebarOpen(false);
+      sidebarToggle?.focus();
+    }
+  });
+  window.addEventListener('resize', () => {
+    if (!window.matchMedia('(max-width: 650px)').matches) setSidebarOpen(false);
+  });
+
   function navigate(page) {
     if (!currentProfile) {
       showLogin('Please sign in to access CampusShield.');
@@ -1006,6 +1085,7 @@ td strong{color:#2a464d;font-size:11px}
     const button = e.target.closest('[data-page]');
     if (!button) return;
     navigate(button.dataset.page);
+    if (window.matchMedia('(max-width: 650px)').matches) setSidebarOpen(false);
     if (button.dataset.page === 'approvals') loadAccountApprovals();
     if (button.dataset.page === 'community') loadCommunityPage();
     if (button.dataset.page === 'groups') loadCampusGroupsPage();
