@@ -40,8 +40,8 @@ Deno.serve(async (req: Request) => {
         if(error) return json({error:"Event is already processing; retry later"},503);
       }
       try {
-        const supported={starter:200000,plus:500000,pro:1000000,ultra:1500000,max:2800000};
-        const imageLimits={starter:20,plus:60,pro:150,ultra:300,max:600};
+        const supported:Record<string,number>={starter:200000,plus:500000,pro:1000000,ultra:1500000,max:2800000};
+        const imageLimits:Record<string,number>={starter:20,plus:60,pro:150,ultra:300,max:600};
         const lower=(v:unknown)=>typeof v==="string"?v.trim().toLowerCase():"";
         const dateIso=(v:unknown)=>typeof v==="string"&&Number.isFinite(Date.parse(v))?new Date(v).toISOString():null;
         let sub:any=null, code=recurringCode;
