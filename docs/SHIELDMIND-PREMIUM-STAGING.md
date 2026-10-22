@@ -11,7 +11,7 @@
 | Ultra | ₦15,000 | 35 | 2,500 | 300/month |
 | Max | ₦28,000 | 50 | 4,000 | 600/month |
 
-All paid plans provide 30 days of prepaid access and require manual renewal. There is no auto-renewal. Pro is intended to unlock all standard ShieldMind features; higher plans primarily increase capacity and priority where available. Core campus safety and incident-reporting remain free.
+**Billing model note (updated 2026-10-22):** The five supplied Paystack hosted pages are configured for recurring monthly charges (Starter is visually confirmed at ₦2,000/month). This supersedes the earlier no-auto-renewal proposal for those hosted pages, but recurring entitlements are not yet implemented. Until the recurring webhook path is complete and acceptance-tested, opening/returning from a hosted page must not activate, renew, or revoke Premium access. The other four link amounts still need visual confirmation. Pro is intended to unlock all standard ShieldMind features; higher plans primarily increase capacity and priority where available. Core campus safety and incident-reporting remain free.
 
 ## Session rules
 - The server starts a session on the first accepted AI request.
@@ -44,3 +44,38 @@ Never put secret keys in HTML, browser config, GitHub, chat, or logs. Configure 
 - [ ] Verify minute/day quotas by tier and expired subscriptions fall back to Free.
 - [ ] Connect image uploads to server-side allowance tracking before representing image quotas as usable.
 - [ ] Keep tests fictional and staging-only. Do not merge to main, publish, or change production until the owner reviews and approves.
+
+
+## Hosted recurring page links — staging PR #35
+
+| Plan | Intended price/month | Hosted page |
+|---|---:|---|
+| Starter | ₦2,000 | https://paystack.shop/pay/8d8uqv-424 |
+| Plus | ₦5,000 | https://paystack.shop/pay/cw4e6yy3b2 |
+| Pro | ₦10,000 | https://paystack.shop/pay/dqmxy-jpge |
+| Ultra | ₦15,000 | https://paystack.shop/pay/er98helke2 |
+| Max | ₦28,000 | https://paystack.shop/pay/lh62pcokf9 |
+
+Starter's Paystack page screenshot confirms its name and NGN 2,000 monthly charge. The other prices are assigned based on the user's intended order and must be verified against the pages before launch.
+
+## Recurring-billing launch blocker
+
+The current `paystack-webhook` expects a pending `shieldmind_subscriptions` row created by `shieldmind-billing-checkout`, a one-time transaction reference, and a `charge.success` event; it then grants exactly 30 days. That path is not enough to manage Paystack hosted subscription lifecycle. Before paid entitlements are enabled, implement and test:
+- subscription creation/enable/disable and association with an authenticated CampusShield user;
+- invoice-payment success and failure events, renewal dates, cancellations, and downgrade/expiry behavior;
+- signed webhook verification, API-side transaction/subscription verification, expected amount/currency, and customer/user reconciliation;
+- duplicate/replayed event idempotency and correct handling of out-of-order events;
+- a staging end-to-end test for success, failed renewal, cancellation, duplicate event, mismatched user/amount, and expiry.
+
+At that point, staging billing deployment and migration had not occurred. The later update below records the current staging deployment status. Do not merge, publish, or touch production. A Paystack return URL alone is never proof of payment.
+
+
+## Recurring hosted subscription implementation — draft PR #35
+
+The staging branch now includes:
+- an authenticated Edge Function that records a short-lived billing intent only after verified-campus, active-membership, and student identity gates pass;
+- a recurring webhook branch that checks Paystack's signature, retrieves the subscription from Paystack, verifies transaction status/reference/amount/NGN currency/customer email, maps only the five expected monthly plan prices, and uses private event receipts to deduplicate retries;
+- handling for subscription creation/enabling, successful recurring charges, failed invoice payments, non-renewing subscriptions, and disabled subscriptions;
+- a migration adding private billing-intent/event receipt tables and subscription linkage fields.
+
+**Staging deployment status (2026-10-22):** the additive migration `20261022190000_shieldmind_recurring_paystack` was applied to staging, and `shieldmind-hosted-subscription-intent` (JWT required) plus `paystack-webhook` (signature verification in code; JWT disabled as required for Paystack webhooks) were deployed to staging. The frontend changes remain in draft PR #35 and are not published. No real subscription lifecycle test or successful CI run has been confirmed. The five supplied pages are live-mode links; do not use live customer payments for acceptance tests. Use a separate Paystack test-mode plan/account and test secret, confirm all five live page names/prices in the dashboard before launch, run signed synthetic webhook tests plus a test-mode subscription lifecycle, and fix any runtime issues before enabling paid access. Do not merge or change production until these checks pass and the owner approves.

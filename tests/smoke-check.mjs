@@ -3,6 +3,9 @@ import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
+const paystackWebhook = await readFile(new URL("../supabase/functions/paystack-webhook/index.ts", import.meta.url), "utf8");
+const hostedIntent = await readFile(new URL("../supabase/functions/shieldmind-hosted-subscription-intent/index.ts", import.meta.url), "utf8");
+const recurringBillingMigration = await readFile(new URL("../supabase/migrations/20261022190000_shieldmind_recurring_paystack.sql", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
@@ -207,3 +210,41 @@ assert.match(html, /ShieldMind does not receive CampusShield incident reports, i
 assert.match(shieldmindQuotaMigration, /request_count < 5/);
 assert.match(shieldmindQuotaMigration, /request_count < 80/);
 assert.match(shieldmindQuotaMigration, /revoke all on table private\.shieldmind_usage_windows from public, anon, authenticated/i);
+
+/* Hosted recurring Paystack links: tier mapping is explicit and a browser return never grants premium. */
+const hostedCheckoutLinks = {
+  starter: "https://paystack.shop/pay/8d8uqv-424",
+  plus: "https://paystack.shop/pay/cw4e6yy3b2",
+  pro: "https://paystack.shop/pay/dqmxy-jpge",
+  ultra: "https://paystack.shop/pay/er98helke2",
+  max: "https://paystack.shop/pay/lh62pcokf9",
+};
+for (const [plan, url] of Object.entries(hostedCheckoutLinks)) {
+  assert.match(html, new RegExp('data-shieldmind-hosted="' + plan + '"'));
+  assert.ok(html.includes(url), 'missing hosted Paystack URL for ' + plan);
+}
+assert.match(html, /shieldmind-hosted-subscription-intent/);
+assert.match(html, /returning from Paystack does not activate or renew Premium access/);
+assert.doesNotMatch(html, /data-shieldmind-buy=/);
+console.log("PASS hosted Paystack plan URLs map to their intended ShieldMind tier buttons");
+console.log("PASS hosted Paystack return never grants Premium without server verification");
+
+/* Recurring billing must bind to a verified intent and never trust a browser redirect. */
+assert.match(html, /functions\.invoke\('shieldmind-hosted-subscription-intent'/);
+assert.match(hostedIntent, /user\.email_confirmed_at/);
+assert.match(hostedIntent, /get_my_campus_context/);
+assert.match(hostedIntent, /student_identity_verifications/);
+assert.match(hostedIntent, /shieldmind_billing_intents/);
+assert.match(paystackWebhook, /x-paystack-signature/);
+assert.match(paystackWebhook, /transaction\/verify/);
+assert.match(paystackWebhook, /subscription\//);
+assert.match(paystackWebhook, /invoice\.payment_failed/);
+assert.match(paystackWebhook, /subscription\.not_renew/);
+assert.match(paystackWebhook, /subscription\.disable/);
+assert.match(paystackWebhook, /paystack_billing_event_receipts/);
+assert.match(paystackWebhook, /tx\?\.currency!==\"NGN\"/);
+assert.match(recurringBillingMigration, /provider_subscription_code/);
+assert.match(recurringBillingMigration, /revoke all on table private\.shieldmind_billing_intents from public,anon,authenticated/i);
+assert.match(recurringBillingMigration, /paystack_billing_event_receipts/);
+console.log("PASS recurring Paystack billing requires authenticated intent, signed webhook and API verification");
+console.log("PASS recurring billing migration keeps intent and event receipts private");
