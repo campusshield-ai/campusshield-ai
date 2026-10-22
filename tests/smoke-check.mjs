@@ -223,7 +223,7 @@ for (const [plan, url] of Object.entries(hostedCheckoutLinks)) {
   assert.match(html, new RegExp('data-shieldmind-hosted="' + plan + '"'));
   assert.ok(html.includes(url), 'missing hosted Paystack URL for ' + plan);
 }
-assert.match(html, /Paystack opened in a new tab\. Premium stays unchanged until the server verifies the subscription/);
+assert.match(html, /shieldmind-hosted-subscription-intent/);
 assert.match(html, /returning from Paystack does not activate or renew Premium access/);
 assert.doesNotMatch(html, /data-shieldmind-buy=/);
 console.log("PASS hosted Paystack plan URLs map to their intended ShieldMind tier buttons");
