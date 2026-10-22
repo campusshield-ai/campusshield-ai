@@ -1,0 +1,33 @@
+name: Staging dashboard navigation checks
+
+on:
+  pull_request:
+    branches:
+      - staging/browser-test-environment
+    paths:
+      - "index.html"
+      - "supabase-config.js"
+      - "campusshield-backend.js"
+      - "tests/staging-navigation-check.mjs"
+      - ".github/workflows/staging-navigation-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  navigation-browser-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+      - name: Run staging navigation browser checks
+        env:
+          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
+        run: node tests/staging-navigation-check.mjs
