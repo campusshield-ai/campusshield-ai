@@ -14,13 +14,14 @@ Deno.serve(async (req: Request) => {
     const expected = Array.from(digest).map(b=>b.toString(16).padStart(2,"0")).join("");
     if (!constantTimeEqual(signature,expected)) return json({error:"Invalid signature"},401);
     const event = JSON.parse(raw);
-    if (event?.event !== "charge.success" || !event?.data?.reference) return json({received:true});
-    const reference = String(event.data.reference);
-    const admin = createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
     const eventType=String(event?.event||"");
     const payload=event?.data||{};
     const recurringEvents=["charge.success","subscription.create","subscription.enable","subscription.not_renew","subscription.disable","invoice.create","invoice.update","invoice.payment_failed"];
+    if (!recurringEvents.includes(eventType)) return json({received:true});
     const recurringCode=String(payload.subscription_code||payload.subscription?.subscription_code||"");
+    const reference = String(payload.reference||"");
+    if (eventType==="charge.success" && !reference) return json({received:true});
+    const admin = createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
     if(recurringEvents.includes(eventType) && (recurringCode || eventType.startsWith("subscription.") || eventType.startsWith("invoice."))) {
       // A recurring payment must be tied to an authenticated intent and verified against Paystack's API.
       // Browser redirects and unverified webhook payload fields never grant entitlement.
