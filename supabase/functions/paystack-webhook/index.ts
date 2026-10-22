@@ -50,8 +50,16 @@ Deno.serve(async (req: Request) => {
           const sj=await sr.json().catch(()=>null); sub=sj?.data;
           if(!sr.ok||sj?.status!==true||!sub) throw new Error("Paystack subscription verification failed");
         }
-        const customerEmail=lower(sub?.customer?.email||payload.customer?.email||payload.email);
-        const planInfo=sub?.plan||(payload.plan&&typeof payload.plan==="object"?payload.plan:{});
+        const customerEmail=lower(payload.customer?.email||payload.email||sub?.customer?.email);
+        let planInfo:any=(sub?.plan&&typeof sub.plan==="object")?sub.plan:((payload.plan&&typeof payload.plan==="object")?payload.plan:{});
+        if(!planInfo?.name) {
+          const planId=(sub?.plan&&typeof sub.plan==="object")?(sub.plan.plan_code||sub.plan.id):sub?.plan;
+          if(planId!==undefined&&planId!==null) {
+            const pr=await fetch("https://api.paystack.co/plan/"+encodeURIComponent(String(planId)),{headers:{"Authorization":`Bearer ${secret}`}});
+            const pj=await pr.json().catch(()=>null);
+            if(pr.ok&&pj?.status===true&&pj?.data) planInfo=pj.data;
+          }
+        }
         const planName=lower(planInfo?.name||payload.plan_name);
         const plan=Object.keys(supported).find(p=>planName.includes(p));
         const amount=Number(planInfo?.amount||payload.amount||0);
@@ -71,7 +79,7 @@ Deno.serve(async (req: Request) => {
           if(!reference||payload.currency!=="NGN"||Number(payload.amount)!==amount) throw new Error("Recurring charge amount or currency mismatch");
           const vr=await fetch("https://api.paystack.co/transaction/verify/"+encodeURIComponent(reference),{headers:{"Authorization":`Bearer ${secret}`}});
           const vj=await vr.json().catch(()=>null),tx=vj?.data;
-          if(!vr.ok||vj?.status!==true||tx?.status!=="success"||tx?.reference!==reference||tx?.currency!=="NGN"||Number(tx?.amount)!==amount||lower(tx?.customer?.email)!==customerEmail||tx?.subscription_code!==code) throw new Error("Recurring transaction verification failed");
+          if(!vr.ok||vj?.status!==true||tx?.status!=="success"||tx?.reference!==reference||tx?.currency!=="NGN"||Number(tx?.amount)!==amount||lower(tx?.customer?.email)!==customerEmail ) throw new Error("Recurring transaction verification failed");
           const {data:row,error:rowError}=await admin.from("shieldmind_subscriptions").select("user_id,plan,status,expires_at,amount_kobo,currency,last_payment_reference").eq("provider_subscription_code",code).maybeSingle();
           if(rowError) throw new Error("Could not load subscription record");
           if(row) {
