@@ -2564,10 +2564,10 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         const {data:identity,error:identityError}=await backend.client.from('student_identity_verifications').select('status').eq('user_id',user.id).maybeSingle();
         if(identityError||identity?.status!=='approved')throw new Error('Approved student identity is required before upgrading.');
       }
-      // Hosted pages don't bind a user_id to our subscription row. Access remains unchanged until
-      // a server-side recurring webhook/verification flow safely reconciles the subscription.
-      window.open(link.href,'_blank','noopener,noreferrer');
-      $('shieldmind-plan-status').textContent='Paystack opened in a new tab. Premium stays unchanged until the server verifies the subscription.';
+      const {data:intent,error:intentError}=await backend.client.functions.invoke('shieldmind-hosted-subscription-intent',{body:{plan:link.dataset.shieldmindHosted}});
+      if(intentError||!intent?.ready)throw new Error(intent?.error||'Secure subscription setup is unavailable. Please try again later.');
+      // Hosted-page redirects never grant access; only the verified recurring webhook can do that.
+      window.location.assign(link.href);
     } catch(error) {
       $('shieldmind-plan-status').textContent=error?.message||'Checkout could not start. Please try again.';
     } finally {
