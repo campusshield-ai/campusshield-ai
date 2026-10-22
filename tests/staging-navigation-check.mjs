@@ -114,3 +114,5 @@ try {
   try { socket?.close(); } catch {}
   browser.kill("SIGTERM");
 }
+
+// Staging-only test harness: no live Supabase writes or production access.
