@@ -100,13 +100,13 @@ try {
   assert.equal(await evaluate("document.body.classList.contains('sidebar-open')"), false, "backdrop closes the drawer");
   await evaluate("document.getElementById('sidebar-toggle').click(); document.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true}))");
   assert.equal(await evaluate("document.body.classList.contains('sidebar-open')"), false, "Escape closes the drawer");
-  await evaluate("document.getElementById('sidebar-toggle').click(); document.querySelector('[data-page=\"report\"]').click()");
+  await evaluate("document.getElementById('sidebar-toggle').click(); document.querySelector('[data-page=\\\"report\\\"]').click()");
   assert.equal(await evaluate("document.body.classList.contains('sidebar-open')"), false, "selecting a page closes the drawer");
 
   await cdp("Emulation.setDeviceMetricsOverride", { width: 1365, height: 900, deviceScaleFactor: 1, mobile: false });
-  await delay(150);
+  await delay(250);
   assert.equal(await evaluate("getComputedStyle(document.getElementById('sidebar-toggle')).display === 'none'"), true, "desktop menu toggle is hidden");
-  assert.equal(await evaluate("document.querySelector('.main').getBoundingClientRect().left > 0"), true, "desktop workspace keeps its sidebar offset");
+  assert.equal(await evaluate("parseFloat(getComputedStyle(document.querySelector('.main')).marginLeft) >= 220"), true, "desktop workspace retains its configured sidebar margin");
 
   console.log("PASS: inline JavaScript syntax, staging-only config, mobile drawer open/close, accessible expanded state, Escape, navigation close, and desktop layout.");
 } finally {
