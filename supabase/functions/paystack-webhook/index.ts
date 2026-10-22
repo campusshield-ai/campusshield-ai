@@ -64,7 +64,7 @@ Deno.serve(async (req: Request) => {
         const plan=Object.keys(supported).find(p=>planName.includes(p));
         const amount=Number(planInfo?.amount||payload.amount||0);
         const interval=lower(planInfo?.interval||"");
-        if(!code||!customerEmail||!plan||amount!==supported[plan]||(interval&&interval!=="monthly")) throw new Error("Subscription does not match an allowed monthly tier");
+        if(!code||!customerEmail||!plan||amount!==supported[plan]||(interval&&interval!=="monthly")||(planInfo?.currency&&planInfo.currency!=="NGN")) throw new Error("Subscription does not match an allowed monthly tier");
         const now=new Date().toISOString();
         if(eventType==="subscription.create"||eventType==="subscription.enable") {
           const {data:intent,error}=await admin.schema("private").from("shieldmind_billing_intents").select("id,user_id,email,plan,amount_kobo,currency,status,expires_at").eq("email",customerEmail).eq("plan",plan).eq("status","pending").gt("expires_at",now).order("created_at",{ascending:false}).limit(1).maybeSingle();
