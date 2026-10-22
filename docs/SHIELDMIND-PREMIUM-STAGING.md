@@ -67,7 +67,7 @@ The current `paystack-webhook` expects a pending `shieldmind_subscriptions` row 
 - duplicate/replayed event idempotency and correct handling of out-of-order events;
 - a staging end-to-end test for success, failed renewal, cancellation, duplicate event, mismatched user/amount, and expiry.
 
-No staging billing Edge Function was deployed or database migration applied by PR #35. Do not merge, publish, or touch production. A Paystack return URL alone is never proof of payment.
+At that point, staging billing deployment and migration had not occurred. The later update below records the current staging deployment status. Do not merge, publish, or touch production. A Paystack return URL alone is never proof of payment.
 
 
 ## Recurring hosted subscription implementation — draft PR #35
@@ -78,4 +78,4 @@ The staging branch now includes:
 - handling for subscription creation/enabling, successful recurring charges, failed invoice payments, non-renewing subscriptions, and disabled subscriptions;
 - a migration adding private billing-intent/event receipt tables and subscription linkage fields.
 
-**Not yet deployed or end-to-end verified.** The new migration and Edge Function must be applied to staging and tested with Paystack test-mode subscriptions. The supplied pages are currently live-mode links; do not use live customer payments for acceptance tests. Confirm all five live page names/prices in the Paystack dashboard before launch. CI must pass, then run signed synthetic webhook tests plus a real test-mode subscription lifecycle. Do not merge or change production until these checks pass and the owner approves.
+**Staging deployment status (2026-10-22):** the additive migration `20261022190000_shieldmind_recurring_paystack` was applied to staging, and `shieldmind-hosted-subscription-intent` (JWT required) plus `paystack-webhook` (signature verification in code; JWT disabled as required for Paystack webhooks) were deployed to staging. The frontend changes remain in draft PR #35 and are not published. No real subscription lifecycle test or successful CI run has been confirmed. The five supplied pages are live-mode links; do not use live customer payments for acceptance tests. Use a separate Paystack test-mode plan/account and test secret, confirm all five live page names/prices in the dashboard before launch, run signed synthetic webhook tests plus a test-mode subscription lifecycle, and fix any runtime issues before enabling paid access. Do not merge or change production until these checks pass and the owner approves.
