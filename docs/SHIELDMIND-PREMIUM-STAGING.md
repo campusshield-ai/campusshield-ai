@@ -68,3 +68,14 @@ The current `paystack-webhook` expects a pending `shieldmind_subscriptions` row 
 - a staging end-to-end test for success, failed renewal, cancellation, duplicate event, mismatched user/amount, and expiry.
 
 No staging billing Edge Function was deployed or database migration applied by PR #35. Do not merge, publish, or touch production. A Paystack return URL alone is never proof of payment.
+
+
+## Recurring hosted subscription implementation — draft PR #35
+
+The staging branch now includes:
+- an authenticated Edge Function that records a short-lived billing intent only after verified-campus, active-membership, and student identity gates pass;
+- a recurring webhook branch that checks Paystack's signature, retrieves the subscription from Paystack, verifies transaction status/reference/amount/NGN currency/customer email, maps only the five expected monthly plan prices, and uses private event receipts to deduplicate retries;
+- handling for subscription creation/enabling, successful recurring charges, failed invoice payments, non-renewing subscriptions, and disabled subscriptions;
+- a migration adding private billing-intent/event receipt tables and subscription linkage fields.
+
+**Not yet deployed or end-to-end verified.** The new migration and Edge Function must be applied to staging and tested with Paystack test-mode subscriptions. The supplied pages are currently live-mode links; do not use live customer payments for acceptance tests. Confirm all five live page names/prices in the Paystack dashboard before launch. CI must pass, then run signed synthetic webhook tests plus a real test-mode subscription lifecycle. Do not merge or change production until these checks pass and the owner approves.
