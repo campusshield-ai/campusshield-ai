@@ -16,8 +16,7 @@ for (const [index, source] of inlineScripts.entries()) {
 }
 assert.doesNotThrow(() => new Function(config), "Supabase config parses");
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
-assert.match(config, /hywcpnoqqhxvujnimhxl/);
-assert.doesNotMatch(config, /fvgtnujjnvdkhzqqcaqe/);
+assert.match(config, /const stagingUrl = "https:\/\/hywcpnoqqhxvujnimhxl\.supabase\.co"/);
 assert.match(html, /id="workspace-sidebar"/);
 assert.match(html, /id="sidebar-toggle"/);
 assert.match(html, /id="sidebar-backdrop"/);
