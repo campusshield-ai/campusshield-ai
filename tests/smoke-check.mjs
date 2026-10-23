@@ -70,6 +70,13 @@ assert.ok(html.indexOf('<div class="brand">') < html.indexOf('id="sidebar-collap
 assert.match(html, /button\.title = label; button\.setAttribute\('aria-label', label\)/, "collapsed navigation icons retain accessible names and tooltips");
 
 assert.match(html, /id="mobile-nav-toggle"/, "mobile navigation has a drawer toggle");
+assert.match(html, /id="workspace-quick-jump-form"[^>]*role="search"/, "workspace includes an accessible feature quick-jump");
+assert.match(html, /id="workspace-quick-jump"[^>]*list="workspace-feature-options"/, "feature quick-jump offers known feature suggestions");
+assert.match(html, /id="workspace-feature-options"/, "feature suggestions are grouped in a datalist");
+assert.match(html, /function runWorkspaceQuickJump\(\)/, "feature quick-jump resolves a selected destination");
+assert.match(html, /const workspaceQuickJumpPages = \[/, "feature quick-jump covers the workspace navigation destinations");
+assert.match(html, /navigate\(page\)/, "quick-jump routes through the existing role-gated navigation function");
+assert.match(html, /workspace-quick-jump-status[^]*role="status"[^]*aria-live="polite"/, "quick-jump exposes accessible feedback");
 assert.match(html, /campusshield-sidebar-collapsed/, "desktop sidebar collapse preference is remembered");
 assert.match(html, /id="auth-university-search"/, "signup has a live institution search field");
 assert.match(html, /id="signin-institution-suggestions"/, "sign-in institution hint has its own autocomplete list");
