@@ -527,6 +527,97 @@ td strong{color:#2a464d;font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.sidebar,.sidebar .nav button,.page{transition:none!important;animation:none!important}}
 
+
+/* Modern responsive CampusShield Hub refresh */
+.campus-hub{
+  position:relative;isolation:isolate;overflow:hidden;
+  width:100%;max-width:1120px;margin:30px auto 0;
+  padding:clamp(20px,3.2vw,38px);
+  border:1px solid rgba(75,190,196,.34);border-radius:28px;
+  background:
+    radial-gradient(ellipse at 83% 18%,rgba(0,202,207,.16),transparent 32%),
+    radial-gradient(ellipse at 7% 100%,rgba(20,126,184,.18),transparent 38%),
+    linear-gradient(135deg,#062638 0%,#082f40 52%,#073442 100%);
+  color:#f2fbff;box-shadow:0 28px 70px rgba(2,25,39,.22),inset 0 1px rgba(255,255,255,.07);
+}
+.campus-hub:before{content:"";position:absolute;z-index:-1;width:330px;height:330px;right:3%;top:8%;border:1px solid rgba(37,213,220,.18);border-radius:50%;box-shadow:0 0 0 30px rgba(37,213,220,.025),0 0 0 65px rgba(37,213,220,.02);pointer-events:none}
+.campus-hub:after{content:"✓";position:absolute;z-index:-1;right:10%;top:9%;width:145px;height:170px;display:grid;place-items:center;clip-path:polygon(50% 0,94% 17%,89% 65%,50% 100%,11% 65%,6% 17%);border:0;background:linear-gradient(145deg,#1688d9,#12d8c1);color:#073246;font-size:76px;font-weight:900;text-shadow:0 2px 0 #a7fff0;filter:drop-shadow(0 18px 26px rgba(0,207,214,.25));opacity:.95}
+.campus-hub-head{position:relative;display:flex;align-items:center;gap:16px;min-width:0;padding:0 0 24px}
+.campus-hub-mark{width:58px;height:58px;display:grid;place-items:center;flex:0 0 58px;border:1px solid rgba(98,215,215,.35);border-radius:18px;background:linear-gradient(145deg,#15516a,#103b50);box-shadow:inset 0 1px rgba(255,255,255,.12)}
+.campus-hub-mark svg{width:33px;height:33px}
+.campus-hub-brand{min-width:0;flex:1}
+.campus-hub-eyebrow,.campus-hub-section-title,.campus-hub-series-kicker{display:block;color:#45e7d7;font-size:10px;font-weight:900;letter-spacing:.18em}
+.campus-hub-brand h2{margin:7px 0 5px;color:#f7fcff;font-size:clamp(21px,2.4vw,32px);line-height:1.15;letter-spacing:-.045em;font-weight:850}
+.campus-hub-brand p{margin:0;color:#c1d9e5;font-size:clamp(12px,1.25vw,15px)}
+.campus-hub-official{display:inline-flex;align-items:center;justify-content:center;gap:9px;flex:0 0 auto;min-height:44px;padding:11px 17px;border:1px solid rgba(117,205,215,.35);border-radius:999px;background:rgba(255,255,255,.055);color:#f2fbff;text-decoration:none;font-size:11px;font-weight:850;transition:transform .2s ease,border-color .2s ease,background .2s ease}
+.campus-hub-official:hover{transform:translateY(-2px);border-color:#3ce4d5;background:rgba(31,207,205,.12)}
+.campus-hub-section-title{display:flex;align-items:center;gap:14px;margin:8px 0 14px;color:#9dcde1;font-size:10px}
+.campus-hub-section-title:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(106,190,205,.4),transparent)}
+.campus-hub-series-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.campus-hub-series{position:relative;min-width:0;overflow:hidden;padding:20px 18px 18px;border:1px solid rgba(117,184,209,.24);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.025));box-shadow:inset 0 1px rgba(255,255,255,.05);transition:transform .2s ease,border-color .2s ease,background .2s ease}
+.campus-hub-series:nth-child(1){background:linear-gradient(145deg,rgba(0,128,255,.2),rgba(255,255,255,.035))}
+.campus-hub-series:nth-child(2){background:linear-gradient(145deg,rgba(120,92,213,.18),rgba(255,255,255,.035))}
+.campus-hub-series:nth-child(3){background:linear-gradient(145deg,rgba(0,194,160,.17),rgba(255,255,255,.035))}
+.campus-hub-series:hover{transform:translateY(-3px);border-color:rgba(57,223,213,.6)}
+.campus-hub-series-kicker{font-size:9px;letter-spacing:.12em}
+.campus-hub-series strong{display:block;margin:10px 0 7px;color:#f6fcff;font-size:clamp(12px,1.2vw,15px);line-height:1.35;letter-spacing:-.02em}
+.campus-hub-series p{max-width:34ch;margin:0;color:#bfd6e2;font-size:12px;line-height:1.6}
+.campus-hub-social{display:grid;grid-template-columns:minmax(110px,.65fr) 2.8fr;align-items:start;gap:15px;margin-top:20px;padding-top:18px;border-top:1px solid rgba(112,190,202,.2)}
+.campus-hub-social-label{padding-top:12px;color:#b7d8e5;font-size:9px;font-weight:900;letter-spacing:.16em;white-space:nowrap}
+.campus-hub-channel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;min-width:0}
+.campus-hub-channel{display:flex;align-items:center;gap:10px;min-width:0;min-height:66px;padding:10px;border:1px solid rgba(117,184,209,.2);border-radius:15px;background:rgba(255,255,255,.035)}
+.campus-hub-channel-icon{width:38px;height:38px;display:grid;place-items:center;flex:0 0 38px;border-radius:12px;background:#183e53;color:#f5fbff;font-size:19px;font-weight:850}
+.channel-instagram{background:#593b61;color:#ffadd2}.channel-linkedin{background:#164b70;color:#a9e0ff;font-size:13px}
+.campus-hub-channel-copy{display:grid;gap:3px;min-width:0;flex:1}
+.campus-hub-channel-copy strong{color:#f4fbff;font-size:11px}
+.campus-hub-channel-copy small{overflow-wrap:anywhere;color:#b8d0dc;font-size:10px;line-height:1.35}
+.campus-hub-soon,.campus-hub-live{padding:6px 8px;border:1px solid rgba(38,217,201,.38);border-radius:999px;color:#5aead9;font-size:8px;font-weight:900;white-space:nowrap}
+.campus-hub-note{margin:13px 0 0;color:#9fc3d1;font-size:10px;line-height:1.5}
+.campus-hub-channel-link{position:relative;z-index:2;pointer-events:auto;cursor:pointer;color:inherit;text-decoration:none;transition:border-color .16s ease,background .16s ease}
+.campus-hub-channel-link:hover{border-color:#45e7d7;background:rgba(255,255,255,.09)}
+.campus-hub-channel-link:focus-visible{outline:3px solid #45e7d7;outline-offset:3px}
+@media(max-width:900px){
+ .campus-hub{padding:24px;border-radius:23px}
+ .campus-hub:after{right:7%;top:11%;width:100px;height:120px;font-size:54px;opacity:.6}
+ .campus-hub-series-grid{gap:10px}
+ .campus-hub-series{padding:16px 14px}
+ .campus-hub-social{grid-template-columns:1fr;gap:9px}
+ .campus-hub-social-label{padding-top:0}
+}
+@media(max-width:600px){
+ .campus-hub{margin-top:22px;padding:19px 16px;border-radius:20px}
+ .campus-hub:before{width:210px;height:210px;right:-65px;top:0}
+ .campus-hub:after{right:2%;top:7%;width:57px;height:68px;font-size:34px;opacity:.42}
+ .campus-hub-head{align-items:flex-start;gap:11px;padding-bottom:20px;flex-wrap:wrap}
+ .campus-hub-mark{width:43px;height:43px;flex-basis:43px;border-radius:14px}
+ .campus-hub-mark svg{width:26px;height:26px}
+ .campus-hub-brand{width:calc(100% - 56px);flex:1}
+ .campus-hub-eyebrow{font-size:8px;letter-spacing:.13em}
+ .campus-hub-brand h2{font-size:22px;max-width:23ch}
+ .campus-hub-brand p{font-size:11px;max-width:34ch}
+ .campus-hub-official{margin-left:54px;min-height:39px;padding:9px 13px}
+ .campus-hub-section-title{margin:4px 0 11px;font-size:9px}
+ .campus-hub-series-grid{grid-template-columns:1fr;gap:9px}
+ .campus-hub-series{padding:15px;border-radius:14px}
+ .campus-hub-series strong{margin:6px 0 4px;font-size:13px}
+ .campus-hub-series p{font-size:11px}
+ .campus-hub-social{margin-top:16px;padding-top:15px}
+ .campus-hub-channel-grid{grid-template-columns:1fr 1fr;gap:8px}
+ .campus-hub-channel{gap:8px;min-height:62px;padding:8px;border-radius:12px}
+ .campus-hub-channel-icon{width:32px;height:32px;flex-basis:32px;border-radius:10px;font-size:16px}
+ .campus-hub-channel-copy strong{font-size:10px}
+ .campus-hub-channel-copy small{font-size:9px}
+ .campus-hub-soon,.campus-hub-live{font-size:7px;padding:4px 5px}
+ .campus-hub-note{font-size:9px}
+}
+@media(max-width:360px){
+ .campus-hub{padding:16px 12px}
+ .campus-hub-channel-grid{grid-template-columns:1fr}
+ .campus-hub-channel{min-height:56px}
+ .campus-hub-brand h2{font-size:20px}
+}
+@media(prefers-reduced-motion:reduce){.campus-hub-series,.campus-hub-official,.campus-hub-channel-link{transition:none}.campus-hub-series:hover,.campus-hub-official:hover{transform:none}}
+
 </style>
 </head>
 <body>
