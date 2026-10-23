@@ -586,7 +586,7 @@ td strong{color:#2a464d;font-size:11px}
       <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦15,000</b><span>35 requests/min · 2,500/day</span><small>Target: 300 image uploads/month · higher capacity and priority where available</small><a class="btn shieldmind-hosted-checkout" data-shieldmind-hosted="ultra" href="https://paystack.shop/pay/er98helke2" target="_blank" rel="noopener noreferrer">Continue to Paystack</a></article>
       <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>50 requests/min · 4,000/day</span><small>Target: 600 image uploads/month · highest planned usage tier</small><a class="btn shieldmind-hosted-checkout" data-shieldmind-hosted="max" href="https://paystack.shop/pay/lh62pcokf9" target="_blank" rel="noopener noreferrer">Continue to Paystack</a></article>
     </div>
-    <p class="shieldmind-plan-note">Hosted Paystack checkout uses recurring monthly billing. This is a staging preview: returning from Paystack does not activate or renew Premium access. Server-side recurring subscription verification, renewal, cancellation and failed-payment handling must pass acceptance tests before paid access is enabled. Image allowances are planned entitlement limits; image-upload processing must be connected before those allowances can be used.</p>
+    <p class="shieldmind-plan-note">The supplied hosted Paystack pages are live-mode recurring links. Staging deliberately uses the authenticated test-checkout endpoint only, which refuses any key that does not start with sk_test_; it will not redirect students into a live payment. Returning from any payment page does not activate or renew Premium access. Production hosted subscriptions still require the recurring-intent function to be deployed there and signed webhook lifecycle tests to pass. Image allowances are planned entitlement limits; image-upload processing must be connected before those allowances can be used.</p>
   </section>
   <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Start with a general academic question.</p></div><span class="shieldmind-pill">STAGING</span></div>
     <div class="notice-inline">Official campus source catalog and AI provider are not configured yet. ShieldMind will not guess official policies or deadlines.</div>
@@ -2568,9 +2568,31 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         const {data:identity,error:identityError}=await backend.client.from('student_identity_verifications').select('status').eq('user_id',user.id).maybeSingle();
         if(identityError||identity?.status!=='approved')throw new Error('Approved student identity is required before upgrading.');
       }
-      const {data:intent,error:intentError}=await backend.client.functions.invoke('shieldmind-hosted-subscription-intent',{body:{plan:link.dataset.shieldmindHosted}});
-      if(intentError||!intent?.ready)throw new Error(intent?.error||'Secure subscription setup is unavailable. Please try again later.');
-      // Redirects do not grant access. The signed webhook verifies the subscription and each charge.
+      const plan = link.dataset.shieldmindHosted;
+      const activeSupabaseUrl = String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url || '');
+      if (activeSupabaseUrl === 'https://hywcpnoqqhxvujnimhxl.supabase.co') {
+        // Staging uses only test-key checkout. The supplied hosted shop URLs are live-mode
+        // links and must not be opened from the staging environment.
+        const {data:checkout,error:checkoutError}=await backend.client.functions.invoke('shieldmind-billing-checkout',{body:{plan}});
+        if (checkoutError) {
+          let message = checkoutError.message || 'Test checkout could not start.';
+          try { const detail = await checkoutError.context?.clone?.().json(); if (detail?.error) message = detail.error; } catch (_e) {}
+          throw new Error(message);
+        }
+        if (!checkout?.checkout_url || !/^https:\/\/checkout\.paystack\.com\//.test(checkout.checkout_url)) {
+          throw new Error(checkout?.error || 'A Paystack test checkout URL was not returned. Live payments are disabled in staging.');
+        }
+        window.location.assign(checkout.checkout_url);
+        return;
+      }
+      const {data:intent,error:intentError}=await backend.client.functions.invoke('shieldmind-hosted-subscription-intent',{body:{plan}});
+      if(intentError||!intent?.ready) {
+        let message = intent?.error || intentError?.message || 'Secure subscription setup is unavailable. Please try again later.';
+        try { const detail = await intentError?.context?.clone?.().json(); if (detail?.error) message = detail.error; } catch (_e) {}
+        throw new Error(message);
+      }
+      // Production must have a deployed recurring-intent function and verified webhooks.
+      // Redirects do not grant access: the signed webhook verifies the subscription and each charge.
       window.location.assign(link.href);
     } catch(error) {
       $('shieldmind-plan-status').textContent=error?.message||'Checkout could not start. Please try again.';
