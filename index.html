@@ -2564,7 +2564,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       const {data:contexts,error:contextError}=await backend.client.rpc('get_my_campus_context');
       const context=Array.isArray(contexts)?contexts[0]:null;
       if(contextError||!context||context.membership_status!=='active'||context.verification_status!=='verified')throw new Error('Active verified campus membership is required.');
-      if((profile.requested_role||profile.role)==='student'){
+      if(String(profile.role||'').toLowerCase()==='student'){
         const {data:identity,error:identityError}=await backend.client.from('student_identity_verifications').select('status').eq('user_id',user.id).maybeSingle();
         if(identityError||identity?.status!=='approved')throw new Error('Approved student identity is required before upgrading.');
       }
