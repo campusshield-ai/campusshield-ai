@@ -2571,18 +2571,15 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       const plan = link.dataset.shieldmindHosted;
       const activeSupabaseUrl = String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url || '');
       if (activeSupabaseUrl === 'https://hywcpnoqqhxvujnimhxl.supabase.co') {
-        // Staging uses only test-key checkout. The supplied hosted shop URLs are live-mode
-        // links and must not be opened from the staging environment.
-        const {data:checkout,error:checkoutError}=await backend.client.functions.invoke('shieldmind-billing-checkout',{body:{plan}});
-        if (checkoutError) {
-          let message = checkoutError.message || 'Test checkout could not start.';
-          try { const detail = await checkoutError.context?.clone?.().json(); if (detail?.error) message = detail.error; } catch (_e) {}
-          throw new Error(message);
+        // The owner explicitly requested the published Paystack subscription links on staging.
+        // These links may accept real payments. Payment redirects alone never activate Premium;
+        // the signed server-side webhook must verify the subscription/charge first.
+        const approvedPaystackHosts = new Set(['paystack.shop']);
+        const checkoutUrl = new URL(link.href);
+        if (checkoutUrl.protocol !== 'https:' || !approvedPaystackHosts.has(checkoutUrl.hostname)) {
+          throw new Error('This plan has no approved Paystack checkout link.');
         }
-        if (!checkout?.checkout_url || !/^https:\/\/checkout\.paystack\.com\//.test(checkout.checkout_url)) {
-          throw new Error(checkout?.error || 'A Paystack test checkout URL was not returned. Live payments are disabled in staging.');
-        }
-        window.location.assign(checkout.checkout_url);
+        window.location.assign(checkoutUrl.href);
         return;
       }
       const {data:intent,error:intentError}=await backend.client.functions.invoke('shieldmind-hosted-subscription-intent',{body:{plan}});
