@@ -841,9 +841,9 @@ td strong{color:#2a464d;font-size:11px}
   let identityFraudStatus = null;
 
   function isStudentAccount() {
-    const requestedRole = currentProfile?.requested_role;
-    if (requestedRole) return requestedRole === 'student';
-    return currentProfile?.role === 'student';
+    // Authoritative role comes from the verified database profile. requested_role is
+    // a user-selected onboarding hint and must not override assigned staff/admin role.
+    return String(currentProfile?.role || '').toLowerCase() === 'student';
   }
 
   function hasApprovedStudentIdentity() {
@@ -2556,8 +2556,15 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       const {data:{user},error:userError}=await backend.client.auth.getUser();
       if(userError||!user)throw new Error('Sign in again before checkout.');
       const {data,error}=await backend.client.functions.invoke('shieldmind-billing-checkout',{body:{plan}});
-      if(error)throw error;
-      if(!data?.checkout_url||!/^https:\/\/checkout\.paystack\.com\//.test(data.checkout_url))throw new Error(data?.error||'Secure checkout is not configured in staging yet.');
+      if(error) {
+        const details = data?.error || error?.message || 'Checkout could not start.';
+        throw new Error(details);
+      }
+      if(!data?.checkout_url||!/^https:\/\/checkout\.paystack\.com\//.test(data.checkout_url)) {
+        throw new Error(data?.error||'Secure test checkout is unavailable. Live charges are disabled in staging.');
+      }
+      // Reserve the browser interaction on click, then use only a server-created
+      // test checkout URL. The staging Edge Function rejects live secret keys.
       window.location.assign(data.checkout_url);
     } catch(error) {
       $('shieldmind-plan-status').textContent=error?.message||'Checkout could not start. Please try again.';
