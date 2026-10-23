@@ -357,6 +357,27 @@ td strong{color:#2a464d;font-size:11px}
 .campus-hub-channel-link:focus-visible{outline:3px solid #71e7d1;outline-offset:2px}
 .campus-hub-live{padding:4px 5px;border:1px solid #2d8d78;border-radius:999px;color:#8ce8d8;font-size:7px;font-weight:900}
 
+
+/* Contrast and keyboard-navigation polish: preserve the existing CampusShield design. */
+.page .heading h1{color:#102b35;text-wrap:balance}
+.page .heading>div>p,.page .muted,.page .stat-label,.page .stat-note{color:#526579}
+.nav button:focus-visible,.btn:focus-visible,.page button:focus-visible,.page a:focus-visible,.page input:focus-visible,.page select:focus-visible,.page textarea:focus-visible,.auth-panel button:focus-visible,.auth-panel input:focus-visible{outline:3px solid #0f8a83;outline-offset:2px;position:relative;z-index:1}
+@media(max-width:760px){
+  .nav{scroll-padding-inline:12px}
+  .nav button{min-height:40px;white-space:nowrap}
+  .heading{gap:12px}
+  .heading-actions{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+  .heading-actions .btn{max-width:100%}
+  .topbar{min-width:0}
+  .content{overflow-wrap:anywhere}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:420px){
+  .stats{grid-template-columns:1fr}
+  .page .heading h1{font-size:24px}
+  .heading-actions .btn{width:100%}
+}
+
 </style>
 </head>
 <body>
