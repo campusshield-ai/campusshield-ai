@@ -17,7 +17,7 @@ Deno.serve(async(req:Request)=>{
   if(profileError||!profile||profile.verification_status!=="verified")return json({error:"Verify your campus account before subscribing."},403);
   const {data:contexts,error:contextError}=await userClient.rpc("get_my_campus_context"),ctx=Array.isArray(contexts)?contexts[0]:null;
   if(contextError||!ctx||ctx.membership_status!=="active"||ctx.verification_status!=="verified")return json({error:"Active verified campus membership is required."},403);
-  if((profile.requested_role||profile.role)==="student"){
+  if(String(profile.role||"").toLowerCase()==="student"){
    const {data:identity,error}=await userClient.from("student_identity_verifications").select("status").eq("user_id",user.id).maybeSingle();
    if(error||identity?.status!=="approved")return json({error:"Approved student identity is required before subscribing."},403);
   }
