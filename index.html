@@ -5477,22 +5477,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     try {
       const {data:{user},error:userError}=await backend.client.auth.getUser();
       if(userError||!user)throw new Error('Sign in again before checkout.');
-      const activeSupabaseUrl=String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url||'');
-      if(activeSupabaseUrl==='https://hywcpnoqqhxvujnimhxl.supabase.co'){
-        // Owner-approved real hosted Paystack links. These may collect actual payments.
-        // Redirecting alone never activates Premium; server-side signed payment verification is required.
-        const hostedPaystackLinks={
-          starter:'https://paystack.shop/pay/8d8uqv-424',
-          plus:'https://paystack.shop/pay/cw4e6yy3b2',
-          pro:'https://paystack.shop/pay/dqmxy-jpge',
-          ultra:'https://paystack.shop/pay/er98helke2',
-          max:'https://paystack.shop/pay/lh62pcokf9'
-        };
-        const checkoutUrl=new URL(hostedPaystackLinks[plan]||'');
-        if(checkoutUrl.protocol!=='https:'||checkoutUrl.hostname!=='paystack.shop')throw new Error('No approved Paystack checkout link is configured for this plan.');
-        window.location.assign(checkoutUrl.href);
-        return;
-      }
+      // Production and staging both use the server-created checkout flow. Never redirect directly to hosted payment links.
       const {data,error}=await backend.client.functions.invoke('shieldmind-billing-checkout',{body:{plan}});
       if(error)throw error;
       if(!data?.checkout_url||!/^https:\/\/checkout\.paystack\.com\//.test(data.checkout_url))throw new Error(data?.error||'Secure checkout is not configured.');
