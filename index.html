@@ -841,9 +841,9 @@ td strong{color:#2a464d;font-size:11px}
   let identityFraudStatus = null;
 
   function isStudentAccount() {
-    const requestedRole = currentProfile?.requested_role;
-    if (requestedRole) return requestedRole === 'student';
-    return currentProfile?.role === 'student';
+    // Use the assigned database role for access decisions; requested_role is only
+    // an onboarding preference and must not override a verified staff/admin role.
+    return String(currentProfile?.role || '').toLowerCase() === 'student';
   }
 
   function hasApprovedStudentIdentity() {
