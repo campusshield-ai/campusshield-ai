@@ -357,6 +357,11 @@ td strong{color:#2a464d;font-size:11px}
 .campus-hub-channel-link:focus-visible{outline:3px solid #71e7d1;outline-offset:2px}
 .campus-hub-live{padding:4px 5px;border:1px solid #2d8d78;border-radius:999px;color:#8ce8d8;font-size:7px;font-weight:900}
 
+
+/* CampusPulse: separate verified announcements from community discussion. */
+.campus-announcements{border-color:#b9e6d8;background:linear-gradient(180deg,#fbfffd,#fff)}
+.campus-announcements>.community-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.community-post-official{border-color:#b9e6d8;background:#fcfffd}
 </style>
 </head>
 <body>
@@ -465,7 +470,7 @@ td strong{color:#2a464d;font-size:11px}
 <nav class="nav">
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
-<button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus community</button>
+<button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11.5h5"/></svg></span>CampusPulse</button>
 <button data-page="manage"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button>
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
@@ -519,7 +524,7 @@ td strong{color:#2a464d;font-size:11px}
 </section>
 
 <section class="page" id="page-community">
-<div class="heading"><h1>Campus community</h1><p>Share public-safe campus issues and suggestions, discuss approved posts, and see verified staff announcements.</p></div>
+<div class="heading"><h1>CampusPulse</h1><p>Your campus community for reviewed student updates, helpful discussions, and verified staff announcements.</p></div>
 <div class="notice-inline"><strong>Protect your privacy.</strong> Community posts are separate from private incident reports and require review before other students can see them. Do not post real names, email addresses, room numbers, medical details, harassment allegations, threats, evidence, or other identifying information. Use <button type="button" class="btn secondary" data-page="report">private incident reporting</button> for sensitive concerns.</div>
 <div class="community-layout">
   <section class="panel" aria-labelledby="community-profile-title">
@@ -550,6 +555,10 @@ td strong{color:#2a464d;font-size:11px}
   <h3>Reports from the community</h3>
   <div id="community-reports-queue"><p class="muted">Loading reports…</p></div>
   <p id="community-moderation-message" class="message" role="status" aria-live="polite"></p>
+</section>
+<section class="panel campus-announcements" aria-labelledby="campus-announcements-title">
+  <div class="community-section-title"><div><h2 id="campus-announcements-title">Verified campus announcements</h2><p class="muted">Official updates from verified campus staff. Student posts never appear in this section.</p></div><span class="community-official">STAFF VERIFIED</span></div>
+  <div id="campus-announcements-feed"><div class="community-empty">Loading verified announcements…</div></div>
 </section>
 <section class="panel" aria-labelledby="community-feed-title">
   <div class="community-section-title"><div><h2 id="community-feed-title">Latest campus updates</h2><p class="muted">Only published posts appear here. Usernames are public; real names and emails are not.</p></div><button type="button" class="btn secondary" id="refresh-community">Refresh feed</button></div>
@@ -1564,18 +1573,25 @@ td strong{color:#2a464d;font-size:11px}
   function renderCommunityFeed(posts, comments) {
     const list = Array.isArray(posts) ? posts : [];
     const commentList = Array.isArray(comments) ? comments : [];
-    if (!list.length) {
-      $('community-feed').innerHTML = '<div class="community-empty"><strong>No published campus updates yet.</strong><p>Share a public-safe safety issue or suggestion. A moderator will review student posts before publication.</p></div>';
-      return;
-    }
-
     const commentsByPost = {};
     commentList.forEach(function(comment) {
       if (!commentsByPost[comment.post_id]) commentsByPost[comment.post_id] = [];
       commentsByPost[comment.post_id].push(comment);
     });
 
-    $('community-feed').innerHTML = list.map(function(post) {
+    const officialPosts = list.filter(function(post) { return post.is_official === true; });
+    const communityPosts = list.filter(function(post) { return post.is_official !== true; });
+    $('campus-announcements-feed').innerHTML = officialPosts.length
+      ? renderCommunityPostCards(officialPosts, commentsByPost)
+      : '<div class="community-empty"><strong>No verified announcements yet.</strong><p>Official campus notices from verified staff will appear here.</p></div>';
+
+    $('community-feed').innerHTML = communityPosts.length
+      ? renderCommunityPostCards(communityPosts, commentsByPost)
+      : '<div class="community-empty"><strong>No student updates yet.</strong><p>Share a public-safe safety issue or suggestion. A moderator will review student posts before publication.</p></div>';
+  }
+
+  function renderCommunityPostCards(list, commentsByPost) {
+    return list.map(function(post) {
       const postComments = commentsByPost[post.id] || [];
       const commentsHtml = postComments.map(function(comment) {
         return '<article class="community-comment">' +
@@ -1585,9 +1601,9 @@ td strong{color:#2a464d;font-size:11px}
           '</article>';
       }).join('');
 
-      return '<article class="community-post" id="community-post-' + esc(post.id) + '">' +
+      return '<article class="community-post' + (post.is_official === true ? ' community-post-official' : '') + '" id="community-post-' + esc(post.id) + '">' +
         '<div class="community-post-header"><div class="community-meta">' +
-        (post.is_official ? '<span class="community-official">Verified staff update</span>' : '<span class="tag open">' + esc(communityPostTypeLabel(post.post_type)) + '</span>') +
+        (post.is_official === true ? '<span class="community-official">Verified staff update</span>' : '<span class="tag open">' + esc(communityPostTypeLabel(post.post_type)) + '</span>') +
         '<strong class="community-handle">@' + esc(post.author_username) + '</strong><span>·</span><time>' + esc(dateText(post.created_at)) + '</time></div>' +
         '<button type="button" class="btn secondary" data-report-community-type="post" data-report-community-id="' + esc(post.id) + '">Report</button></div>' +
         '<h3 class="community-post-title">' + esc(post.title) + '</h3>' +
