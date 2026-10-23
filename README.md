@@ -103,3 +103,12 @@ CampusShield AI is a technology development project. Any risk indicators or anal
 ---
 
 **CampusShield AI — Building Safer Campuses Through Technology.**
+
+
+## Hosted Paystack subscriptions — staging preview (2026-10-22)
+
+- ShieldMind tier buttons now open the owner's hosted recurring Paystack pages after the existing verified-campus account gates.
+- Intended mappings: Starter ₦2,000/month, Plus ₦5,000/month, Pro ₦10,000/month, Ultra ₦15,000/month, Max ₦28,000/month. The supplied screenshot confirms Starter is ₦2,000/month; the other four amounts still require visual confirmation in Paystack.
+- The hosted-page flow does not bind a payment to a CampusShield user and therefore does **not** activate or renew entitlements. Paystack return/redirect is not proof of payment.
+- Before enabling paid access, implement and test server-side subscription create/enable/disable, invoice-payment success/failure, recurring customer/subscription reconciliation, cancellations, duplicate-event idempotency, amount/currency verification and expiry/downgrade rules using Paystack's signed webhook plus API verification.
+- Staging-only. Do not merge/publish or alter production. Do not represent this preview as production-ready billing.
