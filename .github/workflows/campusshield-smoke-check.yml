@@ -10,6 +10,7 @@ on:
     branches:
       - codex/campuspulse-mobile-spacing-staging
       - codex/signup-identity-review-staging
+      - codex/shieldmind-premium-staging
       - codex/paystack-hosted-links-staging
 
 permissions:
