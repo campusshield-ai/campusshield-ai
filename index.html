@@ -580,13 +580,13 @@ td strong{color:#2a464d;font-size:11px}
     <div class="shieldmind-plan-copy"><span class="shieldmind-pill">FREE + PREMIUM</span><h2 id="shieldmind-plan-title">Choose how much AI support you need</h2><p>Core campus safety stays free. Premium adds higher AI limits for study support.</p><p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p></div>
     <div class="shieldmind-prices">
       <article class="shieldmind-price"><strong>Free</strong><b>₦0</b><span>5 requests/min · 80/day</span><small>Core academic Q&amp;A and study prompts</small><button class="btn secondary" type="button" disabled>Included</button></article>
-      <article class="shieldmind-price premium"><strong>Starter</strong><b>₦2,000</b><span>10 requests/min · 250/day</span><small>Target: 20 image uploads/month · 8-hour sessions, then 1-hour rest</small><button class="btn" type="button" data-shieldmind-buy="starter">Choose Starter</button></article>
-      <article class="shieldmind-price premium"><strong>Plus</strong><b>₦5,000</b><span>15 requests/min · 700/day</span><small>Target: 60 image uploads/month · expanded study workloads</small><button class="btn" type="button" data-shieldmind-buy="plus">Choose Plus</button></article>
-      <article class="shieldmind-price premium"><strong>Pro · Full standard access</strong><b>₦10,000</b><span>25 requests/min · 1,500/day</span><small>Target: 150 image uploads/month · all standard ShieldMind features</small><button class="btn" type="button" data-shieldmind-buy="pro">Choose Pro</button></article>
-      <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦15,000</b><span>35 requests/min · 2,500/day</span><small>Target: 300 image uploads/month · higher capacity and priority where available</small><button class="btn" type="button" data-shieldmind-buy="ultra">Choose Ultra</button></article>
-      <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>50 requests/min · 4,000/day</span><small>Target: 600 image uploads/month · highest planned usage tier</small><button class="btn" type="button" data-shieldmind-buy="max">Choose Max</button></article>
+      <article class="shieldmind-price premium"><strong>Starter</strong><b>₦2,000</b><span>10 requests/min · 250/day</span><small>Target: 20 image uploads/month · 8-hour sessions, then 1-hour rest</small><a class="btn shieldmind-hosted-checkout" data-shieldmind-hosted="starter" href="https://paystack.shop/pay/8d8uqv-424" target="_blank" rel="noopener noreferrer">Continue to Paystack</a></article>
+      <article class="shieldmind-price premium"><strong>Plus</strong><b>₦5,000</b><span>15 requests/min · 700/day</span><small>Target: 60 image uploads/month · expanded study workloads</small><a class="btn shieldmind-hosted-checkout" data-shieldmind-hosted="plus" href="https://paystack.shop/pay/cw4e6yy3b2" target="_blank" rel="noopener noreferrer">Continue to Paystack</a></article>
+      <article class="shieldmind-price premium"><strong>Pro · Full standard access</strong><b>₦10,000</b><span>25 requests/min · 1,500/day</span><small>Target: 150 image uploads/month · all standard ShieldMind features</small><a class="btn shieldmind-hosted-checkout" data-shieldmind-hosted="pro" href="https://paystack.shop/pay/dqmxy-jpge" target="_blank" rel="noopener noreferrer">Continue to Paystack</a></article>
+      <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦15,000</b><span>35 requests/min · 2,500/day</span><small>Target: 300 image uploads/month · higher capacity and priority where available</small><a class="btn shieldmind-hosted-checkout" data-shieldmind-hosted="ultra" href="https://paystack.shop/pay/er98helke2" target="_blank" rel="noopener noreferrer">Continue to Paystack</a></article>
+      <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>50 requests/min · 4,000/day</span><small>Target: 600 image uploads/month · highest planned usage tier</small><a class="btn shieldmind-hosted-checkout" data-shieldmind-hosted="max" href="https://paystack.shop/pay/lh62pcokf9" target="_blank" rel="noopener noreferrer">Continue to Paystack</a></article>
     </div>
-    <p class="shieldmind-plan-note">All paid plans are 30-day prepaid access, not auto-renewing. The 8-hour session / 1-hour cooldown is enforced by the staging AI endpoint. Image allowances are planned entitlement limits; image-upload processing must be connected before those allowances can be used. Checkout is staging-only and requires Paystack test credentials. Prices and limits need cost testing before launch.</p>
+    <p class="shieldmind-plan-note">The supplied hosted Paystack pages are live-mode recurring links. Staging deliberately uses the authenticated test-checkout endpoint only, which refuses any key that does not start with sk_test_; it will not redirect students into a live payment. Returning from any payment page does not activate or renew Premium access. Production hosted subscriptions still require the recurring-intent function to be deployed there and signed webhook lifecycle tests to pass. Image allowances are planned entitlement limits; image-upload processing must be connected before those allowances can be used.</p>
   </section>
   <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Start with a general academic question.</p></div><span class="shieldmind-pill">STAGING</span></div>
     <div class="notice-inline">Official campus source catalog and AI provider are not configured yet. ShieldMind will not guess official policies or deadlines.</div>
@@ -841,8 +841,8 @@ td strong{color:#2a464d;font-size:11px}
   let identityFraudStatus = null;
 
   function isStudentAccount() {
-    // Authoritative role comes from the verified database profile. requested_role is
-    // a user-selected onboarding hint and must not override assigned staff/admin role.
+    // Use the assigned database role for access decisions; requested_role is only
+    // an onboarding preference and must not override a verified staff/admin role.
     return String(currentProfile?.role || '').toLowerCase() === 'student';
   }
 
@@ -2542,33 +2542,61 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       const plan=Array.isArray(data)?data[0]:data;
       if (['starter','plus','pro','ultra','max','premium'].includes(plan?.plan) && plan?.status==='active' && plan?.expires_at && new Date(plan.expires_at).getTime()>Date.now()) {
         status.textContent=plan.plan.toUpperCase()+' active until '+new Date(plan.expires_at).toLocaleDateString()+'. Your tier limits are enabled.';
-        document.querySelectorAll('[data-shieldmind-buy]').forEach(button=>{button.disabled=true;button.textContent='Premium active';});
+        document.querySelectorAll('[data-shieldmind-hosted]').forEach(link=>{link.setAttribute('aria-disabled','true');link.textContent='Premium active';});
       } else {
         status.textContent='You are on ShieldMind Free. Upgrade for higher AI usage; payment must be confirmed by the server before Premium activates.';
       }
     } catch (_error) { status.textContent='Plan status could not be loaded. Try refreshing this page.'; }
   }
-  document.querySelectorAll('[data-shieldmind-buy]').forEach(button=>button.addEventListener('click',async()=>{
-    const backend=window.CampusShieldBackend, plan=button.dataset.shieldmindBuy;
-    if(!currentProfile||!backend?.isConfigured){$('shieldmind-plan-status').textContent='Sign in before upgrading.';return;}
-    const oldText=button.textContent;button.disabled=true;button.textContent='Opening secure checkout…';
+  document.querySelectorAll('[data-shieldmind-hosted]').forEach(link=>link.addEventListener('click',async event=>{
+    event.preventDefault();
+    if(link.getAttribute('aria-disabled')==='true'){return;}
+    if(!currentProfile||!window.CampusShieldBackend?.isConfigured){
+      $('shieldmind-plan-status').textContent='Sign in before opening checkout.';return;
+    }
+    const backend=window.CampusShieldBackend, oldText=link.textContent;
+    link.setAttribute('aria-disabled','true');link.textContent='Checking account…';
     try {
       const {data:{user},error:userError}=await backend.client.auth.getUser();
       if(userError||!user)throw new Error('Sign in again before checkout.');
-      const {data,error}=await backend.client.functions.invoke('shieldmind-billing-checkout',{body:{plan}});
-      if(error) {
-        const details = data?.error || error?.message || 'Checkout could not start.';
-        throw new Error(details);
+      const {data:profile,error:profileError}=await backend.client.from('profiles').select('verification_status,role,requested_role').eq('id',user.id).maybeSingle();
+      if(profileError||!profile||profile.verification_status!=='verified')throw new Error('Verify your campus account before upgrading.');
+      const {data:contexts,error:contextError}=await backend.client.rpc('get_my_campus_context');
+      const context=Array.isArray(contexts)?contexts[0]:null;
+      if(contextError||!context||context.membership_status!=='active'||context.verification_status!=='verified')throw new Error('Active verified campus membership is required.');
+      if(String(profile.role||'').toLowerCase()==='student'){
+        const {data:identity,error:identityError}=await backend.client.from('student_identity_verifications').select('status').eq('user_id',user.id).maybeSingle();
+        if(identityError||identity?.status!=='approved')throw new Error('Approved student identity is required before upgrading.');
       }
-      if(!data?.checkout_url||!/^https:\/\/checkout\.paystack\.com\//.test(data.checkout_url)) {
-        throw new Error(data?.error||'Secure test checkout is unavailable. Live charges are disabled in staging.');
+      const plan = link.dataset.shieldmindHosted;
+      const activeSupabaseUrl = String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url || '');
+      if (activeSupabaseUrl === 'https://hywcpnoqqhxvujnimhxl.supabase.co') {
+        // Staging uses only test-key checkout. The supplied hosted shop URLs are live-mode
+        // links and must not be opened from the staging environment.
+        const {data:checkout,error:checkoutError}=await backend.client.functions.invoke('shieldmind-billing-checkout',{body:{plan}});
+        if (checkoutError) {
+          let message = checkoutError.message || 'Test checkout could not start.';
+          try { const detail = await checkoutError.context?.clone?.().json(); if (detail?.error) message = detail.error; } catch (_e) {}
+          throw new Error(message);
+        }
+        if (!checkout?.checkout_url || !/^https:\/\/checkout\.paystack\.com\//.test(checkout.checkout_url)) {
+          throw new Error(checkout?.error || 'A Paystack test checkout URL was not returned. Live payments are disabled in staging.');
+        }
+        window.location.assign(checkout.checkout_url);
+        return;
       }
-      // Reserve the browser interaction on click, then use only a server-created
-      // test checkout URL. The staging Edge Function rejects live secret keys.
-      window.location.assign(data.checkout_url);
+      const {data:intent,error:intentError}=await backend.client.functions.invoke('shieldmind-hosted-subscription-intent',{body:{plan}});
+      if(intentError||!intent?.ready) {
+        let message = intent?.error || intentError?.message || 'Secure subscription setup is unavailable. Please try again later.';
+        try { const detail = await intentError?.context?.clone?.().json(); if (detail?.error) message = detail.error; } catch (_e) {}
+        throw new Error(message);
+      }
+      // Production must have a deployed recurring-intent function and verified webhooks.
+      // Redirects do not grant access: the signed webhook verifies the subscription and each charge.
+      window.location.assign(link.href);
     } catch(error) {
       $('shieldmind-plan-status').textContent=error?.message||'Checkout could not start. Please try again.';
-      button.disabled=false;button.textContent=oldText;
+      link.removeAttribute('aria-disabled');link.textContent=oldText;
     }
   }));
   function addShieldMindMessage(role,message) {
