@@ -20,6 +20,8 @@ Deno.serve(async (req: Request) => {
     const url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY");
     const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), paystack = Deno.env.get("PAYSTACK_SECRET_KEY");
     if (!url || !anon || !service || !paystack) return json({error:"Premium checkout is not configured in staging yet."},503);
+    // Staging must never initialize a live charge.
+    if (!paystack.startsWith("sk_test_")) return json({error:"Staging checkout requires a Paystack test secret (sk_test_). Live charges are disabled here."},409);
     const userClient = createClient(url, anon, {global:{headers:{Authorization:authorization}},auth:{persistSession:false,autoRefreshToken:false}});
     const {data:{user},error:userError} = await userClient.auth.getUser();
     if (userError || !user?.email) return json({error:"A verified signed-in email is required."},401);
@@ -28,7 +30,7 @@ Deno.serve(async (req: Request) => {
     const {data:contexts,error:contextError} = await userClient.rpc("get_my_campus_context");
     const context = Array.isArray(contexts) ? contexts[0] : null;
     if (contextError || !context || context.membership_status !== "active" || context.verification_status !== "verified") return json({error:"Active verified campus membership is required."},403);
-    const isStudent = (profile.requested_role || profile.role) === "student";
+    const isStudent = String(profile.role || "").toLowerCase() === "student";
     if (isStudent) {
       const {data:identity,error:identityError} = await userClient.from("student_identity_verifications").select("status").eq("user_id",user.id).maybeSingle();
       if (identityError || identity?.status !== "approved") return json({error:"Approved student identity is required before upgrading."},403);
