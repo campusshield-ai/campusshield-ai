@@ -19,14 +19,8 @@ Deno.serve(async(req:Request)=>{
   const userClient=createClient(supabaseUrl,anonKey,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false}});
   const {data:{user},error:userError}=await userClient.auth.getUser(token);
   if(userError||!user?.id||!user.email||!user.email_confirmed_at)return json(401,{error:"A confirmed signed-in email is required."});
-  const {data:profile,error:profileError}=await userClient.from("profiles").select("role,verification_status").eq("id",user.id).maybeSingle();
-  if(profileError||!profile||profile.verification_status!=="verified")return json(403,{error:"Verify your campus account before upgrading."});
-  const {data:contexts,error:contextError}=await userClient.rpc("get_my_campus_context"),ctx=Array.isArray(contexts)?contexts[0]:null;
-  if(contextError||!ctx||ctx.membership_status!=="active"||ctx.verification_status!=="verified")return json(403,{error:"Active verified campus membership is required."});
-  if(String(profile.role||"").toLowerCase()==="student"){
-   const {data:identity,error}=await userClient.from("student_identity_verifications").select("status").eq("user_id",user.id).maybeSingle();
-   if(error||identity?.status!=="approved")return json(403,{error:"Approved student identity is required before upgrading."});
-  }
+  // Any confirmed, signed-in account may purchase a personal ShieldMind plan.
+  // Campus membership, profile verification, and student-ID review are not required for checkout.
   let input:any;try{input=await req.json();}catch{return json(400,{error:"Invalid request."});}
   const plan=String(input?.plan||"").toLowerCase(),amount=prices[plan];
   if(!amount||input?.billing_period!=="monthly")return json(400,{error:"Choose a valid monthly ShieldMind plan."});
