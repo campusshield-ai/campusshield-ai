@@ -5695,6 +5695,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     event.preventDefault(); const question=String($('shieldmind-question').value||'').trim(),backend=window.CampusShieldBackend,imageFile=$('shieldmind-image')?.files?.[0]||null;
     const allowed=Boolean(currentProfile);
     if(!question||question.length>1200)return;
+    if (!backend?.isConfigured) { $('shieldmind-status').textContent='ShieldMind backend is unavailable. Please try again later.'; return; }
     if(imageFile && !['image/jpeg','image/png','image/webp'].includes(imageFile.type)){$('shieldmind-status').textContent='Use a JPG, PNG or WebP study image.';return;}
     if(imageFile && imageFile.size>2.5*1024*1024){$('shieldmind-status').textContent='The image must be 2.5 MB or smaller.';return;}
     if(imageFile && !$('shieldmind-image-confirm')?.checked){$('shieldmind-status').textContent='Confirm that the image contains only academic material and no private personal information.';return;}
