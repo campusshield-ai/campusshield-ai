@@ -5635,10 +5635,16 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   let shieldMindSessionUserId = null, shieldMindHistory = [];
   function resetShieldMindForSession() {
     if (!currentProfile) { shieldMindSessionUserId=null; shieldMindHistory=[]; return; }
-    const allowed=currentProfile.verification_status==='verified' && (!isStudentAccount() || hasApprovedStudentIdentity());
-    if ($('shieldmind-submit')) $('shieldmind-submit').disabled=!allowed;
-    if (shieldMindSessionUserId!==currentProfile.id) { shieldMindSessionUserId=currentProfile.id; shieldMindHistory=[]; if ($('shieldmind-messages')) $('shieldmind-messages').innerHTML='<article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Chat ready. General academic questions only in this initial staging build.</p></article>'; }
-    if ($('shieldmind-status')&&!allowed) $('shieldmind-status').textContent='Verified campus access is required to use ShieldMind.';
+    // Let all signed-in accounts ask general academic questions. The backend independently
+    // blocks campus-specific and sensitive actions when the account is not eligible.
+    const allowed=true;
+    if ($('shieldmind-submit')) $('shieldmind-submit').disabled=false;
+    if (shieldMindSessionUserId!==currentProfile.id) {
+      shieldMindSessionUserId=currentProfile.id;
+      shieldMindHistory=[];
+      if ($('shieldmind-messages')) $('shieldmind-messages').innerHTML='<article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Chat ready. Ask a general academic question. Official campus details are only answered when approved campus sources support them.</p></article>';
+    }
+    if ($('shieldmind-status')) $('shieldmind-status').textContent='Ready for a general academic question.';
   }
   async function refreshShieldMindPlan() {
     const status = $('shieldmind-plan-status');
