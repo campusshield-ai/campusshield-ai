@@ -2442,6 +2442,7 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'classroom') loadCampusClassroomsPage();
     if (button.dataset.page === 'opportunities') loadCampusOpportunitiesPage();
     if (button.dataset.page === 'shieldmind') { resetShieldMindForSession(); refreshShieldMindPlan(); window.CampusShieldPlanner?.load(); }
+    if (button.dataset.page === 'billing') { refreshShieldMindPlan(); loadInstitutionalBillingRequests(); }
     if (button.dataset.page === 'noticeboard') loadCampusNoticeboardPage();
     if (button.dataset.page === 'helpdesk') loadCampusHelpdeskPage();
     if (button.dataset.page === 'community') loadCommunityPage();
