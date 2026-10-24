@@ -1780,7 +1780,7 @@ td strong{color:#2a464d;font-size:11px}
         if (error) {
           let providerMessage = null;
           try { providerMessage = (await error.context?.clone?.().json())?.error || null; } catch (_ignored) {}
-          throw new Error(providerMessage || 'Secure checkout could not start. Confirm staging Paystack test billing is configured. No payment has been taken.');
+          throw new Error(providerMessage || 'Secure checkout could not start. Confirm production Paystack live billing is configured. No payment has been taken.');
         }
         if (!data?.authorization_url || typeof data.authorization_url !== 'string' ||
             !/^https:\/\/checkout\.paystack\.com\//i.test(data.authorization_url)) {
