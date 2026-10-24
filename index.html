@@ -1173,7 +1173,7 @@ td strong{color:#2a464d;font-size:11px}
       <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦20,000</b><span>35 requests/min · 2,500/day</span><small>300 image uploads/month · higher capacity and priority where available</small><button class="btn" type="button" data-shieldmind-buy="ultra">Choose Ultra</button></article>
       <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>50 requests/min · 4,000/day</span><small>600 image uploads/month · highest planned usage tier</small><button class="btn" type="button" data-shieldmind-buy="max">Choose Max</button></article>
     </div>
-    <p class="shieldmind-plan-note">All paid plans are proposed 30-day prepaid access, not auto-renewing. Checkout and paid activation remain unavailable until production billing and webhook verification pass end-to-end tests. Do not treat these plans or prices as purchasable yet. Images are sent to the configured AI provider for processing and are not saved in CampusShield Storage; upload academic images only, never IDs or private campus records.</p>
+    <p class="shieldmind-plan-note">Paid plans are 30-day prepaid access and do not auto-renew. Payments are processed on Paystack Checkout. Paid access activates only after a verified server-side payment confirmation. Images are sent to the configured AI provider for processing and are not saved in CampusShield Storage; upload academic images only, never IDs or private campus records.</p>
   </section>
   <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Start with a general academic question.</p></div><span class="shieldmind-pill">LIVE AI SERVICE</span></div>
     <div class="notice-inline">ShieldMind will not guess official university policies or deadlines. Official answers require approved campus source pages.</div>
@@ -1252,7 +1252,7 @@ td strong{color:#2a464d;font-size:11px}
   <section class="panel">
     <h2>Payment status &amp; help</h2>
     <p id="billing-payment-message" class="message" role="status" aria-live="polite">No payment has been initiated from this screen.</p>
-    <p class="muted">Secure Paystack checkout and signed payment verification must be configured on the server before taking live payments. CampusShield will not activate a paid subscription based only on a browser redirect or screenshot.</p>
+    <p class="muted">Paystack Checkout opens securely from the server. Only a signed webhook plus server-side transaction verification can activate paid access. These plans are prepaid for 30 days and do not auto-renew.</p>
   </section>
 </section>
 
@@ -1772,7 +1772,7 @@ td strong{color:#2a464d;font-size:11px}
         return;
       }
       button.disabled = true;
-      status.textContent = 'Checking secure Paystack checkout configuration…';
+      status.textContent = 'Preparing secure live Paystack checkout…';
       try {
         const { data, error } = await window.CampusShieldBackend.client.functions.invoke('paystack-initialize', {
           body: { plan, billing_period: 'monthly' }
@@ -1780,11 +1780,11 @@ td strong{color:#2a464d;font-size:11px}
         if (error) {
           let providerMessage = null;
           try { providerMessage = (await error.context?.clone?.().json())?.error || null; } catch (_ignored) {}
-          throw new Error(providerMessage || 'Secure checkout could not start. Confirm production Paystack live billing is configured. No payment has been taken.');
+          throw new Error(providerMessage || 'Secure live checkout is not available. Check production Paystack setup. No payment has been taken.');
         }
         if (!data?.authorization_url || typeof data.authorization_url !== 'string' ||
             !/^https:\/\/checkout\.paystack\.com\//i.test(data.authorization_url)) {
-          throw new Error(data?.error || 'Secure checkout is not configured yet. No payment has been taken.');
+          throw new Error(data?.error || 'Secure live checkout is not configured yet. No payment has been taken.');
         }
         window.location.assign(data.authorization_url);
       } catch (error) {
@@ -5803,16 +5803,14 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     try {
       const {data:{user},error:userError}=await backend.client.auth.getUser();
       if(userError||!user)throw new Error('Sign in again before checkout.');
-      // Paystack must generate this checkout on the server. Never trust browser redirects as payment confirmation.
-      const {data,error}=await backend.client.functions.invoke('shieldmind-billing-checkout',{body:{plan}});
+      const {data,error}=await backend.client.functions.invoke('paystack-initialize',{body:{plan,billing_period:'monthly'}});
       if(error){
         let providerMessage=null;
         try{providerMessage=(await error.context?.clone?.().json())?.error||null;}catch(_ignored){}
-        throw new Error(providerMessage||'Secure checkout could not start. Confirm PAYSTACK_SECRET_KEY is saved in production Supabase Secrets. No payment has been taken.');
+        throw new Error(providerMessage||'Secure live checkout could not start. Check the production Paystack configuration. No payment has been taken.');
       }
-      const checkoutUrl=data?.checkout_url||data?.authorization_url;
-      if(!checkoutUrl||!/^https:\/\/checkout\.paystack\.com\//.test(checkoutUrl))throw new Error(data?.error||'Secure checkout is not configured yet. No payment has been taken.');
-      window.location.assign(checkoutUrl);
+      if(!data?.authorization_url||!/^https:\/\/checkout\.paystack\.com\//i.test(data.authorization_url))throw new Error(data?.error||'Secure live checkout is not configured yet. No payment has been taken.');
+      window.location.assign(data.authorization_url);
     } catch(error) {
       $('shieldmind-plan-status').textContent=error?.message||'Checkout could not start. Please try again.';
       button.disabled=false;button.textContent=oldText;
