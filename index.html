@@ -5644,7 +5644,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     const status = $('shieldmind-plan-status');
     if (!status) return;
     const backend = window.CampusShieldBackend;
-    if (!currentProfile || !backend?.isConfigured) { status.textContent='Sign in with a verified campus account to check your plan.'; return; }
+    if (!currentProfile || !backend?.isConfigured) { status.textContent='Sign in to view your plan. ShieldMind and subscription information are available to every signed-in user.'; return; }
     status.textContent='Checking your plan…';
     try {
       const {data:{user},error:userError}=await backend.client.auth.getUser();
@@ -5669,7 +5669,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if(userError||!user)throw new Error('Sign in again before checkout.');
       // Paystack must generate this checkout on the server. Never trust browser redirects as payment confirmation.
       const {data,error}=await backend.client.functions.invoke('paystack-initialize',{body:{plan,billing_period:'monthly'}});
-      if(error)throw error;
+      if(error)throw new Error('Secure checkout request failed. Open billing status below and confirm PAYSTACK_SECRET_KEY is saved in production Supabase Secrets.');
       if(!data?.authorization_url||!/^https:\/\/checkout\.paystack\.com\//.test(data.authorization_url))throw new Error(data?.error||'Secure checkout is not configured yet. No payment has been taken.');
       window.location.assign(data.authorization_url);
     } catch(error) {
