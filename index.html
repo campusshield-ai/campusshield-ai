@@ -2066,13 +2066,8 @@ td strong{color:#2a464d;font-size:11px}
       page = 'dashboard';
       toast('This feature requires a verified account and verified membership at your university.');
     }
-    if (page === 'shieldmind' &&
-        (!verified || !campusContext?.university_id ||
-         campusContext.membership_status !== 'active' ||
-         campusContext.verification_status !== 'verified')) {
-      page = 'dashboard';
-      toast('ShieldMind requires a verified account and active verified campus membership. Protected AI actions still enforce eligibility server-side.');
-    }
+    // ShieldMind and plan information are available to all signed-in users.
+    // The Edge Function applies its own eligibility rules only to protected capabilities.
 
     document.querySelectorAll('.page').forEach(el =>
       el.classList.toggle('active', el.id === 'page-' + page)
@@ -2102,6 +2097,7 @@ td strong{color:#2a464d;font-size:11px}
       classroom:'Teacher Classroom',
       opportunities:'Gift & Opportunity Hub',
       shieldmind:'ShieldMind AI',
+      billing:'Subscriptions & billing',
     };
 
     $('sectionTitle').textContent = names[page] || 'Overview';
