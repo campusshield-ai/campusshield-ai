@@ -1587,19 +1587,19 @@ td strong{color:#2a464d;font-size:11px}
         campusContext.verification_status === 'verified';
       shieldMindAccessNotice.hidden = campusReady;
       shieldMindAccessNotice.textContent = !verified
-        ? 'ShieldMind is visible, but questions are locked until your CampusShield account is verified.'
+        ? 'ShieldMind is open for general academic questions. Account verification is still required for protected campus features.'
         : !campusContext?.university_id
-          ? 'Finish joining your university space, then complete campus verification. ShieldMind will unlock after your campus membership is active and verified. Student accounts also need approved student identity verification.'
-          : 'Your campus membership is not yet active and verified. Contact your university’s authorized CampusShield reviewer if you believe this is incorrect. Student accounts also need approved student identity verification.';
+          ? 'ShieldMind is open for general academic questions. Join your university space to unlock campus-aware answers and protected campus features.'
+          : 'General academic questions are available. Campus-aware answers and protected actions remain gated until your university membership is verified.';
     }
     const setup = $('student-identity-setup-button');
     const note = $('student-identity-setup-status');
     const state = studentIdentitySubmission?.status || null;
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
       if (button.id === 'platform-admin-nav') return;
-      if (button.dataset.page === 'shieldmind') {
-        // Keep ShieldMind discoverable in the signed-in workspace. The Edge Function
-        // independently enforces verified profile, campus membership and student identity.
+      if (button.dataset.page === 'shieldmind' || button.dataset.page === 'billing') {
+        // General AI and subscription information is discoverable to all signed-in users.
+        // Sensitive operations and payment activation are still enforced server-side.
         button.hidden = false;
         return;
       }
@@ -5671,11 +5671,11 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     try {
       const {data:{user},error:userError}=await backend.client.auth.getUser();
       if(userError||!user)throw new Error('Sign in again before checkout.');
-      // Production and staging both use the server-created checkout flow. Never redirect directly to hosted payment links.
-      const {data,error}=await backend.client.functions.invoke('shieldmind-billing-checkout',{body:{plan}});
+      // Paystack must generate this checkout on the server. Never trust browser redirects as payment confirmation.
+      const {data,error}=await backend.client.functions.invoke('paystack-initialize',{body:{plan,billing_period:'monthly'}});
       if(error)throw error;
-      if(!data?.checkout_url||!/^https:\/\/checkout\.paystack\.com\//.test(data.checkout_url))throw new Error(data?.error||'Secure checkout is not configured.');
-      window.location.assign(data.checkout_url);
+      if(!data?.authorization_url||!/^https:\/\/checkout\.paystack\.com\//.test(data.authorization_url))throw new Error(data?.error||'Secure checkout is not configured yet. No payment has been taken.');
+      window.location.assign(data.authorization_url);
     } catch(error) {
       $('shieldmind-plan-status').textContent=error?.message||'Checkout could not start. Please try again.';
       button.disabled=false;button.textContent=oldText;
@@ -5691,12 +5691,12 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   document.querySelectorAll('[data-shieldmind-prompt]').forEach(button=>button.addEventListener('click',()=>{$('shieldmind-question').value=button.dataset.shieldmindPrompt;$('shieldmind-question').focus();}));
   $('shieldmind-form').addEventListener('submit',async event=>{
     event.preventDefault(); const question=String($('shieldmind-question').value||'').trim(),backend=window.CampusShieldBackend,imageFile=$('shieldmind-image')?.files?.[0]||null;
-    const allowed=Boolean(currentProfile&&currentProfile.verification_status==='verified'&&(!isStudentAccount()||hasApprovedStudentIdentity()));
+    const allowed=Boolean(currentProfile);
     if(!question||question.length>1200)return;
     if(imageFile && !['image/jpeg','image/png','image/webp'].includes(imageFile.type)){$('shieldmind-status').textContent='Use a JPG, PNG or WebP study image.';return;}
     if(imageFile && imageFile.size>2.5*1024*1024){$('shieldmind-status').textContent='The image must be 2.5 MB or smaller.';return;}
     if(imageFile && !$('shieldmind-image-confirm')?.checked){$('shieldmind-status').textContent='Confirm that the image contains only academic material and no private personal information.';return;}
-    if(!backend?.isConfigured||!allowed){$('shieldmind-status').textContent='Verified campus access is required to use ShieldMind.';return;}
+    if(!backend?.isConfigured||!allowed){$('shieldmind-status').textContent='Sign in to use ShieldMind.';return;}
     const {data:{user},error:userError}=await backend.client.auth.getUser();
     if(userError||!user){$('shieldmind-status').textContent='Your session could not be confirmed. Sign in again.';return;}
     if (!currentProfile.id) currentProfile={...currentProfile,id:user.id};
