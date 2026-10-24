@@ -1660,7 +1660,7 @@ td strong{color:#2a464d;font-size:11px}
         return;
       }
       if (kind === 'institution') {
-        status.textContent = 'Institutional billing request noted. Secure university checkout and invoice reconciliation must be enabled by CampusShield before payment can be accepted. No charge has been made.';
+        status.textContent = 'University billing request: contact CampusShield to arrange an institutional agreement. No automatic university charge or activation has occurred.';
         return;
       }
       button.disabled = true;
@@ -5655,16 +5655,27 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     try {
       const {data:{user},error:userError}=await backend.client.auth.getUser();
       if (userError || !user) { status.textContent='Sign in to view or upgrade your plan.'; return; }
-      const {data,error}=await backend.client.rpc('get_my_shieldmind_plan');
+      const {data,error}=await backend.client.from('shieldmind_subscriptions')
+        .select('plan,status,expires_at').eq('user_id',user.id).maybeSingle();
       if (error) throw error;
-      const plan=Array.isArray(data)?data[0]:data;
-      if (['starter','plus','pro','ultra','max','premium'].includes(plan?.plan) && plan?.status==='active' && plan?.expires_at && new Date(plan.expires_at).getTime()>Date.now()) {
-        status.textContent=plan.plan.toUpperCase()+' active until '+new Date(plan.expires_at).toLocaleDateString()+'. Your tier limits are enabled.';
-        document.querySelectorAll('[data-shieldmind-buy]').forEach(button=>{button.disabled=true;button.textContent='Premium active';});
-      } else {
-        status.textContent='You are on ShieldMind Free. Upgrade for higher AI usage; payment must be confirmed by the server before Premium activates.';
-      }
-    } catch (_error) { status.textContent='Plan status could not be loaded. Try refreshing this page.'; }
+      const active=Boolean(data && ['starter','plus','pro','ultra','max','premium'].includes(data.plan) &&
+        data.status==='active' && data.expires_at && new Date(data.expires_at).getTime()>Date.now());
+      document.querySelectorAll('[data-shieldmind-buy],[data-billing-plan]').forEach(button=>{
+        button.disabled=false;
+        if(button.dataset.shieldmindBuy) button.textContent=active?'Manage / renew plan':'Choose '+button.dataset.shieldmindBuy.charAt(0).toUpperCase()+button.dataset.shieldmindBuy.slice(1);
+      });
+      status.textContent=active
+        ? data.plan.toUpperCase()+' active until '+new Date(data.expires_at).toLocaleDateString()+'. Your tier limits are enabled.'
+        : 'You are on ShieldMind Free. Choose a paid plan to open secure Paystack checkout. Payment must be confirmed by the server before Premium activates.';
+      const billingStatus=$('billing-ai-status');
+      if(billingStatus) billingStatus.textContent=active
+        ? data.plan.toUpperCase()+' active until '+new Date(data.expires_at).toLocaleDateString()+'.'
+        : 'Current plan: Free. Paid access activates only after Paystack payment is independently verified.';
+    } catch (_error) {
+      status.textContent='Plan status could not be loaded. Your AI can still be used within Free-tier server limits.';
+      const billingStatus=$('billing-ai-status');
+      if(billingStatus) billingStatus.textContent='Plan status is temporarily unavailable. Paid access cannot be granted without a verified server-side payment.';
+    }
   }
   document.querySelectorAll('[data-shieldmind-buy]').forEach(button=>button.addEventListener('click',async()=>{
     const backend=window.CampusShieldBackend, plan=button.dataset.shieldmindBuy;
