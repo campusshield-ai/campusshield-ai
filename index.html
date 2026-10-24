@@ -627,6 +627,20 @@ td strong{color:#2a464d;font-size:11px}
 .campus-hub-icon-placeholder{cursor:default}
 @media(max-width:600px){.campus-hub-social-icons{margin-top:16px;padding-top:15px}.campus-hub-social-icons .campus-hub-channel-grid{display:flex;gap:10px}.campus-hub-social-icons .campus-hub-channel{width:52px;height:52px;min-height:52px;padding:7px}.campus-hub-social-icons .campus-hub-channel-icon{width:34px;height:34px;flex-basis:34px}}
 
+
+/* Keep the decorative hub emblem from competing with the headline or official-site link. */
+.campus-hub:after{display:none!important}
+.campus-hub-head{position:relative;z-index:1}
+.campus-hub-brand{position:relative;z-index:1}
+.campus-hub-official{position:relative;z-index:2}
+@media(min-width:601px){
+  .campus-hub-brand h2{max-width:27ch}
+}
+@media(max-width:600px){
+  .campus-hub-head{column-gap:11px}
+  .campus-hub-brand h2{max-width:100%;overflow-wrap:normal}
+}
+
 </style>
 </head>
 <body>
