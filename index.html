@@ -818,6 +818,7 @@ td strong{color:#2a464d;font-size:11px}
 <button data-page="classroom" id="classroom-nav">Teacher Classroom</button>
 <button data-page="opportunities" id="opportunities-nav">Gift & Opportunity Hub</button>
 <button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button>
+<button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; billing</button>
 <button data-page="manage"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button>
 <button data-page="risk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <button data-page="analytics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
@@ -1209,6 +1210,37 @@ td strong{color:#2a464d;font-size:11px}
   <p class="shieldmind-disclaimer">Educational support only. Check course materials and ask your lecturer when accuracy matters. ShieldMind is not an emergency service or official university decision-maker.</p>
 </section>
 
+
+<section class="page" id="page-billing">
+  <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · PLANS</span><h1>Subscriptions &amp; billing</h1><p>Manage ShieldMind AI study plans and explore institutional subscriptions for your university.</p></div></div>
+  <div class="notice-inline"><strong>Essential safety stays free.</strong> Student safety reporting and core access are not paywalled. Payments must be verified by CampusShield's server before a paid plan is activated. Do not send card details or payment credentials in chat.</div>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>ShieldMind AI · Individual plans</h2><p>Prepaid 30-day access for additional academic AI usage.</p></div><span class="shieldmind-pill">NGN</span></div>
+    <p id="billing-ai-status" class="message" role="status" aria-live="polite">Your current plan and payment status will be shown here when billing is connected.</p>
+    <div class="shieldmind-prices">
+      <article class="shieldmind-price"><strong>Free</strong><b>₦0</b><span>5 requests/min · 80/day</span><small>Core academic Q&amp;A and study prompts</small><button class="btn secondary" type="button" disabled>Included</button></article>
+      <article class="shieldmind-price premium"><strong>Starter</strong><b>₦2,000</b><span>10 requests/min · 250/day</span><small>20 image uploads/month</small><button class="btn" type="button" data-billing-plan="starter" data-billing-kind="individual">Continue to payment</button></article>
+      <article class="shieldmind-price premium"><strong>Plus</strong><b>₦5,000</b><span>15 requests/min · 700/day</span><small>60 image uploads/month</small><button class="btn" type="button" data-billing-plan="plus" data-billing-kind="individual">Continue to payment</button></article>
+      <article class="shieldmind-price premium"><strong>Pro</strong><b>₦10,000</b><span>25 requests/min · 1,500/day</span><small>150 image uploads/month</small><button class="btn" type="button" data-billing-plan="pro" data-billing-kind="individual">Continue to payment</button></article>
+      <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦20,000</b><span>35 requests/min · 2,500/day</span><small>300 image uploads/month</small><button class="btn" type="button" data-billing-plan="ultra" data-billing-kind="individual">Continue to payment</button></article>
+      <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>50 requests/min · 4,000/day</span><small>600 image uploads/month</small><button class="btn" type="button" data-billing-plan="max" data-billing-kind="individual">Continue to payment</button></article>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>University subscriptions</h2><p>Institution-level controls for verified campus teams. Student essential safety access remains free.</p></div></div>
+    <div class="shieldmind-prices">
+      <article class="shieldmind-price"><strong>Starter · University</strong><b>₦100,000</b><span>per month</span><small>₦1,000,000 yearly · Core campus verification, notices, helpdesk and safety dashboard</small><button class="btn secondary" type="button" data-billing-plan="university-starter" data-billing-kind="institution">Request institutional billing</button></article>
+      <article class="shieldmind-price premium"><strong>Professional · University</strong><b>₦250,000</b><span>per month</span><small>₦2,500,000 yearly · Expanded analytics, moderation and campus administration</small><button class="btn" type="button" data-billing-plan="university-professional" data-billing-kind="institution">Request institutional billing</button></article>
+      <article class="shieldmind-price premium"><strong>Enterprise</strong><b>From ₦500,000</b><span>per month</span><small>From ₦5,000,000 yearly · Multi-campus controls, integrations and support</small><button class="btn" type="button" data-billing-plan="university-enterprise" data-billing-kind="institution">Request institutional billing</button></article>
+    </div>
+    <p class="muted">University subscriptions require an authorized institutional representative. Invoice or bank-transfer payments must be manually reconciled by authorized staff; they do not automatically unlock a university.</p>
+  </section>
+  <section class="panel">
+    <h2>Payment status &amp; help</h2>
+    <p id="billing-payment-message" class="message" role="status" aria-live="polite">No payment has been initiated from this screen.</p>
+    <p class="muted">Secure Paystack checkout and signed payment verification must be configured on the server before taking live payments. CampusShield will not activate a paid subscription based only on a browser redirect or screenshot.</p>
+  </section>
+</section>
 
 <section class="page" id="page-classroom">
   <div class="heading"><h1>Teacher Classroom</h1><p>Private course spaces for verified teachers and students at the same university.</p></div>
@@ -1615,6 +1647,41 @@ td strong{color:#2a464d;font-size:11px}
     $('staff-verification-nav').hidden = !isTeacherAccount();
     $('staff-review-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
   }
+
+  // Billing UI is visible to all signed-in accounts. Checkout is only opened by a
+  // server-created Paystack transaction; client-side clicks never grant paid access.
+  document.querySelectorAll('[data-billing-plan]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const status = $('billing-payment-message');
+      const plan = button.dataset.billingPlan;
+      const kind = button.dataset.billingKind;
+      if (!window.CampusShieldBackend?.client) {
+        status.textContent = 'Billing is unavailable because the secure backend is not configured.';
+        return;
+      }
+      if (kind === 'institution') {
+        status.textContent = 'Institutional billing request noted. Secure university checkout and invoice reconciliation must be enabled by CampusShield before payment can be accepted. No charge has been made.';
+        return;
+      }
+      button.disabled = true;
+      status.textContent = 'Checking secure Paystack checkout configuration…';
+      try {
+        const { data, error } = await window.CampusShieldBackend.client.functions.invoke('paystack-initialize', {
+          body: { plan, billing_period: 'monthly' }
+        });
+        if (error) throw error;
+        if (!data?.authorization_url || typeof data.authorization_url !== 'string' ||
+            !/^https:\/\/checkout\.paystack\.com\//i.test(data.authorization_url)) {
+          throw new Error(data?.error || 'Secure checkout is not configured yet. No payment has been taken.');
+        }
+        window.location.assign(data.authorization_url);
+      } catch (error) {
+        status.textContent = error?.message || 'Secure checkout is not available yet. No payment has been taken.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
 
   function isStudentAccount() {
     return ['student'].includes(currentProfile?.requested_role || currentProfile?.role);
