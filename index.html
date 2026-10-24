@@ -1234,6 +1234,20 @@ td strong{color:#2a464d;font-size:11px}
       <article class="shieldmind-price premium"><strong>Enterprise</strong><b>From ₦500,000</b><span>per month</span><small>From ₦5,000,000 yearly · Multi-campus controls, integrations and support</small><button class="btn" type="button" data-billing-plan="university-enterprise" data-billing-kind="institution">Request institutional billing</button></article>
     </div>
     <p class="muted">University subscriptions require an authorized institutional representative. Invoice or bank-transfer payments must be manually reconciled by authorized staff; they do not automatically unlock a university.</p>
+    <form id="institutional-billing-form" hidden>
+      <h3>Request institutional billing</h3>
+      <p class="muted">This submits a request for review only. It does not charge your institution or activate any premium access.</p>
+      <div class="grid two">
+        <div class="field"><label for="institution-billing-name">Official institution name *</label><input id="institution-billing-name" required maxlength="180" placeholder="University / institution name"></div>
+        <div class="field"><label for="institution-billing-plan">Requested plan *</label><select id="institution-billing-plan" required><option value="university-starter">Starter · University</option><option value="university-professional">Professional · University</option><option value="university-enterprise">Enterprise</option></select></div>
+        <div class="field"><label for="institution-billing-period">Preferred billing period *</label><select id="institution-billing-period" required><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div>
+        <div class="field"><label for="institution-billing-email">Contact email *</label><input id="institution-billing-email" type="email" required maxlength="254" placeholder="Your institutional contact email"></div>
+      </div>
+      <div class="field"><label for="institution-billing-message">Additional details (optional)</label><textarea id="institution-billing-message" maxlength="2000" placeholder="Expected campus size, procurement contact, or questions"></textarea></div>
+      <div class="actions"><button class="btn" type="submit" id="institution-billing-submit">Submit billing request</button><button class="btn secondary" type="button" id="institution-billing-cancel">Cancel</button></div>
+      <p id="institution-billing-status" class="message" role="status" aria-live="polite"></p>
+    </form>
+    <div id="institutional-billing-requests" class="muted">Your submitted institutional billing requests will appear here.</div>
   </section>
   <section class="panel">
     <h2>Payment status &amp; help</h2>
@@ -1650,6 +1664,90 @@ td strong{color:#2a464d;font-size:11px}
 
   // Billing UI is visible to all signed-in accounts. Checkout is only opened by a
   // server-created Paystack transaction; client-side clicks never grant paid access.
+  const institutionBillingForm = $('institutional-billing-form');
+  if (institutionBillingForm) {
+    $('institution-billing-cancel')?.addEventListener('click', () => {
+      institutionBillingForm.hidden = true;
+      $('institution-billing-status').textContent = '';
+    });
+    institutionBillingForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const status = $('institution-billing-status');
+      const backend = window.CampusShieldBackend;
+      const submit = $('institution-billing-submit');
+      if (!currentProfile || !backend?.isConfigured) {
+        status.textContent = 'Please sign in before submitting an institutional request.';
+        return;
+      }
+      const institutionName = String($('institution-billing-name')?.value || '').trim();
+      const plan = String($('institution-billing-plan')?.value || '');
+      const period = String($('institution-billing-period')?.value || 'monthly');
+      const contactEmail = String($('institution-billing-email')?.value || '').trim();
+      const message = String($('institution-billing-message')?.value || '').trim();
+      if (!institutionName || !contactEmail || !['monthly','yearly'].includes(period)) {
+        status.textContent = 'Complete the required fields before submitting.';
+        return;
+      }
+      submit.disabled = true;
+      status.textContent = 'Submitting your request securely…';
+      try {
+        const { data: { user }, error: userError } = await backend.client.auth.getUser();
+        if (userError || !user) throw new Error('Your session could not be verified. Please sign in again.');
+        const { error } = await backend.client.from('campus_institutional_billing_requests').insert({
+          requester_id: user.id,
+          institution_name: institutionName,
+          requested_plan: plan,
+          billing_period: period,
+          contact_email: contactEmail,
+          message: message || null
+        });
+        if (error) throw error;
+        status.textContent = 'Request submitted. It is pending review; no payment was taken and no campus subscription has been activated.';
+        institutionBillingForm.reset();
+        await loadInstitutionalBillingRequests();
+      } catch (error) {
+        status.textContent = error?.message || 'The request could not be submitted. Please try again.';
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  }
+  async function loadInstitutionalBillingRequests() {
+    const container = $('institutional-billing-requests');
+    if (!container) return;
+    const backend = window.CampusShieldBackend;
+    if (!currentProfile || !backend?.isConfigured) {
+      container.textContent = 'Sign in to view your institutional billing requests.';
+      return;
+    }
+    try {
+      const { data: { user }, error: userError } = await backend.client.auth.getUser();
+      if (userError || !user) throw new Error('Session could not be verified.');
+      const { data, error } = await backend.client.from('campus_institutional_billing_requests')
+        .select('institution_name,requested_plan,billing_period,status,created_at')
+        .eq('requester_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      container.replaceChildren();
+      if (!data?.length) {
+        container.textContent = 'No institutional billing requests submitted yet.';
+        return;
+      }
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'community-post';
+        const title = document.createElement('strong');
+        title.textContent = item.institution_name + ' · ' + item.requested_plan.replace(/-/g, ' ');
+        const detail = document.createElement('p');
+        detail.textContent = item.billing_period + ' · ' + item.status + ' · ' + new Date(item.created_at).toLocaleDateString();
+        card.append(title, detail);
+        container.appendChild(card);
+      });
+    } catch (_error) {
+      container.textContent = 'Requests could not be loaded right now.';
+    }
+  }
   document.querySelectorAll('[data-billing-plan]').forEach(button => {
     button.addEventListener('click', async () => {
       const status = $('billing-payment-message');
@@ -1660,7 +1758,17 @@ td strong{color:#2a464d;font-size:11px}
         return;
       }
       if (kind === 'institution') {
-        status.textContent = 'University billing request: contact CampusShield to arrange an institutional agreement. No automatic university charge or activation has occurred.';
+        const form = $('institutional-billing-form');
+        if (form) {
+          form.hidden = false;
+          const planField = $('institution-billing-plan');
+          if (planField) planField.value = plan;
+          const periodField = $('institution-billing-period');
+          if (periodField) periodField.value = 'monthly';
+          form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          $('institution-billing-name')?.focus();
+          status.textContent = 'Complete the institutional billing request form. No payment will be taken at this stage.';
+        }
         return;
       }
       button.disabled = true;
