@@ -1159,7 +1159,8 @@ td strong{color:#2a464d;font-size:11px}
 
 <section class="page" id="page-shieldmind">
   <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · LEARNING ASSISTANT</span><h1>Meet ShieldMind AI</h1><p>Study support for campus life. Official university answers will only appear when trusted campus sources are available.</p></div></div>
-  <div class="shieldmind-hero"><div class="shieldmind-mark" aria-hidden="true">✦</div><div><h2>Your campus learning companion</h2><p>Ask an academic question, explore a topic, or get a study plan. This staging prototype does not present unverified content as official university policy.</p></div></div>
+  <div class="shieldmind-hero"><div class="shieldmind-mark" aria-hidden="true">✦</div><div><h2>Your campus learning companion</h2><p>Ask an academic question, explore a topic, or get a study plan. Official university answers are only provided when approved campus sources support them.</p></div></div>
+  <div class="notice-inline" id="shieldmind-access-notice" role="status" aria-live="polite">ShieldMind AI is available in the live workspace. Sending questions requires a verified CampusShield account and an active, verified university membership. Student accounts must also have approved student identity verification.</div>
 
   <section class="shieldmind-plan panel" aria-labelledby="shieldmind-plan-title">
     <div class="shieldmind-plan-copy"><span class="shieldmind-pill">FREE + PREMIUM</span><h2 id="shieldmind-plan-title">Choose how much AI support you need</h2><p>Core campus safety stays free. Premium adds higher AI limits for study support.</p><p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p></div>
@@ -1171,10 +1172,10 @@ td strong{color:#2a464d;font-size:11px}
       <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦20,000</b><span>35 requests/min · 2,500/day</span><small>300 image uploads/month · higher capacity and priority where available</small><button class="btn" type="button" data-shieldmind-buy="ultra">Choose Ultra</button></article>
       <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>50 requests/min · 4,000/day</span><small>600 image uploads/month · highest planned usage tier</small><button class="btn" type="button" data-shieldmind-buy="max">Choose Max</button></article>
     </div>
-    <p class="shieldmind-plan-note">All paid plans are 30-day prepaid access, not auto-renewing. The 8-hour session / 1-hour cooldown is enforced by the staging AI endpoint. Monthly image limits are enforced by the staging server and vary by active paid tier. Images are sent to OpenAI for processing and not saved in CampusShield Storage; upload academic images only, never IDs or private campus records. Checkout is staging-only and requires Paystack test credentials. Prices and limits need cost testing before launch.</p>
+    <p class="shieldmind-plan-note">All paid plans are 30-day prepaid access, not auto-renewing. The live AI endpoint enforces server-side account and usage checks. Paid plan checkout is not enabled for production yet; the displayed plan prices and limits are proposals and should not be treated as purchasable until production billing is configured and tested. Images are sent to OpenAI for processing and are not saved in CampusShield Storage; upload academic images only, never IDs or private campus records.</p>
   </section>
-  <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Start with a general academic question.</p></div><span class="shieldmind-pill">STAGING</span></div>
-    <div class="notice-inline">The approved campus source catalog is not connected yet, so ShieldMind will not guess official university policies or deadlines.</div>
+  <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Start with a general academic question.</p></div><span class="shieldmind-pill">LIVE AI SERVICE</span></div>
+    <div class="notice-inline">ShieldMind will not guess official university policies or deadlines. Official answers require approved campus source pages.</div>
     <div id="shieldmind-messages" class="shieldmind-messages" aria-live="polite"><article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Hi! Ask a general academic question. Verified campus-policy answers are unavailable until approved official sources are connected.</p></article></div>
     <form id="shieldmind-form"><div class="field"><label for="shieldmind-question">Your question</label><textarea id="shieldmind-question" required maxlength="1200" placeholder="e.g. Explain photosynthesis in simple steps…" rows="3"></textarea><p class="muted">Do not enter safety reports, ID details, passwords, medical details, or other private student information.</p></div>
       <div class="field">
@@ -1547,13 +1548,27 @@ td strong{color:#2a464d;font-size:11px}
     const student = isStudentAccount();
     const teacher = isTeacherAccount();
     const verified = currentProfile?.verification_status === 'verified';
+    const shieldMindAccessNotice = $('shieldmind-access-notice');
+    if (shieldMindAccessNotice) {
+      const campusReady = verified && !!campusContext?.university_id &&
+        campusContext.membership_status === 'active' &&
+        campusContext.verification_status === 'verified';
+      shieldMindAccessNotice.hidden = campusReady;
+      shieldMindAccessNotice.textContent = !verified
+        ? 'ShieldMind is visible, but questions are locked until your CampusShield account is verified.'
+        : !campusContext?.university_id
+          ? 'Finish joining your university space, then complete campus verification. ShieldMind will unlock after your campus membership is active and verified. Student accounts also need approved student identity verification.'
+          : 'Your campus membership is not yet active and verified. Contact your university’s authorized CampusShield reviewer if you believe this is incorrect. Student accounts also need approved student identity verification.';
+    }
     const setup = $('student-identity-setup-button');
     const note = $('student-identity-setup-status');
     const state = studentIdentitySubmission?.status || null;
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
       if (button.id === 'platform-admin-nav') return;
       if (button.dataset.page === 'shieldmind') {
-        button.hidden = !(verified && !!campusContext?.university_id && campusContext.membership_status === 'active' && campusContext.verification_status === 'verified');
+        // Keep ShieldMind discoverable in the signed-in workspace. The Edge Function
+        // independently enforces verified profile, campus membership and student identity.
+        button.hidden = false;
         return;
       }
       if (button.dataset.page === 'classroom' || button.dataset.page === 'opportunities') {
