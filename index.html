@@ -1853,6 +1853,8 @@ td strong{color:#2a464d;font-size:11px}
     navigate(returnedFromPayment ? 'billing' : 'dashboard');
     if (returnedFromPayment) {
       $('billing-payment-message').textContent = 'Returned from Paystack. Payment is pending server verification; a redirect alone does not activate a subscription. Refresh your plan status in a moment.';
+      refreshShieldMindPlan();
+      loadInstitutionalBillingRequests();
     }
     refreshPlatformAdminAccess();
     return true;
