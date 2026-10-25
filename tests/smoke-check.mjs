@@ -243,3 +243,11 @@ assert.match(html, /\.field input,\.field select,\.field textarea,\.institution-
 assert.match(html, /env\(safe-area-inset-bottom\)/);
 assert.match(html, /\.table-wrap\{max-width:100%;overflow-x:auto\}/);
 console.log("PASS mobile workspace, forms, navigation header, tables, and safe-area layout safeguards");
+
+
+// Mobile drawer must use a vertical, full-width navigation list rather than a horizontal strip.
+assert.match(html, /Mobile drawer correction: navigation is a vertical list, never a horizontal strip/);
+assert.match(html, /\.sidebar \.nav\{\s*display:flex!important;\s*flex:0 0 auto;\s*flex-direction:column!important/);
+assert.match(html, /\.sidebar \.nav button,\s*\.app\.sidebar-collapsed \.sidebar \.nav button\{[\s\S]*?width:100%;[\s\S]*?white-space:normal/);
+assert.match(html, /\.sidebar-toggle\{display:none!important\}/);
+console.log("PASS mobile drawer navigation remains vertical and full width");
