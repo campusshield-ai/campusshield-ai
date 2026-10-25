@@ -64,6 +64,18 @@ alter table public.campus_direct_conversations enable row level security;
 alter table public.campus_direct_messages enable row level security;
 alter table public.campus_direct_message_reports enable row level security;
 
+-- Explicit deny policies make the no-direct-REST-access posture visible to linter
+-- tools; privileged, authorization-checked RPCs run as the table owner.
+drop policy if exists campus_direct_conversations_no_direct_client_access on public.campus_direct_conversations;
+create policy campus_direct_conversations_no_direct_client_access
+  on public.campus_direct_conversations for all to authenticated
+  using (false) with check (false);
+
+drop policy if exists campus_direct_message_reports_no_direct_client_access on public.campus_direct_message_reports;
+create policy campus_direct_message_reports_no_direct_client_access
+  on public.campus_direct_message_reports for all to authenticated
+  using (false) with check (false);
+
 -- All writes go through authorization-checked RPCs. Conversations and report tables
 -- are not directly exposed to the authenticated REST client.
 revoke all on table public.campus_direct_conversations from anon, authenticated;
