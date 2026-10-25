@@ -4514,6 +4514,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     } else {
       $("campus-dm-decline").textContent = "Decline";
     }
+    $("campus-dm-decline").textContent = pendingMine ? "Cancel request" : "Decline";
     $("campus-dm-block-button").hidden = !(accepted || pendingIncoming || pendingMine);
     $("campus-dm-block-button").textContent = "Block";
     if (accepted) {
@@ -4833,7 +4834,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
       $("campus-dm-search").value = "";
       campusDirectSelectedRecipient = null;
       await refreshCampusDirectConversations();
-      if (status) status.textContent = "Message sent. You can continue after the member accepts your request.";
+      const createdConversation = campusDirectConversations.find(function(item) { return item.conversation_id === id; });
+      if (status) status.textContent = createdConversation?.status === "accepted"
+        ? "Message sent to @" + campusDirectSelectedRecipient + "."
+        : "Message request sent. You can continue after the member accepts your request.";
       await openCampusDirectConversation(id);
     } catch (error) {
       if (status) status.textContent = error?.message || "Could not send the message request.";
