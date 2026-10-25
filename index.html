@@ -656,6 +656,91 @@ td strong{color:#2a464d;font-size:11px}
 }
 
 
+/* Mobile drawer correction: navigation is a vertical list, never a horizontal strip. */
+@media(max-width:650px){
+  .sidebar{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:0;
+    width:min(320px,88vw);
+    max-width:88vw;
+    height:100vh;
+    height:100dvh;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    padding:18px 14px calc(18px + env(safe-area-inset-bottom));
+  }
+  .sidebar .brand{width:100%;min-width:0;flex:0 0 auto;flex-wrap:nowrap}
+  .sidebar-toggle{display:none!important}
+  .sidebar .nav{
+    display:flex!important;
+    flex:0 0 auto;
+    flex-direction:column!important;
+    align-items:stretch;
+    gap:5px;
+    width:100%;
+    min-width:0;
+    overflow:visible;
+    padding:4px 0 12px;
+  }
+  .sidebar .nav .nav-section-label{
+    display:block!important;
+    padding:14px 11px 5px;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  .sidebar .nav button,
+  .app.sidebar-collapsed .sidebar .nav button{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:11px;
+    width:100%;
+    min-width:0;
+    min-height:46px;
+    flex:0 0 auto;
+    padding:11px 12px;
+    white-space:normal;
+    text-align:left;
+    font-size:13px;
+    line-height:1.35;
+    overflow-wrap:anywhere;
+  }
+  .sidebar .nav button .nav-label,
+  .app.sidebar-collapsed .sidebar .nav button .nav-label{
+    display:inline!important;
+    min-width:0;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  .sidebar .nav button .nav-icon,
+  .app.sidebar-collapsed .sidebar .nav button .nav-icon{
+    display:inline-flex;
+    flex:0 0 20px;
+    width:20px;
+    height:20px;
+    margin:0;
+  }
+  .sidebar .nav button.active::before{
+    left:-14px;
+    right:auto;
+    top:10px;
+    bottom:10px;
+    width:3px;
+    height:auto;
+  }
+  .app.sidebar-collapsed .sidebar .brand-copy,
+  .app.sidebar-collapsed .sidebar .nav-label,
+  .app.sidebar-collapsed .sidebar .sidebar-status p,
+  .app.sidebar-collapsed .sidebar .sidebar-status strong{display:initial}
+  .app.sidebar-collapsed .sidebar .brand{justify-content:flex-start}
+  .app.sidebar-collapsed .sidebar .brand-logo{width:42px;height:42px;flex-basis:42px}
+  .sidebar-status{display:block;margin-top:auto}
+  .app.mobile-nav-open .main{margin-left:0!important;width:100%;min-width:0}
+}
+
 /* Mobile-first layout hardening: prevent clipped headers, horizontal overflow, and cramped controls. */
 html{width:100%;max-width:100%;overflow-x:clip;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{width:100%;max-width:100%;overflow-x:clip}
