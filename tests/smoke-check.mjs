@@ -20,6 +20,7 @@ const staffIdentityParityMigration = await readFile(new URL("../supabase/migrati
 const campusPushMigration = await readFile(new URL("../supabase/migrations/20261025203000_campus_push_notifications.sql", import.meta.url), "utf8");
 const pushSubscriptionsFunction = await readFile(new URL("../supabase/functions/push-subscriptions/index.ts", import.meta.url), "utf8");
 const pushDispatchFunction = await readFile(new URL("../supabase/functions/push-dispatch/index.ts", import.meta.url), "utf8");
+const pushSecretSetup = await readFile(new URL("../scripts/configure-staging-push-secrets.ps1", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -296,6 +297,12 @@ assert.match(pushDispatchFunction, /req\.method === "OPTIONS"/, "push dispatch a
 assert.match(pushDispatchFunction, /CAMPUSSHIELD_APP_ORIGIN/, "push dispatch restricts browser requests to the configured origin");
 assert.match(pushDispatchFunction, /const respond = \(body: Record<string, unknown>, status = 200\) => json\(body, status, origin \|\| DEFAULT_ORIGIN\)/, "push API success and error responses allow the request origin");
 assert.match(pushDispatchFunction, /equalsConstantTime/, "internal dispatch secret comparison is constant-time");
+assert.match(pushSecretSetup, /npx --yes web-push generate-vapid-keys --json/, "staging setup generates VAPID keys locally");
+assert.match(pushSecretSetup, /supabase secrets set --project-ref \$projectRef --env-file \$tempEnv/, "staging setup uploads secrets directly to Supabase");
+assert.match(pushSecretSetup, /PUSH_DISPATCH_SECRET=/, "setup creates an independent dispatch secret");
+assert.match(pushSecretSetup, /CAMPUSSHIELD_APP_ORIGIN=/, "setup records the exact staging origin");
+assert.match(pushSecretSetup, /Remove-Item -LiteralPath \$tempEnv -Force/, "temporary secret file is deleted on success or failure");
+assert.doesNotMatch(pushSecretSetup, /Write-Host[^\n]*(?:VAPID_PRIVATE_KEY|PUSH_DISPATCH_SECRET|publicKey|privateKey)/i, "setup does not print generated secret values");
 assert.match(pushDispatchFunction, /Only a recently sent message can trigger a background notification/, "direct-message push checks a message the caller recently sent");
 assert.match(backend, /async sendCampusDirectMessage\(conversationId, body\)[\s\S]*?this\.callPushFunction\("delivery", \{ action: "message", message_id: data \}\)/, "direct-message push is attempted only after a successful staging message write");
 assert.match(backend, /if \(isStaging && typeof data === "string"/, "production direct messages do not call staging push functions");
