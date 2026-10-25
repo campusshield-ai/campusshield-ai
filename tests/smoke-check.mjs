@@ -27,7 +27,7 @@ for (const [index, source] of inlineScripts.entries()) {
 }
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
 assert.doesNotThrow(() => new Function(planner), "ShieldMind planner parses");
-assert.match(shieldmindGeneralAccessMigration, /General academic ShieldMind access is available|Allow signed-in accounts/i, "migration describes general account access");
+assert.match(shieldmindGeneralAccessMigration, /all signed-in accounts may use general text assistance/i, "migration describes general account access");
 assert.match(shieldmindGeneralAccessMigration, /FUNCTION public\.consume_shieldmind_quota\(\)[\s\S]*?SECURITY INVOKER/, "public quota function is an invoker wrapper");
 assert.match(shieldmindGeneralAccessMigration, /FUNCTION public\.consume_shieldmind_image_upload\(\)[\s\S]*?SECURITY INVOKER/, "public image quota function is an invoker wrapper");
 assert.doesNotMatch(shieldmindGeneralAccessMigration, /perform private\.shieldmind_require_eligible_caller\(\)/i, "general quota does not require campus verification");
