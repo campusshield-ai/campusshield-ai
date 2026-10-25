@@ -140,7 +140,7 @@
   }
 
   function occurrenceForItem(item, date) {
-    if (!item.starts_at || item.completed) return null;
+    if (!item.starts_at) return null;
     const weekdays = weekdaysForItem(item);
     if (weekdays.length && item.kind === "class") {
       const start = recurringStartForDate(item, date);
@@ -231,7 +231,9 @@
     const courseButton = item.course_code
       ? '<button type="button" class="btn secondary" data-page="groups" data-course-search="' + escapeHtml(item.course_code) + '">Find course community</button>'
       : '<button type="button" class="btn secondary" data-page="courses">Link a course</button>';
-    const toggleButton = '<button type="button" class="btn secondary" data-timetable-action="toggle" data-timetable-id="' + escapeHtml(item.id) + '" data-completed="' + String(Boolean(item.completed)) + '">' + (item.completed ? "Mark incomplete" : "Mark complete") + "</button>";
+    const toggleButton = occurrence.recurring
+      ? ""
+      : '<button type="button" class="btn secondary" data-timetable-action="toggle" data-timetable-id="' + escapeHtml(item.id) + '" data-completed="' + String(Boolean(item.completed)) + '">' + (item.completed ? "Mark incomplete" : "Mark complete") + "</button>";
     const deleteButton = '<button type="button" class="btn secondary" data-timetable-action="delete" data-timetable-id="' + escapeHtml(item.id) + '">Delete</button>';
     return '<article class="campus-timetable-item' + completedClass + '">' +
       '<div class="campus-timetable-item-time"><strong>' + escapeHtml(formatTime(occurrence.start)) + "</strong>" +
@@ -323,11 +325,10 @@
 
   function updateSummary() {
     const weekDays = currentWeekDays();
-    const recurringClasses = timetableItems.filter((item) => item.kind === "class" && weekdaysForItem(item).length);
-    const timedClasses = timetableItems.filter((item) => item.kind === "class" && item.starts_at);
+    const timedClasses = timetableItems.filter((item) => item.kind === "class" && item.starts_at && !item.completed);
     const unsolvedTasks = timetableItems.filter((item) => !item.completed && item.kind !== "class");
     byId("campus-timetable-course-count").textContent = String(publishedCourses.length);
-    byId("campus-timetable-class-count").textContent = String(timedClasses.length + recurringClasses.length);
+    byId("campus-timetable-class-count").textContent = String(timedClasses.length);
     byId("campus-timetable-task-count").textContent = String(unsolvedTasks.length);
     void weekDays;
   }
@@ -447,7 +448,7 @@
       });
       const preserveKind = kind;
       byId("campus-timetable-form").reset();
-      byId("campus-timetable-kind").value = preserveKind === "class" ? "class" : "assignment";
+      byId("campus-timetable-kind").value = preserveKind;
       updateRepeatVisibility();
       formStatus("Saved to your private timetable.");
       await load();
