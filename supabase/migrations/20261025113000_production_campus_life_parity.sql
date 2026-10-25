@@ -3216,7 +3216,7 @@ grant execute on function public.get_campus_classroom_join_code(uuid) to authent
 -- Hardened invoker wrappers + private implementations for current campus social, classroom, and planner workflows.
 create or replace function private.can_access_classroom(p_classroom_id uuid)
 returns boolean language sql stable security definer set search_path = ''
-as $
+as $body$
   select exists (
     select 1
     from public.campus_classrooms c
@@ -3234,7 +3234,7 @@ as $
         )
       )
   );
-$;
+$body$;
 revoke all on function private.can_access_classroom(uuid) from public, anon;
 grant execute on function private.can_access_classroom(uuid) to authenticated;
 
@@ -3659,7 +3659,7 @@ grant execute on function public.toggle_campus_follow_post_author(uuid,boolean) 
 
 create or replace function private.set_campus_class_assistant_impl(p_classroom_id uuid, p_student_id uuid)
 returns void language plpgsql security definer set search_path = ''
-as $
+as $body$
 declare v_university uuid;
 begin
   if not private.is_verified_classroom_teacher(p_classroom_id) then
@@ -3679,7 +3679,7 @@ begin
   update public.campus_classrooms set assistant_student_id = p_student_id, updated_at = now()
   where id = p_classroom_id;
 end;
-$;
+$body$;
 revoke all on function private.set_campus_class_assistant_impl(uuid,uuid) from public, anon;
 grant execute on function private.set_campus_class_assistant_impl(uuid,uuid) to authenticated;
 create or replace function public.set_campus_class_assistant(p_classroom_id uuid, p_student_id uuid)
