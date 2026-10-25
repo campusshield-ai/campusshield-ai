@@ -26,6 +26,13 @@
   window.CampusShieldBackend = {
     isConfigured: ready,
     client,
+
+    async getMyStudentRewards() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("get_my_student_rewards");
+      if (error) throw error;
+      return data || {};
+    },
  
 async signUp(email, password, displayName, username, universityId, profileData = {}) {
   if (!client) throw new Error("Supabase is not configured.");
