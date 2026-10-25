@@ -1471,6 +1471,20 @@ async getCurrentUser() {
         p_body: String(body || "").trim()
       });
       if (error) throw error;
+
+      // Use background push only in the staging project until production has been
+      // configured and authenticated end-to-end notification tests have passed.
+      let isStaging = false;
+      try {
+        isStaging = new URL(String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url || "")).hostname === "hywcpnoqqhxvujnimhxl.supabase.co";
+      } catch (_error) {}
+      if (isStaging && typeof data === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data)) {
+        try {
+          await this.callPushFunction("delivery", { action: "message", message_id: data });
+        } catch (_pushError) {
+          // Message delivery succeeds independently; a disabled push channel must not block chat.
+        }
+      }
       return data;
     },
 
