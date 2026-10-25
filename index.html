@@ -2139,6 +2139,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   let authMode = 'signin';
   let identityCompletionMode = false;
   let authBusy = false;
+  let confirmationPending = false;
   const initialRecoveryHash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
   let passwordRecoveryActive =
     new URLSearchParams(window.location.search).get('password-reset') === '1' ||
@@ -2606,7 +2607,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     $('auth-university').required = false; // hidden ID select is populated only after an exact directory match
     if ($('auth-university-search')) $('auth-university-search').required = isSignUp && !identityCompletionMode;
     syncSignupRoleFields(isSignUp && !identityCompletionMode);
-    $('resend-field').hidden = isSignUp || isReset;
+    $('resend-field').hidden = isReset || (isSignUp && !confirmationPending);
     $('auth-helper').hidden = isReset;
     $('install-card').hidden = isReset;
     $('auth-title').textContent = identityCompletionMode ? 'Complete student setup' : isSignUp ? 'Create your account' : isReset ? 'Choose a new password' : 'Welcome back';
@@ -6381,9 +6382,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
         }
       } else {
         sessionStorage.setItem('campusshield_requested_role', requestedRole);
+        confirmationPending = true;
+        $('resend-field').hidden = false;
         msg.textContent = isTeacher
-          ? 'Account created. Check your email to confirm it, then sign in to finish campus onboarding and staff verification.'
-          : 'Account created. Confirm your email, sign in, then choose Complete student setup to securely upload your ID. ID files are not saved on this device.';
+          ? 'Account created. Open the confirmation link sent to your email, then return here to sign in and finish staff verification. You can resend the email below.'
+          : 'Account created. Open the confirmation link sent to your email, then sign in and choose Complete student setup to securely upload your ID. You can resend the email below.';
       }
     } catch (e) {
       console.error('Sign-up failed:', e);
@@ -6972,6 +6975,21 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
   } else {
     showLogin();
+  }
+
+  // Surface Supabase confirmation-link errors instead of silently returning to sign-in.
+  // Supabase may return these in the query string or URL fragment.
+  const confirmationQuery = new URLSearchParams(window.location.search);
+  const confirmationHash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
+  const confirmationError = confirmationQuery.get('error_description') || confirmationHash.get('error_description');
+  if (confirmationError) {
+    confirmationPending = true;
+    $('resend-field').hidden = false;
+    const normalizedConfirmationError = confirmationError.toLowerCase();
+    $('auth-message').textContent = /expired|invalid|otp/i.test(normalizedConfirmationError)
+      ? 'That email link has expired or was already used. Enter your email and choose Resend confirmation email to get a fresh link.'
+      : 'The email confirmation link could not be completed. Request a fresh confirmation email below.';
+    try { window.history.replaceState({}, document.title, window.location.pathname); } catch (_urlError) {}
   }
 
   (async () => {
