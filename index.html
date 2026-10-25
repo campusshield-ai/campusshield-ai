@@ -965,6 +965,50 @@ button,input,select,textarea{max-width:100%;min-width:0}
 #studentIdentityForm .btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(16,43,53,.17)}
 @media(max-width:650px){.signup-student-identity-panel{padding:14px;border-radius:16px}#studentIdentityForm{grid-template-columns:minmax(0,1fr);padding:15px;gap:0;border-radius:14px}#studentIdentityForm>.field:has(#identity-document){grid-column:auto}#identity-verification-status,#studentIdentityForm .remember-field,#studentIdentityForm>p.muted,#studentIdentityForm>.actions,#studentIdentityForm>button{grid-column:auto}}
 
+
+/* Mobile usability polish: prevent clipped content and improve touch targets. */
+@media(max-width:760px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .app,.main,.content,.panel,.card,.heading,.heading-actions,.topbar,.topbar-actions,
+  .login-screen,.login-intro,.login-form-wrap,.auth-panel,.field,.form-grid,
+  .campus-dashboard-card,.campus-dashboard-panel,.shieldmind-grid,.shieldmind-planner-panel{
+    min-width:0;max-width:100%;
+  }
+  .content{padding-left:clamp(12px,3.5vw,18px);padding-right:clamp(12px,3.5vw,18px)}
+  .heading h1,.heading h2,.panel h2,.panel h3,.campus-dashboard-card h3{
+    overflow-wrap:anywhere;word-break:normal;
+  }
+  .btn,button:not(.nav button):not(.password-toggle):not(.sidebar-toggle):not(.mobile-nav-toggle),
+  input[type="submit"],input[type="button"]{min-height:42px}
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,textarea{max-width:100%;min-width:0;box-sizing:border-box}
+  textarea{resize:vertical}
+  .table-wrap,.table-responsive,.table-scroll,.data-table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{max-width:100%}
+  th,td{overflow-wrap:anywhere}
+  .campus-dashboard-actions,.heading-actions,.topbar-actions,.shieldmind-planner-actions{
+    flex-wrap:wrap;min-width:0;
+  }
+  .campus-dashboard-actions .btn,.heading-actions .btn{max-width:100%;white-space:normal}
+  .campus-dashboard-helpdesk,.campus-dashboard-grid,.campus-dashboard-metrics,
+  .shieldmind-grid,.shieldmind-planner-fields{min-width:0}
+  .campus-hub-channel,.campus-hub-channel-copy,.campus-hub-series{min-width:0}
+  .campus-hub-channel-copy small{overflow-wrap:anywhere}
+}
+@media(max-width:520px){
+  .topbar{padding-left:12px;padding-right:12px}
+  .topbar-actions{width:100%;align-items:stretch}
+  .topbar-actions .btn{flex:1 1 auto}
+  .panel{min-width:0}
+  .field label{line-height:1.4}
+  .actions,.form-actions{display:flex;flex-wrap:wrap;gap:8px}
+  .actions>.btn,.form-actions>.btn{flex:1 1 140px}
+  .empty-state{min-width:0;overflow-wrap:anywhere}
+  .recent-item,.campus-dashboard-list-item,.shieldmind-planner-item{min-width:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .campus-hub-channel-link,.btn,.campus-dashboard-actions .btn{transition:none!important}
+}
 </style>
 </head>
 <body>
