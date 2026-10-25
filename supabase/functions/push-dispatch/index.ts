@@ -35,6 +35,8 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Validate the VAPID keypair before claiming an idempotency key.
+    webpush.setVapidDetails(subject, publicKey, privateKey);
     const body = await req.json().catch(() => null);
     let userId = String(body?.user_id || "");
     let kind = body?.kind as PushKind;
@@ -110,7 +112,6 @@ Deno.serve(async (req: Request) => {
       return json({ delivered: 0, expired: 0 });
     }
 
-    webpush.setVapidDetails(subject, publicKey, privateKey);
     const message = genericMessages[kind];
     const payload = JSON.stringify({
       title: message.title,
