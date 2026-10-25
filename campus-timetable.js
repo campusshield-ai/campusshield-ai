@@ -252,7 +252,7 @@
       '<div class="campus-timetable-event-date"><strong>' + escapeHtml(formatTime(occurrence.start)) + '</strong><small>' + escapeHtml(event.category || "event") + "</small></div>" +
       '<div class="campus-timetable-event-copy"><h4>' + escapeHtml(event.title || "Campus event") + "</h4>" +
       '<p>' + escapeHtml([event.location, event.organizer_username ? "@" + event.organizer_username : ""].filter(Boolean).join(" · ") || "Published university event") + "</p></div>" +
-      '<button type="button" class="btn secondary" data-page="events">View event</button></article>";
+      '<button type="button" class="btn secondary" data-page="events">View event</button></article>';
   }
 
   function renderCalendar() {
