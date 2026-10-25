@@ -27,6 +27,42 @@
     isConfigured: ready,
     client,
 
+    async getPushPublicKey() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-subscriptions", { body: { action: "get-key" } });
+      if (error) throw error;
+      if (!data?.publicKey) throw new Error(data?.error || "Background notifications are not configured yet.");
+      return data.publicKey;
+    },
+
+    async savePushSubscription(subscription) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-subscriptions", {
+        body: { action: "subscribe", subscription }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+
+    async removePushSubscription(endpoint) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-subscriptions", {
+        body: { action: "unsubscribe", endpoint }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+
+    async sendPushTest() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-dispatch", { body: { action: "test" } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+
     async getMyStudentRewards() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("get_my_student_rewards");
