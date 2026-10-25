@@ -824,6 +824,7 @@ td strong{color:#2a464d;font-size:11px}
 <button data-page="events"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>Events</button>
 <button data-page="marketplace"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16l-1.5-5h-13L4 8ZM5 8v13h14V8M9 21v-7h6v7M3 8a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg></span>Marketplace</button>
 <button data-page="classroom" id="classroom-nav">Teacher Classroom</button>
+<button data-page="courses" id="courses-nav">Course &amp; Resource Directory</button>
 <button data-page="opportunities" id="opportunities-nav">Gift & Opportunity Hub</button>
 <button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button>
 <button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; billing</button>
@@ -950,6 +951,12 @@ td strong{color:#2a464d;font-size:11px}
       <h3>Find your learning spaces</h3>
       <p>Open course spaces and learning links shared through authorized campus classrooms.</p>
       <button class="btn secondary" type="button" data-page="classroom">Open course spaces</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">COURSE DIRECTORY</span>
+      <h3>Find course outlines and learning links</h3>
+      <p>Browse campus-approved courses and external learning resources. New suggestions wait for review.</p>
+      <button class="btn secondary" type="button" data-page="courses">Open course directory</button>
     </article>
     <article class="campus-feature">
       <span class="campus-feature-kicker">STUDY GROUPS</span>
@@ -1371,6 +1378,57 @@ td strong{color:#2a464d;font-size:11px}
     <div class="panel-heading"><div><h2 id="classroom-detail-title">Classroom</h2><p id="classroom-detail-subtitle" class="muted"></p></div><button class="btn secondary" type="button" id="close-classroom-detail">Close</button></div>
     <div id="classroom-detail-content"></div>
     <p id="classroom-detail-message" class="message" role="status" aria-live="polite"></p>
+  </section>
+</section>
+
+
+<section class="page" id="page-courses">
+  <div class="heading"><div><h1>Course &amp; Resource Directory</h1><p>Discover course listings and learning links approved for your university.</p></div><div class="heading-actions"><button class="btn secondary" type="button" id="refresh-campus-courses">Refresh directory</button></div></div>
+  <div class="notice-inline"><strong>Trusted learning links.</strong> Course and resource suggestions stay pending until reviewed. Links open external websites; CampusShield does not host or endorse every external resource. Do not submit private student records, passwords, or restricted course files.</div>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Published courses</h2><p>Search your university's approved directory.</p></div></div>
+    <p id="campus-courses-status" class="message" role="status" aria-live="polite">Loading courses…</p>
+    <div id="campus-courses-feed"><div class="community-empty">Loading courses…</div></div>
+  </section>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Approved learning resources</h2><p>Resources linked to published courses.</p></div></div>
+    <p id="campus-course-resources-status" class="message" role="status" aria-live="polite">Loading resources…</p>
+    <div id="campus-course-resources-feed"><div class="community-empty">Loading resources…</div></div>
+  </section>
+  <section class="panel" id="campus-course-suggest-panel">
+    <div class="panel-heading"><div><h2>Suggest a course</h2><p>Suggestions stay pending until reviewed.</p></div></div>
+    <form id="campus-course-form">
+      <div class="grid two">
+        <div class="field"><label for="campus-course-code">Course code *</label><input id="campus-course-code" required maxlength="32" minlength="2" placeholder="e.g. CSC 301"></div>
+        <div class="field"><label for="campus-course-title">Course title *</label><input id="campus-course-title" required maxlength="160" minlength="3" placeholder="e.g. Database Systems"></div>
+        <div class="field"><label for="campus-course-faculty">Faculty (optional)</label><input id="campus-course-faculty" maxlength="120"></div>
+        <div class="field"><label for="campus-course-department">Department (optional)</label><input id="campus-course-department" maxlength="120"></div>
+        <div class="field"><label for="campus-course-level">Study level</label><select id="campus-course-level"><option value="all">All levels</option><option value="100">100 level</option><option value="200">200 level</option><option value="300">300 level</option><option value="400">400 level</option><option value="500">500 level</option><option value="600">600 level</option><option value="postgraduate">Postgraduate</option></select></div>
+      </div>
+      <div class="field"><label for="campus-course-summary">Brief description (optional)</label><textarea id="campus-course-summary" maxlength="2000" placeholder="Short course overview or topics covered"></textarea></div>
+      <div class="actions"><button class="btn" type="submit">Submit course for review</button></div>
+      <p id="campus-course-form-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="panel" id="campus-resource-suggest-panel">
+    <div class="panel-heading"><div><h2>Suggest a learning resource</h2><p>Use an official course page, public learning link, or another lawful external resource.</p></div></div>
+    <form id="campus-resource-form">
+      <div class="grid two">
+        <div class="field"><label for="campus-resource-course">Published course *</label><select id="campus-resource-course" required><option value="">Choose a published course</option></select></div>
+        <div class="field"><label for="campus-resource-type">Resource type *</label><select id="campus-resource-type" required><option value="lecture_notes">Lecture notes</option><option value="past_question">Past questions</option><option value="reading">Reading / textbook page</option><option value="video">Video / lecture</option><option value="slides">Slides</option><option value="website">Website</option><option value="other">Other</option></select></div>
+        <div class="field"><label for="campus-resource-title">Resource title *</label><input id="campus-resource-title" required minlength="3" maxlength="160"></div>
+        <div class="field"><label for="campus-resource-label">Source / publisher *</label><input id="campus-resource-label" required minlength="2" maxlength="120" placeholder="e.g. Official department site"></div>
+        <div class="field" style="grid-column:1/-1"><label for="campus-resource-url">External URL *</label><input id="campus-resource-url" required type="url" maxlength="2048" placeholder="https://"></div>
+      </div>
+      <div class="field"><label for="campus-resource-description">Description (optional)</label><textarea id="campus-resource-description" maxlength="2000"></textarea></div>
+      <div class="actions"><button class="btn" type="submit">Submit resource for review</button></div>
+      <p id="campus-resource-form-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="panel" id="campus-course-review-panel" hidden>
+    <div class="panel-heading"><div><h2>Course &amp; resource review</h2><p>Pending suggestions for your current university.</p></div><button class="btn secondary" type="button" id="refresh-campus-course-reviews">Refresh queue</button></div>
+    <p id="campus-course-review-status" class="message" role="status" aria-live="polite"></p>
+    <div id="campus-course-review-feed"></div>
   </section>
 </section>
 
@@ -2299,6 +2357,7 @@ td strong{color:#2a464d;font-size:11px}
       events:'Campus events',
       marketplace:'Campus marketplace',
       classroom:'Teacher Classroom',
+      courses:'Course & Resource Directory',
       opportunities:'Gift & Opportunity Hub',
       shieldmind:'ShieldMind AI',
       billing:'Subscriptions & billing',
@@ -2569,6 +2628,7 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'approvals') loadAccountApprovals();
     if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
     if (button.dataset.page === 'classroom') loadCampusClassroomsPage();
+    if (button.dataset.page === 'courses') loadCampusCoursesPage();
     if (button.dataset.page === 'opportunities') loadCampusOpportunitiesPage();
     if (button.dataset.page === 'shieldmind') { resetShieldMindForSession(); refreshShieldMindPlan(); window.CampusShieldPlanner?.load(); }
     if (button.dataset.page === 'billing') { refreshShieldMindPlan(); loadInstitutionalBillingRequests(); }
