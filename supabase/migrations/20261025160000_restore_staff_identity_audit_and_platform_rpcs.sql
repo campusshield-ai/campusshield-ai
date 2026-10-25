@@ -98,6 +98,14 @@ ON public.student_identity_upload_scans
 FOR SELECT TO authenticated
 USING (user_id = (SELECT auth.uid()));
 
+DROP POLICY IF EXISTS campus_identity_evidence_checks_no_direct_client_access ON public.campus_identity_evidence_checks;
+CREATE POLICY campus_identity_evidence_checks_no_direct_client_access
+ON public.campus_identity_evidence_checks
+FOR ALL TO anon, authenticated
+USING (false)
+WITH CHECK (false);
+
+
 -- Evidence audit records have no direct client-side read or write policy.
 -- Approved campus administrators use the guarded audit RPCs instead.
 
