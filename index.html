@@ -6963,6 +6963,20 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   }
 });
 
+  // Keep render() as the app's rendering function.
+  $('approvals-nav').hidden = true;
+  setAuthMode('signin');
+
+  render();
+  if (passwordRecoveryActive) {
+    $('workspace').hidden = true;
+    $('login-screen').hidden = false;
+    setAuthMode('reset');
+    $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
+  } else {
+    showLogin();
+  }
+
   // Surface Supabase confirmation-link errors instead of silently returning to sign-in.
   // Supabase may return these in the query string or URL fragment.
   const confirmationQuery = new URLSearchParams(window.location.search);
@@ -6976,20 +6990,6 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       ? 'That email link has expired or was already used. Enter your email and choose Resend confirmation email to get a fresh link.'
       : 'The email confirmation link could not be completed. Request a fresh confirmation email below.';
     try { window.history.replaceState({}, document.title, window.location.pathname); } catch (_urlError) {}
-  }
-
-  // Keep render() as the app's rendering function.
-  $('approvals-nav').hidden = true;
-  setAuthMode('signin');
-
-  render();
-  if (passwordRecoveryActive) {
-    $('workspace').hidden = true;
-    $('login-screen').hidden = false;
-    setAuthMode('reset');
-    $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
-  } else {
-    showLogin();
   }
 
   (async () => {
