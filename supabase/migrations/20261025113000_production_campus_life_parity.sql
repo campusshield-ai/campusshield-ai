@@ -3007,6 +3007,86 @@ $function$;
 revoke all on function private.shieldmind_require_eligible_caller() from public, anon, authenticated;
 grant execute on function private.shieldmind_require_eligible_caller() to postgres;
 
+
+-- Definitions must precede policies and invoker wrappers that call them.
+create or replace function private.current_user_matches_notice_audience(
+  p_university_id uuid,
+  p_audience_scope text,
+  p_target_faculty text,
+  p_target_department text
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $function$
+  select exists (
+    select 1
+    from public.campus_memberships cm
+    where cm.user_id = (select auth.uid())
+      and cm.university_id = p_university_id
+      and cm.membership_status = 'active'
+      and (
+        p_audience_scope = 'campus'
+        or (
+          p_audience_scope = 'faculty'
+          and cm.faculty = p_target_faculty
+        )
+        or (
+          p_audience_scope = 'department'
+          and cm.faculty = p_target_faculty
+          and cm.department = p_target_department
+        )
+      )
+  );
+$function$;
+revoke all on function private.current_user_matches_notice_audience(uuid,text,text,text) from public, anon;
+grant execute on function private.current_user_matches_notice_audience(uuid,text,text,text) to authenticated;
+create or replace function private.get_campus_classroom_join_code_impl(p_classroom_id uuid)
+returns text
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  v_user uuid := (select auth.uid());
+  v_code text;
+begin
+  if v_user is null then
+    raise exception 'Sign in is required.' using errcode = '28000';
+  end if;
+
+  if not exists (
+    select 1
+    from public.profiles p
+    join public.campus_memberships m on m.user_id = p.id
+    join public.campus_classrooms c on c.university_id = m.university_id
+    where p.id = v_user
+      and c.id = p_classroom_id
+      and c.teacher_id = v_user
+      and p.role = 'teacher'
+      and p.verification_status = 'verified'
+      and m.campus_role = 'teacher'
+      and m.membership_status = 'active'
+      and m.verification_status = 'verified'
+  ) then
+    raise exception 'Only the verified class teacher can view this join code.' using errcode = '42501';
+  end if;
+
+  select c.join_code into v_code
+  from public.campus_classrooms c
+  where c.id = p_classroom_id and c.teacher_id = v_user;
+
+  if v_code is null then
+    raise exception 'Classroom not found.' using errcode = 'P0002';
+  end if;
+
+  return v_code;
+end;
+$function$;
+revoke all on function private.get_campus_classroom_join_code_impl(uuid) from public, anon;
+grant execute on function private.get_campus_classroom_join_code_impl(uuid) to authenticated;
 -- Read policies must bind all visible CampusPulse content to the caller's active university.
 drop policy if exists community_posts_read_published_or_staff on public.community_posts;
 drop policy if exists community_posts_read_same_campus on public.community_posts;
