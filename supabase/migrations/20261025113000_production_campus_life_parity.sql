@@ -1095,6 +1095,26 @@ drop policy if exists shieldmind_planner_delete_own on public.shieldmind_planner
 create policy shieldmind_planner_delete_own on public.shieldmind_planner_items
   for delete to authenticated using (user_id = (select auth.uid()));
 
+create or replace function private.fill_campus_social_username()
+returns trigger language plpgsql security definer set search_path to ''
+as $function$
+declare v_user_id uuid;
+begin
+  if tg_table_name='campus_groups' then
+    v_user_id := new.created_by;
+    select cp.username into new.creator_username from public.community_profiles cp where cp.user_id=v_user_id;
+  elsif tg_table_name='campus_events' then
+    v_user_id := new.created_by;
+    select cp.username into new.organizer_username from public.community_profiles cp where cp.user_id=v_user_id;
+  elsif tg_table_name='campus_marketplace_listings' then
+    v_user_id := new.seller_id;
+    select cp.username into new.seller_username from public.community_profiles cp where cp.user_id=v_user_id;
+  end if;
+  return new;
+end;
+$function$;
+revoke all on function private.fill_campus_social_username() from public,anon,authenticated;
+
 drop trigger if exists campus_groups_set_username on public.campus_groups;
 create trigger campus_groups_set_username before insert on public.campus_groups
 for each row execute function private.fill_campus_social_username();
