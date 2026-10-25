@@ -301,7 +301,7 @@ assert.match(pushSecretSetup, /npx --yes web-push generate-vapid-keys --json/, "
 assert.match(pushSecretSetup, /supabase secrets set --project-ref \$projectRef --env-file \$tempEnv/, "staging setup uploads secrets directly to Supabase");
 assert.match(pushSecretSetup, /PUSH_DISPATCH_SECRET=/, "setup creates an independent dispatch secret");
 assert.match(pushSecretSetup, /CAMPUSSHIELD_APP_ORIGIN=/, "setup records the exact staging origin");
-assert.match(pushSecretSetup, /campusshield-ai\\.github\\.io/, "setup refuses to configure the production host as staging");
+assert.ok(pushSecretSetup.includes("campusshield-ai.github.io"), "setup refuses to configure the production host as staging");
 assert.match(pushSecretSetup, /Remove-Item -LiteralPath \$tempEnv -Force/, "temporary secret file is deleted on success or failure");
 assert.doesNotMatch(pushSecretSetup, /Write-Host[^\n]*(?:VAPID_PRIVATE_KEY|PUSH_DISPATCH_SECRET|publicKey|privateKey)/i, "setup does not print generated secret values");
 assert.match(pushDispatchFunction, /Only a recently sent message can trigger a background notification/, "direct-message push checks a message the caller recently sent");
