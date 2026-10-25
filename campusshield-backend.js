@@ -21,6 +21,10 @@
   // be allowed in the matching Supabase project's Auth URL Configuration.
   function getAuthRedirectUrl() {
     const url = new URL(window.location.href);
+    const isLocalHttp = url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname);
+    if (url.protocol !== "https:" && !isLocalHttp) {
+      throw new Error("Open CampusShield through HTTPS or localhost to complete sign-up.");
+    }
     url.search = "";
     url.hash = "";
     return url.href;
