@@ -130,6 +130,20 @@ for (const label of [
 ]) assert.ok(html.includes(label), `student navigation contains ${label}`);
 assert.match(html, /id="page-profile-settings"/);
 assert.match(html, /id="profile-settings-email"/);
+
+// Profile dashboard layout, private contact edits, and safely scoped helpdesk alerts.
+assert.match(html, /id="profile-settings-contact-form"/);
+assert.match(html, /id="profile-settings-contact-phone"/);
+assert.match(html, /id="profile-settings-department"/);
+assert.match(html, /id="profile-settings-alerts"/);
+assert.match(html, /id="profile-settings-mark-all-read"/);
+assert.match(html, /function loadProfileSettingsAlerts\(user, backend\)/);
+assert.match(html, /currentProfile\?\.role === 'admin' && canModerateCommunity\(\)/);
+assert.match(html, /replace\(\/\[\^a-z0-9-\]\+\/g, '-'\)/);
+assert.match(html, /listCampusHelpdeskTicketUpdates\(mine\.map/);
+assert.match(html, /campusshield\.profile-alerts\.v1\./);
+assert.match(html, /auth\.updateUser\(\{ data: metadata \}\)/);
+
 assert.match(html, /id="nav-staff-heading" hidden/);
 assert.match(html, /el\.id === 'community-nav' && page === 'groups'/);
 assert.match(html, /el\.id === 'events-services-nav' && \['noticeboard','helpdesk','marketplace'\]/);

@@ -879,6 +879,68 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .campus-contacts-footnote{color:#7d8c90;font-size:10px;line-height:1.6}
 @media(max-width:700px){.campus-contacts-grid{grid-template-columns:minmax(0,1fr)}.campus-contacts-campus-summary{align-items:flex-start;flex-direction:column}.campus-contacts-campus-summary .btn{width:100%;justify-content:center}}
 
+
+/* Advanced private profile layout */
+.profile-page-heading{margin-bottom:24px}
+.profile-page-heading h1{letter-spacing:-.035em}
+.profile-dashboard-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:stretch}
+.profile-overview-card,.profile-alerts-card{border:1px solid #d9e3ee;border-radius:22px;background:#fff;box-shadow:0 8px 30px rgba(17,39,72,.035);padding:26px;min-width:0}
+.profile-identity-header{display:flex;align-items:center;gap:18px;margin-bottom:24px;min-width:0}
+.profile-avatar{display:grid;place-items:center;width:68px;height:68px;flex:0 0 68px;border-radius:21px;background:#10284a;color:#fff}
+.profile-avatar svg{width:37px;height:37px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.profile-identity-copy{min-width:0}
+.profile-account-name{margin:0 0 5px;color:#132c4d;font-size:20px;font-weight:760;letter-spacing:-.025em;overflow-wrap:anywhere}
+.profile-account-email{margin:0;color:#647b99;font-size:14px;overflow-wrap:anywhere}
+.profile-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.profile-verification-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #edf1f6;padding-top:17px;margin-bottom:18px}
+.profile-overline{margin:0;color:#647b99;font-size:11px;font-weight:850;letter-spacing:1.9px}
+.profile-status-pill{display:inline-flex;align-items:center;justify-content:center;min-height:33px;padding:6px 14px;border:1px solid #dfe7f1;border-radius:99px;background:#f4f7fb;color:#425774;font-size:12px;font-weight:800;text-transform:capitalize}
+.profile-status-pill.profile-status-verified,.profile-status-pill.profile-status-approved{background:#e8f8ef;color:#157144;border-color:#ccecd8}
+.profile-status-pill.profile-status-pending,.profile-status-pill.profile-status-pending-review{background:#fff6e6;color:#8e5b04;border-color:#f6e5bd}
+.profile-status-pill.profile-status-rejected{background:#fff0f0;color:#a62636;border-color:#f3d3d5}
+.profile-account-details{display:grid;gap:0}
+.profile-account-detail{display:grid;grid-template-columns:minmax(120px,.85fr) minmax(0,1.4fr);align-items:start;gap:12px;padding:12px 0;border-bottom:1px solid #edf1f6}
+.profile-account-detail>span{color:#647b99;font-size:11px;font-weight:800;letter-spacing:1.35px}
+.profile-account-detail>strong{color:#112e52;font-size:14px;font-weight:650;text-align:right;overflow-wrap:anywhere}
+.profile-security-note{display:flex;gap:10px;align-items:flex-start;margin:18px 0 24px;padding:14px;border-radius:15px;background:#f4f7fa;color:#58708c}
+.profile-security-note svg{width:18px;height:18px;flex:0 0 18px;margin-top:1px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.profile-security-note p{margin:0;font-size:12px;line-height:1.55}
+.profile-contact-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 16px;margin-top:2px}
+.profile-contact-field{min-width:0}
+.profile-contact-field label{display:block;margin-bottom:8px;color:#132c4d;font-size:13px;font-weight:650}
+.profile-contact-field input{width:100%;min-width:0;min-height:45px;padding:11px 13px;border:1px solid #d7e1ec;border-radius:13px;background:#fff;color:#112e52;box-shadow:0 2px 3px rgba(17,39,72,.035);font:inherit;font-size:13px}
+.profile-contact-field input:focus{outline:3px solid rgba(49,103,170,.16);border-color:#4278b4}
+.profile-save-details{display:inline-flex;align-items:center;justify-content:center;gap:9px;justify-self:start;min-height:45px;padding:0 18px;border-radius:13px;background:#10284a;color:white}
+.profile-save-details svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.profile-contact-message{grid-column:1/-1;margin:0;font-size:12px}
+.profile-alerts-card{display:flex;flex-direction:column;min-height:100%}
+.profile-alerts-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:8px}
+.profile-alerts-header h2{margin:8px 0 0;color:#132c4d;font-size:19px;letter-spacing:-.02em}
+.profile-mark-all-read{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;padding:7px 0;border:0;background:transparent;color:#17395f;font:inherit;font-size:12px;font-weight:650;cursor:pointer}
+.profile-mark-all-read svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.profile-mark-all-read:disabled{opacity:.38;cursor:default}
+.profile-mark-all-read:focus-visible,.profile-alert-action:focus-visible{outline:3px solid rgba(49,103,170,.25);outline-offset:3px;border-radius:6px}
+.profile-alerts-status{margin:0 0 6px;color:#7588a0;font-size:12px}
+.profile-alerts-list{display:grid;align-content:start}
+.profile-alert-item{display:grid;grid-template-columns:43px minmax(0,1fr);gap:13px;padding:18px 0;border-bottom:1px solid #e9eef4}
+.profile-alert-item:last-child{border-bottom:0}
+.profile-alert-item.is-read{opacity:.72}
+.profile-alert-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:15px;background:#fff3e9;color:#d76820}
+.profile-alert-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.profile-alert-content{min-width:0}
+.profile-alert-title{margin:0 0 5px;color:#173454;font-size:14px;line-height:1.45;font-weight:760;overflow-wrap:anywhere}
+.profile-alert-meta{margin:0;color:#647b99;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.profile-alert-time{margin:6px 0 0;color:#7a8ca2;font-size:11px}
+.profile-alert-actions{display:flex;align-items:center;justify-content:flex-start;gap:18px;flex-wrap:wrap;margin-top:8px}
+.profile-alert-action{padding:0;border:0;background:transparent;color:#2e5c8a;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.profile-alert-open{color:#d35b25}
+.profile-alert-read-indicator{color:#7b8ca1;font-size:11px;font-weight:650}
+.profile-alert-empty{padding:24px 12px;text-align:center;color:#70839a;font-size:13px;line-height:1.6}
+.profile-alert-empty strong{display:block;margin-bottom:4px;color:#173454;font-size:14px}
+.profile-settings-secondary-grid{margin-top:24px}
+@media(max-width:950px){.profile-dashboard-layout{grid-template-columns:minmax(0,1fr)}.profile-alerts-card{min-height:0}}
+@media(max-width:600px){.profile-overview-card,.profile-alerts-card{padding:18px;border-radius:18px}.profile-identity-header{gap:13px}.profile-avatar{width:56px;height:56px;flex-basis:56px;border-radius:17px}.profile-avatar svg{width:31px;height:31px}.profile-account-name{font-size:17px}.profile-contact-form{grid-template-columns:minmax(0,1fr)}.profile-contact-message{grid-column:1}.profile-account-detail{grid-template-columns:minmax(105px,.8fr) minmax(0,1.2fr);gap:8px}.profile-account-detail>span{font-size:10px;letter-spacing:.9px}.profile-account-detail>strong{font-size:13px}.profile-alerts-header{align-items:flex-start}.profile-mark-all-read{font-size:11px}.profile-alerts-header h2{font-size:18px}}
+
 </style>
 </head>
 <body>
@@ -1647,32 +1709,93 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
 
 <section class="page" id="page-profile-settings">
-  <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">YOUR ACCOUNT</span><h1>My Profile &amp; Settings</h1><p>Review your account status, campus connection and public-profile privacy.</p></div></div>
-  <div class="grid two">
-    <section class="panel" aria-labelledby="profile-settings-account-title">
-      <div class="panel-heading"><div><h2 id="profile-settings-account-title">Private account details</h2><p>Visible only in your signed-in workspace.</p></div></div>
-      <div class="profile-settings-grid">
-        <div class="profile-settings-field"><span>Display name</span><strong id="profile-settings-name">Loading…</strong></div>
-        <div class="profile-settings-field"><span>Account email</span><strong id="profile-settings-email">Checking secure session…</strong></div>
-        <div class="profile-settings-field"><span>Account role</span><strong id="profile-settings-role">Loading…</strong></div>
-        <div class="profile-settings-field"><span>Account verification</span><strong id="profile-settings-verification">Loading…</strong></div>
-        <div class="profile-settings-field"><span>University</span><strong id="profile-settings-campus">Checking campus connection…</strong></div>
-        <div class="profile-settings-field"><span>Campus membership</span><strong id="profile-settings-membership">Checking membership…</strong></div>
+  <div class="heading profile-page-heading">
+    <div>
+      <span class="campus-hub-eyebrow" style="color:#27816c">YOUR ACCOUNT</span>
+      <h1>My profile</h1>
+      <p>Your identity, campus connection and account updates.</p>
+    </div>
+  </div>
+
+  <div class="profile-dashboard-layout">
+    <section class="panel profile-overview-card" aria-labelledby="profile-settings-account-title">
+      <div class="profile-identity-header">
+        <div class="profile-avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="8" r="3.5"></circle><path d="M5.5 19c.8-3 3.2-4.7 6.5-4.7s5.7 1.7 6.5 4.7"></path><circle cx="12" cy="12" r="10"></circle></svg>
+        </div>
+        <div class="profile-identity-copy">
+          <h2 id="profile-settings-account-title" class="profile-visually-hidden">Private account details</h2>
+          <p id="profile-settings-name" class="profile-account-name">Loading your profile…</p>
+          <p id="profile-settings-email" class="profile-account-email">Checking secure session…</p>
+        </div>
       </div>
-      <p id="profile-settings-message" class="message" role="status" aria-live="polite">Loading your private account details…</p>
+
+      <div class="profile-verification-row">
+        <span class="profile-overline">VERIFICATION</span>
+        <span id="profile-settings-verification" class="profile-status-pill">Loading…</span>
+      </div>
+
+      <div class="profile-account-details">
+        <div class="profile-account-detail"><span>CAMPUS</span><strong id="profile-settings-campus">Checking campus connection…</strong></div>
+        <div class="profile-account-detail"><span>ACCOUNT ROLE</span><strong id="profile-settings-role">Loading…</strong></div>
+        <div class="profile-account-detail"><span>CAMPUS MEMBERSHIP</span><strong id="profile-settings-membership">Checking membership…</strong></div>
+      </div>
+
+      <div class="profile-security-note">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 4.6-2.8 7.8-7 10-4.2-2.2-7-5.4-7-10V6l7-3Z"></path><path d="m9 12 2 2 4-4"></path></svg>
+        <p>Your campus and account role are controlled by authorized administrators and cannot be changed from this page.</p>
+      </div>
+
+      <form id="profile-settings-contact-form" class="profile-contact-form">
+        <div class="profile-contact-field">
+          <label for="profile-settings-department">Department</label>
+          <input id="profile-settings-department" name="department" type="text" maxlength="100" autocomplete="organization-title" placeholder="e.g. Computer Science">
+        </div>
+        <div class="profile-contact-field">
+          <label for="profile-settings-contact-phone">Contact phone</label>
+          <input id="profile-settings-contact-phone" name="contact_phone" type="tel" maxlength="32" autocomplete="tel" placeholder="Your contact number">
+        </div>
+        <button class="btn profile-save-details" id="profile-settings-save-details" type="submit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l3 3v13H4V4h1Z"></path><path d="M8 4v6h8V4M8 20v-7h8v7"></path></svg>
+          Save details
+        </button>
+        <p id="profile-settings-message" class="message profile-contact-message" role="status" aria-live="polite">Your private account details are shown only in your signed-in workspace.</p>
+      </form>
     </section>
+
+    <section class="panel profile-alerts-card" aria-labelledby="profile-settings-alerts-title">
+      <div class="profile-alerts-header">
+        <div>
+          <p class="profile-overline">YOUR UPDATES</p>
+          <h2 id="profile-settings-alerts-title">Your alerts</h2>
+        </div>
+        <button class="profile-mark-all-read" id="profile-settings-mark-all-read" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 12 5 5L21 4"></path><path d="m14 17 2 2 5-5"></path></svg>
+          Mark all read
+        </button>
+      </div>
+      <p id="profile-settings-alerts-status" class="profile-alerts-status" role="status" aria-live="polite">Loading your latest updates…</p>
+      <div id="profile-settings-alerts" class="profile-alerts-list">
+        <div class="profile-alert-empty">Checking for account updates…</div>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid two profile-settings-secondary-grid">
     <section class="panel" aria-labelledby="profile-settings-privacy-title">
       <div class="panel-heading"><div><h2 id="profile-settings-privacy-title">Public profile &amp; privacy</h2><p>Choose how you appear in the campus community.</p></div></div>
       <p>Your CampusPulse posts use your chosen username. Your account email and private identity information are not part of your public student card.</p>
       <div class="actions"><button class="btn secondary" type="button" data-page="community">Manage public username</button><button class="btn secondary" type="button" data-page="dashboard">Back to overview</button></div>
     </section>
+
     <section class="panel" id="profile-settings-identity-panel" aria-labelledby="profile-settings-identity-title">
-      <div class="panel-heading"><div><h2 id="profile-settings-identity-title">Student identity verification</h2></div></div>
+      <div class="panel-heading"><div><h2 id="profile-settings-identity-title">Student identity verification</h2><p>Private review status</p></div></div>
       <p id="profile-settings-identity-status" class="message" role="status" aria-live="polite">Checking student identity status…</p>
-      <p class="muted">Identity documents are private and should only be submitted through the protected student verification workflow. Never post ID cards in CampusPulse.</p>
+      <p class="muted">Identity documents stay in private storage. Never post student ID cards in CampusPulse.</p>
     </section>
+
     <section class="panel" aria-labelledby="profile-settings-security-title">
-      <div class="panel-heading"><div><h2 id="profile-settings-security-title">Sign-in &amp; security</h2></div></div>
+      <div class="panel-heading"><div><h2 id="profile-settings-security-title">Sign-in &amp; security</h2><p>Protect access to your account.</p></div></div>
       <p>Use the sign-in method linked to your account. Never share your password, one-time codes, or private identity documents.</p>
       <div class="actions"><button class="btn secondary" id="profile-settings-signout" type="button">Sign out</button></div>
     </section>
@@ -3016,6 +3139,192 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
   }
 
+  function profileSettingsTimeAgo(value) {
+    const stamp = Date.parse(value || '');
+    if (!Number.isFinite(stamp)) return 'Recently';
+    const minutes = Math.max(0, Math.floor((Date.now() - stamp) / 60000));
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return minutes + ' min ago';
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + (hours === 1 ? ' hr ago' : ' hrs ago');
+    const days = Math.floor(hours / 24);
+    if (days < 30) return days + (days === 1 ? ' day ago' : ' days ago');
+    return new Date(stamp).toLocaleDateString();
+  }
+
+  async function loadProfileSettingsAlerts(user, backend) {
+    const list = $('profile-settings-alerts');
+    const status = $('profile-settings-alerts-status');
+    const allReadButton = $('profile-settings-mark-all-read');
+    if (!list || !status || !user) return;
+    list.replaceChildren();
+    status.textContent = 'Loading your latest updates…';
+    if (allReadButton) allReadButton.disabled = true;
+
+    try {
+      const tickets = await backend.listCampusHelpdeskTickets();
+      const canSeeCampusQueue = currentProfile?.role === 'admin' && canModerateCommunity();
+      let rows = [];
+
+      if (canSeeCampusQueue) {
+        const recentCutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        rows = tickets
+          .filter(function(ticket) {
+            const createdAt = Date.parse(ticket.created_at || '');
+            return Number.isFinite(createdAt) && createdAt >= recentCutoff;
+          })
+          .map(function(ticket) {
+            const detailParts = [ticket.location || ticket.category || 'Campus service', ticket.priority ? String(ticket.priority) + ' priority' : null];
+            return {
+              id: 'ticket:' + String(ticket.id),
+              title: 'New helpdesk request: ' + String(ticket.title || 'Untitled request'),
+              meta: detailParts.filter(Boolean).join(' · '),
+              time: ticket.created_at,
+              type: 'request'
+            };
+          });
+      } else {
+        const mine = tickets.filter(function(ticket) { return String(ticket.created_by) === String(user.id); });
+        const updates = await backend.listCampusHelpdeskTicketUpdates(mine.map(function(ticket) { return ticket.id; }));
+        const mineById = new Map(mine.map(function(ticket) { return [String(ticket.id), ticket]; }));
+        const recentCutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
+        rows = updates
+          .filter(function(update) {
+            const createdAt = Date.parse(update.created_at || '');
+            return String(update.author_id) !== String(user.id) &&
+              Number.isFinite(createdAt) && createdAt >= recentCutoff &&
+              mineById.has(String(update.ticket_id));
+          })
+          .map(function(update) {
+            const ticket = mineById.get(String(update.ticket_id));
+            const message = String(update.message || update.to_status || 'Your request was updated').trim();
+            return {
+              id: 'update:' + String(update.id),
+              title: 'Helpdesk update: ' + String(ticket.title || 'Your campus request'),
+              meta: String(update.author_label || 'Campus staff') + ' · ' + message,
+              time: update.created_at,
+              type: 'update'
+            };
+          });
+      }
+
+      rows.sort(function(a, b) { return Date.parse(b.time || '') - Date.parse(a.time || ''); });
+      rows = rows.slice(0, 8);
+      const storageKey = 'campusshield.profile-alerts.v1.' + String(user.id) + '.' + String(campusContext?.university_id || 'personal');
+      let readIds = new Set();
+      try {
+        const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        if (Array.isArray(stored)) readIds = new Set(stored.map(String));
+      } catch (_storageError) {
+        readIds = new Set();
+      }
+
+      function persistReadIds() {
+        try { localStorage.setItem(storageKey, JSON.stringify(Array.from(readIds).slice(-200))); }
+        catch (_storageError) { /* Reading alerts still works if local storage is unavailable. */ }
+      }
+
+      function renderAlerts() {
+        list.replaceChildren();
+        const unreadCount = rows.filter(function(row) { return !readIds.has(row.id); }).length;
+        status.textContent = unreadCount + ' unread update' + (unreadCount === 1 ? '' : 's') + ' · read status is saved on this device.';
+        if (allReadButton) allReadButton.disabled = !rows.length || unreadCount === 0;
+
+        if (!rows.length) {
+          const empty = document.createElement('div');
+          empty.className = 'profile-alert-empty';
+          const heading = document.createElement('strong');
+          heading.textContent = 'You’re all caught up';
+          const copy = document.createElement('p');
+          copy.textContent = canSeeCampusQueue
+            ? 'New campus helpdesk requests from the last seven days will appear here.'
+            : 'Replies to your campus helpdesk requests will appear here.';
+          copy.style.margin = '0';
+          empty.append(heading, copy);
+          list.appendChild(empty);
+          return;
+        }
+
+        rows.forEach(function(row) {
+          const isRead = readIds.has(row.id);
+          const item = document.createElement('article');
+          item.className = 'profile-alert-item' + (isRead ? ' is-read' : '');
+          const icon = document.createElement('div');
+          icon.className = 'profile-alert-icon';
+          icon.setAttribute('aria-hidden', 'true');
+          icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg>';
+          const content = document.createElement('div');
+          content.className = 'profile-alert-content';
+          const title = document.createElement('h3');
+          title.className = 'profile-alert-title';
+          title.textContent = row.title;
+          const meta = document.createElement('p');
+          meta.className = 'profile-alert-meta';
+          meta.textContent = row.meta;
+          const time = document.createElement('p');
+          time.className = 'profile-alert-time';
+          time.textContent = profileSettingsTimeAgo(row.time);
+          const actions = document.createElement('div');
+          actions.className = 'profile-alert-actions';
+          const open = document.createElement('button');
+          open.type = 'button';
+          open.className = 'profile-alert-action profile-alert-open';
+          open.textContent = 'Open';
+          open.dataset.page = 'helpdesk';
+          actions.appendChild(open);
+          if (isRead) {
+            const read = document.createElement('span');
+            read.className = 'profile-alert-read-indicator';
+            read.textContent = 'Read';
+            actions.appendChild(read);
+          } else {
+            const markRead = document.createElement('button');
+            markRead.type = 'button';
+            markRead.className = 'profile-alert-action';
+            markRead.textContent = 'Mark read';
+            markRead.addEventListener('click', function() {
+              readIds.add(row.id);
+              persistReadIds();
+              renderAlerts();
+            });
+            actions.appendChild(markRead);
+          }
+          content.append(title, meta, time, actions);
+          item.append(icon, content);
+          list.appendChild(item);
+        });
+      }
+
+      if (allReadButton) {
+        allReadButton.onclick = function() {
+          rows.forEach(function(row) { readIds.add(row.id); });
+          persistReadIds();
+          renderAlerts();
+        };
+      }
+      renderAlerts();
+    } catch (error) {
+      list.replaceChildren();
+      const empty = document.createElement('div');
+      empty.className = 'profile-alert-empty';
+      const heading = document.createElement('strong');
+      heading.textContent = 'Alerts are temporarily unavailable';
+      const copy = document.createElement('p');
+      copy.textContent = 'Open Helpdesk to check your latest campus requests.';
+      copy.style.margin = '0';
+      const open = document.createElement('button');
+      open.type = 'button';
+      open.className = 'btn secondary';
+      open.dataset.page = 'helpdesk';
+      open.textContent = 'Open Helpdesk';
+      open.style.marginTop = '12px';
+      empty.append(heading, copy, open);
+      list.appendChild(empty);
+      status.textContent = 'Could not refresh helpdesk updates.';
+      console.warn('Could not load profile alerts:', error);
+    }
+  }
+
   async function loadMyProfileSettings() {
     const profile = currentProfile;
     if (!profile) return;
@@ -3029,25 +3338,47 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const identityPanel = $('profile-settings-identity-panel');
     const identityStatus = $('profile-settings-identity-status');
     if (name) name.textContent = profile.display_name || profile.full_name || profile.name || 'Name not provided';
-    if (role) role.textContent = String(profile.role || 'member').replace(/_/g,' ').replace(/\b\w/g, char => char.toUpperCase());
-    if (verification) verification.textContent = String(profile.verification_status || 'unknown').replace(/_/g,' ');
-    if (campus) campus.textContent = campusContext?.university_name || 'No university connected yet';
-    if (membership) membership.textContent = campusContext?.membership_status === 'active' && campusContext?.verification_status === 'verified'
-      ? 'Verified'
-      : campusContext?.university_id ? 'Pending verification' : 'Not linked';
+    if (role) role.textContent = String(profile.role || 'member').replace(/_/g, ' ').replace(/\b\w/g, function(char) { return char.toUpperCase(); });
+    if (verification) {
+      const verificationStatus = String(profile.verification_status || 'unknown').toLowerCase().replace(/[^a-z0-9-]+/g, '-');
+      verification.textContent = verificationStatus.replace(/-/g, ' ');
+      verification.className = 'profile-status-pill profile-status-' + verificationStatus;
+    }
     if (identityPanel) identityPanel.hidden = !isStudentAccount();
     if (identityStatus) identityStatus.textContent = isStudentAccount()
       ? 'Checking private student identity status…'
       : 'This check is available to student accounts only.';
     if (email) email.textContent = 'Checking secure session…';
-    if (message) message.textContent = 'Your account details are shown only in your signed-in workspace.';
+    if (message) message.textContent = 'Your private account details are shown only in your signed-in workspace.';
+
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured) {
+      if (email) email.textContent = 'Unavailable';
+      if (message) message.textContent = 'Account details could not be refreshed because the secure backend is unavailable.';
+      if ($('profile-settings-alerts-status')) $('profile-settings-alerts-status').textContent = 'The secure backend is unavailable.';
+      return;
+    }
     try {
-      const backend = window.CampusShieldBackend;
-      if (!backend?.isConfigured) throw new Error('Account details could not be refreshed because the secure backend is unavailable.');
-      const {data:{user},error} = await backend.client.auth.getUser();
+      let context = null;
+      try { context = await backend.getMyCampusContext(); } catch (_contextError) { context = null; }
       if (currentProfile !== profile) return;
-      if (error || !user) throw new Error('Your secure session could not be verified. Please sign in again.');
+      campusContext = context;
+      const response = await backend.client.auth.getUser();
+      const user = response?.data?.user;
+      if (currentProfile !== profile) return;
+      if (response?.error || !user) throw new Error('Your secure session could not be verified. Please sign in again.');
       if (email) email.textContent = user.email || 'Email is not available from this sign-in provider.';
+      if (campus) campus.textContent = campusContext?.university_name || 'No university connected yet';
+      if (membership) membership.textContent = campusContext?.membership_status === 'active' && campusContext?.verification_status === 'verified'
+        ? 'Verified'
+        : campusContext?.university_id ? 'Pending verification' : 'Not linked';
+
+      const metadata = user.user_metadata || {};
+      const departmentInput = $('profile-settings-department');
+      const phoneInput = $('profile-settings-contact-phone');
+      if (departmentInput) departmentInput.value = String(metadata.department || '');
+      if (phoneInput) phoneInput.value = String(metadata.contact_phone || '');
+
       if (isStudentAccount() && typeof backend.getMyStudentIdentityVerification === 'function') {
         try {
           const submission = await backend.getMyStudentIdentityVerification();
@@ -3067,11 +3398,42 @@ button,input,select,textarea{max-width:100%;min-width:0}
           if (identityStatus) identityStatus.textContent = 'Student identity status is temporarily unavailable.';
         }
       }
+      await loadProfileSettingsAlerts(user, backend);
     } catch (error) {
       if (email) email.textContent = 'Unavailable';
       if (message) message.textContent = error?.message || 'Account details could not be loaded.';
     }
   }
+
+  document.addEventListener('submit', async function(event) {
+    if (event.target?.id !== 'profile-settings-contact-form') return;
+    event.preventDefault();
+    const message = $('profile-settings-message');
+    const button = $('profile-settings-save-details');
+    const backend = window.CampusShieldBackend;
+    if (button) { button.disabled = true; button.textContent = 'Saving…'; }
+    if (message) message.textContent = 'Saving your contact details securely…';
+    try {
+      if (!backend?.isConfigured || !currentProfile) throw new Error('Sign in before updating your contact details.');
+      const response = await backend.client.auth.getUser();
+      const user = response?.data?.user;
+      if (response?.error || !user) throw new Error('Your secure session could not be verified. Please sign in again.');
+      const department = String($('profile-settings-department')?.value || '').trim().slice(0, 100);
+      const contactPhone = String($('profile-settings-contact-phone')?.value || '').trim().slice(0, 32);
+      const metadata = Object.assign({}, user.user_metadata || {}, { department: department, contact_phone: contactPhone });
+      const result = await backend.client.auth.updateUser({ data: metadata });
+      if (result?.error) throw result.error;
+      if (message) message.textContent = 'Your contact details were saved.';
+      showToast('Contact details saved.');
+    } catch (error) {
+      if (message) message.textContent = error?.message || 'Contact details could not be saved. Please try again.';
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l3 3v13H4V4h1Z"></path><path d="M8 4v6h8V4M8 20v-7h8v7"></path></svg> Save details';
+      }
+    }
+  });
 
   document.addEventListener('click', e => {
     const button = e.target.closest('[data-page]');
