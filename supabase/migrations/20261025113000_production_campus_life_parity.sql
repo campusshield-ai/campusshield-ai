@@ -681,6 +681,62 @@ using (university_id=(select private.current_campus_university_id()) and (select
 with check (university_id=(select private.current_campus_university_id()) and (select private.current_campus_role())=any(array['admin','security','teacher']));
 
 
+insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
+values (
+  'campus-community-media','campus-community-media',false,52428800,
+  array['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm']
+)
+on conflict (id) do update set
+  public = false,
+  file_size_limit = 52428800,
+  allowed_mime_types = array['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm'];
+
+drop policy if exists campus_media_read_same_campus on storage.objects;
+create policy campus_media_read_same_campus on storage.objects
+for select to authenticated using (
+  bucket_id = 'campus-community-media'
+  and split_part(name,'/',1) = (select private.current_campus_university_id())::text
+  and exists (
+    select 1
+    from public.community_post_media m
+    join public.community_posts p on p.id = m.post_id
+    where m.object_path = name
+      and m.university_id = (select private.current_campus_university_id())
+      and (
+        p.status = 'published'
+        or p.author_id = (select auth.uid())
+        or private.current_campus_role() = any (array['admin','security','teacher'])
+      )
+  )
+);
+
+drop policy if exists campus_media_upload_same_campus on storage.objects;
+create policy campus_media_upload_same_campus on storage.objects
+for insert to authenticated with check (
+  bucket_id = 'campus-community-media'
+  and split_part(name,'/',1) = (select private.current_campus_university_id())::text
+  and private.current_campus_account_status() = any (array['pending','verified'])
+  and exists (
+    select 1 from public.community_posts p
+    where p.id::text = split_part(name,'/',2)
+      and p.author_id = (select auth.uid())
+      and p.university_id = (select private.current_campus_university_id())
+  )
+);
+
+drop policy if exists campus_media_delete_own_same_campus on storage.objects;
+create policy campus_media_delete_own_same_campus on storage.objects
+for delete to authenticated using (
+  bucket_id = 'campus-community-media'
+  and split_part(name,'/',1) = (select private.current_campus_university_id())::text
+  and exists (
+    select 1 from public.community_posts p
+    where p.id::text = split_part(name,'/',2)
+      and p.author_id = (select auth.uid())
+      and p.university_id = (select private.current_campus_university_id())
+  )
+);
+
 -- Existing source policy logic is retained only for newly introduced feature tables; no incident/payment/identity policies are replaced.
 drop policy if exists campus_university_requests_read_own_or_admin on public.campus_university_requests;
 create policy campus_university_requests_read_own_or_admin on public.campus_university_requests
@@ -1790,7 +1846,7 @@ $function$;
 revoke all on function private.list_my_campus_group_memberships_impl() from public, anon;
 grant execute on function private.list_my_campus_group_memberships_impl() to authenticated;
 create or replace function public.list_my_campus_group_memberships()
-returns table(group_id uuid) language sql stable security invoker set search_path to ''
+returns table(group_id uuid) language plpgsql stable security invoker set search_path to ''
  as $wrapper$ begin return query select * from private.list_my_campus_group_memberships_impl(); end; $wrapper$;
 revoke all on function public.list_my_campus_group_memberships() from public, anon;
 grant execute on function public.list_my_campus_group_memberships() to authenticated;
