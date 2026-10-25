@@ -19,6 +19,7 @@
   let loading = false;
   let reminderTimer = null;
   const notifiedReminderKeys = new Set();
+  const CALENDAR_EXPORT_DAYS = 90;
 
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -251,7 +252,7 @@
       '<div class="campus-timetable-event-date"><strong>' + escapeHtml(formatTime(occurrence.start)) + '</strong><small>' + escapeHtml(event.category || "event") + "</small></div>" +
       '<div class="campus-timetable-event-copy"><h4>' + escapeHtml(event.title || "Campus event") + "</h4>" +
       '<p>' + escapeHtml([event.location, event.organizer_username ? "@" + event.organizer_username : ""].filter(Boolean).join(" · ") || "Published university event") + "</p></div>" +
-      '<button type="button" class="btn secondary" data-page="events">View event</button></article>";
+      '<button type="button" class="btn secondary" data-page="events">View event</button></article>';
   }
 
   function renderCalendar() {
@@ -558,9 +559,162 @@
     reminderTimer = window.setInterval(checkReminders, 60000);
   }
 
+  function escapeCalendarText(value) {
+    return String(value ?? "")
+      .replace(/\\/g, "\\\\")
+      .replace(/\r\n|\r|\n/g, "\\n")
+      .replace(/,/g, "\\,")
+      .replace(/;/g, "\\;");
+  }
+
+  function calendarUtcStamp(value) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) throw new Error("Calendar export encountered an invalid date.");
+    return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  }
+
+  function foldCalendarLine(line) {
+    const segments = [];
+    let segment = "";
+    let byteLength = 0;
+    for (const character of String(line)) {
+      const characterBytes = new TextEncoder().encode(character).length;
+      const limit = segments.length ? 74 : 75;
+      if (byteLength + characterBytes > limit && segment) {
+        segments.push(segment);
+        segment = " " + character;
+        byteLength = 1 + characterBytes;
+      } else {
+        segment += character;
+        byteLength += characterBytes;
+      }
+    }
+    segments.push(segment);
+    return segments.join("\r\n");
+  }
+
+  function appendCalendarEvent(lines, event) {
+    const safeUid = String(event.uid || "item-" + Date.now()).replace(/[^a-zA-Z0-9._-]/g, "-");
+    const start = event.start instanceof Date ? event.start : new Date(event.start);
+    const requestedEnd = event.end ? (event.end instanceof Date ? event.end : new Date(event.end)) : null;
+    const end = requestedEnd && !Number.isNaN(requestedEnd.getTime()) && requestedEnd > start
+      ? requestedEnd
+      : new Date(start.getTime() + 60 * 60 * 1000);
+    lines.push(
+      "BEGIN:VEVENT",
+      "UID:" + safeUid + "@campusshieldai.com",
+      "DTSTAMP:" + calendarUtcStamp(new Date()),
+      "DTSTART:" + calendarUtcStamp(start),
+      "DTEND:" + calendarUtcStamp(end),
+      "SUMMARY:" + escapeCalendarText(event.title || "CampusShield scheduled item")
+    );
+    if (event.description) lines.push("DESCRIPTION:" + escapeCalendarText(event.description));
+    if (event.location) lines.push("LOCATION:" + escapeCalendarText(event.location));
+    if (event.category) lines.push("CATEGORIES:" + escapeCalendarText(event.category));
+    lines.push("END:VEVENT");
+  }
+
+  function downloadCalendar() {
+    const now = new Date();
+    const firstDay = startOfDay(now);
+    const lastDay = addDays(firstDay, CALENDAR_EXPORT_DAYS);
+    lastDay.setHours(23, 59, 59, 999);
+    const events = [];
+
+    function addIfUpcoming(event) {
+      const start = event.start instanceof Date ? event.start : new Date(event.start);
+      if (Number.isNaN(start.getTime()) || start < now || start > lastDay) return;
+      events.push({ ...event, start });
+    }
+
+    timetableItems.forEach((item) => {
+      if (!item || item.completed || !item.starts_at) return;
+      const weekdays = weekdaysForItem(item);
+      const label = kindLabels[item.kind] || "Timetable item";
+      const course = [item.course_code, item.course_title].filter(Boolean).join(" · ");
+      const description = [course, item.details].filter(Boolean).join("\n");
+
+      if (item.kind === "class" && weekdays.length) {
+        for (let offset = 0; offset <= CALENDAR_EXPORT_DAYS; offset += 1) {
+          const date = addDays(firstDay, offset);
+          const occurrence = occurrenceForItem(item, date);
+          if (!occurrence?.recurring) continue;
+          addIfUpcoming({
+            uid: "planner-" + item.id + "-" + dateKey(date),
+            title: "[Class] " + String(item.title || "Class"),
+            description,
+            location: item.location || "",
+            category: label,
+            start: occurrence.start,
+            end: occurrence.end || new Date(occurrence.start.getTime() + 60 * 60 * 1000)
+          });
+        }
+        return;
+      }
+
+      const start = new Date(item.starts_at);
+      if (Number.isNaN(start.getTime())) return;
+      addIfUpcoming({
+        uid: "planner-" + item.id,
+        title: "[" + label + "] " + String(item.title || "Timetable item"),
+        description,
+        location: item.location || "",
+        category: label,
+        start,
+        end: item.ends_at ? new Date(item.ends_at) : new Date(start.getTime() + 60 * 60 * 1000)
+      });
+    });
+
+    campusEvents.forEach((event) => {
+      if (!event?.starts_at) return;
+      const start = new Date(event.starts_at);
+      if (Number.isNaN(start.getTime())) return;
+      addIfUpcoming({
+        uid: "campus-event-" + event.id,
+        title: "[Campus event] " + String(event.title || "Campus event"),
+        description: [event.category, event.organizer_username ? "Organizer: @" + event.organizer_username : ""].filter(Boolean).join("\n"),
+        location: event.location || "",
+        category: "Campus event",
+        start,
+        end: event.ends_at ? new Date(event.ends_at) : new Date(start.getTime() + 60 * 60 * 1000)
+      });
+    });
+
+    if (!events.length) {
+      formStatus("No upcoming timed classes, tasks, or campus events found for the next " + CALENDAR_EXPORT_DAYS + " days.", true);
+      return;
+    }
+
+    events.sort((left, right) => left.start.getTime() - right.start.getTime());
+    const lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//CampusShield AI//Academic Calendar//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "X-WR-CALNAME:CampusShield AI Schedule"
+    ];
+    events.forEach((event) => appendCalendarEvent(lines, event));
+    lines.push("END:VCALENDAR");
+
+    const calendarText = lines.map(foldCalendarLine).join("\r\n") + "\r\n";
+    const blob = new Blob([calendarText], { type: "text/calendar;charset=utf-8" });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = "campusshield-calendar-" + dateKey(now) + ".ics";
+    link.hidden = true;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    formStatus("Exported " + events.length + " upcoming item(s). Import the .ics file into Google Calendar, Apple Calendar, or Outlook.");
+  }
+
   function init() {
     byId("campus-timetable-form")?.addEventListener("submit", save);
     byId("campus-timetable-refresh")?.addEventListener("click", () => load());
+    byId("campus-timetable-export-calendar")?.addEventListener("click", downloadCalendar);
     byId("campus-timetable-prev-week")?.addEventListener("click", () => setWeek(addDays(weekStart, -7), addDays(selectedDate, -7)));
     byId("campus-timetable-next-week")?.addEventListener("click", () => setWeek(addDays(weekStart, 7), addDays(selectedDate, 7)));
     byId("campus-timetable-today")?.addEventListener("click", () => setWeek(new Date(), new Date()));
