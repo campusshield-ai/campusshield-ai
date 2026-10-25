@@ -441,6 +441,13 @@ td strong{color:#2a464d;font-size:11px}
 .campus-dashboard-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .campus-dashboard-card-head h3{margin:0;font-size:14px}
 .campus-dashboard-list{display:grid;gap:9px}
+.campus-dashboard-helpdesk{display:grid;grid-template-columns:minmax(200px,.7fr) minmax(0,1.3fr);gap:18px;align-items:start;margin-top:14px}
+.campus-dashboard-helpdesk .campus-dashboard-card-head{align-items:center}
+.campus-dashboard-helpdesk-summary{display:flex;align-items:baseline;gap:9px;margin-top:10px}
+.campus-dashboard-helpdesk-summary strong{color:#183840;font-size:28px;line-height:1;font-weight:850}
+.campus-dashboard-helpdesk-summary span{color:var(--muted,#71848a);font-size:11px;font-weight:700}
+.campus-dashboard-helpdesk-main>p{margin:8px 0 0}
+@media(max-width:700px){.campus-dashboard-helpdesk{grid-template-columns:1fr;gap:8px}}
 .campus-dashboard-list-item{padding:10px 0;border-bottom:1px solid var(--border,#e6eeea)}
 .campus-dashboard-list-item:last-child{border-bottom:0}
 .campus-dashboard-list-item strong{display:block;color:var(--text,#13343c);font-size:12px;line-height:1.4;overflow-wrap:anywhere}
@@ -880,6 +887,17 @@ td strong{color:#2a464d;font-size:11px}
       <div id="campus-dashboard-updates" class="campus-dashboard-list"><div class="campus-dashboard-empty">Verified notices and upcoming events will appear here.</div></div>
     </section>
   </div>
+  <section class="campus-dashboard-card campus-dashboard-helpdesk" aria-labelledby="campus-dashboard-helpdesk-title">
+    <div class="campus-dashboard-helpdesk-main">
+      <div class="campus-dashboard-card-head">
+        <h3 id="campus-dashboard-helpdesk-title">My Helpdesk status</h3>
+        <button class="btn secondary" type="button" data-page="helpdesk">Track requests</button>
+      </div>
+      <div class="campus-dashboard-helpdesk-summary"><strong id="campus-dashboard-helpdesk-count">—</strong><span>open service requests</span></div>
+      <p class="muted">A quick view of the service requests submitted from your account.</p>
+    </div>
+    <div id="campus-dashboard-helpdesk" class="campus-dashboard-list"><div class="campus-dashboard-empty">Sign in with a verified campus account to load your requests.</div></div>
+  </section>
   <div class="campus-dashboard-actions" id="campus-dashboard-actions">
     <button class="btn secondary" type="button" data-page="classroom">Open classrooms</button>
     <button class="btn secondary" type="button" data-page="events">Browse events</button>
@@ -2390,6 +2408,8 @@ td strong{color:#2a464d;font-size:11px}
       clearFeed('campus-dashboard-classes', 'Your classes appear after campus verification.');
       clearFeed('campus-dashboard-announcements', 'Class announcements appear after campus verification.');
       clearFeed('campus-dashboard-updates', 'Verified notices and events appear after campus verification.');
+      clearFeed('campus-dashboard-helpdesk', 'Your service request status appears after campus verification.');
+      $('campus-dashboard-helpdesk-count').textContent = '—';
       $('campus-metric-classes').textContent = '—';
       $('campus-metric-secondary').textContent = '—';
       $('campus-metric-events').textContent = '—';
@@ -2405,6 +2425,8 @@ td strong{color:#2a464d;font-size:11px}
         clearFeed('campus-dashboard-classes', 'A verified campus membership is required.');
         clearFeed('campus-dashboard-announcements', 'A verified campus membership is required.');
         clearFeed('campus-dashboard-updates', 'A verified campus membership is required.');
+        clearFeed('campus-dashboard-helpdesk', 'Choose and verify your university to load your service requests.');
+        $('campus-dashboard-helpdesk-count').textContent = '—';
         $('campus-metric-classes').textContent = '—';
         $('campus-metric-secondary').textContent = '—';
         $('campus-metric-events').textContent = '—';
@@ -2417,13 +2439,20 @@ td strong{color:#2a464d;font-size:11px}
       const results = await Promise.all([
         backend.listCampusClassrooms().catch(() => []),
         backend.listCampusNotices().catch(() => []),
-        backend.listCampusEvents().catch(() => [])
+        backend.listCampusEvents().catch(() => []),
+        backend.listCampusHelpdeskTickets().catch(() => null),
+        backend.getCurrentUser().catch(() => null)
       ]);
       const classes = (results[0] || []).filter(row => row.university_id === campusId);
       const notices = (results[1] || []).filter(row => row.university_id === campusId &&
         (!row.expires_at || new Date(row.expires_at).getTime() > Date.now()));
       if (requestId !== loadCampusDashboardInsights.requestId || requestSessionVersion !== authSessionVersion || currentProfile !== requestProfile) return;
       const allEvents = (results[2] || []).filter(row => row.university_id === campusId);
+      const helpdeskDataAvailable = Array.isArray(results[3]) && !!results[4]?.id;
+      const ownHelpdeskTickets = helpdeskDataAvailable
+        ? results[3].filter(row => row.university_id === campusId && row.created_by === results[4].id)
+          .sort((a,b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
+        : [];
       const upcomingEvents = allEvents.filter(row => row.starts_at && new Date(row.starts_at).getTime() >= Date.now())
         .sort((a,b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
       const now = Date.now();
@@ -2460,6 +2489,28 @@ td strong{color:#2a464d;font-size:11px}
       $('campus-metric-secondary').textContent = String(isTeacher ? studentCount : classroomAnnouncements.length);
       $('campus-metric-events').textContent = String(upcomingEvents.length);
       $('campus-metric-incidents').textContent = String((incidents || []).filter(i => !isResolvedStatus(i.status)).length);
+      const helpdeskCount = $('campus-dashboard-helpdesk-count');
+      const helpdeskFeed = $('campus-dashboard-helpdesk');
+      helpdeskFeed.replaceChildren();
+      if (!helpdeskDataAvailable) {
+        helpdeskCount.textContent = '—';
+        clearFeed('campus-dashboard-helpdesk', 'Helpdesk status is temporarily unavailable. Open Helpdesk to try again.');
+      } else {
+        const openHelpdeskTickets = ownHelpdeskTickets.filter(ticket => !isResolvedStatus(ticket.status));
+        helpdeskCount.textContent = String(openHelpdeskTickets.length);
+        if (!ownHelpdeskTickets.length) {
+          clearFeed('campus-dashboard-helpdesk', 'No service requests have been submitted from your account yet.');
+        } else {
+          ownHelpdeskTickets.slice(0, 3).forEach(ticket => appendItem(
+            helpdeskFeed,
+            ticket.title || 'Campus service request',
+            'Reference ' + String(ticket.reference_code || 'pending') + ' · ' + String(ticket.status || 'Status unavailable'),
+            ticket.assigned_department ? 'Assigned to ' + ticket.assigned_department : String(ticket.category || 'Campus service request'),
+            'View status',
+            () => { navigate('helpdesk'); loadCampusHelpdeskPage(); }
+          ));
+        }
+      }
       if (isTeacher && !rosterCounts.length) $('campus-metric-secondary-note').textContent = 'Owned class rosters are available to their verified teacher';
       else if (isTeacher) $('campus-metric-secondary-note').textContent = 'Across classrooms you own';
       else $('campus-metric-secondary-note').textContent = 'Updates from your authorized classrooms';
