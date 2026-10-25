@@ -16,6 +16,7 @@ const staffProfileMigration = await readFile(new URL("../supabase/migrations/202
 const campusLifeParityMigration = await readFile(new URL("../supabase/migrations/20261025113000_production_campus_life_parity.sql", import.meta.url), "utf8");
 const institutionalBillingMigration = await readFile(new URL("../supabase/migrations/20261025153000_restrict_institutional_billing_to_admins.sql", import.meta.url), "utf8");
 const staffIdentityParityMigration = await readFile(new URL("../supabase/migrations/20261025160000_restore_staff_identity_audit_and_platform_rpcs.sql", import.meta.url), "utf8");
+const campusPushMigration = await readFile(new URL("../supabase/migrations/20261025203000_campus_push_notifications.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -257,6 +258,23 @@ assert.match(html, /beforeinstallprompt/);
 assert.match(html, /Add to Home Screen/);
 assert.match(html, /id="workspace-install-app"/);
 assert.match(html, /serviceWorker\.register\('\.\/service-worker\.js'/);
+assert.match(serviceWorker, /self\.addEventListener\("push"/, "service worker displays background push notifications");
+assert.match(serviceWorker, /self\.addEventListener\("notificationclick"/, "notification clicks return to the app safely");
+assert.match(backend, /async getPushVapidPublicKey\(\)/, "push public-key retrieval is exposed through the authenticated backend");
+assert.match(backend, /async savePushSubscription\(subscription\)/, "device subscriptions are saved through the edge function");
+assert.match(backend, /async removePushSubscription\(endpoint\)/, "device unsubscribe is server-side and owner-scoped");
+assert.match(backend, /async sendPushTest\(\)/, "users can send a safe push test to their own devices");
+for (const pushControl of ["profile-push-enable", "profile-push-test", "profile-push-disable", "profile-push-settings-status"]) {
+  assert.ok(html.includes(pushControl), `push settings include ${pushControl}`);
+}
+assert.match(html, /pushAppUsesStaging\(\)/, "push controls remain hidden from production until configured and verified");
+assert.match(html, /Notification\.requestPermission\(\)/, "push permissions are requested after user interaction");
+assert.match(campusPushMigration, /enable row level security/i);
+assert.match(campusPushMigration, /using \(false\) with check \(false\)/i, "push tables deny direct client access");
+assert.match(campusPushMigration, /revoke all on table public\.campus_push_subscriptions from anon, authenticated/i);
+assert.match(campusPushMigration, /revoke all on table public\.campus_push_delivery_events from anon, authenticated/i);
+assert.match(campusPushMigration, /grant all on table public\.campus_push_subscriptions to service_role/i);
+assert.match(campusPushMigration, /grant all on table public\.campus_push_delivery_events to service_role/i);
 assert.match(serviceWorker, /request\.mode\s*!==\s*"navigate"/);
 assert.doesNotThrow(() => new Function(serviceWorker), "service worker parses");
 assert.match(serviceWorker, /self\.addEventListener\("fetch"/);
