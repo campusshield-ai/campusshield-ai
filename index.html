@@ -1472,6 +1472,46 @@ button,input,select,textarea{max-width:100%;min-width:0}
   .campus-timetable-event-card .btn{margin-left:58px}
 }
 
+
+/* Course discussion rooms inside approved campus groups */
+.campus-course-discussion-panel{margin-top:18px;overflow:hidden}
+.campus-course-discussion-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.campus-course-discussion-header h2{margin:5px 0 4px;color:#193b40;font-size:20px;letter-spacing:-.035em}
+.campus-course-discussion-header p{margin:0;color:#788d86;font-size:11px;line-height:1.55}
+.campus-course-discussion-messages{display:flex;flex-direction:column;gap:10px;min-height:190px;max-height:460px;overflow-y:auto;overscroll-behavior:contain;padding:14px;border:1px solid #e1ebe5;border-radius:15px;background:#f8fbf9}
+.campus-course-discussion-message{display:grid;gap:5px;align-self:flex-start;max-width:90%;padding:11px 13px;border:1px solid #dfebe3;border-radius:5px 15px 15px;background:#fff;box-shadow:0 3px 9px #102b3508;overflow-wrap:anywhere}
+.campus-course-discussion-message.is-mine{align-self:flex-end;border-color:#cce6d7;border-radius:15px 5px 15px 15px;background:#eaf7f0}
+.campus-course-discussion-message-head{display:flex;align-items:center;flex-wrap:wrap;gap:9px;color:#24745a;font-size:10px;font-weight:800}
+.campus-course-discussion-message-head time{margin-left:auto;color:#8a9a95;font-size:9px;font-weight:500}
+.campus-course-discussion-message-body{margin:0;color:#2f4d4c;font-size:12px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.campus-course-discussion-message-actions{display:flex;justify-content:flex-end;margin-top:3px}
+.campus-course-discussion-message-actions button{border:0;padding:3px;background:transparent;color:#618478;font-size:9px;font-weight:750;text-decoration:underline;text-underline-offset:2px}
+.campus-course-discussion-compose{display:grid;gap:9px;margin-top:12px}
+.campus-course-discussion-compose textarea{width:100%;box-sizing:border-box;min-height:68px;max-height:170px;resize:vertical;padding:11px 12px;border:1px solid #d8e5de;border-radius:12px;background:#fbfdfb;color:#173840;font-size:12px;line-height:1.6}
+.campus-course-discussion-compose textarea:focus{outline:3px solid #79e0c430;border-color:#79baa0}
+.campus-course-discussion-compose-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.campus-course-discussion-compose-footer span{color:#83948d;font-size:9px}
+.campus-course-discussion-compose-footer .btn{min-height:41px}
+.campus-course-discussion-staff{margin-top:18px;padding-top:18px;border-top:1px solid #e6eee8}
+.campus-course-discussion-staff .panel-heading h3{margin:0;color:#21464a;font-size:14px}
+.campus-course-discussion-staff #campus-course-discussion-reports-feed{display:grid;gap:9px}
+.campus-course-discussion-report-card{padding:12px;border:1px solid #e2eae5;border-radius:12px;background:#fbfdfb}
+.campus-course-discussion-report-card strong{color:#24484a;font-size:11px}
+.campus-course-discussion-report-card blockquote{margin:8px 0;padding:9px 11px;border-left:3px solid #d1e6d8;background:#f2f8f4;color:#48615d;font-size:11px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.campus-course-discussion-report-card p{margin:5px 0 10px;color:#71857e;font-size:10px;line-height:1.5;overflow-wrap:anywhere}
+.campus-course-discussion-report-card .actions{gap:7px}
+.campus-group-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.campus-group-card-actions .btn{min-height:36px;font-size:10px}
+@media(max-width:650px){
+  .campus-course-discussion-header{align-items:stretch}
+  .campus-course-discussion-header .btn{align-self:flex-start}
+  .campus-course-discussion-messages{padding:10px;max-height:55vh}
+  .campus-course-discussion-message{max-width:96%;padding:10px 11px}
+  .campus-course-discussion-compose-footer{align-items:stretch;flex-direction:column}
+  .campus-course-discussion-compose-footer .btn{width:100%;min-height:44px}
+  .campus-group-card-actions .btn{min-height:40px}
+}
+
 </style>
 </head>
 <body>
@@ -2222,6 +2262,25 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <div id="campus-groups-feed"><div class="community-empty">Loading groups…</div></div>
     </section>
   </div>
+  <section class="panel campus-course-discussion-panel" id="campus-course-discussion-panel" hidden aria-labelledby="campus-course-discussion-title">
+    <div class="campus-course-discussion-header">
+      <div><span class="campus-hub-eyebrow" style="color:#25846b">COURSE COMMUNITY</span><h2 id="campus-course-discussion-title">Course discussion</h2><p id="campus-course-discussion-subtitle">Members of this approved course community can discuss study questions and resources.</p></div>
+      <button type="button" class="btn secondary" id="campus-course-discussion-close">Close discussion</button>
+    </div>
+    <div class="notice-inline"><strong>Keep it helpful.</strong> Share explanations and learning tips, not answer keys for active assessments, private student records, or copyrighted materials you do not have permission to share.</div>
+    <p id="campus-course-discussion-status" class="message" role="status" aria-live="polite">Loading discussion…</p>
+    <div id="campus-course-discussion-messages" class="campus-course-discussion-messages" role="log" aria-label="Course discussion messages" aria-live="polite" aria-relevant="additions text"></div>
+    <form id="campus-course-discussion-form" class="campus-course-discussion-compose">
+      <label for="campus-course-discussion-input" class="visually-hidden">Write a message to this course community</label>
+      <textarea id="campus-course-discussion-input" rows="2" maxlength="1200" placeholder="Ask a question or share a study tip…" required disabled></textarea>
+      <div class="campus-course-discussion-compose-footer"><span>Members only · 1,200 characters maximum</span><button type="submit" class="btn" id="campus-course-discussion-send" disabled>Send message</button></div>
+    </form>
+    <section class="campus-course-discussion-staff" id="campus-course-discussion-staff" hidden aria-labelledby="campus-course-discussion-staff-title">
+      <div class="panel-heading"><div><h3 id="campus-course-discussion-staff-title">Reported discussion messages</h3><p>Review reports from your university.</p></div><button type="button" class="btn secondary" id="campus-course-discussion-refresh-reports">Refresh reports</button></div>
+      <p id="campus-course-discussion-reports-status" class="message" role="status" aria-live="polite"></p>
+      <div id="campus-course-discussion-reports-feed"></div>
+    </section>
+  </section>
   <section class="panel" id="campus-content-moderation" hidden aria-labelledby="campus-content-moderation-title">
     <div class="panel-heading"><div><h2 id="campus-content-moderation-title">Campus content moderation</h2><p>Review groups, events and marketplace listings for your university.</p></div><button type="button" class="btn secondary" id="refresh-campus-content-moderation">Refresh queue</button></div>
     <h3>Groups awaiting review</h3><div id="moderation-groups-feed"><div class="community-empty">Loading queue…</div></div>
@@ -2231,6 +2290,18 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <p id="campus-content-moderation-message" class="message" role="status" aria-live="polite"></p>
   </section>
 </section>
+
+<dialog id="campus-course-discussion-report-dialog" class="campus-chat-report-dialog" aria-labelledby="campus-course-discussion-report-title">
+  <form id="campus-course-discussion-report-form">
+    <h2 id="campus-course-discussion-report-title">Report course message</h2>
+    <p class="muted">The reported message and your reason will be shared with authorized campus staff.</p>
+    <input type="hidden" id="campus-course-discussion-report-message-id">
+    <div class="field"><label for="campus-course-discussion-report-reason">Reason *</label><select id="campus-course-discussion-report-reason" required><option value="spam">Spam</option><option value="harassment">Harassment or bullying</option><option value="personal_information">Personal information</option><option value="threats">Threats</option><option value="other">Other concern</option></select></div>
+    <div class="field"><label for="campus-course-discussion-report-details">Details (optional)</label><textarea id="campus-course-discussion-report-details" maxlength="500" rows="3" placeholder="Add context for campus staff…"></textarea></div>
+    <p id="campus-course-discussion-report-status" class="message" role="status" aria-live="polite"></p>
+    <div class="actions"><button class="btn secondary" type="button" id="campus-course-discussion-report-cancel">Cancel</button><button class="btn" type="submit" id="campus-course-discussion-report-submit">Submit report</button></div>
+  </form>
+</dialog>
 
 <section class="page" id="page-events">
   <div class="heading"><div><h1>Events &amp; Campus Services</h1><p>Discover campus events, official notices, Helpdesk services and student marketplace listings.</p></div><div class="heading-actions"><button class="btn secondary" type="button" data-page="noticeboard">Noticeboard</button><button class="btn secondary" type="button" data-page="helpdesk">Helpdesk</button><button class="btn secondary" type="button" data-page="marketplace">Marketplace</button></div></div>
@@ -2780,6 +2851,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <script src="./campusshield-backend.js"></script>
 <script src="./shieldmind-planner.js"></script>
 <script src="./campus-timetable.js"></script>
+<script src="./campus-course-community.js"></script>
 <script>
 
 (() => {
@@ -6685,8 +6757,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
   });
 
   $('refresh-campus-helpdesk').addEventListener('click', loadCampusHelpdeskPage);
+  let campusGroupsSearchTimer = null;
   $('campus-groups-search')?.addEventListener('input', function() {
-    loadCampusGroupsPage();
+    if (campusGroupsSearchTimer !== null) window.clearTimeout(campusGroupsSearchTimer);
+    campusGroupsSearchTimer = window.setTimeout(loadCampusGroupsPage, 250);
   });
 
 
@@ -6722,7 +6796,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
           '<h3 class="community-post-title">' + esc(group.name) + '</h3>' +
           '<p class="community-post-body">' + esc(group.description || 'Campus group') + '</p>' +
           '<p class="community-meta">Created by @' + esc(group.creator_username || 'campus member') + '</p>' +
-          '<button type="button" class="btn ' + (isJoined ? 'secondary' : '') + '" data-campus-group-action="' + (isJoined ? 'leave' : 'join') + '" data-campus-group-id="' + esc(group.id) + '">' + (isJoined ? 'Leave group' : 'Join group') + '</button>' +
+          '<div class="actions campus-group-card-actions"><button type="button" class="btn ' + (isJoined ? 'secondary' : '') + '" data-campus-group-action="' + (isJoined ? 'leave' : 'join') + '" data-campus-group-id="' + esc(group.id) + '">' + (isJoined ? 'Leave group' : 'Join group') + '</button>' +
+          (group.course_id && isJoined ? '<button type="button" class="btn" data-open-course-discussion data-course-group-id="' + esc(group.id) + '" data-course-group-name="' + esc(group.name) + '">Open discussion</button>' : '') + '</div>' +
           '</article>';
       }).join('') : '<div class="community-empty"><strong>No approved groups yet.</strong><p>Create one for your course, department, study circle or society. It will be reviewed before appearing.</p></div>';
       status.textContent = visibleGroups.length + ' group(s) match your search.';
