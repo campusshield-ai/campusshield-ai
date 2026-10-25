@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
+const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
 const paystackWebhookFunction = await readFile(new URL("../supabase/functions/paystack-webhook/index.ts", import.meta.url), "utf8");
 const paystackReconcileFunction = await readFile(new URL("../supabase/functions/paystack-reconcile/index.ts", import.meta.url), "utf8");
@@ -26,6 +27,16 @@ for (const [index, source] of inlineScripts.entries()) {
 }
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
 assert.doesNotThrow(() => new Function(planner), "ShieldMind planner parses");
+assert.doesNotThrow(() => new Function(timetable), "Campus timetable parses");
+assert.match(html, /id="campus-timetable-export-calendar"/, "timetable has a calendar export action");
+assert.match(timetable, /function downloadCalendar\(\)/, "calendar export handler exists");
+assert.match(timetable, /BEGIN:VCALENDAR/);
+assert.match(timetable, /END:VCALENDAR/);
+assert.match(timetable, /CALENDAR_EXPORT_DAYS = 90/, "calendar export covers the next 90 days");
+assert.match(timetable, /escapeCalendarText/);
+assert.match(timetable, /foldCalendarLine/);
+assert.match(timetable, /occurrence\?\.recurring/, "recurring class occurrences are expanded for calendar export");
+assert.match(timetable, /campusEvents\.forEach/, "published campus events are included in the calendar export");
 assert.match(html, /<script src="\.\/shieldmind-planner\.js"><\/script>/);
 assert.doesNotMatch(html, /campusshield-backend-identity-addon\.js/);
 assert.match(planner, /create_my_shieldmind_planner_item/);
