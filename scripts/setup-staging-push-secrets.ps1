@@ -106,7 +106,7 @@ try {
   $acl = Get-Acl -LiteralPath $tempPath
   $acl.SetAccessRuleProtection($true, $false)
   $identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-  $rule = New-Object Security.AccessControl.FileSystemAccessRule($identity, "FullControl", "Allow")
+  $rule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule -ArgumentList $identity, "FullControl", "Allow"
   $acl.SetAccessRule($rule)
   Set-Acl -LiteralPath $tempPath -AclObject $acl
 
