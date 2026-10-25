@@ -368,6 +368,12 @@ create table if not exists public.campus_course_resources (
 create index if not exists campus_course_resources_campus_status_idx on public.campus_course_resources(university_id,status,created_at desc);
 
 
+-- New groups require moderation before they are visible or joinable.
+alter table public.campus_groups drop constraint if exists campus_groups_status_check;
+alter table public.campus_groups add constraint campus_groups_status_check
+  check (status in ('pending','active','hidden','archived'));
+alter table public.campus_groups alter column status set default 'pending';
+
 -- Existing CampusPulse tables need campus keys so reads and actions remain university-scoped.
 alter table public.community_posts add column if not exists university_id uuid references public.campus_universities(id) on delete restrict;
 alter table public.community_posts add column if not exists reposted_from_id uuid references public.community_posts(id) on delete set null;
@@ -1085,6 +1091,13 @@ create policy shieldmind_planner_update_own on public.shieldmind_planner_items
 drop policy if exists shieldmind_planner_delete_own on public.shieldmind_planner_items;
 create policy shieldmind_planner_delete_own on public.shieldmind_planner_items
   for delete to authenticated using (user_id = (select auth.uid()));
+
+create trigger campus_groups_set_username before insert on public.campus_groups
+for each row execute function private.fill_campus_social_username();
+create trigger campus_events_set_username before insert on public.campus_events
+for each row execute function private.fill_campus_social_username();
+create trigger campus_marketplace_set_username before insert on public.campus_marketplace_listings
+for each row execute function private.fill_campus_social_username();
 
 -- New direct-data APIs are private to signed-in campus members. Policies remain the row-level authority.
 grant select, insert, update, delete on table public.campus_university_requests to authenticated;
