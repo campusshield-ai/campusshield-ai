@@ -50,7 +50,7 @@ Deno.serve(async (req: Request) => {
     }
     const db = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data: subscriptions, error } = await db.from("campus_push_subscriptions")
-      .select("id,user_id,endpoint,p256dh,auth").eq("user_id", userId).limit(20);
+      .select("user_id,endpoint,p256dh_key,auth_key").eq("user_id", userId).limit(20);
     if (error) return json({ error: "Could not load push subscriptions." }, 503);
     if (!subscriptions?.length) return json({ delivered: 0, expired: 0, failed: 0, reason: "no_subscriptions" });
 
@@ -60,13 +60,13 @@ Deno.serve(async (req: Request) => {
     for (const row of subscriptions) {
       try {
         await webpush.sendNotification({
-          endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth },
+          endpoint: row.endpoint, keys: { p256dh: row.p256dh_key, auth: row.auth_key },
         }, payload, { TTL: 3600 });
         delivered += 1;
       } catch (error) {
         const status = Number((error as { statusCode?: number })?.statusCode || 0);
         if (status === 404 || status === 410) {
-          const { error: deleteError } = await db.from("campus_push_subscriptions").delete().eq("id", row.id);
+          const { error: deleteError } = await db.from("campus_push_subscriptions").delete().eq("endpoint", row.endpoint).eq("user_id", userId);
           if (!deleteError) expired += 1;
           else failed += 1;
         } else {
