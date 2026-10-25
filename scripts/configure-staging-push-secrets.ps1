@@ -17,6 +17,9 @@ if (-not [Uri]::TryCreate($originInput, [UriKind]::Absolute, [ref]$originUri)) {
   throw "Enter a valid absolute preview origin."
 }
 $isLocal = $originUri.Scheme -eq "http" -and @("localhost", "127.0.0.1") -contains $originUri.Host
+if ($originUri.Host -ieq "campusshield-ai.github.io") {
+  throw "This hostname selects production in supabase-config.js. Use the actual staging preview origin or localhost instead."
+}
 if (($originUri.Scheme -ne "https" -and -not $isLocal) -or $originUri.AbsolutePath -ne "/" -or $originUri.Query -or $originUri.Fragment) {
   throw "Use the HTTPS origin only (or localhost for local testing), without a path, query, or fragment."
 }
