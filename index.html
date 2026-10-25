@@ -3124,6 +3124,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
         button.hidden = false;
         return;
       }
+      if (button.dataset.page === 'student-rewards') {
+        button.hidden = !student;
+        return;
+      }
       if (button.dataset.page === 'classroom') {
         button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['teacher','security','admin'].includes(currentProfile?.role));
         return;
@@ -3729,6 +3733,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
+
+    if (page === 'student-rewards' && currentProfile.role !== 'student') {
+      page = 'dashboard';
+      toast('Challenges and rewards are available to student accounts only.');
+    }
 
     if (['manage', 'risk', 'analytics'].includes(page) && !canManageIncidents()) {
       page = 'dashboard';
