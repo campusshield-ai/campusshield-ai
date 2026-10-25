@@ -40,6 +40,17 @@ assert.match(html, /\.campus-dashboard-hero\{[\s\S]*?background:[\s\S]*?linear-g
 assert.match(html, /@media\(max-width:700px\)\{\.campus-dashboard-hero\{grid-template-columns:minmax\(0,1fr\)/);
 assert.match(html, /id="page-dashboard"/);
 assert.match(html, /id="totalStat"/);
+assert.match(html, /id="page-campus-contacts"/, "campus contacts destination exists");
+assert.match(html, /data-page="campus-contacts"/, "dashboard contacts link points to a supported route");
+assert.match(html, /id="campus-contacts-campus-name"/, "contacts page shows selected institution");
+assert.match(html, /id="campus-contacts-official-link"/, "contacts page supports official institution website");
+assert.match(html, /async function loadCampusContactsPage\(\)/, "contacts destination loads verified directory details");
+assert.match(html, /from\('campus_universities'\)[\s\S]*?select\('name,official_website'\)/, "contacts page sources websites from the university directory");
+assert.match(html, /if \(button\.tagName === 'A'\) e\.preventDefault\(\)/, "route links do not trigger unwanted hash navigation");
+const routeIds = new Set([...html.matchAll(/id="page-([^"]+)"/g)].map((match) => match[1]));
+const routeTargets = new Set([...html.matchAll(/data-page="([^"]+)"/g)].map((match) => match[1]));
+for (const target of routeTargets) assert.ok(routeIds.has(target), `data-page route ${target} has a matching page`);
+
 
 assert.doesNotThrow(() => new Function(config), "Supabase config parses");
 
