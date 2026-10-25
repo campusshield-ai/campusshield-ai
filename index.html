@@ -833,6 +833,34 @@ button,input,select,textarea{max-width:100%;min-width:0}
   .stat:hover,.nav button:hover,.campus-hub-series:hover,.campus-hub-official:hover{transform:none}
 }
 
+
+/* Dashboard hero refresh: accessible hierarchy and responsive emergency guidance. */
+.campus-dashboard-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(230px,.78fr) minmax(0,1.42fr);align-items:stretch;gap:clamp(18px,2.7vw,36px);overflow:hidden;margin:0 0 22px;padding:clamp(22px,3vw,38px);border:1px solid rgba(117,205,215,.22);border-radius:26px;background:radial-gradient(ellipse at 88% 12%,rgba(39,145,164,.24),transparent 36%),linear-gradient(125deg,#0d2b35 0%,#123943 55%,#183c62 100%);color:#f5fbfc;box-shadow:0 20px 44px rgba(18,49,58,.12)}
+.campus-dashboard-hero:before{content:"";position:absolute;z-index:-1;right:-90px;top:-150px;width:370px;height:370px;border:1px solid rgba(132,221,213,.15);border-radius:50%;box-shadow:0 0 0 28px rgba(132,221,213,.025),0 0 0 60px rgba(132,221,213,.02);pointer-events:none}
+.campus-dashboard-hero-main{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.campus-dashboard-hero .hero-eyebrow{display:flex;align-items:center;gap:9px;margin:0 0 17px;color:#9ce7dc;font-size:10px;line-height:1.4;font-weight:900;letter-spacing:.19em;text-transform:uppercase}
+.campus-dashboard-hero .hero-eyebrow:before{content:"";width:22px;height:2px;border-radius:2px;background:#79e0c4}
+.campus-dashboard-hero h1{max-width:18ch;margin:0;color:#f8fcfc;font-size:clamp(28px,3.1vw,43px);line-height:1.06;letter-spacing:-.055em;font-weight:850;overflow-wrap:normal}
+.campus-dashboard-hero .hero-description{max-width:39ch;margin:13px 0 0;color:#d0e1e5;font-size:14px;line-height:1.7}
+.campus-dashboard-hero .hero-actions{display:flex;flex-direction:column;align-items:stretch;gap:9px;width:min(100%,230px);margin-top:22px}
+.campus-dashboard-hero .hero-actions .btn{display:inline-flex;align-items:center;justify-content:flex-start;gap:10px;min-height:43px;padding:11px 14px;border:1px solid transparent;border-radius:12px;background:#258692;color:#fff;font-size:12px;font-weight:850;text-decoration:none;box-shadow:none}
+.campus-dashboard-hero .hero-actions .btn:hover{background:#2b9aa0}
+.campus-dashboard-hero .hero-actions .btn.secondary{border-color:rgba(221,244,247,.28);background:rgba(255,255,255,.055);color:#f1fbfc}
+.campus-dashboard-hero .hero-actions .btn.secondary:hover{background:rgba(255,255,255,.12)}
+.campus-dashboard-hero .hero-actions .btn svg{width:17px;height:17px;flex:0 0 17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.campus-dashboard-emergency{align-self:end;min-width:0;margin:0;padding:clamp(18px,2vw,25px);border:1px solid rgba(211,234,242,.22);border-radius:21px;background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.045));box-shadow:inset 0 1px rgba(255,255,255,.04)}
+.campus-dashboard-emergency-kicker{display:flex;align-items:center;gap:9px;margin:0 0 13px;color:#8be0d7;font-size:10px;font-weight:900;letter-spacing:.16em}
+.campus-dashboard-emergency-kicker svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.campus-dashboard-emergency p{margin:0;color:#e0eaef;font-size:clamp(13px,1.2vw,16px);line-height:1.7}
+.campus-dashboard-emergency a{display:inline-flex;align-items:center;gap:8px;margin-top:15px;color:#7bdcd3;font-size:13px;font-weight:800;text-decoration:none}
+.campus-dashboard-emergency a:hover{text-decoration:underline;text-underline-offset:4px}
+.campus-dashboard-emergency a svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dashboard-section-heading{margin:0;color:#183840;font-size:clamp(20px,2.2vw,25px);letter-spacing:-.04em}
+.dashboard-section-heading+p{margin:7px 0 0}
+@media(max-width:1000px){.campus-dashboard-hero{grid-template-columns:minmax(200px,.8fr) minmax(0,1.2fr);gap:18px}.campus-dashboard-hero h1{font-size:clamp(27px,3.7vw,38px)}}
+@media(max-width:700px){.campus-dashboard-hero{grid-template-columns:minmax(0,1fr);gap:19px;padding:22px 18px;border-radius:21px}.campus-dashboard-hero h1{font-size:clamp(29px,8vw,38px);max-width:20ch}.campus-dashboard-hero .hero-description{font-size:13px}.campus-dashboard-hero .hero-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:none;margin-top:19px}.campus-dashboard-hero .hero-actions .btn{justify-content:center;padding-inline:10px;font-size:11px}.campus-dashboard-emergency{align-self:stretch;padding:17px}.campus-dashboard-emergency p{font-size:13px}}
+@media(max-width:390px){.campus-dashboard-hero .hero-actions{grid-template-columns:1fr}.campus-dashboard-hero .hero-actions .btn{justify-content:flex-start}}
+
 </style>
 </head>
 <body>
@@ -1038,10 +1066,25 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <div class="notice"><span class="notice-icon" aria-hidden="true">!</span><span><strong>Demonstration prototype.</strong> Use fictional information only. Reports are stored in the connected Supabase project when available. This prototype does not contact emergency services.</span></div>
 
 <section class="page active" id="page-dashboard">
-<div class="heading">
-  <div><h1>Your campus, in one place.</h1><p>Stay safe, find your people, and make the most of campus life. Your campus space is limited to your university.</p></div>
-  <div class="heading-actions"><button class="btn" type="button" data-page="report"><span aria-hidden="true">＋</span>New report</button>
-    <button class="btn secondary" type="button" data-page="academics">Academic Life</button>
+<section class="campus-dashboard-hero" aria-labelledby="campus-dashboard-hero-title">
+  <div class="campus-dashboard-hero-main">
+    <p class="hero-eyebrow">Campus safety network</p>
+    <h1 id="campus-dashboard-hero-title">Welcome back,<br>CampusShield</h1>
+    <p class="hero-description">No open incidents right now. Report anything that feels unsafe so your safety team can act on it.</p>
+    <div class="hero-actions">
+      <button class="btn" type="button" data-page="report"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.6 7.7 7 10 4.4-2.3 7-5.5 7-10V6l-7-3Z"/><path d="M12 8v4"/><path d="M12 15.5h.01"/></svg>Report an incident</button>
+      <button class="btn secondary" type="button" data-page="shieldmind"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="11" rx="2"/><path d="M9 8V5h6v3M8 13h.01M16 13h.01M9 16h6M12 5V3"/></svg>Ask the assistant</button>
+    </div>
+  </div>
+  <aside class="campus-dashboard-emergency" aria-label="Emergency guidance">
+    <div class="campus-dashboard-emergency-kicker"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3H4a1 1 0 0 0-1 1 17 17 0 0 0 17 17 1 1 0 0 0 1-1v-3l-5-2-2 3a14 14 0 0 1-5-5l3-2-2-5Z"/></svg>Emergency guidance</div>
+    <p>If someone is in immediate danger, contact your campus security control room or local emergency services straight away. This platform records reports — it does not dispatch help.</p>
+    <a href="#" data-page="campus-contacts">Campus service contacts <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+  </aside>
+</section>
+<div class="heading dashboard-overview-heading">
+  <div><h2 class="dashboard-section-heading">Your campus overview</h2><p>Incident statistics and campus activity available to your account.</p></div>
+  <div class="heading-actions"><button class="btn secondary" type="button" data-page="academics">Academic Life</button>
     <button class="btn secondary" type="button" id="student-identity-setup-button" hidden>Complete student setup</button>
     <p id="student-identity-setup-status" class="muted" role="status" aria-live="polite" hidden></p></div>
 </div>
