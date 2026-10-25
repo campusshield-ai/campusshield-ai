@@ -249,7 +249,7 @@ begin
   returning id into v_check_id;
   return v_check_id;
 end;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.record_campus_identity_evidence_check(
@@ -346,7 +346,7 @@ begin
   end if;
   return true;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.bootstrap_first_campus_admin(p_university_id uuid)
  RETURNS boolean
@@ -385,7 +385,7 @@ begin
     order by c.checked_at desc
     limit 200;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.list_campus_identity_evidence_checks(p_subject_user_id uuid DEFAULT NULL::uuid)
  RETURNS TABLE(id uuid, subject_user_id uuid, evidence_type text, outcome text, source_kind text, source_reference text, reviewer_note text, checked_by uuid, checked_at timestamp with time zone)
@@ -430,7 +430,7 @@ begin
       and (p.requested_role = 'teacher' or p.role in ('teacher','security','admin'))
     order by cm.created_at;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.list_campus_staff_membership_reviews()
  RETURNS TABLE(user_id uuid, username text, requested_role text, account_role text, account_status text, campus_status text, faculty text, department text, created_at timestamp with time zone)
@@ -471,7 +471,7 @@ begin
       and v.status='pending'
     order by v.created_at asc;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.list_campus_staff_verification_reviews()
  RETURNS TABLE(user_id uuid, username text, position_title text, staff_number text, official_email text, document_path text, requested_campus_admin boolean, created_at timestamp with time zone)
@@ -499,7 +499,7 @@ AS $function$
     and l.university_id=(select private.current_campus_university_id())
     and l.status in ('pending','published','sold','hidden','rejected')
   order by l.created_at desc;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.list_my_campus_marketplace_listings()
  RETURNS TABLE(listing_id uuid, listing_status text)
@@ -562,7 +562,7 @@ begin
       and verification_status='verified';
   if not found then raise exception 'Campus administrator membership is not verified for this university.'; end if;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.platform_assign_campus_admin(p_user_id uuid, p_university_id uuid)
  RETURNS void
@@ -607,7 +607,7 @@ begin
       and cm.verification_status='verified'
     order by v.created_at asc;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.platform_list_campus_admin_requests()
  RETURNS TABLE(user_id uuid, username text, university_id uuid, university_name text, position_title text, official_email text, created_at timestamp with time zone)
@@ -657,7 +657,7 @@ begin
       and p.role::text in ('teacher','security','admin')
     order by cp.username;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.platform_list_campus_staff_candidates(p_university_id uuid)
  RETURNS TABLE(user_id uuid, username text, account_role text, account_status text, campus_status text, faculty text, department text)
@@ -690,7 +690,7 @@ begin
     where r.status='pending'
     order by r.created_at asc;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.platform_list_campus_university_requests()
  RETURNS TABLE(id uuid, university_name text, state text, ownership text, official_website text, status text, created_at timestamp with time zone)
@@ -763,7 +763,7 @@ begin
 
   if not found then raise exception 'University request could not be reviewed.'; end if;
 end;
-$function$
+$function$;
  then nullif(btrim(v_request.official_website),'') else null end,true);
     end if;
 
@@ -778,7 +778,7 @@ $function$
 
   if not found then raise exception 'University request could not be reviewed.'; end if;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.platform_review_campus_university_request(p_request_id uuid, p_decision text)
  RETURNS void
@@ -818,7 +818,7 @@ begin
   returning id into v_id;
   return v_id;
 end;
-$function$
+$function$;
 
   ) then raise exception 'Enter a valid HTTP or HTTPS official website URL (maximum 250 characters).'; end if;
   if exists (select 1 from public.campus_universities u where lower(u.name) = lower(btrim(p_university_name))) then
@@ -829,7 +829,7 @@ $function$
   returning id into v_id;
   return v_id;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.request_campus_university(p_university_name text, p_state text, p_ownership text, p_official_website text DEFAULT NULL::text)
  RETURNS uuid
@@ -903,7 +903,7 @@ begin
     raise exception 'Campus membership could not be updated.';
   end if;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.review_campus_staff_membership(p_user_id uuid, p_decision text)
  RETURNS void
@@ -973,7 +973,7 @@ begin
       where user_id=p_user_id and university_id=v_university_id and membership_status='active';
   end if;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.review_campus_staff_verification(p_user_id uuid, p_decision text, p_rejection_reason text DEFAULT NULL::text)
  RETURNS void
@@ -1068,7 +1068,7 @@ begin
     set verification_status='pending', updated_at=now()
   where user_id=v_user_id and university_id=v_university_id and membership_status='active';
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.submit_campus_staff_verification(p_position_title text, p_staff_number text DEFAULT NULL::text, p_official_email text DEFAULT NULL::text, p_document_path text DEFAULT NULL::text, p_requested_campus_admin boolean DEFAULT false)
  RETURNS void
