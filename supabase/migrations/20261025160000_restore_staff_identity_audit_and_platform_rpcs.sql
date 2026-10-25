@@ -749,7 +749,13 @@ begin
         (name,slug,ownership,state,source_url,official_website,is_active)
       values
         (btrim(v_request.university_name),v_slug,v_request.ownership,btrim(v_request.state),
-         'https://enuc.nuc.edu.ng/nus',case when btrim(coalesce(v_request.official_website,'')) ~* '^https?://[^[:space:]]+,true);
+         'https://enuc.nuc.edu.ng/nus',
+         case
+           when btrim(coalesce(v_request.official_website,'')) ~* '^https?://[^[:space:]]+$'
+             then nullif(btrim(v_request.official_website),'')
+           else null
+         end,
+         true);
     end if;
 
     update public.campus_university_requests
@@ -764,22 +770,6 @@ begin
   if not found then raise exception 'University request could not be reviewed.'; end if;
 end;
 $function$;
- then nullif(btrim(v_request.official_website),'') else null end,true);
-    end if;
-
-    update public.campus_university_requests
-      set status='approved',reviewed_at=now()
-      where id=p_request_id and status='pending';
-  else
-    update public.campus_university_requests
-      set status='rejected',reviewed_at=now()
-      where id=p_request_id and status='pending';
-  end if;
-
-  if not found then raise exception 'University request could not be reviewed.'; end if;
-end;
-$function$;
-
 CREATE OR REPLACE FUNCTION public.platform_review_campus_university_request(p_request_id uuid, p_decision text)
  RETURNS void
  LANGUAGE sql
@@ -809,7 +799,10 @@ begin
   if p_ownership not in ('Federal','State','Private') then raise exception 'Select Federal, State, or Private.'; end if;
   if p_official_website is not null and (
     char_length(btrim(p_official_website)) > 250
-    or btrim(p_official_website) !~* '^https?://[^[:space:]]+
+    or btrim(p_official_website) !~* '^https?://[^[:space:]]+$'
+  ) then
+    raise exception 'Enter a valid HTTP or HTTPS official website URL (maximum 250 characters).';
+  end if;
   if exists (select 1 from public.campus_universities u where lower(u.name) = lower(btrim(p_university_name))) then
     raise exception 'That university is already in the directory.';
   end if;
@@ -819,18 +812,6 @@ begin
   return v_id;
 end;
 $function$;
-
-  ) then raise exception 'Enter a valid HTTP or HTTPS official website URL (maximum 250 characters).'; end if;
-  if exists (select 1 from public.campus_universities u where lower(u.name) = lower(btrim(p_university_name))) then
-    raise exception 'That university is already in the directory.';
-  end if;
-  insert into public.campus_university_requests (requester_id, university_name, state, ownership, official_website)
-  values (v_user_id, btrim(p_university_name), btrim(p_state), p_ownership, nullif(btrim(coalesce(p_official_website,'')), ''))
-  returning id into v_id;
-  return v_id;
-end;
-$function$;
-
 CREATE OR REPLACE FUNCTION public.request_campus_university(p_university_name text, p_state text, p_ownership text, p_official_website text DEFAULT NULL::text)
  RETURNS uuid
  LANGUAGE sql
