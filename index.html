@@ -941,6 +941,30 @@ button,input,select,textarea{max-width:100%;min-width:0}
 @media(max-width:950px){.profile-dashboard-layout{grid-template-columns:minmax(0,1fr)}.profile-alerts-card{min-height:0}}
 @media(max-width:600px){.profile-overview-card,.profile-alerts-card{padding:18px;border-radius:18px}.profile-identity-header{gap:13px}.profile-avatar{width:56px;height:56px;flex-basis:56px;border-radius:17px}.profile-avatar svg{width:31px;height:31px}.profile-account-name{font-size:17px}.profile-contact-form{grid-template-columns:minmax(0,1fr)}.profile-contact-message{grid-column:1}.profile-account-detail{grid-template-columns:minmax(105px,.8fr) minmax(0,1.2fr);gap:8px}.profile-account-detail>span{font-size:10px;letter-spacing:.9px}.profile-account-detail>strong{font-size:13px}.profile-alerts-header{align-items:flex-start}.profile-mark-all-read{font-size:11px}.profile-alerts-header h2{font-size:18px}}
 
+
+/* Premium campus identity verification refresh — scoped to the existing form.
+   Keeps existing field IDs and submit handlers intact. */
+.signup-student-identity-panel{max-width:1040px;margin-inline:auto;padding:clamp(18px,3vw,34px);border:1px solid #dce7e2;border-radius:22px;background:linear-gradient(180deg,#f7faf8 0%,#f3f7f5 100%)}
+.signup-student-identity-panel>.heading{padding:0 0 22px;margin:0 0 24px;border-bottom:1px solid #dce7e2}
+.signup-student-identity-panel>.heading:before{content:"ACCOUNT VERIFICATION";display:block;margin-bottom:8px;color:#397b7b;font-size:10px;font-weight:850;letter-spacing:.19em}
+.signup-student-identity-panel>.heading h2{color:#102f39;font-size:clamp(25px,3vw,34px);line-height:1.15;letter-spacing:-.045em;margin:0 0 9px}
+.signup-student-identity-panel>.heading p{max-width:720px;margin:0;color:#627a80;font-size:14px}
+#studentIdentityForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 20px;padding:clamp(17px,2.5vw,28px);border:1px solid #dce7e2;border-radius:18px;background:#fff;box-shadow:0 12px 34px rgba(16,43,53,.045)}
+#identity-verification-status{grid-column:1/-1;padding:11px 13px;border:1px solid #e1ebe6;border-radius:11px;background:#f6faf8;color:#4b6e70}
+#studentIdentityForm>.field{min-width:0;margin:5px 0 12px}
+#studentIdentityForm>.field label{color:#173840;font-size:12px;font-weight:750;margin-bottom:8px}
+#studentIdentityForm>.field input:not([type="file"]),#studentIdentityForm>.field select,#studentIdentityForm>.field textarea{min-height:45px;border:1px solid #d8e4df;border-radius:11px;padding:11px 13px;background:#fff;box-shadow:0 2px 4px rgba(16,43,53,.035);transition:border-color .16s ease,box-shadow .16s ease}
+#studentIdentityForm>.field input:focus,#studentIdentityForm>.field select:focus,#studentIdentityForm>.field textarea:focus{border-color:#62b8a5;box-shadow:0 0 0 4px rgba(98,184,165,.14);outline:none}
+#studentIdentityForm>.field:has(#identity-document){grid-column:1/-1;margin-top:4px}
+#studentIdentityForm>.field:has(#identity-document) input[type="file"]{width:100%;min-height:76px;padding:15px;border:1px dashed #c9ded6;border-radius:13px;background:#f4faf7;color:#47666a}
+#studentIdentityForm>.field small{display:block;margin-top:7px;color:#71868a;font-size:11px;line-height:1.55}
+#studentIdentityForm .remember-field,#studentIdentityForm>p.muted,#studentIdentityForm>.actions,#studentIdentityForm>button{grid-column:1/-1}
+#studentIdentityForm .remember-field{display:flex;align-items:flex-start;gap:9px;padding:13px 14px;border:1px solid #e0eae5;border-radius:12px;background:#f7faf8;color:#516b70;font-size:11px;line-height:1.5}
+#studentIdentityForm .remember-field input{flex:0 0 auto;margin-top:2px}
+#studentIdentityForm .btn{min-height:45px;padding:12px 18px;border-radius:11px;background:linear-gradient(135deg,#153b45,#102b35);box-shadow:0 5px 12px rgba(16,43,53,.13);font-size:12px;transition:transform .16s ease,box-shadow .16s ease}
+#studentIdentityForm .btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(16,43,53,.17)}
+@media(max-width:650px){.signup-student-identity-panel{padding:14px;border-radius:16px}#studentIdentityForm{grid-template-columns:minmax(0,1fr);padding:15px;gap:0;border-radius:14px}#studentIdentityForm>.field:has(#identity-document){grid-column:auto}#identity-verification-status,#studentIdentityForm .remember-field,#studentIdentityForm>p.muted,#studentIdentityForm>.actions,#studentIdentityForm>button{grid-column:auto}}
+
 </style>
 </head>
 <body>
