@@ -8,6 +8,7 @@ const usernameSyncMigration = await readFile(new URL("../supabase/migrations/202
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
 const usernameLookupRemovalMigration = await readFile(new URL("../supabase/migrations/20261014235000_remove_username_availability_rpc.sql", import.meta.url), "utf8");
 const staffProfileMigration = await readFile(new URL("../supabase/migrations/20261014240000_allow_verified_teachers_to_read_profiles.sql", import.meta.url), "utf8");
+const campusLifeParityMigration = await readFile(new URL("../supabase/migrations/20261025113000_production_campus_life_parity.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -45,6 +46,29 @@ assert.match(html, /does not contact emergency services/i);
 
 // Campus community and public-identity privacy.
 assert.match(html, /id="auth-username"/);
+
+assert.match(html, /id="page-courses"/);
+assert.match(html, /id="campus-course-form"/);
+assert.match(html, /id="campus-resource-form"/);
+assert.match(html, /data-opportunity-bookmark/);
+assert.match(html, /loadCampusCoursesPage\(\)/);
+assert.match(backend, /async listCampusCourses\(\)/);
+assert.match(backend, /async suggestCampusCourse\(input\)/);
+assert.match(backend, /async listCampusCourseResources\(\)/);
+assert.match(backend, /async suggestCampusCourseResource\(input\)/);
+assert.match(backend, /async listOpportunityBookmarks\(\)/);
+assert.match(backend, /async saveCampusOpportunity\(opportunityId\)/);
+assert.match(campusLifeParityMigration, /create table if not exists public\.campus_courses/i);
+assert.match(campusLifeParityMigration, /create table if not exists public\.campus_course_resources/i);
+assert.match(campusLifeParityMigration, /create table if not exists public\.campus_opportunity_bookmarks/i);
+assert.match(campusLifeParityMigration, /alter table public\.community_posts add column if not exists university_id/i);
+assert.match(campusLifeParityMigration, /community_posts_read_same_campus/i);
+assert.match(campusLifeParityMigration, /verified_account_required_for_interactions/i);
+assert.match(campusLifeParityMigration, /revoke all on table public\.shieldmind_planner_items from public, anon, authenticated/i);
+assert.match(campusLifeParityMigration, /security invoker/i);
+assert.match(campusLifeParityMigration, /private\.current_user_has_verified_campus_access\(\)/i);
+assert.doesNotMatch(campusLifeParityMigration, /grant select, insert, update, delete on table public\.campus_classrooms to authenticated/i);
+
 assert.match(html, /id="page-community"/);
 assert.match(html, /id="communityUsernameForm"/);
 assert.match(html, /id="communityPostForm"/);
@@ -107,6 +131,7 @@ for (const [filename, size] of [["apple-touch-icon.png", 180], ["campusshield-19
 
 console.log(`PASS ${inlineScripts.length} inline script(s), backend, and config parse`);
 console.log("PASS browser config uses the Supabase project URL and publishable key only");
+console.log("PASS campus course/resource directory, opportunity bookmarks, and campus-scoped migration contracts");
 console.log("PASS incident reads, submissions, status updates, and dashboard metrics use Supabase data");
 console.log("PASS incident data can be refreshed manually, on tab return, and every minute");
 console.log("PASS resolve controls are shown only to verified security/admin users");
