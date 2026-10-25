@@ -233,3 +233,13 @@ for (const providerQuotaCode of [
 assert.match(shieldmindFunction, /"Retry-After": retryAfter/);
 assert.match(shieldmindFunction, /your ShieldMind account limit has not been reached/i);
 console.log("PASS ShieldMind surfaces safe provider rate-limit and billing errors");
+
+
+// Mobile workspace layout: protect narrow screens from horizontal overflow and cramped controls.
+assert.match(html, /Mobile-first layout hardening: prevent clipped headers, horizontal overflow, and cramped controls/);
+assert.match(html, /html,body\{min-width:320px\}/);
+assert.match(html, /\.topbar-actions\{flex:1 1 100%;width:100%;justify-content:flex-start;gap:7px\}/);
+assert.match(html, /\.field input,\.field select,\.field textarea,\.institution-picker-field input\[list\]\{width:100%;min-height:46px;padding:11px 12px;font-size:16px\}/);
+assert.match(html, /env\(safe-area-inset-bottom\)/);
+assert.match(html, /\.table-wrap\{max-width:100%;overflow-x:auto\}/);
+console.log("PASS mobile workspace, forms, navigation header, tables, and safe-area layout safeguards");
