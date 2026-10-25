@@ -276,6 +276,9 @@ assert.match(pushSubscriptionsFunction, /auth\.getUser\(token\)/, "push subscrip
 assert.match(pushSubscriptionsFunction, /validPushEndpoint/, "push endpoints are validated before storage");
 assert.match(pushSubscriptionsFunction, /CAMPUSSHIELD_APP_ORIGIN/, "push subscription CORS uses an explicit preview origin when configured");
 assert.match(pushDispatchFunction, /PUSH_DISPATCH_SECRET/, "internal push delivery requires a dispatch secret");
+assert.match(pushDispatchFunction, /req\.method === "OPTIONS"/, "push dispatch answers browser CORS preflight");
+assert.match(pushDispatchFunction, /CAMPUSSHIELD_APP_ORIGIN/, "push dispatch restricts browser requests to the configured origin");
+assert.match(pushDispatchFunction, /const respond = \(body: Record<string, unknown>, status = 200\) => json\(body, status, origin \|\| DEFAULT_ORIGIN\)/, "push API success and error responses allow the request origin");
 assert.match(pushDispatchFunction, /equalsConstantTime/, "internal dispatch secret comparison is constant-time");
 assert.match(pushDispatchFunction, /Only a recently sent message can trigger a background notification/, "direct-message push checks a message the caller recently sent");
 assert.match(pushDispatchFunction, /genericMessages/, "push payloads use generic notification copy rather than private message content");
