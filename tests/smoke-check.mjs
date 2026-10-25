@@ -7,6 +7,7 @@ const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.u
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
 const paystackWebhookFunction = await readFile(new URL("../supabase/functions/paystack-webhook/index.ts", import.meta.url), "utf8");
 const paystackReconcileFunction = await readFile(new URL("../supabase/functions/paystack-reconcile/index.ts", import.meta.url), "utf8");
+const shieldmindBillingCheckout = await readFile(new URL("../supabase/functions/shieldmind-billing-checkout/index.ts", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
@@ -46,6 +47,13 @@ assert.match(html, /functions\.invoke\('paystack-reconcile'/, "checkout return t
 assert.match(html, /id="billing-reconcile-button"/, "users can retry payment verification safely");
 assert.match(html, /isStrongPasswordBaseline\(password\)/, "signup and password reset use a stronger password baseline");
 assert.match(backend, /Choose a 12\+ character password with uppercase, lowercase, a number, and a symbol/);
+assert.match(backend, /function getAuthRedirectUrl\(\)/, "auth confirmation returns to the current app URL");
+assert.doesNotMatch(backend, /AUTH_REDIRECT_URL\s*=\s*["']https:\/\/campusshield-ai\.github\.io/, "staging confirmations must not be hard-coded to production");
+assert.match(shieldmindBillingCheckout, /CAMPUSSHIELD_APP_ORIGIN/, "staging checkout supports an exact configured preview origin");
+assert.match(shieldmindBillingCheckout, /isLocalPreview/, "staging checkout supports localhost browser testing");
+assert.match(shieldmindBillingCheckout, /sk_test_/, "staging checkout rejects live Paystack credentials");
+assert.doesNotMatch(shieldmindBillingCheckout, /student_identity_verifications|membership_status!==\"active\"|verification_status!==\"verified\"/, "purchase eligibility does not depend on campus verification");
+assert.match(shieldmindBillingCheckout, /monthly_prepaid/, "checkout identifies the plan as a prepaid monthly term");
 
 assert.doesNotMatch(paystackWebhookFunction, /if\(order\.status==="paid"\)return json\(\{received:true,duplicate:true\}\)/, "paid orders must reach the verified activation-repair path");
 assert.match(paystackWebhookFunction, /\.in\("status",\["pending","failed"\]\)/, "verified success can reconcile an out-of-order failed event");
