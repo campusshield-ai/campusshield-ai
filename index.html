@@ -6355,6 +6355,18 @@ button,input,select,textarea{max-width:100%;min-width:0}
       const {data, error} = await backend.signUp(email, password, name, username, universityId, profileData);
       if (error) throw error;
       if (!data?.user) throw new Error('Supabase did not return a user.');
+
+      // Supabase intentionally returns a non-error response for an email that already
+      // exists, to avoid account enumeration. An empty identities array is the common
+      // signal; do not tell the person a new account or email was created.
+      const existingAccountResponse = Array.isArray(data.user.identities) && data.user.identities.length === 0;
+      if (existingAccountResponse && !data.session) {
+        confirmationPending = true;
+        $('resend-field').hidden = false;
+        msg.textContent = 'This email may already have a CampusShield account. No new account was created. Try Sign in, or use Forgot password if you cannot access it. If you still need confirmation, you can request another email below.';
+        return;
+      }
+
       accountCreated = true;
 
       if (data.session) {
