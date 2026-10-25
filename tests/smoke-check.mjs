@@ -125,6 +125,12 @@ assert.match(html, /button\.dataset\.academicFocus === 'planner'/);
 assert.match(html, /shieldmind-planner-panel/);
 assert.match(html, /scrollIntoView/);
 assert.match(html, /prefers-reduced-motion: reduce/);
+assert.match(html, /id="campus-dashboard-helpdesk"/);
+assert.match(html, /id="campus-dashboard-helpdesk-count"/);
+assert.match(html, /backend\.listCampusHelpdeskTickets\(\)\.catch\(\(\) => null\)/);
+assert.match(html, /row\.created_by === results\[4\]\.id/);
+assert.match(html, /Helpdesk status is temporarily unavailable/);
+
 
 assert.match(html, /data-page="classroom"/);
 assert.match(html, /data-page="groups"/);
