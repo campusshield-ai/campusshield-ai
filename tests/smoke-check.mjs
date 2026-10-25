@@ -279,6 +279,10 @@ assert.match(backend, /async getPushVapidPublicKey\(\)/, "push public-key retrie
 assert.match(backend, /async savePushSubscription\(subscription\)/, "device subscriptions are saved through the edge function");
 assert.match(backend, /async removePushSubscription\(endpoint\)/, "device unsubscribe is server-side and owner-scoped");
 assert.match(backend, /async sendPushTest\(\)/, "users can send a safe push test to their own devices");
+const pushEnableHandlerStart = html.indexOf('if (action === "enable") {');
+const pushPermissionRequestAt = html.indexOf("Notification.requestPermission()", pushEnableHandlerStart);
+const pushKeyFetchAt = html.indexOf("backend.getPushVapidPublicKey()", pushEnableHandlerStart);
+assert.ok(pushEnableHandlerStart >= 0 && pushPermissionRequestAt > pushEnableHandlerStart && pushKeyFetchAt > pushPermissionRequestAt, "push permission is requested before any network await so browser user activation is preserved");
 for (const pushControl of ["profile-push-enable", "profile-push-test", "profile-push-disable", "profile-push-settings-status"]) {
   assert.ok(html.includes(pushControl), `push settings include ${pushControl}`);
 }
