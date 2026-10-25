@@ -327,6 +327,11 @@ begin
     (v_university_id,p_course_id,v_user_id,v_group_name,v_description,'course','campus','pending',v_username)
   returning id,status,name into v_group_id,v_group_status,v_group_name;
 
+  -- The course-community creator is auto-enrolled as a moderator; discussion stays closed until approval.
+  insert into public.campus_group_members(group_id,user_id,member_role)
+  values (v_group_id,v_user_id,'moderator')
+  on conflict (group_id,user_id) do nothing;
+
   return query select v_group_id,v_group_status,v_group_name,false;
 exception when unique_violation then
   select g.id,g.status,g.name into v_group_id,v_group_status,v_group_name
@@ -342,5 +347,289 @@ $function$;
 
 revoke all on function public.create_campus_course_group(uuid,text) from public,anon,authenticated;
 grant execute on function public.create_campus_course_group(uuid,text) to authenticated;
+
+
+-- Member-only course discussion rooms.
+create table if not exists public.campus_course_community_messages (
+  id uuid primary key default gen_random_uuid(),
+  group_id uuid not null references public.campus_groups(id) on delete cascade,
+  course_id uuid not null references public.campus_courses(id) on delete cascade,
+  university_id uuid not null references public.campus_universities(id) on delete cascade,
+  author_id uuid not null references public.profiles(id) on delete cascade,
+  author_username text not null,
+  body text not null check (char_length(btrim(body)) between 1 and 1200),
+  status text not null default 'published' check (status in ('published','hidden')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists campus_course_community_messages_group_created_idx
+  on public.campus_course_community_messages(group_id,created_at desc);
+create index if not exists campus_course_community_messages_author_created_idx
+  on public.campus_course_community_messages(author_id,created_at desc);
+
+create table if not exists public.campus_course_community_reports (
+  id uuid primary key default gen_random_uuid(),
+  message_id uuid not null references public.campus_course_community_messages(id) on delete cascade,
+  group_id uuid not null references public.campus_groups(id) on delete cascade,
+  course_id uuid not null references public.campus_courses(id) on delete cascade,
+  university_id uuid not null references public.campus_universities(id) on delete cascade,
+  reporter_id uuid not null references public.profiles(id) on delete cascade,
+  reason text not null check (reason in ('spam','harassment','personal_information','threats','other')),
+  details text check (details is null or char_length(btrim(details)) <= 500),
+  status text not null default 'pending' check (status in ('pending','reviewed','dismissed')),
+  created_at timestamptz not null default now(),
+  unique(message_id,reporter_id)
+);
+
+create index if not exists campus_course_community_reports_campus_status_idx
+  on public.campus_course_community_reports(university_id,status,created_at);
+
+alter table public.campus_course_community_messages enable row level security;
+alter table public.campus_course_community_reports enable row level security;
+
+revoke all on table public.campus_course_community_messages from anon,authenticated;
+revoke all on table public.campus_course_community_reports from anon,authenticated;
+grant select (id,group_id,course_id,university_id,author_username,body,status,created_at,updated_at)
+  on table public.campus_course_community_messages to authenticated;
+
+drop policy if exists campus_course_community_messages_read_members on public.campus_course_community_messages;
+create policy campus_course_community_messages_read_members
+  on public.campus_course_community_messages for select to authenticated
+  using (
+    university_id=(select private.current_campus_university_id())
+    and status='published'
+    and (select private.current_user_has_verified_campus_access())
+    and exists (
+      select 1 from public.campus_groups g
+      where g.id=campus_course_community_messages.group_id
+        and g.course_id=campus_course_community_messages.course_id
+        and g.university_id=campus_course_community_messages.university_id
+        and g.status='active'
+        and (
+          exists (
+            select 1 from public.campus_group_members gm
+            where gm.group_id=g.id and gm.user_id=(select auth.uid())
+          )
+          or coalesce((select private.current_campus_role()),'')=any(array['teacher','security','admin']::text[])
+        )
+    )
+  );
+
+drop policy if exists campus_course_community_reports_no_direct_client_access on public.campus_course_community_reports;
+create policy campus_course_community_reports_no_direct_client_access
+  on public.campus_course_community_reports for all to authenticated
+  using (false) with check (false);
+
+create or replace function public.list_campus_course_community_messages(p_group_id uuid)
+returns table(id uuid,author_username text,body text,status text,created_at timestamptz,is_mine boolean)
+language plpgsql
+stable
+security definer
+set search_path to ''
+as $function$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_university_id uuid := (select private.current_campus_university_id());
+begin
+  if v_user_id is null or v_university_id is null
+     or not coalesce((select private.current_user_has_verified_campus_access()),false) then
+    raise exception 'Verified campus access is required to read course discussions.';
+  end if;
+
+  if not exists (
+    select 1 from public.campus_groups g
+    where g.id=p_group_id and g.university_id=v_university_id and g.course_id is not null
+      and g.status='active'
+      and (
+        exists (select 1 from public.campus_group_members gm where gm.group_id=g.id and gm.user_id=v_user_id)
+        or coalesce((select private.current_campus_role()),'')=any(array['teacher','security','admin']::text[])
+      )
+  ) then
+    raise exception 'Join this approved course community before opening its discussion.';
+  end if;
+
+  return query
+  select m.id,m.author_username,m.body,m.status,m.created_at,m.author_id=v_user_id
+  from public.campus_course_community_messages m
+  where m.group_id=p_group_id and m.university_id=v_university_id and m.status='published'
+  order by m.created_at asc
+  limit 200;
+end;
+$function$;
+
+create or replace function public.send_campus_course_community_message(p_group_id uuid,p_body text)
+returns uuid
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_university_id uuid := (select private.current_campus_university_id());
+  v_course_id uuid;
+  v_username text;
+  v_body text := btrim(coalesce(p_body,''));
+  v_recent_count integer;
+  v_message_id uuid;
+begin
+  if v_user_id is null or v_university_id is null
+     or not coalesce((select private.current_user_has_verified_campus_access()),false) then
+    raise exception 'Verified campus access is required to post in course discussions.';
+  end if;
+  if char_length(v_body) not between 1 and 1200 then raise exception 'Messages must be between 1 and 1200 characters.'; end if;
+
+  select g.course_id into v_course_id
+  from public.campus_groups g
+  where g.id=p_group_id and g.university_id=v_university_id and g.course_id is not null and g.status='active';
+
+  if not found then raise exception 'This approved course community is not available in your university.'; end if;
+  if not exists(select 1 from public.campus_group_members gm where gm.group_id=p_group_id and gm.user_id=v_user_id) then
+    raise exception 'Join this course community before posting.';
+  end if;
+
+  select count(*)::integer into v_recent_count
+  from public.campus_course_community_messages m
+  where m.author_id=v_user_id and m.created_at>now()-interval '1 minute';
+  if v_recent_count>=8 then raise exception 'You are sending messages too quickly. Wait a minute and try again.'; end if;
+
+  select cp.username into v_username from public.community_profiles cp where cp.user_id=v_user_id;
+  if v_username is null then raise exception 'Your campus username is not ready yet. Refresh and try again.'; end if;
+
+  insert into public.campus_course_community_messages
+    (group_id,course_id,university_id,author_id,author_username,body)
+  values (p_group_id,v_course_id,v_university_id,v_user_id,v_username,v_body)
+  returning id into v_message_id;
+
+  return v_message_id;
+end;
+$function$;
+
+create or replace function public.report_campus_course_community_message(
+  p_message_id uuid,p_reason text,p_details text default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_university_id uuid := (select private.current_campus_university_id());
+  v_group_id uuid;
+  v_course_id uuid;
+  v_author_id uuid;
+  v_report_id uuid;
+  v_details text := nullif(btrim(coalesce(p_details,'')),'');
+begin
+  if v_user_id is null or v_university_id is null
+     or not coalesce((select private.current_user_has_verified_campus_access()),false) then
+    raise exception 'Verified campus access is required to report course messages.';
+  end if;
+  if p_reason is null or p_reason not in ('spam','harassment','personal_information','threats','other') then
+    raise exception 'Choose a valid report reason.';
+  end if;
+  if v_details is not null and char_length(v_details)>500 then raise exception 'Report details must be 500 characters or fewer.'; end if;
+
+  select m.group_id,m.course_id,m.author_id into v_group_id,v_course_id,v_author_id
+  from public.campus_course_community_messages m
+  join public.campus_groups g on g.id=m.group_id
+  where m.id=p_message_id and m.university_id=v_university_id and m.status='published'
+    and g.status='active'
+    and exists(select 1 from public.campus_group_members gm where gm.group_id=g.id and gm.user_id=v_user_id);
+
+  if not found then raise exception 'This course message is no longer available to report.'; end if;
+  if v_author_id=v_user_id then raise exception 'You cannot report your own message.'; end if;
+
+  insert into public.campus_course_community_reports
+    (message_id,group_id,course_id,university_id,reporter_id,reason,details)
+  values (p_message_id,v_group_id,v_course_id,v_university_id,v_user_id,p_reason,v_details)
+  returning id into v_report_id;
+  return v_report_id;
+exception when unique_violation then raise exception 'You have already reported this message.';
+end;
+$function$;
+
+create or replace function public.list_campus_course_community_reports()
+returns table(
+  report_id uuid,group_id uuid,message_id uuid,message_body text,author_username text,
+  reporter_username text,reason text,details text,created_at timestamptz
+)
+language plpgsql
+stable
+security definer
+set search_path to ''
+as $function$
+declare v_university_id uuid := (select private.current_campus_university_id());
+begin
+  if auth.uid() is null or not coalesce((select private.current_user_has_verified_campus_access()),false)
+     or coalesce((select private.current_campus_role()),'') not in ('teacher','security','admin') then
+    raise exception 'Only verified campus staff can review course discussion reports.';
+  end if;
+  return query
+  select r.id,r.group_id,r.message_id,m.body,m.author_username,
+         coalesce(cp.username,'campus_member'),r.reason,r.details,r.created_at
+  from public.campus_course_community_reports r
+  join public.campus_course_community_messages m on m.id=r.message_id
+  left join public.community_profiles cp on cp.user_id=r.reporter_id
+  where r.university_id=v_university_id and r.status='pending'
+  order by r.created_at asc limit 100;
+end;
+$function$;
+
+create or replace function public.resolve_campus_course_community_report(p_report_id uuid,p_action text)
+returns boolean
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  v_university_id uuid := (select private.current_campus_university_id());
+  v_message_id uuid;
+begin
+  if auth.uid() is null or not coalesce((select private.current_user_has_verified_campus_access()),false)
+     or coalesce((select private.current_campus_role()),'') not in ('teacher','security','admin') then
+    raise exception 'Only verified campus staff can review course discussion reports.';
+  end if;
+  if p_action is null or p_action not in ('hide','dismiss') then raise exception 'Choose hide or dismiss.'; end if;
+
+  select r.message_id into v_message_id
+  from public.campus_course_community_reports r
+  where r.id=p_report_id and r.university_id=v_university_id and r.status='pending'
+  for update;
+  if not found then raise exception 'This pending course discussion report was not found.'; end if;
+
+  if p_action='hide' then
+    update public.campus_course_community_messages set status='hidden',updated_at=now()
+    where id=v_message_id and university_id=v_university_id;
+    update public.campus_course_community_reports set status='reviewed' where id=p_report_id;
+  else
+    update public.campus_course_community_reports set status='dismissed' where id=p_report_id;
+  end if;
+  return true;
+end;
+$function$;
+
+revoke all on function public.list_campus_course_community_messages(uuid) from public,anon,authenticated;
+revoke all on function public.send_campus_course_community_message(uuid,text) from public,anon,authenticated;
+revoke all on function public.report_campus_course_community_message(uuid,text,text) from public,anon,authenticated;
+revoke all on function public.list_campus_course_community_reports() from public,anon,authenticated;
+revoke all on function public.resolve_campus_course_community_report(uuid,text) from public,anon,authenticated;
+grant execute on function public.list_campus_course_community_messages(uuid) to authenticated;
+grant execute on function public.send_campus_course_community_message(uuid,text) to authenticated;
+grant execute on function public.report_campus_course_community_message(uuid,text,text) to authenticated;
+grant execute on function public.list_campus_course_community_reports() to authenticated;
+grant execute on function public.resolve_campus_course_community_report(uuid,text) to authenticated;
+
+do $publication$
+begin
+  if exists(select 1 from pg_publication where pubname='supabase_realtime')
+     and not exists(select 1 from pg_publication_tables where pubname='supabase_realtime'
+        and schemaname='public' and tablename='campus_course_community_messages') then
+    execute 'alter publication supabase_realtime add table public.campus_course_community_messages';
+  end if;
+end;
+$publication$;
+
 
 commit;
