@@ -2152,6 +2152,14 @@ button,input,select,textarea{max-width:100%;min-width:0}
   </details>
 </section>
 <div class="notice-inline" id="campus-context-banner" hidden><strong>Your university space:</strong> <span id="campus-context-name"></span>. Student interaction is limited to members of this university. <span id="campus-context-status"></span></div>
+<section class="panel campus-invitation-panel" id="campus-invitation-panel" hidden aria-labelledby="campus-invitation-title">
+  <div class="panel-heading"><div><h2 id="campus-invitation-title">Invite classmates</h2><p>Share CampusShield with friends. Invites are counted when a new account is created through your link; we do not show you their email or private profile.</p></div><span class="campus-dashboard-role" id="campus-invitation-count">0 sign-ups</span></div>
+  <div class="grid two">
+    <div class="field"><label for="campus-invitation-link">Your personal invitation link</label><input id="campus-invitation-link" type="url" readonly placeholder="Loading your invitation link…" aria-describedby="campus-invitation-help"></div>
+    <div class="field"><label>Invite classmates on WhatsApp</label><p id="campus-invitation-help" class="muted">Your link includes a code used to attribute new account sign-ups. It does not grant campus access or bypass identity verification.</p><div class="actions"><button class="btn" type="button" id="campus-invitation-whatsapp" disabled>Share on WhatsApp</button><button class="btn secondary" type="button" id="campus-invitation-copy" disabled>Copy invite link</button></div></div>
+  </div>
+  <p id="campus-invitation-status" class="message" role="status" aria-live="polite">Preparing your personal invitation link…</p>
+</section>
 <div class="community-layout" id="community-main-layout">
   <section class="panel" aria-labelledby="community-profile-title">
     <div class="panel-heading"><div><h2 id="community-profile-title">Your public profile</h2><p>Students see your username only.</p></div></div>
@@ -6446,6 +6454,76 @@ button,input,select,textarea{max-width:100%;min-width:0}
     })[type] || 'Campus update';
   }
 
+  async function loadCampusInvitationPanel(backend) {
+    const panel = $('campus-invitation-panel');
+    const linkInput = $('campus-invitation-link');
+    const count = $('campus-invitation-count');
+    const status = $('campus-invitation-status');
+    const whatsappButton = $('campus-invitation-whatsapp');
+    const copyButton = $('campus-invitation-copy');
+    if (!panel || !linkInput || !count || !status) return;
+    try {
+      const summary = await backend.getMyCampusInvitationSummary();
+      const inviteCode = String(summary?.invite_code || '').trim().toUpperCase();
+      if (!/^[A-Z0-9]{10}$/.test(inviteCode)) throw new Error('Your invitation link is not available yet.');
+      const link = new URL(window.location.pathname, window.location.origin);
+      link.searchParams.set('invite', inviteCode);
+      linkInput.value = link.href;
+      linkInput.dataset.inviteCode = inviteCode;
+      count.textContent = Number(summary?.signup_count || 0) + ' sign-ups';
+      status.textContent = 'Share this link with classmates. New sign-ups are counted once; invitee names and emails stay private.';
+      if (whatsappButton) whatsappButton.disabled = false;
+      if (copyButton) copyButton.disabled = false;
+    } catch (error) {
+      linkInput.value = '';
+      linkInput.dataset.inviteCode = '';
+      count.textContent = '— sign-ups';
+      status.textContent = error?.message || 'Invitations are temporarily unavailable.';
+      if (whatsappButton) whatsappButton.disabled = true;
+      if (copyButton) copyButton.disabled = true;
+    }
+  }
+
+  $('campus-invitation-whatsapp')?.addEventListener('click', function() {
+    const link = String($('campus-invitation-link')?.value || '').trim();
+    if (!link) return;
+    const message = 'Join me on CampusShield AI for campus communities, study tools, events and trusted campus updates: ' + link;
+    const whatsappUrl = 'https://wa.me/?text=' + encodeURIComponent(message);
+    const popup = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    if (!popup) window.location.href = whatsappUrl;
+    $('campus-invitation-status').textContent = 'WhatsApp opened. Sign-ups are counted when a new account is created through your invitation link.';
+  });
+
+  $('campus-invitation-copy')?.addEventListener('click', async function() {
+    const input = $('campus-invitation-link');
+    if (!input?.value) return;
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard access is not available in this browser.');
+      await navigator.clipboard.writeText(input.value);
+      $('campus-invitation-status').textContent = 'Invitation link copied. Anyone who signs up through it can be counted as an invitation.';
+    } catch (_) {
+      input.focus();
+      input.select();
+      $('campus-invitation-status').textContent = 'Select the invitation link above and copy it manually.';
+    }
+  });
+
+  function focusPendingSharedCommunityPost() {
+    const backend = window.CampusShieldBackend;
+    const postId = backend?.getPendingSharedCommunityPostId?.();
+    if (!postId) return;
+    const target = document.getElementById('community-post-' + postId);
+    if (target) {
+      target.setAttribute('tabindex', '-1');
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.focus({ preventScroll: true });
+      backend.clearPendingSharedCommunityPostId?.();
+      return;
+    }
+    backend.clearPendingSharedCommunityPostId?.();
+    toast('That CampusPulse post is no longer available or is not published in your university space.');
+  }
+
   async function loadCommunityPage() {
     const backend = window.CampusShieldBackend;
     if (!backend?.isConfigured || !currentProfile) {
@@ -6462,6 +6540,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       campusContext = campus;
       syncCampusAccessNavigation();
       const needsCampus = !campus?.university_id;
+      $('campus-invitation-panel').hidden = needsCampus;
       $('campus-onboarding').hidden = !needsCampus;
       $('community-main-layout').hidden = needsCampus;
       $('community-feed-panel').hidden = needsCampus;
@@ -6486,6 +6565,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
       $('community-username-current').textContent = profile?.username ? '@' + profile.username : 'Username unavailable';
       $('community-username').value = profile?.username || '';
       $('community-announcement-option').disabled = !canModerateCommunity();
+      $('campus-invitation-panel').hidden = false;
+      await loadCampusInvitationPanel(backend);
 
       const posts = await backend.listCommunityPosts();
       const postIds = posts.map(function(post) { return post.id; });
@@ -6507,6 +6588,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       }));
       pollResults.forEach(function(entry) { pollsByPost[entry[0]] = entry[1]; });
       renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost);
+      if (backend.getPendingSharedCommunityPostId?.()) window.requestAnimationFrame(focusPendingSharedCommunityPost);
       $('community-feed-status').textContent = posts.length + (posts.length === 1 ? ' published post' : ' published posts') + ' · refreshed ' + new Date().toLocaleTimeString();
 
       $('community-moderation').hidden = !canModerateCommunity();
@@ -6614,6 +6696,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         '<button type="button" class="btn secondary" data-community-reaction="' + esc(post.id) + '" aria-pressed="' + String(reacted) + '">' + (reacted ? 'Liked' : 'Like') + ' (' + reactionCount + ')</button>' +
         '<button type="button" class="btn secondary" data-community-bookmark="' + esc(post.id) + '" aria-pressed="' + String(bookmarked) + '">' + (bookmarked ? 'Saved' : 'Bookmark') + '</button>' +
         '<button type="button" class="btn secondary" data-community-repost="' + esc(post.id) + '">Repost</button>' +
+        '<button type="button" class="btn secondary" data-community-share-whatsapp="' + esc(post.id) + '">Share on WhatsApp</button>' +
         followButton + '</div>' +
         '<div class="community-comments"><div class="community-meta"><strong>' + postComments.length + (postComments.length === 1 ? ' comment' : ' comments') + '</strong></div>' +
         commentsHtml +
@@ -7548,6 +7631,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   });
 
   $('community-feed').addEventListener('click', async function(event) {
+    const whatsappShareButton = event.target.closest('[data-community-share-whatsapp]');
     const reactionButton = event.target.closest('[data-community-reaction]');
     const bookmarkButton = event.target.closest('[data-community-bookmark]');
     const repostButton = event.target.closest('[data-community-repost]');
@@ -7557,6 +7641,22 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const backend = window.CampusShieldBackend;
 
     try {
+      if (whatsappShareButton) {
+        const postId = whatsappShareButton.dataset.communityShareWhatsapp;
+        if (!postId || !document.getElementById('community-post-' + postId)) {
+          toast('This post is no longer available to share.');
+          return;
+        }
+        const shareUrl = new URL(window.location.pathname, window.location.origin);
+        shareUrl.searchParams.set('communityPost', postId);
+        const inviteCode = String($('campus-invitation-link')?.dataset.inviteCode || '').trim().toUpperCase();
+        if (/^[A-Z0-9]{10}$/.test(inviteCode)) shareUrl.searchParams.set('invite', inviteCode);
+        const message = 'A CampusPulse post is waiting for you on CampusShield AI. Sign in and verify your university to view campus-only content: ' + shareUrl.href;
+        const whatsappUrl = 'https://wa.me/?text=' + encodeURIComponent(message);
+        const popup = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+        if (!popup) window.location.href = whatsappUrl;
+        return;
+      }
       if (reactionButton) {
         await backend.toggleCommunityReaction(reactionButton.dataset.communityReaction, 'like');
         toast('Reaction updated.');
@@ -8405,6 +8505,19 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
   }
 
+  async function applyPendingGoogleCampusInvitation(backend, user) {
+    const code = backend?.getPendingCampusInvitationCode?.();
+    if (!code || user?.app_metadata?.provider !== 'google') return;
+    const createdAt = Date.parse(user?.created_at || '');
+    if (!Number.isFinite(createdAt) || Date.now() - createdAt > 2 * 60 * 60 * 1000) return;
+    try {
+      await backend.applyMyCampusInvitation(code);
+      backend.clearPendingCampusInvitationCode?.();
+    } catch (error) {
+      console.warn('Could not attribute this Google sign-up invitation:', error?.message || error);
+    }
+  }
+
   async function handleSignIn() {
     const backend = window.CampusShieldBackend;
     const email = $('auth-email').value.trim();
@@ -8450,6 +8563,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
       if (!user) {
         throw new Error('No active user session was found.');
       }
+
+      await applyPendingGoogleCampusInvitation(backend, user);
 
       const onboarding = user.user_metadata || {};
       if (onboarding.university_id) {
@@ -8502,6 +8617,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
           navigate('community');
           await loadCommunityPage();
           toast('Choose your university to create your private campus space.');
+        } else if (backend.getPendingSharedCommunityPostId?.()) {
+          navigate('community');
+          await loadCommunityPage();
         } else if (isStudentAccount()) {
           navigate('dashboard');
           await loadStudentIdentityStatus();
@@ -9025,6 +9143,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
             }
             const workspaceReady = showWorkspace(profile);
             if (workspaceReady) {
+              await applyPendingGoogleCampusInvitation(backend, user);
               campusContext = await backend.getMyCampusContext();
               syncCampusAccessNavigation();
               const completedGoogleOAuth = consumeGoogleOAuthHints(profile, campusContext);
@@ -9034,9 +9153,14 @@ $('resend-confirmation-button').addEventListener('click', async () => {
                   ? `Signed in. Your role is ${profile.role}.`
                   : 'Your account is pending verification. You can submit incident reports.';
               }
-              // Always restore signed-in sessions to Overview after a fresh visit or refresh.
-              // CampusPulse/university selection remains available through its own navigation item.
-              navigate('dashboard');
+              // Restore the shared post first when a campus invitation link was opened.
+              // Otherwise open the normal Overview page.
+              if (backend.getPendingSharedCommunityPostId?.()) {
+                navigate('community');
+                await loadCommunityPage();
+              } else {
+                navigate('dashboard');
+              }
               if (isStudentAccount()) {
                 await loadStudentIdentityStatus();
               }
