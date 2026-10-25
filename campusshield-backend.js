@@ -785,6 +785,70 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    async listCampusCourseCommunityMessages(groupId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!groupId) throw new Error("Choose a course community.");
+      const { data, error } = await client.rpc("list_campus_course_community_messages", {
+        p_group_id: groupId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async sendCampusCourseCommunityMessage(groupId, body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("send_campus_course_community_message", {
+        p_group_id: groupId,
+        p_body: String(body || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    subscribeCampusCourseCommunityMessages(groupId, onChange, onStatus) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!groupId || typeof onChange !== "function") throw new Error("Choose a course discussion and a message handler.");
+      return client.channel("campus-course-community-" + groupId + "-" + Date.now())
+        .on("postgres_changes", {
+          event: "*", schema: "public", table: "campus_course_community_messages",
+          filter: "group_id=eq." + groupId
+        }, payload => onChange(payload.new || {}, payload.eventType))
+        .subscribe(state => { if (typeof onStatus === "function") onStatus(state); });
+    },
+
+    async unsubscribeCampusCourseCommunityMessages(subscription) {
+      if (!client || !subscription) return;
+      await client.removeChannel(subscription);
+    },
+
+    async reportCampusCourseCommunityMessage(messageId, reason, details) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("report_campus_course_community_message", {
+        p_message_id: messageId,
+        p_reason: reason,
+        p_details: details || null
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusCourseCommunityReports() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_course_community_reports");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async resolveCampusCourseCommunityReport(reportId, action) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("resolve_campus_course_community_report", {
+        p_report_id: reportId,
+        p_action: action
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
     async listCampusGroups() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.from("campus_groups")
