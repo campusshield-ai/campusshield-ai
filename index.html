@@ -3424,7 +3424,6 @@ button,input,select,textarea{max-width:100%;min-width:0}
       const result = await backend.client.auth.updateUser({ data: metadata });
       if (result?.error) throw result.error;
       if (message) message.textContent = 'Your contact details were saved.';
-      showToast('Contact details saved.');
     } catch (error) {
       if (message) message.textContent = error?.message || 'Contact details could not be saved. Please try again.';
     } finally {

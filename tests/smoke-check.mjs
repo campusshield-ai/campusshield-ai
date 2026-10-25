@@ -143,6 +143,7 @@ assert.match(html, /replace\(\/\[\^a-z0-9-\]\+\/g, '-'\)/);
 assert.match(html, /listCampusHelpdeskTicketUpdates\(mine\.map/);
 assert.match(html, /campusshield\.profile-alerts\.v1\./);
 assert.match(html, /auth\.updateUser\(\{ data: metadata \}\)/);
+assert.doesNotMatch(html, /showToast\('Contact details saved\.'\)/);
 
 assert.match(html, /id="nav-staff-heading" hidden/);
 assert.match(html, /el\.id === 'community-nav' && page === 'groups'/);
