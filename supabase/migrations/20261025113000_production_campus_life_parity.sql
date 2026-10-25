@@ -3142,7 +3142,7 @@ for select to authenticated using (
 );
 
 -- Restrictive identity policy blocks pending/unverified users from direct writes to interaction tables.
-do $
+do $policy_guard$
 declare v_table text;
 begin
   foreach v_table in array array[
@@ -3157,7 +3157,7 @@ begin
     );
   end loop;
 end
-$;
+$policy_guard$;
 
 -- Notices use the existing campus audience/expiry filters plus a restrictive verified-campus gate.
 drop policy if exists campus_notices_read_published_for_campus_audience on public.campus_notices;
