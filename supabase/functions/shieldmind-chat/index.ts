@@ -191,9 +191,17 @@ Deno.serve(async (req: Request) => {
       // Inspect only the provider's structured error code; never expose its raw body or headers.
       const providerFailure = await providerResponse.json().catch(() => null);
       const providerCode = String(providerFailure?.error?.code || providerFailure?.error?.type || "").toLowerCase();
-      if (providerCode === "insufficient_quota" || providerCode === "billing_hard_limit_reached") {
+      const quotaOrBillingCodes = new Set([
+        "insufficient_quota",
+        "billing_hard_limit_reached",
+        "credit_balance_exhausted",
+        "organization_usage_limit_exceeded",
+        "organization_spend_limit_exceeded",
+        "project_spend_limit_exceeded",
+      ]);
+      if (quotaOrBillingCodes.has(providerCode)) {
         return json({
-          error: "ShieldMind's AI provider has reached its API usage or billing limit. The platform administrator must check the provider account; your ShieldMind account limit has not been reached.",
+          error: "ShieldMind's AI provider has reached a credit, billing, or usage limit. The platform administrator must check the provider API billing and usage settings; your ShieldMind account limit has not been reached.",
         }, 503);
       }
       const upstreamRetryAfter = providerResponse.headers.get("retry-after");
