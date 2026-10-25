@@ -27,6 +27,42 @@
     isConfigured: ready,
     client,
 
+    async getPushPublicKey() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-subscriptions", { body: { action: "get-key" } });
+      if (error) throw error;
+      if (!data?.publicKey) throw new Error(data?.error || "Background notifications are not configured yet.");
+      return data.publicKey;
+    },
+
+    async savePushSubscription(subscription) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-subscriptions", {
+        body: { action: "subscribe", subscription }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+
+    async removePushSubscription(endpoint) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-subscriptions", {
+        body: { action: "unsubscribe", endpoint }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+
+    async sendPushTest() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-dispatch", { body: { action: "test" } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+
     async getMyStudentRewards() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("get_my_student_rewards");
@@ -1464,6 +1500,16 @@ async getCurrentUser() {
         p_body: String(body || "").trim()
       });
       if (error) throw error;
+      // Best-effort notification only after the message is committed. The server
+      // verifies sender, accepted conversation, and the newly created message ID.
+      try {
+        const { error: pushError } = await client.functions.invoke("push-dispatch", {
+          body: { action: "message", message_id: data }
+        });
+        if (pushError) console.info("Private message sent; background notification was not delivered.");
+      } catch (_) {
+        // Notification failures must never undo a successful private message.
+      }
       return data;
     },
 
