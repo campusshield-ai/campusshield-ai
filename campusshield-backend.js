@@ -1217,6 +1217,91 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    async listCampusChatMessages(channel = "general") {
+      if (!client) throw new Error("Supabase is not configured.");
+      const allowed = ["general", "study_help", "campus_life", "marketplace"];
+      if (!allowed.includes(channel)) throw new Error("Choose a valid campus chat channel.");
+      const { data, error } = await client
+        .from("campus_chat_messages")
+        .select("id, university_id, author_username, channel, body, status, created_at, updated_at")
+        .eq("channel", channel)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data || []).reverse();
+    },
+
+    async sendCampusChatMessage(channel, body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("send_campus_chat_message", {
+        p_channel: channel,
+        p_body: String(body || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    subscribeCampusChatMessages(universityId, onChange, onStatus) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!universityId || typeof onChange !== "function") throw new Error("Campus chat subscription needs a university and handler.");
+      return client.channel("campus-chat-" + universityId + "-" + Date.now())
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "campus_chat_messages",
+          filter: "university_id=eq." + universityId
+        }, payload => onChange(payload.new || {}, payload.eventType))
+        .subscribe(status => { if (typeof onStatus === "function") onStatus(status); });
+    },
+
+    async unsubscribeCampusChatMessages(subscription) {
+      if (!client || !subscription) return;
+      await client.removeChannel(subscription);
+    },
+
+    async reportCampusChatMessage(messageId, reason, details) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("report_campus_chat_message", {
+        p_message_id: messageId,
+        p_reason: reason,
+        p_details: details || null
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async moderateCampusChatMessage(messageId, action) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("moderate_campus_chat_message", {
+        p_message_id: messageId,
+        p_action: action
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
+    async listCampusChatReports() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client
+        .from("campus_chat_message_reports")
+        .select("id, message_id, university_id, reason, details, status, created_at")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async reviewCampusChatReport(reportId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("review_campus_chat_report", {
+        p_report_id: reportId,
+        p_decision: decision
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
