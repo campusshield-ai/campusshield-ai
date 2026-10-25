@@ -1007,12 +1007,12 @@ button,input,select,textarea{max-width:100%;min-width:0}
 </div>
         </div>
         <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
-        <div class="field" id="auth-password-field"><label for="auth-password">Password</label><div class="password-input-wrap"><input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"><button type="button" class="password-toggle" data-toggle-password="auth-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+        <div class="field" id="auth-password-field"><label for="auth-password">Password</label><div class="password-input-wrap"><input id="auth-password" type="password" autocomplete="current-password" minlength="1" required placeholder="Enter your password"><button type="button" class="password-toggle" data-toggle-password="auth-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
         <div class="field" id="forgot-password-field"><button type="button" id="forgot-password-button" class="btn secondary">Forgot password?</button></div>
         <div id="password-reset-fields" hidden>
-          <div class="field"><label for="new-password">New password *</label><div class="password-input-wrap"><input id="new-password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"><button type="button" class="password-toggle" data-toggle-password="new-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-          <div class="field"><label for="confirm-new-password">Confirm new password *</label><div class="password-input-wrap"><input id="confirm-new-password" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the new password again"><button type="button" class="password-toggle" data-toggle-password="confirm-new-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-          <p class="muted">Use a password you do not use on other websites.</p>
+          <div class="field"><label for="new-password">New password *</label><div class="password-input-wrap"><input id="new-password" type="password" autocomplete="new-password" minlength="12" placeholder="12+ characters, mixed case, number & symbol"><button type="button" class="password-toggle" data-toggle-password="new-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+          <div class="field"><label for="confirm-new-password">Confirm new password *</label><div class="password-input-wrap"><input id="confirm-new-password" type="password" autocomplete="new-password" minlength="12" placeholder="Enter the new password again"><button type="button" class="password-toggle" data-toggle-password="confirm-new-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+          <p class="muted">Use 12 or more characters with uppercase and lowercase letters, a number and a symbol. Avoid reused passwords. This is an app-level baseline; Supabase leaked-password screening still requires a supported project plan.</p>
         </div>
         <div class="remember-field" id="remember-email-field"><label for="remember-email"><input type="checkbox" id="remember-email"> Remember my email address</label></div>
         <div class="field" id="resend-field">
@@ -1640,6 +1640,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   <section class="panel">
     <h2>Payment status &amp; help</h2>
     <p id="billing-payment-message" class="message" role="status" aria-live="polite">No payment has been initiated from this screen.</p>
+    <button id="billing-reconcile-button" class="btn secondary" type="button" hidden>Verify payment status</button>
     <p class="muted">Paystack Checkout opens securely from the server. Only a signed webhook plus server-side transaction verification can activate paid access. These plans are prepaid for 30 days and do not auto-renew.</p>
   </section>
 </section>
@@ -2358,8 +2359,17 @@ button,input,select,textarea{max-width:100%;min-width:0}
     syncIdentityNavigation();
     const returnedFromPayment = new URLSearchParams(window.location.search).get('billing') === 'return';
     navigate(returnedFromPayment ? 'billing' : 'dashboard');
+    $('billing-reconcile-button').onclick = reconcileReturnedPaystackPayment;
     if (returnedFromPayment) {
-      $('billing-payment-message').textContent = 'Returned from Paystack. Payment is pending server verification; a redirect alone does not activate a subscription. Refresh your plan status in a moment.';
+      const returnParams = new URLSearchParams(window.location.search);
+      const returnedReference = returnParams.get('reference') || returnParams.get('trxref');
+      $('billing-reconcile-button').hidden = !returnedReference;
+      if (returnedReference) {
+        $('billing-payment-message').textContent = 'Checking your payment directly with Paystack. A redirect by itself never activates a subscription.';
+        void reconcileReturnedPaystackPayment();
+      } else {
+        $('billing-payment-message').textContent = 'Paystack returned without a transaction reference. Refresh plan status before trying another payment; do not pay twice.';
+      }
       refreshShieldMindPlan();
       loadInstitutionalBillingRequests();
     }
@@ -2395,6 +2405,15 @@ button,input,select,textarea{max-width:100%;min-width:0}
     if (!response.ok) throw new Error("Could not verify the Google sign-in provider status.");
     const settings = await response.json();
     return settings?.external?.google === true;
+  }
+
+  function isStrongPasswordBaseline(value) {
+    const password = String(value || '');
+    return password.length >= 12 &&
+      /[a-z]/.test(password) &&
+      /[A-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[^A-Za-z0-9]/.test(password);
   }
 
   function setAuthMode(mode) {
@@ -2444,6 +2463,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
         ? 'Set a new password to finish recovering your account.'
         : "Sign in to your university's CampusShield workspace.";
     $('auth-password').autocomplete = isSignUp ? 'new-password' : 'current-password';
+    $('auth-password').minLength = isSignUp ? 12 : 1;
+    $('auth-password').placeholder = isSignUp ? '12+ characters with mixed case, number & symbol' : 'Enter your password';
     $('auth-submit').hidden = identityCompletionMode;
     $('auth-submit').textContent = identityCompletionMode ? 'Submit student ID for review' : isSignUp ? 'Create account' : isReset ? 'Update password' : 'Sign in';
     $('auth-helper').hidden = identityCompletionMode || isReset;
@@ -2554,8 +2575,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
       message.textContent = 'Supabase is not connected. Please try again later.';
       return;
     }
-    if (password.length < 8) {
-      message.textContent = 'Choose a password with at least 8 characters.';
+    if (!isStrongPasswordBaseline(password)) {
+      message.textContent = 'Choose 12+ characters with uppercase and lowercase letters, at least one number and one symbol. Do not reuse passwords.';
       $('new-password').focus();
       return;
     }
@@ -5883,6 +5904,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
       msg.textContent = 'Enter your name, email, password, and choose your university.';
       return;
     }
+    if (!isStrongPasswordBaseline(password)) {
+      msg.textContent = 'Choose 12+ characters with uppercase and lowercase letters, at least one number and one symbol. Do not reuse passwords.';
+      $('auth-password').focus();
+      return;
+    }
     if (!/^[a-z0-9_]{3,20}$/.test(username)) {
       msg.textContent = 'Choose a username with 3–20 lowercase letters, numbers, or underscores.';
       return;
@@ -6621,6 +6647,58 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     }
     if ($('shieldmind-status')) $('shieldmind-status').textContent='Ready for a general academic question.';
   }
+
+  async function reconcileReturnedPaystackPayment() {
+    const message = $('billing-payment-message');
+    const button = $('billing-reconcile-button');
+    const backend = window.CampusShieldBackend;
+    const params = new URLSearchParams(window.location.search);
+    const reference = params.get('reference') || params.get('trxref');
+    if (!message || !button) return;
+    if (!reference || !/^csa_[a-f0-9]{32}$/i.test(reference)) {
+      message.textContent = 'The payment return does not contain a valid transaction reference. Check your plan status before trying another payment.';
+      button.hidden = true;
+      return;
+    }
+    if (!backend?.client || !currentProfile) {
+      message.textContent = 'Sign in with the same CampusShield account used at checkout, then choose Verify payment status.';
+      button.hidden = false;
+      return;
+    }
+    button.hidden = false;
+    button.disabled = true;
+    button.textContent = 'Verifying payment…';
+    message.textContent = 'Verifying the transaction with Paystack and reconciling your subscription securely…';
+    try {
+      const {data, error} = await backend.client.functions.invoke('paystack-reconcile', {
+        body: { reference }
+      });
+      if (error) throw new Error('The server could not confirm the payment yet. Retry verification before starting another checkout.');
+      if (data?.activated === true && data?.verified === true) {
+        message.textContent = data?.duplicate
+          ? 'Payment verified. Your ShieldMind plan is already active.'
+          : 'Payment verified and your ShieldMind plan is active for 30 days.';
+        button.hidden = true;
+        const cleanUrl = new URL(window.location.href);
+        ['billing','reference','trxref'].forEach(key => cleanUrl.searchParams.delete(key));
+        window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+        await refreshShieldMindPlan();
+      } else if (data?.action_required === true) {
+        message.textContent = data?.message || 'Payment verified, but a newer subscription was preserved. Contact CampusShield support before making another payment.';
+        button.disabled = true;
+      } else {
+        message.textContent = data?.message || 'Paystack has not confirmed a successful payment yet. You can retry verification; do not start another checkout while this one is pending.';
+      }
+    } catch (error) {
+      message.textContent = error?.message || 'Could not verify payment right now. Retry verification before starting another checkout.';
+    } finally {
+      if (!button.hidden) {
+        button.disabled = false;
+        button.textContent = 'Retry payment verification';
+      }
+    }
+  }
+
   async function refreshShieldMindPlan() {
     const status = $('shieldmind-plan-status');
     if (!status) return;
