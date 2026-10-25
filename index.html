@@ -1781,6 +1781,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span>Opportunities &amp; Scholarships</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span>Safety &amp; Report Incident</button>
 <button data-page="student-rewards" id="student-rewards-nav"><span class="nav-icon" aria-hidden="true">✧</span>Challenges &amp; Rewards</button>
+<button data-page="admin-rewards" id="admin-rewards-nav" hidden><span class="nav-icon" aria-hidden="true">◈</span>Rewards Management</button>
 <button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button>
 <button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; Billing</button>
 <button data-page="profile-settings" id="profile-settings-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20v-1.2A4.8 4.8 0 0 1 9.3 14h5.4a4.8 4.8 0 0 1 4.8 4.8V20"/><path d="m18.5 4.5 1 .5.9-.5.6 1 .9.4-.3 1.1.3 1.1-.9.4-.6 1-1-.5-1 .5-.6-1-.9-.4.3-1.1-.3-1.1.9-.4z"/></svg></span>My Profile &amp; Settings</button>
@@ -2524,6 +2525,29 @@ button,input,select,textarea{max-width:100%;min-width:0}
   </section>
 </section>
 
+<section class="page" id="page-admin-rewards" hidden>
+  <div class="heading">
+    <div><span class="campus-hub-eyebrow" style="color:#25846b">CAMPUSSHIELD AI · ADMINISTRATION</span><h1>Rewards Management</h1><p>Review student participation and reward totals across campuses. Student-level progress remains private to each student unless you are an authorized administrator.</p></div>
+    <div class="heading-actions"><button class="btn secondary" type="button" id="admin-rewards-refresh">Refresh overview</button></div>
+  </div>
+  <p id="admin-rewards-status" class="message" role="status" aria-live="polite">Checking administrator access…</p>
+  <div class="grid stats" style="margin-bottom:17px">
+    <article class="stat"><div class="stat-label">Students with rewards</div><div class="stat-num" id="admin-rewards-student-count">—</div></article>
+    <article class="stat"><div class="stat-label">Points awarded</div><div class="stat-num" id="admin-rewards-points-total">—</div></article>
+    <article class="stat"><div class="stat-label">Badges earned</div><div class="stat-num" id="admin-rewards-badge-total">—</div></article>
+    <article class="stat"><div class="stat-label">Challenges completed</div><div class="stat-num" id="admin-rewards-completed-total">—</div></article>
+  </div>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Student rewards overview</h2><p>Aggregated reward activity for administrator review.</p></div></div>
+    <div class="table-wrap"><table>
+      <caption class="sr-only">Student reward totals and challenge participation</caption>
+      <thead><tr><th>Student</th><th>Total points</th><th>Badges earned</th><th>Challenges completed</th><th>Last points awarded</th></tr></thead>
+      <tbody id="admin-rewards-rows"><tr><td colspan="5">Sign in with an authorized admin account to load this overview.</td></tr></tbody>
+    </table></div>
+  </section>
+  <p class="muted">This page is read-only. Points and badges cannot be edited from the browser. Access is verified by Supabase on every request.</p>
+</section>
+
 <section class="page" id="page-billing">
   <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · PLANS</span><h1>Subscriptions &amp; billing</h1><p>Manage ShieldMind AI study plans and explore institutional subscriptions for your university.</p></div></div>
   <div class="notice-inline"><strong>Essential safety stays free.</strong> Student safety reporting and core access are not paywalled. Payments must be verified by CampusShield's server before a paid plan is activated. Do not send card details or payment credentials in chat.</div>
@@ -2975,6 +2999,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <script src="./campus-timetable.js"></script>
 <script src="./campus-course-community.js"></script>
 <script src="./student-rewards.js"></script>
+<script src="./student-rewards-admin.js"></script>
 <script>
 
 (() => {
