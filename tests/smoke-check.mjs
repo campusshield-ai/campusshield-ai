@@ -18,6 +18,9 @@ const staffIdentityParityMigration = await readFile(new URL("../supabase/migrati
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
+const pushSubscriptionsFunction = await readFile(new URL("../supabase/functions/push-subscriptions/index.ts", import.meta.url), "utf8");
+const pushDispatchFunction = await readFile(new URL("../supabase/functions/push-dispatch/index.ts", import.meta.url), "utf8");
+const pushMigration = await readFile(new URL("../supabase/migrations/20261025200000_add_web_push_notifications.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -25,6 +28,23 @@ for (const [index, source] of inlineScripts.entries()) {
   assert.doesNotThrow(() => new Function(source), `inline script ${index + 1} parses`);
 }
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
+assert.match(backend, /async getPushPublicKey\(\)/, "client can fetch the public Web Push application key");
+assert.match(backend, /async savePushSubscription\(subscription\)/, "client can register a device subscription");
+assert.match(backend, /async removePushSubscription\(endpoint\)/, "client can revoke a device subscription");
+assert.match(backend, /async sendPushTest\(\)/, "client can request a self-only push delivery test");
+assert.match(html, /id="profile-push-enable"/, "users can opt in to background notifications");
+assert.match(html, /id="profile-push-disable"/, "users can turn off device notifications");
+assert.match(html, /CAMPUSSHIELD_PUSH_NAVIGATE/, "push notification clicks route an existing app session");
+assert.match(serviceWorker, /addEventListener\("push"/, "service worker displays background push notifications");
+assert.match(serviceWorker, /addEventListener\("notificationclick"/, "notification clicks reopen or focus the app");
+assert.match(pushMigration, /ENABLE ROW LEVEL SECURITY/, "push subscriptions have RLS enabled");
+assert.match(pushMigration, /REVOKE ALL ON TABLE public\.campus_push_subscriptions FROM PUBLIC, anon, authenticated/, "client roles cannot query device push endpoints");
+assert.match(pushMigration, /GRANT ALL ON TABLE public\.campus_push_subscriptions TO service_role/, "only trusted server code can manage push endpoint records");
+assert.match(pushSubscriptionsFunction, /auth\.getUser\(token\)/, "subscription changes validate the signed-in user");
+assert.match(pushSubscriptionsFunction, /validPushEndpoint/, "subscriptions accept only validated HTTPS push service endpoints");
+assert.match(pushDispatchFunction, /PUSH_DISPATCH_SECRET/, "server-initiated push requires a private dispatch secret");
+assert.match(pushDispatchFunction, /body\?\.action !== "test"/, "browser test push is limited to the current signed-in user");
+assert.doesNotMatch(pushDispatchFunction, /body\.title|body\.message/, "callers cannot inject arbitrary push message text");
 assert.doesNotThrow(() => new Function(planner), "ShieldMind planner parses");
 assert.match(html, /<script src="\.\/shieldmind-planner\.js"><\/script>/);
 assert.doesNotMatch(html, /campusshield-backend-identity-addon\.js/);
