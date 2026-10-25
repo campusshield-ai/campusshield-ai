@@ -30,7 +30,7 @@
 
     challenges.forEach((challenge) => {
       const target = Math.max(1, Number(challenge.target_count) || 1);
-      const count = Math.max(0, Math.min(target, Number(challenge.progress_count) || 0));
+      const count = challenge.completed ? target : Math.max(0, Math.min(target, Number(challenge.progress_count) || 0));
       const percent = Math.round((count / target) * 100);
       const card = element("article", "student-reward-challenge" + (challenge.completed ? " is-complete" : ""));
       const top = element("div", "student-reward-challenge-top");
@@ -114,6 +114,7 @@
     try {
       const user = await api.getCurrentUser();
       if (!user) {
+        render({ total_points: 0, challenges: [], badges: [] });
         status("Sign in to view your student progress.", true);
         return;
       }
