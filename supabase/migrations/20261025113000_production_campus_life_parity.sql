@@ -666,6 +666,9 @@ using (user_id=(select auth.uid()) and university_id=(select private.current_cam
 drop policy if exists campus_courses_read_campus_published_or_staff on public.campus_courses;
 create policy campus_courses_read_campus_published_or_staff on public.campus_courses for select to authenticated
 using (university_id=(select private.current_campus_university_id()) and (status='published' or (status='pending' and (select private.current_campus_role())=any(array['admin','security','teacher']))));
+drop policy if exists campus_courses_read_own_pending on public.campus_courses;
+create policy campus_courses_read_own_pending on public.campus_courses for select to authenticated
+using (created_by=(select auth.uid()) and university_id=(select private.current_campus_university_id()));
 drop policy if exists campus_courses_suggest_own on public.campus_courses;
 create policy campus_courses_suggest_own on public.campus_courses for insert to authenticated
 with check (created_by=(select auth.uid()) and university_id=(select private.current_campus_university_id()) and status='pending');
@@ -1092,14 +1095,17 @@ drop policy if exists shieldmind_planner_delete_own on public.shieldmind_planner
 create policy shieldmind_planner_delete_own on public.shieldmind_planner_items
   for delete to authenticated using (user_id = (select auth.uid()));
 
+drop trigger if exists campus_groups_set_username on public.campus_groups;
 create trigger campus_groups_set_username before insert on public.campus_groups
 for each row execute function private.fill_campus_social_username();
+drop trigger if exists campus_events_set_username on public.campus_events;
 create trigger campus_events_set_username before insert on public.campus_events
 for each row execute function private.fill_campus_social_username();
+drop trigger if exists campus_marketplace_set_username on public.campus_marketplace_listings;
 create trigger campus_marketplace_set_username before insert on public.campus_marketplace_listings
 for each row execute function private.fill_campus_social_username();
 
--- New direct-data APIs are private to signed-in campus members. Policies remain the row-level authority.
+-- Explicit grants mirror the staging security contract. RLS remains the row authorization layer.
 grant select, insert, update, delete on table public.campus_university_requests to authenticated;
 grant select, insert, update, delete on table public.campus_groups to authenticated;
 grant select, insert, update, delete on table public.campus_group_members to authenticated;
@@ -1111,28 +1117,28 @@ grant select, insert, update, delete on table public.community_post_bookmarks to
 grant select, insert, update, delete on table public.campus_follows to authenticated;
 grant select, insert, update, delete on table public.community_poll_options to authenticated;
 grant select, insert, update, delete on table public.community_poll_votes to authenticated;
-grant select, insert, update, delete on table public.community_post_media to authenticated;
+revoke all on table public.community_post_media from anon, authenticated;
+grant select (id,post_id,university_id,object_path,media_kind,mime_type,byte_size,alt_text,created_at)
+  on public.community_post_media to authenticated;
+grant insert (post_id,university_id,uploader_id,object_path,media_kind,mime_type,byte_size,alt_text)
+  on public.community_post_media to authenticated;
 grant select, insert, update, delete on table public.campus_marketplace_reports to authenticated;
 grant select, insert, update, delete on table public.campus_helpdesk_tickets to authenticated;
 grant select, insert, update, delete on table public.campus_helpdesk_ticket_updates to authenticated;
-grant select, insert, update, delete on table public.campus_notices to authenticated;
-grant select (id, university_id, teacher_id, name, subject, description, assistant_student_id, created_at, updated_at) on public.campus_classrooms to authenticated;
-grant insert, update, delete on table public.campus_classrooms to authenticated;
-grant select, insert, update, delete on table public.campus_classroom_enrollments to authenticated;
-grant select, insert, update, delete on table public.campus_classroom_announcements to authenticated;
-grant select, insert, update, delete on table public.campus_classroom_materials to authenticated;
-grant select, insert, update, delete on table public.campus_class_sessions to authenticated;
-grant select, insert, update, delete on table public.campus_class_attendance to authenticated;
-grant select, insert, update, delete on table public.campus_class_attendance_audit to authenticated;
+grant select on table public.campus_notices to authenticated;
+grant select (id, university_id, teacher_id, name, subject, description, assistant_student_id, created_at, updated_at)
+  on public.campus_classrooms to authenticated;
+grant select on public.campus_classroom_enrollments, public.campus_class_sessions, public.campus_class_attendance, public.campus_class_attendance_audit to authenticated;
+grant select on public.campus_classroom_announcements, public.campus_classroom_materials to authenticated;
+grant insert on public.campus_classroom_announcements, public.campus_classroom_materials to authenticated;
+revoke insert, update, delete on public.campus_classrooms, public.campus_classroom_enrollments, public.campus_class_sessions, public.campus_class_attendance, public.campus_class_attendance_audit from anon, authenticated;
+revoke update, delete on public.campus_classroom_announcements, public.campus_classroom_materials from anon, authenticated;
 grant select, insert, update, delete on table public.campus_opportunities to authenticated;
 grant select, insert, update, delete on table public.shieldmind_planner_items to authenticated;
 grant select, insert, update, delete on table public.campus_opportunity_bookmarks to authenticated;
 grant select, insert, update, delete on table public.campus_courses to authenticated;
 grant select, insert, update, delete on table public.campus_course_resources to authenticated;
-grant select, insert, update, delete on table public.campus_courses, public.campus_course_resources, public.campus_opportunity_bookmarks to authenticated;
-revoke all on table public.campus_university_requests from anon;
-revoke all on table public.campus_marketplace_reports from anon;
-revoke all on table public.campus_helpdesk_tickets, public.campus_helpdesk_ticket_updates, public.campus_notices from anon;
+revoke all on table public.campus_university_requests, public.campus_marketplace_reports, public.campus_helpdesk_tickets, public.campus_helpdesk_ticket_updates, public.campus_notices from anon;
 
 -- New RPCs: private implementations carry the reviewed staged checks; narrow public wrappers expose them to authenticated users only.
 create or replace function private.create_community_post_impl(
