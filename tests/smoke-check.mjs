@@ -215,3 +215,13 @@ assert.match(html, /data-page="opportunities"/);
 assert.match(html, /data-page="helpdesk"/);
 assert.match(html, /data-page="community"/);
 assert.match(html, /data-page="marketplace"/);
+
+// ShieldMind: provider 429/billing errors should be actionable rather than hidden
+// behind the generic chat failure message.
+assert.match(backend, /responseMessage = ""/);
+assert.match(backend, /response\.clone\(\)\.json\(\)/);
+assert.match(html, /const friendlyMessage=detail/);
+assert.match(prodFn, /providerCode === "insufficient_quota"/);
+assert.match(prodFn, /"Retry-After": retryAfter/);
+assert.match(prodFn, /your ShieldMind account limit has not been reached/i);
+console.log("PASS ShieldMind surfaces safe provider rate-limit and billing errors");
