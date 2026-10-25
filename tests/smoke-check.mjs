@@ -30,6 +30,17 @@ assert.match(planner, /list_my_shieldmind_planner_items/);
 assert.match(planner, /update_my_shieldmind_planner_item/);
 assert.match(planner, /delete_my_shieldmind_planner_item/);
 console.log("PASS referenced local scripts exist and ShieldMind timetable actions are wired");
+assert.match(html, /class="campus-dashboard-hero" aria-labelledby="campus-dashboard-hero-title"/);
+assert.match(html, /id="campus-dashboard-hero-title">Welcome back,<br>CampusShield/);
+assert.match(html, /data-page="report"><svg[\s\S]*?Report an incident/);
+assert.match(html, /data-page="shieldmind"><svg[\s\S]*?Ask the assistant/);
+assert.match(html, /Emergency guidance/);
+assert.match(html, /Campus service contacts/);
+assert.match(html, /\.campus-dashboard-hero\{[\s\S]*?background:[\s\S]*?linear-gradient/);
+assert.match(html, /@media\(max-width:700px\)\{\.campus-dashboard-hero\{grid-template-columns:minmax\(0,1fr\)/);
+assert.match(html, /id="page-dashboard"/);
+assert.match(html, /id="totalStat"/);
+
 assert.doesNotThrow(() => new Function(config), "Supabase config parses");
 
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
