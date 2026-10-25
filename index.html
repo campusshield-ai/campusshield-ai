@@ -4525,11 +4525,12 @@ button,input,select,textarea{max-width:100%;min-width:0}
       : "Turning off notifications on this device…";
     try {
       if (action === "enable") {
-        const publicKey = await backend.getPushVapidPublicKey();
+        // Ask for permission before any network await so browsers retain the user gesture.
         if (Notification.permission !== "granted") {
           const permission = await Notification.requestPermission();
           if (permission !== "granted") throw new Error("Notification permission was not granted.");
         }
+        const publicKey = await backend.getPushVapidPublicKey();
         await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
         const registration = await navigator.serviceWorker.ready;
         let subscription = await registration.pushManager.getSubscription();
