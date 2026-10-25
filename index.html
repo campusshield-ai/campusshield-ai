@@ -6339,7 +6339,15 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'));
       shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-8);
       $('shieldmind-status').textContent=result?.mode==='provider'?'Study support · Verify important facts against your course materials.':'Safe response · official campus sources are not connected, so verify important facts with your course materials.';
-    }catch(error){console.warn('ShieldMind request failed:',error?.message||'unknown');$('shieldmind-status').textContent='ShieldMind is not available right now. Your question was not saved; please try again later.';addShieldMindMessage('assistant','I could not complete that request. Please try again later. For urgent campus or safety matters, use official university channels.');}
+    }catch(error){
+      const detail=String(error?.message||'').trim();
+      const friendlyMessage=detail&&!/Edge Function returned a non-2xx status code/i.test(detail)
+        ? detail
+        : 'ShieldMind is temporarily unavailable. Please try again later.';
+      console.warn('ShieldMind request failed:',friendlyMessage);
+      $('shieldmind-status').textContent=friendlyMessage;
+      addShieldMindMessage('assistant',friendlyMessage+' For urgent campus or safety matters, use official university channels.');
+    }
     finally{button.disabled=false;}
   });
 
