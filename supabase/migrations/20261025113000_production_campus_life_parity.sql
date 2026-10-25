@@ -2973,4 +2973,729 @@ revoke all on function public.list_campus_opportunities() from public, anon;
 grant execute on function public.list_campus_opportunities() to authenticated;
 
 
+
+-- Harden the additional RPCs against the latest staging-reviewed identity and membership rules.
+create or replace function private.current_user_has_verified_campus_access()
+returns boolean
+language sql stable security definer set search_path = ''
+as $function$
+  select coalesce((select private.current_user_can_use_restricted_features()), false)
+     and exists (
+       select 1 from public.campus_memberships cm
+       where cm.user_id = (select auth.uid())
+         and cm.membership_status = 'active'
+         and cm.verification_status = 'verified'
+     );
+$function$;
+revoke all on function private.current_user_has_verified_campus_access() from public, anon;
+grant execute on function private.current_user_has_verified_campus_access() to authenticated;
+
+create or replace function private.shieldmind_require_eligible_caller()
+returns void language plpgsql security definer set search_path = ''
+as $function$
+begin
+  if (select auth.uid()) is null then
+    raise exception 'Sign in required';
+  end if;
+  if (select private.current_campus_university_id()) is null
+     or coalesce((select private.current_campus_role()), '') = ''
+     or not coalesce((select private.current_user_can_use_restricted_features()), false) then
+    raise exception 'A verified campus account and active verified campus membership are required';
+  end if;
+end;
+$function$;
+revoke all on function private.shieldmind_require_eligible_caller() from public, anon, authenticated;
+grant execute on function private.shieldmind_require_eligible_caller() to postgres;
+
+-- Read policies must bind all visible CampusPulse content to the caller's active university.
+drop policy if exists community_posts_read_published_or_staff on public.community_posts;
+drop policy if exists community_posts_read_same_campus on public.community_posts;
+create policy community_posts_read_same_campus on public.community_posts
+for select to authenticated using (
+  (select private.current_user_has_verified_campus_access())
+  and university_id = (select private.current_campus_university_id())
+  and (
+    status = 'published'
+    or author_id = (select auth.uid())
+    or (select private.current_campus_role()) = any (array['admin','security','teacher'])
+  )
+);
+drop policy if exists community_comments_read_published_or_staff on public.community_comments;
+drop policy if exists community_comments_read_same_campus on public.community_comments;
+create policy community_comments_read_same_campus on public.community_comments
+for select to authenticated using (
+  (select private.current_user_has_verified_campus_access())
+  and exists (
+    select 1 from public.community_posts p
+    where p.id = community_comments.post_id
+      and p.university_id = (select private.current_campus_university_id())
+      and (
+        p.status = 'published'
+        or p.author_id = (select auth.uid())
+        or (select private.current_campus_role()) = any (array['admin','security','teacher'])
+      )
+  )
+  and (
+    community_comments.status = 'published'
+    or community_comments.author_id = (select auth.uid())
+    or (select private.current_campus_role()) = any (array['admin','security','teacher'])
+  )
+);
+drop policy if exists community_reports_read_staff on public.community_reports;
+drop policy if exists community_reports_read_same_campus_staff on public.community_reports;
+create policy community_reports_read_same_campus_staff on public.community_reports
+for select to authenticated using (
+  (select private.current_campus_role()) = any (array['admin','security','teacher'])
+  and (
+    exists (
+      select 1 from public.community_posts p
+      where p.id = community_reports.post_id
+        and p.university_id = (select private.current_campus_university_id())
+    )
+    or exists (
+      select 1 from public.community_comments c
+      join public.community_posts p on p.id = c.post_id
+      where c.id = community_reports.comment_id
+        and p.university_id = (select private.current_campus_university_id())
+    )
+  )
+);
+
+-- Restrictive identity policy blocks pending/unverified users from direct writes to interaction tables.
+do $
+declare v_table text;
+begin
+  foreach v_table in array array[
+    'campus_event_rsvps','campus_follows','campus_group_members',
+    'community_poll_votes','community_post_bookmarks','community_post_reactions',
+    'campus_opportunity_bookmarks'
+  ] loop
+    execute format('drop policy if exists %I on public.%I','verified_account_required_for_interactions',v_table);
+    execute format(
+      'create policy %I on public.%I as restrictive for all to authenticated using ((select private.current_user_has_verified_campus_access())) with check ((select private.current_user_has_verified_campus_access()))',
+      'verified_account_required_for_interactions',v_table
+    );
+  end loop;
+end
+$;
+
+-- Notices use the existing campus audience/expiry filters plus a restrictive verified-campus gate.
+drop policy if exists campus_notices_read_published_for_campus_audience on public.campus_notices;
+create policy campus_notices_read_published_for_campus_audience on public.campus_notices
+for select to authenticated using (
+  university_id = (select private.current_campus_university_id())
+  and status = 'published'
+  and (expires_at is null or expires_at > now())
+  and (
+    coalesce((select private.current_campus_role()), '') in ('admin','security','teacher')
+    or (select private.current_user_matches_notice_audience(
+      campus_notices.university_id,campus_notices.audience_scope,
+      campus_notices.target_faculty,campus_notices.target_department
+    ))
+  )
+);
+drop policy if exists campus_notices_require_verified_campus_access on public.campus_notices;
+create policy campus_notices_require_verified_campus_access on public.campus_notices
+as restrictive for select to authenticated
+using ((select private.current_user_has_verified_campus_access()));
+
+-- Only eligible verified members may suggest a course/resource; the submitter can see their own pending course.
+drop policy if exists campus_courses_suggest_own on public.campus_courses;
+create policy campus_courses_suggest_own on public.campus_courses for insert to authenticated
+with check (created_by=(select auth.uid()) and university_id=(select private.current_campus_university_id())
+  and status='pending' and (select private.current_user_has_verified_campus_access()));
+drop policy if exists campus_course_resources_submit_own on public.campus_course_resources;
+create policy campus_course_resources_submit_own on public.campus_course_resources for insert to authenticated
+with check (submitted_by=(select auth.uid()) and university_id=(select private.current_campus_university_id())
+  and status='pending' and (select private.current_user_has_verified_campus_access())
+  and exists (select 1 from public.campus_courses c
+    where c.id=campus_course_resources.course_id
+      and c.university_id=campus_course_resources.university_id and c.status='published'));
+drop policy if exists campus_opportunity_bookmarks_insert_own on public.campus_opportunity_bookmarks;
+create policy campus_opportunity_bookmarks_insert_own on public.campus_opportunity_bookmarks for insert to authenticated
+with check (user_id=(select auth.uid()) and university_id=(select private.current_campus_university_id())
+  and (select private.current_user_has_verified_campus_access())
+  and exists (select 1 from public.campus_opportunities o
+    where o.id=campus_opportunity_bookmarks.opportunity_id
+      and o.university_id=campus_opportunity_bookmarks.university_id and o.status='published'
+      and (o.deadline is null or o.deadline>now())));
+
+-- Personal planner state is accessible only through owner-checked RPCs; never expose the table directly.
+revoke all on table public.shieldmind_planner_items from public, anon, authenticated;
+
+-- Preserve private classroom join-code access and teacher-only assistant assignment.
+revoke all on table public.campus_classrooms from public, anon, authenticated;
+grant select (id, university_id, teacher_id, name, subject, description, assistant_student_id, created_at, updated_at)
+  on table public.campus_classrooms to authenticated;
+create or replace function public.get_campus_classroom_join_code(p_classroom_id uuid)
+returns text language sql security invoker set search_path = ''
+as $wrapper$ select private.get_campus_classroom_join_code_impl(p_classroom_id); $wrapper$;
+revoke all on function public.get_campus_classroom_join_code(uuid) from public, anon;
+grant execute on function public.get_campus_classroom_join_code(uuid) to authenticated;
+
+-- Hardened invoker wrappers + private implementations for current campus social, classroom, and planner workflows.
+create or replace function private.can_access_classroom(p_classroom_id uuid)
+returns boolean language sql stable security definer set search_path = ''
+as $
+  select exists (
+    select 1
+    from public.campus_classrooms c
+    join public.profiles p on p.id = (select auth.uid())
+    join public.campus_memberships m on m.user_id = p.id and m.university_id = c.university_id
+    where c.id = p_classroom_id
+      and p.verification_status = 'verified'
+      and m.membership_status = 'active'
+      and (
+        c.teacher_id = p.id
+        or c.assistant_student_id = p.id
+        or exists (
+          select 1 from public.campus_classroom_enrollments e
+          where e.classroom_id = c.id and e.student_id = p.id
+        )
+      )
+  );
+$;
+revoke all on function private.can_access_classroom(uuid) from public, anon;
+grant execute on function private.can_access_classroom(uuid) to authenticated;
+
+create or replace function private.current_user_matches_notice_audience(
+  p_university_id uuid,
+  p_audience_scope text,
+  p_target_faculty text,
+  p_target_department text
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $function$
+  select exists (
+    select 1
+    from public.campus_memberships cm
+    where cm.user_id = (select auth.uid())
+      and cm.university_id = p_university_id
+      and cm.membership_status = 'active'
+      and (
+        p_audience_scope = 'campus'
+        or (
+          p_audience_scope = 'faculty'
+          and cm.faculty = p_target_faculty
+        )
+        or (
+          p_audience_scope = 'department'
+          and cm.faculty = p_target_faculty
+          and cm.department = p_target_department
+        )
+      )
+  );
+$function$;
+revoke all on function private.current_user_matches_notice_audience(uuid,text,text,text) from public, anon;
+grant execute on function private.current_user_matches_notice_audience(uuid,text,text,text) to authenticated;
+
+create or replace function private.get_campus_classroom_join_code_impl(p_classroom_id uuid)
+returns text
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  v_user uuid := (select auth.uid());
+  v_code text;
+begin
+  if v_user is null then
+    raise exception 'Sign in is required.' using errcode = '28000';
+  end if;
+
+  if not exists (
+    select 1
+    from public.profiles p
+    join public.campus_memberships m on m.user_id = p.id
+    join public.campus_classrooms c on c.university_id = m.university_id
+    where p.id = v_user
+      and c.id = p_classroom_id
+      and c.teacher_id = v_user
+      and p.role = 'teacher'
+      and p.verification_status = 'verified'
+      and m.campus_role = 'teacher'
+      and m.membership_status = 'active'
+      and m.verification_status = 'verified'
+  ) then
+    raise exception 'Only the verified class teacher can view this join code.' using errcode = '42501';
+  end if;
+
+  select c.join_code into v_code
+  from public.campus_classrooms c
+  where c.id = p_classroom_id and c.teacher_id = v_user;
+
+  if v_code is null then
+    raise exception 'Classroom not found.' using errcode = 'P0002';
+  end if;
+
+  return v_code;
+end;
+$function$;
+revoke all on function private.get_campus_classroom_join_code_impl(uuid) from public, anon;
+grant execute on function private.get_campus_classroom_join_code_impl(uuid) to authenticated;
+
+create or replace function private.get_community_poll_data_impl(p_post_id uuid)
+returns table(
+  option_id uuid,
+  option_text text,
+  "position" integer,
+  vote_count bigint,
+  my_vote boolean
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $function$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_university_id uuid := (select private.current_campus_university_id());
+begin
+  if v_user_id is null or v_university_id is null then
+    raise exception 'Sign in and choose a university.';
+  end if;
+  if not (select private.current_user_has_verified_campus_access()) then
+    raise exception 'Verify your student identity and wait for account approval before using campus interactions.';
+  end if;
+  if not exists (
+    select 1 from public.community_posts p
+    where p.id = p_post_id
+      and p.university_id = v_university_id
+      and p.status = 'published'
+      and p.post_type = 'poll'
+  ) then
+    raise exception 'This poll is not available in your university community.';
+  end if;
+
+  return query
+    select o.id, o.option_text, o.position,
+      (select count(*) from public.community_poll_votes v where v.option_id = o.id),
+      exists (
+        select 1 from public.community_poll_votes v
+        where v.option_id = o.id and v.user_id = v_user_id
+      )
+    from public.community_poll_options o
+    where o.post_id = p_post_id
+      and o.university_id = v_university_id
+    order by o.position;
+end;
+$function$;
+revoke all on function private.get_community_poll_data_impl(uuid) from public, anon;
+grant execute on function private.get_community_poll_data_impl(uuid) to authenticated;
+create or replace function public.get_community_poll_data(p_post_id uuid)
+returns table(
+  option_id uuid,
+  option_text text,
+  "position" integer,
+  vote_count bigint,
+  my_vote boolean
+)
+language plpgsql
+stable
+security invoker
+set search_path = ''
+ as $wrapper$ begin return query select * from private.get_community_poll_data_impl(p_post_id); end; $wrapper$;
+revoke all on function public.get_community_poll_data(uuid) from public, anon;
+grant execute on function public.get_community_poll_data(uuid) to authenticated;
+
+create or replace function private.get_community_post_social_impl(p_post_ids uuid[])
+returns table(
+  post_id uuid,
+  reaction_count bigint,
+  user_reaction text,
+  is_bookmarked boolean,
+  following_author boolean,
+  is_my_post boolean
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $function$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_university_id uuid := (select private.current_campus_university_id());
+begin
+  if v_user_id is null or v_university_id is null then
+    raise exception 'Sign in and choose a university.';
+  end if;
+  if not (select private.current_user_has_verified_campus_access()) then
+    raise exception 'Verify your student identity and wait for account approval before using campus interactions.';
+  end if;
+  if coalesce(cardinality(p_post_ids),0) > 50 then
+    raise exception 'Load no more than 50 posts at a time.';
+  end if;
+
+  return query
+    select p.id,
+      (select count(*) from public.community_post_reactions r where r.post_id = p.id),
+      (select r.reaction_type from public.community_post_reactions r where r.post_id = p.id and r.user_id = v_user_id),
+      exists(select 1 from public.community_post_bookmarks b where b.post_id = p.id and b.user_id = v_user_id),
+      exists(select 1 from public.campus_follows f where f.follower_id = v_user_id and f.followed_id = p.author_id and f.university_id = v_university_id),
+      p.author_id = v_user_id
+    from public.community_posts p
+    where p.id = any(coalesce(p_post_ids, array[]::uuid[]))
+      and p.university_id = v_university_id
+      and p.status = 'published';
+end;
+$function$;
+revoke all on function private.get_community_post_social_impl(uuid[]) from public, anon;
+grant execute on function private.get_community_post_social_impl(uuid[]) to authenticated;
+create or replace function public.get_community_post_social(p_post_ids uuid[])
+returns table(
+  post_id uuid,
+  reaction_count bigint,
+  user_reaction text,
+  is_bookmarked boolean,
+  following_author boolean,
+  is_my_post boolean
+)
+language plpgsql
+stable
+security invoker
+set search_path = ''
+ as $wrapper$ begin return query select * from private.get_community_post_social_impl(p_post_ids); end; $wrapper$;
+revoke all on function public.get_community_post_social(uuid[]) from public, anon;
+grant execute on function public.get_community_post_social(uuid[]) to authenticated;
+
+create or replace function private.create_community_comment_impl(p_post_id uuid, p_body text)
+returns uuid language plpgsql security definer set search_path = ''
+as $function$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_university_id uuid := (select private.current_campus_university_id());
+  v_username text;
+  v_verification_status text;
+  v_comment_id uuid;
+begin
+  if v_user_id is null then raise exception 'Sign in before commenting.'; end if;
+  if v_university_id is null then raise exception 'Choose your university before commenting.'; end if;
+  select p.verification_status::text into v_verification_status from public.profiles p where p.id=v_user_id;
+  if v_verification_status is distinct from 'verified'
+     or coalesce((select private.current_campus_role()), '') = '' then
+    raise exception 'Verify your campus account before commenting.';
+  end if;
+  if char_length(btrim(coalesce(p_body,''))) not between 2 and 800 then raise exception 'Comments must be 2–800 characters.'; end if;
+  if not exists (select 1 from public.community_posts p where p.id=p_post_id and p.status='published' and p.university_id=v_university_id) then
+    raise exception 'This post is not available in your university community.';
+  end if;
+  select cp.username into v_username from public.community_profiles cp where cp.user_id=v_user_id;
+  if v_username is null then raise exception 'Your public username is not ready yet. Refresh and try again.'; end if;
+  insert into public.community_comments(post_id,author_id,author_username,body,status)
+  values(p_post_id,v_user_id,v_username,btrim(p_body),'published') returning id into v_comment_id;
+  return v_comment_id;
+end;
+$function$;
+revoke all on function private.create_community_comment_impl(uuid,text) from public, anon;
+grant execute on function private.create_community_comment_impl(uuid,text) to authenticated;
+create or replace function public.create_community_comment(p_post_id uuid, p_body text)
+returns uuid language plpgsql security invoker set search_path = ''
+ as $wrapper$ begin return private.create_community_comment_impl(p_post_id, p_body); end; $wrapper$;
+revoke all on function public.create_community_comment(uuid,text) from public, anon;
+grant execute on function public.create_community_comment(uuid,text) to authenticated;
+
+create or replace function private.create_community_reply_impl(p_post_id uuid, p_parent_comment_id uuid, p_body text)
+returns uuid language plpgsql security definer set search_path = ''
+as $function$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_university_id uuid := (select private.current_campus_university_id());
+  v_username text;
+  v_status text;
+  v_comment_id uuid;
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before replying.'; end if;
+  select p.verification_status::text into v_status from public.profiles p where p.id=v_user_id;
+  if v_status is distinct from 'verified'
+     or coalesce((select private.current_campus_role()), '') = '' then
+    raise exception 'Verify your campus account before replying.';
+  end if;
+  if char_length(btrim(coalesce(p_body,''))) not between 2 and 800 then raise exception 'Replies must be 2–800 characters.'; end if;
+  if not exists (select 1 from public.community_posts p where p.id=p_post_id and p.university_id=v_university_id and p.status='published') then
+    raise exception 'This post is not available in your university community.';
+  end if;
+  if not exists (select 1 from public.community_comments c where c.id=p_parent_comment_id and c.post_id=p_post_id and c.status='published') then
+    raise exception 'The comment you are replying to is not available.';
+  end if;
+  select cp.username into v_username from public.community_profiles cp where cp.user_id=v_user_id;
+  if v_username is null then raise exception 'Your public username is not ready yet. Refresh and try again.'; end if;
+  insert into public.community_comments(post_id,author_id,author_username,parent_comment_id,body,status)
+  values(p_post_id,v_user_id,v_username,p_parent_comment_id,btrim(p_body),'published') returning id into v_comment_id;
+  return v_comment_id;
+end;
+$function$;
+revoke all on function private.create_community_reply_impl(uuid,uuid,text) from public, anon;
+grant execute on function private.create_community_reply_impl(uuid,uuid,text) to authenticated;
+create or replace function public.create_community_reply(p_post_id uuid, p_parent_comment_id uuid, p_body text)
+returns uuid language plpgsql security invoker set search_path = ''
+ as $wrapper$ begin return private.create_community_reply_impl(p_post_id, p_parent_comment_id, p_body); end; $wrapper$;
+revoke all on function public.create_community_reply(uuid,uuid,text) from public, anon;
+grant execute on function public.create_community_reply(uuid,uuid,text) to authenticated;
+
+create or replace function private.join_campus_group_impl(p_group_id uuid)
+returns void language plpgsql security definer set search_path = ''
+as $function$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_university_id uuid := (select private.current_campus_university_id());
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before joining a group.'; end if;
+  if private.current_campus_account_status() is distinct from 'verified'
+     or coalesce((select private.current_campus_role()), '') = '' then
+    raise exception 'Verify your campus account before joining groups.';
+  end if;
+  if not exists (select 1 from public.campus_groups g where g.id=p_group_id and g.university_id=v_university_id and g.status='active') then
+    raise exception 'This group is not available in your university.';
+  end if;
+  insert into public.campus_group_members(group_id,user_id,member_role)
+  values(p_group_id,v_user_id,'member') on conflict(group_id,user_id) do nothing;
+end;
+$function$;
+revoke all on function private.join_campus_group_impl(uuid) from public, anon;
+grant execute on function private.join_campus_group_impl(uuid) to authenticated;
+create or replace function public.join_campus_group(p_group_id uuid)
+returns void language plpgsql security invoker set search_path = ''
+ as $wrapper$ begin perform private.join_campus_group_impl(p_group_id); return; end; $wrapper$;
+revoke all on function public.join_campus_group(uuid) from public, anon;
+grant execute on function public.join_campus_group(uuid) to authenticated;
+
+create or replace function private.toggle_community_reaction_impl(p_post_id uuid, p_reaction_type text default 'like'::text)
+returns jsonb language plpgsql security definer set search_path = '' as $function$
+declare v_user_id uuid := (select auth.uid()); v_university_id uuid := (select private.current_campus_university_id()); v_exists boolean; v_count bigint;
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before reacting.'; end if;
+  if private.current_campus_account_status() is distinct from 'verified' or coalesce((select private.current_campus_role()), '') = '' then raise exception 'Verify your campus account before reacting.'; end if;
+  if p_reaction_type not in ('like','support','celebrate','helpful') then raise exception 'Choose a valid reaction.'; end if;
+  if not exists(select 1 from public.community_posts p where p.id=p_post_id and p.university_id=v_university_id and p.status='published') then raise exception 'This post is not available in your university community.'; end if;
+  select exists(select 1 from public.community_post_reactions r where r.post_id=p_post_id and r.user_id=v_user_id) into v_exists;
+  if v_exists then
+    if exists(select 1 from public.community_post_reactions r where r.post_id=p_post_id and r.user_id=v_user_id and r.reaction_type=p_reaction_type) then delete from public.community_post_reactions where post_id=p_post_id and user_id=v_user_id;
+    else update public.community_post_reactions set reaction_type=p_reaction_type where post_id=p_post_id and user_id=v_user_id; end if;
+  else insert into public.community_post_reactions(post_id,user_id,reaction_type) values(p_post_id,v_user_id,p_reaction_type); end if;
+  select count(*) into v_count from public.community_post_reactions r where r.post_id=p_post_id;
+  return jsonb_build_object('reacted',exists(select 1 from public.community_post_reactions r where r.post_id=p_post_id and r.user_id=v_user_id),'count',v_count);
+end; $function$;
+revoke all on function private.toggle_community_reaction_impl(uuid,text) from public, anon;
+grant execute on function private.toggle_community_reaction_impl(uuid,text) to authenticated;
+create or replace function public.toggle_community_reaction(p_post_id uuid, p_reaction_type text default 'like'::text)
+returns jsonb language plpgsql security invoker set search_path = ''  as $wrapper$ begin return private.toggle_community_reaction_impl(p_post_id, p_reaction_type); end; $wrapper$;
+revoke all on function public.toggle_community_reaction(uuid,text) from public, anon;
+grant execute on function public.toggle_community_reaction(uuid,text) to authenticated;
+
+create or replace function private.toggle_community_bookmark_impl(p_post_id uuid)
+returns boolean language plpgsql security definer set search_path = '' as $function$
+declare v_user_id uuid := (select auth.uid()); v_university_id uuid := (select private.current_campus_university_id()); v_exists boolean;
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before bookmarking.'; end if;
+  if private.current_campus_account_status() is distinct from 'verified' or coalesce((select private.current_campus_role()), '') = '' then raise exception 'Verify your campus account before bookmarking posts.'; end if;
+  if not exists(select 1 from public.community_posts p where p.id=p_post_id and p.university_id=v_university_id and p.status='published') then raise exception 'This post is not available in your university community.'; end if;
+  select exists(select 1 from public.community_post_bookmarks b where b.post_id=p_post_id and b.user_id=v_user_id) into v_exists;
+  if v_exists then delete from public.community_post_bookmarks where post_id=p_post_id and user_id=v_user_id; return false; end if;
+  insert into public.community_post_bookmarks(post_id,user_id) values(p_post_id,v_user_id); return true;
+end; $function$;
+revoke all on function private.toggle_community_bookmark_impl(uuid) from public, anon;
+grant execute on function private.toggle_community_bookmark_impl(uuid) to authenticated;
+create or replace function public.toggle_community_bookmark(p_post_id uuid)
+returns boolean language plpgsql security invoker set search_path = ''  as $wrapper$ begin return private.toggle_community_bookmark_impl(p_post_id); end; $wrapper$;
+revoke all on function public.toggle_community_bookmark(uuid) from public, anon;
+grant execute on function public.toggle_community_bookmark(uuid) to authenticated;
+
+create or replace function private.vote_community_poll_impl(p_post_id uuid, p_option_id uuid)
+returns void language plpgsql security definer set search_path = '' as $function$
+declare v_user_id uuid := (select auth.uid()); v_university_id uuid := (select private.current_campus_university_id());
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before voting.'; end if;
+  if private.current_campus_account_status() is distinct from 'verified' or coalesce((select private.current_campus_role()), '') = '' then raise exception 'Verify your campus account before voting in polls.'; end if;
+  if not exists(select 1 from public.community_posts p join public.community_poll_options o on o.post_id=p.id where p.id=p_post_id and o.id=p_option_id and p.post_type='poll' and p.status='published' and p.university_id=v_university_id and o.university_id=v_university_id) then raise exception 'This poll is not available in your university community.'; end if;
+  insert into public.community_poll_votes(post_id,option_id,university_id,user_id) values(p_post_id,p_option_id,v_university_id,v_user_id) on conflict(post_id,user_id) do update set option_id=excluded.option_id,university_id=excluded.university_id,created_at=now();
+end; $function$;
+revoke all on function private.vote_community_poll_impl(uuid,uuid) from public, anon;
+grant execute on function private.vote_community_poll_impl(uuid,uuid) to authenticated;
+create or replace function public.vote_community_poll(p_post_id uuid, p_option_id uuid)
+returns void language plpgsql security invoker set search_path = ''  as $wrapper$ begin perform private.vote_community_poll_impl(p_post_id, p_option_id); return; end; $wrapper$;
+revoke all on function public.vote_community_poll(uuid,uuid) from public, anon;
+grant execute on function public.vote_community_poll(uuid,uuid) to authenticated;
+
+create or replace function private.repost_community_post_impl(p_post_id uuid)
+returns uuid language plpgsql security definer set search_path = '' as $function$
+declare v_user_id uuid := (select auth.uid()); v_university_id uuid := (select private.current_campus_university_id()); v_username text; v_source public.community_posts%rowtype; v_new_id uuid;
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before reposting.'; end if;
+  if private.current_campus_account_status() is distinct from 'verified' or coalesce((select private.current_campus_role()), '') = '' then raise exception 'Verify your campus account before reposting content.'; end if;
+  select * into v_source from public.community_posts p where p.id=p_post_id and p.university_id=v_university_id and p.status='published';
+  if not found then raise exception 'This post is not available in your university community.'; end if;
+  select cp.username into v_username from public.community_profiles cp where cp.user_id=v_user_id;
+  if v_username is null then raise exception 'Your public username is not ready yet. Refresh and try again.'; end if;
+  insert into public.community_posts(university_id,author_id,author_username,post_type,title,body,location,status,is_official,reposted_from_id) values(v_university_id,v_user_id,v_username,'campus_update','Repost: '||left(v_source.title,90),left('Shared by @'||v_source.author_username||E'\n\n'||v_source.body,2000),null,'pending',false,p_post_id) returning id into v_new_id;
+  return v_new_id;
+end; $function$;
+revoke all on function private.repost_community_post_impl(uuid) from public, anon;
+grant execute on function private.repost_community_post_impl(uuid) to authenticated;
+create or replace function public.repost_community_post(p_post_id uuid)
+returns uuid language plpgsql security invoker set search_path = ''  as $wrapper$ begin return private.repost_community_post_impl(p_post_id); end; $wrapper$;
+revoke all on function public.repost_community_post(uuid) from public, anon;
+grant execute on function public.repost_community_post(uuid) to authenticated;
+
+create or replace function private.toggle_campus_follow_impl(p_followed_id uuid, p_follow boolean)
+returns boolean language plpgsql security definer set search_path = '' as $function$
+declare v_user_id uuid := (select auth.uid()); v_university_id uuid := (select private.current_campus_university_id());
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before following.'; end if;
+  if private.current_campus_account_status() is distinct from 'verified' or coalesce((select private.current_campus_role()), '') = '' then raise exception 'Verify your campus account before following campus members.'; end if;
+  if p_followed_id=v_user_id then raise exception 'You cannot follow your own profile.'; end if;
+  if not exists(select 1 from public.campus_memberships cm where cm.user_id=p_followed_id and cm.university_id=v_university_id and cm.membership_status='active') then raise exception 'You can only follow students from your own university.'; end if;
+  if p_follow then insert into public.campus_follows(follower_id,followed_id,university_id) values(v_user_id,p_followed_id,v_university_id) on conflict(follower_id,followed_id) do nothing; return true;
+  else delete from public.campus_follows where follower_id=v_user_id and followed_id=p_followed_id and university_id=v_university_id; return false; end if;
+end; $function$;
+revoke all on function private.toggle_campus_follow_impl(uuid,boolean) from public, anon;
+grant execute on function private.toggle_campus_follow_impl(uuid,boolean) to authenticated;
+create or replace function public.toggle_campus_follow(p_followed_id uuid, p_follow boolean)
+returns boolean language plpgsql security invoker set search_path = ''  as $wrapper$ begin return private.toggle_campus_follow_impl(p_followed_id, p_follow); end; $wrapper$;
+revoke all on function public.toggle_campus_follow(uuid,boolean) from public, anon;
+grant execute on function public.toggle_campus_follow(uuid,boolean) to authenticated;
+
+create or replace function private.toggle_campus_follow_post_author_impl(p_post_id uuid, p_follow boolean)
+returns boolean language plpgsql security definer set search_path = '' as $function$
+declare v_user_id uuid := (select auth.uid()); v_university_id uuid := (select private.current_campus_university_id()); v_author_id uuid;
+begin
+  if v_user_id is null or v_university_id is null then raise exception 'Sign in and choose a university before following.'; end if;
+  if private.current_campus_account_status() is distinct from 'verified' or coalesce((select private.current_campus_role()), '') = '' then raise exception 'Verify your campus account before following campus members.'; end if;
+  select p.author_id into v_author_id from public.community_posts p where p.id=p_post_id and p.university_id=v_university_id and p.status='published';
+  if not found then raise exception 'This post is not available in your university community.'; end if;
+  if v_author_id=v_user_id then raise exception 'You cannot follow your own profile.'; end if;
+  if p_follow then insert into public.campus_follows(follower_id,followed_id,university_id) values(v_user_id,v_author_id,v_university_id) on conflict(follower_id,followed_id) do nothing; return true;
+  else delete from public.campus_follows where follower_id=v_user_id and followed_id=v_author_id and university_id=v_university_id; return false; end if;
+end; $function$;
+revoke all on function private.toggle_campus_follow_post_author_impl(uuid,boolean) from public, anon;
+grant execute on function private.toggle_campus_follow_post_author_impl(uuid,boolean) to authenticated;
+create or replace function public.toggle_campus_follow_post_author(p_post_id uuid, p_follow boolean)
+returns boolean language plpgsql security invoker set search_path = ''  as $wrapper$ begin return private.toggle_campus_follow_post_author_impl(p_post_id, p_follow); end; $wrapper$;
+revoke all on function public.toggle_campus_follow_post_author(uuid,boolean) from public, anon;
+grant execute on function public.toggle_campus_follow_post_author(uuid,boolean) to authenticated;
+
+create or replace function private.set_campus_class_assistant_impl(p_classroom_id uuid, p_student_id uuid)
+returns void language plpgsql security definer set search_path = ''
+as $
+declare v_university uuid;
+begin
+  if not private.is_verified_classroom_teacher(p_classroom_id) then
+    raise exception 'Only the verified class teacher can appoint or remove an assistant.' using errcode = '42501';
+  end if;
+  select university_id into v_university from public.campus_classrooms where id = p_classroom_id;
+  if p_student_id is not null and not exists (
+    select 1 from public.campus_classroom_enrollments e
+    join public.profiles p on p.id = e.student_id
+    join public.campus_memberships m on m.user_id = p.id and m.university_id = v_university
+    where e.classroom_id = p_classroom_id and e.student_id = p_student_id
+      and p.role = 'student' and p.verification_status = 'verified'
+      and m.membership_status = 'active'
+  ) then
+    raise exception 'The assistant must be a verified, active-campus student enrolled in this class.' using errcode = '22023';
+  end if;
+  update public.campus_classrooms set assistant_student_id = p_student_id, updated_at = now()
+  where id = p_classroom_id;
+end;
+$;
+revoke all on function private.set_campus_class_assistant_impl(uuid,uuid) from public, anon;
+grant execute on function private.set_campus_class_assistant_impl(uuid,uuid) to authenticated;
+create or replace function public.set_campus_class_assistant(p_classroom_id uuid, p_student_id uuid)
+returns void language plpgsql security invoker set search_path = ''
+ as $wrapper$ begin perform private.set_campus_class_assistant_impl(p_classroom_id, p_student_id); return; end; $wrapper$;
+revoke all on function public.set_campus_class_assistant(uuid,uuid) from public, anon;
+grant execute on function public.set_campus_class_assistant(uuid,uuid) to authenticated;
+
+create or replace function private.list_my_shieldmind_planner_items_impl()
+returns table(id uuid,title text,kind text,details text,starts_at timestamptz,remind_at timestamptz,completed boolean,created_at timestamptz,updated_at timestamptz)
+language plpgsql security definer set search_path = ''
+as $function$
+begin
+  perform private.shieldmind_require_eligible_caller();
+  return query
+    select p.id,p.title,p.kind,p.details,p.starts_at,p.remind_at,p.completed,p.created_at,p.updated_at
+    from public.shieldmind_planner_items p
+    where p.user_id = auth.uid()
+    order by p.starts_at nulls last,p.created_at desc
+    limit 100;
+end;
+$function$;
+revoke all on function private.list_my_shieldmind_planner_items_impl() from public, anon;
+grant execute on function private.list_my_shieldmind_planner_items_impl() to authenticated;
+create or replace function public.list_my_shieldmind_planner_items()
+returns table(id uuid,title text,kind text,details text,starts_at timestamptz,remind_at timestamptz,completed boolean,created_at timestamptz,updated_at timestamptz)
+language plpgsql security invoker set search_path = ''
+ as $wrapper$ begin return query select * from private.list_my_shieldmind_planner_items_impl(); end; $wrapper$;
+revoke all on function public.list_my_shieldmind_planner_items() from public, anon;
+grant execute on function public.list_my_shieldmind_planner_items() to authenticated;
+
+create or replace function private.create_my_shieldmind_planner_item_impl(
+  p_title text,p_kind text,p_details text default '',p_starts_at timestamptz default null,p_remind_at timestamptz default null
+) returns uuid
+language plpgsql security definer set search_path = ''
+as $function$
+declare v_id uuid;
+begin
+  perform private.shieldmind_require_eligible_caller();
+  if char_length(btrim(coalesce(p_title,''))) < 2 or char_length(btrim(p_title)) > 120 then raise exception 'Title must be 2–120 characters'; end if;
+  if coalesce(p_kind,'revision') not in ('revision','class','assignment','exam','reminder') then raise exception 'Invalid planner item type'; end if;
+  if char_length(coalesce(p_details,'')) > 1000 then raise exception 'Notes are too long'; end if;
+  insert into public.shieldmind_planner_items(user_id,title,kind,details,starts_at,remind_at)
+    values(auth.uid(),btrim(p_title),coalesce(p_kind,'revision'),coalesce(p_details,''),p_starts_at,p_remind_at)
+    returning id into v_id;
+  return v_id;
+end;
+$function$;
+revoke all on function private.create_my_shieldmind_planner_item_impl(text,text,text,timestamptz,timestamptz) from public, anon;
+grant execute on function private.create_my_shieldmind_planner_item_impl(text,text,text,timestamptz,timestamptz) to authenticated;
+create or replace function public.create_my_shieldmind_planner_item(
+  p_title text,p_kind text,p_details text default '',p_starts_at timestamptz default null,p_remind_at timestamptz default null
+) returns uuid
+language plpgsql security invoker set search_path = ''
+ as $wrapper$ begin return private.create_my_shieldmind_planner_item_impl(p_title, p_kind, p_details, p_starts_at, p_remind_at); end; $wrapper$;
+revoke all on function public.create_my_shieldmind_planner_item(text,text,text,timestamptz,timestamptz) from public, anon;
+grant execute on function public.create_my_shieldmind_planner_item(text,text,text,timestamptz,timestamptz) to authenticated;
+
+create or replace function private.update_my_shieldmind_planner_item_impl(p_item_id uuid,p_completed boolean)
+returns boolean
+language plpgsql security definer set search_path = ''
+as $function$
+begin
+  perform private.shieldmind_require_eligible_caller();
+  update public.shieldmind_planner_items set completed=coalesce(p_completed,false),updated_at=now()
+    where id=p_item_id and user_id=auth.uid();
+  return found;
+end;
+$function$;
+revoke all on function private.update_my_shieldmind_planner_item_impl(uuid,boolean) from public, anon;
+grant execute on function private.update_my_shieldmind_planner_item_impl(uuid,boolean) to authenticated;
+create or replace function public.update_my_shieldmind_planner_item(p_item_id uuid,p_completed boolean)
+returns boolean
+language plpgsql security invoker set search_path = ''
+ as $wrapper$ begin return private.update_my_shieldmind_planner_item_impl(p_item_id, p_completed); end; $wrapper$;
+revoke all on function public.update_my_shieldmind_planner_item(uuid,boolean) from public, anon;
+grant execute on function public.update_my_shieldmind_planner_item(uuid,boolean) to authenticated;
+
+create or replace function private.delete_my_shieldmind_planner_item_impl(p_item_id uuid)
+returns boolean
+language plpgsql security definer set search_path = ''
+as $function$
+begin
+  perform private.shieldmind_require_eligible_caller();
+  delete from public.shieldmind_planner_items where id=p_item_id and user_id=auth.uid();
+  return found;
+end;
+$function$;
+revoke all on function private.delete_my_shieldmind_planner_item_impl(uuid) from public, anon;
+grant execute on function private.delete_my_shieldmind_planner_item_impl(uuid) to authenticated;
+create or replace function public.delete_my_shieldmind_planner_item(p_item_id uuid)
+returns boolean
+language plpgsql security invoker set search_path = ''
+ as $wrapper$ begin return private.delete_my_shieldmind_planner_item_impl(p_item_id); end; $wrapper$;
+revoke all on function public.delete_my_shieldmind_planner_item(uuid) from public, anon;
+grant execute on function public.delete_my_shieldmind_planner_item(uuid) to authenticated;
+
+
 commit;
