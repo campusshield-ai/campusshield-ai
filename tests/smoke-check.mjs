@@ -8,6 +8,10 @@ const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldm
 const paystackWebhookFunction = await readFile(new URL("../supabase/functions/paystack-webhook/index.ts", import.meta.url), "utf8");
 const paystackReconcileFunction = await readFile(new URL("../supabase/functions/paystack-reconcile/index.ts", import.meta.url), "utf8");
 const shieldmindBillingCheckout = await readFile(new URL("../supabase/functions/shieldmind-billing-checkout/index.ts", import.meta.url), "utf8");
+const pushClient = await readFile(new URL("../campus-push.js", import.meta.url), "utf8");
+const pushSubscriptionsFunction = await readFile(new URL("../supabase/functions/campus-push-subscriptions/index.ts", import.meta.url), "utf8");
+const pushDispatchFunction = await readFile(new URL("../supabase/functions/campus-push-dispatch/index.ts", import.meta.url), "utf8");
+const pushMigration = await readFile(new URL("../supabase/migrations/20261025213000_campus_background_push.sql", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
@@ -56,6 +60,25 @@ assert.match(shieldmindBillingCheckout, /isLocalPreview/, "staging checkout supp
 assert.match(shieldmindBillingCheckout, /sk_test_/, "staging checkout rejects live Paystack credentials");
 assert.doesNotMatch(shieldmindBillingCheckout, /student_identity_verifications|membership_status!==\"active\"|verification_status!==\"verified\"/, "purchase eligibility does not depend on campus verification");
 assert.match(shieldmindBillingCheckout, /monthly_prepaid/, "checkout identifies the plan as a prepaid monthly term");
+assert.match(html, /<script src="\.\/campus-push\.js"><\/script>/, "background push controls are loaded");
+assert.match(serviceWorker, /addEventListener\("push"/, "service worker handles background push events");
+assert.match(serviceWorker, /addEventListener\("notificationclick"/, "push notification clicks return to the app");
+assert.match(pushClient, /pushManager\.subscribe/, "clients can opt in to PushManager notifications");
+assert.match(pushClient, /functions\.invoke\(API/, "push subscriptions are managed through the authenticated Edge Function");
+assert.match(pushClient, /Notification\.requestPermission/, "notification permission is requested only after user interaction");
+assert.match(pushSubscriptionsFunction, /auth\.getUser\(token\)/, "push subscriptions require a verified signed-in user");
+assert.match(pushSubscriptionsFunction, /CAMPUSSHIELD_APP_ORIGIN/, "push management restricts non-local origins to the configured preview");
+assert.match(pushSubscriptionsFunction, /isAllowedPushEndpoint/, "push subscription storage rejects untrusted endpoint hosts");
+assert.match(pushDispatchFunction, /PUSH_DISPATCH_SECRET/, "push dispatch requires a private dispatch secret");
+assert.match(pushDispatchFunction, /constantTimeEqual/, "push dispatch secret is compared without early exit");
+assert.match(pushDispatchFunction, /npm:web-push@3\.6\.7/, "server sends encrypted Web Push payloads");
+assert.match(pushDispatchFunction, /status === 404 \|\| status === 410/, "expired push subscriptions are cleaned up");
+assert.match(pushMigration, /ENABLE ROW LEVEL SECURITY/, "push subscriptions have RLS enabled");
+assert.match(pushMigration, /REVOKE ALL ON TABLE public\.campus_push_subscriptions FROM PUBLIC, anon, authenticated/, "browser clients cannot read subscription endpoints or keys");
+assert.match(shieldmindFunction, /stage: "quota_check"/, "ShieldMind quota failures have safe stage diagnostics");
+assert.match(shieldmindFunction, /stage: "provider_rate_or_quota"/, "ShieldMind provider quota failures log the provider error code");
+assert.match(shieldmindFunction, /providerRequestId/, "ShieldMind diagnostic logs retain the provider request ID without the prompt");
+
 
 assert.doesNotMatch(paystackWebhookFunction, /if\(order\.status==="paid"\)return json\(\{received:true,duplicate:true\}\)/, "paid orders must reach the verified activation-repair path");
 assert.match(paystackWebhookFunction, /\.in\("status",\["pending","failed"\]\)/, "verified success can reconcile an out-of-order failed event");
