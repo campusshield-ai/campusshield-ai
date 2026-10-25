@@ -1206,6 +1206,80 @@ button,input,select,textarea{max-width:100%;min-width:0}
   .mobile-nav-toggle { flex-basis: 46px; width: 46px; }
 }
 
+
+/* University-scoped Campus Chat */
+.campus-chat-panel{padding:0;overflow:hidden}
+.campus-chat-topline{display:flex;align-items:center;gap:12px;padding:20px 22px;border-bottom:1px solid #e3ece7;background:linear-gradient(120deg,#f9fcfa,#edf7f2)}
+.campus-chat-community-mark{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border-radius:15px;background:#102b35;color:#79e0c4}
+.campus-chat-community-mark svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.campus-chat-heading-copy{min-width:0;flex:1}
+.campus-chat-heading-copy h2{margin:0;color:#173840;font-size:16px;letter-spacing:-.025em}
+.campus-chat-heading-copy p{margin:4px 0 0;color:#657b7b;font-size:11px;overflow-wrap:anywhere}
+.campus-chat-live-tag{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;padding:7px 10px;border:1px solid #cce7d9;border-radius:999px;background:#f4fbf6;color:#26765f;font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.campus-chat-live-tag .status-dot{width:6px;height:6px;box-shadow:none}
+.campus-chat-channel-tabs{display:flex;gap:7px;overflow-x:auto;padding:13px 18px;border-bottom:1px solid #edf1ef;background:#fff;scrollbar-width:thin}
+.campus-chat-channel-tabs button{flex:0 0 auto;min-height:38px;padding:8px 13px;border:1px solid #dfe9e4;border-radius:999px;background:#fff;color:#587076;font-size:11px;font-weight:760;white-space:nowrap}
+.campus-chat-channel-tabs button.active,.campus-chat-channel-tabs button[aria-selected="true"]{border-color:#b2dcc9;background:#eaf6ef;color:#17654f;box-shadow:inset 0 0 0 1px #d2eadc}
+.campus-chat-channel-tabs button:focus-visible{outline:3px solid #79e0c4;outline-offset:2px}
+#campus-chat-status{min-height:20px;margin:10px 20px 0;font-size:11px}
+.campus-chat-messages{display:flex;flex-direction:column;gap:12px;min-height:280px;max-height:min(55vh,560px);overflow-y:auto;overscroll-behavior:contain;padding:16px 20px;background:#f8fbf9}
+.campus-chat-empty{display:grid;align-content:center;justify-items:center;min-height:230px;padding:22px;text-align:center;color:#71878a}
+.campus-chat-empty strong{color:#35565a;font-size:14px}
+.campus-chat-empty p{max-width:330px;margin:6px 0 0;font-size:12px;line-height:1.6}
+.campus-chat-message{max-width:min(88%,720px);align-self:flex-start;padding:12px 14px;border:1px solid #e0eae4;border-radius:5px 16px 16px;background:#fff;box-shadow:0 4px 13px rgba(16,43,53,.035);overflow-wrap:anywhere}
+.campus-chat-message.is-mine{align-self:flex-end;border-color:#cee7d9;border-radius:16px 5px 16px 16px;background:#eaf7f0}
+.campus-chat-message.is-hidden{border-style:dashed;background:#f4f5f4}
+.campus-chat-message-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;color:#6d8383;font-size:10px}
+.campus-chat-message-meta strong{color:#1a6654;font-size:11px}
+.campus-chat-message time{margin-left:auto;font-size:9px;color:#879897}
+.campus-chat-message-body{margin:0;color:#2d484d;font-size:13px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.campus-chat-message.is-hidden .campus-chat-message-body{color:#687778;font-style:italic}
+.campus-chat-message-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:8px}
+.campus-chat-message-actions button{border:0;background:transparent;padding:3px 0;color:#5e8278;font-size:10px;font-weight:750;text-decoration:underline;text-underline-offset:3px}
+.campus-chat-message-actions button[data-action="hide"]{color:#a23c42}
+.campus-chat-compose{padding:14px 18px 17px;border-top:1px solid #e2ebe6;background:#fff}
+.campus-chat-compose textarea{display:block;width:100%;min-height:72px;max-height:180px;resize:vertical;border:1px solid #d5e3dc;border-radius:13px;padding:12px;background:#fbfdfb;color:#173840;font-size:13px;line-height:1.5}
+.campus-chat-compose textarea:focus{border-color:#79baa0;outline:3px solid #79e0c430}
+.campus-chat-compose textarea:disabled{background:#f2f5f3;color:#879592}
+.campus-chat-compose-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
+.campus-chat-compose-footer>span{color:#81918f;font-size:10px;line-height:1.5}
+.campus-chat-compose-footer .btn{min-height:42px;white-space:nowrap}
+.campus-chat-compose-footer .btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.campus-chat-reports-list{display:grid;gap:9px}
+.campus-chat-report-card{padding:14px;border:1px solid #e2eae6;border-radius:13px;background:#fbfdfb}
+.campus-chat-report-card strong{color:#28494d;font-size:12px}
+.campus-chat-report-card p{margin:5px 0 10px;color:#6c8080;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.campus-chat-report-card .actions{gap:7px}
+.campus-chat-report-dialog{width:min(520px,calc(100% - 28px));max-height:85vh;overflow-y:auto;padding:22px;border:1px solid #dbe8e1;border-radius:20px;background:#fff;color:#173840;box-shadow:0 24px 70px #07172d55}
+.campus-chat-report-dialog::backdrop{background:rgba(7,23,45,.55);backdrop-filter:blur(3px)}
+.campus-chat-report-dialog h2{margin:0;font-size:21px;letter-spacing:-.04em}
+.campus-chat-report-dialog .muted{margin:5px 0 16px}
+.campus-chat-report-dialog .actions{justify-content:flex-end}
+@media(max-width:650px){
+  .campus-chat-topline{padding:16px 14px;gap:10px}
+  .campus-chat-community-mark{width:39px;height:39px;flex-basis:39px;border-radius:13px}
+  .campus-chat-heading-copy h2{font-size:14px}
+  .campus-chat-heading-copy p{font-size:10px}
+  .campus-chat-live-tag{padding:6px 8px;font-size:8px;gap:5px}
+  .campus-chat-channel-tabs{padding:11px 12px;gap:6px}
+  .campus-chat-channel-tabs button{min-height:38px;padding:8px 12px}
+  .campus-chat-messages{min-height:260px;max-height:55vh;padding:13px 11px;gap:10px}
+  .campus-chat-message{max-width:94%;padding:10px 11px;border-radius:5px 14px 14px}
+  .campus-chat-message.is-mine{border-radius:14px 5px 14px 14px}
+  .campus-chat-message-body{font-size:13px}
+  .campus-chat-compose{padding:12px}
+  .campus-chat-compose-footer{align-items:flex-end}
+  .campus-chat-compose-footer>span{max-width:46%}
+  .campus-chat-compose-footer .btn{min-height:44px;padding:10px 12px;font-size:11px}
+}
+@media(max-width:390px){
+  .campus-chat-live-tag{font-size:0;width:10px;height:10px;padding:4px;justify-content:center}
+  .campus-chat-live-tag .status-dot{width:6px;height:6px}
+  .campus-chat-compose-footer{flex-direction:column;align-items:stretch}
+  .campus-chat-compose-footer>span{max-width:none}
+  .campus-chat-compose-footer .btn{width:100%}
+}
+
 </style>
 </head>
 <body>
@@ -1376,6 +1450,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <button data-page="academics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5-9 5.5-9-5.5Z"/><path d="M6.5 12.5v5c3.5 2.5 7.5 2.5 11 0v-5M21 10v6"/></svg></span>Academic Life</button>
 <button data-page="courses" id="courses-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg></span>Courses &amp; Study Resources</button>
 <button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span>CampusPulse &amp; Groups</button>
+<button data-page="campus-chat" id="campus-chat-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus Chat</button>
 <button data-page="events" id="events-services-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span>Events &amp; Campus Services</button>
 <button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span>Opportunities &amp; Scholarships</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span>Safety &amp; Report Incident</button>
@@ -1803,6 +1878,58 @@ button,input,select,textarea{max-width:100%;min-width:0}
   <div id="community-feed"><div class="community-empty">Loading campus updates…</div></div>
 </section>
 </section>
+
+<section class="page" id="page-campus-chat">
+  <div class="heading">
+    <div><h1>Campus Chat</h1><p>Talk with students and campus members from your university in live topic channels.</p></div>
+    <div class="heading-actions"><button class="btn secondary" type="button" data-page="community">Open CampusPulse</button></div>
+  </div>
+  <div class="notice-inline"><strong>Your university, your chat.</strong> Messages are visible to users with verified campus access to your selected university only. Do not share passwords, phone numbers, personal addresses, student ID numbers, private health details or other sensitive information. Use private incident reporting for safety concerns.</div>
+
+  <section class="panel campus-chat-panel" aria-labelledby="campus-chat-title">
+    <div class="campus-chat-topline">
+      <div class="campus-chat-community-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.6 7.7 7 10 4.4-2.3 7-5.5 7-10V6l-7-3Z"/><path d="M12 8v4.5"/></svg></div>
+      <div class="campus-chat-heading-copy">
+        <h2 id="campus-chat-title">Your campus room</h2>
+        <p id="campus-chat-university">Checking your university…</p>
+      </div>
+      <span class="campus-chat-live-tag"><span class="status-dot" aria-hidden="true"></span>Live chat</span>
+    </div>
+    <div class="campus-chat-channel-tabs" role="tablist" aria-label="Campus chat topics">
+      <button type="button" class="active" role="tab" aria-selected="true" data-chat-channel="general">General</button>
+      <button type="button" role="tab" aria-selected="false" data-chat-channel="study_help">Study Help</button>
+      <button type="button" role="tab" aria-selected="false" data-chat-channel="campus_life">Campus Life</button>
+      <button type="button" role="tab" aria-selected="false" data-chat-channel="marketplace">Marketplace</button>
+    </div>
+    <p id="campus-chat-status" class="message" role="status" aria-live="polite">Loading your university chat…</p>
+    <div id="campus-chat-messages" class="campus-chat-messages" role="log" aria-label="Campus chat messages" aria-live="polite" aria-relevant="additions text">
+      <div class="campus-chat-empty"><strong>Welcome to Campus Chat</strong><p>Choose a topic and start a helpful conversation with your campus community.</p></div>
+    </div>
+    <form id="campus-chat-form" class="campus-chat-compose">
+      <label class="visually-hidden" for="campus-chat-input">Write a campus chat message</label>
+      <textarea id="campus-chat-input" maxlength="1200" rows="2" placeholder="Message your campus…" required disabled></textarea>
+      <div class="campus-chat-compose-footer"><span>Be respectful. Messages are limited to 1,200 characters.</span><button class="btn" type="submit" id="campus-chat-send" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-7 18-3-7-8-3Z"/><path d="M11 14 21 3"/></svg>Send message</button></div>
+    </form>
+  </section>
+
+  <section class="panel campus-chat-moderation" id="campus-chat-moderation" aria-labelledby="campus-chat-moderation-title" hidden>
+    <div class="panel-heading"><div><h2 id="campus-chat-moderation-title">Campus chat reports</h2><p>Review reports from this university only.</p></div><button class="btn secondary" type="button" id="campus-chat-refresh-reports">Refresh reports</button></div>
+    <p id="campus-chat-reports-status" class="message" role="status" aria-live="polite"></p>
+    <div id="campus-chat-reports-list" class="campus-chat-reports-list"></div>
+  </section>
+</section>
+
+<dialog id="campus-chat-report-dialog" class="campus-chat-report-dialog" aria-labelledby="campus-chat-report-title">
+  <form id="campus-chat-report-form">
+    <h2 id="campus-chat-report-title">Report a chat message</h2>
+    <p class="muted">Reports go to your university's authorized campus staff.</p>
+    <input type="hidden" id="campus-chat-report-message-id">
+    <div class="field"><label for="campus-chat-report-reason">Reason *</label><select id="campus-chat-report-reason" required><option value="spam">Spam</option><option value="harassment">Harassment or bullying</option><option value="personal_information">Personal information</option><option value="threats">Threats</option><option value="other">Other concern</option></select></div>
+    <div class="field"><label for="campus-chat-report-details">Details (optional)</label><textarea id="campus-chat-report-details" maxlength="500" rows="3" placeholder="Add context for the campus team…"></textarea></div>
+    <p id="campus-chat-report-status" class="message" role="status" aria-live="polite"></p>
+    <div class="actions"><button class="btn secondary" type="button" id="campus-chat-report-cancel">Cancel</button><button class="btn" type="submit" id="campus-chat-report-submit">Submit report</button></div>
+  </form>
+</dialog>
 
 <section class="page" id="page-groups">
   <div class="heading"><h1>Campus groups</h1><p>Find study circles, departments, societies and interest groups inside your university only.</p></div>
@@ -3148,6 +3275,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       helpdesk:'Campus Helpdesk',
       'campus-contacts':'Campus service contacts',
       community:'CampusPulse & Groups',
+      'campus-chat':'Campus Chat',
       groups:'Campus groups',
       events:'Events & Campus Services',
       marketplace:'Campus marketplace',
@@ -3714,11 +3842,378 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
   });
 
+  const CAMPUS_CHAT_CHANNELS = [
+    { id: "general", label: "General" },
+    { id: "study_help", label: "Study Help" },
+    { id: "campus_life", label: "Campus Life" },
+    { id: "marketplace", label: "Marketplace" }
+  ];
+  let campusChatChannel = "general";
+  let campusChatUniversityId = null;
+  let campusChatSubscription = null;
+  let campusChatSubscriptionUniversityId = null;
+  let campusChatMessages = [];
+  let campusChatLoadGeneration = 0;
+
+  function canModerateCampusChat() {
+    return hasVerifiedCampusStaffMembership() &&
+      ["admin", "security", "teacher"].includes(currentProfile?.role);
+  }
+
+  function stopCampusChatRealtime() {
+    const backend = window.CampusShieldBackend;
+    const subscription = campusChatSubscription;
+    campusChatSubscription = null;
+    campusChatSubscriptionUniversityId = null;
+    if (backend?.unsubscribeCampusChatMessages && subscription) {
+      backend.unsubscribeCampusChatMessages(subscription).catch(function(error) {
+        console.warn("Could not close campus chat subscription:", error?.message || error);
+      });
+    }
+  }
+
+  function setCampusChatReady(ready) {
+    const input = $("campus-chat-input");
+    const send = $("campus-chat-send");
+    if (input) input.disabled = !ready;
+    if (send) send.disabled = !ready;
+  }
+
+  function setCampusChatChannel(channel) {
+    if (!CAMPUS_CHAT_CHANNELS.some(function(item) { return item.id === channel; })) return;
+    campusChatChannel = channel;
+    document.querySelectorAll("[data-chat-channel]").forEach(function(button) {
+      const active = button.dataset.chatChannel === channel;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+    const status = $("campus-chat-status");
+    if (status) status.textContent = "Loading " + (CAMPUS_CHAT_CHANNELS.find(function(item) { return item.id === channel; })?.label || "campus") + " chat…";
+    refreshCampusChatMessages().catch(function(error) {
+      if (status) status.textContent = error?.message || "Campus chat could not be loaded.";
+    });
+  }
+
+  async function refreshCampusChatMessages(options) {
+    const backend = window.CampusShieldBackend;
+    const generation = campusChatLoadGeneration;
+    if (!backend?.isConfigured || !campusChatUniversityId) return;
+    const list = $("campus-chat-messages");
+    const status = $("campus-chat-status");
+    try {
+      const rows = await backend.listCampusChatMessages(campusChatChannel);
+      if (generation !== campusChatLoadGeneration || !campusChatUniversityId) return;
+      campusChatMessages = Array.isArray(rows) ? rows : [];
+      renderCampusChatMessages(campusChatMessages);
+      if (status && !(options && options.quiet)) {
+        status.textContent = "Showing the latest campus messages. Live updates are enabled when connected.";
+      }
+    } catch (error) {
+      if (list) list.innerHTML = '<div class="campus-chat-empty"><strong>Chat is temporarily unavailable</strong><p>The university chat service may still be getting set up. Refresh this page to retry.</p></div>';
+      if (status) status.textContent = error?.message || "Campus chat could not be loaded.";
+      throw error;
+    }
+  }
+
+  function renderCampusChatMessages(rows) {
+    const list = $("campus-chat-messages");
+    if (!list) return;
+    list.replaceChildren();
+    if (!Array.isArray(rows) || !rows.length) {
+      const empty = document.createElement("div");
+      empty.className = "campus-chat-empty";
+      const title = document.createElement("strong");
+      title.textContent = "No messages here yet";
+      const copy = document.createElement("p");
+      copy.textContent = "Start the conversation with a helpful question, study tip or campus update.";
+      empty.append(title, copy);
+      list.appendChild(empty);
+      return;
+    }
+    const myUsername = communityProfile?.username || "";
+    rows.forEach(function(row) {
+      const card = document.createElement("article");
+      card.className = "campus-chat-message" +
+        (myUsername && row.author_username === myUsername ? " is-mine" : "") +
+        (row.status === "hidden" ? " is-hidden" : "");
+      const meta = document.createElement("div");
+      meta.className = "campus-chat-message-meta";
+      const author = document.createElement("strong");
+      author.textContent = "@" + String(row.author_username || "campus_member");
+      const time = document.createElement("time");
+      time.dateTime = row.created_at || "";
+      time.textContent = row.created_at ? dateText(row.created_at) : "Just now";
+      meta.append(author, time);
+      const body = document.createElement("p");
+      body.className = "campus-chat-message-body";
+      body.textContent = row.status === "hidden"
+        ? "This message has been hidden by campus staff."
+        : String(row.body || "");
+      card.append(meta, body);
+
+      const actions = document.createElement("div");
+      actions.className = "campus-chat-message-actions";
+      if (row.status === "published" && myUsername !== row.author_username) {
+        const report = document.createElement("button");
+        report.type = "button";
+        report.textContent = "Report";
+        report.setAttribute("aria-label", "Report message from @" + String(row.author_username || "campus member"));
+        report.addEventListener("click", function() {
+          const dialog = $("campus-chat-report-dialog");
+          if (!dialog || typeof dialog.showModal !== "function") {
+            toast("Message reporting is not supported by this browser.");
+            return;
+          }
+          $("campus-chat-report-message-id").value = row.id;
+          $("campus-chat-report-status").textContent = "";
+          $("campus-chat-report-details").value = "";
+          dialog.showModal();
+        });
+        actions.appendChild(report);
+      }
+
+      if (canModerateCampusChat()) {
+        const moderate = document.createElement("button");
+        moderate.type = "button";
+        moderate.dataset.action = row.status === "hidden" ? "restore" : "hide";
+        moderate.textContent = row.status === "hidden" ? "Restore message" : "Hide message";
+        moderate.addEventListener("click", async function() {
+          if (row.status !== "hidden" && !window.confirm("Hide this message from students at this university?")) return;
+          moderate.disabled = true;
+          try {
+            await window.CampusShieldBackend.moderateCampusChatMessage(row.id, row.status === "hidden" ? "restore" : "hide");
+            await refreshCampusChatMessages({quiet:true});
+            await loadCampusChatReports();
+            toast(row.status === "hidden" ? "Message restored." : "Message hidden.");
+          } catch (error) {
+            toast(error?.message || "Could not update this message.");
+            moderate.disabled = false;
+          }
+        });
+        actions.appendChild(moderate);
+      }
+      if (actions.childNodes.length) card.appendChild(actions);
+      list.appendChild(card);
+    });
+    list.scrollTop = list.scrollHeight;
+  }
+
+  async function loadCampusChatReports() {
+    const panel = $("campus-chat-moderation");
+    const list = $("campus-chat-reports-list");
+    const status = $("campus-chat-reports-status");
+    if (!panel || !list || !status) return;
+    const mayModerate = canModerateCampusChat();
+    panel.hidden = !mayModerate;
+    if (!mayModerate) return;
+    status.textContent = "Loading reports…";
+    list.replaceChildren();
+    try {
+      const reports = await window.CampusShieldBackend.listCampusChatReports();
+      if (!reports.length) {
+        status.textContent = "No pending reports for this university.";
+        return;
+      }
+      status.textContent = reports.length + " pending report" + (reports.length === 1 ? "" : "s") + ".";
+      reports.forEach(function(report) {
+        const card = document.createElement("article");
+        card.className = "campus-chat-report-card";
+        const title = document.createElement("strong");
+        title.textContent = ({
+          spam: "Spam",
+          harassment: "Harassment or bullying",
+          personal_information: "Personal information",
+          threats: "Threats",
+          other: "Other concern"
+        })[report.reason] || "Chat message report";
+        const details = document.createElement("p");
+        details.textContent = (report.details || "No extra details provided.") +
+          " · Reported " + (report.created_at ? dateText(report.created_at) : "recently");
+        const actions = document.createElement("div");
+        actions.className = "actions";
+        const hide = document.createElement("button");
+        hide.type = "button";
+        hide.className = "btn danger";
+        hide.textContent = "Hide message";
+        hide.addEventListener("click", async function() {
+          hide.disabled = true;
+          try {
+            await window.CampusShieldBackend.moderateCampusChatMessage(report.message_id, "hide");
+            await window.CampusShieldBackend.reviewCampusChatReport(report.id, "reviewed");
+            await refreshCampusChatMessages({quiet:true});
+            await loadCampusChatReports();
+            toast("Message hidden and report reviewed.");
+          } catch (error) { toast(error?.message || "Could not hide this message."); hide.disabled = false; }
+        });
+        const dismiss = document.createElement("button");
+        dismiss.type = "button";
+        dismiss.className = "btn secondary";
+        dismiss.textContent = "Dismiss report";
+        dismiss.addEventListener("click", async function() {
+          dismiss.disabled = true;
+          try {
+            await window.CampusShieldBackend.reviewCampusChatReport(report.id, "dismissed");
+            await loadCampusChatReports();
+            toast("Report dismissed.");
+          } catch (error) { toast(error?.message || "Could not dismiss this report."); dismiss.disabled = false; }
+        });
+        actions.append(hide, dismiss);
+        card.append(title, details, actions);
+        list.appendChild(card);
+      });
+    } catch (error) {
+      status.textContent = error?.message || "Could not load chat reports.";
+    }
+  }
+
+  async function loadCampusChatPage() {
+    const backend = window.CampusShieldBackend;
+    const status = $("campus-chat-status");
+    const list = $("campus-chat-messages");
+    if (!backend?.isConfigured || !currentProfile) {
+      setCampusChatReady(false);
+      if (status) status.textContent = "Sign in to use Campus Chat.";
+      return;
+    }
+    const generation = ++campusChatLoadGeneration;
+    setCampusChatReady(false);
+    if (status) status.textContent = "Checking your university membership…";
+    if (list) list.innerHTML = '<div class="campus-chat-empty"><strong>Loading your campus room…</strong><p>Checking access and loading recent messages.</p></div>';
+    try {
+      const campus = await backend.getMyCampusContext();
+      if (generation !== campusChatLoadGeneration) return;
+      campusContext = campus;
+      syncCampusAccessNavigation();
+      if (!campus?.university_id) {
+        stopCampusChatRealtime();
+        campusChatUniversityId = null;
+        if ($("campus-chat-university")) $("campus-chat-university").textContent = "No university selected";
+        if (status) status.textContent = "Choose your university in CampusPulse before joining your campus chat.";
+        if (list) list.innerHTML = '<div class="campus-chat-empty"><strong>Your campus room is waiting</strong><p>Choose the correct university to keep conversations separated by campus.</p><button class="btn secondary" type="button" data-page="community">Choose my university</button></div>';
+        if ($("campus-chat-moderation")) $("campus-chat-moderation").hidden = true;
+        return;
+      }
+      if ($("campus-chat-university")) {
+        $("campus-chat-university").textContent = campus.university_name + (campus.state ? " · " + campus.state : "");
+      }
+      const verifiedAccess = currentProfile.verification_status === "verified" &&
+        campus.membership_status === "active" &&
+        campus.verification_status === "verified";
+      if (!verifiedAccess) {
+        stopCampusChatRealtime();
+        campusChatUniversityId = null;
+        setCampusChatReady(false);
+        if (status) status.textContent = "Campus Chat requires a verified CampusShield account and approved university membership. You can still browse the rest of your workspace.";
+        if (list) list.innerHTML = '<div class="campus-chat-empty"><strong>Verification needed</strong><p>Complete account and university verification to join your university conversation.</p></div>';
+        if ($("campus-chat-moderation")) $("campus-chat-moderation").hidden = true;
+        return;
+      }
+      const previousUniversity = campusChatUniversityId;
+      if (previousUniversity !== campus.university_id) {
+        stopCampusChatRealtime();
+        campusChatMessages = [];
+      }
+      campusChatUniversityId = campus.university_id;
+      try { communityProfile = await backend.getMyCommunityProfile(); } catch (_) { communityProfile = null; }
+      if (generation !== campusChatLoadGeneration) return;
+      setCampusChatReady(true);
+      if (!campusChatSubscription || campusChatSubscriptionUniversityId !== campus.university_id) {
+        campusChatSubscription = backend.subscribeCampusChatMessages(campus.university_id, function(row, eventType) {
+          if (row?.university_id !== campusChatUniversityId || row?.channel !== campusChatChannel) return;
+          refreshCampusChatMessages({quiet:true}).catch(function() {});
+          if (canModerateCampusChat()) loadCampusChatReports();
+        }, function(subscriptionStatus) {
+          if (generation !== campusChatLoadGeneration || !status) return;
+          if (subscriptionStatus === "SUBSCRIBED") {
+            status.textContent = "Live chat connected · " + (CAMPUS_CHAT_CHANNELS.find(function(item) { return item.id === campusChatChannel; })?.label || "General");
+          } else if (subscriptionStatus === "CHANNEL_ERROR" || subscriptionStatus === "TIMED_OUT") {
+            status.textContent = "Live updates are reconnecting. You can still refresh the chat.";
+          }
+        });
+        campusChatSubscriptionUniversityId = campus.university_id;
+      }
+      await refreshCampusChatMessages();
+      await loadCampusChatReports();
+    } catch (error) {
+      if (generation !== campusChatLoadGeneration) return;
+      setCampusChatReady(false);
+      if (status) status.textContent = error?.message || "Campus Chat is not available yet.";
+      if (list) list.innerHTML = '<div class="campus-chat-empty"><strong>Campus Chat is temporarily unavailable</strong><p>Refresh to retry. If this continues, the chat database migration may not yet be enabled on this environment.</p></div>';
+      if ($("campus-chat-moderation")) $("campus-chat-moderation").hidden = true;
+    }
+  }
+
+  document.querySelectorAll("[data-chat-channel]").forEach(function(button) {
+    button.addEventListener("click", function() { setCampusChatChannel(button.dataset.chatChannel); });
+  });
+
+  $("campus-chat-form")?.addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const input = $("campus-chat-input");
+    const send = $("campus-chat-send");
+    const status = $("campus-chat-status");
+    const text = String(input?.value || "").trim();
+    if (!text) { input?.focus(); return; }
+    if (!campusChatUniversityId) {
+      if (status) status.textContent = "Choose a verified university room before sending a message.";
+      return;
+    }
+    if (text.length > 1200) {
+      if (status) status.textContent = "Messages must be 1,200 characters or fewer.";
+      return;
+    }
+    if (send) send.disabled = true;
+    if (status) status.textContent = "Sending message…";
+    try {
+      await window.CampusShieldBackend.sendCampusChatMessage(campusChatChannel, text);
+      input.value = "";
+      await refreshCampusChatMessages({quiet:true});
+      if (status) status.textContent = "Message sent.";
+      input.focus();
+    } catch (error) {
+      if (status) status.textContent = error?.message || "Could not send your message.";
+    } finally {
+      if (send) send.disabled = !campusChatUniversityId;
+    }
+  });
+
+  $("campus-chat-report-cancel")?.addEventListener("click", function() {
+    $("campus-chat-report-dialog")?.close();
+  });
+
+  $("campus-chat-report-form")?.addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const submit = $("campus-chat-report-submit");
+    const reportStatus = $("campus-chat-report-status");
+    const messageId = $("campus-chat-report-message-id")?.value;
+    if (!messageId) return;
+    if (submit) submit.disabled = true;
+    if (reportStatus) reportStatus.textContent = "Submitting report…";
+    try {
+      await window.CampusShieldBackend.reportCampusChatMessage(
+        messageId,
+        $("campus-chat-report-reason").value,
+        $("campus-chat-report-details").value
+      );
+      $("campus-chat-report-dialog")?.close();
+      toast("Report sent to your campus moderation team.");
+      if (canModerateCampusChat()) await loadCampusChatReports();
+    } catch (error) {
+      if (reportStatus) reportStatus.textContent = error?.message || "Could not submit report.";
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  });
+
+  $("campus-chat-refresh-reports")?.addEventListener("click", loadCampusChatReports);
+
   document.addEventListener('click', e => {
     const button = e.target.closest('[data-page]');
     if (!button) return;
     if (button.tagName === 'A') e.preventDefault();
     navigate(button.dataset.page);
+    if (button.dataset.page !== 'campus-chat') stopCampusChatRealtime();
+    if (button.dataset.page === 'campus-chat') loadCampusChatPage();
     if (button.dataset.page === 'profile-settings') loadMyProfileSettings();
     if (button.dataset.page === 'campus-contacts') loadCampusContactsPage();
     if (button.dataset.page === 'approvals') loadAccountApprovals();
@@ -7499,6 +7994,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   });
 
   $('signout-button').addEventListener('click', async () => {
+    stopCampusChatRealtime();
     try {
       const backend = window.CampusShieldBackend;
       if (!backend?.client) {
