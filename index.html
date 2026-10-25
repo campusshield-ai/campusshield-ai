@@ -1280,6 +1280,92 @@ button,input,select,textarea{max-width:100%;min-width:0}
   .campus-chat-compose-footer .btn{width:100%}
 }
 
+
+/* University-only private messaging */
+.campus-dm-layout{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);align-items:stretch;gap:16px}
+.campus-dm-rail{padding:0;overflow:hidden}
+.campus-dm-new{padding:17px;border-bottom:1px solid #e3ece7;background:linear-gradient(135deg,#f8fcf9,#edf6f1)}
+.campus-dm-section-title{display:flex;align-items:center;gap:10px;margin-bottom:13px}
+.campus-dm-section-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:12px;background:#102b35;color:#79e0c4}
+.campus-dm-section-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.campus-dm-section-title h2,.campus-dm-inbox-title h2{margin:0;color:#173840;font-size:14px;letter-spacing:-.02em}
+.campus-dm-section-title p{margin:3px 0 0;color:#78908c;font-size:10px}
+.campus-dm-new .field{margin-bottom:10px}
+.campus-dm-new .field input,.campus-dm-new .field textarea{width:100%;box-sizing:border-box;border:1px solid #d8e5de;border-radius:11px;padding:11px 12px;background:#fff;color:#173840;font-size:12px}
+.campus-dm-new .field input:focus,.campus-dm-new .field textarea:focus{outline:3px solid #79e0c430;border-color:#79baa0}
+.campus-dm-new>form>.btn,.campus-dm-request-form .btn{min-height:40px;width:100%;justify-content:center}
+.campus-dm-new label{font-size:10px}
+#campus-dm-search-status,#campus-dm-inbox-status{font-size:10px;margin:8px 0}
+.campus-dm-search-results{display:grid;gap:6px;margin-top:8px}
+.campus-dm-search-result{display:flex;align-items:center;gap:9px;width:100%;min-height:46px;padding:9px 10px;border:1px solid #dbe8e1;border-radius:12px;background:#fff;text-align:left;color:#24464b}
+.campus-dm-search-result:hover{border-color:#9dcfba;background:#f4fbf6}
+.campus-dm-search-result-avatar{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border-radius:10px;background:#e8f5ed;color:#17654f;font-size:11px;font-weight:850}
+.campus-dm-search-result-copy{display:grid;gap:2px;min-width:0;flex:1}
+.campus-dm-search-result-copy strong{font-size:11px;overflow-wrap:anywhere}
+.campus-dm-search-result-copy small{color:#82948f;font-size:9px}
+.campus-dm-search-result>svg{width:16px;height:16px;fill:none;stroke:#39876c;stroke-width:2}
+.campus-dm-selected-recipient{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:10px 11px;margin:12px 0;border:1px solid #d2e7d9;border-radius:11px;background:#f7fcf8;color:#62847a;font-size:10px}
+.campus-dm-selected-recipient strong{color:#17654f;font-size:11px}
+.campus-dm-clear-selection{margin-left:auto;border:0;background:transparent;color:#4c8170;font-size:10px;font-weight:800;text-decoration:underline}
+.campus-dm-inbox-title{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px 7px}
+.campus-dm-inbox-title .btn{min-height:30px;padding:6px 9px;font-size:10px}
+.campus-dm-conversations{display:grid;gap:5px;padding:5px 9px 12px}
+.campus-dm-conversation{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:9px;width:100%;padding:11px 9px;border:1px solid transparent;border-radius:12px;background:transparent;text-align:left;color:#24464b}
+.campus-dm-conversation:hover{background:#f5faf7}
+.campus-dm-conversation.active{border-color:#cae5d5;background:#eef8f1}
+.campus-dm-conversation-avatar{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#e4f2e9;color:#216d54;font-size:12px;font-weight:850}
+.campus-dm-conversation-copy{display:grid;gap:4px;min-width:0}
+.campus-dm-conversation-copy strong{font-size:11px;overflow-wrap:anywhere}
+.campus-dm-conversation-copy small{overflow:hidden;color:#81928f;font-size:10px;line-height:1.45;text-overflow:ellipsis;white-space:nowrap}
+.campus-dm-conversation-meta{display:grid;justify-items:end;gap:6px}
+.campus-dm-conversation-meta time{color:#8a9c97;font-size:9px;white-space:nowrap}
+.campus-dm-status{display:inline-block;padding:4px 6px;border-radius:999px;background:#edf2ef;color:#667b73;font-size:8px;font-weight:850;white-space:nowrap}
+.campus-dm-status.pending{background:#fff4df;color:#916126}
+.campus-dm-status.accepted{background:#e2f5e9;color:#1c7351}
+.campus-dm-thread{display:flex;flex-direction:column;min-height:550px;padding:0;overflow:hidden}
+.campus-dm-thread-empty{display:grid;align-content:center;justify-items:center;flex:1;min-height:450px;padding:28px;text-align:center}
+.campus-dm-thread-empty-icon{display:grid;place-items:center;width:64px;height:64px;border-radius:22px;background:#e8f5ed;color:#17654f}
+.campus-dm-thread-empty-icon svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.campus-dm-thread-empty h2{margin:16px 0 6px;color:#22454a;font-size:17px;letter-spacing:-.035em}
+.campus-dm-thread-empty p{max-width:300px;margin:0;color:#788d89;font-size:12px;line-height:1.6}
+.campus-dm-thread-header{display:flex;align-items:center;gap:11px;padding:16px 18px;border-bottom:1px solid #e4ece7;background:#f7fbf8}
+.campus-dm-avatar{display:grid;place-items:center;width:39px;height:39px;flex:0 0 39px;border-radius:13px;background:#102b35;color:#79e0c4;font-weight:850}
+.campus-dm-thread-contact{display:grid;gap:3px;min-width:0;flex:1}
+.campus-dm-thread-contact strong{color:#173840;font-size:13px;overflow-wrap:anywhere}
+.campus-dm-thread-contact span{color:#84948e;font-size:10px}
+.campus-dm-block-button{min-height:34px;padding:7px 10px;border:1px solid #ead8d6;border-radius:10px;background:#fffafa;color:#a54c4c;font-size:10px;font-weight:800}
+.campus-dm-request-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid #f0dfbf;background:#fff8e9}
+.campus-dm-request-banner strong{color:#805922;font-size:12px}
+.campus-dm-request-banner p{margin:3px 0 0;color:#927849;font-size:10px;line-height:1.5}
+.campus-dm-request-actions{display:flex;gap:7px}
+.campus-dm-request-actions .btn{min-height:35px;padding:8px 11px;font-size:10px}
+#campus-dm-thread-status{min-height:0;margin:0;padding:0 17px;font-size:10px}
+.campus-dm-thread-messages{display:flex;flex-direction:column;gap:11px;flex:1;min-height:300px;max-height:60vh;overflow-y:auto;padding:17px;background:#f9fcfa;overscroll-behavior:contain}
+.campus-dm-message{display:grid;gap:5px;max-width:86%;align-self:flex-start;padding:11px 13px;border:1px solid #e0eae4;border-radius:5px 15px 15px;background:#fff;box-shadow:0 3px 10px #102b3508;overflow-wrap:anywhere}
+.campus-dm-message.is-mine{align-self:flex-end;border-color:#cce6d7;border-radius:15px 5px 15px 15px;background:#eaf7f0}
+.campus-dm-message-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#1b7058;font-size:10px;font-weight:800}
+.campus-dm-message-head time{margin-left:auto;color:#8a9a95;font-size:9px;font-weight:500}
+.campus-dm-message-body{margin:0;color:#2d484d;font-size:12px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.campus-dm-message-actions{display:flex;justify-content:flex-end;margin-top:2px}
+.campus-dm-message-actions button{border:0;padding:3px;background:transparent;color:#678579;font-size:9px;font-weight:750;text-decoration:underline;text-underline-offset:2px}
+.campus-dm-compose{padding:13px 16px 15px;border-top:1px solid #e3ece7;background:#fff}
+.campus-dm-compose textarea{display:block;width:100%;box-sizing:border-box;min-height:70px;max-height:170px;resize:vertical;padding:11px 12px;border:1px solid #d8e5de;border-radius:12px;background:#fbfdfb;color:#173840;font-size:12px;line-height:1.6}
+.campus-dm-compose textarea:focus{outline:3px solid #79e0c430;border-color:#79baa0}
+.campus-dm-compose textarea:disabled{background:#f2f5f3;color:#85958f}
+.campus-dm-compose-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px}
+.campus-dm-compose-footer span{color:#869791;font-size:9px;line-height:1.5}
+.campus-dm-compose-footer .btn{display:flex;align-items:center;gap:7px;min-height:40px}
+.campus-dm-compose-footer .btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.campus-dm-moderation{margin-top:16px}
+.campus-dm-report-queue{display:grid;gap:10px}
+.campus-dm-report-card{padding:13px;border:1px solid #e0eae4;border-radius:13px;background:#fbfdfb}
+.campus-dm-report-card strong{color:#23464a;font-size:12px}
+.campus-dm-report-card blockquote{margin:8px 0;padding:10px 12px;border-left:3px solid #d2e7d9;background:#f3f8f5;color:#46605c;font-size:11px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.campus-dm-report-card p{margin:5px 0 10px;color:#6e8580;font-size:10px;line-height:1.5;overflow-wrap:anywhere}
+.campus-dm-report-card .actions{gap:7px}
+@media(max-width:900px){.campus-dm-layout{grid-template-columns:minmax(0,1fr)}.campus-dm-thread{min-height:470px}.campus-dm-thread-messages{max-height:55vh;min-height:260px}}
+@media(max-width:650px){.campus-dm-layout{gap:12px}.campus-dm-thread{min-height:430px}.campus-dm-thread-header{padding:13px}.campus-dm-request-banner{padding:12px}.campus-dm-thread-messages{min-height:250px;max-height:52vh;padding:12px 10px}.campus-dm-message{max-width:94%;padding:10px 11px}.campus-dm-compose{padding:11px}.campus-dm-compose-footer .btn{min-height:44px}.campus-dm-new{padding:14px}.campus-dm-thread-empty{min-height:350px}}
+
 </style>
 </head>
 <body>
@@ -1451,6 +1537,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <button data-page="courses" id="courses-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg></span>Courses &amp; Study Resources</button>
 <button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span>CampusPulse &amp; Groups</button>
 <button data-page="campus-chat" id="campus-chat-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus Chat</button>
+<button data-page="campus-messages" id="campus-messages-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="3"/><path d="m8 18-3 3v-3M7 9h10M7 13h6"/></svg></span>Private Messages</button>
 <button data-page="events" id="events-services-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span>Events &amp; Campus Services</button>
 <button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span>Opportunities &amp; Scholarships</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span>Safety &amp; Report Incident</button>
@@ -1928,6 +2015,81 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <div class="field"><label for="campus-chat-report-details">Details (optional)</label><textarea id="campus-chat-report-details" maxlength="500" rows="3" placeholder="Add context for the campus team…"></textarea></div>
     <p id="campus-chat-report-status" class="message" role="status" aria-live="polite"></p>
     <div class="actions"><button class="btn secondary" type="button" id="campus-chat-report-cancel">Cancel</button><button class="btn" type="submit" id="campus-chat-report-submit">Submit report</button></div>
+  </form>
+</dialog>
+
+<section class="page" id="page-campus-messages">
+  <div class="heading">
+    <div><h1>Private Messages</h1><p>Start a private conversation with a verified member of your university.</p></div>
+    <div class="heading-actions"><button class="btn secondary" type="button" data-page="campus-chat">Open Campus Chat</button></div>
+  </div>
+  <div class="notice-inline"><strong>Private by design.</strong> Only the two participants can read an accepted conversation. New conversations start as message requests. You can decline or block a request and report inappropriate messages. Never share passwords, student ID numbers, account codes, or sensitive personal details.</div>
+
+  <div class="campus-dm-layout">
+    <aside class="panel campus-dm-rail" aria-label="Message requests and conversations">
+      <section class="campus-dm-new" aria-labelledby="campus-dm-new-title">
+        <div class="campus-dm-section-title"><span class="campus-dm-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><div><h2 id="campus-dm-new-title">New message</h2><p>Find someone at your university</p></div></div>
+        <form id="campus-dm-search-form">
+          <div class="field"><label for="campus-dm-search">Campus username</label><input id="campus-dm-search" minlength="3" maxlength="20" autocomplete="off" placeholder="e.g. ada_cs01" required></div>
+          <button class="btn secondary" type="submit" id="campus-dm-search-button">Find member</button>
+        </form>
+        <p id="campus-dm-search-status" class="message" role="status" aria-live="polite"></p>
+        <div id="campus-dm-search-results" class="campus-dm-search-results"></div>
+        <form id="campus-dm-request-form" hidden>
+          <div class="campus-dm-selected-recipient"><span>Message request to</span><strong id="campus-dm-selected-username">@username</strong><button class="campus-dm-clear-selection" id="campus-dm-clear-selection" type="button" aria-label="Choose a different member">Change</button></div>
+          <div class="field"><label for="campus-dm-introduction">Introduce yourself *</label><textarea id="campus-dm-introduction" maxlength="1200" rows="3" placeholder="Write a short, respectful first message…" required></textarea></div>
+          <button class="btn" type="submit" id="campus-dm-request-send">Send message request</button>
+        </form>
+      </section>
+      <div class="campus-dm-inbox-title"><h2>Inbox</h2><button type="button" class="btn secondary" id="campus-dm-refresh">Refresh</button></div>
+      <p id="campus-dm-inbox-status" class="message" role="status" aria-live="polite"></p>
+      <div id="campus-dm-conversations" class="campus-dm-conversations">
+        <div class="campus-chat-empty"><strong>Your inbox is ready</strong><p>Message requests and conversations will appear here.</p></div>
+      </div>
+    </aside>
+
+    <section class="panel campus-dm-thread" aria-label="Private conversation">
+      <div id="campus-dm-thread-empty" class="campus-dm-thread-empty">
+        <span class="campus-dm-thread-empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>
+        <h2>Your private inbox</h2><p>Choose a conversation or find a campus member to start a message request.</p>
+      </div>
+      <div id="campus-dm-thread-active" hidden>
+        <div class="campus-dm-thread-header">
+          <div class="campus-dm-avatar" id="campus-dm-thread-avatar">C</div>
+          <div class="campus-dm-thread-contact"><strong id="campus-dm-thread-name">@campus_member</strong><span id="campus-dm-thread-subtitle">Private conversation</span></div>
+          <button type="button" class="campus-dm-block-button" id="campus-dm-block-button" hidden>Block</button>
+        </div>
+        <div id="campus-dm-request-banner" class="campus-dm-request-banner" hidden>
+          <div><strong id="campus-dm-request-title">Message request</strong><p id="campus-dm-request-copy">Accept this request to reply.</p></div>
+          <div class="campus-dm-request-actions"><button type="button" class="btn secondary" id="campus-dm-decline">Decline</button><button type="button" class="btn" id="campus-dm-accept">Accept</button></div>
+        </div>
+        <p id="campus-dm-thread-status" class="message" role="status" aria-live="polite"></p>
+        <div id="campus-dm-thread-messages" class="campus-dm-thread-messages" role="log" aria-label="Private messages" aria-live="polite" aria-relevant="additions text"></div>
+        <form id="campus-dm-compose-form" class="campus-dm-compose">
+          <label for="campus-dm-compose-input" class="visually-hidden">Write a private message</label>
+          <textarea id="campus-dm-compose-input" rows="2" maxlength="1200" placeholder="Write a private message…" required disabled></textarea>
+          <div class="campus-dm-compose-footer"><span id="campus-dm-compose-hint">Only visible to this conversation</span><button type="submit" class="btn" id="campus-dm-compose-send" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-7 18-3-7-8-3Z"/><path d="M11 14 21 3"/></svg>Send</button></div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel campus-dm-moderation" id="campus-dm-moderation" hidden>
+    <div class="panel-heading"><div><h2>Private-message reports</h2><p>Only reported messages for your university appear here.</p></div><button type="button" class="btn secondary" id="campus-dm-refresh-reports">Refresh reports</button></div>
+    <p id="campus-dm-report-queue-status" class="message" role="status" aria-live="polite"></p>
+    <div id="campus-dm-report-queue" class="campus-dm-report-queue"></div>
+  </section>
+</section>
+
+<dialog id="campus-dm-report-dialog" class="campus-chat-report-dialog" aria-labelledby="campus-dm-report-title">
+  <form id="campus-dm-report-form">
+    <h2 id="campus-dm-report-title">Report private message</h2>
+    <p class="muted">The reported message and your reason will be shared with authorized campus staff for review.</p>
+    <input type="hidden" id="campus-dm-report-message-id">
+    <div class="field"><label for="campus-dm-report-reason">Reason *</label><select id="campus-dm-report-reason" required><option value="spam">Spam</option><option value="harassment">Harassment or bullying</option><option value="personal_information">Personal information</option><option value="threats">Threats</option><option value="other">Other concern</option></select></div>
+    <div class="field"><label for="campus-dm-report-details">Details (optional)</label><textarea id="campus-dm-report-details" maxlength="500" rows="3" placeholder="Add context for the campus team…"></textarea></div>
+    <p id="campus-dm-report-status" class="message" role="status" aria-live="polite"></p>
+    <div class="actions"><button class="btn secondary" type="button" id="campus-dm-report-cancel">Cancel</button><button class="btn" type="submit" id="campus-dm-report-submit">Submit report</button></div>
   </form>
 </dialog>
 
@@ -3276,6 +3438,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       'campus-contacts':'Campus service contacts',
       community:'CampusPulse & Groups',
       'campus-chat':'Campus Chat',
+      'campus-messages':'Private Messages',
       groups:'Campus groups',
       events:'Events & Campus Services',
       marketplace:'Campus marketplace',
@@ -4207,13 +4370,585 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
   $("campus-chat-refresh-reports")?.addEventListener("click", loadCampusChatReports);
 
+  let campusDirectConversations = [];
+  let campusDirectActiveId = null;
+  let campusDirectActiveConversation = null;
+  let campusDirectSelectedRecipient = null;
+  let campusDirectSubscription = null;
+  let campusDirectSubscriptionId = null;
+  let campusDirectLoadGeneration = 0;
+  let campusDirectMessageReports = [];
+
+  function stopCampusDirectMessageRealtime() {
+    const backend = window.CampusShieldBackend;
+    const subscription = campusDirectSubscription;
+    campusDirectSubscription = null;
+    campusDirectSubscriptionId = null;
+    if (backend?.unsubscribeCampusDirectMessages && subscription) {
+      backend.unsubscribeCampusDirectMessages(subscription).catch(function(error) {
+        console.warn("Could not close private-message subscription:", error?.message || error);
+      });
+    }
+  }
+
+  function setCampusDirectComposer(enabled, hint) {
+    const input = $("campus-dm-compose-input");
+    const button = $("campus-dm-compose-send");
+    if (input) input.disabled = !enabled;
+    if (button) button.disabled = !enabled;
+    if ($("campus-dm-compose-hint") && hint) $("campus-dm-compose-hint").textContent = hint;
+  }
+
+  function campusDirectStatusLabel(conversation) {
+    if (!conversation) return "Conversation";
+    if (conversation.status === "accepted") return "Connected";
+    if (conversation.status === "cancelled") return "Request cancelled";
+    if (conversation.status === "blocked") return conversation.blocked_by_me ? "Blocked by you" : "Unavailable";
+    if (conversation.status === "declined") return "Request declined";
+    return conversation.requested_by_me ? "Request sent" : "Message request";
+  }
+
+  async function refreshCampusDirectConversations(options) {
+    const backend = window.CampusShieldBackend;
+    const list = $("campus-dm-conversations");
+    const status = $("campus-dm-inbox-status");
+    if (!backend?.isConfigured) return;
+    try {
+      campusDirectConversations = await backend.listMyCampusDirectConversations();
+      renderCampusDirectConversations();
+      if (status && !(options && options.quiet)) {
+        const incoming = campusDirectConversations.filter(function(item) { return item.status === "pending" && !item.requested_by_me; }).length;
+        status.textContent = incoming ? incoming + " message request" + (incoming === 1 ? "" : "s") + " waiting for you." : campusDirectConversations.length + " conversation" + (campusDirectConversations.length === 1 ? "" : "s") + " in your inbox.";
+      }
+      if (campusDirectActiveId) {
+        const selected = campusDirectConversations.find(function(item) { return item.conversation_id === campusDirectActiveId; });
+        if (selected) {
+          campusDirectActiveConversation = selected;
+          renderCampusDirectThreadHeader(selected);
+        } else {
+          campusDirectActiveId = null;
+          campusDirectActiveConversation = null;
+          stopCampusDirectMessageRealtime();
+          renderCampusDirectThreadEmpty();
+        }
+      }
+    } catch (error) {
+      if (status) status.textContent = error?.message || "Could not load your inbox.";
+      if (list) list.innerHTML = '<div class="campus-chat-empty"><strong>Inbox unavailable</strong><p>Refresh your private messages to retry.</p></div>';
+    }
+  }
+
+  function renderCampusDirectConversations() {
+    const list = $("campus-dm-conversations");
+    if (!list) return;
+    list.replaceChildren();
+    if (!campusDirectConversations.length) {
+      const empty = document.createElement("div");
+      empty.className = "campus-chat-empty";
+      const title = document.createElement("strong");
+      title.textContent = "No conversations yet";
+      const copy = document.createElement("p");
+      copy.textContent = "Find a campus username above to send a first message.";
+      empty.append(title, copy);
+      list.appendChild(empty);
+      return;
+    }
+    campusDirectConversations.forEach(function(conversation) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "campus-dm-conversation" + (conversation.conversation_id === campusDirectActiveId ? " active" : "");
+      button.setAttribute("aria-pressed", String(conversation.conversation_id === campusDirectActiveId));
+      const avatar = document.createElement("span");
+      avatar.className = "campus-dm-conversation-avatar";
+      avatar.textContent = String(conversation.other_username || "C").replace(/^@/,"").slice(0,1).toUpperCase();
+      const copy = document.createElement("span");
+      copy.className = "campus-dm-conversation-copy";
+      const name = document.createElement("strong");
+      name.textContent = "@" + String(conversation.other_username || "campus_member");
+      const preview = document.createElement("small");
+      preview.textContent = conversation.latest_message_preview || campusDirectStatusLabel(conversation);
+      copy.append(name, preview);
+      const meta = document.createElement("span");
+      meta.className = "campus-dm-conversation-meta";
+      const time = document.createElement("time");
+      time.textContent = conversation.last_message_at ? dateText(conversation.last_message_at) : "";
+      const state = document.createElement("span");
+      state.className = "campus-dm-status " + (conversation.status === "pending" ? "pending" : conversation.status === "accepted" ? "accepted" : "");
+      state.textContent = campusDirectStatusLabel(conversation);
+      meta.append(time, state);
+      button.append(avatar, copy, meta);
+      button.addEventListener("click", function() { openCampusDirectConversation(conversation.conversation_id); });
+      list.appendChild(button);
+    });
+  }
+
+  function renderCampusDirectThreadEmpty() {
+    $("campus-dm-thread-empty").hidden = false;
+    $("campus-dm-thread-active").hidden = true;
+    setCampusDirectComposer(false, "Only visible to this conversation");
+  }
+
+  function renderCampusDirectThreadHeader(conversation) {
+    if (!conversation) return renderCampusDirectThreadEmpty();
+    $("campus-dm-thread-empty").hidden = true;
+    $("campus-dm-thread-active").hidden = false;
+    $("campus-dm-thread-avatar").textContent = String(conversation.other_username || "C").replace(/^@/,"").slice(0,1).toUpperCase();
+    $("campus-dm-thread-name").textContent = "@" + String(conversation.other_username || "campus_member");
+    $("campus-dm-thread-subtitle").textContent = campusDirectStatusLabel(conversation) + " · Same-university chat";
+    const pendingIncoming = conversation.status === "pending" && !conversation.requested_by_me;
+    const pendingMine = conversation.status === "pending" && conversation.requested_by_me;
+    const accepted = conversation.status === "accepted";
+    const banner = $("campus-dm-request-banner");
+    banner.hidden = !(pendingIncoming || pendingMine);
+    if (pendingIncoming) {
+      $("campus-dm-request-title").textContent = "Message request";
+      $("campus-dm-request-copy").textContent = "Accept to continue the private conversation, or decline this request.";
+      $("campus-dm-accept").hidden = false;
+      $("campus-dm-decline").hidden = false;
+    } else if (pendingMine) {
+      $("campus-dm-request-title").textContent = "Request sent";
+      $("campus-dm-request-copy").textContent = "You can reply after this member accepts your request.";
+      $("campus-dm-accept").hidden = true;
+      $("campus-dm-decline").hidden = false;
+      $("campus-dm-decline").textContent = "Cancel request";
+    } else {
+      $("campus-dm-decline").textContent = "Decline";
+    }
+    $("campus-dm-decline").textContent = pendingMine ? "Cancel request" : "Decline";
+    $("campus-dm-block-button").hidden = !(accepted || pendingIncoming || pendingMine);
+    $("campus-dm-block-button").textContent = "Block";
+    if (accepted) {
+      setCampusDirectComposer(true, "Private to you and @" + String(conversation.other_username || "campus_member"));
+    } else if (pendingMine) {
+      setCampusDirectComposer(false, "Waiting for the member to accept your request");
+    } else if (pendingIncoming) {
+      setCampusDirectComposer(false, "Accept this request before sending a reply");
+    } else if (conversation.status === "blocked") {
+      setCampusDirectComposer(false, conversation.blocked_by_me ? "You blocked this conversation" : "This conversation is unavailable");
+    } else {
+      setCampusDirectComposer(false, "This conversation is closed");
+    }
+  }
+
+  async function openCampusDirectConversation(conversationId) {
+    const conversation = campusDirectConversations.find(function(item) { return item.conversation_id === conversationId; });
+    if (!conversation) return;
+    campusDirectActiveId = conversationId;
+    campusDirectActiveConversation = conversation;
+    renderCampusDirectConversations();
+    renderCampusDirectThreadHeader(conversation);
+    const thread = $("campus-dm-thread-messages");
+    const status = $("campus-dm-thread-status");
+    thread.replaceChildren();
+    const loading = document.createElement("div");
+    loading.className = "campus-chat-empty";
+    loading.textContent = "Loading private messages…";
+    thread.appendChild(loading);
+    if (conversation.status !== "accepted" && conversation.status !== "pending") {
+      thread.replaceChildren();
+      const empty = document.createElement("div");
+      empty.className = "campus-dm-thread-empty";
+      const copy = document.createElement("p");
+      copy.textContent = conversation.status === "blocked"
+        ? (conversation.blocked_by_me ? "You blocked this conversation. New messages are disabled." : "This conversation is unavailable. New messages are disabled.")
+        : "This message request is closed. Start a new conversation only if it is appropriate and welcome.";
+      empty.appendChild(copy);
+      thread.appendChild(empty);
+      status.textContent = "";
+      stopCampusDirectMessageRealtime();
+      return;
+    }
+    try {
+      await refreshCampusDirectMessages();
+      if (!document.querySelector("#page-campus-messages")?.classList.contains("active") || campusDirectActiveId !== conversationId) return;
+      if (campusDirectSubscriptionId !== conversationId) {
+        stopCampusDirectMessageRealtime();
+        campusDirectSubscription = window.CampusShieldBackend.subscribeCampusDirectMessages(conversationId, function(row) {
+          if (row?.conversation_id !== campusDirectActiveId) return;
+          refreshCampusDirectMessages({quiet:true}).catch(function() {});
+          refreshCampusDirectConversations({quiet:true});
+        }, function(subscriptionStatus) {
+          if (campusDirectActiveId !== conversationId || !status) return;
+          if (subscriptionStatus === "SUBSCRIBED") status.textContent = "Live updates connected.";
+          else if (subscriptionStatus === "CHANNEL_ERROR" || subscriptionStatus === "TIMED_OUT") status.textContent = "Live updates are reconnecting; refresh if a new message does not appear.";
+        });
+        campusDirectSubscriptionId = conversationId;
+      }
+      await refreshCampusDirectMessageReports();
+    } catch (error) {
+      if (status) status.textContent = error?.message || "Could not open this private conversation.";
+    }
+  }
+
+  async function refreshCampusDirectMessages(options) {
+    const backend = window.CampusShieldBackend;
+    const id = campusDirectActiveId;
+    if (!id || !backend?.isConfigured) return;
+    const rows = await backend.listCampusDirectMessages(id);
+    if (campusDirectActiveId !== id) return;
+    const list = $("campus-dm-thread-messages");
+    list.replaceChildren();
+    if (!rows.length) {
+      const empty = document.createElement("div");
+      empty.className = "campus-chat-empty";
+      const title = document.createElement("strong");
+      title.textContent = "Start the conversation";
+      const copy = document.createElement("p");
+      copy.textContent = "This private thread is ready for a helpful, respectful exchange.";
+      empty.append(title,copy);
+      list.appendChild(empty);
+    }
+    rows.forEach(function(row) {
+      const card = document.createElement("article");
+      card.className = "campus-dm-message" + (row.is_mine ? " is-mine" : "");
+      const head = document.createElement("div");
+      head.className = "campus-dm-message-head";
+      const author = document.createElement("span");
+      author.textContent = "@" + String(row.author_username || "campus_member");
+      const time = document.createElement("time");
+      time.dateTime = row.created_at || "";
+      time.textContent = row.created_at ? dateText(row.created_at) : "Just now";
+      head.append(author,time);
+      const body = document.createElement("p");
+      body.className = "campus-dm-message-body";
+      body.textContent = row.body || "";
+      card.append(head,body);
+      if (!row.is_mine && row.status === "published") {
+        const actions = document.createElement("div");
+        actions.className = "campus-dm-message-actions";
+        const report = document.createElement("button");
+        report.type = "button";
+        report.textContent = "Report message";
+        report.addEventListener("click", function() {
+          const dialog = $("campus-dm-report-dialog");
+          if (!dialog || typeof dialog.showModal !== "function") {
+            toast("Message reporting is not supported by this browser.");
+            return;
+          }
+          $("campus-dm-report-message-id").value = row.id;
+          $("campus-dm-report-status").textContent = "";
+          $("campus-dm-report-details").value = "";
+          dialog.showModal();
+        });
+        actions.appendChild(report);
+        card.appendChild(actions);
+      }
+      list.appendChild(card);
+    });
+    if (!(options && options.preserveScroll)) list.scrollTop = list.scrollHeight;
+  }
+
+  async function loadCampusDirectMessageReports() {
+    const panel = $("campus-dm-moderation");
+    const list = $("campus-dm-report-queue");
+    const status = $("campus-dm-report-queue-status");
+    if (!panel || !list || !status) return;
+    panel.hidden = !canModerateCampusChat();
+    if (panel.hidden) return;
+    status.textContent = "Loading reported private messages…";
+    list.replaceChildren();
+    try {
+      campusDirectMessageReports = await window.CampusShieldBackend.listCampusDirectMessageReports();
+      if (!campusDirectMessageReports.length) {
+        status.textContent = "No pending private-message reports for this university.";
+        return;
+      }
+      status.textContent = campusDirectMessageReports.length + " pending report" + (campusDirectMessageReports.length === 1 ? "" : "s") + ".";
+      campusDirectMessageReports.forEach(function(report) {
+        const card = document.createElement("article");
+        card.className = "campus-dm-report-card";
+        const title = document.createElement("strong");
+        title.textContent = "@" + String(report.author_username || "campus_member") + " · " + ({
+          spam:"Spam",harassment:"Harassment or bullying",personal_information:"Personal information",threats:"Threats",other:"Other concern"
+        })[report.reason];
+        const quote = document.createElement("blockquote");
+        quote.textContent = report.message_body || "[Message content unavailable]";
+        const context = document.createElement("p");
+        context.textContent = "Reported by @" + String(report.reporter_username || "campus_member") +
+          (report.details ? " · " + report.details : "") +
+          " · " + (report.created_at ? dateText(report.created_at) : "Recently");
+        const actions = document.createElement("div");
+        actions.className = "actions";
+        const hide = document.createElement("button");
+        hide.type = "button";
+        hide.className = "btn danger";
+        hide.textContent = "Hide message";
+        hide.addEventListener("click", async function() {
+          hide.disabled = true;
+          try {
+            await window.CampusShieldBackend.resolveCampusDirectMessageReport(report.report_id,"hide");
+            await loadCampusDirectMessageReports();
+            if (campusDirectActiveId === report.conversation_id) await refreshCampusDirectMessages({quiet:true});
+            toast("Message hidden and report reviewed.");
+          } catch (error) { toast(error?.message || "Could not hide this message."); hide.disabled = false; }
+        });
+        const dismiss = document.createElement("button");
+        dismiss.type = "button";
+        dismiss.className = "btn secondary";
+        dismiss.textContent = "Dismiss";
+        dismiss.addEventListener("click", async function() {
+          dismiss.disabled = true;
+          try {
+            await window.CampusShieldBackend.resolveCampusDirectMessageReport(report.report_id,"dismiss");
+            await loadCampusDirectMessageReports();
+            toast("Report dismissed.");
+          } catch (error) { toast(error?.message || "Could not dismiss this report."); dismiss.disabled = false; }
+        });
+        actions.append(hide,dismiss);
+        card.append(title,quote,context,actions);
+        list.appendChild(card);
+      });
+    } catch (error) {
+      status.textContent = error?.message || "Could not load private-message reports.";
+    }
+  }
+
+  async function loadCampusDirectMessagesPage() {
+    const backend = window.CampusShieldBackend;
+    const status = $("campus-dm-inbox-status");
+    if (!backend?.isConfigured || !currentProfile) {
+      stopCampusDirectMessageRealtime();
+      if (status) status.textContent = "Sign in to use private messages.";
+      return;
+    }
+    const generation = ++campusDirectLoadGeneration;
+    if (status) status.textContent = "Checking your university access…";
+    try {
+      const campus = await backend.getMyCampusContext();
+      if (generation !== campusDirectLoadGeneration) return;
+      campusContext = campus;
+      syncCampusAccessNavigation();
+      const verifiedAccess = currentProfile.verification_status === "verified" &&
+        campus?.membership_status === "active" &&
+        campus?.verification_status === "verified";
+      if (!campus?.university_id) {
+        stopCampusDirectMessageRealtime();
+        status.textContent = "Choose your university in CampusPulse before starting a private conversation.";
+        $("campus-dm-search-button").disabled = true;
+        $("campus-dm-request-send").disabled = true;
+        return;
+      }
+      if (!verifiedAccess) {
+        stopCampusDirectMessageRealtime();
+        status.textContent = "Private Messages require verified CampusShield access and approved university membership. Student identity approval is also required when your account's access rules call for it.";
+        $("campus-dm-search-button").disabled = true;
+        $("campus-dm-request-send").disabled = true;
+        return;
+      }
+      $("campus-dm-search-button").disabled = false;
+      $("campus-dm-request-send").disabled = false;
+      const profile = await backend.getMyCommunityProfile();
+      communityProfile = profile;
+      await refreshCampusDirectConversations();
+      await refreshCampusDirectMessageReports();
+      if (campusDirectActiveId) {
+        const selected = campusDirectConversations.find(function(item) { return item.conversation_id === campusDirectActiveId; });
+        if (selected) await openCampusDirectConversation(selected.conversation_id);
+      }
+    } catch (error) {
+      if (generation !== campusDirectLoadGeneration) return;
+      if (status) status.textContent = error?.message || "Private Messages are temporarily unavailable.";
+    }
+  }
+
+  $("campus-dm-search-form")?.addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const input = $("campus-dm-search");
+    const button = $("campus-dm-search-button");
+    const status = $("campus-dm-search-status");
+    const results = $("campus-dm-search-results");
+    const query = String(input?.value || "").trim().toLowerCase();
+    if (query.length < 3) {
+      if (status) status.textContent = "Enter at least 3 characters of a campus username.";
+      return;
+    }
+    if (button) button.disabled = true;
+    if (status) status.textContent = "Searching your university…";
+    results.replaceChildren();
+    try {
+      const members = await window.CampusShieldBackend.searchCampusMembers(query);
+      if (!members.length) {
+        status.textContent = "No eligible campus members matched that username.";
+        return;
+      }
+      status.textContent = members.length + " member" + (members.length === 1 ? "" : "s") + " found. Choose one to compose a request.";
+      members.forEach(function(member) {
+        const result = document.createElement("button");
+        result.type = "button";
+        result.className = "campus-dm-search-result";
+        const avatar = document.createElement("span");
+        avatar.className = "campus-dm-search-result-avatar";
+        avatar.textContent = String(member.username || "C").slice(0,1).toUpperCase();
+        const copy = document.createElement("span");
+        copy.className = "campus-dm-search-result-copy";
+        const name = document.createElement("strong");
+        name.textContent = "@" + member.username;
+        const sub = document.createElement("small");
+        sub.textContent = "Verified university member";
+        copy.append(name,sub);
+        const arrow = document.createElement("svg");
+        arrow.setAttribute("viewBox","0 0 24 24");
+        arrow.setAttribute("aria-hidden","true");
+        arrow.innerHTML = '<path d="M5 12h14M13 6l6 6-6 6"/>';
+        result.append(avatar,copy,arrow);
+        result.addEventListener("click", function() {
+          campusDirectSelectedRecipient = member.username;
+          $("campus-dm-selected-username").textContent = "@" + member.username;
+          $("campus-dm-request-form").hidden = false;
+          $("campus-dm-introduction").focus();
+          status.textContent = "You’re composing a private message request.";
+        });
+        results.appendChild(result);
+      });
+    } catch (error) {
+      if (status) status.textContent = error?.message || "Could not search for campus members.";
+    } finally {
+      if (button) button.disabled = false;
+    }
+  });
+
+  $("campus-dm-clear-selection")?.addEventListener("click", function() {
+    campusDirectSelectedRecipient = null;
+    $("campus-dm-request-form").hidden = true;
+    $("campus-dm-introduction").value = "";
+    $("campus-dm-search").focus();
+  });
+
+  $("campus-dm-request-form")?.addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const send = $("campus-dm-request-send");
+    const status = $("campus-dm-search-status");
+    if (!campusDirectSelectedRecipient) {
+      if (status) status.textContent = "Choose a campus member first.";
+      return;
+    }
+    if (send) send.disabled = true;
+    if (status) status.textContent = "Sending your message request…";
+    try {
+      const id = await window.CampusShieldBackend.createCampusDirectMessageRequest(
+        campusDirectSelectedRecipient,
+        $("campus-dm-introduction").value
+      );
+      $("campus-dm-introduction").value = "";
+      $("campus-dm-request-form").hidden = true;
+      $("campus-dm-search-results").replaceChildren();
+      $("campus-dm-search").value = "";
+      campusDirectSelectedRecipient = null;
+      await refreshCampusDirectConversations();
+      const createdConversation = campusDirectConversations.find(function(item) { return item.conversation_id === id; });
+      if (status) status.textContent = createdConversation?.status === "accepted"
+        ? "Message sent to @" + campusDirectSelectedRecipient + "."
+        : "Message request sent. You can continue after the member accepts your request.";
+      await openCampusDirectConversation(id);
+    } catch (error) {
+      if (status) status.textContent = error?.message || "Could not send the message request.";
+      await refreshCampusDirectConversations({quiet:true});
+    } finally {
+      if (send) send.disabled = false;
+    }
+  });
+
+  $("campus-dm-compose-form")?.addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const send = $("campus-dm-compose-send");
+    const input = $("campus-dm-compose-input");
+    const status = $("campus-dm-thread-status");
+    const body = String(input?.value || "").trim();
+    if (!body || !campusDirectActiveId || campusDirectActiveConversation?.status !== "accepted") return;
+    if (send) send.disabled = true;
+    if (status) status.textContent = "Sending private message…";
+    try {
+      await window.CampusShieldBackend.sendCampusDirectMessage(campusDirectActiveId,body);
+      input.value = "";
+      await refreshCampusDirectMessages();
+      await refreshCampusDirectConversations({quiet:true});
+      if (status) status.textContent = "Message sent.";
+      input.focus();
+    } catch (error) {
+      if (status) status.textContent = error?.message || "Could not send this private message.";
+    } finally {
+      if (send) send.disabled = !campusDirectActiveConversation || campusDirectActiveConversation.status !== "accepted";
+    }
+  });
+
+  $("campus-dm-accept")?.addEventListener("click", async function() {
+    if (!campusDirectActiveId) return;
+    const status = $("campus-dm-thread-status");
+    try {
+      await window.CampusShieldBackend.respondCampusDirectMessageRequest(campusDirectActiveId,"accept");
+      await refreshCampusDirectConversations({quiet:true});
+      await openCampusDirectConversation(campusDirectActiveId);
+      if (status) status.textContent = "Request accepted. You can now send private messages.";
+    } catch (error) { if (status) status.textContent = error?.message || "Could not accept this request."; }
+  });
+
+  $("campus-dm-decline")?.addEventListener("click", async function() {
+    if (!campusDirectActiveId) return;
+    const conversation = campusDirectActiveConversation;
+    const action = conversation?.status === "pending" && conversation.requested_by_me ? "cancel" : "decline";
+    if (action === "cancel" && !window.confirm("Cancel your pending message request?")) return;
+    try {
+      await window.CampusShieldBackend.respondCampusDirectMessageRequest(campusDirectActiveId,action);
+      await refreshCampusDirectConversations({quiet:true});
+      const selected = campusDirectConversations.find(function(item) { return item.conversation_id === campusDirectActiveId; });
+      if (selected) await openCampusDirectConversation(selected.conversation_id);
+      toast(action === "cancel" ? "Message request cancelled." : "Message request declined.");
+    } catch (error) { $("campus-dm-thread-status").textContent = error?.message || "Could not update this request."; }
+  });
+
+  $("campus-dm-block-button")?.addEventListener("click", async function() {
+    if (!campusDirectActiveId || !window.confirm("Block this member? You will no longer be able to exchange messages in this conversation.")) return;
+    try {
+      await window.CampusShieldBackend.respondCampusDirectMessageRequest(campusDirectActiveId,"block");
+      stopCampusDirectMessageRealtime();
+      await refreshCampusDirectConversations({quiet:true});
+      await openCampusDirectConversation(campusDirectActiveId);
+    } catch (error) { $("campus-dm-thread-status").textContent = error?.message || "Could not block this member."; }
+  });
+
+  $("campus-dm-refresh")?.addEventListener("click", function() {
+    refreshCampusDirectConversations().then(function() {
+      if (campusDirectActiveId) return refreshCampusDirectMessages();
+    }).catch(function(error) { $("campus-dm-inbox-status").textContent = error?.message || "Could not refresh your inbox."; });
+  });
+  $("campus-dm-refresh-reports")?.addEventListener("click", loadCampusDirectMessageReports);
+  $("campus-dm-report-cancel")?.addEventListener("click", function() { $("campus-dm-report-dialog")?.close(); });
+  $("campus-dm-report-form")?.addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const submit = $("campus-dm-report-submit");
+    const status = $("campus-dm-report-status");
+    const messageId = $("campus-dm-report-message-id")?.value;
+    if (!messageId) return;
+    if (submit) submit.disabled = true;
+    if (status) status.textContent = "Submitting report…";
+    try {
+      await window.CampusShieldBackend.reportCampusDirectMessage(
+        messageId,
+        $("campus-dm-report-reason").value,
+        $("campus-dm-report-details").value
+      );
+      $("campus-dm-report-dialog")?.close();
+      toast("Private message reported to authorized campus staff.");
+      if (canModerateCampusChat()) await loadCampusDirectMessageReports();
+    } catch (error) {
+      if (status) status.textContent = error?.message || "Could not submit this report.";
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  });
+
   document.addEventListener('click', e => {
     const button = e.target.closest('[data-page]');
     if (!button) return;
     if (button.tagName === 'A') e.preventDefault();
     navigate(button.dataset.page);
     if (button.dataset.page !== 'campus-chat') stopCampusChatRealtime();
+    if (button.dataset.page !== 'campus-messages') {
+      campusDirectLoadGeneration++;
+      stopCampusDirectMessageRealtime();
+    }
     if (button.dataset.page === 'campus-chat') loadCampusChatPage();
+    if (button.dataset.page === 'campus-messages') loadCampusDirectMessagesPage();
     if (button.dataset.page === 'profile-settings') loadMyProfileSettings();
     if (button.dataset.page === 'campus-contacts') loadCampusContactsPage();
     if (button.dataset.page === 'approvals') loadAccountApprovals();
@@ -7995,6 +8730,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
 
   $('signout-button').addEventListener('click', async () => {
     stopCampusChatRealtime();
+    stopCampusDirectMessageRealtime();
     try {
       const backend = window.CampusShieldBackend;
       if (!backend?.client) {
