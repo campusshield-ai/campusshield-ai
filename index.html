@@ -6440,9 +6440,18 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
       if (pendingRole && ['student', 'teacher'].includes(pendingRole)) {
         const {error:roleError} = await backend.saveRequestedRole(pendingRole);
-        if (roleError) throw roleError;
-
-        sessionStorage.removeItem('campusshield_requested_role');
+        if (roleError) {
+          // Old signup state can survive in this browser after an account is verified.
+          // A verified/admin account cannot change requested_role; this must not block login.
+          if (/only pending accounts can change their requested role/i.test(String(roleError.message || ''))) {
+            console.warn('Clearing stale CampusShield signup role state for an existing account.');
+            sessionStorage.removeItem('campusshield_requested_role');
+          } else {
+            throw roleError;
+          }
+        } else {
+          sessionStorage.removeItem('campusshield_requested_role');
+        }
       }
 
       const user = await backend.getCurrentUser();
