@@ -6,6 +6,7 @@ const backend = await readFile(new URL("../campusshield-backend.js", import.meta
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
 const paystackWebhookFunction = await readFile(new URL("../supabase/functions/paystack-webhook/index.ts", import.meta.url), "utf8");
+const paystackReconcileFunction = await readFile(new URL("../supabase/functions/paystack-reconcile/index.ts", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
@@ -33,6 +34,19 @@ assert.match(planner, /update_my_shieldmind_planner_item/);
 assert.match(planner, /delete_my_shieldmind_planner_item/);
 
 assert.match(paystackWebhookFunction, /select\("id,user_id,plan,billing_period,amount_kobo,currency,status,paid_at"\)/);
+assert.match(paystackReconcileFunction, /auth\.getUser\(token\)/, "payment reconciliation validates the caller's access token");
+assert.match(paystackReconcileFunction, /\.eq\("user_id", user\.id\)/, "payment references can only be reconciled by their owner");
+assert.match(paystackReconcileFunction, /api\.paystack\.co\/transaction\/verify\//, "reconciliation uses Paystack server verification");
+assert.match(paystackReconcileFunction, /Number\(tx\?\.amount\) !== order\.amount_kobo/);
+assert.match(paystackReconcileFunction, /tx\?\.currency !== order\.currency/);
+assert.match(paystackReconcileFunction, /tx\?\.status !== "success"/);
+assert.match(paystackReconcileFunction, /last_payment_reference === reference/, "duplicate verification does not extend a plan");
+assert.match(paystackReconcileFunction, /expires_at: expiry\.toISOString\(\)/, "subscription expires from stable paid timestamp");
+assert.match(html, /functions\.invoke\('paystack-reconcile'/, "checkout return triggers server-side payment reconciliation");
+assert.match(html, /id="billing-reconcile-button"/, "users can retry payment verification safely");
+assert.match(html, /isStrongPasswordBaseline\(password\)/, "signup and password reset use a stronger password baseline");
+assert.match(backend, /Choose a 12\+ character password with uppercase, lowercase, a number, and a symbol/);
+
 assert.doesNotMatch(paystackWebhookFunction, /if\(order\.status==="paid"\)return json\(\{received:true,duplicate:true\}\)/, "paid orders must reach the verified activation-repair path");
 assert.match(paystackWebhookFunction, /\.in\("status",\["pending","failed"\]\)/, "verified success can reconcile an out-of-order failed event");
 assert.match(paystackWebhookFunction, /last_payment_reference===reference/, "replayed success must not extend an already activated plan");
