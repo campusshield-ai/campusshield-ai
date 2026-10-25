@@ -2528,6 +2528,16 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'events') loadCampusEventsPage();
     if (button.dataset.page === 'marketplace') loadCampusMarketplacePage();
     if (button.dataset.page === 'dashboard') loadCampusDashboardInsights();
+    if (button.dataset.academicFocus === 'planner') {
+      const planner = document.querySelector('#page-shieldmind .shieldmind-planner-panel');
+      if (planner) {
+        planner.scrollIntoView({
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          block: 'start'
+        });
+        $('shieldmind-plan-title')?.focus({ preventScroll: true });
+      }
+    }
     if (button.dataset.page === 'platform-admin') loadPlatformAdminPage();
   });
 
