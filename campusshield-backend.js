@@ -26,6 +26,11 @@
  
 async signUp(email, password, displayName, username, universityId, profileData = {}) {
   if (!client) throw new Error("Supabase is not configured.");
+  if (typeof password !== "string" || password.length < 12 ||
+      !/[a-z]/.test(password) || !/[A-Z]/.test(password) ||
+      !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+    throw new Error("Choose a 12+ character password with uppercase, lowercase, a number, and a symbol.");
+  }
   const safeProfileData = profileData && typeof profileData === "object" ? profileData : {};
 
   return client.auth.signUp({
@@ -82,8 +87,10 @@ async resendConfirmation(email) {
 
     async updatePassword(password) {
       if (!client) throw new Error("Supabase is not configured.");
-      if (typeof password !== "string" || password.length < 8) {
-        throw new Error("Choose a password with at least 8 characters.");
+      if (typeof password !== "string" || password.length < 12 ||
+          !/[a-z]/.test(password) || !/[A-Z]/.test(password) ||
+          !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+        throw new Error("Choose a 12+ character password with uppercase, lowercase, a number, and a symbol.");
       }
 
       return client.auth.updateUser({ password });
