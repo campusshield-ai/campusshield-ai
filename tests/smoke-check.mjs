@@ -52,7 +52,7 @@ assert.match(pushDispatchFunction, /campus_push_delivery_events/, "message push 
 assert.match(pushEventDedupMigration, /REVOKE ALL ON TABLE public\.campus_push_delivery_events FROM PUBLIC, anon, authenticated/, "push delivery idempotency records are server-only");
 assert.match(backend, /body: \{ action: "message", message_id: data \}/, "sending a private message triggers a best-effort generic push");
 assert.match(backend, /Notification failures must never undo a successful private message/, "push errors do not fail message sending");
-assert.doesNotMatch(pushDispatchFunction, /body\.title|body\.message/, "callers cannot inject arbitrary push message text");
+assert.doesNotMatch(pushDispatchFunction, /body\.title\b|body\.message\b/, "callers cannot inject arbitrary push message text");
 assert.doesNotThrow(() => new Function(planner), "ShieldMind planner parses");
 assert.match(html, /<script src="\.\/shieldmind-planner\.js"><\/script>/);
 assert.doesNotMatch(html, /campusshield-backend-identity-addon\.js/);
