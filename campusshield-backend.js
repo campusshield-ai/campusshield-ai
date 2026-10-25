@@ -16,8 +16,14 @@
     !cfg.publishableKey.includes("REPLACE_ME")
   );
 
-  // Use the canonical GitHub Pages URL so signup and resend emails always return to the live app.
-  const AUTH_REDIRECT_URL = "https://campusshield-ai.github.io/campusshield-ai/";
+  // Keep auth confirmation on the app origin that initiated registration. The matching
+  // URL must be included in the staging Supabase Auth Redirect URLs allow-list.
+  function getAuthRedirectUrl() {
+    const url = new URL(window.location.href);
+    url.search = "";
+    url.hash = "";
+    return url.href;
+  }
 
   const client = ready
     ? window.supabase.createClient(cfg.url, cfg.publishableKey)
@@ -26,6 +32,42 @@
   window.CampusShieldBackend = {
     isConfigured: ready,
     client,
+
+    async getPushPublicKey() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-subscriptions", { body: { action: "get-key" } });
+      if (error) throw error;
+      if (!data?.publicKey) throw new Error(data?.error || "Background notifications are not configured yet.");
+      return data.publicKey;
+    },
+
+    async savePushSubscription(subscription) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-subscriptions", {
+        body: { action: "subscribe", subscription }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+
+    async removePushSubscription(endpoint) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-subscriptions", {
+        body: { action: "unsubscribe", endpoint }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+
+    async sendPushTest() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("push-dispatch", { body: { action: "test" } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
 
     async getMyStudentRewards() {
       if (!client) throw new Error("Supabase is not configured.");
@@ -61,7 +103,7 @@ async signUp(email, password, displayName, username, universityId, profileData =
         campus_official_email: safeProfileData.campus_official_email || null,
         requested_campus_admin: Boolean(safeProfileData.requested_campus_admin)
       },
-      emailRedirectTo: AUTH_REDIRECT_URL
+      emailRedirectTo: getAuthRedirectUrl()
     }
   });
 },
@@ -79,7 +121,7 @@ async resendConfirmation(email) {
     type: "signup",
     email: email.trim(),
     options: {
-      emailRedirectTo: AUTH_REDIRECT_URL
+      emailRedirectTo: getAuthRedirectUrl()
     }
   });
 },
@@ -1464,6 +1506,16 @@ async getCurrentUser() {
         p_body: String(body || "").trim()
       });
       if (error) throw error;
+      // Best-effort notification only after the message is committed. The server
+      // verifies sender, accepted conversation, and the newly created message ID.
+      try {
+        const { error: pushError } = await client.functions.invoke("push-dispatch", {
+          body: { action: "message", message_id: data }
+        });
+        if (pushError) console.info("Private message sent; background notification was not delivered.");
+      } catch (_) {
+        // Notification failures must never undo a successful private message.
+      }
       return data;
     },
 
