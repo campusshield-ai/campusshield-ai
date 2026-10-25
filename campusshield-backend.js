@@ -1634,6 +1634,56 @@ async getCurrentUser() {
       return data;
     },
 
+    async callPushFunction(functionName, body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const allowed = {
+        subscriptions: "push-subscriptions",
+        delivery: "push-dispatch"
+      };
+      const target = allowed[functionName];
+      if (!target) throw new Error("Unsupported push notification action.");
+      const { data, error } = await client.functions.invoke(target, { body });
+      if (error) {
+        let message = "";
+        try {
+          const response = error.context;
+          if (response && typeof response.clone === "function") {
+            const payload = await response.clone().json();
+            if (typeof payload?.error === "string") message = payload.error;
+          }
+        } catch (_parseError) {}
+        throw new Error(message || error.message || "Push notification request failed.");
+      }
+      if (data?.error) throw new Error(String(data.error));
+      return data || {};
+    },
+
+    async getPushVapidPublicKey() {
+      const result = await this.callPushFunction("subscriptions", { action: "get-key" });
+      if (typeof result.publicKey !== "string" || !result.publicKey) {
+        throw new Error("Background notification keys are not configured yet.");
+      }
+      return result.publicKey;
+    },
+
+    async savePushSubscription(subscription) {
+      if (!subscription || typeof subscription !== "object") {
+        throw new Error("The browser did not create a push subscription.");
+      }
+      return this.callPushFunction("subscriptions", { action: "subscribe", subscription });
+    },
+
+    async removePushSubscription(endpoint) {
+      if (typeof endpoint !== "string" || !endpoint.startsWith("https://")) {
+        throw new Error("Choose a valid device subscription.");
+      }
+      return this.callPushFunction("subscriptions", { action: "unsubscribe", endpoint });
+    },
+
+    async sendPushTest() {
+      return this.callPushFunction("delivery", { action: "test" });
+    },
+
     async deleteIncident(id) {
       if (!client) throw new Error("Supabase is not configured.");
 
