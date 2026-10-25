@@ -824,6 +824,7 @@ td strong{color:#2a464d;font-size:11px}
 <button data-page="events"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>Events</button>
 <button data-page="marketplace"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16l-1.5-5h-13L4 8ZM5 8v13h14V8M9 21v-7h6v7M3 8a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg></span>Marketplace</button>
 <button data-page="classroom" id="classroom-nav">Teacher Classroom</button>
+<button data-page="courses" id="courses-nav">Course &amp; Resource Directory</button>
 <button data-page="opportunities" id="opportunities-nav">Gift & Opportunity Hub</button>
 <button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button>
 <button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; billing</button>
@@ -950,6 +951,12 @@ td strong{color:#2a464d;font-size:11px}
       <h3>Find your learning spaces</h3>
       <p>Open course spaces and learning links shared through authorized campus classrooms.</p>
       <button class="btn secondary" type="button" data-page="classroom">Open course spaces</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">COURSE DIRECTORY</span>
+      <h3>Find course outlines and learning links</h3>
+      <p>Browse campus-approved courses and external learning resources. New suggestions wait for review.</p>
+      <button class="btn secondary" type="button" data-page="courses">Open course directory</button>
     </article>
     <article class="campus-feature">
       <span class="campus-feature-kicker">STUDY GROUPS</span>
@@ -1371,6 +1378,57 @@ td strong{color:#2a464d;font-size:11px}
     <div class="panel-heading"><div><h2 id="classroom-detail-title">Classroom</h2><p id="classroom-detail-subtitle" class="muted"></p></div><button class="btn secondary" type="button" id="close-classroom-detail">Close</button></div>
     <div id="classroom-detail-content"></div>
     <p id="classroom-detail-message" class="message" role="status" aria-live="polite"></p>
+  </section>
+</section>
+
+
+<section class="page" id="page-courses">
+  <div class="heading"><div><h1>Course &amp; Resource Directory</h1><p>Discover course listings and learning links approved for your university.</p></div><div class="heading-actions"><button class="btn secondary" type="button" id="refresh-campus-courses">Refresh directory</button></div></div>
+  <div class="notice-inline"><strong>Trusted learning links.</strong> Course and resource suggestions stay pending until reviewed. Links open external websites; CampusShield does not host or endorse every external resource. Do not submit private student records, passwords, or restricted course files.</div>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Published courses</h2><p>Search your university's approved directory.</p></div></div>
+    <p id="campus-courses-status" class="message" role="status" aria-live="polite">Loading courses…</p>
+    <div id="campus-courses-feed"><div class="community-empty">Loading courses…</div></div>
+  </section>
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Approved learning resources</h2><p>Resources linked to published courses.</p></div></div>
+    <p id="campus-course-resources-status" class="message" role="status" aria-live="polite">Loading resources…</p>
+    <div id="campus-course-resources-feed"><div class="community-empty">Loading resources…</div></div>
+  </section>
+  <section class="panel" id="campus-course-suggest-panel">
+    <div class="panel-heading"><div><h2>Suggest a course</h2><p>Suggestions stay pending until reviewed.</p></div></div>
+    <form id="campus-course-form">
+      <div class="grid two">
+        <div class="field"><label for="campus-course-code">Course code *</label><input id="campus-course-code" required maxlength="32" minlength="2" placeholder="e.g. CSC 301"></div>
+        <div class="field"><label for="campus-course-title">Course title *</label><input id="campus-course-title" required maxlength="160" minlength="3" placeholder="e.g. Database Systems"></div>
+        <div class="field"><label for="campus-course-faculty">Faculty (optional)</label><input id="campus-course-faculty" maxlength="120"></div>
+        <div class="field"><label for="campus-course-department">Department (optional)</label><input id="campus-course-department" maxlength="120"></div>
+        <div class="field"><label for="campus-course-level">Study level</label><select id="campus-course-level"><option value="all">All levels</option><option value="100">100 level</option><option value="200">200 level</option><option value="300">300 level</option><option value="400">400 level</option><option value="500">500 level</option><option value="600">600 level</option><option value="postgraduate">Postgraduate</option></select></div>
+      </div>
+      <div class="field"><label for="campus-course-summary">Brief description (optional)</label><textarea id="campus-course-summary" maxlength="2000" placeholder="Short course overview or topics covered"></textarea></div>
+      <div class="actions"><button class="btn" type="submit">Submit course for review</button></div>
+      <p id="campus-course-form-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="panel" id="campus-resource-suggest-panel">
+    <div class="panel-heading"><div><h2>Suggest a learning resource</h2><p>Use an official course page, public learning link, or another lawful external resource.</p></div></div>
+    <form id="campus-resource-form">
+      <div class="grid two">
+        <div class="field"><label for="campus-resource-course">Published course *</label><select id="campus-resource-course" required><option value="">Choose a published course</option></select></div>
+        <div class="field"><label for="campus-resource-type">Resource type *</label><select id="campus-resource-type" required><option value="lecture_notes">Lecture notes</option><option value="past_question">Past questions</option><option value="reading">Reading / textbook page</option><option value="video">Video / lecture</option><option value="slides">Slides</option><option value="website">Website</option><option value="other">Other</option></select></div>
+        <div class="field"><label for="campus-resource-title">Resource title *</label><input id="campus-resource-title" required minlength="3" maxlength="160"></div>
+        <div class="field"><label for="campus-resource-label">Source / publisher *</label><input id="campus-resource-label" required minlength="2" maxlength="120" placeholder="e.g. Official department site"></div>
+        <div class="field" style="grid-column:1/-1"><label for="campus-resource-url">External URL *</label><input id="campus-resource-url" required type="url" maxlength="2048" placeholder="https://"></div>
+      </div>
+      <div class="field"><label for="campus-resource-description">Description (optional)</label><textarea id="campus-resource-description" maxlength="2000"></textarea></div>
+      <div class="actions"><button class="btn" type="submit">Submit resource for review</button></div>
+      <p id="campus-resource-form-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="panel" id="campus-course-review-panel" hidden>
+    <div class="panel-heading"><div><h2>Course &amp; resource review</h2><p>Pending suggestions for your current university.</p></div><button class="btn secondary" type="button" id="refresh-campus-course-reviews">Refresh queue</button></div>
+    <p id="campus-course-review-status" class="message" role="status" aria-live="polite"></p>
+    <div id="campus-course-review-feed"></div>
   </section>
 </section>
 
@@ -2299,6 +2357,7 @@ td strong{color:#2a464d;font-size:11px}
       events:'Campus events',
       marketplace:'Campus marketplace',
       classroom:'Teacher Classroom',
+      courses:'Course & Resource Directory',
       opportunities:'Gift & Opportunity Hub',
       shieldmind:'ShieldMind AI',
       billing:'Subscriptions & billing',
@@ -2569,6 +2628,7 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'approvals') loadAccountApprovals();
     if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
     if (button.dataset.page === 'classroom') loadCampusClassroomsPage();
+    if (button.dataset.page === 'courses') loadCampusCoursesPage();
     if (button.dataset.page === 'opportunities') loadCampusOpportunitiesPage();
     if (button.dataset.page === 'shieldmind') { resetShieldMindForSession(); refreshShieldMindPlan(); window.CampusShieldPlanner?.load(); }
     if (button.dataset.page === 'billing') { refreshShieldMindPlan(); loadInstitutionalBillingRequests(); }
@@ -4216,7 +4276,155 @@ td strong{color:#2a464d;font-size:11px}
     $('campusOpportunityForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function renderOpportunityCard(item, ownerActions = false, reviewActions = false) {
+
+  async function loadCampusCoursesPage() {
+    const status = $('campus-courses-status');
+    const resourcesStatus = $('campus-course-resources-status');
+    const coursesFeed = $('campus-courses-feed');
+    const resourcesFeed = $('campus-course-resources-feed');
+    const eligible = hasVerifiedCampusStaffMembership();
+    const staff = eligible && ['teacher','security','admin'].includes(currentProfile?.role);
+    $('campus-course-suggest-panel').hidden = !eligible;
+    $('campus-resource-suggest-panel').hidden = !eligible;
+    $('campus-course-review-panel').hidden = !staff;
+    if (!eligible) {
+      status.textContent = 'Choose your university and complete campus verification to use the directory.';
+      coursesFeed.innerHTML = '<div class="community-empty">The course directory is available after campus verification.</div>';
+      resourcesStatus.textContent = 'Campus verification is required.';
+      resourcesFeed.innerHTML = '<div class="community-empty">No resources are shown before campus verification.</div>';
+      return;
+    }
+    status.textContent = 'Loading published courses…';
+    resourcesStatus.textContent = 'Loading approved resources…';
+    try {
+      const [courses, resources] = await Promise.all([
+        window.CampusShieldBackend.listCampusCourses(),
+        window.CampusShieldBackend.listCampusCourseResources()
+      ]);
+      const courseById = new Map(courses.map(course => [course.id, course]));
+      const resourceSelect = $('campus-resource-course');
+      const previousCourseId = resourceSelect.value;
+      resourceSelect.innerHTML = '<option value="">Choose a published course</option>' + courses.map(course =>
+        '<option value="' + escapeHubHtml(course.id) + '">' + escapeHubHtml(course.course_code + ' · ' + course.title) + '</option>'
+      ).join('');
+      if (courses.some(course => course.id === previousCourseId)) resourceSelect.value = previousCourseId;
+      status.textContent = courses.length ? courses.length + ' published course(s).' : 'No approved courses yet.';
+      coursesFeed.innerHTML = courses.length ? courses.map(course =>
+        '<article class="community-moderation-item"><h3>' + escapeHubHtml(course.course_code + ' · ' + course.title) + '</h3>' +
+        '<p class="muted">' + escapeHubHtml([course.faculty, course.department, course.level === 'all' ? '' : course.level + ' level'].filter(Boolean).join(' · ') || 'Course listing') + '</p>' +
+        (course.summary ? '<p>' + escapeHubHtml(course.summary) + '</p>' : '') + '</article>'
+      ).join('') : '<div class="community-empty">No approved courses yet. Suggest a course above; it will appear after campus review.</div>';
+      resourcesStatus.textContent = resources.length ? resources.length + ' approved learning resource(s).' : 'No approved resources yet.';
+      resourcesFeed.innerHTML = resources.length ? resources.map(resource => {
+        const course = courseById.get(resource.course_id);
+        const url = safeHttpUrl(resource.source_url);
+        return '<article class="community-moderation-item"><h3>' + escapeHubHtml(resource.title) + '</h3>' +
+          '<p class="muted">' + escapeHubHtml(course ? course.course_code + ' · ' + course.title : 'Campus resource') + ' · ' +
+          escapeHubHtml(resource.resource_type.replaceAll('_',' ')) + ' · ' + escapeHubHtml(resource.source_label) + '</p>' +
+          (resource.description ? '<p>' + escapeHubHtml(resource.description) + '</p>' : '') +
+          (url ? '<p><a href="' + escapeHubHtml(url) + '" target="_blank" rel="noopener noreferrer">Open external resource</a></p>' : '<p class="muted">Resource URL unavailable.</p>') +
+          '</article>';
+      }).join('') : '<div class="community-empty">No approved resources yet. Submit a link after its course has been published.</div>';
+      if (staff) {
+        const queue = await window.CampusShieldBackend.listCampusCourseReviews();
+        const entries = [
+          ...(queue.courses || []).map(item => ({ kind:'course', item })),
+          ...(queue.resources || []).map(item => ({ kind:'resource', item }))
+        ];
+        $('campus-course-review-status').textContent = entries.length ? entries.length + ' item(s) await review.' : 'No pending courses or resources.';
+        $('campus-course-review-feed').innerHTML = entries.length ? entries.map(({kind,item}) =>
+          '<article class="community-moderation-item"><h3>' + escapeHubHtml(item.title || item.course_code) + '</h3>' +
+          '<p class="muted">' + escapeHubHtml(kind === 'course' ? 'Course · ' + item.course_code : 'Resource · ' + item.source_label) + '</p>' +
+          (item.description || item.summary ? '<p>' + escapeHubHtml(item.description || item.summary) + '</p>' : '') +
+          '<div class="actions"><button class="btn" type="button" data-campus-directory-review="' + kind + '" data-decision="publish" data-item-id="' + escapeHubHtml(item.id) + '">Approve &amp; publish</button>' +
+          '<button class="btn danger" type="button" data-campus-directory-review="' + kind + '" data-decision="reject" data-item-id="' + escapeHubHtml(item.id) + '">Reject</button></div></article>'
+        ).join('') : '<div class="community-empty">No items are waiting for review.</div>';
+      }
+    } catch (error) {
+      status.textContent = error.message || 'Could not load courses.';
+      resourcesStatus.textContent = 'Could not load resources.';
+      coursesFeed.innerHTML = '<div class="community-empty">The course directory could not be loaded.</div>';
+      resourcesFeed.innerHTML = '<div class="community-empty">The resource directory could not be loaded.</div>';
+    }
+  }
+
+  $('campus-course-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const message = $('campus-course-form-message');
+    message.textContent = 'Submitting course suggestion…';
+    try {
+      await window.CampusShieldBackend.suggestCampusCourse({
+        courseCode: $('campus-course-code').value,
+        title: $('campus-course-title').value,
+        faculty: $('campus-course-faculty').value,
+        department: $('campus-course-department').value,
+        level: $('campus-course-level').value,
+        summary: $('campus-course-summary').value
+      });
+      this.reset();
+      message.textContent = 'Course suggestion submitted for campus review.';
+      loadCampusCoursesPage();
+    } catch (error) {
+      message.textContent = error.message || 'Could not submit course suggestion.';
+    }
+  });
+
+  $('campus-resource-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const message = $('campus-resource-form-message');
+    message.textContent = 'Submitting resource suggestion…';
+    try {
+      await window.CampusShieldBackend.suggestCampusCourseResource({
+        courseId: $('campus-resource-course').value,
+        title: $('campus-resource-title').value,
+        description: $('campus-resource-description').value,
+        resourceType: $('campus-resource-type').value,
+        sourceUrl: $('campus-resource-url').value,
+        sourceLabel: $('campus-resource-label').value
+      });
+      this.reset();
+      message.textContent = 'Resource suggestion submitted for campus review.';
+      loadCampusCoursesPage();
+    } catch (error) {
+      message.textContent = error.message || 'Could not submit resource suggestion.';
+    }
+  });
+
+  $('refresh-campus-courses').addEventListener('click', loadCampusCoursesPage);
+  $('refresh-campus-course-reviews').addEventListener('click', loadCampusCoursesPage);
+
+  document.addEventListener('click', async function(event) {
+    const bookmark = event.target.closest('[data-opportunity-bookmark]');
+    if (bookmark) {
+      bookmark.disabled = true;
+      try {
+        if (bookmark.dataset.opportunityBookmark === 'save') {
+          await window.CampusShieldBackend.saveCampusOpportunity(bookmark.dataset.opportunityId);
+        } else {
+          await window.CampusShieldBackend.unsaveCampusOpportunity(bookmark.dataset.opportunityId);
+        }
+        await loadCampusOpportunitiesPage();
+      } catch (error) {
+        toast(error.message || 'Could not update saved opportunities.');
+        bookmark.disabled = false;
+      }
+      return;
+    }
+    const review = event.target.closest('[data-campus-directory-review]');
+    if (review) {
+      review.disabled = true;
+      try {
+        const method = review.dataset.campusDirectoryReview === 'course' ? 'reviewCampusCourse' : 'reviewCampusCourseResource';
+        await window.CampusShieldBackend[method](review.dataset.itemId, review.dataset.decision);
+        await loadCampusCoursesPage();
+      } catch (error) {
+        toast(error.message || 'Could not review this item.');
+        review.disabled = false;
+      }
+    }
+  });
+
+  function renderOpportunityCard(item, ownerActions = false, reviewActions = false, isSaved = false) {
     const sourceUrl = safeHttpUrl(item.source_url);
     const contactUrl = safeHttpUrl(item.contact_url);
     const status = String(item.status || 'published');
@@ -4230,6 +4438,7 @@ td strong{color:#2a464d;font-size:11px}
         <p>${sourceUrl ? `<a href="${escapeHubHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Check source</a>` : '<span class="muted">Source link unavailable</span>'}
         ${contactUrl ? ` · <a href="${escapeHubHtml(contactUrl)}" target="_blank" rel="noopener noreferrer">Application / contact</a>` : ''}</p>
         <p class="muted">${item.is_official ? 'Officially verified publisher' : 'Community-submitted · verify the source independently'}</p>
+        ${status === 'published' && !ownerActions && !reviewActions ? `<div class="actions"><button type="button" class="btn secondary" data-opportunity-bookmark="${isSaved ? 'remove' : 'save'}" data-opportunity-id="${escapeHubHtml(item.id)}">${isSaved ? 'Remove saved opportunity' : 'Save opportunity'}</button></div>` : ''}
         ${ownerActions && ['draft','rejected'].includes(status) ? `
           <div class="actions"><button type="button" class="btn secondary" data-opportunity-edit="${escapeHubHtml(item.id)}">Edit</button><button type="button" class="btn" data-opportunity-submit="${escapeHubHtml(item.id)}" ${item.deadline && new Date(item.deadline).getTime() <= Date.now() ? 'disabled' : ''}>Submit for review</button></div>
         ` : ''}
@@ -4258,14 +4467,16 @@ td strong{color:#2a464d;font-size:11px}
     status.textContent = 'Loading published opportunities…';
     myStatus.textContent = 'Loading your submissions…';
     try {
-      const [allRows, myRows] = await Promise.all([
+      const [allRows, myRows, bookmarks] = await Promise.all([
         window.CampusShieldBackend.listCampusOpportunities(),
-        window.CampusShieldBackend.listMyCampusOpportunities()
+        window.CampusShieldBackend.listMyCampusOpportunities(),
+        window.CampusShieldBackend.listOpportunityBookmarks()
       ]);
+      const savedIds = new Set(bookmarks.map(item => item.opportunity_id));
       const published = allRows.filter(item => item.status === 'published' && (!item.deadline || new Date(item.deadline).getTime() > Date.now()));
       const pending = allRows.filter(item => item.status === 'pending');
       status.textContent = published.length ? published.length + ' published opportunity(ies).' : 'No published opportunities yet.';
-      feed.innerHTML = published.length ? published.map(item => renderOpportunityCard(item)).join('') : '<div class="community-empty">No approved opportunities yet. Check back after campus review.</div>';
+      feed.innerHTML = published.length ? published.map(item => renderOpportunityCard(item, false, false, savedIds.has(item.id))).join('') : '<div class="community-empty">No approved opportunities yet. Check back after campus review.</div>';
       myStatus.textContent = myRows.length ? myRows.length + ' submission(s) created by your account.' : 'You have not submitted an opportunity yet.';
       myFeed.innerHTML = myRows.length ? myRows.map(item => renderOpportunityCard(item, true)).join('') : '<div class="community-empty">Your drafts and submissions will appear here.</div>';
       if (staffAccess) {
@@ -4275,7 +4486,7 @@ td strong{color:#2a464d;font-size:11px}
     } catch (err) {
       status.textContent = err.message || 'Could not load opportunities.';
       myStatus.textContent = 'Could not load your submissions.';
-      feed.innerHTML = '<div class="community-empty">Opportunity data could not be loaded. Confirm the staging migration has been reviewed and applied.</div>';
+      feed.innerHTML = '<div class="community-empty">Opportunity data could not be loaded. Confirm the campus-life database migration has been applied.</div>';
       myFeed.innerHTML = '<div class="community-empty">Your submissions could not be loaded.</div>';
     }
   }

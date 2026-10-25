@@ -1078,6 +1078,135 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    async listOpportunityBookmarks() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.from("campus_opportunity_bookmarks")
+        .select("opportunity_id,university_id,created_at")
+        .order("created_at", { ascending: false }).limit(300);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async saveCampusOpportunity(opportunityId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!opportunityId) throw new Error("Choose an opportunity to save.");
+      const user = await this.getCurrentUser();
+      const campus = await this.getMyCampusContext();
+      if (!user || !campus?.university_id) throw new Error("Sign in and choose your university first.");
+      const { error } = await client.from("campus_opportunity_bookmarks").upsert({
+        opportunity_id: opportunityId, user_id: user.id, university_id: campus.university_id
+      }, { onConflict: "opportunity_id,user_id", ignoreDuplicates: true });
+      if (error) throw error;
+    },
+
+    async unsaveCampusOpportunity(opportunityId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!opportunityId) throw new Error("Choose an opportunity to remove.");
+      const { error } = await client.from("campus_opportunity_bookmarks")
+        .delete().eq("opportunity_id", opportunityId);
+      if (error) throw error;
+    },
+
+    async listCampusCourses() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.from("campus_courses")
+        .select("id,university_id,course_code,title,faculty,department,level,summary,status,created_at")
+        .eq("status", "published").order("course_code", { ascending: true }).limit(200);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async suggestCampusCourse(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      const campus = await this.getMyCampusContext();
+      if (!user || !campus?.university_id) throw new Error("Sign in and choose your university first.");
+      const courseCode = String(input?.courseCode || "").trim().toUpperCase();
+      const title = String(input?.title || "").trim();
+      if (courseCode.length < 2 || courseCode.length > 32 || title.length < 3 || title.length > 160) {
+        throw new Error("Enter a valid course code and course title.");
+      }
+      const { data, error } = await client.from("campus_courses").insert({
+        university_id: campus.university_id, created_by: user.id,
+        course_code: courseCode, title,
+        faculty: String(input?.faculty || "").trim() || null,
+        department: String(input?.department || "").trim() || null,
+        level: input?.level || "all",
+        summary: String(input?.summary || "").trim(),
+        status: "pending"
+      }).select("id").single();
+      if (error) throw error;
+      return data.id;
+    },
+
+    async listCampusCourseResources() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.from("campus_course_resources")
+        .select("id,university_id,course_id,title,description,resource_type,source_url,source_label,status,created_at")
+        .eq("status", "published").order("created_at", { ascending: false }).limit(200);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async suggestCampusCourseResource(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      const campus = await this.getMyCampusContext();
+      if (!user || !campus?.university_id) throw new Error("Sign in and choose your university first.");
+      const title = String(input?.title || "").trim();
+      const sourceUrl = String(input?.sourceUrl || "").trim();
+      let url;
+      try { url = new URL(sourceUrl); } catch { throw new Error("Enter a valid external resource URL."); }
+      if (!["http:", "https:"].includes(url.protocol) || title.length < 3 || title.length > 160) {
+        throw new Error("Use a valid HTTP(S) link and a resource title between 3 and 160 characters.");
+      }
+      const courseId = String(input?.courseId || "").trim();
+      if (!courseId) throw new Error("Choose a published course for this resource.");
+      const { data, error } = await client.from("campus_course_resources").insert({
+        university_id: campus.university_id, course_id: courseId,
+        title, description: String(input?.description || "").trim(),
+        resource_type: input?.resourceType || "other", source_url: url.href,
+        source_label: String(input?.sourceLabel || "").trim() || "External resource",
+        submitted_by: user.id, status: "pending"
+      }).select("id").single();
+      if (error) throw error;
+      return data.id;
+    },
+
+
+    async listCampusCourseReviews() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const [courses, resources] = await Promise.all([
+        client.from("campus_courses").select("id,course_code,title,faculty,department,level,summary,status,created_at").eq("status", "pending").order("created_at", { ascending: true }).limit(100),
+        client.from("campus_course_resources").select("id,course_id,title,description,resource_type,source_url,source_label,status,created_at").eq("status", "pending").order("created_at", { ascending: true }).limit(100)
+      ]);
+      if (courses.error) throw courses.error;
+      if (resources.error) throw resources.error;
+      return { courses: courses.data || [], resources: resources.data || [] };
+    },
+
+    async reviewCampusCourse(courseId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!courseId || !["publish", "reject"].includes(decision)) throw new Error("Choose a course and a valid review decision.");
+      const user = await this.getCurrentUser();
+      const { error } = await client.from("campus_courses").update({
+        status: decision === "publish" ? "published" : "rejected",
+        reviewed_by: user?.id || null, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString()
+      }).eq("id", courseId).eq("status", "pending");
+      if (error) throw error;
+    },
+
+    async reviewCampusCourseResource(resourceId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!resourceId || !["publish", "reject"].includes(decision)) throw new Error("Choose a resource and a valid review decision.");
+      const user = await this.getCurrentUser();
+      const { error } = await client.from("campus_course_resources").update({
+        status: decision === "publish" ? "published" : "rejected",
+        reviewed_by: user?.id || null, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString()
+      }).eq("id", resourceId).eq("status", "pending");
+      if (error) throw error;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
