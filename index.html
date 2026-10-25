@@ -6484,13 +6484,23 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
   }
 
+  function openWhatsAppShareUrl(url) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.hidden = true;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
   $('campus-invitation-whatsapp')?.addEventListener('click', function() {
     const link = String($('campus-invitation-link')?.value || '').trim();
     if (!link) return;
     const message = 'Join me on CampusShield AI for campus communities, study tools, events and trusted campus updates: ' + link;
     const whatsappUrl = 'https://wa.me/?text=' + encodeURIComponent(message);
-    const popup = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-    if (!popup) window.location.href = whatsappUrl;
+    openWhatsAppShareUrl(whatsappUrl);
     $('campus-invitation-status').textContent = 'WhatsApp opened. Sign-ups are counted when a new account is created through your invitation link.';
   });
 
@@ -7653,8 +7663,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         if (/^[A-Z0-9]{10}$/.test(inviteCode)) shareUrl.searchParams.set('invite', inviteCode);
         const message = 'A CampusPulse post is waiting for you on CampusShield AI. Sign in and verify your university to view campus-only content: ' + shareUrl.href;
         const whatsappUrl = 'https://wa.me/?text=' + encodeURIComponent(message);
-        const popup = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-        if (!popup) window.location.href = whatsappUrl;
+        openWhatsAppShareUrl(whatsappUrl);
         return;
       }
       if (reactionButton) {
