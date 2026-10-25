@@ -15,6 +15,7 @@ const staffProfileMigration = await readFile(new URL("../supabase/migrations/202
 const campusLifeParityMigration = await readFile(new URL("../supabase/migrations/20261025113000_production_campus_life_parity.sql", import.meta.url), "utf8");
 const institutionalBillingMigration = await readFile(new URL("../supabase/migrations/20261025153000_restrict_institutional_billing_to_admins.sql", import.meta.url), "utf8");
 const staffIdentityParityMigration = await readFile(new URL("../supabase/migrations/20261025160000_restore_staff_identity_audit_and_platform_rpcs.sql", import.meta.url), "utf8");
+const shieldmindGeneralAccessMigration = await readFile(new URL("../supabase/migrations/20261025210000_allow_general_shieldmind_usage.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -26,6 +27,11 @@ for (const [index, source] of inlineScripts.entries()) {
 }
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
 assert.doesNotThrow(() => new Function(planner), "ShieldMind planner parses");
+assert.match(shieldmindGeneralAccessMigration, /General academic ShieldMind access is available|Allow signed-in accounts/i, "migration describes general account access");
+assert.match(shieldmindGeneralAccessMigration, /FUNCTION public\.consume_shieldmind_quota\(\)[\s\S]*?SECURITY INVOKER/, "public quota function is an invoker wrapper");
+assert.match(shieldmindGeneralAccessMigration, /FUNCTION public\.consume_shieldmind_image_upload\(\)[\s\S]*?SECURITY INVOKER/, "public image quota function is an invoker wrapper");
+assert.doesNotMatch(shieldmindGeneralAccessMigration, /perform private\.shieldmind_require_eligible_caller\(\)/i, "general quota does not require campus verification");
+assert.match(shieldmindGeneralAccessMigration, /WHERE s\.user_id=v_user_id[\s\S]*?AND s\.status='active'[\s\S]*?AND s\.expires_at>v_now/, "image upload allowance remains tied to a live subscription");
 assert.match(html, /<script src="\.\/shieldmind-planner\.js"><\/script>/);
 assert.doesNotMatch(html, /campusshield-backend-identity-addon\.js/);
 assert.match(planner, /create_my_shieldmind_planner_item/);
