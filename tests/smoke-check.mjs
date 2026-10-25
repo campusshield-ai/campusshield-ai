@@ -313,6 +313,12 @@ for (const providerQuotaCode of [
 ]) assert.ok(shieldmindFunction.includes(`"${providerQuotaCode}"`), `ShieldMind classifies ${providerQuotaCode}`);
 assert.match(shieldmindFunction, /"Retry-After": retryAfter/);
 assert.match(shieldmindFunction, /your ShieldMind account limit has not been reached/i);
+assert.match(shieldmindFunction, /ShieldMind usage quota check failed/, "usage-control 503s are attributable to the database quota check");
+assert.match(shieldmindFunction, /ShieldMind image quota check failed/, "image quota 503s are attributable without logging user content");
+assert.match(shieldmindFunction, /ShieldMind provider billing or usage limit reached/, "provider billing 503s are distinguishable in logs");
+assert.match(shieldmindFunction, /ShieldMind provider returned a non-success response/, "other provider HTTP failures have status-only diagnostics");
+assert.match(shieldmindFunction, /errorName: _error instanceof Error/, "unexpected exceptions log only the error class");
+assert.doesNotMatch(shieldmindFunction, /console\.(?:error|warn|log)\([^\n]*(?:question|messages|providerKey|Authorization|data_base64)/i, "diagnostic logs must not include prompts, secrets, or uploaded images");
 console.log("PASS ShieldMind surfaces safe provider rate-limit and billing errors");
 
 
