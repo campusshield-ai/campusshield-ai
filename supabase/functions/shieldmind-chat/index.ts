@@ -7,10 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function json(body: Record<string, unknown>, status = 200) {
+function json(body: Record<string, unknown>, status = 200, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+    headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...extraHeaders },
   });
 }
 
@@ -187,7 +187,23 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: 700 }),
       });
     } finally { clearTimeout(timeout); }
-    if (providerResponse.status === 429) return json({ error: "ShieldMind is busy. Please wait a little before asking again." }, 429);
+    if (providerResponse.status === 429) {
+      // Inspect only the provider's structured error code; never expose its raw body or headers.
+      const providerFailure = await providerResponse.json().catch(() => null);
+      const providerCode = String(providerFailure?.error?.code || providerFailure?.error?.type || "").toLowerCase();
+      if (providerCode === "insufficient_quota" || providerCode === "billing_hard_limit_reached") {
+        return json({
+          error: "ShieldMind's AI provider has reached its API usage or billing limit. The platform administrator must check the provider account; your ShieldMind account limit has not been reached.",
+        }, 503);
+      }
+      const upstreamRetryAfter = providerResponse.headers.get("retry-after");
+      const retryAfter = upstreamRetryAfter && /^\d+$/.test(upstreamRetryAfter) ? upstreamRetryAfter : "30";
+      return json({
+        error: providerCode === "rate_limit_exceeded"
+          ? "ShieldMind's AI provider is temporarily rate-limiting requests. Please wait 30 seconds and try again."
+          : "ShieldMind's AI provider temporarily rejected this request. Please wait 30 seconds and try again.",
+      }, 429, { "Retry-After": retryAfter });
+    }
     if (!providerResponse.ok) return json({ error: "ShieldMind could not answer right now. Please try again later." }, 502);
     const completion = await providerResponse.json().catch(() => null);
     const answer = completion?.choices?.[0]?.message?.content;

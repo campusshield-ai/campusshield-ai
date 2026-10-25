@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
+const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
@@ -215,3 +216,13 @@ assert.match(html, /data-page="opportunities"/);
 assert.match(html, /data-page="helpdesk"/);
 assert.match(html, /data-page="community"/);
 assert.match(html, /data-page="marketplace"/);
+
+// ShieldMind: provider 429/billing errors should be actionable rather than hidden
+// behind the generic chat failure message.
+assert.match(backend, /responseMessage = ""/);
+assert.match(backend, /response\.clone\(\)\.json\(\)/);
+assert.match(html, /const friendlyMessage=detail/);
+assert.match(shieldmindFunction, /providerCode === "insufficient_quota"/);
+assert.match(shieldmindFunction, /"Retry-After": retryAfter/);
+assert.match(shieldmindFunction, /your ShieldMind account limit has not been reached/i);
+console.log("PASS ShieldMind surfaces safe provider rate-limit and billing errors");
