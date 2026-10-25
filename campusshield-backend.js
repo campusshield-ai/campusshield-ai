@@ -1302,6 +1302,110 @@ async getCurrentUser() {
       return data === true;
     },
 
+    async searchCampusMembers(query) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const clean = String(query || "").trim().toLowerCase();
+      if (clean.length < 3) throw new Error("Enter at least 3 characters of a campus username.");
+      const { data, error } = await client.rpc("search_campus_members", { p_query: clean });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async listMyCampusDirectConversations() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_my_campus_direct_conversations");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async listCampusDirectMessages(conversationId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!conversationId) throw new Error("Choose a conversation.");
+      const { data, error } = await client.rpc("list_campus_direct_messages", {
+        p_conversation_id: conversationId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async createCampusDirectMessageRequest(username, body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_campus_direct_message_request", {
+        p_recipient_username: String(username || "").trim().toLowerCase(),
+        p_body: String(body || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async sendCampusDirectMessage(conversationId, body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("send_campus_direct_message", {
+        p_conversation_id: conversationId,
+        p_body: String(body || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async respondCampusDirectMessageRequest(conversationId, action) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("respond_campus_direct_message_request", {
+        p_conversation_id: conversationId,
+        p_action: action
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
+    subscribeCampusDirectMessages(conversationId, onChange, onStatus) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!conversationId || typeof onChange !== "function") {
+        throw new Error("Private-message subscription requires a conversation and handler.");
+      }
+      return client.channel("campus-dm-" + conversationId + "-" + Date.now())
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "campus_direct_messages",
+          filter: "conversation_id=eq." + conversationId
+        }, payload => onChange(payload.new || {}, payload.eventType))
+        .subscribe(status => { if (typeof onStatus === "function") onStatus(status); });
+    },
+
+    async unsubscribeCampusDirectMessages(subscription) {
+      if (!client || !subscription) return;
+      await client.removeChannel(subscription);
+    },
+
+    async reportCampusDirectMessage(messageId, reason, details) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("report_campus_direct_message", {
+        p_message_id: messageId,
+        p_reason: reason,
+        p_details: details || null
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusDirectMessageReports() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_direct_message_reports");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async resolveCampusDirectMessageReport(reportId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("resolve_campus_direct_message_report", {
+        p_report_id: reportId,
+        p_decision: decision
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
