@@ -57,6 +57,10 @@ assert.match(html, /functions\.invoke\('paystack-reconcile'/, "checkout return t
 assert.match(html, /id="billing-reconcile-button"/, "users can retry payment verification safely");
 assert.match(html, /isStrongPasswordBaseline\(password\)/, "signup and password reset use a stronger password baseline");
 assert.match(backend, /Choose a 12\+ character password with uppercase, lowercase, a number, and a symbol/);
+assert.match(backend, /function getAuthRedirectUrl\(\)/, "auth redirects are computed from the current app URL");
+assert.equal((backend.match(/emailRedirectTo: getAuthRedirectUrl\(\)/g) || []).length, 2, "signup and confirmation resend use the current app URL");
+assert.match(backend, /url\.protocol !== "https:" && !isLocalHttp/, "auth redirects reject insecure non-local origins");
+assert.doesNotMatch(backend, /AUTH_REDIRECT_URL/, "no hard-coded production confirmation redirect remains");
 
 assert.doesNotMatch(paystackWebhookFunction, /if\(order\.status==="paid"\)return json\(\{received:true,duplicate:true\}\)/, "paid orders must reach the verified activation-repair path");
 assert.match(paystackWebhookFunction, /\.in\("status",\["pending","failed"\]\)/, "verified success can reconcile an out-of-order failed event");
