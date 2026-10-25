@@ -3340,7 +3340,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     if (name) name.textContent = profile.display_name || profile.full_name || profile.name || 'Name not provided';
     if (role) role.textContent = String(profile.role || 'member').replace(/_/g, ' ').replace(/\b\w/g, function(char) { return char.toUpperCase(); });
     if (verification) {
-      const verificationStatus = String(profile.verification_status || 'unknown').toLowerCase().replace(/_/g, '-');
+      const verificationStatus = String(profile.verification_status || 'unknown').toLowerCase().replace(/[^a-z0-9-]+/g, '-');
       verification.textContent = verificationStatus.replace(/-/g, ' ');
       verification.className = 'profile-status-pill profile-status-' + verificationStatus;
     }

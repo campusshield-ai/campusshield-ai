@@ -139,6 +139,7 @@ assert.match(html, /id="profile-settings-alerts"/);
 assert.match(html, /id="profile-settings-mark-all-read"/);
 assert.match(html, /function loadProfileSettingsAlerts\(user, backend\)/);
 assert.match(html, /currentProfile\?\.role === 'admin' && canModerateCommunity\(\)/);
+assert.match(html, /replace\(\/\[\^a-z0-9-\]\+\/g, '-'\)/);
 assert.match(html, /listCampusHelpdeskTicketUpdates\(mine\.map/);
 assert.match(html, /campusshield\.profile-alerts\.v1\./);
 assert.match(html, /auth\.updateUser\(\{ data: metadata \}\)/);
