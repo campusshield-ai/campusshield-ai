@@ -32,8 +32,9 @@ Deno.serve(async (req: Request) => {
   const local = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
   const allowed = !origin || (configuredOrigin ? origin === configuredOrigin : origin === DEFAULT_ORIGIN || local);
   if (origin && !allowed) return json({ error: "App origin is not allowed." }, 403);
+  const respond = (body: Record<string, unknown>, status = 200) => json(body, status, origin || DEFAULT_ORIGIN);
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin || DEFAULT_ORIGIN) });
-  if (req.method !== "POST") return json({ error: "Method not allowed." }, 405, origin || DEFAULT_ORIGIN);
+  if (req.method !== "POST") return respond({ error: "Method not allowed." }, 405);
   const expected = Deno.env.get("PUSH_DISPATCH_SECRET") || "";
   const supplied = req.headers.get("x-campus-push-secret") || "";
   const internalAuthorized = Boolean(expected && supplied && equalsConstantTime(expected, supplied));
@@ -44,7 +45,7 @@ Deno.serve(async (req: Request) => {
   const privateKey = Deno.env.get("VAPID_PRIVATE_KEY") || "";
   const subject = Deno.env.get("VAPID_SUBJECT") || "";
   if (!url || !service || !publicKey || !privateKey || !subject) {
-    return json({ error: "Push delivery is not configured." }, 503);
+    return respond({ error: "Push delivery is not configured." }, 503);
   }
 
   try {
@@ -58,14 +59,14 @@ Deno.serve(async (req: Request) => {
     if (!internalAuthorized) {
       const token = (req.headers.get("authorization") || "").match(/^Bearer\s+(.+)$/i)?.[1];
       if (!["test", "message"].includes(String(body?.action || "")) || !token || !anon) {
-        return json({ error: "Not authorized." }, 401);
+        return respond({ error: "Not authorized." }, 401);
       }
       const authClient = createClient(url, anon, {
         global: { headers: { Authorization: `Bearer ${token}` } },
         auth: { persistSession: false, autoRefreshToken: false },
       });
       const { data: { user }, error: authError } = await authClient.auth.getUser(token);
-      if (authError || !user?.id) return json({ error: "Your session could not be verified." }, 401);
+      if (authError || !user?.id) return respond({ error: "Your session could not be verified." }, 401);
       if (body.action === "test") {
         userId = user.id;
         kind = "test";
@@ -73,14 +74,14 @@ Deno.serve(async (req: Request) => {
       } else if (body.action === "message") {
         const messageId = String(body?.message_id || "");
         if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(messageId)) {
-          return json({ error: "A valid recent message is required." }, 400);
+          return respond({ error: "A valid recent message is required." }, 400);
         }
         const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
         const { data: sentMessage, error: messageError } = await db.from("campus_direct_messages")
           .select("id,conversation_id,university_id,sender_id,status,created_at")
           .eq("id", messageId).eq("sender_id", user.id).eq("status", "published")
           .gte("created_at", since).maybeSingle();
-        if (messageError || !sentMessage) return json({ error: "Only a recently sent message can trigger a background notification." }, 403);
+        if (messageError || !sentMessage) return respond({ error: "Only a recently sent message can trigger a background notification." }, 403);
         const { data: conversation, error: conversationError } = await db.from("campus_direct_conversations")
           .select("user_one_id,user_two_id,university_id,status")
           .eq("id", sentMessage.conversation_id)
@@ -89,28 +90,28 @@ Deno.serve(async (req: Request) => {
           .maybeSingle();
         if (conversationError || !conversation ||
             ![conversation.user_one_id, conversation.user_two_id].includes(user.id)) {
-          return json({ error: "An accepted conversation between campus members is required." }, 403);
+          return respond({ error: "An accepted conversation between campus members is required." }, 403);
         }
         userId = conversation.user_one_id === user.id ? conversation.user_two_id : conversation.user_one_id;
         kind = "new_message";
         eventKey = "direct-message:" + sentMessage.id + ":" + userId;
       } else {
-        return json({ error: "Unsupported push action." }, 400);
+        return respond({ error: "Unsupported push action." }, 400);
       }
     }
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId) ||
         !Object.prototype.hasOwnProperty.call(genericMessages, kind) ||
         (!internalAuthorized && !["test", "new_message"].includes(kind))) {
-      return json({ error: "A valid recipient and notification kind are required." }, 400);
+      return respond({ error: "A valid recipient and notification kind are required." }, 400);
     }
     if (eventKey) {
       const { error: claimError } = await db.from("campus_push_delivery_events").insert({
         event_key: eventKey, user_id: userId, kind, status: "queued", updated_at: new Date().toISOString(),
       });
-      if (claimError?.code === "23505") return json({ delivered: 0, expired: 0, duplicate: true });
+      if (claimError?.code === "23505") return respond({ delivered: 0, expired: 0, duplicate: true });
       if (claimError) {
         console.error("Push event deduplication failed", { code: claimError.code });
-        return json({ error: "Could not safely queue this notification." }, 503);
+        return respond({ error: "Could not safely queue this notification." }, 503);
       }
     }
     const { data: subscriptions, error } = await db.from("campus_push_subscriptions")
@@ -120,11 +121,11 @@ Deno.serve(async (req: Request) => {
     if (error) {
       console.error("Push subscription lookup failed", { code: error.code });
       if (eventKey) await db.from("campus_push_delivery_events").update({ status: "failed", updated_at: new Date().toISOString() }).eq("event_key", eventKey);
-      return json({ error: "Could not load notification destinations." }, 503);
+      return respond({ error: "Could not load notification destinations." }, 503);
     }
     if (!subscriptions?.length) {
       if (eventKey) await db.from("campus_push_delivery_events").update({ status: "no_subscription", updated_at: new Date().toISOString() }).eq("event_key", eventKey);
-      return json({ delivered: 0, expired: 0 });
+      return respond({ delivered: 0, expired: 0 });
     }
 
     const message = genericMessages[kind];
@@ -166,8 +167,8 @@ Deno.serve(async (req: Request) => {
       expired_count: expired,
       updated_at: new Date().toISOString(),
     }).eq("event_key", eventKey);
-    return json({ delivered, expired });
+    return respond({ delivered, expired });
   } catch {
-    return json({ error: "Push delivery failed." }, 500);
+    return respond({ error: "Push delivery failed." }, 500);
   }
 });
