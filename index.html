@@ -504,11 +504,11 @@ td strong{color:#2a464d;font-size:11px}
 .app.sidebar-collapsed .nav{gap:7px}
 .app.sidebar-collapsed .sidebar .nav button{justify-content:center;gap:0;padding:10px 5px;font-size:0;min-height:42px}
 .app.sidebar-collapsed .sidebar .nav button .nav-icon{margin:0;flex:0 0 22px}
-.app.sidebar-collapsed .sidebar .nav button[data-page="classroom"],.app.sidebar-collapsed .sidebar .nav button[data-page="staff-verification"],.app.sidebar-collapsed .sidebar .nav button[data-page="staff-review"]{font-size:0}
-.app.sidebar-collapsed .sidebar .nav button[data-page="classroom"]::before{content:"TC";font-size:10px;font-weight:900}
 
-.app.sidebar-collapsed .sidebar .nav button[data-page="staff-verification"]::before{content:"SV";font-size:10px;font-weight:900}
-.app.sidebar-collapsed .sidebar .nav button[data-page="staff-review"]::before{content:"SR";font-size:10px;font-weight:900}
+
+
+
+
 .sidebar-backdrop{display:none}
 .mobile-nav-toggle{display:none;flex:0 0 auto;width:40px;height:40px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-size:18px}
 .institution-id-select{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;clip-path:inset(50%)!important}
@@ -1806,7 +1806,11 @@ td strong{color:#2a464d;font-size:11px}
         button.hidden = false;
         return;
       }
-      if (button.dataset.page === 'classroom' || button.dataset.page === 'opportunities') {
+      if (button.dataset.page === 'classroom') {
+        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['teacher','security','admin'].includes(currentProfile?.role));
+        return;
+      }
+      if (button.dataset.page === 'opportunities') {
         button.hidden = !(verified && hasVerifiedCampusStaffMembership());
         return;
       }
@@ -2391,10 +2395,14 @@ td strong{color:#2a464d;font-size:11px}
       page = 'dashboard';
       toast('Only verified administrators can access account approvals.');
     }
-    if (['classroom','opportunities'].includes(page) &&
-        (!verified || !hasVerifiedCampusStaffMembership())) {
+    if (page === 'classroom' &&
+        (!verified || !hasVerifiedCampusStaffMembership() || !['teacher','security','admin'].includes(currentProfile.role))) {
       page = 'dashboard';
-      toast('This feature requires a verified account and verified membership at your university.');
+      toast('Teacher Classroom requires a verified campus staff account.');
+    }
+    if (page === 'opportunities' && (!verified || !hasVerifiedCampusStaffMembership())) {
+      page = 'dashboard';
+      toast('The Opportunities Hub requires a verified account and university membership.');
     }
     // ShieldMind and plan information are available to all signed-in users.
     // The Edge Function applies its own eligibility rules only to protected capabilities.
