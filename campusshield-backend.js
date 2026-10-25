@@ -16,8 +16,9 @@
     !cfg.publishableKey.includes("REPLACE_ME")
   );
 
-  // Keep confirmation links on the app origin that initiated authentication.
-  // Supabase must also allow the selected return URL in this project's Auth URL Configuration.
+  // Return confirmations to the app origin that initiated signup. This keeps staging
+  // and local preview confirmations out of production. The redirect URI must also
+  // be allowed in the matching Supabase project's Auth URL Configuration.
   function getAuthRedirectUrl() {
     const url = new URL(window.location.href);
     const isLocalHttp = url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname);
@@ -1474,6 +1475,20 @@ async getCurrentUser() {
         p_body: String(body || "").trim()
       });
       if (error) throw error;
+
+      // Use background push only in the staging project until production has been
+      // configured and authenticated end-to-end notification tests have passed.
+      let isStaging = false;
+      try {
+        isStaging = new URL(String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url || "")).hostname === "hywcpnoqqhxvujnimhxl.supabase.co";
+      } catch (_error) {}
+      if (isStaging && typeof data === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data)) {
+        try {
+          await this.callPushFunction("delivery", { action: "message", message_id: data });
+        } catch (_pushError) {
+          // Message delivery succeeds independently; a disabled push channel must not block chat.
+        }
+      }
       return data;
     },
 
@@ -1635,6 +1650,56 @@ async getCurrentUser() {
       }
       if (data?.error) throw new Error(data.error);
       return data;
+    },
+
+    async callPushFunction(functionName, body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const allowed = {
+        subscriptions: "push-subscriptions",
+        delivery: "push-dispatch"
+      };
+      const target = allowed[functionName];
+      if (!target) throw new Error("Unsupported push notification action.");
+      const { data, error } = await client.functions.invoke(target, { body });
+      if (error) {
+        let message = "";
+        try {
+          const response = error.context;
+          if (response && typeof response.clone === "function") {
+            const payload = await response.clone().json();
+            if (typeof payload?.error === "string") message = payload.error;
+          }
+        } catch (_parseError) {}
+        throw new Error(message || error.message || "Push notification request failed.");
+      }
+      if (data?.error) throw new Error(String(data.error));
+      return data || {};
+    },
+
+    async getPushVapidPublicKey() {
+      const result = await this.callPushFunction("subscriptions", { action: "get-key" });
+      if (typeof result.publicKey !== "string" || !result.publicKey) {
+        throw new Error("Background notification keys are not configured yet.");
+      }
+      return result.publicKey;
+    },
+
+    async savePushSubscription(subscription) {
+      if (!subscription || typeof subscription !== "object") {
+        throw new Error("The browser did not create a push subscription.");
+      }
+      return this.callPushFunction("subscriptions", { action: "subscribe", subscription });
+    },
+
+    async removePushSubscription(endpoint) {
+      if (typeof endpoint !== "string" || !endpoint.startsWith("https://")) {
+        throw new Error("Choose a valid device subscription.");
+      }
+      return this.callPushFunction("subscriptions", { action: "unsubscribe", endpoint });
+    },
+
+    async sendPushTest() {
+      return this.callPushFunction("delivery", { action: "test" });
     },
 
     async deleteIncident(id) {

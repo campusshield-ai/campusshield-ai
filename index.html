@@ -2665,6 +2665,21 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <div id="profile-settings-alerts" class="profile-alerts-list">
         <div class="profile-alert-empty">Checking for account updates…</div>
       </div>
+      <section class="profile-push-settings" aria-labelledby="profile-push-settings-title" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line,#dfe6e2)">
+        <div class="profile-alerts-header">
+          <div>
+            <p class="profile-overline">DEVICE ALERTS</p>
+            <h3 id="profile-push-settings-title">Background notifications</h3>
+          </div>
+        </div>
+        <p id="profile-push-settings-status" class="profile-alerts-status" role="status" aria-live="polite">Checking this device…</p>
+        <div class="actions" style="flex-wrap:wrap">
+          <button class="btn secondary" id="profile-push-enable" type="button" data-push-action="enable">Enable on this device</button>
+          <button class="btn secondary" id="profile-push-test" type="button" data-push-action="test" hidden>Send test notification</button>
+          <button class="btn secondary" id="profile-push-disable" type="button" data-push-action="disable" hidden>Turn off on this device</button>
+        </div>
+        <p class="profile-alerts-status">Background notifications require browser permission and may depend on device, browser, and network settings. Test notifications contain no private message or incident details.</p>
+      </section>
     </section>
   </div>
 
@@ -3371,19 +3386,27 @@ button,input,select,textarea{max-width:100%;min-width:0}
         return;
       }
       button.disabled = true;
-      status.textContent = 'Preparing secure live Paystack checkout…';
+      const stagingBilling = isStagingSupabaseEnvironment();
+      button.disabled = true;
+      status.textContent = stagingBilling
+        ? 'Preparing secure Paystack test checkout…'
+        : 'Preparing secure live Paystack checkout…';
       try {
-        const { data, error } = await window.CampusShieldBackend.client.functions.invoke('paystack-initialize', {
-          body: { plan, billing_period: 'monthly' }
+        const functionName = stagingBilling ? 'shieldmind-billing-checkout' : 'paystack-initialize';
+        const requestBody = stagingBilling ? { plan } : { plan, billing_period: 'monthly' };
+        const { data, error } = await window.CampusShieldBackend.client.functions.invoke(functionName, {
+          body: requestBody
         });
         if (error) {
           let providerMessage = null;
           try { providerMessage = (await error.context?.clone?.().json())?.error || null; } catch (_ignored) {}
-          throw new Error(providerMessage || 'Secure live checkout is not available. Check production Paystack setup. No payment has been taken.');
+          throw new Error(providerMessage || (stagingBilling
+            ? 'Paystack test checkout is not available. Check staging billing configuration. No payment has been taken.'
+            : 'Secure live checkout is not available. Check production Paystack setup. No payment has been taken.'));
         }
         if (!data?.authorization_url || typeof data.authorization_url !== 'string' ||
             !/^https:\/\/checkout\.paystack\.com\//i.test(data.authorization_url)) {
-          throw new Error(data?.error || 'Secure live checkout is not configured yet. No payment has been taken.');
+          throw new Error(data?.error || 'Secure checkout is not configured yet. No payment has been taken.');
         }
         window.location.assign(data.authorization_url);
       } catch (error) {
@@ -3477,7 +3500,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     if (message) $('auth-message').textContent = message;
   }
 
-  function isStagingGoogleAuthEnvironment() {
+  function isStagingSupabaseEnvironment() {
     try {
       const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
       return new URL(String(config.url || "")).hostname === "hywcpnoqqhxvujnimhxl.supabase.co";
@@ -3489,7 +3512,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   async function isGoogleProviderEnabled() {
     const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
     const publishableKey = String(config.publishableKey || "");
-    if (!isStagingGoogleAuthEnvironment() || !publishableKey) return false;
+    if (!isStagingSupabaseEnvironment() || !publishableKey) return false;
     const response = await fetch(String(config.url).replace(/\/$/, "") + "/auth/v1/settings", {
       method: "GET",
       headers: { apikey: publishableKey, Accept: "application/json" },
@@ -3515,7 +3538,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const isReset = authMode === 'reset';
 
     $('auth-tabs').hidden = isReset;
-    $('google-signin-wrap').hidden = isSignUp || isReset || !isStagingGoogleAuthEnvironment();
+    $('google-signin-wrap').hidden = isSignUp || isReset || !isStagingSupabaseEnvironment();
     $('signin-institution-field').hidden = isSignUp || isReset;
     $('signin-role-picker').hidden = isSignUp || isReset;
     $('signin-role-note').hidden = isSignUp || isReset;
@@ -4159,6 +4182,71 @@ button,input,select,textarea{max-width:100%;min-width:0}
     return new Date(stamp).toLocaleDateString();
   }
 
+  function pushAppUsesStaging() {
+    try {
+      return new URL(String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url || "")).hostname === "hywcpnoqqhxvujnimhxl.supabase.co";
+    } catch (_) { return false; }
+  }
+
+  function pushPublicKeyBytes(value) {
+    const encoded = String(value || "").trim();
+    if (!/^[A-Za-z0-9_-]+$/.test(encoded)) throw new Error("The push public key is not valid.");
+    const padded = encoded.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - encoded.length % 4) % 4);
+    const decoded = atob(padded);
+    return Uint8Array.from(decoded, function(character) { return character.charCodeAt(0); });
+  }
+
+  async function loadProfileSettingsPush(user, backend) {
+    const status = $("profile-push-settings-status");
+    const enableButton = $("profile-push-enable");
+    const testButton = $("profile-push-test");
+    const disableButton = $("profile-push-disable");
+    if (!status || !enableButton || !testButton || !disableButton) return;
+    enableButton.disabled = !user;
+    testButton.disabled = !user;
+    disableButton.disabled = !user;
+
+    if (!pushAppUsesStaging()) {
+      status.textContent = "Background push is available in the staging environment while delivery configuration is being verified.";
+      enableButton.hidden = true;
+      testButton.hidden = true;
+      disableButton.hidden = true;
+      return;
+    }
+    if (!user) {
+      status.textContent = "Sign in to manage background notifications on this device.";
+      enableButton.hidden = false;
+      testButton.hidden = true;
+      disableButton.hidden = true;
+      return;
+    }
+    if (!window.isSecureContext || !("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+      status.textContent = "This browser does not support background push notifications here. Use a supported browser on HTTPS or localhost.";
+      enableButton.hidden = true;
+      testButton.hidden = true;
+      disableButton.hidden = true;
+      return;
+    }
+    try {
+      const registration = await navigator.serviceWorker.getRegistration("./");
+      const subscription = registration?.pushManager ? await registration.pushManager.getSubscription() : null;
+      const subscribed = Boolean(subscription);
+      status.textContent = subscribed
+        ? "Background notifications are enabled on this device."
+        : Notification.permission === "denied"
+          ? "Notifications are blocked in browser settings. Allow them there before enabling push."
+          : "Background notifications are off on this device.";
+      enableButton.hidden = subscribed || Notification.permission === "denied";
+      testButton.hidden = !subscribed;
+      disableButton.hidden = !subscribed;
+      enableButton.disabled = false;
+      testButton.disabled = false;
+      disableButton.disabled = false;
+    } catch (_) {
+      status.textContent = "Could not read this device's push settings. Reload the page and try again.";
+    }
+  }
+
   async function loadProfileSettingsAlerts(user, backend) {
     const list = $('profile-settings-alerts');
     const status = $('profile-settings-alerts-status');
@@ -4406,11 +4494,79 @@ button,input,select,textarea{max-width:100%;min-width:0}
         }
       }
       await loadProfileSettingsAlerts(user, backend);
+      await loadProfileSettingsPush(user, backend);
     } catch (error) {
       if (email) email.textContent = 'Unavailable';
       if (message) message.textContent = error?.message || 'Account details could not be loaded.';
     }
   }
+
+  document.addEventListener('click', async function(event) {
+    const button = event.target?.closest?.("[data-push-action]");
+    if (!button) return;
+    event.preventDefault();
+    const action = button.dataset.pushAction;
+    const backend = window.CampusShieldBackend;
+    const status = $("profile-push-settings-status");
+    const all = ["profile-push-enable", "profile-push-test", "profile-push-disable"]
+      .map(function(id) { return $(id); }).filter(Boolean);
+    if (!backend?.isConfigured || !currentProfile) {
+      if (status) status.textContent = "Sign in before managing background notifications.";
+      return;
+    }
+    if (!pushAppUsesStaging()) {
+      if (status) status.textContent = "Background push is currently enabled for staging verification only.";
+      return;
+    }
+    all.forEach(function(control) { control.disabled = true; });
+    if (status) status.textContent = action === "enable"
+      ? "Preparing secure notifications for this device…"
+      : action === "test" ? "Sending a test notification…"
+      : "Turning off notifications on this device…";
+    try {
+      if (action === "enable") {
+        // Ask for permission before any network await so browsers retain the user gesture.
+        if (Notification.permission !== "granted") {
+          const permission = await Notification.requestPermission();
+          if (permission !== "granted") throw new Error("Notification permission was not granted.");
+        }
+        const publicKey = await backend.getPushVapidPublicKey();
+        await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
+        const registration = await navigator.serviceWorker.ready;
+        let subscription = await registration.pushManager.getSubscription();
+        if (!subscription) {
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: pushPublicKeyBytes(publicKey)
+          });
+        }
+        await backend.savePushSubscription(subscription.toJSON());
+        if (status) status.textContent = "Background notifications are enabled on this device.";
+        await loadProfileSettingsPush(currentProfile, backend);
+      } else if (action === "test") {
+        const result = await backend.sendPushTest();
+        const delivered = Number(result?.delivered) || 0;
+        if (status) status.textContent = delivered > 0
+          ? "Test notification sent to " + delivered + (delivered === 1 ? " device." : " devices.")
+          : "No active push destination received the test. Check browser permission and staging VAPID configuration.";
+      } else if (action === "disable") {
+        const registration = await navigator.serviceWorker.getRegistration("./");
+        const subscription = registration?.pushManager ? await registration.pushManager.getSubscription() : null;
+        if (subscription) {
+          await backend.removePushSubscription(subscription.endpoint);
+          await subscription.unsubscribe();
+        }
+        if (status) status.textContent = "Background notifications are off on this device.";
+        await loadProfileSettingsPush(currentProfile, backend);
+      } else {
+        throw new Error("Unsupported push notification action.");
+      }
+    } catch (error) {
+      if (status) status.textContent = error?.message || "Background notifications could not be updated.";
+    } finally {
+      all.forEach(function(control) { control.disabled = false; });
+    }
+  });
 
   document.addEventListener('submit', async function(event) {
     if (event.target?.id !== 'profile-settings-contact-form') return;
@@ -8549,7 +8705,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const button = $('google-signin-button');
     const message = $('auth-message');
     const institutionHint = String($('signin-institution')?.value || '').trim();
-    if (!isStagingGoogleAuthEnvironment()) {
+    if (!isStagingSupabaseEnvironment()) {
       message.textContent = 'Google sign-in is available in the staging preview only. Production has not been changed.';
       return;
     }
@@ -9084,7 +9240,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     const params = new URLSearchParams(window.location.search);
     const reference = params.get('reference') || params.get('trxref');
     if (!message || !button) return;
-    if (!reference || !/^csa_[a-f0-9]{32}$/i.test(reference)) {
+    const stagingBilling = isStagingSupabaseEnvironment();
+    const validReference = stagingBilling ? /^sm_[a-f0-9]{32}$/i.test(reference || "") : /^csa_[a-f0-9]{32}$/i.test(reference || "");
+    if (!reference || !validReference) {
       message.textContent = 'The payment return does not contain a valid transaction reference. Check your plan status before trying another payment.';
       button.hidden = true;
       return;
@@ -9099,7 +9257,8 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     button.textContent = 'Verifying payment…';
     message.textContent = 'Verifying the transaction with Paystack and reconciling your subscription securely…';
     try {
-      const {data, error} = await backend.client.functions.invoke('paystack-reconcile', {
+      const reconcileFunction = stagingBilling ? 'shieldmind-billing-reconcile' : 'paystack-reconcile';
+      const {data, error} = await backend.client.functions.invoke(reconcileFunction, {
         body: { reference }
       });
       if (error) throw new Error('The server could not confirm the payment yet. Retry verification before starting another checkout.');
