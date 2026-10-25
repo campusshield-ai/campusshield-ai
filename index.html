@@ -2594,6 +2594,12 @@ button,input,select,textarea{max-width:100%;min-width:0}
         if (field) field.required = false;
       });
     }
+    // University listing is a separate, optional request. Its collapsed fields
+    // must not prevent account creation or student setup from submitting.
+    ['identity-request-university-name','identity-request-university-state','identity-request-university-ownership'].forEach(function(id) {
+      const field = $(id);
+      if (field) field.required = false;
+    });
     $('auth-role').required = isSignUp && !identityCompletionMode;
     $('auth-username').required = isSignUp && !identityCompletionMode;
     $('auth-name').required = isSignUp && !identityCompletionMode;
@@ -4345,14 +4351,23 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const button = $('identity-request-university-submit');
     const message = $('identity-request-university-message');
     try {
+      const name = $('identity-request-university-name').value.trim();
+      const state = $('identity-request-university-state').value.trim();
+      const ownership = $('identity-request-university-ownership').value;
+      if (!name || !state || !ownership) {
+        message.textContent = 'Enter the official university name, state or FCT, and ownership before submitting the listing request.';
+        const missing = !name ? $('identity-request-university-name') : !state ? $('identity-request-university-state') : $('identity-request-university-ownership');
+        missing.focus();
+        return;
+      }
       const user = await backend?.getCurrentUser?.();
       if (!user) { message.textContent = 'Sign in and open Complete student setup before requesting a university listing.'; return; }
       button.disabled = true;
       message.textContent = 'Sending request for platform review…';
       await backend.requestCampusUniversity({
-        name: $('identity-request-university-name').value.trim(),
-        state: $('identity-request-university-state').value.trim(),
-        ownership: $('identity-request-university-ownership').value,
+        name,
+        state,
+        ownership,
         website: $('identity-request-university-website').value.trim()
       });
       ['identity-request-university-name','identity-request-university-state','identity-request-university-ownership','identity-request-university-website'].forEach(id => {
