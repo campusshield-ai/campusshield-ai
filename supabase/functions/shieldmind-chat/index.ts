@@ -144,7 +144,11 @@ Deno.serve(async (req: Request) => {
 
     const { data: quotaData, error: quotaError } = await client.rpc("consume_shieldmind_quota");
     const quota = Array.isArray(quotaData) ? quotaData[0] : quotaData;
-    if (quotaError || !quota) return json({ error: "ShieldMind usage controls could not be verified. Please try again later." }, 503);
+    if (quotaError || !quota) {
+      // Log only the database error code or an empty-result marker; never log user data.
+      console.warn("ShieldMind quota check failed", { code: quotaError?.code || "empty_result" });
+      return json({ error: "ShieldMind usage controls could not be verified. Please try again later." }, 503);
+    }
     if (quota.allowed !== true) return json({ error: "You have reached ShieldMind's usage limit. Please try again later." }, 429);
 
     const providerKey = Deno.env.get("OPENAI_API_KEY");
@@ -165,7 +169,10 @@ Deno.serve(async (req: Request) => {
     if (studyImage) {
       const {data:imageQuotaData,error:imageQuotaError}=await client.rpc("consume_shieldmind_image_upload");
       const imageQuota=Array.isArray(imageQuotaData)?imageQuotaData[0]:imageQuotaData;
-      if(imageQuotaError||!imageQuota)return json({error:"Image allowance could not be verified. Please try again later."},503);
+      if(imageQuotaError||!imageQuota) {
+        console.warn("ShieldMind image quota check failed", { code: imageQuotaError?.code || "empty_result" });
+        return json({error:"Image allowance could not be verified. Please try again later."},503);
+      }
       if(imageQuota.allowed!==true)return json({error:"No remaining study-image allowance. A paid ShieldMind plan is required."},429);
     }
     const userContent=studyImage
@@ -200,10 +207,12 @@ Deno.serve(async (req: Request) => {
         "project_spend_limit_exceeded",
       ]);
       if (quotaOrBillingCodes.has(providerCode)) {
+        console.warn("ShieldMind provider billing/quota limit", { status: providerResponse.status, code: providerCode || "unknown" });
         return json({
           error: "ShieldMind's AI provider has reached a credit, billing, or usage limit. The platform administrator must check the provider API billing and usage settings; your ShieldMind account limit has not been reached.",
         }, 503);
       }
+      console.warn("ShieldMind provider rate limit", { status: providerResponse.status, code: providerCode || "unknown" });
       const upstreamRetryAfter = providerResponse.headers.get("retry-after");
       const retryAfter = upstreamRetryAfter && /^\d+$/.test(upstreamRetryAfter) ? upstreamRetryAfter : "30";
       return json({
@@ -212,12 +221,21 @@ Deno.serve(async (req: Request) => {
           : "ShieldMind's AI provider temporarily rejected this request. Please wait 30 seconds and try again.",
       }, 429, { "Retry-After": retryAfter });
     }
-    if (!providerResponse.ok) return json({ error: "ShieldMind could not answer right now. Please try again later." }, 502);
+    if (!providerResponse.ok) {
+      const providerFailure = await providerResponse.clone().json().catch(() => null);
+      const providerCode = String(providerFailure?.error?.code || providerFailure?.error?.type || "").toLowerCase();
+      console.warn("ShieldMind provider request failed", { status: providerResponse.status, code: providerCode || "unknown" });
+      return json({ error: "ShieldMind could not answer right now. Please try again later." }, 502);
+    }
     const completion = await providerResponse.json().catch(() => null);
     const answer = completion?.choices?.[0]?.message?.content;
     if (typeof answer !== "string" || !answer.trim()) return json({ error: "ShieldMind received an empty answer. Please try again." }, 502);
     return json({ mode: "provider", answer: answer.slice(0, 8000), sources: responseSources });
-  } catch (_error) {
+  } catch (error) {
+    // Keep operational visibility without logging the prompt, provider response, tokens, or keys.
+    console.warn("ShieldMind request failed before a provider response was handled", {
+      name: error instanceof Error ? error.name : "UnknownError",
+    });
     return json({ error: "ShieldMind is unavailable right now. Please try again later." }, 500);
   }
 });
