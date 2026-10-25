@@ -4560,6 +4560,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
     try {
       await refreshCampusDirectMessages();
+      if (!document.querySelector("#page-campus-messages")?.classList.contains("active") || campusDirectActiveId !== conversationId) return;
       if (campusDirectSubscriptionId !== conversationId) {
         stopCampusDirectMessageRealtime();
         campusDirectSubscription = window.CampusShieldBackend.subscribeCampusDirectMessages(conversationId, function(row) {
