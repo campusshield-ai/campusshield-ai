@@ -41,14 +41,14 @@ assert.match(html, /\.campus-dashboard-hero\{[\s\S]*?background:[\s\S]*?linear-g
 assert.match(html, /@media\(max-width:700px\)\{\.campus-dashboard-hero\{grid-template-columns:minmax\(0,1fr\)/);
 assert.match(html, /id="page-dashboard"/);
 assert.match(html, /id="totalStat"/);
-assert.match(staffIdentityParityMigration, /CREATE TABLE IF NOT EXISTS public\\.campus_staff_verifications/i);
-assert.match(staffIdentityParityMigration, /CREATE TABLE IF NOT EXISTS public\\.campus_identity_evidence_checks/i);
-assert.match(staffIdentityParityMigration, /CREATE TABLE IF NOT EXISTS public\\.student_identity_upload_scans/i);
-assert.match(staffIdentityParityMigration, /CREATE OR REPLACE FUNCTION private\\.can_read_campus_staff_document/i);
-assert.match(staffIdentityParityMigration, /CREATE POLICY student_identity_quarantine_no_browser_access[\\s\\S]*?AND false/i);
-assert.match(staffIdentityParityMigration, /CREATE OR REPLACE FUNCTION public\\.submit_campus_staff_verification[\\s\\S]*?SECURITY INVOKER/i);
-assert.match(staffIdentityParityMigration, /CREATE OR REPLACE FUNCTION public\\.platform_assign_campus_admin[\\s\\S]*?SECURITY INVOKER/i);
-const staffIdentityPublicWrappers = [...staffIdentityParityMigration.matchAll(/CREATE OR REPLACE FUNCTION public\\.[\\s\\S]*?AS \\$wrapper\\$;/g)].map((match) => match[0]);
+assert.match(staffIdentityParityMigration, /CREATE TABLE IF NOT EXISTS public\.campus_staff_verifications/i);
+assert.match(staffIdentityParityMigration, /CREATE TABLE IF NOT EXISTS public\.campus_identity_evidence_checks/i);
+assert.match(staffIdentityParityMigration, /CREATE TABLE IF NOT EXISTS public\.student_identity_upload_scans/i);
+assert.match(staffIdentityParityMigration, /CREATE OR REPLACE FUNCTION private\.can_read_campus_staff_document/i);
+assert.match(staffIdentityParityMigration, /CREATE POLICY student_identity_quarantine_no_browser_access[\s\S]*?AND false/i);
+assert.match(staffIdentityParityMigration, /CREATE OR REPLACE FUNCTION public\.submit_campus_staff_verification[\s\S]*?SECURITY INVOKER/i);
+assert.match(staffIdentityParityMigration, /CREATE OR REPLACE FUNCTION public\.platform_assign_campus_admin[\s\S]*?SECURITY INVOKER/i);
+const staffIdentityPublicWrappers = [...staffIdentityParityMigration.matchAll(/CREATE OR REPLACE FUNCTION public\.[\s\S]*?\$wrapper\$;/g)].map((match) => match[0]);
 assert.ok(staffIdentityPublicWrappers.length >= 15, "staff identity migration includes the public RPC wrappers");
 assert.ok(staffIdentityPublicWrappers.every((source) => !/SECURITY DEFINER/i.test(source)), "public staff identity RPCs stay invoker wrappers");
 
