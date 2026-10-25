@@ -652,7 +652,7 @@ using (user_id=(select auth.uid()) and university_id=(select private.current_cam
 drop policy if exists campus_opportunity_bookmarks_insert_own on public.campus_opportunity_bookmarks;
 create policy campus_opportunity_bookmarks_insert_own on public.campus_opportunity_bookmarks for insert to authenticated
 with check (user_id=(select auth.uid()) and university_id=(select private.current_campus_university_id()) and exists (
-  select 1 from public.campus_opportunities o where o.id=opportunity_id and o.university_id=university_id and o.status='published' and (o.deadline is null or o.deadline>now())
+  select 1 from public.campus_opportunities o where o.id=campus_opportunity_bookmarks.opportunity_id and o.university_id=campus_opportunity_bookmarks.university_id and o.status='published' and (o.deadline is null or o.deadline>now())
 ));
 drop policy if exists campus_opportunity_bookmarks_delete_own on public.campus_opportunity_bookmarks;
 create policy campus_opportunity_bookmarks_delete_own on public.campus_opportunity_bookmarks for delete to authenticated
@@ -673,7 +673,7 @@ using (university_id=(select private.current_campus_university_id()) and (status
 drop policy if exists campus_course_resources_submit_own on public.campus_course_resources;
 create policy campus_course_resources_submit_own on public.campus_course_resources for insert to authenticated
 with check (submitted_by=(select auth.uid()) and university_id=(select private.current_campus_university_id()) and status='pending' and exists (
-  select 1 from public.campus_courses c where c.id=course_id and c.university_id=university_id and c.status='published'
+  select 1 from public.campus_courses c where c.id=course_id and c.university_id=campus_course_resources.university_id and c.status='published'
 ));
 drop policy if exists campus_course_resources_review_staff on public.campus_course_resources;
 create policy campus_course_resources_review_staff on public.campus_course_resources for update to authenticated
@@ -1047,7 +1047,8 @@ grant select, insert, update, delete on table public.campus_marketplace_reports 
 grant select, insert, update, delete on table public.campus_helpdesk_tickets to authenticated;
 grant select, insert, update, delete on table public.campus_helpdesk_ticket_updates to authenticated;
 grant select, insert, update, delete on table public.campus_notices to authenticated;
-grant select, insert, update, delete on table public.campus_classrooms to authenticated;
+grant select (id, university_id, teacher_id, name, subject, description, assistant_student_id, created_at, updated_at) on public.campus_classrooms to authenticated;
+grant insert, update, delete on table public.campus_classrooms to authenticated;
 grant select, insert, update, delete on table public.campus_classroom_enrollments to authenticated;
 grant select, insert, update, delete on table public.campus_classroom_announcements to authenticated;
 grant select, insert, update, delete on table public.campus_classroom_materials to authenticated;
