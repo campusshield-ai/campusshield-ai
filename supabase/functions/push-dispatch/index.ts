@@ -38,33 +38,77 @@ Deno.serve(async (req: Request) => {
     const body = await req.json().catch(() => null);
     let userId = String(body?.user_id || "");
     let kind = body?.kind as PushKind;
+    let eventKey: string | null = null;
+    const db = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
     if (!internalAuthorized) {
       const token = (req.headers.get("authorization") || "").match(/^Bearer\\s+(.+)$/i)?.[1];
-      if (body?.action !== "test" || !token || !anon) return json({ error: "Not authorized." }, 401);
+      if (!["test", "message"].includes(String(body?.action || "")) || !token || !anon) {
+        return json({ error: "Not authorized." }, 401);
+      }
       const authClient = createClient(url, anon, {
         global: { headers: { Authorization: `Bearer ${token}` } },
         auth: { persistSession: false, autoRefreshToken: false },
       });
       const { data: { user }, error: authError } = await authClient.auth.getUser(token);
       if (authError || !user?.id) return json({ error: "Your session could not be verified." }, 401);
-      userId = user.id;
-      kind = "test";
+      if (body.action === "test") {
+        userId = user.id;
+        kind = "test";
+        eventKey = null; // Users can send another test after re-subscribing or for troubleshooting.
+      } else {
+        const messageId = String(body?.message_id || "");
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(messageId)) {
+          return json({ error: "A valid recent message is required." }, 400);
+        }
+        const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const { data: sentMessage, error: messageError } = await db.from("campus_direct_messages")
+          .select("id,conversation_id,university_id,sender_id,status,created_at")
+          .eq("id", messageId).eq("sender_id", user.id).eq("status", "published")
+          .gte("created_at", since).maybeSingle();
+        if (messageError || !sentMessage) return json({ error: "Only a recently sent message can trigger a background notification." }, 403);
+        const { data: conversation, error: conversationError } = await db.from("campus_direct_conversations")
+          .select("user_one_id,user_two_id,university_id,status")
+          .eq("id", sentMessage.conversation_id)
+          .eq("university_id", sentMessage.university_id)
+          .eq("status", "accepted")
+          .maybeSingle();
+        if (conversationError || !conversation ||
+            ![conversation.user_one_id, conversation.user_two_id].includes(user.id)) {
+          return json({ error: "An accepted conversation between campus members is required." }, 403);
+        }
+        userId = conversation.user_one_id === user.id ? conversation.user_two_id : conversation.user_one_id;
+        kind = "new_message";
+        eventKey = "direct-message:" + sentMessage.id + ":" + userId;
+      }
     }
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId) ||
         !Object.prototype.hasOwnProperty.call(genericMessages, kind) ||
-        (!internalAuthorized && kind !== "test")) {
+        (!internalAuthorized && !["test", "new_message"].includes(kind))) {
       return json({ error: "A valid recipient and notification kind are required." }, 400);
     }
-    const db = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
+    if (eventKey) {
+      const { error: claimError } = await db.from("campus_push_delivery_events").insert({
+        event_key: eventKey, user_id: userId, kind, status: "queued", updated_at: new Date().toISOString(),
+      });
+      if (claimError?.code === "23505") return json({ delivered: 0, expired: 0, duplicate: true });
+      if (claimError) {
+        console.error("Push event deduplication failed", { code: claimError.code });
+        return json({ error: "Could not safely queue this notification." }, 503);
+      }
+    }
     const { data: subscriptions, error } = await db.from("campus_push_subscriptions")
       .select("endpoint,p256dh_key,auth_key")
       .eq("user_id", userId)
       .limit(20);
     if (error) {
       console.error("Push subscription lookup failed", { code: error.code });
+      if (eventKey) await db.from("campus_push_delivery_events").update({ status: "failed", updated_at: new Date().toISOString() }).eq("event_key", eventKey);
       return json({ error: "Could not load notification destinations." }, 503);
     }
-    if (!subscriptions?.length) return json({ delivered: 0, expired: 0 });
+    if (!subscriptions?.length) {
+      if (eventKey) await db.from("campus_push_delivery_events").update({ status: "no_subscription", updated_at: new Date().toISOString() }).eq("event_key", eventKey);
+      return json({ delivered: 0, expired: 0 });
+    }
 
     webpush.setVapidDetails(subject, publicKey, privateKey);
     const message = genericMessages[kind];
@@ -100,6 +144,12 @@ Deno.serve(async (req: Request) => {
         }
       }
     }
+    if (eventKey) await db.from("campus_push_delivery_events").update({
+      status: delivered > 0 ? "sent" : "failed",
+      delivered_count: delivered,
+      expired_count: expired,
+      updated_at: new Date().toISOString(),
+    }).eq("event_key", eventKey);
     return json({ delivered, expired });
   } catch {
     return json({ error: "Push delivery failed." }, 500);
