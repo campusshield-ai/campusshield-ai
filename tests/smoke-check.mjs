@@ -9,6 +9,7 @@ const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrat
 const usernameLookupRemovalMigration = await readFile(new URL("../supabase/migrations/20261014235000_remove_username_availability_rpc.sql", import.meta.url), "utf8");
 const staffProfileMigration = await readFile(new URL("../supabase/migrations/20261014240000_allow_verified_teachers_to_read_profiles.sql", import.meta.url), "utf8");
 const campusLifeParityMigration = await readFile(new URL("../supabase/migrations/20261025113000_production_campus_life_parity.sql", import.meta.url), "utf8");
+const institutionalBillingMigration = await readFile(new URL("../supabase/migrations/20261025153000_restrict_institutional_billing_to_admins.sql", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -48,6 +49,15 @@ assert.match(html, /does not contact emergency services/i);
 assert.match(html, /id="auth-username"/);
 
 assert.match(html, /id="page-courses"/);
+assert.match(html, /id="institutional-billing-panel" hidden/);
+assert.match(html, /function canManageInstitutionalBilling\(\)/);
+assert.match(html, /if \(kind === 'institution' && !canManageInstitutionalBilling\(\)\)/);
+assert.match(html, /if \(!canManageInstitutionalBilling\(\)\)/);
+assert.match(institutionalBillingMigration, /DROP POLICY IF EXISTS campus_institutional_billing_requests_select_own/i);
+assert.match(institutionalBillingMigration, /profile\.role = 'admin'/i);
+assert.match(institutionalBillingMigration, /profile\.verification_status = 'verified'/i);
+assert.match(institutionalBillingMigration, /requester_id = \(SELECT auth\.uid\(\)\)/i);
+assert.match(institutionalBillingMigration, /public\.platform_is_admin\(\)/i);
 assert.match(html, /id="campus-course-form"/);
 assert.match(html, /id="campus-resource-form"/);
 assert.match(html, /data-opportunity-bookmark/);
