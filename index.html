@@ -808,6 +808,7 @@ td strong{color:#2a464d;font-size:11px}
 <div class="nav-label">WORKSPACE</div>
 <nav class="nav">
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
+<button data-page="academics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5-9 5.5-9-5.5Z"/><path d="M6.5 12.5v5c3.5 2.5 7.5 2.5 11 0v-5M21 10v6"/></svg></span>Academic Life</button>
 <button data-page="noticeboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3.5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>Noticeboard</button>
 <button data-page="helpdesk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Helpdesk</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
@@ -847,6 +848,7 @@ td strong{color:#2a464d;font-size:11px}
 <div class="heading">
   <div><h1>Your campus, in one place.</h1><p>Stay safe, find your people, and make the most of campus life. Your campus space is limited to your university.</p></div>
   <div class="heading-actions"><button class="btn" type="button" data-page="report"><span aria-hidden="true">＋</span>New report</button>
+    <button class="btn secondary" type="button" data-page="academics">Academic Life</button>
     <button class="btn secondary" type="button" id="student-identity-setup-button" hidden>Complete student setup</button>
     <p id="student-identity-setup-status" class="muted" role="status" aria-live="polite" hidden></p></div>
 </div>
@@ -910,6 +912,71 @@ td strong{color:#2a464d;font-size:11px}
   <div class="panel-heading"><div><h2>Recent reports</h2><p>Latest records your account can access.</p></div><span class="muted">Sorted newest first</span></div>
   <div id="recentList" class="recent-list"><div class="empty-state"><span class="empty-state-mark" aria-hidden="true">＋</span><div><strong>No reports in view yet</strong><p>Submit a report to start the activity list.</p></div><button class="btn secondary" type="button" data-page="report">Create a report</button></div></div>
 </div>
+</section>
+
+<section class="page" id="page-academics">
+  <div class="heading">
+    <div><h1>Academic Life</h1><p>Reach your study plan, course spaces, study groups and university learning updates from one place.</p></div>
+    <div class="heading-actions"><button class="btn" type="button" data-page="shieldmind" data-academic-focus="planner">Open study planner</button></div>
+  </div>
+  <div class="notice-inline"><strong>Your academic workspace.</strong> Use your private planner for personal study tasks and reminders. Course spaces, official notices, events and community areas continue to use their existing CampusShield access controls and university boundaries.</div>
+  <div class="grid campus-feature-grid">
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">TIMETABLE &amp; DEADLINES</span>
+      <h3>Keep your study plan organized</h3>
+      <p>Use the existing private ShieldMind planner for class sessions, assignments, exams, revision blocks and reminders.</p>
+      <button class="btn secondary" type="button" data-page="shieldmind" data-academic-focus="planner">Open timetable &amp; reminders</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">COURSE SPACES</span>
+      <h3>Find your learning spaces</h3>
+      <p>Open course spaces and learning links shared through authorized campus classrooms.</p>
+      <button class="btn secondary" type="button" data-page="classroom">Open course spaces</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">STUDY GROUPS</span>
+      <h3>Learn with your campus community</h3>
+      <p>Explore study circles, departments, societies and interest groups within your university.</p>
+      <button class="btn secondary" type="button" data-page="groups">Explore study groups</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">OFFICIAL ACADEMIC UPDATES</span>
+      <h3>Check verified notices</h3>
+      <p>Look for published registration information, academic updates and other university notices.</p>
+      <button class="btn secondary" type="button" data-page="noticeboard">Open noticeboard</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">EVENTS &amp; SEMINARS</span>
+      <h3>Discover campus activities</h3>
+      <p>Find seminars, career events, society meetings and other activities listed for your university.</p>
+      <button class="btn secondary" type="button" data-page="events">Browse events</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">OPPORTUNITIES</span>
+      <h3>Explore ways to grow</h3>
+      <p>Open the existing opportunity hub for scholarships, internships, grants and student resources.</p>
+      <button class="btn secondary" type="button" data-page="opportunities">Open opportunities</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">CAMPUS SUPPORT</span>
+      <h3>Get help with everyday issues</h3>
+      <p>Submit and track campus service requests without mixing them with private safety incidents.</p>
+      <button class="btn secondary" type="button" data-page="helpdesk">Open Helpdesk</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">CAMPUSPULSE</span>
+      <h3>Ask, share and connect</h3>
+      <p>Join student discussions and campus questions while keeping sensitive matters in private reporting.</p>
+      <button class="btn secondary" type="button" data-page="community">Open CampusPulse</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">CAMPUS RESOURCES</span>
+      <h3>Find campus listings</h3>
+      <p>Browse university-only marketplace listings for textbooks, student services and other items.</p>
+      <button class="btn secondary" type="button" data-page="marketplace">Open marketplace</button>
+    </article>
+  </div>
+  <p class="campus-roadmap-note"><strong>Privacy note:</strong> Personal study planning remains separate from public campus posts. This hub does not create duplicate records or bypass existing role, verification or university-access checks.</p>
 </section>
 
 <section class="page" id="page-report">
@@ -2200,6 +2267,7 @@ td strong{color:#2a464d;font-size:11px}
 
     const names = {
       dashboard:'Overview',
+      academics:'Academic Life',
       report:'Report incident',
       manage:'Incident management',
       risk:'Risk analysis',
