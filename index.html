@@ -4276,7 +4276,155 @@ td strong{color:#2a464d;font-size:11px}
     $('campusOpportunityForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function renderOpportunityCard(item, ownerActions = false, reviewActions = false) {
+
+  async function loadCampusCoursesPage() {
+    const status = $('campus-courses-status');
+    const resourcesStatus = $('campus-course-resources-status');
+    const coursesFeed = $('campus-courses-feed');
+    const resourcesFeed = $('campus-course-resources-feed');
+    const eligible = hasVerifiedCampusStaffMembership();
+    const staff = eligible && ['teacher','security','admin'].includes(currentProfile?.role);
+    $('campus-course-suggest-panel').hidden = !eligible;
+    $('campus-resource-suggest-panel').hidden = !eligible;
+    $('campus-course-review-panel').hidden = !staff;
+    if (!eligible) {
+      status.textContent = 'Choose your university and complete campus verification to use the directory.';
+      coursesFeed.innerHTML = '<div class="community-empty">The course directory is available after campus verification.</div>';
+      resourcesStatus.textContent = 'Campus verification is required.';
+      resourcesFeed.innerHTML = '<div class="community-empty">No resources are shown before campus verification.</div>';
+      return;
+    }
+    status.textContent = 'Loading published courses…';
+    resourcesStatus.textContent = 'Loading approved resources…';
+    try {
+      const [courses, resources] = await Promise.all([
+        window.CampusShieldBackend.listCampusCourses(),
+        window.CampusShieldBackend.listCampusCourseResources()
+      ]);
+      const courseById = new Map(courses.map(course => [course.id, course]));
+      const resourceSelect = $('campus-resource-course');
+      const previousCourseId = resourceSelect.value;
+      resourceSelect.innerHTML = '<option value="">Choose a published course</option>' + courses.map(course =>
+        '<option value="' + escapeHubHtml(course.id) + '">' + escapeHubHtml(course.course_code + ' · ' + course.title) + '</option>'
+      ).join('');
+      if (courses.some(course => course.id === previousCourseId)) resourceSelect.value = previousCourseId;
+      status.textContent = courses.length ? courses.length + ' published course(s).' : 'No approved courses yet.';
+      coursesFeed.innerHTML = courses.length ? courses.map(course =>
+        '<article class="community-moderation-item"><h3>' + escapeHubHtml(course.course_code + ' · ' + course.title) + '</h3>' +
+        '<p class="muted">' + escapeHubHtml([course.faculty, course.department, course.level === 'all' ? '' : course.level + ' level'].filter(Boolean).join(' · ') || 'Course listing') + '</p>' +
+        (course.summary ? '<p>' + escapeHubHtml(course.summary) + '</p>' : '') + '</article>'
+      ).join('') : '<div class="community-empty">No approved courses yet. Suggest a course above; it will appear after campus review.</div>';
+      resourcesStatus.textContent = resources.length ? resources.length + ' approved learning resource(s).' : 'No approved resources yet.';
+      resourcesFeed.innerHTML = resources.length ? resources.map(resource => {
+        const course = courseById.get(resource.course_id);
+        const url = safeHttpUrl(resource.source_url);
+        return '<article class="community-moderation-item"><h3>' + escapeHubHtml(resource.title) + '</h3>' +
+          '<p class="muted">' + escapeHubHtml(course ? course.course_code + ' · ' + course.title : 'Campus resource') + ' · ' +
+          escapeHubHtml(resource.resource_type.replaceAll('_',' ')) + ' · ' + escapeHubHtml(resource.source_label) + '</p>' +
+          (resource.description ? '<p>' + escapeHubHtml(resource.description) + '</p>' : '') +
+          (url ? '<p><a href="' + escapeHubHtml(url) + '" target="_blank" rel="noopener noreferrer">Open external resource</a></p>' : '<p class="muted">Resource URL unavailable.</p>') +
+          '</article>';
+      }).join('') : '<div class="community-empty">No approved resources yet. Submit a link after its course has been published.</div>';
+      if (staff) {
+        const queue = await window.CampusShieldBackend.listCampusCourseReviews();
+        const entries = [
+          ...(queue.courses || []).map(item => ({ kind:'course', item })),
+          ...(queue.resources || []).map(item => ({ kind:'resource', item }))
+        ];
+        $('campus-course-review-status').textContent = entries.length ? entries.length + ' item(s) await review.' : 'No pending courses or resources.';
+        $('campus-course-review-feed').innerHTML = entries.length ? entries.map(({kind,item}) =>
+          '<article class="community-moderation-item"><h3>' + escapeHubHtml(item.title || item.course_code) + '</h3>' +
+          '<p class="muted">' + escapeHubHtml(kind === 'course' ? 'Course · ' + item.course_code : 'Resource · ' + item.source_label) + '</p>' +
+          (item.description || item.summary ? '<p>' + escapeHubHtml(item.description || item.summary) + '</p>' : '') +
+          '<div class="actions"><button class="btn" type="button" data-campus-directory-review="' + kind + '" data-decision="publish" data-item-id="' + escapeHubHtml(item.id) + '">Approve &amp; publish</button>' +
+          '<button class="btn danger" type="button" data-campus-directory-review="' + kind + '" data-decision="reject" data-item-id="' + escapeHubHtml(item.id) + '">Reject</button></div></article>'
+        ).join('') : '<div class="community-empty">No items are waiting for review.</div>';
+      }
+    } catch (error) {
+      status.textContent = error.message || 'Could not load courses.';
+      resourcesStatus.textContent = 'Could not load resources.';
+      coursesFeed.innerHTML = '<div class="community-empty">The course directory could not be loaded.</div>';
+      resourcesFeed.innerHTML = '<div class="community-empty">The resource directory could not be loaded.</div>';
+    }
+  }
+
+  $('campus-course-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const message = $('campus-course-form-message');
+    message.textContent = 'Submitting course suggestion…';
+    try {
+      await window.CampusShieldBackend.suggestCampusCourse({
+        courseCode: $('campus-course-code').value,
+        title: $('campus-course-title').value,
+        faculty: $('campus-course-faculty').value,
+        department: $('campus-course-department').value,
+        level: $('campus-course-level').value,
+        summary: $('campus-course-summary').value
+      });
+      this.reset();
+      message.textContent = 'Course suggestion submitted for campus review.';
+      loadCampusCoursesPage();
+    } catch (error) {
+      message.textContent = error.message || 'Could not submit course suggestion.';
+    }
+  });
+
+  $('campus-resource-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const message = $('campus-resource-form-message');
+    message.textContent = 'Submitting resource suggestion…';
+    try {
+      await window.CampusShieldBackend.suggestCampusCourseResource({
+        courseId: $('campus-resource-course').value,
+        title: $('campus-resource-title').value,
+        description: $('campus-resource-description').value,
+        resourceType: $('campus-resource-type').value,
+        sourceUrl: $('campus-resource-url').value,
+        sourceLabel: $('campus-resource-label').value
+      });
+      this.reset();
+      message.textContent = 'Resource suggestion submitted for campus review.';
+      loadCampusCoursesPage();
+    } catch (error) {
+      message.textContent = error.message || 'Could not submit resource suggestion.';
+    }
+  });
+
+  $('refresh-campus-courses').addEventListener('click', loadCampusCoursesPage);
+  $('refresh-campus-course-reviews').addEventListener('click', loadCampusCoursesPage);
+
+  document.addEventListener('click', async function(event) {
+    const bookmark = event.target.closest('[data-opportunity-bookmark]');
+    if (bookmark) {
+      bookmark.disabled = true;
+      try {
+        if (bookmark.dataset.opportunityBookmark === 'save') {
+          await window.CampusShieldBackend.saveCampusOpportunity(bookmark.dataset.opportunityId);
+        } else {
+          await window.CampusShieldBackend.unsaveCampusOpportunity(bookmark.dataset.opportunityId);
+        }
+        await loadCampusOpportunitiesPage();
+      } catch (error) {
+        toast(error.message || 'Could not update saved opportunities.');
+        bookmark.disabled = false;
+      }
+      return;
+    }
+    const review = event.target.closest('[data-campus-directory-review]');
+    if (review) {
+      review.disabled = true;
+      try {
+        const method = review.dataset.campusDirectoryReview === 'course' ? 'reviewCampusCourse' : 'reviewCampusCourseResource';
+        await window.CampusShieldBackend[method](review.dataset.itemId, review.dataset.decision);
+        await loadCampusCoursesPage();
+      } catch (error) {
+        toast(error.message || 'Could not review this item.');
+        review.disabled = false;
+      }
+    }
+  });
+
+  function renderOpportunityCard(item, ownerActions = false, reviewActions = false, isSaved = false) {
     const sourceUrl = safeHttpUrl(item.source_url);
     const contactUrl = safeHttpUrl(item.contact_url);
     const status = String(item.status || 'published');
@@ -4290,6 +4438,7 @@ td strong{color:#2a464d;font-size:11px}
         <p>${sourceUrl ? `<a href="${escapeHubHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Check source</a>` : '<span class="muted">Source link unavailable</span>'}
         ${contactUrl ? ` · <a href="${escapeHubHtml(contactUrl)}" target="_blank" rel="noopener noreferrer">Application / contact</a>` : ''}</p>
         <p class="muted">${item.is_official ? 'Officially verified publisher' : 'Community-submitted · verify the source independently'}</p>
+        ${status === 'published' && !ownerActions && !reviewActions ? `<div class="actions"><button type="button" class="btn secondary" data-opportunity-bookmark="${isSaved ? 'remove' : 'save'}" data-opportunity-id="${escapeHubHtml(item.id)}">${isSaved ? 'Remove saved opportunity' : 'Save opportunity'}</button></div>` : ''}
         ${ownerActions && ['draft','rejected'].includes(status) ? `
           <div class="actions"><button type="button" class="btn secondary" data-opportunity-edit="${escapeHubHtml(item.id)}">Edit</button><button type="button" class="btn" data-opportunity-submit="${escapeHubHtml(item.id)}" ${item.deadline && new Date(item.deadline).getTime() <= Date.now() ? 'disabled' : ''}>Submit for review</button></div>
         ` : ''}
@@ -4318,14 +4467,16 @@ td strong{color:#2a464d;font-size:11px}
     status.textContent = 'Loading published opportunities…';
     myStatus.textContent = 'Loading your submissions…';
     try {
-      const [allRows, myRows] = await Promise.all([
+      const [allRows, myRows, bookmarks] = await Promise.all([
         window.CampusShieldBackend.listCampusOpportunities(),
-        window.CampusShieldBackend.listMyCampusOpportunities()
+        window.CampusShieldBackend.listMyCampusOpportunities(),
+        window.CampusShieldBackend.listOpportunityBookmarks()
       ]);
+      const savedIds = new Set(bookmarks.map(item => item.opportunity_id));
       const published = allRows.filter(item => item.status === 'published' && (!item.deadline || new Date(item.deadline).getTime() > Date.now()));
       const pending = allRows.filter(item => item.status === 'pending');
       status.textContent = published.length ? published.length + ' published opportunity(ies).' : 'No published opportunities yet.';
-      feed.innerHTML = published.length ? published.map(item => renderOpportunityCard(item)).join('') : '<div class="community-empty">No approved opportunities yet. Check back after campus review.</div>';
+      feed.innerHTML = published.length ? published.map(item => renderOpportunityCard(item, false, false, savedIds.has(item.id))).join('') : '<div class="community-empty">No approved opportunities yet. Check back after campus review.</div>';
       myStatus.textContent = myRows.length ? myRows.length + ' submission(s) created by your account.' : 'You have not submitted an opportunity yet.';
       myFeed.innerHTML = myRows.length ? myRows.map(item => renderOpportunityCard(item, true)).join('') : '<div class="community-empty">Your drafts and submissions will appear here.</div>';
       if (staffAccess) {
@@ -4335,7 +4486,7 @@ td strong{color:#2a464d;font-size:11px}
     } catch (err) {
       status.textContent = err.message || 'Could not load opportunities.';
       myStatus.textContent = 'Could not load your submissions.';
-      feed.innerHTML = '<div class="community-empty">Opportunity data could not be loaded. Confirm the staging migration has been reviewed and applied.</div>';
+      feed.innerHTML = '<div class="community-empty">Opportunity data could not be loaded. Confirm the campus-life database migration has been applied.</div>';
       myFeed.innerHTML = '<div class="community-empty">Your submissions could not be loaded.</div>';
     }
   }
