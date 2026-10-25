@@ -4103,7 +4103,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         stopCampusChatRealtime();
         campusChatUniversityId = null;
         setCampusChatReady(false);
-        if (status) status.textContent = "Campus Chat requires a verified CampusShield account and approved university membership. You can still browse the rest of your workspace.";
+        if (status) status.textContent = "Campus Chat requires a verified CampusShield account, approved university membership, and student identity approval when required for your account. You can still browse the rest of your workspace.";
         if (list) list.innerHTML = '<div class="campus-chat-empty"><strong>Verification needed</strong><p>Complete account and university verification to join your university conversation.</p></div>';
         if ($("campus-chat-moderation")) $("campus-chat-moderation").hidden = true;
         return;
