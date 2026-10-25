@@ -281,6 +281,8 @@ assert.match(pushDispatchFunction, /CAMPUSSHIELD_APP_ORIGIN/, "push dispatch res
 assert.match(pushDispatchFunction, /const respond = \(body: Record<string, unknown>, status = 200\) => json\(body, status, origin \|\| DEFAULT_ORIGIN\)/, "push API success and error responses allow the request origin");
 assert.match(pushDispatchFunction, /equalsConstantTime/, "internal dispatch secret comparison is constant-time");
 assert.match(pushDispatchFunction, /Only a recently sent message can trigger a background notification/, "direct-message push checks a message the caller recently sent");
+assert.match(backend, /async sendCampusDirectMessage\(conversationId, body\)[\s\S]*?this\.callPushFunction\("delivery", \{ action: "message", message_id: data \}\)/, "direct-message push is attempted only after a successful staging message write");
+assert.match(backend, /if \(isStaging && typeof data === "string"/, "production direct messages do not call staging push functions");
 assert.match(pushDispatchFunction, /genericMessages/, "push payloads use generic notification copy rather than private message content");
 assert.match(campusPushMigration, /enable row level security/i);
 assert.match(campusPushMigration, /using \(false\) with check \(false\)/i, "push tables deny direct client access");
