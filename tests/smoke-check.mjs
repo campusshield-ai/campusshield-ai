@@ -121,6 +121,11 @@ assert.match(html, /data-page="academics"/);
 assert.match(html, /academics:'Academic Life'/);
 assert.match(html, /TIMETABLE &amp; DEADLINES/);
 assert.match(html, /data-academic-focus="planner"/);
+assert.match(html, /button\.dataset\.academicFocus === 'planner'/);
+assert.match(html, /shieldmind-planner-panel/);
+assert.match(html, /scrollIntoView/);
+assert.match(html, /prefers-reduced-motion: reduce/);
+
 assert.match(html, /data-page="classroom"/);
 assert.match(html, /data-page="groups"/);
 assert.match(html, /data-page="noticeboard"/);
