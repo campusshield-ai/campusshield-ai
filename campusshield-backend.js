@@ -86,7 +86,7 @@ async resendConfirmation(email) {
     type: "signup",
     email: email.trim(),
     options: {
-      emailRedirectTo: AUTH_REDIRECT_URL
+      emailRedirectTo: getAuthRedirectUrl()
     }
   });
 },
