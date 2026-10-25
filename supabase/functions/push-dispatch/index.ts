@@ -43,7 +43,7 @@ Deno.serve(async (req: Request) => {
     let eventKey: string | null = null;
     const db = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
     if (!internalAuthorized) {
-      const token = (req.headers.get("authorization") || "").match(/^Bearer\\s+(.+)$/i)?.[1];
+      const token = (req.headers.get("authorization") || "").match(/^Bearer\s+(.+)$/i)?.[1];
       if (!["test", "message"].includes(String(body?.action || "")) || !token || !anon) {
         return json({ error: "Not authorized." }, 401);
       }
@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
         userId = user.id;
         kind = "test";
         eventKey = null; // Users can send another test after re-subscribing or for troubleshooting.
-      } else {
+      } else if (body.action === "message") {
         const messageId = String(body?.message_id || "");
         if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(messageId)) {
           return json({ error: "A valid recent message is required." }, 400);
@@ -81,6 +81,8 @@ Deno.serve(async (req: Request) => {
         userId = conversation.user_one_id === user.id ? conversation.user_two_id : conversation.user_one_id;
         kind = "new_message";
         eventKey = "direct-message:" + sentMessage.id + ":" + userId;
+      } else {
+        return json({ error: "Unsupported push action." }, 400);
       }
     }
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId) ||
