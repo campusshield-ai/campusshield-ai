@@ -861,6 +861,24 @@ button,input,select,textarea{max-width:100%;min-width:0}
 @media(max-width:700px){.campus-dashboard-hero{grid-template-columns:minmax(0,1fr);gap:19px;padding:22px 18px;border-radius:21px}.campus-dashboard-hero h1{font-size:clamp(29px,8vw,38px);max-width:20ch}.campus-dashboard-hero .hero-description{font-size:13px}.campus-dashboard-hero .hero-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:none;margin-top:19px}.campus-dashboard-hero .hero-actions .btn{justify-content:center;padding-inline:10px;font-size:11px}.campus-dashboard-emergency{align-self:stretch;padding:17px}.campus-dashboard-emergency p{font-size:13px}}
 @media(max-width:390px){.campus-dashboard-hero .hero-actions{grid-template-columns:1fr}.campus-dashboard-hero .hero-actions .btn{justify-content:flex-start}}
 
+
+/* Campus service contacts: verified links only, with an explicit emergency limitation. */
+.campus-dashboard-hero .campus-dashboard-emergency a[data-page="campus-contacts"]{cursor:pointer}
+.campus-contacts-emergency{margin-bottom:16px}
+.campus-contacts-campus-panel{margin-bottom:16px}
+.campus-contacts-campus-summary{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.campus-contacts-campus-summary>div{min-width:0}
+.campus-contact-kicker{display:block;margin:0 0 8px;color:#428273;font-size:9px;font-weight:900;letter-spacing:.16em}
+.campus-contact-icon{display:grid;place-items:center;width:38px;height:38px;margin-bottom:13px;border:1px solid #d7ebe3;border-radius:12px;background:#eff9f4;color:#267a68;font-size:18px;font-weight:850}
+.campus-contact-card{min-width:0;margin:0}
+.campus-contact-card h2,.campus-contacts-campus-summary h2{margin:0 0 8px;color:#183840;font-size:18px;letter-spacing:-.035em}
+.campus-contact-card p,.campus-contacts-campus-summary p{color:#647a7e;font-size:12px;line-height:1.7}
+.campus-contact-card .btn{margin-top:7px}
+.campus-contact-note{font-size:10px!important;color:#7d8c90!important}
+.campus-contacts-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.campus-contacts-footnote{color:#7d8c90;font-size:10px;line-height:1.6}
+@media(max-width:700px){.campus-contacts-grid{grid-template-columns:minmax(0,1fr)}.campus-contacts-campus-summary{align-items:flex-start;flex-direction:column}.campus-contacts-campus-summary .btn{width:100%;justify-content:center}}
+
 </style>
 </head>
 <body>
@@ -1079,7 +1097,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   <aside class="campus-dashboard-emergency" aria-label="Emergency guidance">
     <div class="campus-dashboard-emergency-kicker"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3H4a1 1 0 0 0-1 1 17 17 0 0 0 17 17 1 1 0 0 0 1-1v-3l-5-2-2 3a14 14 0 0 1-5-5l3-2-2-5Z"/></svg>Emergency guidance</div>
     <p>If someone is in immediate danger, contact your campus security control room or local emergency services straight away. This platform records reports — it does not dispatch help.</p>
-    <a href="#" data-page="campus-contacts">Campus service contacts <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+    <a href="#page-campus-contacts" data-page="campus-contacts">Campus service contacts <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
   </aside>
 </section>
 <div class="heading dashboard-overview-heading">
@@ -1281,6 +1299,59 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <p id="campus-notices-status" class="message" role="status" aria-live="polite">Loading official notices…</p>
     <div id="campus-noticeboard-feed"><div class="community-empty">Loading official notices…</div></div>
   </section>
+</section>
+
+<section class="page" id="page-campus-contacts">
+  <div class="heading">
+    <div><h1>Campus service contacts</h1><p>Find the right official channel for urgent safety concerns and everyday campus support.</p></div>
+    <div class="heading-actions"><button class="btn secondary" type="button" data-page="helpdesk">Open Campus Helpdesk</button></div>
+  </div>
+  <div class="notice-inline campus-contacts-emergency" role="note">
+    <strong>Immediate danger?</strong> Contact your university's security control room or local emergency services using a number published by an official source. CampusShield records reports; it does not dispatch help.
+  </div>
+  <section class="panel campus-contacts-campus-panel" aria-labelledby="campus-contacts-campus-heading">
+    <div class="campus-contacts-campus-summary">
+      <div>
+        <span class="campus-contact-kicker">YOUR INSTITUTION</span>
+        <h2 id="campus-contacts-campus-heading"><span id="campus-contacts-campus-name">Checking your university…</span></h2>
+        <p id="campus-contacts-status" class="message campus-contacts-status" role="status" aria-live="polite">Loading the institution directory…</p>
+      </div>
+      <a id="campus-contacts-official-link" class="btn" href="#" target="_blank" rel="noopener noreferrer" hidden>Open official university website ↗</a>
+    </div>
+  </section>
+  <div class="grid campus-contacts-grid">
+    <article class="panel campus-contact-card">
+      <span class="campus-contact-icon" aria-hidden="true">!</span>
+      <span class="campus-contact-kicker">URGENT SAFETY</span>
+      <h2>Campus security control room</h2>
+      <p>For immediate danger, use the emergency procedure and current contact number published by your university or campus security office.</p>
+      <p class="campus-contact-note">No unverified phone number is displayed here.</p>
+      <button class="btn secondary" type="button" data-page="report">Report a non-immediate incident</button>
+    </article>
+    <article class="panel campus-contact-card">
+      <span class="campus-contact-icon" aria-hidden="true">+</span>
+      <span class="campus-contact-kicker">HEALTH & WELLBEING</span>
+      <h2>Campus medical services</h2>
+      <p>Use your institution's official clinic or health-centre contact details. If the situation is urgent, contact local emergency services directly.</p>
+      <p class="campus-contact-note">CampusShield is not a medical or emergency dispatch service.</p>
+      <a class="btn secondary" href="#page-campus-contacts" data-page="campus-contacts">Check official institution details</a>
+    </article>
+    <article class="panel campus-contact-card">
+      <span class="campus-contact-icon" aria-hidden="true">@</span>
+      <span class="campus-contact-kicker">STUDENT SERVICES</span>
+      <h2>Student affairs and registrar</h2>
+      <p>Use the official university website or student portal for registration, academic records, welfare and administrative enquiries.</p>
+      <a class="btn secondary" href="#page-campus-contacts" data-page="campus-contacts">Open institution details</a>
+    </article>
+    <article class="panel campus-contact-card">
+      <span class="campus-contact-icon" aria-hidden="true">↗</span>
+      <span class="campus-contact-kicker">EVERYDAY SUPPORT</span>
+      <h2>Campus service desk</h2>
+      <p>Report non-emergency issues such as facilities, Wi-Fi, classroom equipment and administrative service problems. Track updates in CampusShield.</p>
+      <button class="btn" type="button" data-page="helpdesk">Open Campus Helpdesk</button>
+    </article>
+  </div>
+  <p class="campus-contacts-footnote">Contact information should be verified against official university sources. CampusShield does not invent or guarantee emergency numbers.</p>
 </section>
 
 <section class="page" id="page-helpdesk">
@@ -2651,6 +2722,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       'platform-admin':'Platform administration',
       noticeboard:'Verified noticeboard',
       helpdesk:'Campus Helpdesk',
+      'campus-contacts':'Campus service contacts',
       community:'CampusPulse & Groups',
       groups:'Campus groups',
       events:'Events & Campus Services',
@@ -2983,8 +3055,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
   document.addEventListener('click', e => {
     const button = e.target.closest('[data-page]');
     if (!button) return;
+    if (button.tagName === 'A') e.preventDefault();
     navigate(button.dataset.page);
     if (button.dataset.page === 'profile-settings') loadMyProfileSettings();
+    if (button.dataset.page === 'campus-contacts') loadCampusContactsPage();
     if (button.dataset.page === 'approvals') loadAccountApprovals();
     if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
     if (button.dataset.page === 'classroom') loadCampusClassroomsPage();
@@ -3020,6 +3094,58 @@ button,input,select,textarea{max-width:100%;min-width:0}
       return '';
     }
   }
+
+  async function loadCampusContactsPage() {
+    const status = $('campus-contacts-status');
+    const campusName = $('campus-contacts-campus-name');
+    const officialLink = $('campus-contacts-official-link');
+    if (!status || !campusName || !officialLink) return;
+
+    officialLink.hidden = true;
+    officialLink.removeAttribute('href');
+    campusName.textContent = 'Checking your university…';
+    status.textContent = 'Loading the institution directory…';
+
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.client) throw new Error('Campus directory is not connected.');
+
+      let context = campusContext;
+      if (!context?.university_id) {
+        context = await backend.getMyCampusContext();
+        campusContext = context;
+      }
+
+      if (!context?.university_id) {
+        campusName.textContent = 'No university linked';
+        status.textContent = 'Link your university in My Profile & Settings. Until then, use your institution’s official channels for current emergency contacts.';
+        return;
+      }
+
+      const {data, error} = await backend.client
+        .from('campus_universities')
+        .select('name,official_website')
+        .eq('id', context.university_id)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (error) throw error;
+
+      campusName.textContent = data?.name || context.university_name || 'Your university';
+      const officialUrl = safeHttpUrl(data?.official_website);
+      if (officialUrl) {
+        officialLink.href = officialUrl;
+        officialLink.hidden = false;
+        status.textContent = 'Institution directory loaded. Confirm emergency numbers and service details on the official university website.';
+      } else {
+        status.textContent = 'Your university is linked, but an official website is not recorded in the directory yet. No phone numbers will be guessed; check your university portal or contact campus security directly.';
+      }
+    } catch (error) {
+      console.warn('Campus service contacts could not be loaded.');
+      campusName.textContent = campusContext?.university_name || 'Your university';
+      status.textContent = 'Could not load institution details right now. Use official university channels for verified contacts; this page does not supply unverified emergency numbers.';
+    }
+  }
+
 
   function escapeHubHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, character => ({
