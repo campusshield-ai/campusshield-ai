@@ -2412,7 +2412,9 @@ td strong{color:#2a464d;font-size:11px}
     );
 
     document.querySelectorAll('[data-page]').forEach(el => {
-      const active = el.dataset.page === page;
+      const active = el.dataset.page === page ||
+        (el.id === 'community-nav' && page === 'groups') ||
+        (el.id === 'events-services-nav' && ['noticeboard','helpdesk','marketplace'].includes(page));
       el.classList.toggle('active', active);
       if (active) el.setAttribute('aria-current', 'page');
       else el.removeAttribute('aria-current');
