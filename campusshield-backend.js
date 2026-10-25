@@ -1289,7 +1289,22 @@ async getCurrentUser() {
       const { data, error } = await client.functions.invoke("shieldmind-chat", {
         body: { question: cleanQuestion, history: safeHistory, ...(safeImage ? { image: safeImage, image_attested: true } : {}) }
       });
-      if (error) throw error;
+      if (error) {
+        // Supabase wraps non-2xx function responses in an error object. Read only
+        // the function's safe JSON message so rate-limit/billing failures are clear.
+        let responseMessage = "";
+        try {
+          const response = error.context;
+          if (response && typeof response.clone === "function") {
+            const payload = await response.clone().json();
+            if (typeof payload?.error === "string") responseMessage = payload.error;
+          }
+        } catch (_parseError) {
+          // Keep the original SDK error if the response body is not JSON.
+        }
+        if (responseMessage) throw new Error(responseMessage);
+        throw error;
+      }
       if (data?.error) throw new Error(data.error);
       return data;
     },
