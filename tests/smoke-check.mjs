@@ -21,6 +21,7 @@ const serviceWorker = await readFile(new URL("../service-worker.js", import.meta
 const pushSubscriptionsFunction = await readFile(new URL("../supabase/functions/push-subscriptions/index.ts", import.meta.url), "utf8");
 const pushDispatchFunction = await readFile(new URL("../supabase/functions/push-dispatch/index.ts", import.meta.url), "utf8");
 const pushMigration = await readFile(new URL("../supabase/migrations/20261025200000_add_web_push_notifications.sql", import.meta.url), "utf8");
+const pushEventDedupMigration = await readFile(new URL("../supabase/migrations/20261025220000_add_push_event_deduplication.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -43,7 +44,14 @@ assert.match(pushMigration, /GRANT ALL ON TABLE public\.campus_push_subscription
 assert.match(pushSubscriptionsFunction, /auth\.getUser\(token\)/, "subscription changes validate the signed-in user");
 assert.match(pushSubscriptionsFunction, /validPushEndpoint/, "subscriptions accept only validated HTTPS push service endpoints");
 assert.match(pushDispatchFunction, /PUSH_DISPATCH_SECRET/, "server-initiated push requires a private dispatch secret");
-assert.match(pushDispatchFunction, /body\?\.action !== "test"/, "browser test push is limited to the current signed-in user");
+assert.match(pushDispatchFunction, /body\.action === "test"/, "browser test push is limited to the current signed-in user");
+assert.match(pushDispatchFunction, /body\.action === "message"/, "private-message pushes are handled by the trusted dispatch function");
+assert.match(pushDispatchFunction, /\.eq\("sender_id", user\.id\)/, "message push requires a message sent by the signed-in caller");
+assert.match(pushDispatchFunction, /\.eq\("status", "accepted"\)/, "message push requires an accepted conversation");
+assert.match(pushDispatchFunction, /campus_push_delivery_events/, "message push uses a deduplication ledger");
+assert.match(pushEventDedupMigration, /REVOKE ALL ON TABLE public\.campus_push_delivery_events FROM PUBLIC, anon, authenticated/, "push delivery idempotency records are server-only");
+assert.match(backend, /body: \{ action: "message", message_id: data \}/, "sending a private message triggers a best-effort generic push");
+assert.match(backend, /Notification failures must never undo a successful private message/, "push errors do not fail message sending");
 assert.doesNotMatch(pushDispatchFunction, /body\.title|body\.message/, "callers cannot inject arbitrary push message text");
 assert.doesNotThrow(() => new Function(planner), "ShieldMind planner parses");
 assert.match(html, /<script src="\.\/shieldmind-planner\.js"><\/script>/);
