@@ -7087,11 +7087,10 @@ $('resend-confirmation-button').addEventListener('click', async () => {
                   ? `Signed in. Your role is ${profile.role}.`
                   : 'Your account is pending verification. You can submit incident reports.';
               }
-              if (!campusContext?.university_id) {
-                navigate('community');
-                await loadCommunityPage();
-              } else if (isStudentAccount()) {
-                navigate('dashboard');
+              // Always restore signed-in sessions to Overview after a fresh visit or refresh.
+              // CampusPulse/university selection remains available through its own navigation item.
+              navigate('dashboard');
+              if (isStudentAccount()) {
                 await loadStudentIdentityStatus();
               }
             }
