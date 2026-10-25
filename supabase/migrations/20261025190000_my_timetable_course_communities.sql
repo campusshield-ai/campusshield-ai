@@ -414,7 +414,7 @@ begin
   -- The course-community creator is auto-enrolled as a moderator; discussion stays closed until approval.
   insert into public.campus_group_members(group_id,user_id,member_role)
   values (v_group_id,v_user_id,'moderator')
-  on conflict (group_id,user_id) do nothing;
+  on conflict do nothing;
 
   return query select v_group_id,v_group_status,v_group_name,false;
 exception when unique_violation then
