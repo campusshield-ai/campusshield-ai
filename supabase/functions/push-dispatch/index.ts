@@ -16,11 +16,24 @@ const equalsConstantTime = (a: string, b: string) => {
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 };
-const json = (body: Record<string, unknown>, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+const DEFAULT_ORIGIN = "https://campusshield-ai.github.io";
+const cors = (origin: string) => ({
+  "Access-Control-Allow-Origin": origin,
+  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Vary": "Origin",
+});
+const json = (body: Record<string, unknown>, status = 200, origin = DEFAULT_ORIGIN) =>
+  new Response(JSON.stringify(body), { status, headers: { ...cors(origin), "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
 
 Deno.serve(async (req: Request) => {
-  if (req.method !== "POST") return json({ error: "Method not allowed." }, 405);
+  const origin = (req.headers.get("origin") || "").replace(/\/$/, "");
+  const configuredOrigin = (Deno.env.get("CAMPUSSHIELD_APP_ORIGIN") || "").replace(/\/$/, "");
+  const local = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+  const allowed = !origin || (configuredOrigin ? origin === configuredOrigin : origin === DEFAULT_ORIGIN || local);
+  if (origin && !allowed) return json({ error: "App origin is not allowed." }, 403);
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin || DEFAULT_ORIGIN) });
+  if (req.method !== "POST") return json({ error: "Method not allowed." }, 405, origin || DEFAULT_ORIGIN);
   const expected = Deno.env.get("PUSH_DISPATCH_SECRET") || "";
   const supplied = req.headers.get("x-campus-push-secret") || "";
   const internalAuthorized = Boolean(expected && supplied && equalsConstantTime(expected, supplied));
