@@ -49,6 +49,33 @@ assert.match(html, /does not contact emergency services/i);
 assert.match(html, /id="auth-username"/);
 
 assert.match(html, /id="page-courses"/);
+for (const label of [
+  'Overview',
+  'Academic Life',
+  'Courses &amp; Study Resources',
+  'CampusPulse &amp; Groups',
+  'Events &amp; Campus Services',
+  'Opportunities &amp; Scholarships',
+  'Safety &amp; Report Incident',
+  'ShieldMind AI',
+  'Subscriptions &amp; Billing',
+  'My Profile &amp; Settings'
+]) assert.ok(html.includes(label), `student navigation contains ${label}`);
+assert.match(html, /id="page-profile-settings"/);
+assert.match(html, /id="profile-settings-email"/);
+assert.match(html, /id="nav-staff-heading" hidden/);
+assert.match(html, /el\.id === 'community-nav' && page === 'groups'/);
+assert.match(html, /el\.id === 'events-services-nav' && \['noticeboard','helpdesk','marketplace'\]/);
+assert.match(html, /id="nav-admin-heading" hidden/);
+assert.match(html, /function syncNavSectionHeadings\(\)/);
+assert.match(html, /!canManageIncidents\(\)/);
+assert.match(html, /\['teacher','security','admin'\]\.includes\(currentProfile\?\.role\)/);
+assert.match(html, /Teacher Classroom requires a verified campus staff account/);
+assert.doesNotMatch(html, /Campus Map &amp; Lost and Found/i);
+assert.match(html, /data-page="groups">Explore groups<\/button>/);
+assert.match(html, /data-page="noticeboard">Noticeboard<\/button>/);
+assert.match(html, /data-page="helpdesk">Helpdesk<\/button>/);
+assert.match(html, /data-page="marketplace">Marketplace<\/button>/);
 // Individual plan prices and payment actions live only on Subscriptions & billing.
 // The ShieldMind AI page keeps plan status and a navigation link, without a duplicate price grid.
 const shieldmindPageStart = html.indexOf('<section class="page" id="page-shieldmind">');
