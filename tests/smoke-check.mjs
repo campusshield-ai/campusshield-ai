@@ -49,6 +49,19 @@ assert.match(html, /does not contact emergency services/i);
 assert.match(html, /id="auth-username"/);
 
 assert.match(html, /id="page-courses"/);
+// Individual plan prices and payment actions live only on Subscriptions & billing.
+// The ShieldMind AI page keeps plan status and a navigation link, without a duplicate price grid.
+const shieldmindPageStart = html.indexOf('<section class="page" id="page-shieldmind">');
+const billingPageStart = html.indexOf('<section class="page" id="page-billing">');
+assert.ok(shieldmindPageStart >= 0 && billingPageStart > shieldmindPageStart, "ShieldMind and billing pages exist in order");
+const shieldmindPageMarkup = html.slice(shieldmindPageStart, billingPageStart);
+assert.match(shieldmindPageMarkup, /id="shieldmind-plan-status"/);
+assert.match(shieldmindPageMarkup, /data-page="billing">View plans &amp; subscriptions<\/button>/);
+assert.doesNotMatch(shieldmindPageMarkup, /data-shieldmind-buy=/, "AI page has no separate purchase actions");
+assert.doesNotMatch(shieldmindPageMarkup, /<div class="shieldmind-prices">/, "AI page has no duplicate price grid");
+assert.match(html.slice(billingPageStart), /ShieldMind AI · Individual plans/);
+assert.match(html.slice(billingPageStart), /data-billing-plan="starter"/);
+assert.match(html.slice(billingPageStart), /id="institutional-billing-panel" hidden/);
 assert.match(html, /id="institutional-billing-panel" hidden/);
 assert.match(html, /function canManageInstitutionalBilling\(\)/);
 assert.match(html, /if \(kind === 'institution' && !canManageInstitutionalBilling\(\)\)/);

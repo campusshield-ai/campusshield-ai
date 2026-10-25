@@ -1256,16 +1256,13 @@ td strong{color:#2a464d;font-size:11px}
   <div class="notice-inline" id="shieldmind-access-notice" role="status" aria-live="polite">ShieldMind AI is available in the live workspace. Sending questions requires a verified CampusShield account and an active, verified university membership. Student accounts must also have approved student identity verification.</div>
 
   <section class="shieldmind-plan panel" aria-labelledby="shieldmind-plan-title">
-    <div class="shieldmind-plan-copy"><span class="shieldmind-pill">FREE + PREMIUM</span><h2 id="shieldmind-plan-title">Choose how much AI support you need</h2><p>Core campus safety stays free. Premium adds higher AI limits for study support.</p><p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p></div>
-    <div class="shieldmind-prices">
-      <article class="shieldmind-price"><strong>Free</strong><b>₦0</b><span>5 requests/min · 80/day</span><small>Core academic Q&amp;A and study prompts</small><button class="btn secondary" type="button" disabled>Included</button></article>
-      <article class="shieldmind-price premium"><strong>Starter</strong><b>₦2,000</b><span>10 requests/min · 250/day</span><small>20 image uploads/month · 8-hour sessions, then 1-hour rest</small><button class="btn" type="button" data-shieldmind-buy="starter">Choose Starter</button></article>
-      <article class="shieldmind-price premium"><strong>Plus</strong><b>₦5,000</b><span>15 requests/min · 700/day</span><small>60 image uploads/month · expanded study workloads</small><button class="btn" type="button" data-shieldmind-buy="plus">Choose Plus</button></article>
-      <article class="shieldmind-price premium"><strong>Pro · Full standard access</strong><b>₦10,000</b><span>25 requests/min · 1,500/day</span><small>150 image uploads/month · all standard ShieldMind features</small><button class="btn" type="button" data-shieldmind-buy="pro">Choose Pro</button></article>
-      <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦20,000</b><span>35 requests/min · 2,500/day</span><small>300 image uploads/month · higher capacity and priority where available</small><button class="btn" type="button" data-shieldmind-buy="ultra">Choose Ultra</button></article>
-      <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>50 requests/min · 4,000/day</span><small>600 image uploads/month · highest planned usage tier</small><button class="btn" type="button" data-shieldmind-buy="max">Choose Max</button></article>
+    <div class="shieldmind-plan-copy">
+      <span class="shieldmind-pill">YOUR PLAN</span>
+      <h2 id="shieldmind-plan-title">Your ShieldMind plan</h2>
+      <p>Stay here to study with ShieldMind AI. Compare Free and premium limits, renew access, and manage payments on the dedicated Subscriptions &amp; billing page.</p>
+      <p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p>
+      <div class="actions"><button class="btn" type="button" data-page="billing">View plans &amp; subscriptions</button></div>
     </div>
-    <p class="shieldmind-plan-note">Paid plans are 30-day prepaid access and do not auto-renew. Payments are processed on Paystack Checkout. Paid access activates only after a verified server-side payment confirmation. Images are sent to the configured AI provider for processing and are not saved in CampusShield Storage; upload academic images only, never IDs or private campus records.</p>
   </section>
   <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Start with a general academic question.</p></div><span class="shieldmind-pill">LIVE AI SERVICE</span></div>
     <div class="notice-inline">ShieldMind will not guess official university policies or deadlines. Official answers require approved campus source pages.</div>
@@ -6163,13 +6160,10 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if (error) throw error;
       const active=Boolean(data && ['starter','plus','pro','ultra','max','premium'].includes(data.plan) &&
         data.status==='active' && data.expires_at && new Date(data.expires_at).getTime()>Date.now());
-      document.querySelectorAll('[data-shieldmind-buy],[data-billing-plan]').forEach(button=>{
-        button.disabled=false;
-        if(button.dataset.shieldmindBuy) button.textContent=active?'Manage / renew plan':'Choose '+button.dataset.shieldmindBuy.charAt(0).toUpperCase()+button.dataset.shieldmindBuy.slice(1);
-      });
+      document.querySelectorAll('[data-billing-plan]').forEach(button=>{ button.disabled=false; });
       status.textContent=active
         ? data.plan.toUpperCase()+' active until '+new Date(data.expires_at).toLocaleDateString()+'. Your tier limits are enabled.'
-        : 'You are on ShieldMind Free. Choose a paid plan to open secure Paystack checkout. Payment must be confirmed by the server before Premium activates.';
+        : 'You are on ShieldMind Free. Visit Subscriptions & billing to compare paid plans. Payment must be confirmed by the server before Premium activates.';
       const billingStatus=$('billing-ai-status');
       if(billingStatus) billingStatus.textContent=active
         ? data.plan.toUpperCase()+' active until '+new Date(data.expires_at).toLocaleDateString()+'.'
@@ -6180,26 +6174,6 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if(billingStatus) billingStatus.textContent='Plan status is temporarily unavailable. Paid access cannot be granted without a verified server-side payment.';
     }
   }
-  document.querySelectorAll('[data-shieldmind-buy]').forEach(button=>button.addEventListener('click',async()=>{
-    const backend=window.CampusShieldBackend, plan=button.dataset.shieldmindBuy;
-    if(!currentProfile||!backend?.isConfigured){$('shieldmind-plan-status').textContent='Sign in before upgrading.';return;}
-    const oldText=button.textContent;button.disabled=true;button.textContent='Opening secure checkout…';
-    try {
-      const {data:{user},error:userError}=await backend.client.auth.getUser();
-      if(userError||!user)throw new Error('Sign in again before checkout.');
-      const {data,error}=await backend.client.functions.invoke('paystack-initialize',{body:{plan,billing_period:'monthly'}});
-      if(error){
-        let providerMessage=null;
-        try{providerMessage=(await error.context?.clone?.().json())?.error||null;}catch(_ignored){}
-        throw new Error(providerMessage||'Secure live checkout could not start. Check the production Paystack configuration. No payment has been taken.');
-      }
-      if(!data?.authorization_url||!/^https:\/\/checkout\.paystack\.com\//i.test(data.authorization_url))throw new Error(data?.error||'Secure live checkout is not configured yet. No payment has been taken.');
-      window.location.assign(data.authorization_url);
-    } catch(error) {
-      $('shieldmind-plan-status').textContent=error?.message||'Checkout could not start. Please try again.';
-      button.disabled=false;button.textContent=oldText;
-    }
-  }));
   function addShieldMindMessage(role,message) {
     const article=document.createElement('article'); article.className='shieldmind-message '+(role==='user'?'user':'assistant');
     const title=document.createElement('strong'); title.textContent=role==='user'?'You':'ShieldMind AI';
