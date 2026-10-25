@@ -197,7 +197,7 @@ Deno.serve(async (req: Request) => {
         }, 503);
       }
       const upstreamRetryAfter = providerResponse.headers.get("retry-after");
-      const retryAfter = upstreamRetryAfter && /^\\d+$/.test(upstreamRetryAfter) ? upstreamRetryAfter : "30";
+      const retryAfter = upstreamRetryAfter && /^\d+$/.test(upstreamRetryAfter) ? upstreamRetryAfter : "30";
       return json({
         error: providerCode === "rate_limit_exceeded"
           ? "ShieldMind's AI provider is temporarily rate-limiting requests. Please wait 30 seconds and try again."
