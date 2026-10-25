@@ -1318,7 +1318,7 @@ td strong{color:#2a464d;font-size:11px}
       <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>50 requests/min · 4,000/day</span><small>600 image uploads/month</small><button class="btn" type="button" data-billing-plan="max" data-billing-kind="individual">Continue to payment</button></article>
     </div>
   </section>
-  <section class="panel">
+  <section class="panel" id="institutional-billing-panel" hidden>
     <div class="panel-heading"><div><h2>University subscriptions</h2><p>Institution-level controls for verified campus teams. Student essential safety access remains free.</p></div></div>
     <div class="shieldmind-prices">
       <article class="shieldmind-price"><strong>Starter · University</strong><b>₦100,000</b><span>per month</span><small>₦1,000,000 yearly · Core campus verification, notices, helpdesk and safety dashboard</small><button class="btn secondary" type="button" data-billing-plan="university-starter" data-billing-kind="institution">Request institutional billing</button></article>
@@ -1797,6 +1797,10 @@ td strong{color:#2a464d;font-size:11px}
       ['security', 'admin'].includes(currentProfile.role);
   }
 
+  function canManageInstitutionalBilling() {
+    return currentProfile?.role === 'admin' && currentProfile?.verification_status === 'verified';
+  }
+
   function syncCampusAccessNavigation() {
     const verified = currentProfile?.verification_status === 'verified';
     const staffCampusApproved = hasVerifiedCampusStaffMembership();
@@ -1818,6 +1822,11 @@ td strong{color:#2a464d;font-size:11px}
       const status = $('institution-billing-status');
       const backend = window.CampusShieldBackend;
       const submit = $('institution-billing-submit');
+      if (!canManageInstitutionalBilling()) {
+        institutionBillingForm.hidden = true;
+        toast('Only verified administrators can submit institutional billing requests.');
+        return;
+      }
       if (!currentProfile || !backend?.isConfigured) {
         status.textContent = 'Please sign in before submitting an institutional request.';
         return;
@@ -1858,6 +1867,10 @@ td strong{color:#2a464d;font-size:11px}
   async function loadInstitutionalBillingRequests() {
     const container = $('institutional-billing-requests');
     if (!container) return;
+    if (!canManageInstitutionalBilling()) {
+      container.replaceChildren();
+      return;
+    }
     const backend = window.CampusShieldBackend;
     if (!currentProfile || !backend?.isConfigured) {
       container.textContent = 'Sign in to view your institutional billing requests.';
@@ -1896,6 +1909,10 @@ td strong{color:#2a464d;font-size:11px}
       const status = $('billing-payment-message');
       const plan = button.dataset.billingPlan;
       const kind = button.dataset.billingKind;
+      if (kind === 'institution' && !canManageInstitutionalBilling()) {
+        toast('Only verified administrators can access institutional billing.');
+        return;
+      }
       if (!window.CampusShieldBackend?.client) {
         status.textContent = 'Billing is unavailable because the secure backend is not configured.';
         return;
@@ -1965,6 +1982,8 @@ td strong{color:#2a464d;font-size:11px}
     $('workspace').hidden = false;
 
     const verified = currentProfile.verification_status === 'verified';
+    const institutionalBillingPanel = $('institutional-billing-panel');
+    if (institutionalBillingPanel) institutionalBillingPanel.hidden = !canManageInstitutionalBilling();
     document.querySelectorAll('[data-page="noticeboard"], [data-page="helpdesk"], [data-page="community"], [data-page="groups"], [data-page="events"], [data-page="marketplace"]').forEach(el => {
       el.hidden = !verified;
     });
