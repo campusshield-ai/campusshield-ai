@@ -441,6 +441,13 @@ td strong{color:#2a464d;font-size:11px}
 .campus-dashboard-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .campus-dashboard-card-head h3{margin:0;font-size:14px}
 .campus-dashboard-list{display:grid;gap:9px}
+.campus-dashboard-helpdesk{display:grid;grid-template-columns:minmax(200px,.7fr) minmax(0,1.3fr);gap:18px;align-items:start;margin-top:14px}
+.campus-dashboard-helpdesk .campus-dashboard-card-head{align-items:center}
+.campus-dashboard-helpdesk-summary{display:flex;align-items:baseline;gap:9px;margin-top:10px}
+.campus-dashboard-helpdesk-summary strong{color:#183840;font-size:28px;line-height:1;font-weight:850}
+.campus-dashboard-helpdesk-summary span{color:var(--muted,#71848a);font-size:11px;font-weight:700}
+.campus-dashboard-helpdesk-main>p{margin:8px 0 0}
+@media(max-width:700px){.campus-dashboard-helpdesk{grid-template-columns:1fr;gap:8px}}
 .campus-dashboard-list-item{padding:10px 0;border-bottom:1px solid var(--border,#e6eeea)}
 .campus-dashboard-list-item:last-child{border-bottom:0}
 .campus-dashboard-list-item strong{display:block;color:var(--text,#13343c);font-size:12px;line-height:1.4;overflow-wrap:anywhere}
@@ -808,6 +815,7 @@ td strong{color:#2a464d;font-size:11px}
 <div class="nav-label">WORKSPACE</div>
 <nav class="nav">
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
+<button data-page="academics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5-9 5.5-9-5.5Z"/><path d="M6.5 12.5v5c3.5 2.5 7.5 2.5 11 0v-5M21 10v6"/></svg></span>Academic Life</button>
 <button data-page="noticeboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3.5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>Noticeboard</button>
 <button data-page="helpdesk"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Helpdesk</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Report incident</button>
@@ -847,6 +855,7 @@ td strong{color:#2a464d;font-size:11px}
 <div class="heading">
   <div><h1>Your campus, in one place.</h1><p>Stay safe, find your people, and make the most of campus life. Your campus space is limited to your university.</p></div>
   <div class="heading-actions"><button class="btn" type="button" data-page="report"><span aria-hidden="true">＋</span>New report</button>
+    <button class="btn secondary" type="button" data-page="academics">Academic Life</button>
     <button class="btn secondary" type="button" id="student-identity-setup-button" hidden>Complete student setup</button>
     <p id="student-identity-setup-status" class="muted" role="status" aria-live="polite" hidden></p></div>
 </div>
@@ -878,6 +887,17 @@ td strong{color:#2a464d;font-size:11px}
       <div id="campus-dashboard-updates" class="campus-dashboard-list"><div class="campus-dashboard-empty">Verified notices and upcoming events will appear here.</div></div>
     </section>
   </div>
+  <section class="campus-dashboard-card campus-dashboard-helpdesk" aria-labelledby="campus-dashboard-helpdesk-title">
+    <div class="campus-dashboard-helpdesk-main">
+      <div class="campus-dashboard-card-head">
+        <h3 id="campus-dashboard-helpdesk-title">My Helpdesk status</h3>
+        <button class="btn secondary" type="button" data-page="helpdesk">Track requests</button>
+      </div>
+      <div class="campus-dashboard-helpdesk-summary"><strong id="campus-dashboard-helpdesk-count">—</strong><span>open service requests</span></div>
+      <p class="muted">A quick view of the service requests submitted from your account.</p>
+    </div>
+    <div id="campus-dashboard-helpdesk" class="campus-dashboard-list"><div class="campus-dashboard-empty">Sign in with a verified campus account to load your requests.</div></div>
+  </section>
   <div class="campus-dashboard-actions" id="campus-dashboard-actions">
     <button class="btn secondary" type="button" data-page="classroom">Open classrooms</button>
     <button class="btn secondary" type="button" data-page="events">Browse events</button>
@@ -910,6 +930,71 @@ td strong{color:#2a464d;font-size:11px}
   <div class="panel-heading"><div><h2>Recent reports</h2><p>Latest records your account can access.</p></div><span class="muted">Sorted newest first</span></div>
   <div id="recentList" class="recent-list"><div class="empty-state"><span class="empty-state-mark" aria-hidden="true">＋</span><div><strong>No reports in view yet</strong><p>Submit a report to start the activity list.</p></div><button class="btn secondary" type="button" data-page="report">Create a report</button></div></div>
 </div>
+</section>
+
+<section class="page" id="page-academics">
+  <div class="heading">
+    <div><h1>Academic Life</h1><p>Reach your study plan, course spaces, study groups and university learning updates from one place.</p></div>
+    <div class="heading-actions"><button class="btn" type="button" data-page="shieldmind" data-academic-focus="planner">Open study planner</button></div>
+  </div>
+  <div class="notice-inline"><strong>Your academic workspace.</strong> Use your private planner for personal study tasks and reminders. Course spaces, official notices, events and community areas continue to use their existing CampusShield access controls and university boundaries.</div>
+  <div class="grid campus-feature-grid">
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">TIMETABLE &amp; DEADLINES</span>
+      <h3>Keep your study plan organized</h3>
+      <p>Use the existing private ShieldMind planner for class sessions, assignments, exams, revision blocks and reminders.</p>
+      <button class="btn secondary" type="button" data-page="shieldmind" data-academic-focus="planner">Open timetable &amp; reminders</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">COURSE SPACES</span>
+      <h3>Find your learning spaces</h3>
+      <p>Open course spaces and learning links shared through authorized campus classrooms.</p>
+      <button class="btn secondary" type="button" data-page="classroom">Open course spaces</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">STUDY GROUPS</span>
+      <h3>Learn with your campus community</h3>
+      <p>Explore study circles, departments, societies and interest groups within your university.</p>
+      <button class="btn secondary" type="button" data-page="groups">Explore study groups</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">OFFICIAL ACADEMIC UPDATES</span>
+      <h3>Check verified notices</h3>
+      <p>Look for published registration information, academic updates and other university notices.</p>
+      <button class="btn secondary" type="button" data-page="noticeboard">Open noticeboard</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">EVENTS &amp; SEMINARS</span>
+      <h3>Discover campus activities</h3>
+      <p>Find seminars, career events, society meetings and other activities listed for your university.</p>
+      <button class="btn secondary" type="button" data-page="events">Browse events</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">OPPORTUNITIES</span>
+      <h3>Explore ways to grow</h3>
+      <p>Open the existing opportunity hub for scholarships, internships, grants and student resources.</p>
+      <button class="btn secondary" type="button" data-page="opportunities">Open opportunities</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">CAMPUS SUPPORT</span>
+      <h3>Get help with everyday issues</h3>
+      <p>Submit and track campus service requests without mixing them with private safety incidents.</p>
+      <button class="btn secondary" type="button" data-page="helpdesk">Open Helpdesk</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">CAMPUSPULSE</span>
+      <h3>Ask, share and connect</h3>
+      <p>Join student discussions and campus questions while keeping sensitive matters in private reporting.</p>
+      <button class="btn secondary" type="button" data-page="community">Open CampusPulse</button>
+    </article>
+    <article class="campus-feature">
+      <span class="campus-feature-kicker">CAMPUS RESOURCES</span>
+      <h3>Find campus listings</h3>
+      <p>Browse university-only marketplace listings for textbooks, student services and other items.</p>
+      <button class="btn secondary" type="button" data-page="marketplace">Open marketplace</button>
+    </article>
+  </div>
+  <p class="campus-roadmap-note"><strong>Privacy note:</strong> Personal study planning remains separate from public campus posts. This hub does not create duplicate records or bypass existing role, verification or university-access checks.</p>
 </section>
 
 <section class="page" id="page-report">
@@ -2200,6 +2285,7 @@ td strong{color:#2a464d;font-size:11px}
 
     const names = {
       dashboard:'Overview',
+      academics:'Academic Life',
       report:'Report incident',
       manage:'Incident management',
       risk:'Risk analysis',
@@ -2322,6 +2408,8 @@ td strong{color:#2a464d;font-size:11px}
       clearFeed('campus-dashboard-classes', 'Your classes appear after campus verification.');
       clearFeed('campus-dashboard-announcements', 'Class announcements appear after campus verification.');
       clearFeed('campus-dashboard-updates', 'Verified notices and events appear after campus verification.');
+      clearFeed('campus-dashboard-helpdesk', 'Your service request status appears after campus verification.');
+      $('campus-dashboard-helpdesk-count').textContent = '—';
       $('campus-metric-classes').textContent = '—';
       $('campus-metric-secondary').textContent = '—';
       $('campus-metric-events').textContent = '—';
@@ -2337,6 +2425,8 @@ td strong{color:#2a464d;font-size:11px}
         clearFeed('campus-dashboard-classes', 'A verified campus membership is required.');
         clearFeed('campus-dashboard-announcements', 'A verified campus membership is required.');
         clearFeed('campus-dashboard-updates', 'A verified campus membership is required.');
+        clearFeed('campus-dashboard-helpdesk', 'Choose and verify your university to load your service requests.');
+        $('campus-dashboard-helpdesk-count').textContent = '—';
         $('campus-metric-classes').textContent = '—';
         $('campus-metric-secondary').textContent = '—';
         $('campus-metric-events').textContent = '—';
@@ -2349,13 +2439,20 @@ td strong{color:#2a464d;font-size:11px}
       const results = await Promise.all([
         backend.listCampusClassrooms().catch(() => []),
         backend.listCampusNotices().catch(() => []),
-        backend.listCampusEvents().catch(() => [])
+        backend.listCampusEvents().catch(() => []),
+        backend.listCampusHelpdeskTickets().catch(() => null),
+        backend.getCurrentUser().catch(() => null)
       ]);
       const classes = (results[0] || []).filter(row => row.university_id === campusId);
       const notices = (results[1] || []).filter(row => row.university_id === campusId &&
         (!row.expires_at || new Date(row.expires_at).getTime() > Date.now()));
       if (requestId !== loadCampusDashboardInsights.requestId || requestSessionVersion !== authSessionVersion || currentProfile !== requestProfile) return;
       const allEvents = (results[2] || []).filter(row => row.university_id === campusId);
+      const helpdeskDataAvailable = Array.isArray(results[3]) && !!results[4]?.id;
+      const ownHelpdeskTickets = helpdeskDataAvailable
+        ? results[3].filter(row => row.university_id === campusId && row.created_by === results[4].id)
+          .sort((a,b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
+        : [];
       const upcomingEvents = allEvents.filter(row => row.starts_at && new Date(row.starts_at).getTime() >= Date.now())
         .sort((a,b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
       const now = Date.now();
@@ -2392,6 +2489,28 @@ td strong{color:#2a464d;font-size:11px}
       $('campus-metric-secondary').textContent = String(isTeacher ? studentCount : classroomAnnouncements.length);
       $('campus-metric-events').textContent = String(upcomingEvents.length);
       $('campus-metric-incidents').textContent = String((incidents || []).filter(i => !isResolvedStatus(i.status)).length);
+      const helpdeskCount = $('campus-dashboard-helpdesk-count');
+      const helpdeskFeed = $('campus-dashboard-helpdesk');
+      helpdeskFeed.replaceChildren();
+      if (!helpdeskDataAvailable) {
+        helpdeskCount.textContent = '—';
+        clearFeed('campus-dashboard-helpdesk', 'Helpdesk status is temporarily unavailable. Open Helpdesk to try again.');
+      } else {
+        const openHelpdeskTickets = ownHelpdeskTickets.filter(ticket => !isResolvedStatus(ticket.status));
+        helpdeskCount.textContent = String(openHelpdeskTickets.length);
+        if (!ownHelpdeskTickets.length) {
+          clearFeed('campus-dashboard-helpdesk', 'No service requests have been submitted from your account yet.');
+        } else {
+          ownHelpdeskTickets.slice(0, 3).forEach(ticket => appendItem(
+            helpdeskFeed,
+            ticket.title || 'Campus service request',
+            'Reference ' + String(ticket.reference_code || 'pending') + ' · ' + String(ticket.status || 'Status unavailable'),
+            ticket.assigned_department ? 'Assigned to ' + ticket.assigned_department : String(ticket.category || 'Campus service request'),
+            'View status',
+            () => { navigate('helpdesk'); loadCampusHelpdeskPage(); }
+          ));
+        }
+      }
       if (isTeacher && !rosterCounts.length) $('campus-metric-secondary-note').textContent = 'Owned class rosters are available to their verified teacher';
       else if (isTeacher) $('campus-metric-secondary-note').textContent = 'Across classrooms you own';
       else $('campus-metric-secondary-note').textContent = 'Updates from your authorized classrooms';
@@ -2460,6 +2579,16 @@ td strong{color:#2a464d;font-size:11px}
     if (button.dataset.page === 'events') loadCampusEventsPage();
     if (button.dataset.page === 'marketplace') loadCampusMarketplacePage();
     if (button.dataset.page === 'dashboard') loadCampusDashboardInsights();
+    if (button.dataset.academicFocus === 'planner') {
+      const planner = document.querySelector('#page-shieldmind .shieldmind-planner-panel');
+      if (planner) {
+        planner.scrollIntoView({
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          block: 'start'
+        });
+        $('shieldmind-plan-title')?.focus({ preventScroll: true });
+      }
+    }
     if (button.dataset.page === 'platform-admin') loadPlatformAdminPage();
   });
 

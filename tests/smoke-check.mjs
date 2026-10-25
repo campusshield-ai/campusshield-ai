@@ -114,3 +114,29 @@ console.log("PASS emergency-services prototype warning remains visible");
 console.log("PASS Android and iOS install metadata and guidance are present");
 console.log("PASS Android and Apple launcher icons are valid PNGs at the required sizes");
 console.log("PASS offline fallback stores no app, authentication, or incident responses");
+
+// Academic Life hub: reuse the existing access-controlled campus features.
+assert.match(html, /id="page-academics"/);
+assert.match(html, /data-page="academics"/);
+assert.match(html, /academics:'Academic Life'/);
+assert.match(html, /TIMETABLE &amp; DEADLINES/);
+assert.match(html, /data-academic-focus="planner"/);
+assert.match(html, /button\.dataset\.academicFocus === 'planner'/);
+assert.match(html, /shieldmind-planner-panel/);
+assert.match(html, /scrollIntoView/);
+assert.match(html, /prefers-reduced-motion: reduce/);
+assert.match(html, /id="campus-dashboard-helpdesk"/);
+assert.match(html, /id="campus-dashboard-helpdesk-count"/);
+assert.match(html, /backend\.listCampusHelpdeskTickets\(\)\.catch\(\(\) => null\)/);
+assert.match(html, /row\.created_by === results\[4\]\.id/);
+assert.match(html, /Helpdesk status is temporarily unavailable/);
+
+
+assert.match(html, /data-page="classroom"/);
+assert.match(html, /data-page="groups"/);
+assert.match(html, /data-page="noticeboard"/);
+assert.match(html, /data-page="events"/);
+assert.match(html, /data-page="opportunities"/);
+assert.match(html, /data-page="helpdesk"/);
+assert.match(html, /data-page="community"/);
+assert.match(html, /data-page="marketplace"/);
