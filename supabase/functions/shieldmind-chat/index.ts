@@ -144,7 +144,14 @@ Deno.serve(async (req: Request) => {
 
     const { data: quotaData, error: quotaError } = await client.rpc("consume_shieldmind_quota");
     const quota = Array.isArray(quotaData) ? quotaData[0] : quotaData;
-    if (quotaError || !quota) return json({ error: "ShieldMind usage controls could not be verified. Please try again later." }, 503);
+    if (quotaError || !quota) {
+      console.warn("shieldmind_diagnostic", JSON.stringify({
+        stage: "quota_check",
+        databaseCode: quotaError?.code || null,
+        returnedData: Boolean(quota),
+      }));
+      return json({ error: "ShieldMind usage controls could not be verified. Please try again later." }, 503);
+    }
     if (quota.allowed !== true) return json({ error: "You have reached ShieldMind's usage limit. Please try again later." }, 429);
 
     const providerKey = Deno.env.get("OPENAI_API_KEY");
@@ -165,7 +172,14 @@ Deno.serve(async (req: Request) => {
     if (studyImage) {
       const {data:imageQuotaData,error:imageQuotaError}=await client.rpc("consume_shieldmind_image_upload");
       const imageQuota=Array.isArray(imageQuotaData)?imageQuotaData[0]:imageQuotaData;
-      if(imageQuotaError||!imageQuota)return json({error:"Image allowance could not be verified. Please try again later."},503);
+      if(imageQuotaError||!imageQuota) {
+        console.warn("shieldmind_diagnostic", JSON.stringify({
+          stage: "image_quota_check",
+          databaseCode: imageQuotaError?.code || null,
+          returnedData: Boolean(imageQuota),
+        }));
+        return json({error:"Image allowance could not be verified. Please try again later."},503);
+      }
       if(imageQuota.allowed!==true)return json({error:"No remaining study-image allowance. A paid ShieldMind plan is required."},429);
     }
     const userContent=studyImage
@@ -199,6 +213,13 @@ Deno.serve(async (req: Request) => {
         "organization_spend_limit_exceeded",
         "project_spend_limit_exceeded",
       ]);
+      console.warn("shieldmind_diagnostic", JSON.stringify({
+        stage: "provider_rate_or_quota",
+        httpStatus: providerResponse.status,
+        providerCode: providerCode || null,
+        providerType: String(providerFailure?.error?.type || "").slice(0, 80) || null,
+        providerRequestId: String(providerResponse.headers.get("x-request-id") || "").slice(0, 120) || null,
+      }));
       if (quotaOrBillingCodes.has(providerCode)) {
         return json({
           error: "ShieldMind's AI provider has reached a credit, billing, or usage limit. The platform administrator must check the provider API billing and usage settings; your ShieldMind account limit has not been reached.",
@@ -212,12 +233,31 @@ Deno.serve(async (req: Request) => {
           : "ShieldMind's AI provider temporarily rejected this request. Please wait 30 seconds and try again.",
       }, 429, { "Retry-After": retryAfter });
     }
-    if (!providerResponse.ok) return json({ error: "ShieldMind could not answer right now. Please try again later." }, 502);
+    if (!providerResponse.ok) {
+      const providerFailure = await providerResponse.clone().json().catch(() => null);
+      console.warn("shieldmind_diagnostic", JSON.stringify({
+        stage: "provider_non_ok",
+        httpStatus: providerResponse.status,
+        providerCode: String(providerFailure?.error?.code || "").slice(0, 100) || null,
+        providerType: String(providerFailure?.error?.type || "").slice(0, 80) || null,
+        providerRequestId: String(providerResponse.headers.get("x-request-id") || "").slice(0, 120) || null,
+      }));
+      if (providerResponse.status === 503 && String(providerFailure?.error?.code || "") === "server_is_overloaded") {
+        const retryAfter = providerResponse.headers.get("retry-after");
+        return json({ error: "ShieldMind's AI provider is temporarily overloaded. Please wait briefly and try again." }, 503,
+          retryAfter && /^\\d+$/.test(retryAfter) ? { "Retry-After": retryAfter } : { "Retry-After": "30" });
+      }
+      return json({ error: "ShieldMind could not answer right now. Please try again later." }, 502);
+    }
     const completion = await providerResponse.json().catch(() => null);
     const answer = completion?.choices?.[0]?.message?.content;
     if (typeof answer !== "string" || !answer.trim()) return json({ error: "ShieldMind received an empty answer. Please try again." }, 502);
     return json({ mode: "provider", answer: answer.slice(0, 8000), sources: responseSources });
   } catch (_error) {
+    console.error("shieldmind_diagnostic", JSON.stringify({
+      stage: "unexpected_exception",
+      errorName: String((_error as { name?: unknown })?.name || "Error").slice(0, 80),
+    }));
     return json({ error: "ShieldMind is unavailable right now. Please try again later." }, 500);
   }
 });
