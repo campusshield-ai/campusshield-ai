@@ -11,7 +11,7 @@ Deno.serve(async(req:Request)=>{
  const isLocalPreview=/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
  const isAllowed=Boolean(origin)&&(configuredOrigin?origin===configuredOrigin:(origin===DEFAULT_APP_ORIGIN||isLocalPreview));
  const send=(body:Record<string,unknown>,status=200)=>json(body,status,origin||DEFAULT_APP_ORIGIN);
- if(!isAllowed)return send({error:"Checkout origin is not allowed. Configure CAMPUSSHIELD_APP_ORIGIN for this staging preview."},403);
+ if(!isAllowed)return json({error:"Checkout origin is not allowed. Configure CAMPUSSHIELD_APP_ORIGIN for this staging preview."},403);
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors(origin)});
  if(req.method!=="POST")return send({error:"Method not allowed."},405);
  try{
