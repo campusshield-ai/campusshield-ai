@@ -379,11 +379,11 @@ for (const providerQuotaCode of [
   "project_spend_limit_exceeded"
 ]) assert.ok(shieldmindFunction.includes(`"${providerQuotaCode}"`), `ShieldMind classifies ${providerQuotaCode}`);
 assert.match(shieldmindFunction, /"Retry-After": retryAfter/);
-assert.match(shieldmindFunction, /ShieldMind quota check failed/,"usage RPC failures have a safe diagnostic log");
-assert.match(shieldmindFunction, /ShieldMind provider billing\/quota limit/,"provider quota errors are distinguishable in server logs");
-assert.match(shieldmindFunction, /ShieldMind provider rate limit/,"provider rate limits are logged separately");
-assert.match(shieldmindFunction, /ShieldMind provider request failed/,"provider server errors record status and structured code only");
-assert.match(shieldmindFunction, /ShieldMind request failed before a provider response was handled/,"unexpected runtime failures are visible without logging prompts or secrets");
+assert.match(shieldmindFunction, /ShieldMind usage quota check failed/,"usage RPC failures have a safe diagnostic log");
+assert.match(shieldmindFunction, /ShieldMind provider billing or usage limit reached/,"provider quota errors are distinguishable in server logs");
+assert.match(shieldmindFunction, /ShieldMind provider rate limit returned/,"provider rate limits are logged separately");
+assert.match(shieldmindFunction, /ShieldMind provider returned a non-success response/,"provider server errors record status and structured code only");
+assert.match(shieldmindFunction, /ShieldMind request failed unexpectedly/,"unexpected runtime failures are visible without logging prompts or secrets");
 assert.doesNotMatch(shieldmindFunction, /console\.(?:log|warn|error)\([^\n]*(?:question|providerKey|Authorization|apiKey)/i,"diagnostics do not log prompt text or provider credentials");
 assert.match(shieldmindFunction, /your ShieldMind account limit has not been reached/i);
 console.log("PASS ShieldMind surfaces safe provider rate-limit and billing errors");
