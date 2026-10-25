@@ -4703,11 +4703,39 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
   }
 
+  function clearCampusDirectMessageState() {
+    campusDirectLoadGeneration++;
+    stopCampusDirectMessageRealtime();
+    campusDirectConversations = [];
+    campusDirectActiveId = null;
+    campusDirectActiveConversation = null;
+    campusDirectSelectedRecipient = null;
+    campusDirectMessageReports = [];
+    $("campus-dm-search").value = "";
+    $("campus-dm-introduction").value = "";
+    $("campus-dm-search-results").replaceChildren();
+    $("campus-dm-search-status").textContent = "";
+    $("campus-dm-request-form").hidden = true;
+    $("campus-dm-search-button").disabled = true;
+    $("campus-dm-request-send").disabled = true;
+    $("campus-dm-conversations").replaceChildren();
+    renderCampusDirectConversations();
+    renderCampusDirectThreadEmpty();
+    $("campus-dm-thread-messages").replaceChildren();
+    $("campus-dm-thread-status").textContent = "";
+    $("campus-dm-inbox-status").textContent = "";
+    $("campus-dm-moderation").hidden = true;
+    $("campus-dm-report-queue").replaceChildren();
+    $("campus-dm-report-queue-status").textContent = "";
+    $("campus-dm-compose-input").value = "";
+    $("campus-dm-report-message-id").value = "";
+  }
+
   async function loadCampusDirectMessagesPage() {
     const backend = window.CampusShieldBackend;
     const status = $("campus-dm-inbox-status");
     if (!backend?.isConfigured || !currentProfile) {
-      stopCampusDirectMessageRealtime();
+      clearCampusDirectMessageState();
       if (status) status.textContent = "Sign in to use private messages.";
       return;
     }
@@ -4722,17 +4750,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
         campus?.membership_status === "active" &&
         campus?.verification_status === "verified";
       if (!campus?.university_id) {
-        stopCampusDirectMessageRealtime();
+        clearCampusDirectMessageState();
         status.textContent = "Choose your university in CampusPulse before starting a private conversation.";
-        $("campus-dm-search-button").disabled = true;
-        $("campus-dm-request-send").disabled = true;
         return;
       }
       if (!verifiedAccess) {
-        stopCampusDirectMessageRealtime();
+        clearCampusDirectMessageState();
         status.textContent = "Private Messages require verified CampusShield access and approved university membership. Student identity approval is also required when your account's access rules call for it.";
-        $("campus-dm-search-button").disabled = true;
-        $("campus-dm-request-send").disabled = true;
         return;
       }
       $("campus-dm-search-button").disabled = false;
@@ -4825,8 +4849,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
     if (send) send.disabled = true;
     if (status) status.textContent = "Sending your message request…";
     try {
+      const recipientUsername = campusDirectSelectedRecipient;
       const id = await window.CampusShieldBackend.createCampusDirectMessageRequest(
-        campusDirectSelectedRecipient,
+        recipientUsername,
         $("campus-dm-introduction").value
       );
       $("campus-dm-introduction").value = "";
@@ -4837,7 +4862,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       await refreshCampusDirectConversations();
       const createdConversation = campusDirectConversations.find(function(item) { return item.conversation_id === id; });
       if (status) status.textContent = createdConversation?.status === "accepted"
-        ? "Message sent to @" + campusDirectSelectedRecipient + "."
+        ? "Message sent to @" + recipientUsername + "."
         : "Message request sent. You can continue after the member accepts your request.";
       await openCampusDirectConversation(id);
     } catch (error) {
@@ -8730,7 +8755,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
 
   $('signout-button').addEventListener('click', async () => {
     stopCampusChatRealtime();
-    stopCampusDirectMessageRealtime();
+    clearCampusDirectMessageState();
     try {
       const backend = window.CampusShieldBackend;
       if (!backend?.client) {
