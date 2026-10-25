@@ -64,6 +64,8 @@ for (const label of [
 assert.match(html, /id="page-profile-settings"/);
 assert.match(html, /id="profile-settings-email"/);
 assert.match(html, /id="nav-staff-heading" hidden/);
+assert.match(html, /el\.id === 'community-nav' && page === 'groups'/);
+assert.match(html, /el\.id === 'events-services-nav' && \['noticeboard','helpdesk','marketplace'\]/);
 assert.match(html, /id="nav-admin-heading" hidden/);
 assert.match(html, /function syncNavSectionHeadings\(\)/);
 assert.match(html, /!canManageIncidents\(\)/);
