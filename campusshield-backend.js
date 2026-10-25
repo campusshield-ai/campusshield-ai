@@ -1500,6 +1500,16 @@ async getCurrentUser() {
         p_body: String(body || "").trim()
       });
       if (error) throw error;
+      // Best-effort notification only after the message is committed. The server
+      // verifies sender, accepted conversation, and the newly created message ID.
+      try {
+        const { error: pushError } = await client.functions.invoke("push-dispatch", {
+          body: { action: "message", message_id: data }
+        });
+        if (pushError) console.info("Private message sent; background notification was not delivered.");
+      } catch (_) {
+        // Notification failures must never undo a successful private message.
+      }
       return data;
     },
 
