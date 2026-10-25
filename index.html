@@ -4402,6 +4402,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   function campusDirectStatusLabel(conversation) {
     if (!conversation) return "Conversation";
     if (conversation.status === "accepted") return "Connected";
+    if (conversation.status === "cancelled") return "Request cancelled";
     if (conversation.status === "blocked") return conversation.blocked_by_me ? "Blocked by you" : "Unavailable";
     if (conversation.status === "declined") return "Request declined";
     return conversation.requested_by_me ? "Request sent" : "Message request";
@@ -4509,6 +4510,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
       $("campus-dm-request-copy").textContent = "You can reply after this member accepts your request.";
       $("campus-dm-accept").hidden = true;
       $("campus-dm-decline").hidden = false;
+      $("campus-dm-decline").textContent = "Cancel request";
+    } else {
+      $("campus-dm-decline").textContent = "Decline";
     }
     $("campus-dm-block-button").hidden = !(accepted || pendingIncoming || pendingMine);
     $("campus-dm-block-button").textContent = "Block";
@@ -4876,14 +4880,14 @@ button,input,select,textarea{max-width:100%;min-width:0}
   $("campus-dm-decline")?.addEventListener("click", async function() {
     if (!campusDirectActiveId) return;
     const conversation = campusDirectActiveConversation;
-    const action = conversation?.status === "pending" && conversation.requested_by_me ? "block" : "decline";
-    if (action === "block" && !window.confirm("Block this member from messaging you?")) return;
+    const action = conversation?.status === "pending" && conversation.requested_by_me ? "cancel" : "decline";
+    if (action === "cancel" && !window.confirm("Cancel your pending message request?")) return;
     try {
       await window.CampusShieldBackend.respondCampusDirectMessageRequest(campusDirectActiveId,action);
       await refreshCampusDirectConversations({quiet:true});
       const selected = campusDirectConversations.find(function(item) { return item.conversation_id === campusDirectActiveId; });
       if (selected) await openCampusDirectConversation(selected.conversation_id);
-      toast(action === "block" ? "Member blocked." : "Message request declined.");
+      toast(action === "cancel" ? "Message request cancelled." : "Message request declined.");
     } catch (error) { $("campus-dm-thread-status").textContent = error?.message || "Could not update this request."; }
   });
 
@@ -4934,7 +4938,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
     if (button.tagName === 'A') e.preventDefault();
     navigate(button.dataset.page);
     if (button.dataset.page !== 'campus-chat') stopCampusChatRealtime();
-    if (button.dataset.page !== 'campus-messages') stopCampusDirectMessageRealtime();
+    if (button.dataset.page !== 'campus-messages') {
+      campusDirectLoadGeneration++;
+      stopCampusDirectMessageRealtime();
+    }
     if (button.dataset.page === 'campus-chat') loadCampusChatPage();
     if (button.dataset.page === 'campus-messages') loadCampusDirectMessagesPage();
     if (button.dataset.page === 'profile-settings') loadMyProfileSettings();
