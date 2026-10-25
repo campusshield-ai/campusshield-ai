@@ -9,6 +9,7 @@ const paystackWebhookFunction = await readFile(new URL("../supabase/functions/pa
 const paystackReconcileFunction = await readFile(new URL("../supabase/functions/paystack-reconcile/index.ts", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
+const invitationMigration = await readFile(new URL("../supabase/migrations/20261025194000_campus_invitations_and_attribution.sql", import.meta.url), "utf8");
 const usernameAvailabilityMigration = await readFile(new URL("../supabase/migrations/20261014234000_restrict_username_availability.sql", import.meta.url), "utf8");
 const usernameLookupRemovalMigration = await readFile(new URL("../supabase/migrations/20261014235000_remove_username_availability_rpc.sql", import.meta.url), "utf8");
 const staffProfileMigration = await readFile(new URL("../supabase/migrations/20261014240000_allow_verified_teachers_to_read_profiles.sql", import.meta.url), "utf8");
@@ -202,6 +203,22 @@ assert.match(campusLifeParityMigration, /private\.current_user_has_verified_camp
 assert.doesNotMatch(campusLifeParityMigration, /grant select, insert, update, delete on table public\.campus_classrooms to authenticated/i);
 
 assert.match(html, /id="page-community"/);
+assert.match(html, /id="campus-invitation-panel"/, "CampusPulse exposes a personal invitation panel");
+assert.match(html, /data-community-share-whatsapp=/, "published community posts can be shared over WhatsApp");
+assert.match(html, /https:\/\/wa\.me\/\?text=/, "WhatsApp share actions use the official click-to-chat URL");
+assert.match(html, /getPendingSharedCommunityPostId/, "shared post links are restored after sign-in");
+assert.match(backend, /campus_invite_code:\s*getPendingCampusInvitationCode\(\)/, "new account metadata carries a valid pending invitation code");
+assert.match(backend, /async getMyCampusInvitationSummary\(\)/);
+assert.match(backend, /apply_my_campus_invitation/);
+assert.match(invitationMigration, /create table if not exists public\.campus_invitation_codes/i);
+assert.match(invitationMigration, /create table if not exists public\.campus_invitation_attributions/i);
+assert.match(invitationMigration, /alter table public\.campus_invitation_attributions enable row level security/i);
+assert.match(invitationMigration, /revoke all on table public\.campus_invitation_attributions from public, anon, authenticated/i);
+assert.match(invitationMigration, /create or replace function public\.get_my_campus_invitation_summary\(\)[\s\S]*?security invoker/i);
+assert.match(invitationMigration, /create or replace function public\.apply_my_campus_invitation\(p_code text\)[\s\S]*?security invoker/i);
+assert.match(invitationMigration, /on conflict \(invited_user_id\) do nothing/i, "an account can receive at most one invitation attribution");
+assert.doesNotMatch(invitationMigration, /select[^;]*email/i, "invitation attribution does not expose invitee email");
+
 assert.match(html, /id="communityUsernameForm"/);
 assert.match(html, /id="communityPostForm"/);
 assert.match(html, /id="community-moderation"/);

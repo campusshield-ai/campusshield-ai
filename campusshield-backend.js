@@ -19,6 +19,65 @@
   // Use the canonical GitHub Pages URL so signup and resend emails always return to the live app.
   const AUTH_REDIRECT_URL = "https://campusshield-ai.github.io/campusshield-ai/";
 
+  const CAMPUS_INVITE_STORAGE_KEY = "campusshield_invitation_code";
+  const CAMPUS_SHARED_POST_STORAGE_KEY = "campusshield_shared_community_post";
+
+  function captureCampusShareParameters() {
+    try {
+      const url = new URL(window.location.href);
+      let changed = false;
+      const inviteCode = String(url.searchParams.get("invite") || "").trim().toUpperCase();
+      if (url.searchParams.has("invite")) {
+        if (/^[A-Z0-9]{10}$/.test(inviteCode)) {
+          window.sessionStorage.setItem(CAMPUS_INVITE_STORAGE_KEY, inviteCode);
+        }
+        url.searchParams.delete("invite");
+        changed = true;
+      }
+      const sharedPostId = String(url.searchParams.get("communityPost") || "").trim().toLowerCase();
+      if (url.searchParams.has("communityPost")) {
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(sharedPostId)) {
+          window.sessionStorage.setItem(CAMPUS_SHARED_POST_STORAGE_KEY, sharedPostId);
+        }
+        url.searchParams.delete("communityPost");
+        changed = true;
+      }
+      if (changed) {
+        window.history.replaceState(window.history.state, document.title, url.pathname + url.search + url.hash);
+      }
+    } catch (_) {
+      // Sharing remains optional when session storage or history APIs are unavailable.
+    }
+  }
+
+  function getPendingCampusInvitationCode() {
+    try {
+      const code = String(window.sessionStorage.getItem(CAMPUS_INVITE_STORAGE_KEY) || "").trim().toUpperCase();
+      return /^[A-Z0-9]{10}$/.test(code) ? code : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function clearPendingCampusInvitationCode() {
+    try { window.sessionStorage.removeItem(CAMPUS_INVITE_STORAGE_KEY); } catch (_) {}
+  }
+
+  function getPendingSharedCommunityPostId() {
+    try {
+      const postId = String(window.sessionStorage.getItem(CAMPUS_SHARED_POST_STORAGE_KEY) || "").trim().toLowerCase();
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(postId) ? postId : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function clearPendingSharedCommunityPostId() {
+    try { window.sessionStorage.removeItem(CAMPUS_SHARED_POST_STORAGE_KEY); } catch (_) {}
+  }
+
+  captureCampusShareParameters();
+
   const client = ready
     ? window.supabase.createClient(cfg.url, cfg.publishableKey)
     : null;
@@ -26,6 +85,27 @@
   window.CampusShieldBackend = {
     isConfigured: ready,
     client,
+
+    getPendingCampusInvitationCode,
+    clearPendingCampusInvitationCode,
+    getPendingSharedCommunityPostId,
+    clearPendingSharedCommunityPostId,
+
+    async getMyCampusInvitationSummary() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("get_my_campus_invitation_summary");
+      if (error) throw error;
+      return Array.isArray(data) ? (data[0] || null) : data;
+    },
+
+    async applyMyCampusInvitation(code) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const inviteCode = String(code || "").trim().toUpperCase();
+      if (!/^[A-Z0-9]{10}$/.test(inviteCode)) return false;
+      const { data, error } = await client.rpc("apply_my_campus_invitation", { p_code: inviteCode });
+      if (error) throw error;
+      return data === true;
+    },
 
     async getMyStudentRewards() {
       if (!client) throw new Error("Supabase is not configured.");
@@ -59,7 +139,8 @@ async signUp(email, password, displayName, username, universityId, profileData =
         campus_position: safeProfileData.campus_position || null,
         campus_staff_number: safeProfileData.campus_staff_number || null,
         campus_official_email: safeProfileData.campus_official_email || null,
-        requested_campus_admin: Boolean(safeProfileData.requested_campus_admin)
+        requested_campus_admin: Boolean(safeProfileData.requested_campus_admin),
+        campus_invite_code: getPendingCampusInvitationCode()
       },
       emailRedirectTo: AUTH_REDIRECT_URL
     }
