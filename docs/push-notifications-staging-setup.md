@@ -2,44 +2,32 @@
 
 This setup is for the **staging** Supabase project only. Do not copy its secrets to production or commit any private key into Git.
 
-## 1. Generate an application-server key pair
+## 1. Upload the staging secrets safely
 
-Run this on your own computer in a terminal:
+From the repository root in Windows PowerShell:
 
-```bash
-npx web-push generate-vapid-keys --json
+```powershell
+supabase login
+.\scripts\setup-staging-push-secrets.ps1
 ```
 
-Keep the private key secret. The public key is used by the browser; the private key is only used by the Edge Function. Do not paste either key into source files, issue comments, or chat.
+The script is pinned to staging project `hywcpnoqqhxvujnimhxl`. It prompts for the exact preview origin, app path, and VAPID contact subject, then creates any missing keys locally, uploads the values with `supabase secrets set`, and deletes its restricted temporary secrets file. It does not print or commit secret values. It preserves an existing VAPID keypair and dispatch secret by default.
 
-## 2. Set staging Edge Function secrets
+Only rotate a VAPID keypair intentionally, because subscribed devices may need to re-subscribe:
 
-In the Supabase Dashboard, open the staging project `hywcpnoqqhxvujnimhxl`, then open **Edge Functions → Secrets** and add these values:
+```powershell
+.\scripts\setup-staging-push-secrets.ps1 -RotateVapidKeys
+```
 
-| Secret | Value |
-|---|---|
-| `VAPID_PUBLIC_KEY` | The generated public key |
-| `VAPID_PRIVATE_KEY` | The generated private key |
-| `VAPID_SUBJECT` | A real, monitored contact URI, usually `mailto:your-admin-contact@example.com` (replace with your actual address) |
-| `CAMPUSSHIELD_APP_ORIGIN` | The exact HTTPS origin of your staging preview, e.g. `https://your-preview-host.example` (no path or trailing slash) |
+Do not use the production GitHub Pages host as the staging origin: `supabase-config.js` selects production for that host. Use your separate staging preview host. The script will show the redirect pattern to add to the staging Auth allow-list.
 
-For the browser-initiated self-test and new-message notification, the dispatcher validates the signed-in user token. For trusted server-originated dispatches, also set:
+## 2. Add the staging authentication redirect
 
-| Secret | Value |
-|---|---|
-| `PUSH_DISPATCH_SECRET` | A long, random value generated locally and shared only with trusted server-side callers |
+In the staging project, open **Authentication → URL Configuration** and add the redirect pattern printed by the script under **Redirect URLs**. Keep the production Site URL unchanged. Do not allowlist an untrusted host or use a wildcard wider than your controlled preview host/path.
 
-Never expose `PUSH_DISPATCH_SECRET` to browser JavaScript.
+Supabase reference: https://supabase.com/docs/guides/auth/redirect-urls
 
-If the app is served from a non-root path on the preview host, also set `CAMPUSSHIELD_APP_PATH` to that path (for example `/preview/`). The current GitHub Pages app path is `/campusshield-ai/campusshield-ai/`.
-
-## 3. Allow the exact staging redirect
-
-In the same staging project, open **Authentication → URL Configuration**. Add the exact staging-preview URL to the Redirect URLs allow-list (use a wildcard only if it is limited to the specific preview host/path you control). Keep the live production URL configured separately. The client requests a redirect to the page that initiated signup/resend.
-
-Reference: https://supabase.com/docs/guides/auth/redirect-urls
-
-## 4. Verify after configuration
+## 3. Verify after configuration
 
 1. Open the staging preview over HTTPS and sign in with a synthetic test account.
 2. In Profile Settings, choose **Enable notifications on this device** and grant browser permission.
