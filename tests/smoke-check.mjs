@@ -222,7 +222,14 @@ assert.match(html, /data-page="marketplace"/);
 assert.match(backend, /responseMessage = ""/);
 assert.match(backend, /response\.clone\(\)\.json\(\)/);
 assert.match(html, /const friendlyMessage=detail/);
-assert.match(shieldmindFunction, /providerCode === "insufficient_quota"/);
+for (const providerQuotaCode of [
+  "insufficient_quota",
+  "billing_hard_limit_reached",
+  "credit_balance_exhausted",
+  "organization_usage_limit_exceeded",
+  "organization_spend_limit_exceeded",
+  "project_spend_limit_exceeded"
+]) assert.ok(shieldmindFunction.includes(`"${providerQuotaCode}"`), `ShieldMind classifies ${providerQuotaCode}`);
 assert.match(shieldmindFunction, /"Retry-After": retryAfter/);
 assert.match(shieldmindFunction, /your ShieldMind account limit has not been reached/i);
 console.log("PASS ShieldMind surfaces safe provider rate-limit and billing errors");
