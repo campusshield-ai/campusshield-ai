@@ -17,6 +17,8 @@ const campusLifeParityMigration = await readFile(new URL("../supabase/migrations
 const institutionalBillingMigration = await readFile(new URL("../supabase/migrations/20261025153000_restrict_institutional_billing_to_admins.sql", import.meta.url), "utf8");
 const staffIdentityParityMigration = await readFile(new URL("../supabase/migrations/20261025160000_restore_staff_identity_audit_and_platform_rpcs.sql", import.meta.url), "utf8");
 const campusPushMigration = await readFile(new URL("../supabase/migrations/20261025203000_campus_push_notifications.sql", import.meta.url), "utf8");
+const pushSubscriptionsFunction = await readFile(new URL("../supabase/functions/push-subscriptions/index.ts", import.meta.url), "utf8");
+const pushDispatchFunction = await readFile(new URL("../supabase/functions/push-dispatch/index.ts", import.meta.url), "utf8");
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
@@ -270,6 +272,13 @@ for (const pushControl of ["profile-push-enable", "profile-push-test", "profile-
 }
 assert.match(html, /pushAppUsesStaging\(\)/, "push controls remain hidden from production until configured and verified");
 assert.match(html, /Notification\.requestPermission\(\)/, "push permissions are requested after user interaction");
+assert.match(pushSubscriptionsFunction, /auth\.getUser\(token\)/, "push subscriptions validate the user session");
+assert.match(pushSubscriptionsFunction, /validPushEndpoint/, "push endpoints are validated before storage");
+assert.match(pushSubscriptionsFunction, /CAMPUSSHIELD_APP_ORIGIN/, "push subscription CORS uses an explicit preview origin when configured");
+assert.match(pushDispatchFunction, /PUSH_DISPATCH_SECRET/, "internal push delivery requires a dispatch secret");
+assert.match(pushDispatchFunction, /equalsConstantTime/, "internal dispatch secret comparison is constant-time");
+assert.match(pushDispatchFunction, /Only a recently sent message can trigger a background notification/, "direct-message push checks a message the caller recently sent");
+assert.match(pushDispatchFunction, /genericMessages/, "push payloads use generic notification copy rather than private message content");
 assert.match(campusPushMigration, /enable row level security/i);
 assert.match(campusPushMigration, /using \(false\) with check \(false\)/i, "push tables deny direct client access");
 assert.match(campusPushMigration, /revoke all on table public\.campus_push_subscriptions from anon, authenticated/i);
