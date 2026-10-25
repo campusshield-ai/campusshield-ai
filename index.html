@@ -4810,6 +4810,36 @@ td strong{color:#2a464d;font-size:11px}
     return String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   }
 
+  function institutionSearchAliases(name) {
+    const words = normalizeInstitutionSearch(name).split(' ').filter(function(word) {
+      return word && !['of', 'the', 'and', 'for', 'in', 'at'].includes(word);
+    });
+    if (!words.length) return [];
+    const aliases = new Set([
+      words.map(function(word) { return word[0]; }).join(''),
+      words.map(function(word) { return word.slice(0, 3); }).join('')
+    ]);
+    if (words[0] === 'university' && words.length > 1) {
+      aliases.add('uni' + words.slice(1).map(function(word) { return word.slice(0, 3); }).join(''));
+      aliases.add('uni' + words.slice(1).map(function(word) { return word[0]; }).join(''));
+    }
+    return Array.from(aliases);
+  }
+
+  function institutionMatchesSearch(university, query) {
+    const name = normalizeInstitutionSearch(university.name);
+    const state = normalizeInstitutionSearch(university.state);
+    const queryTokens = query.split(' ').filter(Boolean);
+    const nameTokens = name.split(' ');
+    const compactQuery = query.replace(/\s/g, '');
+    const matchesNameWords = queryTokens.every(function(token) {
+      return nameTokens.some(function(nameToken) { return nameToken.startsWith(token); });
+    });
+    const matchesAlias = compactQuery.length >= 3 && institutionSearchAliases(university.name)
+      .some(function(alias) { return alias.startsWith(compactQuery); });
+    return name.includes(query) || state.includes(query) || matchesNameWords || matchesAlias;
+  }
+
   function setInstitutionSearchStatus(message) {
     ['signin-institution-search-status', 'auth-university-search-status'].forEach(function(id) {
       const node = $(id);
@@ -4826,13 +4856,7 @@ td strong{color:#2a464d;font-size:11px}
       if (!pair.input || !pair.list) return;
       const query = normalizeInstitutionSearch(pair.input.value);
       const matches = query
-        ? directory.filter(function(university) {
-            const name = normalizeInstitutionSearch(university.name);
-            const state = normalizeInstitutionSearch(university.state);
-            const queryTokens = query.split(' ').filter(Boolean);
-            const nameTokens = name.split(' ');
-            return name.includes(query) || state.includes(query) || queryTokens.every(function(token) { return nameTokens.some(function(nameToken) { return nameToken.startsWith(token); }); });
-          })
+        ? directory.filter(function(university) { return institutionMatchesSearch(university, query); })
         : directory;
       pair.list.replaceChildren();
       matches.forEach(function(university) {
@@ -4856,8 +4880,9 @@ td strong{color:#2a464d;font-size:11px}
     const status = $('auth-university-search-status');
     if (!search || !select) return false;
     const query = normalizeInstitutionSearch(search.value);
+    const compactQuery = query.replace(/\s/g, '');
     const matches = (campusUniversitiesCache || []).filter(function(university) {
-      return normalizeInstitutionSearch(university.name) === query;
+      return normalizeInstitutionSearch(university.name) === query || institutionSearchAliases(university.name).includes(compactQuery);
     });
     if (matches.length === 1) {
       select.value = matches[0].id;
