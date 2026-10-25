@@ -48,6 +48,8 @@ assert.match(html, /id="billing-reconcile-button"/, "users can retry payment ver
 assert.match(html, /isStrongPasswordBaseline\(password\)/, "signup and password reset use a stronger password baseline");
 assert.match(backend, /Choose a 12\+ character password with uppercase, lowercase, a number, and a symbol/);
 assert.match(backend, /function getAuthRedirectUrl\(\)/, "auth confirmation returns to the current app URL");
+assert.equal((backend.match(/emailRedirectTo: getAuthRedirectUrl\(\)/g) || []).length, 2, "signup and confirmation resend use the current app URL");
+assert.doesNotMatch(backend, /AUTH_REDIRECT_URL/, "no hard-coded confirmation redirect remains");
 assert.doesNotMatch(backend, /AUTH_REDIRECT_URL\s*=\s*["']https:\/\/campusshield-ai\.github\.io/, "staging confirmations must not be hard-coded to production");
 assert.match(shieldmindBillingCheckout, /CAMPUSSHIELD_APP_ORIGIN/, "staging checkout supports an exact configured preview origin");
 assert.match(shieldmindBillingCheckout, /isLocalPreview/, "staging checkout supports localhost browser testing");
