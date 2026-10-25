@@ -3201,7 +3201,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         button.hidden = !(verified && currentProfile?.role === 'admin' && hasVerifiedCampusStaffMembership());
         return;
       }
-      if (button.id === 'staff-verification-nav') { button.hidden = !teacher; return; }
+      if (button.id === 'staff-verification-nav') { button.hidden = currentProfile?.role !== 'teacher'; return; }
       if (button.id === 'staff-review-nav') {
         button.hidden = !(verified && currentProfile?.role === 'admin' && hasVerifiedCampusStaffMembership());
         return;
@@ -3241,7 +3241,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const verified = currentProfile?.verification_status === 'verified';
     const staffCampusApproved = hasVerifiedCampusStaffMembership();
     $('approvals-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
-    $('staff-verification-nav').hidden = !isTeacherAccount();
+    $('staff-verification-nav').hidden = currentProfile?.role !== 'teacher';
     $('staff-review-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
     syncNavSectionHeadings();
   }
@@ -3430,7 +3430,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     document.querySelectorAll('[data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
       el.hidden = !canManageIncidents;
     });
-    $('staff-verification-nav').hidden = !isTeacherAccount();
+    $('staff-verification-nav').hidden = currentProfile?.role !== 'teacher';
     $('staff-review-nav').hidden = !(verified && currentProfile.role === 'admin' && hasVerifiedCampusStaffMembership());
     const dashboardTitle = $('page-dashboard h1');
     const dashboardIntro = $('page-dashboard .heading p');
@@ -3811,6 +3811,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
       toast(verifiedAdmin
         ? 'Opening administrator Rewards Management.'
         : 'Challenges and rewards are available to student accounts only.');
+    }
+
+    if (page === 'staff-verification' && currentProfile.role !== 'teacher') {
+      page = 'dashboard';
+      toast('Staff identity verification is available only to staff accounts.');
     }
 
     if (['manage', 'risk', 'analytics'].includes(page) && !canManageIncidents()) {
