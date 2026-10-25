@@ -48,7 +48,9 @@ assert.match(staffIdentityParityMigration, /CREATE OR REPLACE FUNCTION private\\
 assert.match(staffIdentityParityMigration, /CREATE POLICY student_identity_quarantine_no_browser_access[\\s\\S]*?AND false/i);
 assert.match(staffIdentityParityMigration, /CREATE OR REPLACE FUNCTION public\\.submit_campus_staff_verification[\\s\\S]*?SECURITY INVOKER/i);
 assert.match(staffIdentityParityMigration, /CREATE OR REPLACE FUNCTION public\\.platform_assign_campus_admin[\\s\\S]*?SECURITY INVOKER/i);
-assert.doesNotMatch(staffIdentityParityMigration, /CREATE OR REPLACE FUNCTION public\\.[\\s\\S]*?SECURITY DEFINER/, "public staff identity RPCs stay invoker wrappers");
+const staffIdentityPublicWrappers = [...staffIdentityParityMigration.matchAll(/CREATE OR REPLACE FUNCTION public\\.[\\s\\S]*?AS \\$wrapper\\$;/g)].map((match) => match[0]);
+assert.ok(staffIdentityPublicWrappers.length >= 15, "staff identity migration includes the public RPC wrappers");
+assert.ok(staffIdentityPublicWrappers.every((source) => !/SECURITY DEFINER/i.test(source)), "public staff identity RPCs stay invoker wrappers");
 
 assert.match(html, /id="page-campus-contacts"/, "campus contacts destination exists");
 assert.match(html, /data-page="campus-contacts"/, "dashboard contacts link points to a supported route");
