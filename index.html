@@ -2666,6 +2666,19 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <div class="profile-alert-empty">Checking for account updates…</div>
       </div>
     </section>
+    <section class="panel" id="profile-push-notifications" aria-labelledby="profile-push-notifications-title">
+      <div class="panel-heading">
+        <div><p class="profile-overline">OPTIONAL DEVICE ALERTS</p><h2 id="profile-push-notifications-title">Background notifications</h2></div>
+        <span class="tag open">Your choice</span>
+      </div>
+      <p>Allow CampusShield to notify this device when a relevant update is available, even when the app is not open. Messages use generic text and do not include private incident details.</p>
+      <div class="actions">
+        <button class="btn" type="button" id="profile-push-enable">Enable notifications on this device</button>
+        <button class="btn secondary" type="button" id="profile-push-test" hidden>Send test notification</button>
+        <button class="btn secondary" type="button" id="profile-push-disable" hidden>Turn off on this device</button>
+      </div>
+      <p id="profile-push-status" class="profile-alerts-status" role="status" aria-live="polite">Push setup requires browser support and server VAPID configuration.</p>
+    </section>
   </div>
 
   <div class="grid two profile-settings-secondary-grid">
@@ -3450,8 +3463,26 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
     $('community-announcement-option').disabled = !canPublishOfficial;
     syncIdentityNavigation();
-    const returnedFromPayment = new URLSearchParams(window.location.search).get('billing') === 'return';
-    navigate(returnedFromPayment ? 'billing' : 'dashboard');
+    const locationParams = new URLSearchParams(window.location.search);
+    const returnedFromPayment = locationParams.get('billing') === 'return';
+    let pushPage = locationParams.get('pushPage');
+    if (!pushPageIsAllowed(pushPage)) {
+      try { pushPage = sessionStorage.getItem('campusshield-pending-push-page'); } catch (_) { pushPage = null; }
+    }
+    if (!pushPageIsAllowed(pushPage)) pushPage = null;
+    try { sessionStorage.removeItem('campusshield-pending-push-page'); } catch (_) {}
+    if (locationParams.has('pushPage')) {
+      locationParams.delete('pushPage');
+      const cleanUrl = window.location.pathname + (locationParams.toString() ? '?' + locationParams.toString() : '') + window.location.hash;
+      window.history.replaceState(window.history.state, document.title, cleanUrl);
+    }
+    navigate(returnedFromPayment ? 'billing' : (pushPage || 'dashboard'));
+    if (pushPage && !returnedFromPayment) {
+      if (pushPage === 'timetable') window.CampusShieldTimetable?.load();
+      if (pushPage === 'campus-messages') loadCampusDirectMessagesPage();
+      if (pushPage === 'noticeboard') loadCampusNoticeboardPage();
+      if (pushPage === 'profile-settings') loadMyProfileSettings();
+    }
     $('billing-reconcile-button').onclick = reconcileReturnedPaystackPayment;
     if (returnedFromPayment) {
       const returnParams = new URLSearchParams(window.location.search);
@@ -3468,6 +3499,136 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
     refreshPlatformAdminAccess();
     return true;
+  }
+
+  const CAMPUS_PUSH_PAGES = new Set(['timetable', 'campus-messages', 'noticeboard', 'profile-settings']);
+
+  function pushPageIsAllowed(page) {
+    return CAMPUS_PUSH_PAGES.has(String(page || ''));
+  }
+
+  function base64UrlToBytes(value) {
+    const padding = '='.repeat((4 - value.length % 4) % 4);
+    const normalized = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(normalized);
+    return Uint8Array.from(raw, (char) => char.charCodeAt(0));
+  }
+
+  async function refreshPushControls() {
+    const enable = $('profile-push-enable');
+    const test = $('profile-push-test');
+    const disable = $('profile-push-disable');
+    const status = $('profile-push-status');
+    if (!enable || !test || !disable || !status) return;
+    const supported = window.isSecureContext && 'serviceWorker' in navigator &&
+      'PushManager' in window && 'Notification' in window;
+    if (!supported) {
+      enable.disabled = true;
+      test.hidden = true;
+      disable.hidden = true;
+      status.textContent = 'Background push is unavailable in this browser or connection. Open CampusShield over HTTPS in a supported browser.';
+      return;
+    }
+    try {
+      const registration = await navigator.serviceWorker.getRegistration('./');
+      const subscription = registration ? await registration.pushManager.getSubscription() : null;
+      enable.hidden = Boolean(subscription);
+      enable.disabled = Boolean(subscription) || Notification.permission === 'denied';
+      test.hidden = !subscription;
+      disable.hidden = !subscription;
+      if (subscription) status.textContent = 'This device is subscribed. Use “Send test notification” to check delivery, or turn it off here.';
+      else if (Notification.permission === 'denied') status.textContent = 'Notifications are blocked by your browser. Allow them in this site’s browser settings, then try again.';
+      else status.textContent = 'Notifications are off on this device. You can enable them whenever you are ready.';
+    } catch (_) {
+      status.textContent = 'Could not read this device’s notification setting. Try refreshing the page.';
+    }
+  }
+
+  $('profile-push-enable')?.addEventListener('click', async function() {
+    const button = $('profile-push-enable');
+    const status = $('profile-push-status');
+    if (!currentProfile || !button || !status) return;
+    button.disabled = true;
+    status.textContent = 'Preparing this device’s push subscription…';
+    try {
+      if (!window.isSecureContext || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        throw new Error('Background notifications need HTTPS and a browser that supports Web Push.');
+      }
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') throw new Error(permission === 'denied'
+        ? 'Notifications are blocked in your browser settings.'
+        : 'Notification permission was not granted.');
+      const registration = await navigator.serviceWorker.ready;
+      const publicKey = await window.CampusShieldBackend.getPushPublicKey();
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: base64UrlToBytes(publicKey)
+      });
+      await window.CampusShieldBackend.savePushSubscription(subscription.toJSON());
+      status.textContent = 'Notifications enabled on this device.';
+      toast('Background notifications enabled.');
+    } catch (error) {
+      status.textContent = error?.message || 'Could not enable background notifications.';
+    } finally {
+      await refreshPushControls();
+      button.disabled = false;
+    }
+  });
+
+  $('profile-push-disable')?.addEventListener('click', async function() {
+    const button = $('profile-push-disable');
+    const status = $('profile-push-status');
+    if (!currentProfile || !button || !status) return;
+    button.disabled = true;
+    try {
+      const registration = await navigator.serviceWorker.getRegistration('./');
+      const subscription = registration ? await registration.pushManager.getSubscription() : null;
+      if (subscription) {
+        await window.CampusShieldBackend.removePushSubscription(subscription.endpoint);
+        await subscription.unsubscribe();
+      }
+      status.textContent = 'Background notifications turned off on this device.';
+      toast('Notifications disabled on this device.');
+    } catch (error) {
+      status.textContent = error?.message || 'Could not turn off notifications.';
+    } finally {
+      await refreshPushControls();
+      button.disabled = false;
+    }
+  });
+
+  $('profile-push-test')?.addEventListener('click', async function() {
+    const button = $('profile-push-test');
+    const status = $('profile-push-status');
+    if (!currentProfile || !button || !status) return;
+    button.disabled = true;
+    status.textContent = 'Sending a test notification…';
+    try {
+      const result = await window.CampusShieldBackend.sendPushTest();
+      status.textContent = result?.delivered
+        ? 'Test notification sent. It may be shown by the browser or operating system.'
+        : 'No active device subscription was found. Enable notifications again on this device.';
+    } catch (error) {
+      status.textContent = error?.message || 'Could not send a test notification. Check server push configuration.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  if (navigator.serviceWorker) {
+    navigator.serviceWorker.addEventListener('message', function(event) {
+      if (event.data?.type !== 'CAMPUSSHIELD_PUSH_NAVIGATE' || !pushPageIsAllowed(event.data.page)) return;
+      if (!currentProfile) {
+        try { sessionStorage.setItem('campusshield-pending-push-page', event.data.page); } catch (_) {}
+        showLogin('Sign in to open your CampusShield update.');
+        return;
+      }
+      navigate(event.data.page);
+      if (event.data.page === 'timetable') window.CampusShieldTimetable?.load();
+      if (event.data.page === 'campus-messages') loadCampusDirectMessagesPage();
+      if (event.data.page === 'noticeboard') loadCampusNoticeboardPage();
+      if (event.data.page === 'profile-settings') loadMyProfileSettings();
+    });
   }
 
   function showLogin(message) {
@@ -4333,6 +4494,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   }
 
   async function loadMyProfileSettings() {
+    void refreshPushControls();
     const profile = currentProfile;
     if (!profile) return;
     const name = $('profile-settings-name');
