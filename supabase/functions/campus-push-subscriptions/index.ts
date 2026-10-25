@@ -71,7 +71,7 @@ Deno.serve(async (req: Request) => {
 
     if (action === "config" || action === "status") {
       const { count, error } = await admin.from("campus_push_subscriptions")
-        .select("id", { count: "exact", head: true }).eq("user_id", user.id);
+        .select("endpoint", { count: "exact", head: true }).eq("user_id", user.id);
       if (error) return send({ error: "Could not read push notification status." }, 503);
       return send({
         configured: Boolean(publicKey),
@@ -99,7 +99,7 @@ Deno.serve(async (req: Request) => {
       }
       const now = new Date().toISOString();
       const { error } = await admin.from("campus_push_subscriptions").upsert({
-        user_id: user.id, endpoint, p256dh, auth, user_agent: userAgent, updated_at: now,
+        user_id: user.id, endpoint, p256dh_key: p256dh, auth_key: auth, user_agent: userAgent, expiration_time: subscription?.expirationTime ? new Date(subscription.expirationTime).toISOString() : null, updated_at: now, failure_count: 0, last_error_code: null,
       }, { onConflict: "endpoint" });
       if (error) return send({ error: "Could not save your push subscription." }, 503);
       return send({ subscribed: true });
