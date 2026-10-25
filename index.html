@@ -1512,6 +1512,91 @@ button,input,select,textarea{max-width:100%;min-width:0}
   .campus-group-card-actions .btn{min-height:40px}
 }
 
+
+/* Student challenges & rewards — green-first and mobile responsive */
+.student-rewards-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:14px 0}
+.student-rewards-summary-card{display:flex;align-items:center;gap:14px;min-width:0;padding:17px;border:1px solid #dfeae2;border-radius:16px;background:linear-gradient(135deg,#fff,#f3faf4)}
+.student-rewards-total-card{background:linear-gradient(135deg,#153f32,#26784f);border-color:#26784f;color:#fff}
+.student-rewards-summary-icon{display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;border-radius:13px;background:#e3f4e7;color:#247b57;font-size:22px}
+.student-rewards-total-card .student-rewards-summary-icon{background:#ffffff20;color:#c5f0d0}
+.student-rewards-summary-card>div{display:grid;gap:3px;min-width:0}
+.student-rewards-summary-label{font-size:9px;font-weight:900;letter-spacing:1.2px;color:#658070}
+.student-rewards-total-card .student-rewards-summary-label{color:#c0e6ca}
+.student-rewards-summary-card strong{font-size:26px;line-height:1.15;letter-spacing:-.7px;color:#183d2e}
+.student-rewards-total-card strong{color:#fff}
+.student-rewards-summary-card small{font-size:10px;color:#73867a}
+.student-rewards-total-card small{color:#d0e8d7}
+.student-rewards-panel{margin:14px 0}
+.student-rewards-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.student-reward-challenge{min-width:0;padding:15px;border:1px solid #e0ebe2;border-radius:14px;background:#fff}
+.student-reward-challenge.is-complete{border-color:#a9d8b7;background:#f5fbf6}
+.student-reward-challenge-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.student-reward-challenge-copy{min-width:0}
+.student-reward-challenge h3{margin:0;color:#204633;font-size:13px;line-height:1.45}
+.student-reward-challenge p{margin:6px 0 0;color:#708278;font-size:11px;line-height:1.6}
+.student-reward-points{flex-shrink:0;padding:6px 8px;border-radius:999px;background:#e8f6eb;color:#23724b;font-size:10px;font-weight:900;white-space:nowrap}
+.student-reward-progress{height:7px;margin:16px 0 9px;overflow:hidden;border-radius:999px;background:#edf2ed}
+.student-reward-progress span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2c8558,#70c78a);transition:width .2s ease}
+.student-reward-challenge-foot{display:flex;justify-content:space-between;gap:10px;color:#7b8c81;font-size:10px}
+.student-reward-challenge-foot strong{color:#247b57}
+.student-rewards-badges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.student-reward-badge{display:grid;justify-items:center;align-content:start;gap:7px;min-width:0;padding:15px 11px;border:1px solid #e1e9e2;border-radius:14px;background:#f8faf8;text-align:center}
+.student-reward-badge.is-earned{border-color:#b7dfc1;background:#f0f9f1}
+.student-reward-badge-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:#e9efea;color:#89978c;font-size:25px}
+.student-reward-badge.is-earned .student-reward-badge-icon{background:#d9f1df;color:#23784c}
+.student-reward-badge strong{font-size:12px;color:#244534}
+.student-reward-badge small{font-size:9px;font-weight:850;color:#287c50}
+.student-reward-badge p{margin:0;color:#74847a;font-size:10px;line-height:1.5}
+.student-rewards-actions{display:flex;flex-wrap:wrap;gap:9px}
+#student-rewards-status[data-state="error"]{color:#a53b35}
+@media(max-width:650px){
+ .student-rewards-summary{gap:8px}
+ .student-rewards-summary-card{align-items:flex-start;gap:9px;padding:12px 10px;border-radius:13px}
+ .student-rewards-summary-icon{width:34px;height:34px;flex-basis:34px;border-radius:11px;font-size:18px}
+ .student-rewards-summary-card strong{font-size:22px}
+ .student-rewards-summary-label{font-size:8px;letter-spacing:.7px}
+ .student-rewards-summary-card small{font-size:9px;line-height:1.35}
+ .student-rewards-grid{grid-template-columns:1fr;gap:9px}
+ .student-reward-challenge{padding:13px}
+ .student-reward-challenge h3{font-size:12px}
+ .student-rewards-badges{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ .student-reward-badge{padding:11px 6px;gap:6px}
+ .student-reward-badge-icon{width:39px;height:39px;border-radius:12px;font-size:21px}
+ .student-reward-badge strong{font-size:10px}
+ .student-reward-badge small{font-size:8px;line-height:1.35}
+ .student-reward-badge p{font-size:9px}
+ .student-rewards-actions{display:grid;grid-template-columns:1fr}
+ .student-rewards-actions .btn{width:100%;min-height:44px}
+}
+
+/* Approved student-life mobile navigation — use the existing app routes and access checks. */
+.mobile-bottom-nav{display:none}
+@media(max-width:650px){
+  .mobile-bottom-nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:25;
+    display:flex;align-items:stretch;justify-content:space-around;gap:3px;
+    padding:7px 7px calc(7px + env(safe-area-inset-bottom));
+    border-top:1px solid #dce9df;
+    background:rgba(255,255,255,.97);
+    box-shadow:0 -8px 28px rgba(21,63,50,.09);
+    backdrop-filter:blur(16px);
+  }
+  .mobile-bottom-nav button{
+    display:flex;flex:1 1 0;min-width:0;min-height:48px;
+    flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    border:0;border-radius:12px;background:transparent;color:#708278;
+    padding:5px 2px;font-size:20px;line-height:1;
+  }
+  .mobile-bottom-nav button small{font-size:9px;font-weight:800;line-height:1.2;white-space:nowrap}
+  .mobile-bottom-nav button.active{background:#eaf7ed;color:#247b57}
+  .mobile-bottom-nav button:focus-visible{outline:3px solid #6bc48b;outline-offset:1px}
+  #workspace .main{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  #workspace .content{padding-bottom:calc(25px + env(safe-area-inset-bottom))}
+}
+@media(max-width:360px){
+  .mobile-bottom-nav{gap:1px;padding-inline:4px}
+  .mobile-bottom-nav button small{font-size:8px}
+}
 </style>
 </head>
 <body>
@@ -1673,6 +1758,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
 </section>
 
 <div class="app" id="workspace" hidden>
+<nav class="mobile-bottom-nav" aria-label="Primary mobile navigation">
+  <button type="button" data-page="dashboard" aria-label="Overview"><span aria-hidden="true">⌂</span><small>Home</small></button>
+  <button type="button" data-page="community" aria-label="CampusPulse"><span aria-hidden="true">◎</span><small>Campus</small></button>
+  <button type="button" data-page="timetable" aria-label="My timetable"><span aria-hidden="true">▦</span><small>Timetable</small></button>
+  <button type="button" data-page="courses" aria-label="Courses"><span aria-hidden="true">▤</span><small>Courses</small></button>
+  <button type="button" data-page="student-rewards" aria-label="Challenges and rewards" hidden><span aria-hidden="true">✧</span><small>Rewards</small></button>
+</nav>
 <aside class="sidebar" id="app-sidebar" aria-label="Main navigation">
 <div class="brand"><img class="brand-logo" src="./assets/campusshield-logo.svg" alt="CampusShield AI logo" width="42" height="42"><span class="brand-copy">Campus<strong>Shield</strong> AI<small>SAFETY WORKSPACE</small></span></div>
 <button type="button" class="sidebar-toggle" id="sidebar-collapse-toggle" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar"><span class="sidebar-toggle-icon" aria-hidden="true">‹</span><span class="sidebar-toggle-label">Collapse menu</span></button>
@@ -1688,6 +1780,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <button data-page="events" id="events-services-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span>Events &amp; Campus Services</button>
 <button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span>Opportunities &amp; Scholarships</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span>Safety &amp; Report Incident</button>
+<button data-page="student-rewards" id="student-rewards-nav"><span class="nav-icon" aria-hidden="true">✧</span>Challenges &amp; Rewards</button>
 <button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button>
 <button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; Billing</button>
 <button data-page="profile-settings" id="profile-settings-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20v-1.2A4.8 4.8 0 0 1 9.3 14h5.4a4.8 4.8 0 0 1 4.8 4.8V20"/><path d="m18.5 4.5 1 .5.9-.5.6 1 .9.4-.3 1.1.3 1.1-.9.4-.6 1-1-.5-1 .5-.6-1-.9-.4.3-1.1-.3-1.1.9-.4z"/></svg></span>My Profile &amp; Settings</button>
@@ -2357,10 +2450,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
   <div class="shieldmind-hero"><div class="shieldmind-mark" aria-hidden="true">✦</div><div><h2>Your campus learning companion</h2><p>Ask an academic question, explore a topic, or get a study plan. Official university answers are only provided when approved campus sources support them.</p></div></div>
   <div class="notice-inline" id="shieldmind-access-notice" role="status" aria-live="polite">ShieldMind AI is available in the live workspace. Sending questions requires a verified CampusShield account and an active, verified university membership. Student accounts must also have approved student identity verification.</div>
 
-  <section class="shieldmind-plan panel" aria-labelledby="shieldmind-plan-title">
+  <section class="shieldmind-plan panel" aria-labelledby="shieldmind-plan-heading">
     <div class="shieldmind-plan-copy">
       <span class="shieldmind-pill">YOUR PLAN</span>
-      <h2 id="shieldmind-plan-title">Your ShieldMind plan</h2>
+      <h2 id="shieldmind-plan-heading">Your ShieldMind plan</h2>
       <p>Stay here to study with ShieldMind AI. Compare Free and premium limits, renew access, and manage payments on the dedicated Subscriptions &amp; billing page.</p>
       <p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p>
       <div class="actions"><button class="btn" type="button" data-page="billing">View plans &amp; subscriptions</button></div>
@@ -2401,6 +2494,35 @@ button,input,select,textarea{max-width:100%;min-width:0}
   <p class="shieldmind-disclaimer">Educational support only. Check course materials and ask your lecturer when accuracy matters. ShieldMind is not an emergency service or official university decision-maker.</p>
 </section>
 
+
+<section class="page" id="page-student-rewards">
+  <div class="heading">
+    <div><span class="campus-hub-eyebrow" style="color:#25846b">CAMPUSSHIELD AI · STUDENT LIFE</span><h1>Challenges &amp; rewards</h1><p>Build steady study habits, contribute positively, and celebrate your progress.</p></div>
+    <div class="heading-actions"><button class="btn secondary" type="button" id="student-rewards-refresh">Refresh progress</button></div>
+  </div>
+  <div class="notice-inline"><strong>Fair rewards, real activity.</strong> Points are calculated from your saved timetable, published CampusPulse contributions, and approved course discussions. You cannot award yourself points. Safety reports, popularity, paid boosts, and posting volume do not earn rewards.</div>
+  <p id="student-rewards-status" class="message" role="status" aria-live="polite">Your saved progress will appear here after you sign in.</p>
+  <div class="student-rewards-summary">
+    <article class="student-rewards-summary-card student-rewards-total-card"><span class="student-rewards-summary-icon" aria-hidden="true">✧</span><div><span class="student-rewards-summary-label">TOTAL POINTS</span><strong id="student-rewards-total">—</strong><small>Earned through verified activity</small></div></article>
+    <article class="student-rewards-summary-card"><span class="student-rewards-summary-icon" aria-hidden="true">✓</span><div><span class="student-rewards-summary-label">CHALLENGES COMPLETE</span><strong id="student-rewards-completed">—</strong><small id="student-rewards-week">This week</small></div></article>
+  </div>
+  <section class="panel student-rewards-panel">
+    <div class="panel-heading"><div><h2>This week's challenges</h2><p>Complete positive activities in features you already use.</p></div><span class="shieldmind-pill">WEEKLY</span></div>
+    <div class="student-rewards-grid" id="student-rewards-challenges"><p class="message">Loading challenges…</p></div>
+  </section>
+  <section class="panel student-rewards-panel">
+    <div class="panel-heading"><div><h2>Your badges</h2><p>Badges unlock automatically as your points grow.</p></div><span class="shieldmind-pill">MILESTONES</span></div>
+    <div class="student-rewards-badges" id="student-rewards-badges"><p class="message">Your badges will appear here.</p></div>
+  </section>
+  <section class="panel student-rewards-panel">
+    <div class="panel-heading"><div><h2>Keep your momentum</h2><p>Rewards connect to the student features you already know.</p></div></div>
+    <div class="student-rewards-actions">
+      <button class="btn secondary" type="button" data-page="timetable">Open my timetable</button>
+      <button class="btn secondary" type="button" data-page="community">Open CampusPulse</button>
+      <button class="btn secondary" type="button" data-page="groups">Open course communities</button>
+    </div>
+  </section>
+</section>
 
 <section class="page" id="page-billing">
   <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · PLANS</span><h1>Subscriptions &amp; billing</h1><p>Manage ShieldMind AI study plans and explore institutional subscriptions for your university.</p></div></div>
@@ -2852,6 +2974,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <script src="./shieldmind-planner.js"></script>
 <script src="./campus-timetable.js"></script>
 <script src="./campus-course-community.js"></script>
+<script src="./student-rewards.js"></script>
 <script>
 
 (() => {
@@ -3037,6 +3160,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
         button.hidden = false;
         return;
       }
+      if (button.dataset.page === 'student-rewards') {
+        button.hidden = !student;
+        return;
+      }
       if (button.dataset.page === 'classroom') {
         button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['teacher','security','admin'].includes(currentProfile?.role));
         return;
@@ -3057,6 +3184,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
       if (['manage','risk','analytics'].includes(button.dataset.page)) { button.hidden = !canManageIncidents(); return; }
       if (student && !verified) button.hidden = false;
     });
+    const mobileRewardsNav = document.querySelector('.mobile-bottom-nav [data-page="student-rewards"]');
+    if (mobileRewardsNav) mobileRewardsNav.hidden = !student;
     if (setup && note) {
       setup.hidden = !student || state === 'approved' || state === 'pending';
       note.hidden = !student;
@@ -3643,6 +3772,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
 
+    if (page === 'student-rewards' && currentProfile.role !== 'student') {
+      page = 'dashboard';
+      toast('Challenges and rewards are available to student accounts only.');
+    }
+
     if (['manage', 'risk', 'analytics'].includes(page) && !canManageIncidents()) {
       page = 'dashboard';
       toast('Incident management and risk analytics are restricted to verified security and administrator accounts.');
@@ -3698,6 +3832,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       marketplace:'Campus marketplace',
       classroom:'Teacher Classroom',
       courses:'Courses & Study Resources',
+      'student-rewards':'Challenges & Rewards',
       opportunities:'Opportunities & Scholarships',
       shieldmind:'ShieldMind AI',
       billing:'Subscriptions & Billing',
@@ -3708,6 +3843,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
     $('sectionTitle').textContent = names[page] || 'Overview';
 
+    if (page === 'student-rewards') window.CampusShieldStudentRewards?.load({ force: true });
     if (page === 'analytics') renderAnalytics();
   }
 
