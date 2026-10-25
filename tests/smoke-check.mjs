@@ -74,7 +74,14 @@ assert.match(html, /\['teacher','security','admin'\]\.includes\(currentProfile\?
 assert.match(html, /Teacher Classroom requires a verified campus staff account/);
 assert.doesNotMatch(html, /Campus Map &amp; Lost and Found/i);
 assert.match(html, /<button(?=[^>]*id="lost-found-nav")(?=[^>]*data-lost-found-shortcut="true")(?=[^>]*data-page="community")[^>]*>/);
-assert.match(html, /postType\.value = 'lost_found'/);
+const lostFoundHandlerStart = html.indexOf("if (button.hasAttribute('data-lost-found-shortcut'))");
+const lostFoundHandlerEnd = html.indexOf("\n    if (button.dataset.page === 'groups')", lostFoundHandlerStart);
+assert.ok(lostFoundHandlerStart >= 0 && lostFoundHandlerEnd > lostFoundHandlerStart, "Lost & Found shortcut has a dedicated click handler");
+const lostFoundHandler = html.slice(lostFoundHandlerStart, lostFoundHandlerEnd);
+assert.match(lostFoundHandler, /postType\.value = 'lost_found'/, "shortcut preselects the Lost and Found post type");
+assert.match(lostFoundHandler, /communityPostForm/);
+assert.match(lostFoundHandler, /scrollIntoView\(\{behavior: 'smooth', block: 'start'\}\)/, "shortcut scrolls to the post composer");
+assert.match(lostFoundHandler, /Do not post private contact details or sensitive personal information/, "shortcut displays privacy guidance");
 assert.match(html, /data-page="groups">Explore groups<\/button>/);
 assert.match(html, /data-page="noticeboard">Noticeboard<\/button>/);
 assert.match(html, /data-page="helpdesk">Helpdesk<\/button>/);
