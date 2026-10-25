@@ -3807,6 +3807,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
       toast('Incident management and risk analytics are restricted to verified security and administrator accounts.');
     }
 
+    if (page === 'admin-rewards' && !verifiedAdmin) {
+      page = 'dashboard';
+      toast('Rewards Management is restricted to verified administrators.');
+    }
+
     if (page === 'approvals' && !verifiedAdmin) {
       page = 'dashboard';
       toast('Only verified administrators can access account approvals.');
