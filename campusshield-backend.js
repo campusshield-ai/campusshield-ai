@@ -16,8 +16,15 @@
     !cfg.publishableKey.includes("REPLACE_ME")
   );
 
-  // Use the canonical GitHub Pages URL so signup and resend emails always return to the live app.
-  const AUTH_REDIRECT_URL = "https://campusshield-ai.github.io/campusshield-ai/";
+  // Return confirmations to the app origin that initiated signup. This keeps staging
+  // and local preview confirmations out of production. The redirect URI must also
+  // be allowed in the matching Supabase project's Auth URL Configuration.
+  function getAuthRedirectUrl() {
+    const url = new URL(window.location.href);
+    url.search = "";
+    url.hash = "";
+    return url.href;
+  }
 
   const client = ready
     ? window.supabase.createClient(cfg.url, cfg.publishableKey)
@@ -61,7 +68,7 @@ async signUp(email, password, displayName, username, universityId, profileData =
         campus_official_email: safeProfileData.campus_official_email || null,
         requested_campus_admin: Boolean(safeProfileData.requested_campus_admin)
       },
-      emailRedirectTo: AUTH_REDIRECT_URL
+      emailRedirectTo: getAuthRedirectUrl()
     }
   });
 },
