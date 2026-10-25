@@ -1173,6 +1173,40 @@ async getCurrentUser() {
       return data.id;
     },
 
+
+    async listCampusCourseReviews() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const [courses, resources] = await Promise.all([
+        client.from("campus_courses").select("id,course_code,title,faculty,department,level,summary,status,created_at").eq("status", "pending").order("created_at", { ascending: true }).limit(100),
+        client.from("campus_course_resources").select("id,course_id,title,description,resource_type,source_url,source_label,status,created_at").eq("status", "pending").order("created_at", { ascending: true }).limit(100)
+      ]);
+      if (courses.error) throw courses.error;
+      if (resources.error) throw resources.error;
+      return { courses: courses.data || [], resources: resources.data || [] };
+    },
+
+    async reviewCampusCourse(courseId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!courseId || !["publish", "reject"].includes(decision)) throw new Error("Choose a course and a valid review decision.");
+      const user = await this.getCurrentUser();
+      const { error } = await client.from("campus_courses").update({
+        status: decision === "publish" ? "published" : "rejected",
+        reviewed_by: user?.id || null, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString()
+      }).eq("id", courseId).eq("status", "pending");
+      if (error) throw error;
+    },
+
+    async reviewCampusCourseResource(resourceId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!resourceId || !["publish", "reject"].includes(decision)) throw new Error("Choose a resource and a valid review decision.");
+      const user = await this.getCurrentUser();
+      const { error } = await client.from("campus_course_resources").update({
+        status: decision === "publish" ? "published" : "rejected",
+        reviewed_by: user?.id || null, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString()
+      }).eq("id", resourceId).eq("status", "pending");
+      if (error) throw error;
+    },
+
     async listIncidents() {
       if (!client) throw new Error("Supabase is not configured.");
 
