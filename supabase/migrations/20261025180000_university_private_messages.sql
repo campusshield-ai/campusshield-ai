@@ -10,7 +10,7 @@ create table if not exists public.campus_direct_conversations (
   user_two_id uuid not null references public.profiles(id) on delete cascade,
   requested_by uuid not null references public.profiles(id) on delete cascade,
   status text not null default 'pending'
-    check (status in ('pending','accepted','declined','blocked')),
+    check (status in ('pending','accepted','declined','cancelled','blocked')),
   blocked_by uuid references public.profiles(id) on delete set null,
   last_message_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
@@ -73,24 +73,43 @@ revoke all on table public.campus_direct_messages from anon, authenticated;
 grant select (id, conversation_id, university_id, author_username, body, status, created_at, updated_at)
   on table public.campus_direct_messages to authenticated;
 
+create or replace function private.can_read_campus_direct_message(
+  p_conversation_id uuid,
+  p_university_id uuid,
+  p_sender_id uuid
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path to ''
+as $function$
+  select coalesce((select private.current_user_has_verified_campus_access()), false)
+    and p_university_id = (select private.current_campus_university_id())
+    and exists (
+      select 1
+      from public.campus_direct_conversations c
+      where c.id = p_conversation_id
+        and c.university_id = p_university_id
+        and (c.user_one_id = (select auth.uid()) or c.user_two_id = (select auth.uid()))
+        and (
+          c.status = 'accepted'
+          or (c.status = 'pending' and p_sender_id = c.requested_by)
+        )
+    );
+$function$;
+
+revoke all on function private.can_read_campus_direct_message(uuid,uuid,uuid) from public, anon, authenticated;
+grant execute on function private.can_read_campus_direct_message(uuid,uuid,uuid) to authenticated;
+
 drop policy if exists campus_direct_messages_read_participant on public.campus_direct_messages;
 create policy campus_direct_messages_read_participant
   on public.campus_direct_messages for select to authenticated
   using (
-    university_id = (select private.current_campus_university_id())
-    and status = 'published'
-    and (select private.current_user_has_verified_campus_access())
-    and exists (
-      select 1
-      from public.campus_direct_conversations c
-      where c.id = campus_direct_messages.conversation_id
-        and c.university_id = campus_direct_messages.university_id
-        and ((c.user_one_id = (select auth.uid())) or (c.user_two_id = (select auth.uid())))
-        and (
-          c.status = 'accepted'
-          or (c.status = 'pending' and campus_direct_messages.sender_id = c.requested_by)
-        )
-    )
+    status = 'published'
+    and (select private.can_read_campus_direct_message(
+      conversation_id, university_id, sender_id
+    ))
   );
 
 create or replace function public.search_campus_members(p_query text)
@@ -444,8 +463,8 @@ begin
   if v_university_id is null or not coalesce((select private.current_user_has_verified_campus_access()), false) then
     raise exception 'Verified campus access is required for private messaging.';
   end if;
-  if p_action is null or p_action not in ('accept','decline','block') then
-    raise exception 'Choose accept, decline or block.';
+  if p_action is null or p_action not in ('accept','decline','cancel','block') then
+    raise exception 'Choose accept, decline, cancel or block.';
   end if;
 
   select c.requested_by, c.status into v_requested_by, v_status
@@ -466,6 +485,11 @@ begin
   end if;
 
   if v_status <> 'pending' then raise exception 'This message request is no longer pending.'; end if;
+  if p_action = 'cancel' then
+    if v_requested_by <> v_user_id then raise exception 'Only the sender can cancel their own message request.'; end if;
+    update public.campus_direct_conversations set status='cancelled', updated_at=now() where id=p_conversation_id;
+    return true;
+  end if;
   if v_requested_by = v_user_id then raise exception 'Only the recipient can accept or decline a message request.'; end if;
 
   update public.campus_direct_conversations
