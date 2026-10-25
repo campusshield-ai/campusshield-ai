@@ -47,7 +47,7 @@ assert.match(paystackReconcileFunction, /tx\?\.currency !== order\.currency/);
 assert.match(paystackReconcileFunction, /tx\?\.status !== "success"/);
 assert.match(paystackReconcileFunction, /last_payment_reference === reference/, "duplicate verification does not extend a plan");
 assert.match(paystackReconcileFunction, /expires_at: expiry\.toISOString\(\)/, "subscription expires from stable paid timestamp");
-assert.match(html, /functions\.invoke\('paystack-reconcile'/, "checkout return triggers server-side payment reconciliation");
+assert.match(html, /const reconcileFunction = stagingBilling \? 'shieldmind-billing-reconcile' : 'paystack-reconcile'/, "checkout return calls the environment-specific server-side reconciliation");
 assert.match(html, /id="billing-reconcile-button"/, "users can retry payment verification safely");
 assert.match(html, /isStrongPasswordBaseline\(password\)/, "signup and password reset use a stronger password baseline");
 assert.match(backend, /Choose a 12\+ character password with uppercase, lowercase, a number, and a symbol/);
