@@ -22,6 +22,7 @@ const pushSubscriptionsFunction = await readFile(new URL("../supabase/functions/
 const pushDispatchFunction = await readFile(new URL("../supabase/functions/push-dispatch/index.ts", import.meta.url), "utf8");
 const pushMigration = await readFile(new URL("../supabase/migrations/20261025200000_add_web_push_notifications.sql", import.meta.url), "utf8");
 const pushEventDedupMigration = await readFile(new URL("../supabase/migrations/20261025220000_add_push_event_deduplication.sql", import.meta.url), "utf8");
+const pushSetupScript = await readFile(new URL("../scripts/setup-staging-push-secrets.ps1", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -29,6 +30,14 @@ for (const [index, source] of inlineScripts.entries()) {
   assert.doesNotThrow(() => new Function(source), `inline script ${index + 1} parses`);
 }
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
+assert.match(backend, /function getAuthRedirectUrl\(\)/, "auth confirmation returns to the current app URL");
+assert.equal((backend.match(/emailRedirectTo: getAuthRedirectUrl\(\)/g) || []).length, 2, "signup and confirmation resend use the current app URL");
+assert.doesNotMatch(backend, /AUTH_REDIRECT_URL/, "no hard-coded production confirmation redirect remains");
+assert.match(pushSetupScript, /hywcpnoqqhxvujnimhxl/, "push setup is pinned to the staging Supabase project");
+assert.match(pushSetupScript, /supabase secrets set --project-ref \$StagingProjectRef --env-file \$tempPath/, "push setup uploads through a temporary secrets file");
+assert.match(pushSetupScript, /Get-Acl[\s\S]*?Set-Acl/, "push setup restricts temporary secret-file permissions");
+assert.match(pushSetupScript, /VAPID_PUBLIC_KEY|VAPID_PRIVATE_KEY|PUSH_DISPATCH_SECRET/, "push setup covers VAPID and dispatch secrets");
+assert.doesNotMatch(pushSetupScript, /fvgtnujjnvdkhzqqcaqe|sk_live_/, "staging setup contains no production project reference or live payment secret");
 assert.match(backend, /async getPushPublicKey\(\)/, "client can fetch the public Web Push application key");
 assert.match(backend, /async savePushSubscription\(subscription\)/, "client can register a device subscription");
 assert.match(backend, /async removePushSubscription\(endpoint\)/, "client can revoke a device subscription");
