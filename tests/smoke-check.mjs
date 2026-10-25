@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
+const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
 const communityMigration = await readFile(new URL("../supabase/migrations/20261014230000_add_community_privacy_feed.sql", import.meta.url), "utf8");
 const usernameSyncMigration = await readFile(new URL("../supabase/migrations/20261014233000_sync_community_username_snapshots.sql", import.meta.url), "utf8");
@@ -21,6 +22,14 @@ for (const [index, source] of inlineScripts.entries()) {
   assert.doesNotThrow(() => new Function(source), `inline script ${index + 1} parses`);
 }
 assert.doesNotThrow(() => new Function(backend), "Supabase backend parses");
+assert.doesNotThrow(() => new Function(planner), "ShieldMind planner parses");
+assert.match(html, /<script src="\.\/shieldmind-planner\.js"><\/script>/);
+assert.doesNotMatch(html, /campusshield-backend-identity-addon\.js/);
+assert.match(planner, /create_my_shieldmind_planner_item/);
+assert.match(planner, /list_my_shieldmind_planner_items/);
+assert.match(planner, /update_my_shieldmind_planner_item/);
+assert.match(planner, /delete_my_shieldmind_planner_item/);
+console.log("PASS referenced local scripts exist and ShieldMind timetable actions are wired");
 assert.doesNotThrow(() => new Function(config), "Supabase config parses");
 
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
