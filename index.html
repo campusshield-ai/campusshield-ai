@@ -3797,9 +3797,20 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
 
+    // Keep the navigation consistent with the signed-in role even if the
+    // async admin-rewards helper has not initialized yet.
+    const studentRewardsNav = document.getElementById('student-rewards-nav');
+    const adminRewardsNav = document.getElementById('admin-rewards-nav');
+    if (studentRewardsNav) studentRewardsNav.hidden = currentProfile.role !== 'student';
+    if (adminRewardsNav) adminRewardsNav.hidden = !verifiedAdmin;
+
+    // If a non-student opens the student-only route, send verified admins to
+    // the separate cross-campus management view instead of showing a dead end.
     if (page === 'student-rewards' && currentProfile.role !== 'student') {
-      page = 'dashboard';
-      toast('Challenges and rewards are available to student accounts only.');
+      page = verifiedAdmin ? 'admin-rewards' : 'dashboard';
+      toast(verifiedAdmin
+        ? 'Opening administrator Rewards Management.'
+        : 'Challenges and rewards are available to student accounts only.');
     }
 
     if (['manage', 'risk', 'analytics'].includes(page) && !canManageIncidents()) {
