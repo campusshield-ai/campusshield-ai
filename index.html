@@ -3386,19 +3386,27 @@ button,input,select,textarea{max-width:100%;min-width:0}
         return;
       }
       button.disabled = true;
-      status.textContent = 'Preparing secure live Paystack checkout…';
+      const stagingBilling = isStagingSupabaseEnvironment();
+      button.disabled = true;
+      status.textContent = stagingBilling
+        ? 'Preparing secure Paystack test checkout…'
+        : 'Preparing secure live Paystack checkout…';
       try {
-        const { data, error } = await window.CampusShieldBackend.client.functions.invoke('paystack-initialize', {
-          body: { plan, billing_period: 'monthly' }
+        const functionName = stagingBilling ? 'shieldmind-billing-checkout' : 'paystack-initialize';
+        const requestBody = stagingBilling ? { plan } : { plan, billing_period: 'monthly' };
+        const { data, error } = await window.CampusShieldBackend.client.functions.invoke(functionName, {
+          body: requestBody
         });
         if (error) {
           let providerMessage = null;
           try { providerMessage = (await error.context?.clone?.().json())?.error || null; } catch (_ignored) {}
-          throw new Error(providerMessage || 'Secure live checkout is not available. Check production Paystack setup. No payment has been taken.');
+          throw new Error(providerMessage || (stagingBilling
+            ? 'Paystack test checkout is not available. Check staging billing configuration. No payment has been taken.'
+            : 'Secure live checkout is not available. Check production Paystack setup. No payment has been taken.'));
         }
         if (!data?.authorization_url || typeof data.authorization_url !== 'string' ||
             !/^https:\/\/checkout\.paystack\.com\//i.test(data.authorization_url)) {
-          throw new Error(data?.error || 'Secure live checkout is not configured yet. No payment has been taken.');
+          throw new Error(data?.error || 'Secure checkout is not configured yet. No payment has been taken.');
         }
         window.location.assign(data.authorization_url);
       } catch (error) {
@@ -3492,7 +3500,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     if (message) $('auth-message').textContent = message;
   }
 
-  function isStagingGoogleAuthEnvironment() {
+  function isStagingSupabaseEnvironment() {
     try {
       const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
       return new URL(String(config.url || "")).hostname === "hywcpnoqqhxvujnimhxl.supabase.co";
@@ -3504,7 +3512,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   async function isGoogleProviderEnabled() {
     const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
     const publishableKey = String(config.publishableKey || "");
-    if (!isStagingGoogleAuthEnvironment() || !publishableKey) return false;
+    if (!isStagingSupabaseEnvironment() || !publishableKey) return false;
     const response = await fetch(String(config.url).replace(/\/$/, "") + "/auth/v1/settings", {
       method: "GET",
       headers: { apikey: publishableKey, Accept: "application/json" },
@@ -3530,7 +3538,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const isReset = authMode === 'reset';
 
     $('auth-tabs').hidden = isReset;
-    $('google-signin-wrap').hidden = isSignUp || isReset || !isStagingGoogleAuthEnvironment();
+    $('google-signin-wrap').hidden = isSignUp || isReset || !isStagingSupabaseEnvironment();
     $('signin-institution-field').hidden = isSignUp || isReset;
     $('signin-role-picker').hidden = isSignUp || isReset;
     $('signin-role-note').hidden = isSignUp || isReset;
@@ -8696,7 +8704,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const button = $('google-signin-button');
     const message = $('auth-message');
     const institutionHint = String($('signin-institution')?.value || '').trim();
-    if (!isStagingGoogleAuthEnvironment()) {
+    if (!isStagingSupabaseEnvironment()) {
       message.textContent = 'Google sign-in is available in the staging preview only. Production has not been changed.';
       return;
     }
@@ -9231,7 +9239,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     const params = new URLSearchParams(window.location.search);
     const reference = params.get('reference') || params.get('trxref');
     if (!message || !button) return;
-    if (!reference || !/^csa_[a-f0-9]{32}$/i.test(reference)) {
+    const stagingBilling = isStagingSupabaseEnvironment();
+    const validReference = stagingBilling ? /^sm_[a-f0-9]{32}$/i.test(reference || "") : /^csa_[a-f0-9]{32}$/i.test(reference || "");
+    if (!reference || !validReference) {
       message.textContent = 'The payment return does not contain a valid transaction reference. Check your plan status before trying another payment.';
       button.hidden = true;
       return;
@@ -9246,7 +9256,8 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     button.textContent = 'Verifying payment…';
     message.textContent = 'Verifying the transaction with Paystack and reconciling your subscription securely…';
     try {
-      const {data, error} = await backend.client.functions.invoke('paystack-reconcile', {
+      const reconcileFunction = stagingBilling ? 'shieldmind-billing-reconcile' : 'paystack-reconcile';
+      const {data, error} = await backend.client.functions.invoke(reconcileFunction, {
         body: { reference }
       });
       if (error) throw new Error('The server could not confirm the payment yet. Retry verification before starting another checkout.');
