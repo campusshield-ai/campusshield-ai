@@ -53,6 +53,7 @@ assert.equal((backend.match(/emailRedirectTo: getAuthRedirectUrl\(\)/g) || []).l
 assert.doesNotMatch(backend, /AUTH_REDIRECT_URL/, "no hard-coded confirmation redirect remains");
 assert.doesNotMatch(backend, /AUTH_REDIRECT_URL\s*=\s*["']https:\/\/campusshield-ai\.github\.io/, "staging confirmations must not be hard-coded to production");
 assert.match(shieldmindBillingCheckout, /CAMPUSSHIELD_APP_ORIGIN/, "staging checkout supports an exact configured preview origin");
+assert.match(shieldmindBillingCheckout, /if\(!isAllowed\)return json\(/, "rejected origins are not reflected in CORS responses");
 assert.match(shieldmindBillingCheckout, /isLocalPreview/, "staging checkout supports localhost browser testing");
 assert.match(shieldmindBillingCheckout, /sk_test_/, "staging checkout rejects live Paystack credentials");
 assert.doesNotMatch(shieldmindBillingCheckout, /student_identity_verifications|membership_status!==\"active\"|verification_status!==\"verified\"/, "purchase eligibility does not depend on campus verification");
