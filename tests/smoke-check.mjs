@@ -25,6 +25,9 @@ const pushSecretSetup = await readFile(new URL("../scripts/configure-staging-pus
 const config = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
+const campusServiceDirectory = await readFile(new URL("../campus-service-directory.js", import.meta.url), "utf8");
+const campusServiceCrawler = await readFile(new URL("../supabase/functions/campus-service-directory-crawler/index.ts", import.meta.url), "utf8");
+const campusServiceDirectoryMigration = await readFile(new URL("../supabase/migrations/20261026210000_campus_university_service_directory.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -483,3 +486,28 @@ for (const destination of ['timetable', 'campus-messages', 'noticeboard', 'profi
   assert.ok(serviceWorker.includes('"./?page=' + destination + '"'), "service worker allows notification destination " + destination);
 }
 console.log("PASS notification routing, missing-subscription diagnosis, and non-destructive test retries");
+
+
+// National university services directory and source-restricted crawler.
+assert.match(html, /id="campus-service-directory-panel"/, "contacts page contains the searchable national directory");
+assert.match(html, /id="campus-service-directory-search"/, "directory supports university/state search");
+assert.match(html, /id="campus-service-directory-ownership"/, "directory can filter federal, state and private universities");
+assert.match(html, /id="platform-service-directory-crawler"/, "trusted platform admin has crawler controls");
+assert.match(html, /functions\.invoke\('campus-service-directory-crawler'/, "admin UI invokes the service crawler");
+assert.match(campusServiceDirectory, /from\("campus_university_service_directory"\)/, "directory loads official service records");
+assert.match(campusServiceDirectory, /source_directory_url/, "directory links to an official source or NUC fallback");
+assert.match(campusServiceCrawler, /rpc\("platform_is_admin"\)/, "crawler requires the trusted platform-admin registry");
+assert.match(campusServiceCrawler, /SUPABASE_SERVICE_ROLE_KEY/, "privileged database writes use a server-side key");
+assert.match(campusServiceCrawler, /robotsRules\(/, "crawler checks robots.txt before fetching pages");
+assert.match(campusServiceCrawler, /redirect: "manual"/, "crawler does not automatically follow redirects");
+assert.match(campusServiceCrawler, /link\.hostname\.toLowerCase\(\) !== host/, "crawler stays on each registered official host");
+assert.match(campusServiceCrawler, /MAX_PAGES_PER_UNIVERSITY = 5/, "crawler has a strict per-site page cap");
+assert.match(campusServiceCrawler, /MAX_HTML_BYTES = 750_000/, "crawler bounds downloaded HTML size");
+assert.match(campusServiceCrawler, /Only public HTTPS pages on each registered university host/, "crawler describes its source and transport constraints");
+assert.doesNotMatch(campusServiceCrawler, /Access-Control-Allow-Origin"\]\s*=\s*"\*"/, "crawler does not enable wildcard CORS");
+assert.match(campusServiceCrawler, /last_crawl_error/, "crawler records safe crawl status for diagnosis");
+assert.match(campusServiceDirectoryMigration, /CREATE TABLE IF NOT EXISTS public\.campus_university_service_directory/i);
+assert.match(campusServiceDirectoryMigration, /ENABLE ROW LEVEL SECURITY/i, "university service directory enables RLS");
+assert.match(campusServiceDirectoryMigration, /last_crawl_at timestamptz/i, "migration tracks crawler progress");
+assert.match(campusServiceDirectoryMigration, /campus_universities_read_active|campus_service_directory_read_active/i, "active-university reads are scoped to active directory entries");
+console.log("PASS searchable national service directory, verified-source crawler restrictions, admin gate, and crawl status migration");
