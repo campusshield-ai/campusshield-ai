@@ -503,7 +503,7 @@ assert.match(campusServiceCrawler, /redirect: "manual"/, "crawler does not autom
 assert.match(campusServiceCrawler, /link\.hostname\.toLowerCase\(\) !== host/, "crawler stays on each registered official host");
 assert.match(campusServiceCrawler, /MAX_PAGES_PER_UNIVERSITY = 5/, "crawler has a strict per-site page cap");
 assert.match(campusServiceCrawler, /MAX_HTML_BYTES = 750_000/, "crawler bounds downloaded HTML size");
-assert.match(campusServiceCrawler, /Only public HTTPS pages on each registered university host/, "crawler describes its source and transport constraints");
+assert.match(campusServiceCrawler, /Only public HTTPS HTML on each registered university host/, "crawler describes its source and transport constraints");
 assert.doesNotMatch(campusServiceCrawler, /Access-Control-Allow-Origin"\]\s*=\s*"\*"/, "crawler does not enable wildcard CORS");
 assert.match(campusServiceCrawler, /last_crawl_error/, "crawler records safe crawl status for diagnosis");
 assert.match(campusServiceDirectoryMigration, /CREATE TABLE IF NOT EXISTS public\.campus_university_service_directory/i);
