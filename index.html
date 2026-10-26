@@ -1597,6 +1597,37 @@ button,input,select,textarea{max-width:100%;min-width:0}
   .mobile-bottom-nav{gap:1px;padding-inline:4px}
   .mobile-bottom-nav button small{font-size:8px}
 }
+/* Sidebar navigation groups: preserve CampusShield green/teal branding. */
+.nav{gap:4px;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#47736d transparent}
+.nav-section-label{padding:14px 10px 5px;color:#8dbbb0;font-size:9px;font-weight:850;letter-spacing:.16em;line-height:1.35}
+.nav-section-label:first-child{padding-top:4px}
+.nav button{min-height:39px}
+.nav button.active{background:#79e0c41a;border-color:#79e0c426;color:#f8fffc}
+.nav button.active::before{background:#79e0c4}
+.sidebar.collapsed{width:82px;padding:20px 10px}
+.sidebar.collapsed .brand{justify-content:center;padding:0 0 18px}
+.sidebar.collapsed .brand-copy,.sidebar.collapsed .sidebar-toggle-label,.sidebar.collapsed .nav-label,.sidebar.collapsed .nav-section-label,.sidebar.collapsed .sidebar-status p{display:none}
+.sidebar.collapsed .sidebar-toggle{justify-content:center;padding:9px}
+.sidebar.collapsed .nav button{justify-content:center;gap:0;padding:11px 8px;font-size:0}
+.sidebar.collapsed .nav-icon{flex-basis:20px;width:20px;height:20px}
+.sidebar.collapsed .nav button[hidden]{display:none!important}
+.sidebar.collapsed .sidebar-status{padding:10px 6px;text-align:center}
+.sidebar.collapsed .sidebar-status strong{justify-content:center;font-size:0}
+.sidebar.collapsed .status-dot{width:8px;height:8px}
+.sidebar.collapsed+.sidebar-backdrop+.main{margin-left:82px}
+@media(max-width:760px){
+ .nav{overflow:visible;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;max-height:min(62vh,520px);overflow-y:auto;padding:4px 0 7px}
+ .nav-section-label{grid-column:1/-1;padding:10px 7px 2px}
+ .nav button{min-width:0;min-height:39px;white-space:normal;text-align:left}
+ .nav button.active::before{left:9px;right:auto;top:9px;bottom:9px;width:2px;height:auto}
+ .sidebar.collapsed{width:auto;padding:11px 13px 9px}
+ .sidebar.collapsed .brand-copy,.sidebar.collapsed .sidebar-toggle-label{display:inline}
+ .sidebar.collapsed .brand{justify-content:flex-start;padding:0 4px 8px}
+ .sidebar.collapsed .nav-section-label{display:block}
+ .sidebar.collapsed .nav button{justify-content:flex-start;gap:7px;padding:9px 10px;font-size:10px}
+ .sidebar.collapsed .nav-icon{display:grid;width:15px;height:15px;flex-basis:15px}
+ .sidebar.collapsed+.sidebar-backdrop+.main{margin-left:0}
+}
 </style>
 </head>
 <body>
@@ -1770,33 +1801,31 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <button type="button" class="sidebar-toggle" id="sidebar-collapse-toggle" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar"><span class="sidebar-toggle-icon" aria-hidden="true">‹</span><span class="sidebar-toggle-label">Collapse menu</span></button>
 <div class="nav-label">WORKSPACE</div>
 <nav class="nav">
-<button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Overview</button>
-<button data-page="academics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5-9 5.5-9-5.5Z"/><path d="M6.5 12.5v5c3.5 2.5 7.5 2.5 11 0v-5M21 10v6"/></svg></span>Academic Life</button>
-<button data-page="timetable" id="timetable-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span>My Timetable</button>
-<button data-page="courses" id="courses-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg></span>Courses &amp; Study Resources</button>
-<button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span>CampusPulse &amp; Groups</button>
-<button data-page="campus-chat" id="campus-chat-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus Chat</button>
-<button data-page="campus-messages" id="campus-messages-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="3"/><path d="m8 18-3 3v-3M7 9h10M7 13h6"/></svg></span>Private Messages</button>
-<button data-page="events" id="events-services-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span>Events &amp; Campus Services</button>
-<button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span>Opportunities &amp; Scholarships</button>
-<button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span>Safety &amp; Report Incident</button>
-<button data-page="student-rewards" id="student-rewards-nav"><span class="nav-icon" aria-hidden="true">✧</span>Challenges &amp; Rewards</button>
-<button data-page="admin-rewards" id="admin-rewards-nav" hidden><span class="nav-icon" aria-hidden="true">◈</span>Rewards Management</button>
-<button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button>
-<button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; Billing</button>
-<button data-page="profile-settings" id="profile-settings-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20v-1.2A4.8 4.8 0 0 1 9.3 14h5.4a4.8 4.8 0 0 1 4.8 4.8V20"/><path d="m18.5 4.5 1 .5.9-.5.6 1 .9.4-.3 1.1.3 1.1-.9.4-.6 1-1-.5-1 .5-.6-1-.9-.4.3-1.1-.3-1.1.9-.4z"/></svg></span>My Profile &amp; Settings</button>
-
-<div class="nav-section-label" id="nav-staff-heading" hidden>STAFF TOOLS</div>
-<button data-page="classroom" id="classroom-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18v14H3zM8 21h8M12 18v3M7 8h10M7 11h7"/></svg></span>Teacher Classroom</button>
+<div class="nav-section-label">SAFETY & RESPONSE</div>
+<button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>Dashboard</button>
+<button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span>Report incident</button>
 <button data-page="manage" id="manage-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button>
 <button data-page="risk" id="risk-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
-<button data-page="analytics" id="analytics-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics &amp; reports</button>
-<button data-page="staff-verification" id="staff-verification-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Staff verification</button>
-<button data-page="staff-review" id="staff-review-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8l4 4v13H4V3z"/><path d="M8 11h8M8 15h8M16 3v5h4"/></svg></span>Staff applications</button>
-
+<div class="nav-section-label">CAMPUS LIFE</div>
+<button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span>CampusPulse</button>
+<button data-page="campus-chat" id="campus-chat-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus Chat</button><button data-page="campus-messages" id="campus-messages-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="3"/><path d="m8 18-3 3v-3M7 9h10M7 13h6"/></svg></span>Private Messages</button>
+<button data-page="events" id="events-services-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span>Events &amp; Campus services</button>
+<button data-page="student-rewards" id="student-rewards-nav"><span class="nav-icon" aria-hidden="true">✧</span>Challenges &amp; Rewards</button>
+<div class="nav-section-label">ACADEMICS & CAREERS</div>
+<button data-page="academics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5-9 5.5-9-5.5Z"/><path d="M6.5 12.5v5c3.5 2.5 7.5 2.5 11 0v-5M21 10v6"/></svg></span>Academics</button>
+<button data-page="timetable" id="timetable-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span>My Timetable</button><button data-page="courses" id="courses-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg></span>Courses &amp; Study Resources</button>
+<button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span>Opportunities</button>
+<button data-page="classroom" id="classroom-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18v14H3zM8 21h8M12 18v3M7 8h10M7 11h7"/></svg></span>Teacher Classroom</button>
+<div class="nav-section-label">INSIGHTS & SUPPORT</div>
+<button data-page="analytics" id="analytics-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button>
+<button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button><button data-page="staff-verification" id="staff-verification-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Staff verification</button><button data-page="staff-review" id="staff-review-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8l4 4v13H4V3z"/><path d="M8 11h8M8 15h8M16 3v5h4"/></svg></span>Staff applications</button>
+<div class="nav-section-label">ACCOUNT</div>
+<button data-page="profile-settings" id="profile-settings-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20v-1.2A4.8 4.8 0 0 1 9.3 14h5.4a4.8 4.8 0 0 1 4.8 4.8V20"/><path d="m18.5 4.5 1 .5.9-.5.6 1 .9.4-.3 1.1.3 1.1-.9.4-.6 1-1-.5-1 .5-.6-1-.9-.4.3-1.1-.3-1.1.9-.4z"/></svg></span>My profile</button>
+<button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; Billing</button>
+<div class="nav-section-label" id="nav-staff-heading" hidden>STAFF TOOLS</div>
+<button data-page="admin-rewards" id="admin-rewards-nav" hidden><span class="nav-icon" aria-hidden="true">◈</span>Rewards Management</button>
 <div class="nav-section-label" id="nav-admin-heading" hidden>ADMINISTRATION</div>
-<button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button>
-<button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform administration</button>
+<button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button><button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform administration</button>
 </nav>
 <div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
 <button type="button" class="mobile-sidebar-signout" aria-label="Sign out of CampusShield">Sign out</button>
