@@ -23,6 +23,7 @@ type CrawlResult = {
   office_pages_found: number;
   populated_fields: number;
   message: string;
+  discovered_pages?: Array<{ category: string; url: string; title: string; status: string }>;
 };
 
 const CATEGORY_DEFS: Record<Category, {
@@ -340,11 +341,17 @@ function cleanHost(raw: string): { base: URL; host: string } {
   return { base, host };
 }
 
+type CrawlEvent = { event_type: string; university_id?: string; university_name?: string; page_url?: string; category?: string; status?: string; message: string; metadata?: Record<string, unknown> };
+type CrawlEventSink = (event: CrawlEvent) => Promise<void>;
+
 async function crawlUniversity(
   admin: SupabaseClient,
   university: { id: string; name: string; ownership: string; official_website: string | null },
   userId: string,
+  emit: CrawlEventSink = async () => {},
 ): Promise<CrawlResult> {
+  const report = (event: Omit<CrawlEvent, "university_id" | "university_name">) =>
+    emit({ ...event, university_id: university.id, university_name: university.name });
   const startedAt = new Date().toISOString();
   let pagesScanned = 0;
   const officeCandidates = new Map<Category, OfficeCandidate>();
@@ -360,9 +367,11 @@ async function crawlUniversity(
     const normalized = cleanHost(university.official_website);
     root = normalized.base;
     host = normalized.host;
+    await report({ event_type: "robots_check_started", page_url: root.toString(), status: "running", message: "Checking robots.txt before fetching the official site." });
     const robots = await robotsRules(root);
     if (!robots.ok) throw new Error("robots_unavailable");
     if (!robotsAllows(root, robots.rules)) throw new Error("robots_blocked");
+    await report({ event_type: "robots_check_completed", page_url: new URL("/robots.txt", root.origin).toString(), status: "allowed", message: "robots.txt checked; the homepage is allowed." });
 
     const { data: existingRow, error: rowError } = await admin
       .from("campus_university_service_directory")
@@ -382,9 +391,11 @@ async function crawlUniversity(
       if (url.hostname.toLowerCase() !== host || isSensitivePath(url.pathname) || !robotsAllows(url, robots.rules)) continue;
       if (pagesScanned > 0) await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_GAP_MS));
       try {
+        await report({ event_type: "page_fetch_started", page_url: url.toString(), status: "running", message: "Fetching a public same-domain HTML page." });
         const html = await fetchHtml(url, host);
         pagesScanned++;
         const page = pageTextFromHtml(html);
+        await report({ event_type: "page_scanned", page_url: url.toString(), status: "success", message: "Page fetched and parsed.", metadata: { title: page.title.slice(0, 180), page_number: pagesScanned } });
         if (page.text.length < 60) continue;
 
         const categories = classifyPage(url, page.title);
@@ -397,6 +408,7 @@ async function crawlUniversity(
               phone: contact.phone,
               email: contact.email,
             });
+            await report({ event_type: "office_candidate_found", page_url: url.toString(), category, status: "candidate", message: "A possible official office page was identified; verify the source before relying on its details.", metadata: { title: page.title.slice(0, 180) } });
           } else {
             const prior = officeCandidates.get(category)!;
             const currentContact = contactFromText(page.title + "\n" + page.text, category, host);
@@ -503,9 +515,11 @@ async function crawlUniversity(
     updates.last_crawl_status = crawlStatus;
     updates.last_crawl_error = crawlError;
 
+    await report({ event_type: "directory_update_started", status: "running", message: "Saving verified-source candidates and crawl metrics to the campus service directory." });
     const { error: saveError } = await admin.from("campus_university_service_directory")
       .upsert(updates, { onConflict: "university_id" });
     if (saveError) throw new Error("service_record_save_failed");
+    await report({ event_type: "university_crawl_completed", status: crawlStatus, message: "University crawl completed with status: " + crawlStatus + ".", metadata: { pages_scanned: pagesScanned, office_pages_found: officeCandidates.size, fields_populated: populatedFields } });
 
     return {
       university_id: university.id,
@@ -517,9 +531,13 @@ async function crawlUniversity(
       message: crawlError || (officeCandidates.size
         ? "Crawled public pages and recorded candidate office URLs from the official site."
         : "Crawled public pages; no office-specific page could be verified from accessible HTML links."),
+      discovered_pages: Array.from(officeCandidates.entries()).map(([category, office]) => ({
+        category, url: office.url, title: office.title, status: "candidate_requires_review",
+      })),
     };
   } catch (error) {
     const reason = error instanceof Error ? error.message : "crawl_failed";
+    await report({ event_type: "university_crawl_error", status: "failed", message: reason === "robots_blocked" ? "Crawling stopped because robots.txt disallows access." : reason === "robots_unavailable" ? "Crawling stopped because robots.txt could not be checked safely." : "The official website could not be crawled safely.", metadata: { pages_scanned: pagesScanned } });
     const status = reason === "robots_blocked" ? "blocked_robots" :
       reason === "robots_unavailable" ? "robots_unavailable" :
       reason === "official_website_missing" ? "missing_official_website" : "failed";
@@ -555,6 +573,7 @@ async function crawlUniversity(
         : status === "missing_official_website"
         ? "No registered official homepage is available; the directory keeps the NUC listing fallback."
         : "The official website could not be crawled safely. Review the registered URL and retry later.",
+      discovered_pages: [],
     };
   }
 }
@@ -592,13 +611,21 @@ Deno.serve(async (req: Request) => {
     if (accessError || allowed !== true) return reply({ error: "Only a trusted platform administrator can run the national university crawler." }, 403, origin);
 
     const body = await req.json().catch(() => null);
-    if (!body || !["crawl_batch", "crawl_university"].includes(String(body.action || ""))) {
+    if (!body || !["crawl_batch", "crawl_university", "crawl_history"].includes(String(body.action || ""))) {
       return reply({ error: "Choose crawl_batch or crawl_university." }, 400, origin);
     }
 
     const admin = createClient(supabaseUrl, secretKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
+    if (body.action === "crawl_history") {
+      const limit = Math.max(1, Math.min(20, Number(body.limit || 10)));
+      const { data: runs, error: historyError } = await admin.from("campus_crawler_runs")
+        .select("id,action,status,started_at,completed_at,universities_requested,pages_scanned,office_pages_found,fields_populated,failed_or_blocked,results")
+        .order("started_at", { ascending: false }).limit(limit);
+      if (historyError) return reply({ error: "Crawl history could not be loaded." }, 503, origin);
+      return reply({ runs: runs || [] }, 200, origin);
+    }
     let selected: Array<{ id: string; name: string; ownership: string; official_website: string | null }> = [];
     let totalWithHomepage = 0;
     let missingHomepage = 0;
@@ -656,6 +683,69 @@ Deno.serve(async (req: Request) => {
           results: [],
         }, 200, origin);
       }
+    }
+
+    if (body.stream === true) {
+      const { data: run, error: runError } = await admin.from("campus_crawler_runs").insert({
+        started_by: userData.user.id,
+        action: String(body.action),
+        status: "running",
+        universities_requested: selected.length,
+        results: [],
+      }).select("id").single();
+      if (runError || !run?.id) return reply({ error: "Could not create the crawl history record." }, 503, origin);
+      const runId = String(run.id);
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          const send = (event: Record<string, unknown>) => controller.enqueue(encoder.encode("data: " + JSON.stringify(event) + "\n\n"));
+          const persistEvent: CrawlEventSink = async (event) => {
+            const row = { run_id: runId, event_type: event.event_type, university_id: event.university_id || null,
+              university_name: event.university_name || null, page_url: event.page_url || null, category: event.category || null,
+              status: event.status || null, message: event.message, metadata: event.metadata || {} };
+            const { data: saved, error: eventError } = await admin.from("campus_crawler_events").insert(row).select("id,created_at").single();
+            const enriched = { ...event, run_id: runId, id: saved?.id ?? null, created_at: saved?.created_at ?? new Date().toISOString(), persistence_warning: Boolean(eventError) };
+            send({ type: "event", event: enriched });
+          };
+          (async () => {
+            const results: CrawlResult[] = [];
+            try {
+              send({ type: "started", run_id: runId, total_universities: selected.length, max_pages_per_university: MAX_PAGES_PER_UNIVERSITY });
+              await persistEvent({ event_type: "run_started", status: "running", message: "Crawler run started; page-level events will appear as pages are processed.", metadata: { universities_requested: selected.length } });
+              for (const university of selected) {
+                await persistEvent({ event_type: "university_crawl_started", university_id: university.id, university_name: university.name, page_url: university.official_website || undefined, status: "running", message: "Starting crawl for registered official university website." });
+                const result = await crawlUniversity(admin, university, userData.user.id, persistEvent);
+                results.push(result);
+                send({ type: "university_result", result });
+              }
+              const completedAt = new Date().toISOString();
+              const failures = results.filter(r => ["failed", "blocked_robots", "robots_unavailable", "missing_official_website"].includes(r.status)).length;
+              const pagesScanned = results.reduce((sum, r) => sum + r.pages_scanned, 0);
+              const officePagesFound = results.reduce((sum, r) => sum + r.office_pages_found, 0);
+              const populatedFields = results.reduce((sum, r) => sum + r.populated_fields, 0);
+              const finalStatus = failures === results.length ? "failed" : failures ? "partial" : "completed";
+              const { error: updateRunError } = await admin.from("campus_crawler_runs").update({
+                status: finalStatus, completed_at: completedAt, pages_scanned: pagesScanned,
+                office_pages_found: officePagesFound, fields_populated: populatedFields,
+                failed_or_blocked: failures, results,
+              }).eq("id", runId);
+              await persistEvent({ event_type: "run_completed", status: finalStatus, message: "Crawl run finished.", metadata: { pages_scanned: pagesScanned, office_pages_found: officePagesFound, fields_populated: populatedFields, failed_or_blocked: failures, history_update_failed: Boolean(updateRunError) } });
+              send({ type: "completed", run_id: runId, status: finalStatus, results, batch_size: selected.length,
+                pages_scanned: pagesScanned, office_pages_found: officePagesFound, fields_populated: populatedFields,
+                failed_or_blocked: failures, message: "Crawl completed. Live page events and results are based on the actual crawler execution." });
+            } catch {
+              await admin.from("campus_crawler_runs").update({ status: "failed", completed_at: new Date().toISOString(), results }).eq("id", runId);
+              send({ type: "error", run_id: runId, message: "The crawler run failed. Check saved crawl events for details." });
+            } finally {
+              controller.close();
+            }
+          })();
+        },
+      });
+      return new Response(stream, { status: 200, headers: {
+        ...corsHeadersFor(origin), "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform", "Connection": "keep-alive", "X-Accel-Buffering": "no",
+      }});
     }
 
     const results: CrawlResult[] = [];
