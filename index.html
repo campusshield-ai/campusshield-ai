@@ -8982,6 +8982,216 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
   }
 
+
+  // Passkeys/WebAuthn are optional. Supabase Auth verifies the challenge; raw biometric
+  // material stays with the device/authenticator and the email/password path remains available.
+  async function handlePasskeySignIn() {
+    const backend = window.CampusShieldBackend;
+    const button = $('passkey-signin-button');
+    const msg = $('auth-message');
+    if (!backend?.isConfigured || typeof backend.signInWithPasskey !== 'function') {
+      msg.textContent = 'Passkey sign-in is unavailable in this browser session. Use your email and password instead.';
+      return;
+    }
+    if (!window.isSecureContext || !window.PublicKeyCredential) {
+      msg.textContent = 'Passkeys require a supported browser on HTTPS (or localhost). Email and password sign-in remain available.';
+      return;
+    }
+    button.disabled = true;
+    msg.textContent = 'Waiting for your device or passkey provider…';
+    try {
+      const passkeyResult = await backend.signInWithPasskey();
+      const user = passkeyResult?.user || await backend.getCurrentUser();
+      if (!user) throw new Error('No active user session was found after passkey verification.');
+      const { data: profile, error: profileError } = await backend.client
+        .from('profiles')
+        .select('role, requested_role, verification_status')
+        .eq('id', user.id)
+        .single();
+      if (profileError) throw profileError;
+      msg.textContent = profile.verification_status === 'verified'
+        ? 'Signed in successfully with a passkey. Your role and permissions remain server-controlled.'
+        : profile.verification_status === 'rejected'
+          ? 'Your account verification was rejected. Please contact an administrator.'
+          : 'Signed in with a passkey. Your account is still pending verification.';
+      const workspaceReady = showWorkspace(profile);
+      if (!workspaceReady) return;
+      if (typeof resetShieldMindForSession === 'function') resetShieldMindForSession();
+      campusContext = await backend.getMyCampusContext();
+      syncCampusAccessNavigation();
+      await refreshIncidentsFromSupabase();
+      loadCampusDashboardInsights();
+      if (!campusContext?.university_id) {
+        navigate('community');
+        await loadCommunityPage();
+        toast('Choose your university to create your private campus space.');
+      } else if (isStudentAccount()) {
+        navigate('dashboard');
+        await loadStudentIdentityStatus();
+      } else if (isTeacherAccount() && currentProfile.verification_status !== 'verified') {
+        navigate('staff-verification');
+        await loadCampusStaffVerificationStatus();
+      }
+    } catch (error) {
+      console.warn('CampusShield passkey sign-in did not complete:', error?.code || error?.name || 'unknown');
+      const code = String(error?.code || error?.error_code || error?.message || '');
+      msg.textContent = /passkey_disabled|passkey.*disabled/i.test(code)
+        ? 'Passkeys are not enabled in the matching Supabase Auth project yet. Use email and password for now; staging passkeys need a stable HTTPS origin configured under Authentication → Passkeys.'
+        : /NotAllowedError|AbortError|cancel|dismiss/i.test(code)
+          ? 'Passkey sign-in was cancelled or not completed. You can try again or use your email and password.'
+          : (error?.message || 'Passkey sign-in could not complete. You can still use your email and password.');
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  let campusKnownPasskeys = [];
+  function passkeyConfigurationMessage(error) {
+    const code = String(error?.code || error?.error_code || error?.message || '');
+    if (/passkey_disabled|passkey.*disabled/i.test(code)) {
+      return 'Passkey authentication is not enabled in this Supabase project yet. Configure Authentication → Passkeys with a stable staging HTTPS origin; password sign-in remains available.';
+    }
+    if (/webauthn|relying.party|origin|rp_id/i.test(code)) {
+      return 'The passkey origin or relying-party configuration needs review in Supabase Auth → Passkeys. Your email and password still work.';
+    }
+    return error?.message || 'Passkey settings could not be loaded.';
+  }
+
+  async function loadPasskeySettings() {
+    const toggle = $('profile-passkey-toggle');
+    const status = $('profile-passkey-status');
+    const list = $('profile-passkey-list');
+    const addButton = $('profile-passkey-add');
+    const backend = window.CampusShieldBackend;
+    if (!toggle || !status || !list || !addButton) return;
+    list.replaceChildren();
+    campusKnownPasskeys = [];
+    if (!currentProfile || !backend?.isConfigured || typeof backend.isPasskeySupported !== 'function' || !backend.isPasskeySupported()) {
+      toggle.checked = false;
+      toggle.disabled = true;
+      addButton.hidden = true;
+      status.textContent = 'This Supabase client does not expose passkey management. Use your password fallback while the passkey configuration is reviewed.';
+      return;
+    }
+    if (!window.isSecureContext || !window.PublicKeyCredential) {
+      toggle.checked = false;
+      toggle.disabled = true;
+      addButton.hidden = true;
+      status.textContent = 'This device/browser does not expose WebAuthn in this context. Use HTTPS on a supported device; password sign-in remains available.';
+      return;
+    }
+    toggle.disabled = true;
+    status.textContent = 'Checking registered passkeys…';
+    try {
+      campusKnownPasskeys = await backend.listMyPasskeys();
+      toggle.checked = campusKnownPasskeys.length > 0;
+      toggle.disabled = false;
+      addButton.hidden = campusKnownPasskeys.length === 0;
+      status.textContent = campusKnownPasskeys.length
+        ? campusKnownPasskeys.length + ' passkey' + (campusKnownPasskeys.length === 1 ? '' : 's') + ' registered. The authenticator keeps its private credential; CampusShield does not receive raw biometric data.'
+        : 'No passkey is registered on this account. Enable the toggle to register one. Your password remains available.';
+      campusKnownPasskeys.forEach(passkey => {
+        const row = document.createElement('div');
+        row.className = 'profile-passkey-item';
+        const detail = document.createElement('div');
+        const title = document.createElement('strong');
+        title.textContent = passkey.friendly_name || 'Passkey';
+        const meta = document.createElement('small');
+        const created = passkey.created_at ? new Date(passkey.created_at).toLocaleDateString() : 'Date unavailable';
+        meta.textContent = 'Added ' + created + (passkey.last_used_at ? ' · Last used ' + new Date(passkey.last_used_at).toLocaleDateString() : '');
+        detail.append(title, meta);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'btn secondary';
+        remove.textContent = 'Remove';
+        remove.setAttribute('aria-label', 'Remove passkey ' + (passkey.friendly_name || 'credential'));
+        remove.addEventListener('click', async () => {
+          if (!window.confirm('Remove this passkey from your CampusShield account? You can still sign in with your email and password.')) return;
+          remove.disabled = true;
+          try {
+            await backend.deleteMyPasskey(passkey.id);
+            await loadPasskeySettings();
+            status.textContent = 'Passkey removed from this CampusShield account. Password sign-in remains available.';
+          } catch (error) {
+            status.textContent = passkeyConfigurationMessage(error);
+            remove.disabled = false;
+          }
+        });
+        row.append(detail, remove);
+        list.appendChild(row);
+      });
+    } catch (error) {
+      toggle.checked = false;
+      toggle.disabled = true;
+      addButton.hidden = true;
+      status.textContent = passkeyConfigurationMessage(error);
+    }
+  }
+
+  async function registerCampusPasskey() {
+    const backend = window.CampusShieldBackend;
+    const toggle = $('profile-passkey-toggle');
+    const status = $('profile-passkey-status');
+    const addButton = $('profile-passkey-add');
+    if (!backend?.isPasskeySupported?.()) {
+      if (status) status.textContent = 'Passkey support is unavailable in this client. Use your password fallback.';
+      if (toggle) toggle.checked = false;
+      return;
+    }
+    if (!window.isSecureContext || !window.PublicKeyCredential) {
+      if (status) status.textContent = 'Passkeys require a supported browser on HTTPS. Use your password fallback.';
+      if (toggle) toggle.checked = false;
+      return;
+    }
+    if (toggle) toggle.disabled = true;
+    if (addButton) addButton.disabled = true;
+    if (status) status.textContent = 'Follow your device prompt to create the passkey. Your biometric stays with the device/authenticator.';
+    try {
+      await backend.registerMyPasskey();
+      await loadPasskeySettings();
+      if (status) status.textContent = 'Passkey registered. You can now use passkey sign-in; your email/password fallback is still available.';
+    } catch (error) {
+      if (toggle) toggle.checked = campusKnownPasskeys.length > 0;
+      if (status) status.textContent = passkeyConfigurationMessage(error);
+    } finally {
+      if (toggle) toggle.disabled = false;
+      if (addButton) addButton.disabled = false;
+    }
+  }
+
+  $('passkey-signin-button')?.addEventListener('click', handlePasskeySignIn);
+  $('profile-passkey-toggle')?.addEventListener('change', async () => {
+    const toggle = $('profile-passkey-toggle');
+    const status = $('profile-passkey-status');
+    const backend = window.CampusShieldBackend;
+    if (!toggle || !status || !backend?.isPasskeySupported?.()) return;
+    if (toggle.checked) {
+      await registerCampusPasskey();
+      return;
+    }
+    if (!campusKnownPasskeys.length) {
+      status.textContent = 'No passkeys are registered. Email and password sign-in remains available.';
+      return;
+    }
+    if (!window.confirm('Disable passkey sign-in for this account by removing its registered passkeys from CampusShield? You can still use email and password.')) {
+      toggle.checked = true;
+      return;
+    }
+    toggle.disabled = true;
+    status.textContent = 'Removing registered passkeys…';
+    try {
+      for (const passkey of [...campusKnownPasskeys]) await backend.deleteMyPasskey(passkey.id);
+      await loadPasskeySettings();
+      status.textContent = 'Passkey sign-in disabled. Email and password sign-in remains available.';
+    } catch (error) {
+      status.textContent = passkeyConfigurationMessage(error);
+      await loadPasskeySettings();
+    } finally {
+      toggle.disabled = false;
+    }
+  });
+  $('profile-passkey-add')?.addEventListener('click', registerCampusPasskey);
+
   // Password visibility controls; this only changes the local input display.
   document.querySelectorAll('[data-toggle-password]').forEach(toggle => {
     toggle.addEventListener('click', () => {
