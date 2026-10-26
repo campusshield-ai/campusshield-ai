@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#102b35">
-<meta name="description" content="CampusShield AI campus safety incident reporting and review prototype.">
+<meta name="description" content="CampusShield AI campus safety incident reporting and campus support platform.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="CampusShield">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1722,7 +1722,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <div><span>02</span><strong>Find your people</strong><small>Join campus conversations, groups and events.</small></div>
       <div><span>03</span><strong>Grow your future</strong><small>Discover study circles, career events and campus services.</small></div>
     </div>
-    <p class="login-footnote">Demonstration prototype · Does not contact emergency services</p>
+    <p class="login-footnote">Campus safety reporting and campus support · Does not automatically contact emergency services</p>
 
     <div class="campus-hub" aria-label="Official CampusShield AI hub">
   <div class="campus-hub-head">
@@ -1802,7 +1802,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
           </div>
           </div>
 <div class="signup-student-identity-panel" id="signup-student-identity-panel" hidden>
-  <div class="heading"><h2>Student identity document</h2><p>Submit your student ID or matriculation document during account setup. Use synthetic information in this prototype.</p></div>
+  <div class="heading"><h2>Student identity document</h2><p>Submit your student ID or matriculation document during account setup for identity verification.</p></div>
   <div class="panel">
           <p id="identity-verification-status" class="message" role="status" aria-live="polite">Loading your submission status…</p>
           <div id="studentIdentityForm">
@@ -1847,7 +1847,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <div class="field" id="resend-field">
           <button type="button" id="resend-confirmation-button" class="btn secondary">Resend confirmation email</button>
         </div>
-        <p id="auth-helper" class="auth-footnote">Student and teacher accounts require administrator verification before they can review incidents. This prototype does not contact emergency services.</p>
+        <p id="auth-helper" class="auth-footnote">Student and teacher accounts require administrator verification before they can review incidents. CampusShield AI does not automatically contact emergency services.</p>
         <div class="install-card" id="install-card" hidden aria-live="polite">
           <span class="install-mark" aria-hidden="true">↓</span>
           <div class="install-copy"><strong id="install-title">Install CampusShield</strong><p id="install-guidance"></p></div>
@@ -1909,7 +1909,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <div class="nav-section-label" id="nav-staff-heading" hidden>STAFF TOOLS</div><button data-page="admin-rewards" id="admin-rewards-nav" hidden><span class="nav-icon" aria-hidden="true">◈</span>Rewards Management</button>
 <div class="nav-section-label" id="nav-admin-heading" hidden>ADMINISTRATION</div><button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button><button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform administration</button>
 </nav>
-<div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
+<div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>CampusShield workspace</strong><p>Campus safety and student support.</p></div>
 <button type="button" class="mobile-sidebar-signout" aria-label="Sign out of CampusShield">Sign out</button>
 </aside>
 <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
@@ -1924,13 +1924,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
   </button>
   <button type="button" class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="app-sidebar"><span aria-hidden="true">☰</span></button>
   <div class="topbar-title"><small>CampusShield AI</small><strong id="sectionTitle">Overview</strong></div>
-  <div class="topbar-actions"><span id="incidentSyncStatus" class="sync-state" role="status" aria-live="polite">Incident data not loaded</span><button class="btn secondary" type="button" id="refresh-incidents" aria-label="Refresh incident data"><span aria-hidden="true">↻</span>Refresh data</button><button class="btn secondary" type="button" id="workspace-install-app" hidden>Install app</button><span class="demo-pill"><span class="status-dot" aria-hidden="true"></span>PROTOTYPE</span><button class="btn secondary" type="button" id="signout-button">Sign out</button></div>
+  <div class="topbar-actions"><span id="incidentSyncStatus" class="sync-state" role="status" aria-live="polite">Incident data not loaded</span><button class="btn secondary" type="button" id="refresh-incidents" aria-label="Refresh incident data"><span aria-hidden="true">↻</span>Refresh data</button><button class="btn secondary" type="button" id="workspace-install-app" hidden>Install app</button><span class="demo-pill"><span class="status-dot" aria-hidden="true"></span>CAMPUS WORKSPACE</span><button class="btn secondary" type="button" id="signout-button">Sign out</button></div>
 </header>
 <main class="content">
 
 
 
-<div class="notice"><span class="notice-icon" aria-hidden="true">!</span><span><strong>Demonstration prototype.</strong> Use fictional information only. Reports are stored in the connected Supabase project when available. This prototype does not contact emergency services.</span></div>
+
 <div class="quick-action-bar" role="region" aria-label="Emergency and campus quick actions">
   <div class="quick-action-bar-heading"><span class="quick-action-eyebrow">QUICK ACTIONS</span><span>Reach essential tools without opening the sidebar.</span></div>
   <div class="quick-action-buttons">
@@ -2225,7 +2225,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <div><h1>CampusShield Helpdesk</h1><p>Track everyday campus service issues from submission to resolution.</p></div>
     <div class="heading-actions"><button class="btn secondary" type="button" id="refresh-campus-helpdesk">Refresh requests</button></div>
   </div>
-  <div class="notice-inline"><strong>Not an emergency channel.</strong> For immediate danger or sensitive safety concerns, use your university's official emergency process and CampusShield's private incident reporting. Helpdesk response times depend on your institution; the prototype does not promise an SLA.</div>
+  <div class="notice-inline"><strong>Not an emergency channel.</strong> For immediate danger or sensitive safety concerns, use your university's official emergency process and CampusShield's private incident reporting. Helpdesk response times depend on your institution; response times are determined by your institution; no response-time guarantee is provided.</div>
   <div class="community-layout">
     <section class="panel" aria-labelledby="campus-helpdesk-submit-title">
       <div class="panel-heading"><div><h2 id="campus-helpdesk-submit-title">Report a campus service problem</h2><p>Each request gets a reference number and an update history.</p></div></div>
@@ -3752,7 +3752,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     $('auth-helper').hidden = identityCompletionMode || isReset;
     $('auth-helper').textContent = isSignUp
       ? 'Choose your university and complete your student or staff details now. Student ID files upload privately after authentication. If email confirmation is required, sign in and choose Complete student setup.'
-      : 'Use fictional information only. This prototype does not contact emergency services.';
+      : 'CampusShield AI does not automatically contact emergency services.';
     document.querySelectorAll('[data-auth-mode]').forEach(button =>
       button.setAttribute('aria-pressed', String(button.dataset.authMode === authMode))
     );
