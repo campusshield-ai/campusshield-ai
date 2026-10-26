@@ -301,7 +301,9 @@ assert.ok(pushEnableHandlerStart >= 0 && pushPermissionRequestAt > pushEnableHan
 for (const pushControl of ["profile-push-enable", "profile-push-test", "profile-push-disable", "profile-push-settings-status"]) {
   assert.ok(html.includes(pushControl), `push settings include ${pushControl}`);
 }
-assert.match(html, /pushAppUsesStaging\(\)/, "push controls remain hidden from production until configured and verified");
+assert.match(html, /function pushAppSupportsConfiguredProject\(\)/, "push controls are enabled only for explicitly configured CampusShield environments");
+assert.match(html, /hostname === "fvgtnujjnvdkhzqqcaqe\.supabase\.co"/, "production Supabase project is recognized for push notifications");
+assert.match(html, /hostname === "hywcpnoqqhxvujnimhxl\.supabase\.co"/, "staging Supabase project is recognized for push notifications");
 assert.match(html, /Notification\.requestPermission\(\)/, "push permissions are requested after user interaction");
 assert.match(pushSubscriptionsFunction, /auth\.getUser\(token\)/, "push subscriptions validate the user session");
 assert.match(pushSubscriptionsFunction, /validPushEndpoint/, "push endpoints are validated before storage");
