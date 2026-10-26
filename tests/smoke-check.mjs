@@ -423,3 +423,34 @@ assert.match(html, /\.sidebar \.nav\{display:flex;flex:0 1 auto;flex-direction:c
 assert.match(html, /\.sidebar \.nav button\{display:flex;flex:0 0 auto;[\s\S]*?width:100%;[\s\S]*?white-space:normal;overflow-wrap:anywhere/);
 assert.match(html, /\.mobile-bottom-nav button small\{display:block;max-width:100%;font-size:clamp\(7px,2\.1vw,9px\);line-height:1\.15;white-space:normal;overflow-wrap:anywhere;text-align:center\}/);
 console.log("PASS mobile drawer items stack vertically and bottom tabs wrap labels without overlap");
+
+// Pre-launch dashboard improvements: safety actions, verified-alert routing, onboarding,
+// CampusPulse entry points, and explicit incident-report confirmation/result messaging.
+assert.match(html, /class="quick-action-bar" role="region" aria-label="Emergency and campus quick actions"/);
+for (const action of ["Report Incident", "Request Help", "Campus Alerts", "Incident Status"]) {
+  assert.ok(html.includes(action), `quick action is present: ${action}`);
+}
+assert.match(html, /data-quick-action="incident-status"/);
+assert.match(html, /id="quick-campus-alerts" type="button" data-page="noticeboard"[^>]*hidden/);
+assert.match(html, /class="campus-alerts-strip" aria-labelledby="campus-alerts-title"/);
+assert.match(html, /id="campus-alerts-link" data-page="noticeboard" hidden/);
+assert.match(html, /if \(\$\('campus-alerts-link'\)\) \$\('campus-alerts-link'\)\.hidden = !verified/);
+assert.match(html, /id="campus-welcome-tour"/);
+assert.match(html, /maybeShowCampusWelcomeTour\(\)/);
+assert.match(html, /localStorage\.setItem\('campusshield-welcome-tour-v1', 'seen'\)/);
+assert.match(html, /data-campus-tour-page="report"/);
+assert.match(html, /data-campus-tour-page="community"/);
+assert.match(html, /\['community','noticeboard'\]\.includes\(page\) && currentProfile\?\.verification_status !== 'verified'/, "first-time tour links keep verified-only routes gated");
+assert.match(html, /data-campus-pulse-prompt="question"/);
+assert.match(html, /data-campus-pulse-prompt="campus_update"/);
+assert.match(html, /data-campus-pulse-prompt="lost_found"/);
+assert.match(html, /const reportSummary = \[/);
+assert.match(html, /if \(!window\.confirm\(reportSummary\)\)/, "incident submission requires explicit confirmation");
+assert.match(html, /This saves a report for review\. It does NOT contact emergency services or dispatch help\./);
+assert.match(html, /id="report-submit-status" class="message report-submit-status" role="status" aria-live="polite"/);
+assert.match(html, /Report saved successfully to your CampusShield workspace/);
+assert.match(html, /Submission cancelled\. Your report has not been sent\./);
+assert.match(html, /Incident saved to Supabase\. Emergency services have not been contacted\./);
+assert.match(html, /Recent reports &amp; incident status/);
+console.log("PASS pre-launch quick actions, campus alerts, first-time tour, CampusPulse prompts, and incident confirmation/result UX");
+
