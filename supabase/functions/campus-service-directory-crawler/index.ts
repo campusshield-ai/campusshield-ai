@@ -14,7 +14,7 @@ const RECRAWL_AFTER_DAYS = 30;
 
 type Category = "medical" | "student_affairs" | "registrar";
 type OfficeCandidate = { url: string; title: string; phone: string | null; email: string | null };
-type LinkCandidate = { url: URL; score: number };
+type LinkCandidate = { rawHref: string; label: string; score: number };
 type CrawlResult = {
   university_id: string;
   university_name: string;
@@ -180,11 +180,7 @@ function pageTextFromHtml(html: string): { title: string; text: string; links: L
     const rawHref = href[1] || href[2] || href[3] || "";
     if (!rawHref || rawHref.startsWith("#") || /^(javascript|data|mailto|tel):/i.test(rawHref)) continue;
     const label = stripTags(match[2] || "").slice(0, 220);
-    links.push({ url: (() => { try { return normalizePublicHttps(rawHref, "https://invalid.invalid"); } catch { return null; } })() as unknown as URL, score: linkScore(rawHref, label) });
-    const last = links[links.length - 1];
-    // Store the raw URL for later resolution against the fetched page; invalid entries are removed downstream.
-    (last as unknown as { rawHref?: string; label?: string }).rawHref = rawHref;
-    (last as unknown as { label?: string }).label = label;
+    links.push({ rawHref, label, score: linkScore(rawHref, label) });
   }
   return { title, text, links };
 }
@@ -416,8 +412,8 @@ async function crawlUniversity(
         }
 
         const ranked: Array<{ url: URL; score: number }> = [];
-        for (const item of page.links as unknown as Array<LinkCandidate & { rawHref?: string; label?: string }>) {
-          const rawHref = item.rawHref || "";
+        for (const item of page.links) {
+          const rawHref = item.rawHref;
           try {
             const link = normalizePublicHttps(rawHref, url.toString());
             if (link.hostname.toLowerCase() !== host || isSensitivePath(link.pathname)) continue;
@@ -497,7 +493,7 @@ async function crawlUniversity(
     updates.data_status = hasOfficeFields
       ? "official_office_pages_verified"
       : (university.official_website ? "official_homepage_only" : "nuc_listing_only");
-    if (officeCandidates.size > 0) updates.last_verified_at = new Date().toISOString();
+    if (populatedFields > 0) updates.last_verified_at = new Date().toISOString();
     if (note) {
       crawlStatus = pagesScanned ? "partial" : "failed";
       crawlError = note;
@@ -662,13 +658,20 @@ Deno.serve(async (req: Request) => {
     }
 
     const results: CrawlResult[] = [];
+    const completedAt = new Date().toISOString();
     for (const university of selected) {
       results.push(await crawlUniversity(admin, university, userData.user.id));
+      serviceById.set(university.id, { university_id: university.id, last_crawl_at: completedAt });
     }
 
-    const { count: notYetCrawled } = await admin.from("campus_university_service_directory")
-      .select("university_id", { count: "exact", head: true })
-      .is("last_crawl_at", null);
+    const neverCrawledWithWebsite = activeWithSite.filter((u: Record<string, unknown>) =>
+      !serviceById.get(String(u.id))?.last_crawl_at).length;
+    const cutoffForRemaining = Date.now() - RECRAWL_AFTER_DAYS * 24 * 60 * 60 * 1000;
+    const remainingDue = activeWithSite.filter((u: Record<string, unknown>) => {
+      const value = serviceById.get(String(u.id))?.last_crawl_at;
+      const timestamp = value ? Date.parse(String(value)) : 0;
+      return !timestamp || timestamp < cutoffForRemaining;
+    }).length;
     const failures = results.filter(r => ["failed", "blocked_robots", "robots_unavailable", "missing_official_website"].includes(r.status)).length;
     const pagesScanned = results.reduce((sum, r) => sum + r.pages_scanned, 0);
     const officePagesFound = results.reduce((sum, r) => sum + r.office_pages_found, 0);
@@ -683,8 +686,8 @@ Deno.serve(async (req: Request) => {
       failed_or_blocked: failures,
       universities_with_homepages: totalWithHomepage,
       universities_without_homepages: missingHomepage,
-      universities_never_crawled: notYetCrawled ?? null,
-      more_available: body.action === "crawl_university" ? null : (selected.length > 0),
+      universities_never_crawled_with_homepage: neverCrawledWithWebsite,
+      more_available: body.action === "crawl_university" ? null : (remainingDue > 0),
       max_pages_per_university: MAX_PAGES_PER_UNIVERSITY,
       message: "Crawl run finished. Only public HTTPS HTML on each registered university host was considered; robots.txt was enforced, cross-domain links were blocked, and phone/email values were accepted only near explicit office labels on official pages.",
     }, 200, origin);
