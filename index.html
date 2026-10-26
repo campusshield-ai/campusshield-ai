@@ -9199,7 +9199,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       '',
       'This saves a report for review. It does NOT contact emergency services or dispatch help.',
       'For immediate danger, contact campus security or local emergency services directly.'
-    ].join('\\n');
+    ].join('\n');
     if (!window.confirm(reportSummary)) {
       if (submitStatus) { submitStatus.dataset.state = ''; submitStatus.textContent = 'Submission cancelled. Your report has not been sent.'; }
       return;
