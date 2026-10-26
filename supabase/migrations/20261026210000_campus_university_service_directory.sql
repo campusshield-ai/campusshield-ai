@@ -44,59 +44,15 @@ begin
   end if;
 end $$;
 
--- Populate official university homepages only where the website was verified.
--- Existing verified URLs are never overwritten.
-with candidates(name, website) as (values
-  ('Federal University of Agriculture, Mubi','https://fuamb.edu.ng/'),
-  ('Federal University of Health Sciences, Azare, Bauchi State','https://fuhsa.edu.ng/'),
-  ('Federal University of Technology and Environmental Studies, Iyin-Ekiti, Ekiti State','https://www.futes.edu.ng/'),
-  ('Federal University of Technology, Babura, Jigawa State','https://futb.edu.ng/'),
-  ('Federal University of Applied Sciences, Kachia, Kaduna State','https://fuask.edu.ng/'),
-  ('Federal University of Education, Zaria, Kaduna State','https://fuez.edu.ng/'),
-  ('Yusuf Maitama Sule Federal University of Education, Kano','https://www.ymsfuek.edu.ng/public/'),
-  ('Federal University of Health Sciences, Funtua, Katsina State','https://fumhsf.edu.ng/'),
-  ('Amadeus University, Amizi, Abia State','https://amadeus.edu.ng/'),
-  ('Southern Atlantic University, Uyo, Akwa Ibom State','https://www.sauni.edu.ng/'),
-  ('Topfaith University, Mkpatak, Akwa Ibom State','https://www.topfaith.edu.ng/'),
-  ('Shanahan University Onitsha, Anambra State','https://shanahanuni.edu.ng/'),
-  ('Transatlantic University of Medicine and Health Sciences, Umuchukwu, Anambra State','https://transatlanticuniversity.edu.ng/'),
-  ('University on the Niger, Umunya, Anambra state','https://uniniger.edu.ng/'),
-  ('Al-Ansar University, Maiduguri, Borno','https://www.aum.edu.ng/'),
-  ('British Canadian University, Obudu, Cross River State','https://bcu.edu.ng/'),
-  ('Lighthouse University, Evbuobanosa, Edo State','https://www.lighthouseuniversity.edu.ng/'),
-  ('Euston University, Abakaliki, Ebonyi State','https://www.eustonuniversity.edu.ng/'),
-  ('Tonnie Iredia University of Communication, Benin City, Edo State','https://tiuc.edu.ng/'),
-  ('Azione Verde University, Amaigbo, Imo State','https://www.azioneverdeuniversity.edu.ng/'),
-  ('Claretian University of Nigeria, Nekede, Imo State','https://www.claretianuniversity.edu.ng/'),
-  ('Prime University, Kuje, FCT Abuja','https://primeuniversity.edu.ng/'),
-  ('Ummah University of Nigeria, Abuja','https://ummahuniversity.edu.ng/'),
-  ('Al-Muhibbah Open University, Abuja','https://aou.edu.ng/'),
-  ('Philomath University, Kuje, Abuja, FCT','https://www.philomath.edu.ng/'),
-  ('Azman University, Kano State','https://www.azmanuniversity.edu.ng/'),
-  ('Rayhaan University, Birnin Kebbi, Kebbi State','https://rayhaanuniv.edu.ng/'),
-  ('Isaac Balami University of Aeronautics and Management, Lagos State','https://www.ibuam.edu.ng/'),
-  ('Maranatha University, Lagos','https://maranathauniversitylagos.edu.ng/'),
-  ('Lens University, Ilemona, Kwara State','https://www.lens.edu.ng/'),
-  ('Muhammad Kamalud University Kwara','https://mku.edu.ng/'),
-  ('Mercy Medical University, Iwara, Iwo, Osun State','https://mercymedicaluniversity.edu.ng/'),
-  ('Minaret University, Ikirun, Osun State','https://minaretuniversity.edu.ng/'),
-  ('Owolabi University, Oke Ila Orangun','https://www.owolabiuniversity.edu.ng/'),
-  ('Westland University Iwo, Osun State','https://westland.edu.ng/'),
-  ('Atiba University Oyo','https://atibauniversity.edu.ng/'),
-  ('Aletheia University, Ago-Iwoye Ogun State','https://aletheiauniversity.edu.ng/'),
-  ('Iconic Open University, Sokoto State.','https://www.iconicuniversity.edu.ng/'),
-  ('New City University, Ayetoro, Ogun State','https://www.newcity.edu.ng/'),
-  ('Vision University, Ikogbo, Ogun State','https://visionuniversity.edu.ng/'),
-  ('Sam Maris University, Ondo','https://www.smu.edu.ng/'),
-  ('Gerar University of Medical Sciences, Imope-Ijebu, Ogun State','https://gumed.edu.ng/'),
-  ('Huda University, Gusau, Zamfara State','https://hug.edu.ng/')
-)
-update public.campus_universities u
-set official_website = c.website, updated_at = now()
-from candidates c
-where lower(btrim(u.name)) = lower(btrim(c.name))
-  and u.is_active = true
-  and nullif(btrim(u.official_website), '') is null;
+-- Add only a homepage supported by an official institutional source already identified in
+-- this migration. Other universities remain linked to the NUC listing until their
+-- homepage is independently verified; never infer domains from university names.
+update public.campus_universities
+set official_website = 'https://fumhsf.edu.ng/',
+    updated_at = now()
+where lower(btrim(name)) = 'federal university of health sciences, funtua, katsina state'
+  and is_active = true
+  and nullif(btrim(official_website), '') is null;
 
 create table if not exists public.campus_university_service_directory (
   university_id uuid primary key references public.campus_universities(id) on delete cascade,
