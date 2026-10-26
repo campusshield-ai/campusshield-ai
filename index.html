@@ -6605,6 +6605,19 @@ button,input,select,textarea{max-width:100%;min-width:0}
         const errBody=await response.json().catch(()=>({}));
         throw new Error(errBody.error||('Crawler request failed ('+response.status+').'));
       }
+      if((response.headers.get('content-type')||'').includes('application/json')) {
+        const payload=await response.json();
+        if(payload?.done) {
+          if(progressBar)progressBar.style.width='100%';
+          if(progressLabel)progressLabel.textContent='No crawl due';
+          if(runState)runState.textContent='IDLE';
+          status.textContent=payload.message||'No university websites are due for crawling.';
+          activityLine('No crawl performed',status.textContent,true);
+          await loadHistory();
+          return;
+        }
+        throw new Error(payload?.error||'The crawler returned JSON instead of a live event stream.');
+      }
       if(!response.body)throw new Error('This browser does not support live crawl streaming.');
       const reader=response.body.getReader();const decoder=new TextDecoder();let buffer='';let completed=false;let runId=null;let finalPayload=null;
       while(true) {
