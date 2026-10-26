@@ -327,15 +327,14 @@ function contactFromText(text: string, category: Category, siteHost: string): { 
 function classifyPage(url: URL, title: string): Category[] {
   const found: Category[] = [];
   const path = url.pathname.toLowerCase();
-  const label = (url.pathname + " " + title).toLowerCase();
+  const normalizedLabel = (url.pathname + " " + title).toLowerCase().replace(/[-_/]+/g, " ");
 
-  // Only classify an actual health service: academic phrases such as
-  // "Department of Medical Biochemistry" and news stories mentioning wellbeing
-  // are not evidence of a campus clinic or health service.
-  const medicalService = /(?:clinic|hospital|medical[-_\\/ ]?(?:centre|center|service|services|unit)|health[-_\\/ ]?(?:centre|center|service|services|unit|clinic)|student[-_\\/ ]?health|campus[-_\\/ ]?health[-_\\/ ]?(?:centre|center|service|unit)|wellness[-_\\/ ]?services?)/i;
-  if (medicalService.test(label)) found.push("medical");
+  // Require explicit service wording. Academic departments and wellbeing news
+  // are not treated as a clinic or health service based on a broad word match.
+  const medicalService = /(?:clinic|hospital|medical\s+(?:centre|center|service|services|unit)|health\s+(?:centre|center|service|services|unit|clinic)|student\s+health|campus\s+health\s+(?:centre|center|service|unit)|well(?:ness|being)\s+services?)/i;
+  if (medicalService.test(normalizedLabel)) found.push("medical");
 
-  const studentAffairsTitle = /(?:student\\s*affairs|dean\\s*of\\s*students|student\\s*services|student\\s*welfare|student\\s*development)/i;
+  const studentAffairsTitle = /(?:student\s*affairs|dean\s*of\s*students|student\s*services|student\s*welfare|student\s*development)/i;
   if (CATEGORY_DEFS.student_affairs.pathTerms.test(path) || studentAffairsTitle.test(title)) {
     found.push("student_affairs");
   }
