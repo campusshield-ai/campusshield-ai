@@ -72,10 +72,27 @@ create table if not exists public.campus_university_service_directory (
   data_status text not null default 'official_homepage_only'
     check (data_status in ('official_office_pages_verified','official_homepage_only','nuc_listing_only')),
   last_verified_at timestamptz,
+  last_crawl_at timestamptz,
+  last_crawl_status text,
+  last_crawl_error text,
+  pages_scanned integer not null default 0 check (pages_scanned >= 0),
+  office_pages_found integer not null default 0 check (office_pages_found >= 0),
+  last_crawl_by uuid references auth.users(id) on delete set null,
   notes text not null default 'Office-specific links and contact details are included only where verified on official university pages. A blank contact field means the detail has not been verified in this directory.',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.campus_university_service_directory
+  add column if not exists last_crawl_at timestamptz,
+  add column if not exists last_crawl_status text,
+  add column if not exists last_crawl_error text,
+  add column if not exists pages_scanned integer not null default 0,
+  add column if not exists office_pages_found integer not null default 0,
+  add column if not exists last_crawl_by uuid references auth.users(id) on delete set null;
+
+create index if not exists campus_service_directory_crawl_due_idx
+  on public.campus_university_service_directory (last_crawl_at);
 
 create index if not exists campus_service_directory_status_idx
   on public.campus_university_service_directory (data_status);
