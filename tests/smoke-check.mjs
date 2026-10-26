@@ -28,6 +28,7 @@ const serviceWorker = await readFile(new URL("../service-worker.js", import.meta
 const campusServiceDirectory = await readFile(new URL("../campus-service-directory.js", import.meta.url), "utf8");
 const campusServiceCrawler = await readFile(new URL("../supabase/functions/campus-service-directory-crawler/index.ts", import.meta.url), "utf8");
 const campusServiceDirectoryMigration = await readFile(new URL("../supabase/migrations/20261026210000_campus_university_service_directory.sql", import.meta.url), "utf8");
+const profileIdentityMigration = await readFile(new URL("../supabase/migrations/20261026223000_profile_identity_owner_only_crawler.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -513,4 +514,21 @@ assert.match(campusServiceDirectoryMigration, /ENABLE ROW LEVEL SECURITY/i, "uni
 assert.match(campusServiceDirectoryMigration, /last_crawl_at timestamptz/i, "migration tracks crawler progress");
 assert.match(campusServiceDirectoryMigration, /campus_service_directory_crawl_by_idx/, "crawler audit foreign key has a covering index");
 assert.match(campusServiceDirectoryMigration, /campus_universities_read_active|campus_service_directory_read_active/i, "active-university reads are scoped to active directory entries");
+
+assert.match(html, /id="profile-settings-identity-form"/, "profile settings allow display name and picture editing");
+assert.match(html, /id="profile-settings-display-name"/, "profile settings include an editable display name");
+assert.match(html, /id="profile-settings-avatar-file"/, "profile settings accept a selected avatar image");
+assert.match(html, /campus-profile-avatars/, "profile photo uses private per-user Storage");
+assert.match(html, /rpc\('update_my_profile_identity'/, "profile identity saves through the database-enforced self-update RPC");
+assert.match(profileIdentityMigration, /add column if not exists avatar_path text/i, "profile table stores avatar object path");
+assert.match(profileIdentityMigration, /create or replace function public\.update_my_profile_identity/i, "profile identity RPC exists");
+assert.match(profileIdentityMigration, /security definer/i, "profile identity update RPC is database-owned");
+assert.match(profileIdentityMigration, /grant execute on function public\.update_my_profile_identity\(text,text,boolean\) to authenticated/i, "profile identity RPC is granted only to signed-in users");
+assert.match(profileIdentityMigration, /campus_profile_avatar_upload_own/, "avatar upload is scoped to the current user's folder");
+assert.match(profileIdentityMigration, /campus_profile_avatar_read_own/, "private avatar reads are scoped to the current user");
+assert.match(campusServiceCrawler, /campusshieldaitechnologies@gmail\.com/, "crawler endpoint is restricted to its designated owner email");
+assert.match(html, /crawlerPanel\.hidden = !isCrawlerOwner/, "crawler panel is hidden for all other platform administrators");
+assert.match(html, /This crawler is restricted to its designated owner\./, "crawler UI repeats the owner-only guard");
+console.log("PASS self-service profile editing, private avatar storage, and owner-only crawler authorization");
+
 console.log("PASS searchable national service directory, verified-source crawler restrictions, admin gate, and crawl status migration");
