@@ -3428,7 +3428,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const staffHeading = $('nav-staff-heading');
     const adminHeading = $('nav-admin-heading');
     if (staffHeading) staffHeading.hidden = !anyVisible(['classroom-nav','manage-nav','risk-nav','analytics-nav','staff-verification-nav','staff-review-nav']);
-    if (adminHeading) adminHeading.hidden = !anyVisible(['approvals-nav','platform-admin-nav']);
+    if (adminHeading) adminHeading.hidden = !anyVisible(['approvals-nav','platform-admin-nav','feedback-admin-nav']);
   }
 
   function syncIdentityNavigation() {
@@ -3451,6 +3451,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const note = $('student-identity-setup-status');
     const state = studentIdentitySubmission?.status || null;
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
+      if (button.id === 'feedback-admin-nav') {
+        button.hidden = !(verified && currentProfile?.role === 'admin');
+        return;
+      }
       if (button.id === 'platform-admin-nav') return;
       if (button.dataset.page === 'shieldmind' || button.dataset.page === 'billing') {
         // General AI and subscription information is discoverable to all signed-in users.
@@ -3801,6 +3805,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
     $('auth-tabs').hidden = isReset;
     $('google-signin-wrap').hidden = isSignUp || isReset || !isStagingSupabaseEnvironment();
+    $('passkey-signin-wrap').hidden = isSignUp || isReset || identityCompletionMode;
     $('signin-institution-field').hidden = isSignUp || isReset;
     $('signin-role-picker').hidden = isSignUp || isReset;
     $('signin-role-note').hidden = isSignUp || isReset;
@@ -4117,6 +4122,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
       page = 'dashboard';
       toast('Only verified administrators can access account approvals.');
     }
+    if (page === 'feedback-admin' && !verifiedAdmin) {
+      page = 'dashboard';
+      toast('Help & Feedback triage is restricted to verified administrators.');
+    }
     if (page === 'classroom' &&
         (!verified || !hasVerifiedCampusStaffMembership() || !['teacher','security','admin'].includes(currentProfile.role))) {
       page = 'dashboard';
@@ -4168,6 +4177,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
       shieldmind:'ShieldMind AI',
       billing:'Subscriptions & Billing',
       'profile-settings':'My Profile & Settings',
+      'feedback-problem':'Report a Problem',
+      'feedback-improvement':'Suggest an Improvement',
+      'feedback-submissions':'My Submissions',
+      'feedback-admin':'Help & Feedback Triage',
       'staff-verification':'Staff verification',
       'staff-review':'Staff applications',
     };
@@ -5862,7 +5875,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
     if (button.dataset.page === 'campus-chat') loadCampusChatPage();
     if (button.dataset.page === 'campus-messages') loadCampusDirectMessagesPage();
-    if (button.dataset.page === 'profile-settings') loadMyProfileSettings();
+    if (button.dataset.page === 'profile-settings') { loadMyProfileSettings(); loadPasskeySettings(); }
+    if (button.dataset.page === 'feedback-submissions') loadCampusFeedbackSubmissions();
+    if (button.dataset.page === 'feedback-admin') loadCampusFeedbackAdmin();
     if (button.dataset.page === 'campus-contacts') loadCampusContactsPage();
     if (button.dataset.page === 'approvals') loadAccountApprovals();
     if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
