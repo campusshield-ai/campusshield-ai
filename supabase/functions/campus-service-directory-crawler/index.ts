@@ -70,10 +70,7 @@ const corsHeadersFor = (origin: string | null): Record<string, string> => {
     "Vary": "Origin",
     "Cache-Control": "no-store",
   };
-  if (!origin) {
-    headers["Access-Control-Allow-Origin"] = "*";
-    return headers;
-  }
+  if (!origin) return headers;
   let host = "";
   try { host = new URL(origin).hostname.toLowerCase(); } catch { return headers; }
   const allowed = host === "campusshield-ai.github.io" ||
