@@ -291,6 +291,60 @@ begin
 end;
 $function$;
 
+create or replace function public.list_campus_feedback_assignees(p_university_id uuid default null)
+returns table(id uuid, display_name text, role text)
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  v_actor uuid := (select auth.uid());
+  v_university_id uuid := p_university_id;
+  v_is_platform_admin boolean := coalesce((select public.platform_is_admin()), false);
+begin
+  if v_actor is null or not exists (
+    select 1 from public.profiles p
+    where p.id = v_actor and p.role = 'admin' and p.verification_status = 'verified'
+  ) then
+    raise exception 'Only verified administrators can list feedback assignees.' using errcode = '42501';
+  end if;
+  if v_university_id is null and not v_is_platform_admin then
+    select cm.university_id into v_university_id
+    from public.campus_memberships cm
+    where cm.user_id = v_actor
+      and cm.membership_status = 'active'
+      and cm.verification_status = 'verified'
+      and cm.campus_role = 'admin'
+    order by cm.updated_at desc
+    limit 1;
+  end if;
+  if v_university_id is null and not v_is_platform_admin then
+    raise exception 'Choose an active verified campus before assigning feedback.' using errcode = '42501';
+  end if;
+  if v_university_id is not null and not v_is_platform_admin and not exists (
+    select 1 from public.campus_memberships cm
+    where cm.user_id = v_actor
+      and cm.university_id = v_university_id
+      and cm.membership_status = 'active'
+      and cm.verification_status = 'verified'
+      and cm.campus_role = 'admin'
+  ) then
+    raise exception 'You can assign feedback only to verified staff at your campus.' using errcode = '42501';
+  end if;
+  return query
+  select p.id, coalesce(nullif(btrim(p.display_name), ''), 'Campus member'), p.role
+  from public.profiles p
+  join public.campus_memberships cm on cm.user_id = p.id
+  where cm.university_id = v_university_id
+    and cm.membership_status = 'active'
+    and cm.verification_status = 'verified'
+    and cm.campus_role in ('admin','security','teacher')
+    and p.verification_status = 'verified'
+    and p.role in ('admin','security','teacher')
+  order by p.display_name nulls last, p.role;
+end;
+$function$;
+
 revoke all on function public.submit_campus_feedback(uuid,text,text,text,text,text,text,text) from public, anon;
 grant execute on function public.submit_campus_feedback(uuid,text,text,text,text,text,text,text) to authenticated;
 revoke all on function public.admin_manage_campus_feedback(uuid,text,text,uuid,text,text) from public, anon;
@@ -304,3 +358,6 @@ comment on table public.campus_user_feedback_admin_notes is
   'Staff-only notes for campus feedback triage. No direct browser table grants; accessible only through a guarded administrator RPC.';
 
 commit;
+
+revoke all on function public.list_campus_feedback_assignees(uuid) from public, anon;
+grant execute on function public.list_campus_feedback_assignees(uuid) to authenticated;
