@@ -930,6 +930,25 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .profile-overview-card,.profile-alerts-card{border:1px solid #d9e3ee;border-radius:22px;background:#fff;box-shadow:0 8px 30px rgba(17,39,72,.035);padding:26px;min-width:0}
 .profile-identity-header{display:flex;align-items:center;gap:18px;margin-bottom:24px;min-width:0}
 .profile-avatar{display:grid;place-items:center;width:68px;height:68px;flex:0 0 68px;border-radius:21px;background:#10284a;color:#fff}
+.profile-avatar-trigger{position:relative;border:0;padding:0;cursor:pointer;overflow:hidden;appearance:none;transition:transform .15s ease,box-shadow .15s ease}
+.profile-avatar-trigger:hover{transform:translateY(-1px);box-shadow:0 0 0 4px rgba(39,129,108,.15)}
+.profile-avatar-trigger:focus-visible{outline:3px solid #42b79b;outline-offset:4px}
+.profile-avatar-trigger .profile-avatar-edit-indicator{position:absolute;left:0;right:0;bottom:0;padding:3px 2px;background:rgba(5,19,38,.78);color:#fff;font-size:10px;font-weight:800;line-height:1.3;text-align:center;opacity:0;transition:opacity .15s ease}
+.profile-avatar-trigger:hover .profile-avatar-edit-indicator,.profile-avatar-trigger:focus-visible .profile-avatar-edit-indicator{opacity:1}
+.profile-edit-hint{margin:-8px 0 18px;color:#71839a;font-size:12px}
+.profile-identity-dialog{box-sizing:border-box;width:min(540px,calc(100vw - 28px));max-width:540px;max-height:min(88dvh,820px);overflow:auto;border:1px solid #d9e3ee;border-radius:22px;padding:24px;background:#fff;color:#18334f;box-shadow:0 24px 100px rgba(12,30,54,.26)}
+.profile-identity-dialog::backdrop{background:rgba(9,22,39,.58);backdrop-filter:blur(3px)}
+.profile-identity-dialog[open]{display:block}
+.profile-identity-dialog-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.profile-identity-dialog-header h2{margin:6px 0;color:#173653;font-size:22px;letter-spacing:-.03em}
+.profile-identity-dialog-header p{margin:0;color:#6a7f91;font-size:13px;line-height:1.55}
+.profile-identity-dialog-close{width:38px;height:38px;flex:0 0 38px;border:1px solid #dce5e4;border-radius:50%;background:#f7faf9;color:#1e4b4a;font-size:27px;line-height:1;cursor:pointer}
+.profile-avatar-preview-wrap{display:flex;justify-content:center;margin:0 0 16px}
+.profile-avatar-preview,.profile-avatar-preview-fallback{width:88px;height:88px;border-radius:24px;object-fit:cover;background:#edf7f3}
+.profile-avatar-preview-fallback{box-sizing:border-box;padding:21px;fill:none;stroke:#267d6b;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.profile-identity-dialog .profile-identity-form{margin:0;padding:0;border:0;background:transparent}
+@media(max-width:520px){.profile-identity-dialog{padding:18px;border-radius:18px}.profile-identity-dialog-header h2{font-size:20px}}
+
 .profile-avatar svg{width:37px;height:37px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .profile-identity-copy{min-width:0}
 .profile-account-name{margin:0 0 5px;color:#132c4d;font-size:20px;font-weight:760;letter-spacing:-.025em;overflow-wrap:anywhere}
@@ -2822,10 +2841,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
   <div class="profile-dashboard-layout">
     <section class="panel profile-overview-card" aria-labelledby="profile-settings-account-title">
       <div class="profile-identity-header">
-        <div class="profile-avatar" aria-hidden="true">
+        <button id="profile-settings-avatar-trigger" class="profile-avatar profile-avatar-trigger" type="button" aria-label="Edit your profile name and picture" aria-haspopup="dialog" aria-controls="profile-settings-identity-dialog" title="Edit profile">
           <img id="profile-settings-avatar" class="profile-avatar-image" alt="" hidden>
           <svg id="profile-settings-avatar-fallback" viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="8" r="3.5"></circle><path d="M5.5 19c.8-3 3.2-4.7 6.5-4.7s5.7 1.7 6.5 4.7"></path><circle cx="12" cy="12" r="10"></circle></svg>
-        </div>
+          <span class="profile-avatar-edit-indicator" aria-hidden="true">Edit</span>
+        </button>
         <div class="profile-identity-copy">
           <h2 id="profile-settings-account-title" class="profile-visually-hidden">Private account details</h2>
           <p id="profile-settings-name" class="profile-account-name">Loading your profile…</p>
@@ -2833,22 +2853,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
         </div>
       </div>
 
-      <form id="profile-settings-identity-form" class="profile-identity-form">
-        <div class="profile-contact-field">
-          <label for="profile-settings-display-name">Your display name</label>
-          <input id="profile-settings-display-name" name="display_name" type="text" minlength="2" maxlength="60" required autocomplete="name" placeholder="Enter your name">
-        </div>
-        <div class="profile-contact-field">
-          <label for="profile-settings-avatar-file">Profile picture</label>
-          <input id="profile-settings-avatar-file" name="avatar" type="file" accept="image/jpeg,image/png,image/webp">
-          <small class="muted">JPG, PNG or WebP · Maximum 3 MB. Your uploaded image is stored privately.</small>
-        </div>
-        <div class="actions profile-identity-actions">
-          <button class="btn" id="profile-settings-save-identity" type="submit">Save profile</button>
-          <button class="btn secondary" id="profile-settings-remove-avatar" type="button" hidden>Remove picture</button>
-        </div>
-        <p id="profile-settings-identity-message" class="message profile-contact-message" role="status" aria-live="polite">Update the name and picture shown on your account.</p>
-      </form>
+      <p class="profile-edit-hint">Tap your profile picture to edit your name or photo.</p>
+
 
       <div class="profile-verification-row">
         <span class="profile-overline">VERIFICATION</span>
@@ -2915,6 +2921,37 @@ button,input,select,textarea{max-width:100%;min-width:0}
       </section>
     </section>
   </div>
+
+  <dialog id="profile-settings-identity-dialog" class="profile-identity-dialog" aria-labelledby="profile-settings-edit-title">
+    <div class="profile-identity-dialog-header">
+      <div>
+        <span class="campus-hub-eyebrow">YOUR ACCOUNT</span>
+        <h2 id="profile-settings-edit-title">Edit profile</h2>
+        <p>Update the name and picture shown on your account.</p>
+      </div>
+      <button id="profile-settings-close-editor" class="profile-identity-dialog-close" type="button" aria-label="Close profile editor" title="Close">×</button>
+    </div>
+    <div class="profile-avatar-preview-wrap">
+      <img id="profile-settings-avatar-preview" class="profile-avatar-preview" alt="Profile picture preview" hidden>
+      <svg id="profile-settings-avatar-preview-fallback" class="profile-avatar-preview-fallback" viewBox="0 0 24 24" role="img" aria-label="No profile picture selected"><circle cx="12" cy="8" r="3.5"></circle><path d="M5.5 19c.8-3 3.2-4.7 6.5-4.7s5.7 1.7 6.5 4.7"></path><circle cx="12" cy="12" r="10"></circle></svg>
+    </div>
+        <form id="profile-settings-identity-form" class="profile-identity-form">
+          <div class="profile-contact-field">
+            <label for="profile-settings-display-name">Your display name</label>
+            <input id="profile-settings-display-name" name="display_name" type="text" minlength="2" maxlength="60" required autocomplete="name" placeholder="Enter your name">
+          </div>
+          <div class="profile-contact-field">
+            <label for="profile-settings-avatar-file">Profile picture</label>
+            <input id="profile-settings-avatar-file" name="avatar" type="file" accept="image/jpeg,image/png,image/webp">
+            <small class="muted">JPG, PNG or WebP · Maximum 3 MB. Your uploaded image is stored privately.</small>
+          </div>
+          <div class="actions profile-identity-actions">
+            <button class="btn" id="profile-settings-save-identity" type="submit">Save profile</button>
+            <button class="btn secondary" id="profile-settings-remove-avatar" type="button" hidden>Remove picture</button>
+          </div>
+          <p id="profile-settings-identity-message" class="message profile-contact-message" role="status" aria-live="polite">Update the name and picture shown on your account.</p>
+        </form>
+  </dialog>
 
   <div class="grid two profile-settings-secondary-grid">
     <section class="panel" aria-labelledby="profile-settings-privacy-title">
@@ -4715,9 +4752,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
   let profileAvatarPreviewUrl = null;
 
-  async function renderProfileAvatar(backend, avatarPath) {
-    const image = $('profile-settings-avatar');
-    const fallback = $('profile-settings-avatar-fallback');
+  async function renderProfileAvatar(backend, avatarPath, imageId = 'profile-settings-avatar', fallbackId = 'profile-settings-avatar-fallback') {
+    const image = $(imageId);
+    const fallback = $(fallbackId);
     if (!image || !fallback) return;
     image.hidden = true;
     fallback.hidden = false;
@@ -4803,6 +4840,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       const identityMessage = $('profile-settings-identity-message');
       if (identityMessage) identityMessage.textContent = 'Update the name and picture shown on your account.';
       await renderProfileAvatar(backend, profile.avatar_path);
+      await renderProfileAvatar(backend, profile.avatar_path, 'profile-settings-avatar-preview', 'profile-settings-avatar-preview-fallback');
       if (email) email.textContent = user.email || 'Email is not available from this sign-in provider.';
       if (campus) campus.textContent = campusContext?.university_name || 'No university connected yet';
       if (membership) membership.textContent = campusContext?.membership_status === 'active' && campusContext?.verification_status === 'verified'
@@ -4938,11 +4976,45 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
   });
 
+  const profileIdentityDialog = $('profile-settings-identity-dialog');
+  const avatarTrigger = $('profile-settings-avatar-trigger');
+  const closeProfileEditor = $('profile-settings-close-editor');
+
+  if (avatarTrigger && profileIdentityDialog) {
+    avatarTrigger.addEventListener('click', async function() {
+      const nameInput = $('profile-settings-display-name');
+      if (nameInput) nameInput.value = String(currentProfile?.display_name || $('profile-settings-name')?.textContent || '').trim();
+      const fileInput = $('profile-settings-avatar-file');
+      if (fileInput) fileInput.value = '';
+      const removeButton = $('profile-settings-remove-avatar');
+      if (removeButton) {
+        removeButton.hidden = !currentProfile?.avatar_path;
+        removeButton.dataset.clearAvatar = 'false';
+      }
+      const status = $('profile-settings-identity-message');
+      if (status) status.textContent = 'Update the name and picture shown on your account.';
+      if (typeof profileIdentityDialog.showModal === 'function') {
+        profileIdentityDialog.showModal();
+      } else {
+        profileIdentityDialog.setAttribute('open', '');
+      }
+      await renderProfileAvatar(window.CampusShieldBackend, currentProfile?.avatar_path, 'profile-settings-avatar-preview', 'profile-settings-avatar-preview-fallback');
+    });
+  }
+  if (closeProfileEditor && profileIdentityDialog) {
+    closeProfileEditor.addEventListener('click', function() { profileIdentityDialog.close(); });
+  }
+  if (profileIdentityDialog) {
+    profileIdentityDialog.addEventListener('click', function(event) {
+      if (event.target === profileIdentityDialog) profileIdentityDialog.close();
+    });
+  }
+
   document.addEventListener('change', function(event) {
     if (event.target?.id !== 'profile-settings-avatar-file') return;
     const file = event.target.files?.[0];
-    const image = $('profile-settings-avatar');
-    const fallback = $('profile-settings-avatar-fallback');
+    const image = $('profile-settings-avatar-preview');
+    const fallback = $('profile-settings-avatar-preview-fallback');
     const removeButton = $('profile-settings-remove-avatar');
     const status = $('profile-settings-identity-message');
     if (!file || !image || !fallback) return;
@@ -4972,8 +5044,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
       URL.revokeObjectURL(profileAvatarPreviewUrl);
       profileAvatarPreviewUrl = null;
     }
-    const image = $('profile-settings-avatar');
-    const fallback = $('profile-settings-avatar-fallback');
+    const image = $('profile-settings-avatar-preview');
+    const fallback = $('profile-settings-avatar-preview-fallback');
     if (image) { image.hidden = true; image.removeAttribute('src'); }
     if (fallback) fallback.hidden = false;
     const status = $('profile-settings-identity-message');
@@ -5028,6 +5100,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       const name = $('profile-settings-name');
       if (name) name.textContent = currentProfile.display_name;
       await renderProfileAvatar(backend, currentProfile.avatar_path);
+      await renderProfileAvatar(backend, currentProfile.avatar_path, 'profile-settings-avatar-preview', 'profile-settings-avatar-preview-fallback');
       if (oldAvatarPath && oldAvatarPath !== currentProfile.avatar_path && oldAvatarPath.startsWith(user.id + '/')) {
         await backend.client.storage.from('campus-profile-avatars').remove([oldAvatarPath]).catch(() => {});
       }
