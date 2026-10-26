@@ -9155,10 +9155,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
   $('open-campus-tour')?.addEventListener('click', () => openCampusWelcomeTour(true));
   document.querySelectorAll('[data-campus-tour-page]').forEach(button => button.addEventListener('click', () => {
     const page = button.dataset.campusTourPage;
-    if (page === 'noticeboard' && currentProfile?.verification_status !== 'verified') {
+    if (['community','noticeboard'].includes(page) && currentProfile?.verification_status !== 'verified') {
       markCampusWelcomeTourSeen();
       $('campus-welcome-tour')?.close();
-      toast('Verified campus notices are available after account verification.');
+      toast('CampusPulse and verified campus notices are available after account verification.');
       return;
     }
     markCampusWelcomeTourSeen();
