@@ -94,6 +94,10 @@ alter table public.campus_university_service_directory
 create index if not exists campus_service_directory_crawl_due_idx
   on public.campus_university_service_directory (last_crawl_at);
 
+create index if not exists campus_service_directory_crawl_by_idx
+  on public.campus_university_service_directory (last_crawl_by)
+  where last_crawl_by is not null;
+
 create index if not exists campus_service_directory_status_idx
   on public.campus_university_service_directory (data_status);
 

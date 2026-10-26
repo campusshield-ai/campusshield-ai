@@ -511,5 +511,6 @@ assert.match(campusServiceCrawler, /last_crawl_error/, "crawler records safe cra
 assert.match(campusServiceDirectoryMigration, /CREATE TABLE IF NOT EXISTS public\.campus_university_service_directory/i);
 assert.match(campusServiceDirectoryMigration, /ENABLE ROW LEVEL SECURITY/i, "university service directory enables RLS");
 assert.match(campusServiceDirectoryMigration, /last_crawl_at timestamptz/i, "migration tracks crawler progress");
+assert.match(campusServiceDirectoryMigration, /campus_service_directory_crawl_by_idx/, "crawler audit foreign key has a covering index");
 assert.match(campusServiceDirectoryMigration, /campus_universities_read_active|campus_service_directory_read_active/i, "active-university reads are scoped to active directory entries");
 console.log("PASS searchable national service directory, verified-source crawler restrictions, admin gate, and crawl status migration");
