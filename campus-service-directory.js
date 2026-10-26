@@ -9,6 +9,7 @@
   const ownershipFilter = $("campus-service-directory-ownership");
   const matchesEl = $("campus-service-directory-matches");
   const statusEl = $("campus-service-directory-status");
+  const countEl = $("campus-service-directory-count");
   const detailsEl = $("campus-service-directory-details");
 
   let universities = [];
@@ -233,6 +234,7 @@
       }
 
       renderMatches();
+      if (countEl) countEl.textContent = universities.length + " universities";
       if (pendingId) renderDetails(pendingId);
       if (statusEl) {
         statusEl.textContent = universities.length + " active universities loaded. Official office contacts are shown only where verified.";
