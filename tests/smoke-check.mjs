@@ -416,3 +416,10 @@ assert.match(html, /\.sidebar \.nav\{\s*display:flex!important;\s*flex:0 0 auto;
 assert.match(html, /\.sidebar \.nav button,\s*\.app\.sidebar-collapsed \.sidebar \.nav button\{[\s\S]*?width:100%;[\s\S]*?white-space:normal/);
 assert.match(html, /\.sidebar-toggle\{display:none!important\}/);
 console.log("PASS mobile drawer navigation remains vertical and full width");
+
+// Regression: mobile drawer sections stay in a one-column stack, and fixed bottom tabs cannot overlap their labels.
+assert.match(html, /The drawer is a single, readable vertical list/);
+assert.match(html, /\.sidebar \.nav\{display:flex;flex:0 1 auto;flex-direction:column;align-items:stretch;gap:4px;width:100%;min-width:0;max-height:calc\(100dvh - 190px\);overflow-x:hidden;overflow-y:auto/);
+assert.match(html, /\.sidebar \.nav button\{display:flex;flex:0 0 auto;[\s\S]*?width:100%;[\s\S]*?white-space:normal;overflow-wrap:anywhere/);
+assert.match(html, /\.mobile-bottom-nav button small\{display:block;max-width:100%;font-size:clamp\(7px,2\.1vw,9px\);line-height:1\.15;white-space:normal;overflow-wrap:anywhere;text-align:center\}/);
+console.log("PASS mobile drawer items stack vertically and bottom tabs wrap labels without overlap");
