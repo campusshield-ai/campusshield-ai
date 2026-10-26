@@ -240,6 +240,7 @@
         statusEl.textContent = universities.length + " active universities loaded. Official office contacts are shown only where verified.";
       }
     } catch (error) {
+      if (countEl) countEl.textContent = "Directory unavailable";
       if (statusEl) statusEl.textContent = error?.message || "The university service directory could not be loaded right now.";
       matchesEl.innerHTML = '<p class="empty campus-service-directory-empty">Reload this page to try again. If the issue continues, use the official National Universities Commission listing.</p>';
     } finally {
