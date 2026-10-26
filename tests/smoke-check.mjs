@@ -494,6 +494,38 @@ assert.match(campusUserFeedbackMigration, /list_campus_feedback_admin_notes/);
 assert.match(campusUserFeedbackMigration, /https:\/\/github\[\.\]com/);
 console.log("PASS Help & Feedback submission, reference tracking, campus-scoped admin triage, and GitHub issue validation");
 
+// Responsive optimization regression checks: no page-level overflow and usable tablet controls.
+assert.match(html, /id="responsive-optimization-final"/);
+assert.match(html, /Responsive optimization: tablet and desktop widths, narrow viewport safety, and robust controls/);
+assert.match(html, /@media \(min-width: 761px\) and \(max-width: 1024px\)/);
+assert.match(html, /\.topbar-actions\{width:100%;max-width:100%;min-width:0;display:flex;flex-wrap:wrap/);
+assert.match(html, /\.table-wrap table\{min-width:580px\}/);
+console.log("PASS responsive layout hardening for desktop, tablets, narrow phones, forms, dropdowns, and scroll-contained tables");
+
+// Notification regressions: ensure push taps open the intended screen, and do not churn a valid subscription on delivery failure.
+assert.match(pushDispatchFunction, /const notificationUrls: Record<PushKind, string> = \{/);
+for (const [kind, destination] of [
+  ["timetable_reminder", "./?page=timetable"],
+  ["new_message", "./?page=campus-messages"],
+  ["campus_announcement", "./?page=noticeboard"],
+  ["account_update", "./?page=profile-settings"],
+  ["test", "./?page=profile-settings"]
+]) {
+  assert.ok(pushDispatchFunction.includes(kind + ': "' + destination + '"'), "notification route is defined for " + kind);
+}
+assert.match(pushDispatchFunction, /url: notificationUrls\[kind\]/, "push payload includes its relevant application route");
+assert.doesNotMatch(pushDispatchFunction, /url:\s*"\.\/"\s*,/, "notifications do not all route back to the app root");
+assert.match(pushDispatchFunction, /subscriptions_found: 0, no_subscription: true/);
+assert.match(pushDispatchFunction, /subscriptions_found: subscriptions\.length, no_subscription: false/);
+assert.match(html, /if \(delivered === 0 && result\?\.no_subscription === true\)/, "test repairs only a missing server subscription, not any generic delivery failure");
+assert.match(html, /Push delivery was not confirmed\. The subscription was kept/);
+assert.match(serviceWorker, /"\.\/?page=timetable"/);
+assert.match(serviceWorker, /"\.\/?page=campus-messages"/);
+assert.match(serviceWorker, /"\.\/?page=noticeboard"/);
+assert.match(serviceWorker, /"\.\/?page=profile-settings"/);
+console.log("PASS push destination routing, missing-subscription diagnosis, and non-destructive notification test retries");
+
+
 // Optional WebAuthn passkeys: use Supabase Auth; no raw biometrics are handled by the app.
 assert.match(backend, /experimental: \{ passkey: true \}/, "Supabase passkey APIs are explicitly opted into");
 for (const method of ["registerMyPasskey","listMyPasskeys","deleteMyPasskey","signInWithPasskey"]) {
