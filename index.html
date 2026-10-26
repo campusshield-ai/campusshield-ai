@@ -3281,6 +3281,30 @@ button,input,select,textarea{max-width:100%;min-width:0}
   let currentProfile = null;
   let communityProfile = null;
   let campusContext = null;
+
+  // Push notification destinations are an allowlist, not arbitrary page names.
+  const notificationDestinationPages = new Set(['timetable', 'campus-messages', 'noticeboard', 'profile-settings']);
+  let pendingNotificationPage = new URLSearchParams(window.location.search).get('page');
+  if (!notificationDestinationPages.has(pendingNotificationPage)) pendingNotificationPage = null;
+
+  function clearPendingNotificationPage() {
+    pendingNotificationPage = null;
+    try {
+      const url = new URL(window.location.href);
+      if (!url.searchParams.has('page')) return;
+      url.searchParams.delete('page');
+      window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+    } catch (_) {
+      // Navigation can continue if history APIs are unavailable.
+    }
+  }
+
+  // Once a signed-in user interacts with the workspace, discard the notification
+  // deep link so a later refresh does not keep forcing the previous destination.
+  document.addEventListener('click', function(event) {
+    if (!event.isTrusted || !event.target?.closest?.('#workspace')) return;
+    clearPendingNotificationPage();
+  }, true);
   let campusUniversitiesCache = null;
   let communityLoading = false;
   let studentIdentitySubmission = null;
@@ -3953,6 +3977,20 @@ button,input,select,textarea{max-width:100%;min-width:0}
       showLogin('Please sign in to access CampusShield.');
       return;
     }
+
+    // Session restoration can request Overview more than once. Honor a valid
+    // notification deep link until the user interacts with the workspace.
+    if (page === 'dashboard' && pendingNotificationPage) {
+      const target = pendingNotificationPage;
+      if (['campus-messages', 'noticeboard'].includes(target) &&
+          currentProfile.verification_status !== 'verified') {
+        clearPendingNotificationPage();
+        toast('This notification destination requires a verified account. Showing Overview.');
+      } else {
+        page = target;
+      }
+    }
+
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
 
@@ -4686,7 +4724,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         // A VAPID rotation or an expired browser endpoint can leave a local
         // subscription that the server has already removed. Repair it once
         // when the first test finds no active destination.
-        if (delivered === 0) {
+        if (delivered === 0 && result?.no_subscription === true) {
           if (status) status.textContent = "Refreshing this device's secure push subscription…";
           const publicKey = await backend.getPushVapidPublicKey();
           await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
@@ -4712,7 +4750,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
         if (status) status.textContent = delivered > 0
           ? "Test notification sent to " + delivered + (delivered === 1 ? " device." : " devices.")
-          : "The device subscription was refreshed, but push delivery still failed. Check the staging push delivery logs.";
+          : result?.no_subscription === true
+            ? "No active server subscription was found. Enable notifications for this device and retry."
+            : "Push delivery was not confirmed. The subscription was kept; check the staging push delivery logs.";
       } else if (action === "disable") {
         const registration = await navigator.serviceWorker.getRegistration("./");
         const subscription = registration?.pushManager ? await registration.pushManager.getSubscription() : null;
@@ -8824,6 +8864,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         await refreshIncidentsFromSupabase();
         loadCampusDashboardInsights();
         if (!campusContext?.university_id) {
+          clearPendingNotificationPage();
           navigate('community');
           await loadCommunityPage();
           toast('Choose your university to create your private campus space.');
@@ -8831,6 +8872,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
           navigate('dashboard');
           await loadStudentIdentityStatus();
         } else if (isTeacherAccount() && currentProfile.verification_status !== 'verified') {
+          clearPendingNotificationPage();
           navigate('staff-verification');
           await loadCampusStaffVerificationStatus();
         }

@@ -454,3 +454,32 @@ assert.match(html, /Incident saved to Supabase\. Emergency services have not bee
 assert.match(html, /Recent reports &amp; incident status/);
 console.log("PASS pre-launch quick actions, campus alerts, first-time tour, CampusPulse prompts, and incident confirmation/result UX");
 
+
+
+// Notification regressions: route taps to the relevant screen and preserve good subscriptions on delivery errors.
+assert.ok(pushDispatchFunction.includes("const notificationUrls: Record<PushKind, string> = {"));
+for (const [kind, destination] of [
+  ["timetable_reminder", "./?page=timetable"],
+  ["new_message", "./?page=campus-messages"],
+  ["campus_announcement", "./?page=noticeboard"],
+  ["account_update", "./?page=profile-settings"],
+  ["test", "./?page=profile-settings"]
+]) {
+  assert.ok(pushDispatchFunction.includes(kind + ': "' + destination + '"'), "notification route is defined for " + kind);
+}
+assert.ok(pushDispatchFunction.includes("url: notificationUrls[kind]"), "push payload includes its relevant application route");
+assert.ok(!pushDispatchFunction.includes('url: "./",'), "notifications do not all route back to the app root");
+assert.ok(pushDispatchFunction.includes("subscriptions_found: 0, no_subscription: true"));
+assert.ok(pushDispatchFunction.includes("subscriptions_found: subscriptions.length, no_subscription: false"));
+assert.ok(html.includes("if (delivered === 0 && result?.no_subscription === true)"), "repair only runs when server reports no subscription");
+assert.ok(html.includes("Push delivery was not confirmed. The subscription was kept"));
+assert.ok(html.includes("const notificationDestinationPages = new Set(['timetable', 'campus-messages', 'noticeboard', 'profile-settings']);"));
+assert.ok(html.includes("if (page === 'dashboard' && pendingNotificationPage)"), "startup navigation preserves the requested notification destination");
+assert.ok(html.includes("['campus-messages', 'noticeboard'].includes(target)") &&
+  html.includes("currentProfile.verification_status !== 'verified'"), "verified-only routes remain gated");
+assert.ok(html.includes("document.addEventListener('click', function(event)"));
+assert.ok(html.includes("if (!event.isTrusted || !event.target?.closest?.('#workspace')) return;"));
+for (const destination of ['timetable', 'campus-messages', 'noticeboard', 'profile-settings']) {
+  assert.ok(serviceWorker.includes('"./?page=' + destination + '"'), "service worker allows notification destination " + destination);
+}
+console.log("PASS notification routing, missing-subscription diagnosis, and non-destructive test retries");
