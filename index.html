@@ -877,7 +877,50 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .campus-contact-note{font-size:10px!important;color:#7d8c90!important}
 .campus-contacts-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .campus-contacts-footnote{color:#7d8c90;font-size:10px;line-height:1.6}
+
 @media(max-width:700px){.campus-contacts-grid{grid-template-columns:minmax(0,1fr)}.campus-contacts-campus-summary{align-items:flex-start;flex-direction:column}.campus-contacts-campus-summary .btn{width:100%;justify-content:center}}
+
+/* Searchable national campus medical, Student Affairs and Registrar directory */
+.campus-service-directory-panel{margin:0 0 18px}
+.campus-service-directory-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.campus-service-directory-heading h2{margin:0 0 7px;color:#183840;font-size:21px;letter-spacing:-.035em}
+.campus-service-directory-heading p{margin:0;color:#647a7e;font-size:12px;line-height:1.65}
+.campus-service-directory-count{flex:none;border:1px solid #d7ebe3;border-radius:999px;background:#eff9f4;color:#267a68;padding:7px 10px;font-size:10px;font-weight:800}
+.campus-service-directory-filters{margin-top:12px;align-items:end}
+.campus-service-directory-filters .field{margin-bottom:0}
+.campus-service-directory-filters input,.campus-service-directory-filters select{min-height:43px}
+.campus-service-directory-matches{display:grid;gap:9px;margin-top:12px}
+.campus-service-directory-result{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 14px;border:1px solid var(--line,#dfe8e3);border-radius:12px;background:#fff}
+.campus-service-directory-result.is-selected{border-color:#55b69b;background:#f6fcf9}
+.campus-service-directory-result-copy{min-width:0}
+.campus-service-directory-result h3{margin:0 0 3px;color:#183840;font-size:14px;line-height:1.35;overflow-wrap:anywhere}
+.campus-service-directory-result p{margin:0 0 4px;color:#647a7e;font-size:11px}
+.campus-service-directory-result small{color:#71817f;font-size:10px;line-height:1.45}
+.campus-service-directory-result-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end;flex:none}
+.campus-service-directory-result-actions .btn,.campus-service-directory-office-actions .btn{margin:0;white-space:normal}
+.campus-service-directory-more-wrap{display:flex;justify-content:center;padding:8px}
+.campus-service-directory-detail-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin:18px 0 12px;padding:17px;border:1px solid #d7ebe3;border-radius:12px;background:#f6fcf9}
+.campus-service-directory-detail-heading h3{margin:0 0 5px;color:#183840;font-size:18px;overflow-wrap:anywhere}
+.campus-service-directory-detail-heading p{margin:0;color:#647a7e;font-size:12px}
+.campus-service-directory-offices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.campus-service-directory-office{min-width:0;padding:14px;border:1px solid var(--line,#dfe8e3);border-radius:12px;background:#fff}
+.campus-service-directory-office h4{margin:0 0 10px;color:#183840;font-size:15px;line-height:1.35}
+.campus-service-directory-contact{margin:7px 0;color:#405e61;font-size:12px;overflow-wrap:anywhere}
+.campus-service-directory-contact a{color:#267a68;overflow-wrap:anywhere}
+.campus-service-directory-note{margin:10px 0;color:#6c7c7d;font-size:11px;line-height:1.6}
+.campus-service-directory-office-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.campus-service-directory-office-actions .btn{font-size:10px}
+.campus-service-directory-empty{margin:0;padding:15px;border-radius:10px;background:#f7faf8;color:#647a7e}
+@media(max-width:850px){.campus-service-directory-offices{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.campus-service-directory-heading,.campus-service-directory-detail-heading{flex-direction:column}.campus-service-directory-result{align-items:flex-start;flex-direction:column}.campus-service-directory-result-actions{width:100%;justify-content:flex-start}.campus-service-directory-offices{grid-template-columns:minmax(0,1fr)}.campus-service-directory-count{align-self:flex-start}}
+.platform-service-crawler-results{display:grid;gap:8px;margin-top:12px}
+.platform-service-crawler-result{padding:11px 12px;border:1px solid var(--line,#dfe8e3);border-radius:10px;background:#f8fbf9}
+.platform-service-crawler-result h3{margin:0 0 4px;color:#183840;font-size:13px}
+.platform-service-crawler-result p{margin:3px 0;color:#647a7e;font-size:11px;line-height:1.55}
+.platform-service-crawler-result .status{font-weight:800;color:#267a68}
+#platform-service-directory-crawler .actions{display:flex;gap:8px;flex-wrap:wrap}
+#platform-service-directory-crawler .actions .btn{margin:0}
+
 
 
 /* Advanced private profile layout */
@@ -2185,6 +2228,35 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <a id="campus-contacts-official-link" class="btn" href="#" target="_blank" rel="noopener noreferrer" hidden>Open official university website ↗</a>
     </div>
   </section>
+  <section class="panel campus-service-directory-panel" id="campus-service-directory-panel" aria-labelledby="campus-service-directory-title">
+    <div class="campus-service-directory-heading">
+      <div>
+        <span class="campus-contact-kicker">NIGERIA-WIDE DIRECTORY</span>
+        <h2 id="campus-service-directory-title">University medical and student services</h2>
+        <p>Find official campus medical services, Student Affairs and Registrar / Registry information for universities across Nigeria.</p>
+      </div>
+      <span id="campus-service-directory-count" class="campus-service-directory-count">Loading universities…</span>
+    </div>
+    <div class="grid two campus-service-directory-filters">
+      <div class="field">
+        <label for="campus-service-directory-search">Search university or state</label>
+        <input id="campus-service-directory-search" type="search" maxlength="180" placeholder="e.g. Babcock, UNILAG, Ogun, Kano" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="campus-service-directory-ownership">University ownership</label>
+        <select id="campus-service-directory-ownership">
+          <option value="">All ownership types</option>
+          <option value="Federal">Federal universities</option>
+          <option value="State">State universities</option>
+          <option value="Private">Private universities</option>
+        </select>
+      </div>
+    </div>
+    <p id="campus-service-directory-status" class="message" role="status" aria-live="polite">Loading the official university directory…</p>
+    <div id="campus-service-directory-matches" class="campus-service-directory-matches"></div>
+    <div id="campus-service-directory-details" class="campus-service-directory-details" hidden aria-live="polite"></div>
+    <p class="campus-contacts-footnote">Office links, emails and phone numbers are shown only when verified on an official university website or official university publication. If an office-specific contact is not published or could not be verified, the directory links to the university website or the National Universities Commission listing instead. Do not rely on CampusShield for emergency dispatch.</p>
+  </section>
   <div class="grid campus-contacts-grid">
     <article class="panel campus-contact-card">
       <span class="campus-contact-icon" aria-hidden="true">!</span>
@@ -3129,6 +3201,21 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <p id="platform-admin-candidates-message" class="message" role="status" aria-live="polite">Choose a university to load verified staff.</p>
       <div class="table-wrap"><table><caption class="sr-only">Eligible verified staff who can be assigned as campus administrators</caption><thead><tr><th scope="col">Username</th><th scope="col">Account role</th><th scope="col">Account status</th><th scope="col">Campus status</th><th scope="col">Faculty / department</th><th scope="col">Action</th></tr></thead><tbody id="platform-admin-candidates-table"><tr><td colspan="6">Choose a university above.</td></tr></tbody></table></div>
     </section>
+    <section class="panel" id="platform-service-directory-crawler">
+      <div class="panel-heading">
+        <div>
+          <h2>Official university services crawler</h2>
+          <p>Crawl registered public university websites to find medical services, Student Affairs and Registrar / Registry pages.</p>
+        </div>
+      </div>
+      <p class="muted">Restricted to trusted platform administrators. The crawler uses HTTPS, checks robots.txt, stays on each university's registered host, skips login/account paths, and never fabricates contact details. A crawl may find no office page when the website blocks bots or uses a JavaScript-only portal.</p>
+      <div class="actions">
+        <button class="btn" type="button" id="platform-service-crawler-batch">Crawl next batch</button>
+        <button class="btn secondary" type="button" id="platform-service-crawler-one">Crawl selected university</button>
+      </div>
+      <p id="platform-service-crawler-status" class="message" role="status" aria-live="polite">Ready. Select a university above for a targeted crawl, or run the next small batch from the national directory.</p>
+      <div id="platform-service-crawler-results" class="platform-service-crawler-results" aria-live="polite"></div>
+    </section>
   </div>
 </section>
 
@@ -3142,6 +3229,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script src="./campusshield-backend.js"></script>
+<script src="./campus-service-directory.js"></script>
 <script src="./shieldmind-planner.js"></script>
 <script src="./campus-timetable.js"></script>
 <script src="./campus-course-community.js"></script>
@@ -5879,6 +5967,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
       campusName.textContent = data?.name || context.university_name || 'Your university';
       const officialUrl = safeHttpUrl(data?.official_website);
+      window.CampusShieldServiceDirectory?.selectUniversity(context.university_id);
       if (officialUrl) {
         officialLink.href = officialUrl;
         officialLink.hidden = false;
@@ -6091,6 +6180,76 @@ button,input,select,textarea{max-width:100%;min-width:0}
   $('platform-admin-refresh-requests').addEventListener('click', loadPlatformUniversityRequests);
   $('platform-admin-refresh-candidates').addEventListener('click', loadPlatformAdminCandidates);
   $('platform-admin-university-select').addEventListener('change', loadPlatformAdminCandidates);
+
+  async function runPlatformServiceDirectoryCrawl(action) {
+    const status = $('platform-service-crawler-status');
+    const results = $('platform-service-crawler-results');
+    const batchButton = $('platform-service-crawler-batch');
+    const oneButton = $('platform-service-crawler-one');
+    const select = $('platform-admin-university-select');
+    if (!status || !results || !batchButton || !oneButton) return;
+    if (action === 'crawl_university' && !select?.value) {
+      status.textContent = 'Choose a university in the selector above first.';
+      return;
+    }
+    batchButton.disabled = true;
+    oneButton.disabled = true;
+    results.replaceChildren();
+    status.textContent = action === 'crawl_batch'
+      ? 'Crawling the next small batch of official university sites. This may take a little while.'
+      : 'Crawling the selected official university site. This may take a little while.';
+    try {
+      const client = window.CampusShieldBackend?.client;
+      if (!client) throw new Error('CampusShield is not connected to Supabase.');
+      const body = action === 'crawl_batch'
+        ? { action: 'crawl_batch', batch_size: 2 }
+        : { action: 'crawl_university', university_id: select.value };
+      const { data, error } = await client.functions.invoke('campus-service-directory-crawler', { body });
+      if (error) throw error;
+      if (!data || data.error) throw new Error(data?.error || 'The crawler returned no result.');
+      if (data.done) {
+        status.textContent = data.message || 'No university websites are due for crawling.';
+        return;
+      }
+      const siteCount = Number(data.batch_size || 0);
+      const pages = Number(data.pages_scanned || 0);
+      const offices = Number(data.office_pages_found || 0);
+      const fields = Number(data.fields_populated || 0);
+      const blocked = Number(data.failed_or_blocked || 0);
+      status.textContent = 'Finished ' + siteCount + ' university crawl(s): ' + pages + ' public page(s) scanned, ' +
+        offices + ' office-specific page(s) found, ' + fields + ' new field(s) added. ' +
+        (blocked ? blocked + ' site(s) were blocked or failed. ' : '') +
+        (data.more_available === true ? 'More university sites are queued; run the next batch to continue.' :
+          data.more_available === false ? 'No more university sites are currently due.' :
+          'Targeted crawl complete.');
+      results.innerHTML = (Array.isArray(data.results) ? data.results : []).map(function (item) {
+        return '<article class="platform-service-crawler-result">' +
+          '<h3>' + esc(item.university_name || 'University') + '</h3>' +
+          '<p class="status">' + esc(String(item.status || 'unknown').replace(/[_-]+/g, ' ')) +
+            ' · ' + Number(item.pages_scanned || 0) + ' page(s) · ' +
+            Number(item.office_pages_found || 0) + ' office page(s)</p>' +
+          '<p>' + esc(item.message || 'No additional details available.') + '</p>' +
+          '</article>';
+      }).join('');
+      if (Array.isArray(data.results) && data.results.some(item => item.status === 'success' || item.populated_fields > 0)) {
+        // Refresh the public directory view after fresh office links have been written.
+        window.CampusShieldServiceDirectory?.load();
+      }
+    } catch (error) {
+      status.textContent = error?.message || 'The official university crawler could not run. Check the function logs and try again.';
+    } finally {
+      batchButton.disabled = false;
+      oneButton.disabled = false;
+    }
+  }
+
+  $('platform-service-crawler-batch').addEventListener('click', function () {
+    runPlatformServiceDirectoryCrawl('crawl_batch');
+  });
+  $('platform-service-crawler-one').addEventListener('click', function () {
+    runPlatformServiceDirectoryCrawl('crawl_university');
+  });
+
 
   $('platform-admin-requests-table').addEventListener('click', async function(event) {
     const button = event.target.closest('[data-platform-university-review]');
