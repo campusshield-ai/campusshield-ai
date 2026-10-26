@@ -53,17 +53,15 @@ create policy campus_user_feedback_read_own_or_authorized_admin
           and actor.role = 'admin'
           and actor.verification_status = 'verified'
       )
-      and (
-        university_id is null
-        or exists (
-          select 1
-          from public.campus_memberships cm
-          where cm.user_id = (select auth.uid())
-            and cm.university_id = campus_user_feedback.university_id
-            and cm.membership_status = 'active'
-            and cm.verification_status = 'verified'
-            and cm.campus_role = 'admin'
-        )
+      and university_id is not null
+      and exists (
+        select 1
+        from public.campus_memberships cm
+        where cm.user_id = (select auth.uid())
+          and cm.university_id = campus_user_feedback.university_id
+          and cm.membership_status = 'active'
+          and cm.verification_status = 'verified'
+          and cm.campus_role = 'admin'
       )
     )
   );
@@ -206,6 +204,9 @@ begin
   if not found then
     raise exception 'Feedback submission not found.' using errcode = 'P0002';
   end if;
+  if v_university_id is null and not v_is_platform_admin then
+    raise exception 'Only a platform administrator can triage submissions without a campus.' using errcode = '42501';
+  end if;
   if v_university_id is not null and not v_is_platform_admin and not exists (
     select 1 from public.campus_memberships cm
     where cm.user_id = v_actor
@@ -332,16 +333,16 @@ begin
     raise exception 'You can assign feedback only to verified staff at your campus.' using errcode = '42501';
   end if;
   return query
-  select p.id, coalesce(nullif(btrim(p.display_name), ''), 'Campus member'), p.role
+  select distinct on (p.id) p.id, coalesce(nullif(btrim(p.display_name), ''), 'Campus member'), p.role
   from public.profiles p
   join public.campus_memberships cm on cm.user_id = p.id
-  where cm.university_id = v_university_id
+  where (v_university_id is null or cm.university_id = v_university_id)
     and cm.membership_status = 'active'
     and cm.verification_status = 'verified'
     and cm.campus_role in ('admin','security','teacher')
     and p.verification_status = 'verified'
     and p.role in ('admin','security','teacher')
-  order by p.display_name nulls last, p.role;
+  order by p.id, p.display_name nulls last, p.role;
 end;
 $function$;
 
