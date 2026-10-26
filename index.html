@@ -2961,7 +2961,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
           <div class="profile-contact-field">
             <label for="profile-settings-avatar-file">Profile picture</label>
             <input id="profile-settings-avatar-file" name="avatar" type="file" accept="image/jpeg,image/png,image/webp">
-            <small class="muted">JPG, PNG or WebP · Maximum 3 MB. Your uploaded image is stored privately.</small>
+            <small class="muted">JPG, PNG or WebP · Maximum 20 MB. Your uploaded image is stored privately.</small>
           </div>
           <div class="actions profile-identity-actions">
             <button class="btn" id="profile-settings-save-identity" type="submit">Save profile</button>
@@ -5057,9 +5057,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const status = $('profile-settings-identity-message');
     if (!file || !image || !fallback) return;
     const accepted = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!accepted.includes(file.type) || file.size < 1 || file.size > 3 * 1024 * 1024) {
+    if (!accepted.includes(file.type) || file.size < 1 || file.size > 20 * 1024 * 1024) {
       event.target.value = '';
-      if (status) status.textContent = 'Choose a JPG, PNG or WebP image smaller than 3 MB.';
+      if (status) status.textContent = 'Choose a JPG, PNG or WebP image 20 MB or smaller.';
       return;
     }
     if (profileAvatarPreviewUrl) URL.revokeObjectURL(profileAvatarPreviewUrl);
@@ -5114,8 +5114,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
       if (file) {
         const accepted = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!accepted.includes(file.type) || file.size < 1 || file.size > 3 * 1024 * 1024) {
-          throw new Error('Choose a JPG, PNG or WebP image smaller than 3 MB.');
+        if (!accepted.includes(file.type) || file.size < 1 || file.size > 20 * 1024 * 1024) {
+          throw new Error('Choose a JPG, PNG or WebP image 20 MB or smaller.');
         }
         const ext = file.type === 'image/jpeg' ? 'jpg' : file.type === 'image/png' ? 'png' : 'webp';
         if (!window.crypto?.randomUUID) throw new Error('Secure image upload is not supported in this browser. Please update Chrome.');

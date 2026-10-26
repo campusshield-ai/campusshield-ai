@@ -4,11 +4,11 @@ alter table public.profiles
   add column if not exists avatar_path text;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('campus-profile-avatars','campus-profile-avatars',false,3145728,
+values ('campus-profile-avatars','campus-profile-avatars',false,20971520,
         array['image/jpeg','image/png','image/webp'])
 on conflict (id) do update set
   public = false,
-  file_size_limit = 3145728,
+  file_size_limit = 20971520,
   allowed_mime_types = array['image/jpeg','image/png','image/webp'],
   updated_at = now();
 
@@ -28,7 +28,7 @@ with check (
   and (storage.foldername(name))[1] = (select auth.uid())::text
   and storage.extension(name) in ('jpg','png','webp')
   and coalesce(metadata ->> 'mimetype','') in ('image/jpeg','image/png','image/webp')
-  and coalesce(nullif(metadata ->> 'size','')::bigint,0) between 1 and 3145728
+  and coalesce(nullif(metadata ->> 'size','')::bigint,0) between 1 and 20971520
 );
 
 drop policy if exists campus_profile_avatar_delete_own on storage.objects;
