@@ -4356,9 +4356,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
     return new Date(stamp).toLocaleDateString();
   }
 
-  function pushAppUsesStaging() {
+  function pushAppSupportsConfiguredProject() {
     try {
-      return new URL(String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url || "")).hostname === "hywcpnoqqhxvujnimhxl.supabase.co";
+      const hostname = new URL(String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url || "")).hostname;
+      return hostname === "hywcpnoqqhxvujnimhxl.supabase.co" ||
+        hostname === "fvgtnujjnvdkhzqqcaqe.supabase.co";
     } catch (_) { return false; }
   }
 
@@ -4380,8 +4382,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
     testButton.disabled = !user;
     disableButton.disabled = !user;
 
-    if (!pushAppUsesStaging()) {
-      status.textContent = "Background push is available in the staging environment while delivery configuration is being verified.";
+    if (!pushAppSupportsConfiguredProject()) {
+      status.textContent = "Background push is unavailable for this Supabase environment. Use the configured CampusShield AI production or staging project.";
       enableButton.hidden = true;
       testButton.hidden = true;
       disableButton.hidden = true;
@@ -4688,8 +4690,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
       if (status) status.textContent = "Sign in before managing background notifications.";
       return;
     }
-    if (!pushAppUsesStaging()) {
-      if (status) status.textContent = "Background push is currently enabled for staging verification only.";
+    if (!pushAppSupportsConfiguredProject()) {
+      if (status) status.textContent = "Background push is unavailable for this Supabase environment.";
       return;
     }
     all.forEach(function(control) { control.disabled = true; });
