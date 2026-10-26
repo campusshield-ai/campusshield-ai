@@ -1708,6 +1708,58 @@ button,input,select,textarea{max-width:100%;min-width:0}
 }
 @media(max-width:380px){.quick-action-button{gap:6px;font-size:10px;padding:8px}.quick-action-icon,.quick-action-icon svg{width:17px;height:17px;flex-basis:17px}.campus-welcome-tour{padding:18px}}
 
+
+/* Help & Feedback — private submissions and review queues. */
+.feedback-form-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.feedback-submissions-list,.feedback-admin-queue{display:grid;gap:13px;min-width:0}
+.feedback-ticket{min-width:0;padding:16px;border:1px solid var(--border,#dfe8e4);border-radius:15px;background:var(--panel,#fff);overflow-wrap:anywhere}
+.feedback-ticket-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0}
+.feedback-ticket-head-main{min-width:0;flex:1}
+.feedback-ticket-ref{font-size:10px;color:#27765f;font-weight:900;letter-spacing:.08em}
+.feedback-ticket h2,.feedback-ticket h3{margin:6px 0;color:#183f3a;font-size:16px;line-height:1.35;overflow-wrap:anywhere}
+.feedback-ticket-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px}
+.feedback-ticket-badge{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:5px 8px;border-radius:999px;background:#edf7f1;color:#276a53;font-size:9px;font-weight:850;overflow-wrap:anywhere}
+.feedback-ticket-badge.status{background:#f2f6f4;color:#425e57}
+.feedback-ticket-description{white-space:pre-wrap;overflow-wrap:anywhere;color:#526d68;font-size:12px;line-height:1.6;margin:12px 0}
+.feedback-ticket-detail{padding:10px 12px;margin:9px 0;border-radius:10px;background:#f7faf8;color:#5e7570;font-size:11px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.feedback-ticket-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid #e4ece7}
+.feedback-ticket-form .field{margin:0;min-width:0}
+.feedback-ticket-form .wide{grid-column:1/-1}
+.feedback-ticket-form input,.feedback-ticket-form select,.feedback-ticket-form textarea{width:100%;min-width:0;box-sizing:border-box}
+.feedback-ticket-form textarea{min-height:72px}
+.feedback-ticket-notes{display:grid;gap:7px;margin-top:12px}
+.feedback-ticket-note{padding:10px 12px;border-left:3px solid #80cdb0;border-radius:0 10px 10px 0;background:#f4faf6;color:#536d62;font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.feedback-ticket-note time{display:block;margin-top:6px;color:#84968d;font-size:9px}
+.feedback-admin-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.feedback-admin-actions .btn{min-width:100px}
+.feedback-privacy-note{color:#7d8985;font-size:10px;line-height:1.5}
+.passkey-settings{margin:18px 0;padding:16px;border:1px solid #d7e8df;border-radius:14px;background:#f8fcf9}
+.passkey-settings h3{margin:0;font-size:15px;color:#234b40}
+.passkey-toggle-label{display:flex;align-items:center;gap:10px;margin:12px 0;color:#244e43;font-weight:750}
+.passkey-toggle-label input{width:18px;height:18px;accent-color:#188062}
+.passkey-actions{display:flex;flex-wrap:wrap;gap:8px}
+.profile-passkey-list{display:grid;gap:8px;margin-top:12px}
+.profile-passkey-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #e0ebe5;border-radius:10px;background:#fff;min-width:0}
+.profile-passkey-item div{min-width:0;overflow-wrap:anywhere}
+.profile-passkey-item strong{display:block;color:#31574b;font-size:11px}
+.profile-passkey-item small{display:block;margin-top:3px;color:#768983;font-size:9px}
+.profile-passkey-item button{flex:0 0 auto}
+.passkey-signin-wrap{margin-top:12px}
+.passkey-signin-wrap .google-auth-divider{margin:14px 0}
+.passkey-signin-wrap .google-auth-button svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.profile-feedback-actions{display:flex;flex-wrap:wrap;gap:8px}
+@media(max-width:700px){
+ .feedback-ticket{padding:13px}
+ .feedback-ticket-head{flex-direction:column}
+ .feedback-ticket-form{grid-template-columns:minmax(0,1fr)}
+ .feedback-ticket-form .wide{grid-column:auto}
+ .feedback-admin-actions{justify-content:stretch}
+ .feedback-admin-actions .btn{flex:1 1 100%}
+ .profile-passkey-item{align-items:flex-start;flex-direction:column}
+ .profile-passkey-item button{width:100%}
+ .profile-feedback-actions>.btn{flex:1 1 100%;width:100%}
+}
+
 </style>
 </head>
 <body>
@@ -1854,6 +1906,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
           <button type="button" class="btn secondary" id="install-app" hidden>Install</button>
         </div>
         <div class="actions"><button class="btn" type="submit" id="auth-submit" autocomplete="off">Sign in</button></div>
+        <div id="passkey-signin-wrap" class="passkey-signin-wrap">
+          <div class="google-auth-divider" aria-hidden="true"><span>OR USE A PASSKEY</span></div>
+          <button type="button" class="google-auth-button" id="passkey-signin-button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="3"/><path d="M11 9h10M17 9v3M20 9v2M4 15h7M8 15v3M12 15h5"/></svg>Sign in with a passkey</button>
+          <p class="google-auth-note">Your device may ask for biometrics, a PIN, or another supported passkey method. If unavailable, use your email and password above.</p>
+        </div>
         <p id="auth-message" class="message" role="status" aria-live="polite">Please sign in or create an account.</p>
         <div id="google-signin-wrap" hidden>
           <div class="google-auth-divider" aria-hidden="true"><span>OR CONTINUE WITH</span></div>
@@ -1904,10 +1961,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span data-original-label="Opportunities &amp; Scholarships">Opportunities</button><button data-page="classroom" id="classroom-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18v14H3zM8 21h8M12 18v3M7 8h10M7 11h7"/></svg></span>Teacher Classroom</button>
 <div class="nav-section-label">INSIGHTS & SUPPORT</div>
 <button data-page="analytics" id="analytics-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button><button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button><button data-page="staff-verification" id="staff-verification-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Staff verification</button><button data-page="staff-review" id="staff-review-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8l4 4v13H4V3z"/><path d="M8 11h8M8 15h8M16 3v5h4"/></svg></span>Staff applications</button>
+<div class="nav-section-label">HELP &amp; FEEDBACK</div>
+<button data-page="feedback-problem" id="feedback-problem-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span>Report a Problem</button>
+<button data-page="feedback-improvement" id="feedback-improvement-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/></svg></span>Suggest an Improvement</button>
 <div class="nav-section-label">ACCOUNT</div>
-<button data-page="profile-settings" id="profile-settings-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20v-1.2A4.8 4.8 0 0 1 9.3 14h5.4a4.8 4.8 0 0 1 4.8 4.8V20"/><path d="m18.5 4.5 1 .5.9-.5.6 1 .9.4-.3 1.1.3 1.1-.9.4-.6 1-1-.5-1 .5-.6-1-.9-.4.3-1.1-.3-1.1.9-.4z"/></svg></span data-original-label="My Profile &amp; Settings">My profile</button><button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; Billing</button>
+<button data-page="profile-settings" id="profile-settings-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20v-1.2A4.8 4.8 0 0 1 9.3 14h5.4a4.8 4.8 0 0 1 4.8 4.8V20"/><path d="m18.5 4.5 1 .5.9-.5.6 1 .9.4-.3 1.1.3 1.1-.9.4-.6 1-1-.5-1 .5-.6-1-.9-.4.3-1.1-.3-1.1.9-.4z"/></svg></span data-original-label="My Profile &amp; Settings">My profile</button><button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; Billing</button><button data-page="feedback-submissions" id="feedback-submissions-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg></span>My Submissions</button>
 <div class="nav-section-label" id="nav-staff-heading" hidden>STAFF TOOLS</div><button data-page="admin-rewards" id="admin-rewards-nav" hidden><span class="nav-icon" aria-hidden="true">◈</span>Rewards Management</button>
-<div class="nav-section-label" id="nav-admin-heading" hidden>ADMINISTRATION</div><button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button><button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform administration</button>
+<div class="nav-section-label" id="nav-admin-heading" hidden>ADMINISTRATION</div><button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button><button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform administration</button><button data-page="feedback-admin" id="feedback-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m14 16 2 2 4-4"/></svg></span>Feedback triage</button>
 </nav>
 <div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
 <button type="button" class="mobile-sidebar-signout" aria-label="Sign out of CampusShield">Sign out</button>
@@ -2831,9 +2891,75 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <section class="panel" aria-labelledby="profile-settings-security-title">
       <div class="panel-heading"><div><h2 id="profile-settings-security-title">Sign-in &amp; security</h2><p>Protect access to your account.</p></div></div>
       <p>Use the sign-in method linked to your account. Never share your password, one-time codes, or private identity documents.</p>
+      <section class="passkey-settings" aria-labelledby="profile-passkey-title">
+        <div class="panel-heading"><div><h3 id="profile-passkey-title">Optional passkey sign-in</h3><p>Use your device's passkey provider for Face ID, Touch ID, fingerprint, device PIN or a security key where supported.</p></div></div>
+        <label class="remember-field passkey-toggle-label"><input type="checkbox" id="profile-passkey-toggle"> Enable passkey sign-in on this account</label>
+        <p class="muted">CampusShield never receives or stores raw biometric data. Passkeys use a cryptographic credential managed by your device or password manager. Your email and password sign-in remains available as a fallback.</p>
+        <p id="profile-passkey-status" class="message" role="status" aria-live="polite">Checking passkey support…</p>
+        <div id="profile-passkey-list" class="profile-passkey-list"></div>
+        <div class="actions passkey-actions"><button class="btn secondary" type="button" id="profile-passkey-add" hidden>Add another passkey</button></div>
+      </section>
       <div class="actions"><button class="btn secondary" id="profile-settings-signout" type="button">Sign out</button></div>
     </section>
+    <section class="panel profile-help-feedback" aria-labelledby="profile-settings-feedback-title">
+      <div class="panel-heading"><div><h2 id="profile-settings-feedback-title">Help &amp; Feedback</h2><p>Tell us when something breaks or suggest how CampusShield can improve.</p></div></div>
+      <div class="profile-feedback-actions">
+        <button class="btn secondary" type="button" data-page="feedback-problem">Report a Problem</button>
+        <button class="btn secondary" type="button" data-page="feedback-improvement">Suggest an Improvement</button>
+        <button class="btn secondary" type="button" data-page="feedback-submissions">My Submissions</button>
+      </div>
+    </section>
   </div>
+</section>
+
+<section class="page" id="page-feedback-problem">
+  <div class="heading"><div><h1>Report a Problem</h1><p>Tell the CampusShield team about a technical issue in the website or app.</p></div></div>
+  <div class="notice-inline"><strong>For product and technical issues only.</strong> Do not submit a safety incident here, and never include passwords, one-time codes, private student ID documents, payment-card details, or sensitive incident evidence. Use Report Incident for safety concerns.</div>
+  <section class="panel" aria-labelledby="campus-feedback-problem-title">
+    <div class="panel-heading"><div><h2 id="campus-feedback-problem-title">What went wrong?</h2><p>Submissions receive a reference number so you can track progress in My Submissions.</p></div></div>
+    <form id="campusProblemForm">
+      <div class="grid two">
+        <div class="field"><label for="campus-problem-category">Problem area *</label><select id="campus-problem-category" required><option value="app_bug">A page or feature is broken</option><option value="login_access">Sign-in or account access</option><option value="mobile_layout">Mobile or layout issue</option><option value="performance">Slow performance</option><option value="notifications">Notifications</option><option value="data_display">Incorrect or missing display data</option><option value="payments">Billing or checkout issue (never include card details)</option><option value="other">Other technical problem</option></select></div>
+        <div class="field"><label for="campus-problem-impact">Impact *</label><select id="campus-problem-impact" required><option value="normal">Normal — workaround available</option><option value="low">Low — minor inconvenience</option><option value="high">High — important feature unavailable</option><option value="critical">Critical — major feature unusable</option></select></div>
+      </div>
+      <div class="field"><label for="campus-problem-title">Short title *</label><input id="campus-problem-title" required minlength="3" maxlength="120" placeholder="e.g. Sidebar overlaps the bottom navigation"></div>
+      <div class="field"><label for="campus-problem-description">Describe the problem *</label><textarea id="campus-problem-description" required minlength="10" maxlength="4000" rows="5" placeholder="What happened, which page were you on, and what did you expect to happen?"></textarea></div>
+      <div class="field"><label for="campus-problem-steps">Steps to reproduce (optional)</label><textarea id="campus-problem-steps" maxlength="3000" rows="3" placeholder="1. Open the page… 2. Tap… 3. The problem appears…"></textarea></div>
+      <label class="remember-field"><input type="checkbox" id="campus-problem-privacy-confirm" required> I have not included passwords, payment-card details, private identity documents or sensitive incident evidence.</label>
+      <div class="actions"><button class="btn" type="submit" id="campus-problem-submit">Submit problem report</button><button class="btn secondary" type="reset">Clear form</button></div>
+      <p id="campus-problem-status" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</section>
+
+<section class="page" id="page-feedback-improvement">
+  <div class="heading"><div><h1>Suggest an Improvement</h1><p>Share an idea that could make CampusShield more useful, accessible or enjoyable.</p></div></div>
+  <div class="notice-inline"><strong>Ideas are reviewed separately from bugs.</strong> Suggestions are not a promise of delivery. Please avoid sharing private information or sensitive safety case details.</div>
+  <section class="panel" aria-labelledby="campus-feedback-idea-title">
+    <div class="panel-heading"><div><h2 id="campus-feedback-idea-title">What would you improve?</h2><p>Tell us the idea and the benefit it would bring to students or staff.</p></div></div>
+    <form id="campusImprovementForm">
+      <div class="field"><label for="campus-improvement-category">Idea area *</label><select id="campus-improvement-category" required><option value="new_feature">New feature</option><option value="usability">Make a page easier to use</option><option value="accessibility">Accessibility or inclusive design</option><option value="mobile">Mobile experience</option><option value="campus_life">Campus life or community</option><option value="security">Security and privacy</option><option value="other">Other idea</option></select></div>
+      <div class="field"><label for="campus-improvement-title">Idea title *</label><input id="campus-improvement-title" required minlength="3" maxlength="120" placeholder="e.g. Add passkey sign-in for supported devices"></div>
+      <div class="field"><label for="campus-improvement-description">Describe the improvement *</label><textarea id="campus-improvement-description" required minlength="10" maxlength="4000" rows="5" placeholder="What should change, and who would it help?"></textarea></div>
+      <div class="field"><label for="campus-improvement-benefit">Expected benefit (optional)</label><textarea id="campus-improvement-benefit" maxlength="2000" rows="3" placeholder="How would this improve campus life or make the app easier to use?"></textarea></div>
+      <label class="remember-field"><input type="checkbox" id="campus-improvement-privacy-confirm" required> I have not included passwords, payment-card details, private identity documents or sensitive incident evidence.</label>
+      <div class="actions"><button class="btn" type="submit" id="campus-improvement-submit">Submit improvement idea</button><button class="btn secondary" type="reset">Clear form</button></div>
+      <p id="campus-improvement-status" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</section>
+
+<section class="page" id="page-feedback-submissions">
+  <div class="heading"><div><h1>My Submissions</h1><p>Track product problem reports and improvement ideas you have sent to CampusShield.</p></div><div class="heading-actions"><button class="btn secondary" type="button" id="campus-feedback-refresh">Refresh submissions</button></div></div>
+  <p id="campus-feedback-submissions-status" class="message" role="status" aria-live="polite">Loading your submissions…</p>
+  <div id="campus-feedback-submissions-list" class="feedback-submissions-list"><div class="community-empty">Sign in to see your private submissions.</div></div>
+</section>
+
+<section class="page" id="page-feedback-admin">
+  <div class="heading"><div><h1>Help &amp; Feedback Triage</h1><p>Review campus feedback, assign verified staff, set priority and link a GitHub issue.</p></div><div class="heading-actions"><button class="btn secondary" type="button" id="campus-feedback-admin-refresh">Refresh queue</button></div></div>
+  <div class="notice-inline"><strong>Administrator workspace.</strong> The queue and internal notes are restricted by Supabase to verified administrators for their campus, with platform administrators able to triage globally. User-submitted text is untrusted; review it before opening external links or creating a code issue.</div>
+  <p id="campus-feedback-admin-status" class="message" role="status" aria-live="polite">Loading feedback queue…</p>
+  <div id="campus-feedback-admin-queue" class="feedback-admin-queue"><div class="community-empty">Loading feedback…</div></div>
 </section>
 
 <section class="page" id="page-classroom">
