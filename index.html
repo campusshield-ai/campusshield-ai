@@ -1761,6 +1761,52 @@ button,input,select,textarea{max-width:100%;min-width:0}
 }
 
 </style>
+<style id="responsive-optimization-final">
+/* Responsive optimization: tablet and desktop widths, narrow viewport safety, and robust controls. */
+html,body{width:100%;min-width:320px}
+body{overflow-x:clip}
+#app,.app,.main,.content,.page,.panel,.card,.grid,.stats,.two,.three,.table-wrap,.profile-settings-grid{min-width:0;max-width:100%}
+img,svg,video,canvas{max-width:100%}
+input,select,textarea,button,.btn{max-width:100%}
+.table-wrap{width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+@media (min-width: 761px) and (max-width: 1024px){
+  .sidebar{width:210px}
+  .main{margin-left:210px}
+  .content{padding:18px}
+  .topbar{padding-inline:18px;gap:12px}
+  .topbar-actions{min-width:0;max-width:100%;flex-wrap:wrap;gap:8px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two,.three{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .panel,.card,.stat{min-width:0}
+  .heading h1{font-size:clamp(24px,3vw,30px);overflow-wrap:anywhere}
+}
+@media (max-width: 760px){
+  .main{margin-left:0!important;width:100%;min-width:0}
+  .content{width:100%;padding:clamp(12px,3.5vw,18px)}
+  .topbar{width:100%;height:auto;min-height:58px;padding:12px clamp(12px,3.5vw,18px);gap:9px;flex-wrap:wrap;align-items:flex-start}
+  .topbar-actions{width:100%;max-width:100%;min-width:0;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:7px}
+  .topbar-actions>*{min-width:0;max-width:100%}
+  .panel,.card,.stat{padding:clamp(12px,3.5vw,18px);min-width:0}
+  .heading h1{font-size:clamp(23px,6vw,30px);overflow-wrap:anywhere}
+  .heading p,.muted{overflow-wrap:anywhere}
+  .field input,.field select,.field textarea,.institution-picker-field input[list]{width:100%;min-width:0;min-height:46px;font-size:16px}
+  .btn,button:not(.nav button):not(.password-toggle):not(.sidebar-toggle):not(.mobile-nav-toggle){min-height:42px}
+  .table-wrap table{min-width:580px}
+  [role="dialog"],.dropdown-menu,[role="menu"]{max-width:calc(100vw - 24px)}
+  .profile-settings-grid,.community-layout,.campus-dm-layout,.campus-timetable-layout{min-width:0;max-width:100%}
+}
+@media (max-width: 390px){
+  .content{padding:10px}
+  .topbar-actions .btn,.topbar-actions button{flex:0 1 auto;padding-inline:10px;font-size:12px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat-num{font-size:clamp(20px,7vw,28px)}
+  .panel,.card{border-radius:14px}
+  .field input,.field select,.field textarea{padding-inline:10px}
+}
+@media (prefers-reduced-motion:reduce){
+  .sidebar,.sidebar .nav button,.page,.dropdown-menu{transition:none!important;animation:none!important}
+}
+</style>
 </head>
 <body>
 <section id="login-screen" class="login-screen">
@@ -4825,7 +4871,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         // A VAPID rotation or an expired browser endpoint can leave a local
         // subscription that the server has already removed. Repair it once
         // when the first test finds no active destination.
-        if (delivered === 0) {
+        if (delivered === 0 && result?.no_subscription === true) {
           if (status) status.textContent = "Refreshing this device's secure push subscription…";
           const publicKey = await backend.getPushVapidPublicKey();
           await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
@@ -4851,7 +4897,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
         if (status) status.textContent = delivered > 0
           ? "Test notification sent to " + delivered + (delivered === 1 ? " device." : " devices.")
-          : "The device subscription was refreshed, but push delivery still failed. Check the staging push delivery logs.";
+          : result?.no_subscription === true
+            ? "No active server subscription was found. Enable notifications for this device and retry."
+            : "Push delivery was not confirmed. The subscription was kept; check the staging push delivery logs.";
       } else if (action === "disable") {
         const registration = await navigator.serviceWorker.getRegistration("./");
         const subscription = registration?.pushManager ? await registration.pushManager.getSubscription() : null;
