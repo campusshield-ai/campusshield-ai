@@ -4544,11 +4544,39 @@ button,input,select,textarea{max-width:100%;min-width:0}
         if (status) status.textContent = "Background notifications are enabled on this device.";
         await loadProfileSettingsPush(currentProfile, backend);
       } else if (action === "test") {
-        const result = await backend.sendPushTest();
-        const delivered = Number(result?.delivered) || 0;
+        let result = await backend.sendPushTest();
+        let delivered = Number(result?.delivered) || 0;
+
+        // A VAPID rotation or an expired browser endpoint can leave a local
+        // subscription that the server has already removed. Repair it once
+        // when the first test finds no active destination.
+        if (delivered === 0) {
+          if (status) status.textContent = "Refreshing this device's secure push subscription…";
+          const publicKey = await backend.getPushVapidPublicKey();
+          await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
+          const registration = await navigator.serviceWorker.ready;
+          const existing = registration?.pushManager
+            ? await registration.pushManager.getSubscription()
+            : null;
+          if (existing) {
+            try { await backend.removePushSubscription(existing.endpoint); } catch (_removeError) {
+              // The server may already have removed an expired endpoint.
+            }
+            await existing.unsubscribe();
+          }
+          const renewed = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: pushPublicKeyBytes(publicKey)
+          });
+          await backend.savePushSubscription(renewed.toJSON());
+          if (status) status.textContent = "Subscription refreshed. Sending a new test…";
+          result = await backend.sendPushTest();
+          delivered = Number(result?.delivered) || 0;
+        }
+
         if (status) status.textContent = delivered > 0
           ? "Test notification sent to " + delivered + (delivered === 1 ? " device." : " devices.")
-          : "No active push destination received the test. Check browser permission and staging VAPID configuration.";
+          : "The device subscription was refreshed, but push delivery still failed. Check the staging push delivery logs.";
       } else if (action === "disable") {
         const registration = await navigator.serviceWorker.getRegistration("./");
         const subscription = registration?.pushManager ? await registration.pushManager.getSubscription() : null;
