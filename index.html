@@ -1708,6 +1708,104 @@ button,input,select,textarea{max-width:100%;min-width:0}
 }
 @media(max-width:380px){.quick-action-button{gap:6px;font-size:10px;padding:8px}.quick-action-icon,.quick-action-icon svg{width:17px;height:17px;flex-basis:17px}.campus-welcome-tour{padding:18px}}
 
+
+/* Help & Feedback — private submissions and review queues. */
+.feedback-form-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.feedback-submissions-list,.feedback-admin-queue{display:grid;gap:13px;min-width:0}
+.feedback-ticket{min-width:0;padding:16px;border:1px solid var(--border,#dfe8e4);border-radius:15px;background:var(--panel,#fff);overflow-wrap:anywhere}
+.feedback-ticket-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0}
+.feedback-ticket-head-main{min-width:0;flex:1}
+.feedback-ticket-ref{font-size:10px;color:#27765f;font-weight:900;letter-spacing:.08em}
+.feedback-ticket h2,.feedback-ticket h3{margin:6px 0;color:#183f3a;font-size:16px;line-height:1.35;overflow-wrap:anywhere}
+.feedback-ticket-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px}
+.feedback-ticket-badge{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:5px 8px;border-radius:999px;background:#edf7f1;color:#276a53;font-size:9px;font-weight:850;overflow-wrap:anywhere}
+.feedback-ticket-badge.status{background:#f2f6f4;color:#425e57}
+.feedback-ticket-description{white-space:pre-wrap;overflow-wrap:anywhere;color:#526d68;font-size:12px;line-height:1.6;margin:12px 0}
+.feedback-ticket-detail{padding:10px 12px;margin:9px 0;border-radius:10px;background:#f7faf8;color:#5e7570;font-size:11px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.feedback-ticket-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid #e4ece7}
+.feedback-ticket-form .field{margin:0;min-width:0}
+.feedback-ticket-form .wide{grid-column:1/-1}
+.feedback-ticket-form input,.feedback-ticket-form select,.feedback-ticket-form textarea{width:100%;min-width:0;box-sizing:border-box}
+.feedback-ticket-form textarea{min-height:72px}
+.feedback-ticket-notes{display:grid;gap:7px;margin-top:12px}
+.feedback-ticket-note{padding:10px 12px;border-left:3px solid #80cdb0;border-radius:0 10px 10px 0;background:#f4faf6;color:#536d62;font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.feedback-ticket-note time{display:block;margin-top:6px;color:#84968d;font-size:9px}
+.feedback-admin-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.feedback-admin-actions .btn{min-width:100px}
+.feedback-privacy-note{color:#7d8985;font-size:10px;line-height:1.5}
+.passkey-settings{margin:18px 0;padding:16px;border:1px solid #d7e8df;border-radius:14px;background:#f8fcf9}
+.passkey-settings h3{margin:0;font-size:15px;color:#234b40}
+.passkey-toggle-label{display:flex;align-items:center;gap:10px;margin:12px 0;color:#244e43;font-weight:750}
+.passkey-toggle-label input{width:18px;height:18px;accent-color:#188062}
+.passkey-actions{display:flex;flex-wrap:wrap;gap:8px}
+.profile-passkey-list{display:grid;gap:8px;margin-top:12px}
+.profile-passkey-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #e0ebe5;border-radius:10px;background:#fff;min-width:0}
+.profile-passkey-item div{min-width:0;overflow-wrap:anywhere}
+.profile-passkey-item strong{display:block;color:#31574b;font-size:11px}
+.profile-passkey-item small{display:block;margin-top:3px;color:#768983;font-size:9px}
+.profile-passkey-item button{flex:0 0 auto}
+.passkey-signin-wrap{margin-top:12px}
+.passkey-signin-wrap .google-auth-divider{margin:14px 0}
+.passkey-signin-wrap .google-auth-button svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.profile-feedback-actions{display:flex;flex-wrap:wrap;gap:8px}
+@media(max-width:700px){
+ .feedback-ticket{padding:13px}
+ .feedback-ticket-head{flex-direction:column}
+ .feedback-ticket-form{grid-template-columns:minmax(0,1fr)}
+ .feedback-ticket-form .wide{grid-column:auto}
+ .feedback-admin-actions{justify-content:stretch}
+ .feedback-admin-actions .btn{flex:1 1 100%}
+ .profile-passkey-item{align-items:flex-start;flex-direction:column}
+ .profile-passkey-item button{width:100%}
+ .profile-feedback-actions>.btn{flex:1 1 100%;width:100%}
+}
+
+</style>
+<style id="responsive-optimization-final">
+/* Responsive optimization: tablet and desktop widths, narrow viewport safety, and robust controls. */
+html,body{width:100%;min-width:320px}
+body{overflow-x:clip}
+#app,.app,.main,.content,.page,.panel,.card,.grid,.stats,.two,.three,.table-wrap,.profile-settings-grid{min-width:0;max-width:100%}
+img,svg,video,canvas{max-width:100%}
+input,select,textarea,button,.btn{max-width:100%}
+.table-wrap{width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+@media (min-width: 761px) and (max-width: 1024px){
+  .sidebar{width:210px}
+  .main{margin-left:210px}
+  .content{padding:18px}
+  .topbar{padding-inline:18px;gap:12px}
+  .topbar-actions{min-width:0;max-width:100%;flex-wrap:wrap;gap:8px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two,.three{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .panel,.card,.stat{min-width:0}
+  .heading h1{font-size:clamp(24px,3vw,30px);overflow-wrap:anywhere}
+}
+@media (max-width: 760px){
+  .main{margin-left:0!important;width:100%;min-width:0}
+  .content{width:100%;padding:clamp(12px,3.5vw,18px)}
+  .topbar{width:100%;height:auto;min-height:58px;padding:12px clamp(12px,3.5vw,18px);gap:9px;flex-wrap:wrap;align-items:flex-start}
+  .topbar-actions{width:100%;max-width:100%;min-width:0;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:7px}
+  .topbar-actions>*{min-width:0;max-width:100%}
+  .panel,.card,.stat{padding:clamp(12px,3.5vw,18px);min-width:0}
+  .heading h1{font-size:clamp(23px,6vw,30px);overflow-wrap:anywhere}
+  .heading p,.muted{overflow-wrap:anywhere}
+  .field input,.field select,.field textarea,.institution-picker-field input[list]{width:100%;min-width:0;min-height:46px;font-size:16px}
+  .btn,button:not(.nav button):not(.password-toggle):not(.sidebar-toggle):not(.mobile-nav-toggle){min-height:42px}
+  .table-wrap table{min-width:580px}
+  [role="dialog"],.dropdown-menu,[role="menu"]{max-width:calc(100vw - 24px)}
+  .profile-settings-grid,.community-layout,.campus-dm-layout,.campus-timetable-layout{min-width:0;max-width:100%}
+}
+@media (max-width: 390px){
+  .content{padding:10px}
+  .topbar-actions .btn,.topbar-actions button{flex:0 1 auto;padding-inline:10px;font-size:12px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat-num{font-size:clamp(20px,7vw,28px)}
+  .panel,.card{border-radius:14px}
+  .field input,.field select,.field textarea{padding-inline:10px}
+}
+@media (prefers-reduced-motion:reduce){
+  .sidebar,.sidebar .nav button,.page,.dropdown-menu{transition:none!important;animation:none!important}
+}
 </style>
 </head>
 <body>
@@ -1854,6 +1952,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
           <button type="button" class="btn secondary" id="install-app" hidden>Install</button>
         </div>
         <div class="actions"><button class="btn" type="submit" id="auth-submit" autocomplete="off">Sign in</button></div>
+        <div id="passkey-signin-wrap" class="passkey-signin-wrap">
+          <div class="google-auth-divider" aria-hidden="true"><span>OR USE A PASSKEY</span></div>
+          <button type="button" class="google-auth-button" id="passkey-signin-button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="3"/><path d="M11 9h10M17 9v3M20 9v2M4 15h7M8 15v3M12 15h5"/></svg>Sign in with a passkey</button>
+          <p class="google-auth-note">Your device may ask for biometrics, a PIN, or another supported passkey method. If unavailable, use your email and password above.</p>
+        </div>
         <p id="auth-message" class="message" role="status" aria-live="polite">Please sign in or create an account.</p>
         <div id="google-signin-wrap" hidden>
           <div class="google-auth-divider" aria-hidden="true"><span>OR CONTINUE WITH</span></div>
@@ -1904,10 +2007,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span data-original-label="Opportunities &amp; Scholarships">Opportunities</button><button data-page="classroom" id="classroom-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18v14H3zM8 21h8M12 18v3M7 8h10M7 11h7"/></svg></span>Teacher Classroom</button>
 <div class="nav-section-label">INSIGHTS & SUPPORT</div>
 <button data-page="analytics" id="analytics-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button><button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button><button data-page="staff-verification" id="staff-verification-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Staff verification</button><button data-page="staff-review" id="staff-review-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8l4 4v13H4V3z"/><path d="M8 11h8M8 15h8M16 3v5h4"/></svg></span>Staff applications</button>
+<div class="nav-section-label">HELP &amp; FEEDBACK</div>
+<button data-page="feedback-problem" id="feedback-problem-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span>Report a Problem</button>
+<button data-page="feedback-improvement" id="feedback-improvement-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/></svg></span>Suggest an Improvement</button>
 <div class="nav-section-label">ACCOUNT</div>
-<button data-page="profile-settings" id="profile-settings-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20v-1.2A4.8 4.8 0 0 1 9.3 14h5.4a4.8 4.8 0 0 1 4.8 4.8V20"/><path d="m18.5 4.5 1 .5.9-.5.6 1 .9.4-.3 1.1.3 1.1-.9.4-.6 1-1-.5-1 .5-.6-1-.9-.4.3-1.1-.3-1.1.9-.4z"/></svg></span data-original-label="My Profile &amp; Settings">My profile</button><button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; Billing</button>
+<button data-page="profile-settings" id="profile-settings-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20v-1.2A4.8 4.8 0 0 1 9.3 14h5.4a4.8 4.8 0 0 1 4.8 4.8V20"/><path d="m18.5 4.5 1 .5.9-.5.6 1 .9.4-.3 1.1.3 1.1-.9.4-.6 1-1-.5-1 .5-.6-1-.9-.4.3-1.1-.3-1.1.9-.4z"/></svg></span data-original-label="My Profile &amp; Settings">My profile</button><button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; Billing</button><button data-page="feedback-submissions" id="feedback-submissions-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg></span>My Submissions</button>
 <div class="nav-section-label" id="nav-staff-heading" hidden>STAFF TOOLS</div><button data-page="admin-rewards" id="admin-rewards-nav" hidden><span class="nav-icon" aria-hidden="true">◈</span>Rewards Management</button>
-<div class="nav-section-label" id="nav-admin-heading" hidden>ADMINISTRATION</div><button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button><button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform administration</button>
+<div class="nav-section-label" id="nav-admin-heading" hidden>ADMINISTRATION</div><button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button><button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform administration</button><button data-page="feedback-admin" id="feedback-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/><path d="m14 16 2 2 4-4"/></svg></span>Feedback triage</button>
 </nav>
 <div class="sidebar-status"><strong><span class="status-dot" aria-hidden="true"></span>Prototype workspace</strong><p>Use fictional information only.</p></div>
 <button type="button" class="mobile-sidebar-signout" aria-label="Sign out of CampusShield">Sign out</button>
@@ -2831,9 +2937,75 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <section class="panel" aria-labelledby="profile-settings-security-title">
       <div class="panel-heading"><div><h2 id="profile-settings-security-title">Sign-in &amp; security</h2><p>Protect access to your account.</p></div></div>
       <p>Use the sign-in method linked to your account. Never share your password, one-time codes, or private identity documents.</p>
+      <section class="passkey-settings" aria-labelledby="profile-passkey-title">
+        <div class="panel-heading"><div><h3 id="profile-passkey-title">Optional passkey sign-in</h3><p>Use your device's passkey provider for Face ID, Touch ID, fingerprint, device PIN or a security key where supported.</p></div></div>
+        <label class="remember-field passkey-toggle-label"><input type="checkbox" id="profile-passkey-toggle"> Enable passkey sign-in on this account</label>
+        <p class="muted">CampusShield never receives or stores raw biometric data. Passkeys use a cryptographic credential managed by your device or password manager. Your email and password sign-in remains available as a fallback.</p>
+        <p id="profile-passkey-status" class="message" role="status" aria-live="polite">Checking passkey support…</p>
+        <div id="profile-passkey-list" class="profile-passkey-list"></div>
+        <div class="actions passkey-actions"><button class="btn secondary" type="button" id="profile-passkey-add" hidden>Add another passkey</button></div>
+      </section>
       <div class="actions"><button class="btn secondary" id="profile-settings-signout" type="button">Sign out</button></div>
     </section>
+    <section class="panel profile-help-feedback" aria-labelledby="profile-settings-feedback-title">
+      <div class="panel-heading"><div><h2 id="profile-settings-feedback-title">Help &amp; Feedback</h2><p>Tell us when something breaks or suggest how CampusShield can improve.</p></div></div>
+      <div class="profile-feedback-actions">
+        <button class="btn secondary" type="button" data-page="feedback-problem">Report a Problem</button>
+        <button class="btn secondary" type="button" data-page="feedback-improvement">Suggest an Improvement</button>
+        <button class="btn secondary" type="button" data-page="feedback-submissions">My Submissions</button>
+      </div>
+    </section>
   </div>
+</section>
+
+<section class="page" id="page-feedback-problem">
+  <div class="heading"><div><h1>Report a Problem</h1><p>Tell the CampusShield team about a technical issue in the website or app.</p></div></div>
+  <div class="notice-inline"><strong>For product and technical issues only.</strong> Do not submit a safety incident here, and never include passwords, one-time codes, private student ID documents, payment-card details, or sensitive incident evidence. Use Report Incident for safety concerns.</div>
+  <section class="panel" aria-labelledby="campus-feedback-problem-title">
+    <div class="panel-heading"><div><h2 id="campus-feedback-problem-title">What went wrong?</h2><p>Submissions receive a reference number so you can track progress in My Submissions.</p></div></div>
+    <form id="campusProblemForm">
+      <div class="grid two">
+        <div class="field"><label for="campus-problem-category">Problem area *</label><select id="campus-problem-category" required><option value="app_bug">A page or feature is broken</option><option value="login_access">Sign-in or account access</option><option value="mobile_layout">Mobile or layout issue</option><option value="performance">Slow performance</option><option value="notifications">Notifications</option><option value="data_display">Incorrect or missing display data</option><option value="payments">Billing or checkout issue (never include card details)</option><option value="other">Other technical problem</option></select></div>
+        <div class="field"><label for="campus-problem-impact">Impact *</label><select id="campus-problem-impact" required><option value="normal">Normal — workaround available</option><option value="low">Low — minor inconvenience</option><option value="high">High — important feature unavailable</option><option value="critical">Critical — major feature unusable</option></select></div>
+      </div>
+      <div class="field"><label for="campus-problem-title">Short title *</label><input id="campus-problem-title" required minlength="3" maxlength="120" placeholder="e.g. Sidebar overlaps the bottom navigation"></div>
+      <div class="field"><label for="campus-problem-description">Describe the problem *</label><textarea id="campus-problem-description" required minlength="10" maxlength="4000" rows="5" placeholder="What happened, which page were you on, and what did you expect to happen?"></textarea></div>
+      <div class="field"><label for="campus-problem-steps">Steps to reproduce (optional)</label><textarea id="campus-problem-steps" maxlength="3000" rows="3" placeholder="1. Open the page… 2. Tap… 3. The problem appears…"></textarea></div>
+      <label class="remember-field"><input type="checkbox" id="campus-problem-privacy-confirm" required> I have not included passwords, payment-card details, private identity documents or sensitive incident evidence.</label>
+      <div class="actions"><button class="btn" type="submit" id="campus-problem-submit">Submit problem report</button><button class="btn secondary" type="reset">Clear form</button></div>
+      <p id="campus-problem-status" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</section>
+
+<section class="page" id="page-feedback-improvement">
+  <div class="heading"><div><h1>Suggest an Improvement</h1><p>Share an idea that could make CampusShield more useful, accessible or enjoyable.</p></div></div>
+  <div class="notice-inline"><strong>Ideas are reviewed separately from bugs.</strong> Suggestions are not a promise of delivery. Please avoid sharing private information or sensitive safety case details.</div>
+  <section class="panel" aria-labelledby="campus-feedback-idea-title">
+    <div class="panel-heading"><div><h2 id="campus-feedback-idea-title">What would you improve?</h2><p>Tell us the idea and the benefit it would bring to students or staff.</p></div></div>
+    <form id="campusImprovementForm">
+      <div class="field"><label for="campus-improvement-category">Idea area *</label><select id="campus-improvement-category" required><option value="new_feature">New feature</option><option value="usability">Make a page easier to use</option><option value="accessibility">Accessibility or inclusive design</option><option value="mobile">Mobile experience</option><option value="campus_life">Campus life or community</option><option value="security">Security and privacy</option><option value="other">Other idea</option></select></div>
+      <div class="field"><label for="campus-improvement-title">Idea title *</label><input id="campus-improvement-title" required minlength="3" maxlength="120" placeholder="e.g. Add passkey sign-in for supported devices"></div>
+      <div class="field"><label for="campus-improvement-description">Describe the improvement *</label><textarea id="campus-improvement-description" required minlength="10" maxlength="4000" rows="5" placeholder="What should change, and who would it help?"></textarea></div>
+      <div class="field"><label for="campus-improvement-benefit">Expected benefit (optional)</label><textarea id="campus-improvement-benefit" maxlength="2000" rows="3" placeholder="How would this improve campus life or make the app easier to use?"></textarea></div>
+      <label class="remember-field"><input type="checkbox" id="campus-improvement-privacy-confirm" required> I have not included passwords, payment-card details, private identity documents or sensitive incident evidence.</label>
+      <div class="actions"><button class="btn" type="submit" id="campus-improvement-submit">Submit improvement idea</button><button class="btn secondary" type="reset">Clear form</button></div>
+      <p id="campus-improvement-status" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</section>
+
+<section class="page" id="page-feedback-submissions">
+  <div class="heading"><div><h1>My Submissions</h1><p>Track product problem reports and improvement ideas you have sent to CampusShield.</p></div><div class="heading-actions"><button class="btn secondary" type="button" id="campus-feedback-refresh">Refresh submissions</button></div></div>
+  <p id="campus-feedback-submissions-status" class="message" role="status" aria-live="polite">Loading your submissions…</p>
+  <div id="campus-feedback-submissions-list" class="feedback-submissions-list"><div class="community-empty">Sign in to see your private submissions.</div></div>
+</section>
+
+<section class="page" id="page-feedback-admin">
+  <div class="heading"><div><h1>Help &amp; Feedback Triage</h1><p>Review campus feedback, assign verified staff, set priority and link a GitHub issue.</p></div><div class="heading-actions"><button class="btn secondary" type="button" id="campus-feedback-admin-refresh">Refresh queue</button></div></div>
+  <div class="notice-inline"><strong>Administrator workspace.</strong> The queue and internal notes are restricted by Supabase to verified administrators for their campus, with platform administrators able to triage globally. User-submitted text is untrusted; review it before opening external links or creating a code issue.</div>
+  <p id="campus-feedback-admin-status" class="message" role="status" aria-live="polite">Loading feedback queue…</p>
+  <div id="campus-feedback-admin-queue" class="feedback-admin-queue"><div class="community-empty">Loading feedback…</div></div>
 </section>
 
 <section class="page" id="page-classroom">
@@ -3281,6 +3453,30 @@ button,input,select,textarea{max-width:100%;min-width:0}
   let currentProfile = null;
   let communityProfile = null;
   let campusContext = null;
+
+  // Push notification destinations are an allowlist, not arbitrary page names.
+  const notificationDestinationPages = new Set(['timetable', 'campus-messages', 'noticeboard', 'profile-settings']);
+  let pendingNotificationPage = new URLSearchParams(window.location.search).get('page');
+  if (!notificationDestinationPages.has(pendingNotificationPage)) pendingNotificationPage = null;
+
+  function clearPendingNotificationPage() {
+    pendingNotificationPage = null;
+    try {
+      const url = new URL(window.location.href);
+      if (!url.searchParams.has('page')) return;
+      url.searchParams.delete('page');
+      window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+    } catch (_) {
+      // Navigation can continue if history APIs are unavailable.
+    }
+  }
+
+  // Once a signed-in user interacts with the workspace, discard the notification
+  // deep link so a later refresh does not keep forcing the previous destination.
+  document.addEventListener('click', function(event) {
+    if (!event.isTrusted || !event.target?.closest?.('#workspace')) return;
+    clearPendingNotificationPage();
+  }, true);
   let campusUniversitiesCache = null;
   let communityLoading = false;
   let studentIdentitySubmission = null;
@@ -3302,7 +3498,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const staffHeading = $('nav-staff-heading');
     const adminHeading = $('nav-admin-heading');
     if (staffHeading) staffHeading.hidden = !anyVisible(['classroom-nav','manage-nav','risk-nav','analytics-nav','staff-verification-nav','staff-review-nav']);
-    if (adminHeading) adminHeading.hidden = !anyVisible(['approvals-nav','platform-admin-nav']);
+    if (adminHeading) adminHeading.hidden = !anyVisible(['approvals-nav','platform-admin-nav','feedback-admin-nav']);
   }
 
   function syncIdentityNavigation() {
@@ -3325,6 +3521,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const note = $('student-identity-setup-status');
     const state = studentIdentitySubmission?.status || null;
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
+      if (button.id === 'feedback-admin-nav') {
+        button.hidden = !(verified && currentProfile?.role === 'admin');
+        return;
+      }
       if (button.id === 'platform-admin-nav') return;
       if (button.dataset.page === 'shieldmind' || button.dataset.page === 'billing') {
         // General AI and subscription information is discoverable to all signed-in users.
@@ -3675,6 +3875,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
     $('auth-tabs').hidden = isReset;
     $('google-signin-wrap').hidden = isSignUp || isReset || !isStagingSupabaseEnvironment();
+    $('passkey-signin-wrap').hidden = isSignUp || isReset || identityCompletionMode;
     $('signin-institution-field').hidden = isSignUp || isReset;
     $('signin-role-picker').hidden = isSignUp || isReset;
     $('signin-role-note').hidden = isSignUp || isReset;
@@ -3953,6 +4154,21 @@ button,input,select,textarea{max-width:100%;min-width:0}
       showLogin('Please sign in to access CampusShield.');
       return;
     }
+
+    // Existing startup paths may call navigate('dashboard') more than once
+    // while restoring/signing in. Honor the pending notification destination
+    // until the user interacts, while retaining normal role checks below.
+    if (page === 'dashboard' && pendingNotificationPage) {
+      const target = pendingNotificationPage;
+      if (['campus-messages', 'noticeboard'].includes(target) &&
+          currentProfile.verification_status !== 'verified') {
+        clearPendingNotificationPage();
+        toast('This notification destination requires a verified account. Showing Overview.');
+      } else {
+        page = target;
+      }
+    }
+
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
 
@@ -3990,6 +4206,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
     if (page === 'approvals' && !verifiedAdmin) {
       page = 'dashboard';
       toast('Only verified administrators can access account approvals.');
+    }
+    if (page === 'feedback-admin' && !verifiedAdmin) {
+      page = 'dashboard';
+      toast('Help & Feedback triage is restricted to verified administrators.');
     }
     if (page === 'classroom' &&
         (!verified || !hasVerifiedCampusStaffMembership() || !['teacher','security','admin'].includes(currentProfile.role))) {
@@ -4042,6 +4262,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
       shieldmind:'ShieldMind AI',
       billing:'Subscriptions & Billing',
       'profile-settings':'My Profile & Settings',
+      'feedback-problem':'Report a Problem',
+      'feedback-improvement':'Suggest an Improvement',
+      'feedback-submissions':'My Submissions',
+      'feedback-admin':'Help & Feedback Triage',
       'staff-verification':'Staff verification',
       'staff-review':'Staff applications',
     };
@@ -4686,7 +4910,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         // A VAPID rotation or an expired browser endpoint can leave a local
         // subscription that the server has already removed. Repair it once
         // when the first test finds no active destination.
-        if (delivered === 0) {
+        if (delivered === 0 && result?.no_subscription === true) {
           if (status) status.textContent = "Refreshing this device's secure push subscription…";
           const publicKey = await backend.getPushVapidPublicKey();
           await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
@@ -4712,7 +4936,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
         if (status) status.textContent = delivered > 0
           ? "Test notification sent to " + delivered + (delivered === 1 ? " device." : " devices.")
-          : "The device subscription was refreshed, but push delivery still failed. Check the staging push delivery logs.";
+          : result?.no_subscription === true
+            ? "No active server subscription was found. Enable notifications for this device and retry."
+            : "Push delivery was not confirmed. The subscription was kept; check the staging push delivery logs.";
       } else if (action === "disable") {
         const registration = await navigator.serviceWorker.getRegistration("./");
         const subscription = registration?.pushManager ? await registration.pushManager.getSubscription() : null;
@@ -5736,7 +5962,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
     if (button.dataset.page === 'campus-chat') loadCampusChatPage();
     if (button.dataset.page === 'campus-messages') loadCampusDirectMessagesPage();
-    if (button.dataset.page === 'profile-settings') loadMyProfileSettings();
+    if (button.dataset.page === 'profile-settings') { loadMyProfileSettings(); loadPasskeySettings(); }
+    if (button.dataset.page === 'feedback-submissions') loadCampusFeedbackSubmissions();
+    if (button.dataset.page === 'feedback-admin') loadCampusFeedbackAdmin();
     if (button.dataset.page === 'campus-contacts') loadCampusContactsPage();
     if (button.dataset.page === 'approvals') loadAccountApprovals();
     if (button.dataset.page === 'identity-verification') loadStudentIdentityStatus();
@@ -8824,6 +9052,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         await refreshIncidentsFromSupabase();
         loadCampusDashboardInsights();
         if (!campusContext?.university_id) {
+          clearPendingNotificationPage();
           navigate('community');
           await loadCommunityPage();
           toast('Choose your university to create your private campus space.');
@@ -8831,6 +9060,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
           navigate('dashboard');
           await loadStudentIdentityStatus();
         } else if (isTeacherAccount() && currentProfile.verification_status !== 'verified') {
+          clearPendingNotificationPage();
           navigate('staff-verification');
           await loadCampusStaffVerificationStatus();
         }
@@ -8840,6 +9070,218 @@ button,input,select,textarea{max-width:100%;min-width:0}
       msg.textContent = 'Sign-in failed: ' + e.message;
     }
   }
+
+
+  // Passkeys/WebAuthn are optional. Supabase Auth verifies the challenge; raw biometric
+  // material stays with the device/authenticator and the email/password path remains available.
+  async function handlePasskeySignIn() {
+    const backend = window.CampusShieldBackend;
+    const button = $('passkey-signin-button');
+    const msg = $('auth-message');
+    if (!backend?.isConfigured || typeof backend.signInWithPasskey !== 'function') {
+      msg.textContent = 'Passkey sign-in is unavailable in this browser session. Use your email and password instead.';
+      return;
+    }
+    if (!window.isSecureContext || !window.PublicKeyCredential) {
+      msg.textContent = 'Passkeys require a supported browser on HTTPS (or localhost). Email and password sign-in remain available.';
+      return;
+    }
+    button.disabled = true;
+    msg.textContent = 'Waiting for your device or passkey provider…';
+    try {
+      const passkeyResult = await backend.signInWithPasskey();
+      const user = passkeyResult?.user || await backend.getCurrentUser();
+      if (!user) throw new Error('No active user session was found after passkey verification.');
+      const { data: profile, error: profileError } = await backend.client
+        .from('profiles')
+        .select('role, requested_role, verification_status')
+        .eq('id', user.id)
+        .single();
+      if (profileError) throw profileError;
+      msg.textContent = profile.verification_status === 'verified'
+        ? 'Signed in successfully with a passkey. Your role and permissions remain server-controlled.'
+        : profile.verification_status === 'rejected'
+          ? 'Your account verification was rejected. Please contact an administrator.'
+          : 'Signed in with a passkey. Your account is still pending verification.';
+      const workspaceReady = showWorkspace(profile);
+      if (!workspaceReady) return;
+      if (typeof resetShieldMindForSession === 'function') resetShieldMindForSession();
+      campusContext = await backend.getMyCampusContext();
+      syncCampusAccessNavigation();
+      await refreshIncidentsFromSupabase();
+      loadCampusDashboardInsights();
+      if (!campusContext?.university_id) {
+        clearPendingNotificationPage();
+        navigate('community');
+        await loadCommunityPage();
+        toast('Choose your university to create your private campus space.');
+      } else if (isStudentAccount()) {
+        navigate('dashboard');
+        await loadStudentIdentityStatus();
+      } else if (isTeacherAccount() && currentProfile.verification_status !== 'verified') {
+        clearPendingNotificationPage();
+        navigate('staff-verification');
+        await loadCampusStaffVerificationStatus();
+      }
+    } catch (error) {
+      console.warn('CampusShield passkey sign-in did not complete:', error?.code || error?.name || 'unknown');
+      const code = String(error?.code || error?.error_code || error?.message || '');
+      msg.textContent = /passkey_disabled|passkey.*disabled/i.test(code)
+        ? 'Passkeys are not enabled in the matching Supabase Auth project yet. Use email and password for now; staging passkeys need a stable HTTPS origin configured under Authentication → Passkeys.'
+        : /NotAllowedError|AbortError|cancel|dismiss/i.test(code)
+          ? 'Passkey sign-in was cancelled or not completed. You can try again or use your email and password.'
+          : (error?.message || 'Passkey sign-in could not complete. You can still use your email and password.');
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  let campusKnownPasskeys = [];
+  function passkeyConfigurationMessage(error) {
+    const code = String(error?.code || error?.error_code || error?.message || '');
+    if (/passkey_disabled|passkey.*disabled/i.test(code)) {
+      return 'Passkey authentication is not enabled in this Supabase project yet. Configure Authentication → Passkeys with a stable staging HTTPS origin; password sign-in remains available.';
+    }
+    if (/webauthn|relying.party|origin|rp_id/i.test(code)) {
+      return 'The passkey origin or relying-party configuration needs review in Supabase Auth → Passkeys. Your email and password still work.';
+    }
+    return error?.message || 'Passkey settings could not be loaded.';
+  }
+
+  async function loadPasskeySettings() {
+    const toggle = $('profile-passkey-toggle');
+    const status = $('profile-passkey-status');
+    const list = $('profile-passkey-list');
+    const addButton = $('profile-passkey-add');
+    const backend = window.CampusShieldBackend;
+    if (!toggle || !status || !list || !addButton) return;
+    list.replaceChildren();
+    campusKnownPasskeys = [];
+    if (!currentProfile || !backend?.isConfigured || typeof backend.isPasskeySupported !== 'function' || !backend.isPasskeySupported()) {
+      toggle.checked = false;
+      toggle.disabled = true;
+      addButton.hidden = true;
+      status.textContent = 'This Supabase client does not expose passkey management. Use your password fallback while the passkey configuration is reviewed.';
+      return;
+    }
+    if (!window.isSecureContext || !window.PublicKeyCredential) {
+      toggle.checked = false;
+      toggle.disabled = true;
+      addButton.hidden = true;
+      status.textContent = 'This device/browser does not expose WebAuthn in this context. Use HTTPS on a supported device; password sign-in remains available.';
+      return;
+    }
+    toggle.disabled = true;
+    status.textContent = 'Checking registered passkeys…';
+    try {
+      campusKnownPasskeys = await backend.listMyPasskeys();
+      toggle.checked = campusKnownPasskeys.length > 0;
+      toggle.disabled = false;
+      addButton.hidden = campusKnownPasskeys.length === 0;
+      status.textContent = campusKnownPasskeys.length
+        ? campusKnownPasskeys.length + ' passkey' + (campusKnownPasskeys.length === 1 ? '' : 's') + ' registered. The authenticator keeps its private credential; CampusShield does not receive raw biometric data.'
+        : 'No passkey is registered on this account. Enable the toggle to register one. Your password remains available.';
+      campusKnownPasskeys.forEach(passkey => {
+        const row = document.createElement('div');
+        row.className = 'profile-passkey-item';
+        const detail = document.createElement('div');
+        const title = document.createElement('strong');
+        title.textContent = passkey.friendly_name || 'Passkey';
+        const meta = document.createElement('small');
+        const created = passkey.created_at ? new Date(passkey.created_at).toLocaleDateString() : 'Date unavailable';
+        meta.textContent = 'Added ' + created + (passkey.last_used_at ? ' · Last used ' + new Date(passkey.last_used_at).toLocaleDateString() : '');
+        detail.append(title, meta);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'btn secondary';
+        remove.textContent = 'Remove';
+        remove.setAttribute('aria-label', 'Remove passkey ' + (passkey.friendly_name || 'credential'));
+        remove.addEventListener('click', async () => {
+          if (!window.confirm('Remove this passkey from your CampusShield account? You can still sign in with your email and password.')) return;
+          remove.disabled = true;
+          try {
+            await backend.deleteMyPasskey(passkey.id);
+            await loadPasskeySettings();
+            status.textContent = 'Passkey removed from this CampusShield account. Password sign-in remains available.';
+          } catch (error) {
+            status.textContent = passkeyConfigurationMessage(error);
+            remove.disabled = false;
+          }
+        });
+        row.append(detail, remove);
+        list.appendChild(row);
+      });
+    } catch (error) {
+      toggle.checked = false;
+      toggle.disabled = true;
+      addButton.hidden = true;
+      status.textContent = passkeyConfigurationMessage(error);
+    }
+  }
+
+  async function registerCampusPasskey() {
+    const backend = window.CampusShieldBackend;
+    const toggle = $('profile-passkey-toggle');
+    const status = $('profile-passkey-status');
+    const addButton = $('profile-passkey-add');
+    if (!backend?.isPasskeySupported?.()) {
+      if (status) status.textContent = 'Passkey support is unavailable in this client. Use your password fallback.';
+      if (toggle) toggle.checked = false;
+      return;
+    }
+    if (!window.isSecureContext || !window.PublicKeyCredential) {
+      if (status) status.textContent = 'Passkeys require a supported browser on HTTPS. Use your password fallback.';
+      if (toggle) toggle.checked = false;
+      return;
+    }
+    if (toggle) toggle.disabled = true;
+    if (addButton) addButton.disabled = true;
+    if (status) status.textContent = 'Follow your device prompt to create the passkey. Your biometric stays with the device/authenticator.';
+    try {
+      await backend.registerMyPasskey();
+      await loadPasskeySettings();
+      if (status) status.textContent = 'Passkey registered. You can now use passkey sign-in; your email/password fallback is still available.';
+    } catch (error) {
+      if (toggle) toggle.checked = campusKnownPasskeys.length > 0;
+      if (status) status.textContent = passkeyConfigurationMessage(error);
+    } finally {
+      if (toggle) toggle.disabled = false;
+      if (addButton) addButton.disabled = false;
+    }
+  }
+
+  $('passkey-signin-button')?.addEventListener('click', handlePasskeySignIn);
+  $('profile-passkey-toggle')?.addEventListener('change', async () => {
+    const toggle = $('profile-passkey-toggle');
+    const status = $('profile-passkey-status');
+    const backend = window.CampusShieldBackend;
+    if (!toggle || !status || !backend?.isPasskeySupported?.()) return;
+    if (toggle.checked) {
+      await registerCampusPasskey();
+      return;
+    }
+    if (!campusKnownPasskeys.length) {
+      status.textContent = 'No passkeys are registered. Email and password sign-in remains available.';
+      return;
+    }
+    if (!window.confirm('Disable passkey sign-in for this account by removing its registered passkeys from CampusShield? You can still use email and password.')) {
+      toggle.checked = true;
+      return;
+    }
+    toggle.disabled = true;
+    status.textContent = 'Removing registered passkeys…';
+    try {
+      for (const passkey of [...campusKnownPasskeys]) await backend.deleteMyPasskey(passkey.id);
+      await loadPasskeySettings();
+      status.textContent = 'Passkey sign-in disabled. Email and password sign-in remains available.';
+    } catch (error) {
+      status.textContent = passkeyConfigurationMessage(error);
+      await loadPasskeySettings();
+    } finally {
+      toggle.disabled = false;
+    }
+  });
+  $('profile-passkey-add')?.addEventListener('click', registerCampusPasskey);
 
   // Password visibility controls; this only changes the local input display.
   document.querySelectorAll('[data-toggle-password]').forEach(toggle => {
@@ -9131,6 +9573,313 @@ button,input,select,textarea{max-width:100%;min-width:0}
     if (button.dataset.page === 'staff-verification') loadCampusStaffVerificationStatus();
   }));
 
+
+
+  function feedbackStatusLabel(value) {
+    return ({
+      submitted: 'Submitted', triaged: 'Under review', in_progress: 'In progress',
+      planned: 'Planned', resolved: 'Resolved', declined: 'Not planned', duplicate: 'Duplicate'
+    })[String(value || '').toLowerCase()] || String(value || 'Submitted').replace(/_/g, ' ');
+  }
+  function feedbackKindLabel(value) {
+    return value === 'improvement' ? 'Improvement idea' : 'Problem report';
+  }
+  function feedbackDate(value) {
+    const date = value ? new Date(value) : null;
+    return date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : 'Date unavailable';
+  }
+  function feedbackIsGitHubIssueUrl(value) {
+    return /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/issues\/[0-9]+\/?$/.test(String(value || ''));
+  }
+  function feedbackElement(tag, className, text) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== undefined && text !== null) element.textContent = String(text);
+    return element;
+  }
+  async function submitCampusFeedbackForm(event, kind) {
+    event.preventDefault();
+    const isProblem = kind === 'problem';
+    const form = event.currentTarget;
+    const button = $(isProblem ? 'campus-problem-submit' : 'campus-improvement-submit');
+    const status = $(isProblem ? 'campus-problem-status' : 'campus-improvement-status');
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile) {
+      status.textContent = 'Sign in to submit feedback. Your submission has not been saved.';
+      return;
+    }
+    button.disabled = true;
+    status.dataset.state = '';
+    status.textContent = 'Submitting your feedback securely…';
+    try {
+      const saved = await backend.submitCampusFeedback({
+        kind,
+        category: $(isProblem ? 'campus-problem-category' : 'campus-improvement-category').value,
+        title: $(isProblem ? 'campus-problem-title' : 'campus-improvement-title').value.trim(),
+        description: $(isProblem ? 'campus-problem-description' : 'campus-improvement-description').value.trim(),
+        stepsToReproduce: isProblem ? $('campus-problem-steps').value.trim() : null,
+        expectedBehavior: isProblem ? null : $('campus-improvement-benefit').value.trim(),
+        impact: isProblem ? $('campus-problem-impact').value : 'normal'
+      });
+      form.reset();
+      status.dataset.state = 'success';
+      status.textContent = 'Submitted successfully. Your reference number is ' + saved.reference_code + '. Track status in My Submissions.';
+    } catch (error) {
+      console.warn('CampusShield feedback submission failed:', error?.code || error?.message || 'unknown');
+      status.dataset.state = 'error';
+      status.textContent = error?.message || 'Could not submit feedback. Please check your connection and try again.';
+    } finally {
+      button.disabled = false;
+    }
+  }
+  $('campusProblemForm')?.addEventListener('submit', event => submitCampusFeedbackForm(event, 'problem'));
+  $('campusImprovementForm')?.addEventListener('submit', event => submitCampusFeedbackForm(event, 'improvement'));
+
+  async function loadCampusFeedbackSubmissions() {
+    const status = $('campus-feedback-submissions-status');
+    const list = $('campus-feedback-submissions-list');
+    const backend = window.CampusShieldBackend;
+    if (!status || !list) return;
+    list.replaceChildren();
+    if (!currentProfile || !backend?.isConfigured) {
+      status.textContent = 'Sign in to see your private submissions.';
+      list.appendChild(feedbackElement('div','community-empty','Sign in to see your private submissions.'));
+      return;
+    }
+    status.textContent = 'Loading your submissions…';
+    try {
+      const items = await backend.listMyCampusFeedback();
+      if (!items.length) {
+        status.textContent = 'No submissions yet.';
+        list.appendChild(feedbackElement('div','community-empty','Your problem reports and improvement ideas will appear here after you submit them.'));
+        return;
+      }
+      status.textContent = items.length + ' submission' + (items.length === 1 ? '' : 's') + ' — newest first.';
+      items.forEach(item => {
+        const card = feedbackElement('article','feedback-ticket');
+        const head = feedbackElement('div','feedback-ticket-head');
+        const main = feedbackElement('div','feedback-ticket-head-main');
+        main.appendChild(feedbackElement('div','feedback-ticket-ref',item.reference_code));
+        main.appendChild(feedbackElement('h2','',item.title));
+        const meta = feedbackElement('div','feedback-ticket-meta');
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge',feedbackKindLabel(item.kind)));
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge status',feedbackStatusLabel(item.status)));
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge',String(item.priority || 'normal').toUpperCase() + ' PRIORITY'));
+        head.append(main,meta);
+        card.appendChild(head);
+        card.appendChild(feedbackElement('p','feedback-ticket-description',item.description));
+        card.appendChild(feedbackElement('div','feedback-ticket-detail','Category: ' + item.category + ' · Submitted ' + feedbackDate(item.created_at)));
+        if (item.steps_to_reproduce) card.appendChild(feedbackElement('div','feedback-ticket-detail','Steps to reproduce: ' + item.steps_to_reproduce));
+        if (item.expected_behavior) card.appendChild(feedbackElement('div','feedback-ticket-detail','Expected outcome / benefit: ' + item.expected_behavior));
+        if (item.github_issue_url && feedbackIsGitHubIssueUrl(item.github_issue_url)) {
+          const link = feedbackElement('a','', 'Linked GitHub issue');
+          link.href = item.github_issue_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          card.appendChild(link);
+        }
+        list.appendChild(card);
+      });
+    } catch (error) {
+      status.textContent = 'Your submissions could not be loaded. Check your connection and try again.';
+      list.appendChild(feedbackElement('div','community-empty',error?.message || 'Please try again.'));
+    }
+  }
+
+  async function loadCampusFeedbackAdminNotes(feedbackId, notesContainer, button) {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured) return;
+    if (button) { button.disabled = true; button.textContent = 'Loading notes…'; }
+    notesContainer.replaceChildren();
+    try {
+      const notes = await backend.listCampusFeedbackAdminNotes(feedbackId);
+      if (!notes.length) {
+        notesContainer.appendChild(feedbackElement('p','muted','No staff-only notes yet.'));
+      } else {
+        notes.forEach(note => {
+          const noteCard = feedbackElement('div','feedback-ticket-note',note.note);
+          noteCard.appendChild(feedbackElement('time','',feedbackDate(note.created_at) + ' · staff-only'));
+          notesContainer.appendChild(noteCard);
+        });
+      }
+      if (button) button.textContent = 'Refresh staff notes';
+    } catch (error) {
+      notesContainer.appendChild(feedbackElement('p','muted','Staff notes could not be loaded.'));
+      if (button) button.textContent = 'Load staff notes';
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async function loadCampusFeedbackAdmin() {
+    const status = $('campus-feedback-admin-status');
+    const queue = $('campus-feedback-admin-queue');
+    const backend = window.CampusShieldBackend;
+    if (!status || !queue) return;
+    queue.replaceChildren();
+    if (!currentProfile || currentProfile.role !== 'admin' || currentProfile.verification_status !== 'verified' || !backend?.isConfigured) {
+      status.textContent = 'This queue is restricted to verified administrators.';
+      queue.appendChild(feedbackElement('div','community-empty','This queue is restricted to verified administrators.'));
+      return;
+    }
+    status.textContent = 'Loading campus feedback…';
+    try {
+      const [items, campus] = await Promise.all([
+        backend.listMyCampusFeedback(),
+        backend.getMyCampusContext().catch(() => null)
+      ]);
+      if (!items.length) {
+        status.textContent = 'No feedback submissions are available to this admin account.';
+        queue.appendChild(feedbackElement('div','community-empty','New problem reports and improvement ideas will appear here when submitted.'));
+        return;
+      }
+      status.textContent = items.length + ' feedback item' + (items.length === 1 ? '' : 's') + ' available to this administrator. Internal notes are visible only to authorized staff.';
+      const assigneeCache = new Map();
+      const limitedItems = items.slice(0, 50);
+      for (const item of limitedItems) {
+        const universityId = item.university_id || campus?.university_id || null;
+        const cacheKey = universityId || 'global';
+        if (!assigneeCache.has(cacheKey)) {
+          assigneeCache.set(cacheKey, backend.listCampusFeedbackAssignees(universityId).catch(() => []));
+        }
+      }
+      const assigneeLists = new Map();
+      await Promise.all([...assigneeCache.entries()].map(async ([key,promise]) => assigneeLists.set(key, await promise)));
+      limitedItems.forEach(item => {
+        const card = feedbackElement('article','feedback-ticket');
+        const head = feedbackElement('div','feedback-ticket-head');
+        const main = feedbackElement('div','feedback-ticket-head-main');
+        main.appendChild(feedbackElement('div','feedback-ticket-ref',item.reference_code));
+        main.appendChild(feedbackElement('h2','',item.title));
+        const meta = feedbackElement('div','feedback-ticket-meta');
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge',feedbackKindLabel(item.kind)));
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge status',feedbackStatusLabel(item.status)));
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge',String(item.impact || 'normal').toUpperCase() + ' IMPACT'));
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge',String(item.priority || 'normal').toUpperCase() + ' PRIORITY'));
+        head.append(main,meta);
+        card.appendChild(head);
+        card.appendChild(feedbackElement('p','feedback-ticket-description',item.description));
+        card.appendChild(feedbackElement('div','feedback-ticket-detail','Category: ' + item.category + ' · Submitted ' + feedbackDate(item.created_at) + ' · Submitter: ' + String(item.user_id || '').slice(0,8) + '…'));
+        if (item.steps_to_reproduce) card.appendChild(feedbackElement('div','feedback-ticket-detail','Steps to reproduce: ' + item.steps_to_reproduce));
+        if (item.expected_behavior) card.appendChild(feedbackElement('div','feedback-ticket-detail','Expected outcome / benefit: ' + item.expected_behavior));
+        if (item.github_issue_url && feedbackIsGitHubIssueUrl(item.github_issue_url)) {
+          const link = feedbackElement('a','', 'Open linked GitHub issue');
+          link.href = item.github_issue_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          card.appendChild(link);
+        }
+        const form = feedbackElement('form','feedback-ticket-form');
+        form.dataset.feedbackAdminForm = 'true';
+        form.dataset.feedbackId = item.id;
+        const statusWrap = feedbackElement('div','field');
+        const statusLabel = feedbackElement('label','','Status');
+        const statusSelect = document.createElement('select');
+        statusSelect.name = 'status';
+        statusSelect.setAttribute('aria-label','Feedback status');
+        [
+          ['submitted','Submitted'],['triaged','Under review'],['in_progress','In progress'],
+          ['planned','Planned'],['resolved','Resolved'],['declined','Not planned'],['duplicate','Duplicate']
+        ].forEach(([value,label]) => {
+          const option = document.createElement('option'); option.value = value; option.textContent = label; statusSelect.appendChild(option);
+        });
+        statusSelect.value = item.status;
+        statusLabel.htmlFor = 'feedback-status-' + item.id;
+        statusSelect.id = statusLabel.htmlFor;
+        statusWrap.append(statusLabel,statusSelect);
+        const priorityWrap = feedbackElement('div','field');
+        const priorityLabel = feedbackElement('label','','Priority');
+        const prioritySelect = document.createElement('select');
+        prioritySelect.name = 'priority';
+        priorityLabel.htmlFor = 'feedback-priority-' + item.id;
+        prioritySelect.id = priorityLabel.htmlFor;
+        [['low','Low'],['normal','Normal'],['high','High'],['urgent','Urgent']].forEach(([value,label]) => {
+          const option=document.createElement('option'); option.value=value; option.textContent=label; prioritySelect.appendChild(option);
+        });
+        prioritySelect.value = item.priority || 'normal';
+        priorityWrap.append(priorityLabel,prioritySelect);
+        const assigneeWrap = feedbackElement('div','field');
+        const assigneeLabel = feedbackElement('label','','Assign to verified staff');
+        const assignee = document.createElement('select');
+        assignee.name = 'assigned_to';
+        assigneeLabel.htmlFor = 'feedback-assignee-' + item.id;
+        assignee.id = assigneeLabel.htmlFor;
+        const noAssignee=document.createElement('option'); noAssignee.value=''; noAssignee.textContent='Unassigned'; assignee.appendChild(noAssignee);
+        const assigneeKey = item.university_id || campus?.university_id || 'global';
+        (assigneeLists.get(assigneeKey) || []).forEach(person => {
+          const option=document.createElement('option'); option.value=person.id; option.textContent=(person.display_name || 'Campus member') + ' · ' + person.role;
+          assignee.appendChild(option);
+        });
+        if (item.assigned_to && ![...assignee.options].some(option=>option.value===item.assigned_to)) {
+          const current=document.createElement('option'); current.value=item.assigned_to; current.textContent='Current assignee'; assignee.appendChild(current);
+        }
+        assignee.value = item.assigned_to || '';
+        assigneeWrap.append(assigneeLabel,assignee);
+        const githubWrap=feedbackElement('div','field');
+        const githubLabel=feedbackElement('label','','GitHub issue URL (optional)');
+        const github=document.createElement('input');
+        github.type='url'; github.name='github_issue_url'; github.maxLength=500;
+        github.placeholder='https://github.com/owner/repo/issues/123'; github.value=item.github_issue_url || '';
+        githubLabel.htmlFor='feedback-github-' + item.id; github.id=githubLabel.htmlFor;
+        githubWrap.append(githubLabel,github);
+        const noteWrap=feedbackElement('div','field wide');
+        const noteLabel=feedbackElement('label','','Add staff-only note (optional)');
+        const note=document.createElement('textarea');
+        note.name='internal_note'; note.maxLength=2000; note.rows=2;
+        note.placeholder='Internal triage note; only verified staff can read it.';
+        noteLabel.htmlFor='feedback-note-' + item.id; note.id=noteLabel.htmlFor;
+        noteWrap.append(noteLabel,note);
+        const actions=feedbackElement('div','feedback-admin-actions wide');
+        const save=document.createElement('button'); save.type='submit'; save.className='btn'; save.textContent='Save triage update';
+        actions.appendChild(save);
+        const result=feedbackElement('p','message wide','');
+        result.setAttribute('role','status'); result.setAttribute('aria-live','polite'); result.dataset.feedbackSaveStatus='true';
+        form.append(statusWrap,priorityWrap,assigneeWrap,githubWrap,noteWrap,actions,result);
+        card.appendChild(form);
+        const notesPanel=feedbackElement('div','feedback-ticket-notes');
+        const loadNotes=document.createElement('button'); loadNotes.type='button'; loadNotes.className='btn secondary'; loadNotes.textContent='Load staff notes';
+        const notesList=feedbackElement('div','feedback-ticket-notes-list');
+        loadNotes.addEventListener('click',()=>loadCampusFeedbackAdminNotes(item.id,notesList,loadNotes));
+        notesPanel.append(loadNotes,notesList);
+        card.appendChild(notesPanel);
+        queue.appendChild(card);
+      });
+      if (items.length > limitedItems.length) {
+        queue.appendChild(feedbackElement('p','muted','Showing the 50 most recent submissions.'));
+      }
+    } catch (error) {
+      status.textContent = error?.message || 'Feedback queue could not be loaded.';
+      queue.appendChild(feedbackElement('div','community-empty','You may not have access to feedback for this campus, or the staging feedback migration has not been applied.'));
+    }
+  }
+  $('campus-feedback-admin-queue')?.addEventListener('submit', async event => {
+    const form = event.target.closest('form[data-feedback-admin-form]');
+    if (!form) return;
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const status = form.querySelector('[data-feedback-save-status]');
+    const button = form.querySelector('button[type="submit"]');
+    if (!backend?.isConfigured) { if (status) status.textContent = 'Supabase is not configured.'; return; }
+    button.disabled = true;
+    if (status) status.textContent = 'Saving triage update…';
+    try {
+      await backend.updateCampusFeedback({
+        id: form.dataset.feedbackId,
+        status: form.elements.status.value,
+        priority: form.elements.priority.value,
+        assignedTo: form.elements.assigned_to.value || null,
+        githubIssueUrl: form.elements.github_issue_url.value.trim() || null,
+        internalNote: form.elements.internal_note.value.trim() || null
+      });
+      toast('Feedback triage update saved.');
+      await loadCampusFeedbackAdmin();
+    } catch (error) {
+      if (status) status.textContent = error?.message || 'Could not save the triage update.';
+      button.disabled = false;
+    }
+  });
+  $('campus-feedback-refresh')?.addEventListener('click', loadCampusFeedbackSubmissions);
+  $('campus-feedback-admin-refresh')?.addEventListener('click', loadCampusFeedbackAdmin);
 
   function markCampusWelcomeTourSeen() {
     try { localStorage.setItem('campusshield-welcome-tour-v1', 'seen'); } catch (_) {}

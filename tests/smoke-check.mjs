@@ -19,6 +19,9 @@ const campusLifeParityMigration = await readFile(new URL("../supabase/migrations
 const institutionalBillingMigration = await readFile(new URL("../supabase/migrations/20261025153000_restrict_institutional_billing_to_admins.sql", import.meta.url), "utf8");
 const staffIdentityParityMigration = await readFile(new URL("../supabase/migrations/20261025160000_restore_staff_identity_audit_and_platform_rpcs.sql", import.meta.url), "utf8");
 const campusPushMigration = await readFile(new URL("../supabase/migrations/20261025203000_campus_push_notifications.sql", import.meta.url), "utf8");
+const campusUserFeedbackMigration = await readFile(new URL("../supabase/migrations/20261026122000_add_campus_user_feedback.sql", import.meta.url), "utf8");
+const campusUserFeedbackPolicyFixMigration = await readFile(new URL("../supabase/migrations/20261026130000_fix_campus_feedback_visibility_policy.sql", import.meta.url), "utf8");
+const passkeySetupGuide = await readFile(new URL("../docs/PASSKEY_SETUP.md", import.meta.url), "utf8");
 const pushSubscriptionsFunction = await readFile(new URL("../supabase/functions/push-subscriptions/index.ts", import.meta.url), "utf8");
 const pushDispatchFunction = await readFile(new URL("../supabase/functions/push-dispatch/index.ts", import.meta.url), "utf8");
 const pushSecretSetup = await readFile(new URL("../scripts/configure-staging-push-secrets.ps1", import.meta.url), "utf8");
@@ -454,3 +457,97 @@ assert.match(html, /Incident saved to Supabase\. Emergency services have not bee
 assert.match(html, /Recent reports &amp; incident status/);
 console.log("PASS pre-launch quick actions, campus alerts, first-time tour, CampusPulse prompts, and incident confirmation/result UX");
 
+
+
+// Help & Feedback: keep technical bug reports separate from safety incidents and feature ideas.
+for (const page of ["feedback-problem","feedback-improvement","feedback-submissions","feedback-admin"]) {
+  assert.match(html, new RegExp('id="page-' + page + '"'), `feedback route exists: ${page}`);
+  assert.match(html, new RegExp('data-page="' + page + '"'), `feedback navigation exists: ${page}`);
+}
+assert.match(html, /HELP &amp; FEEDBACK/);
+assert.match(html, /id="feedback-problem-nav"/);
+assert.match(html, /id="feedback-improvement-nav"/);
+assert.match(html, /id="feedback-submissions-nav"/, "My Submissions is available in the account navigation");
+assert.match(html, /id="feedback-admin-nav" hidden/, "admin triage is hidden by default");
+assert.match(html, /page === 'feedback-admin' && !verifiedAdmin/, "feedback triage route has a verified administrator guard");
+assert.match(html, /id="campusProblemForm"/);
+assert.match(html, /id="campusImprovementForm"/, "improvement suggestions use a separate form from bug reports");
+assert.match(html, /id="campus-feedback-submissions-list"/);
+assert.match(html, /id="campus-feedback-admin-queue"/);
+assert.match(html, /Your reference number is /, "users receive a feedback reference number");
+assert.match(html, /function feedbackElement\(/, "feedback submission text is rendered through DOM textContent");
+assert.match(html, /function loadCampusFeedbackAdmin\(/);
+assert.match(html, /data-feedback-admin-form/);
+assert.match(html, /listCampusFeedbackAdminNotes/);
+assert.match(html, /GitHub issue URL \(optional\)/);
+assert.match(backend, /async submitCampusFeedback\(/);
+assert.match(backend, /async listMyCampusFeedback\(/);
+assert.match(backend, /async updateCampusFeedback\(/);
+assert.match(backend, /async listCampusFeedbackAssignees\(/);
+assert.match(campusUserFeedbackMigration, /CREATE TABLE IF NOT EXISTS public\.campus_user_feedback/i);
+assert.match(campusUserFeedbackMigration, /ALTER TABLE public\.campus_user_feedback ENABLE ROW LEVEL SECURITY/i);
+assert.match(campusUserFeedbackMigration, /CREATE POLICY campus_user_feedback_read_own_or_authorized_admin/i);
+assert.match(campusUserFeedbackPolicyFixMigration, /CREATE OR REPLACE FUNCTION private\.can_read_campus_feedback/i, "feedback RLS checks use a protected membership helper");
+assert.match(campusUserFeedbackPolicyFixMigration, /SECURITY DEFINER/i, "the membership helper has permission to inspect verified campus membership");
+assert.match(campusUserFeedbackPolicyFixMigration, /REVOKE ALL ON FUNCTION private\.can_read_campus_feedback\(uuid\) FROM public, anon/i, "membership helper is not executable by anonymous users");
+assert.match(campusUserFeedbackPolicyFixMigration, /GRANT EXECUTE ON FUNCTION private\.can_read_campus_feedback\(uuid\) TO authenticated/i);
+assert.match(campusUserFeedbackPolicyFixMigration, /user_id = \(select auth\.uid\(\)\)[\s\S]*?private\.can_read_campus_feedback\(university_id\)/i, "RLS policy avoids direct campus_memberships SELECT grants");
+assert.match(campusUserFeedbackMigration, /Only a platform administrator can triage submissions without a campus/);
+assert.match(campusUserFeedbackMigration, /CREATE TABLE IF NOT EXISTS public\.campus_user_feedback_admin_notes/i);
+assert.match(campusUserFeedbackMigration, /REVOKE ALL ON TABLE public\.campus_user_feedback_admin_notes FROM public, anon, authenticated/i);
+assert.match(campusUserFeedbackMigration, /admin_manage_campus_feedback/);
+assert.match(campusUserFeedbackMigration, /list_campus_feedback_admin_notes/);
+assert.match(campusUserFeedbackMigration, /https:\/\/github\[\.\]com/);
+console.log("PASS Help & Feedback submission, reference tracking, campus-scoped admin triage, and GitHub issue validation");
+
+// Responsive optimization regression checks: no page-level overflow and usable tablet controls.
+assert.match(html, /id="responsive-optimization-final"/);
+assert.match(html, /Responsive optimization: tablet and desktop widths, narrow viewport safety, and robust controls/);
+assert.match(html, /@media \(min-width: 761px\) and \(max-width: 1024px\)/);
+assert.match(html, /\.topbar-actions\{width:100%;max-width:100%;min-width:0;display:flex;flex-wrap:wrap/);
+assert.match(html, /\.table-wrap table\{min-width:580px\}/);
+console.log("PASS responsive layout hardening for desktop, tablets, narrow phones, forms, dropdowns, and scroll-contained tables");
+
+// Notification regressions: ensure push taps open the intended screen, and do not churn a valid subscription on delivery failure.
+assert.match(pushDispatchFunction, /const notificationUrls: Record<PushKind, string> = \{/);
+for (const [kind, destination] of [
+  ["timetable_reminder", "./?page=timetable"],
+  ["new_message", "./?page=campus-messages"],
+  ["campus_announcement", "./?page=noticeboard"],
+  ["account_update", "./?page=profile-settings"],
+  ["test", "./?page=profile-settings"]
+]) {
+  assert.ok(pushDispatchFunction.includes(kind + ': "' + destination + '"'), "notification route is defined for " + kind);
+}
+assert.match(pushDispatchFunction, /url: notificationUrls\[kind\]/, "push payload includes its relevant application route");
+assert.doesNotMatch(pushDispatchFunction, /url:\s*"\.\/"\s*,/, "notifications do not all route back to the app root");
+assert.match(pushDispatchFunction, /subscriptions_found: 0, no_subscription: true/);
+assert.match(pushDispatchFunction, /subscriptions_found: subscriptions\.length, no_subscription: false/);
+assert.match(html, /if \(delivered === 0 && result\?\.no_subscription === true\)/, "test repairs only a missing server subscription, not any generic delivery failure");
+assert.match(html, /Push delivery was not confirmed\. The subscription was kept/);
+assert.match(html, /const notificationDestinationPages = new Set\(\['timetable', 'campus-messages', 'noticeboard', 'profile-settings'\]\)/, "only approved notification deep links are accepted");
+assert.match(html, /if \(page === 'dashboard' && pendingNotificationPage\)/, "startup redirects preserve the requested notification destination");
+assert.match(html, /\['campus-messages', 'noticeboard'\]\.includes\(target\)[\s\S]*?currentProfile\.verification_status !== 'verified'/, "verified-only notification destinations remain gated");
+assert.match(html, /document\.addEventListener\('click', function\(event\)\s*\{\s*if \(!event\.isTrusted \|\| !event\.target\?\.closest\?\.\('#workspace'\)\) return;\s*clearPendingNotificationPage\(\);\s*\}, true\)/, "workspace interaction clears stale notification routes");
+assert.ok(serviceWorker.includes('"./?page=timetable"'), "service worker permits timetable notification routing");
+assert.ok(serviceWorker.includes('"./?page=campus-messages"'), "service worker permits campus messages notification routing");
+assert.ok(serviceWorker.includes('"./?page=noticeboard"'), "service worker permits campus noticeboard notification routing");
+assert.ok(serviceWorker.includes('"./?page=profile-settings"'), "service worker permits profile settings notification routing");
+console.log("PASS push destination routing, missing-subscription diagnosis, and non-destructive notification test retries");
+
+
+// Optional WebAuthn passkeys: use Supabase Auth; no raw biometrics are handled by the app.
+assert.match(backend, /experimental: \{ passkey: true \}/, "Supabase passkey APIs are explicitly opted into");
+for (const method of ["registerMyPasskey","listMyPasskeys","deleteMyPasskey","signInWithPasskey"]) {
+  assert.match(backend, new RegExp("async " + method + "\\("), `passkey backend helper exists: ${method}`);
+}
+assert.match(html, /id="passkey-signin-button"/);
+assert.match(html, /id="profile-passkey-toggle"/);
+assert.match(html, /id="profile-passkey-add"/);
+assert.match(html, /raw biometric data|raw biometric material|biometric stays with the device/i);
+assert.match(html, /Password sign-in remains available|password sign-in remains available|email and password/i);
+assert.match(html, /Passkey authentication is not enabled in this Supabase project yet/);
+assert.match(passkeySetupGuide, /stable HTTPS staging hostname/);
+assert.match(passkeySetupGuide, /never store raw biometric data|must not request, upload, or store raw biometric data/i);
+assert.match(passkeySetupGuide, /password fallback remains available/i);
+console.log("PASS optional WebAuthn passkey controls, password fallback, and staged relying-party guidance");

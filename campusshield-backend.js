@@ -31,7 +31,9 @@
   }
 
   const client = ready
-    ? window.supabase.createClient(cfg.url, cfg.publishableKey)
+    ? window.supabase.createClient(cfg.url, cfg.publishableKey, {
+        auth: { experimental: { passkey: true } }
+      })
     : null;
 
   window.CampusShieldBackend = {
@@ -1711,7 +1713,116 @@ async getCurrentUser() {
         .eq("id", id);
 
       if (error) throw error;
-    }
+    },
+
+    async submitCampusFeedback(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in to submit help and feedback.");
+      let universityId = null;
+      try {
+        const campus = await this.getMyCampusContext();
+        universityId = campus?.university_id || null;
+      } catch (_) {
+        // Accounts still completing campus setup can submit unassigned feedback.
+      }
+      const { data, error } = await client.rpc("submit_campus_feedback", {
+        p_university_id: universityId,
+        p_kind: input.kind,
+        p_category: String(input.category || "").trim(),
+        p_title: String(input.title || "").trim(),
+        p_description: String(input.description || "").trim(),
+        p_steps_to_reproduce: String(input.stepsToReproduce || "").trim() || null,
+        p_expected_behavior: String(input.expectedBehavior || "").trim() || null,
+        p_impact: input.impact || "normal"
+      });
+      if (error) throw error;
+      return Array.isArray(data) ? data[0] : data;
+    },
+
+    async listMyCampusFeedback() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.from("campus_user_feedback")
+        .select("id,reference_code,user_id,university_id,kind,category,title,description,steps_to_reproduce,expected_behavior,impact,status,priority,assigned_to,github_issue_url,created_at,updated_at")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data || [];
+    },
+
+    async listCampusFeedbackAssignees(universityId = null) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_feedback_assignees", {
+        p_university_id: universityId || null
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async updateCampusFeedback(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("admin_manage_campus_feedback", {
+        p_feedback_id: input.id,
+        p_status: input.status,
+        p_priority: input.priority,
+        p_assigned_to: input.assignedTo || null,
+        p_github_issue_url: String(input.githubIssueUrl || "").trim() || null,
+        p_internal_note: String(input.internalNote || "").trim() || null
+      });
+      if (error) throw error;
+      return Array.isArray(data) ? data[0] : data;
+    },
+
+    async listCampusFeedbackAdminNotes(feedbackId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_feedback_admin_notes", {
+        p_feedback_id: feedbackId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    isPasskeySupported() {
+      return Boolean(
+        client &&
+        typeof client.auth?.registerPasskey === "function" &&
+        typeof client.auth?.signInWithPasskey === "function" &&
+        typeof client.auth?.passkey?.list === "function" &&
+        typeof client.auth?.passkey?.delete === "function"
+      );
+    },
+
+    async registerMyPasskey() {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (typeof client.auth?.registerPasskey !== "function") throw new Error("This Supabase client does not support passkeys.");
+      const { data, error } = await client.auth.registerPasskey();
+      if (error) throw error;
+      return data;
+    },
+
+    async listMyPasskeys() {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (typeof client.auth?.passkey?.list !== "function") throw new Error("This Supabase client does not support passkey management.");
+      const { data, error } = await client.auth.passkey.list();
+      if (error) throw error;
+      return Array.isArray(data) ? data : (data?.passkeys || []);
+    },
+
+    async deleteMyPasskey(passkeyId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (typeof client.auth?.passkey?.delete !== "function") throw new Error("This Supabase client does not support passkey management.");
+      const { error } = await client.auth.passkey.delete({ passkeyId });
+      if (error) throw error;
+    },
+
+    async signInWithPasskey() {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (typeof client.auth?.signInWithPasskey !== "function") throw new Error("This Supabase client does not support passkey sign-in.");
+      const { data, error } = await client.auth.signInWithPasskey();
+      if (error) throw error;
+      return data;
+    },
+
   };
 
   console.info(

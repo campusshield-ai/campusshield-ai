@@ -1,0 +1,27 @@
+name: CampusShield Help & Feedback and passkey smoke checks
+
+on:
+  push:
+    branches:
+      - codex/help-feedback-passkey-security
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-check:
+    name: Full Node smoke suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run complete smoke suite
+        run: node tests/smoke-check.mjs
