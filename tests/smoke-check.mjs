@@ -454,3 +454,30 @@ assert.match(html, /Incident saved to Supabase\. Emergency services have not bee
 assert.match(html, /Recent reports &amp; incident status/);
 console.log("PASS pre-launch quick actions, campus alerts, first-time tour, CampusPulse prompts, and incident confirmation/result UX");
 
+
+
+// Notification regressions: route taps to the relevant screen and preserve good subscriptions on delivery errors.
+assert.match(pushDispatchFunction, /const notificationUrls: Record<PushKind, string> = \\{/);
+for (const [kind, destination] of [
+  ["timetable_reminder", "./?page=timetable"],
+  ["new_message", "./?page=campus-messages"],
+  ["campus_announcement", "./?page=noticeboard"],
+  ["account_update", "./?page=profile-settings"],
+  ["test", "./?page=profile-settings"]
+]) {
+  assert.ok(pushDispatchFunction.includes(kind + ': "' + destination + '"'), "notification route is defined for " + kind);
+}
+assert.match(pushDispatchFunction, /url: notificationUrls\\[kind\\]/, "push payload includes its relevant application route");
+assert.doesNotMatch(pushDispatchFunction, /url:\\s*"\\.\\/"\\s*,/, "notifications do not all route back to the app root");
+assert.match(pushDispatchFunction, /subscriptions_found: 0, no_subscription: true/);
+assert.match(pushDispatchFunction, /subscriptions_found: subscriptions\\.length, no_subscription: false/);
+assert.match(html, /if \\(delivered === 0 && result\\?\\.no_subscription === true\\)/, "repair only runs when server reports no subscription");
+assert.match(html, /Push delivery was not confirmed\\. The subscription was kept/);
+assert.match(html, /const notificationDestinationPages = new Set\\(\\['timetable', 'campus-messages', 'noticeboard', 'profile-settings'\\]\\)/);
+assert.match(html, /if \\(page === 'dashboard' && pendingNotificationPage\\)/, "startup navigation preserves the requested notification destination");
+assert.match(html, /\\['campus-messages', 'noticeboard'\\]\\.includes\\(target\\)[\\s\\S]*?currentProfile\\.verification_status !== 'verified'/, "verified-only routes remain gated");
+assert.match(html, /document\\.addEventListener\\('click', function\\(event\\)\\s*\\{\\s*if \\(!event\\.isTrusted \\|\\| !event\\.target\\?\\.closest\\?\\.\\('#workspace'\\)\\) return;\\s*clearPendingNotificationPage\\(\\);\\s*\\}, true\\)/, "workspace interaction clears stale notification routes");
+for (const destination of ['timetable', 'campus-messages', 'noticeboard', 'profile-settings']) {
+  assert.ok(serviceWorker.includes('"./?page=' + destination + '"'), "service worker allows notification destination " + destination);
+}
+console.log("PASS notification routing, missing-subscription diagnosis, and non-destructive test retries");

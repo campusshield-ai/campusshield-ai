@@ -10,6 +10,13 @@ const genericMessages = {
   test: { title: "CampusShield notifications are on", body: "Background notifications are working on this device.", page: "profile-settings" },
 } as const;
 type PushKind = keyof typeof genericMessages;
+const notificationUrls: Record<PushKind, string> = {
+  timetable_reminder: "./?page=timetable",
+  new_message: "./?page=campus-messages",
+  campus_announcement: "./?page=noticeboard",
+  account_update: "./?page=profile-settings",
+  test: "./?page=profile-settings",
+};
 const equalsConstantTime = (a: string, b: string) => {
   if (a.length !== b.length) return false;
   let diff = 0;
@@ -125,7 +132,7 @@ Deno.serve(async (req: Request) => {
     }
     if (!subscriptions?.length) {
       if (eventKey) await db.from("campus_push_delivery_events").update({ status: "no_subscription", updated_at: new Date().toISOString() }).eq("event_key", eventKey);
-      return respond({ delivered: 0, expired: 0 });
+      return respond({ delivered: 0, expired: 0, subscriptions_found: 0, no_subscription: true });
     }
 
     const message = genericMessages[kind];
@@ -134,7 +141,7 @@ Deno.serve(async (req: Request) => {
       body: message.body,
       page: message.page,
       tag: "campusshield-" + kind,
-      url: "./",
+      url: notificationUrls[kind],
     });
     let delivered = 0;
     let expired = 0;
@@ -167,7 +174,7 @@ Deno.serve(async (req: Request) => {
       expired_count: expired,
       updated_at: new Date().toISOString(),
     }).eq("event_key", eventKey);
-    return respond({ delivered, expired });
+    return respond({ delivered, expired, subscriptions_found: subscriptions.length, no_subscription: false });
   } catch {
     return respond({ error: "Push delivery failed." }, 500);
   }
