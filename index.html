@@ -913,6 +913,14 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .campus-service-directory-empty{margin:0;padding:15px;border-radius:10px;background:#f7faf8;color:#647a7e}
 @media(max-width:850px){.campus-service-directory-offices{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.campus-service-directory-heading,.campus-service-directory-detail-heading{flex-direction:column}.campus-service-directory-result{align-items:flex-start;flex-direction:column}.campus-service-directory-result-actions{width:100%;justify-content:flex-start}.campus-service-directory-offices{grid-template-columns:minmax(0,1fr)}.campus-service-directory-count{align-self:flex-start}}
+.platform-service-crawler-results{display:grid;gap:8px;margin-top:12px}
+.platform-service-crawler-result{padding:11px 12px;border:1px solid var(--line,#dfe8e3);border-radius:10px;background:#f8fbf9}
+.platform-service-crawler-result h3{margin:0 0 4px;color:#183840;font-size:13px}
+.platform-service-crawler-result p{margin:3px 0;color:#647a7e;font-size:11px;line-height:1.55}
+.platform-service-crawler-result .status{font-weight:800;color:#267a68}
+#platform-service-directory-crawler .actions{display:flex;gap:8px;flex-wrap:wrap}
+#platform-service-directory-crawler .actions .btn{margin:0}
+
 
 
 /* Advanced private profile layout */
@@ -3192,6 +3200,21 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <div class="field"><label for="platform-admin-university-select">University *</label><select id="platform-admin-university-select"><option value="">Loading university directory…</option></select></div>
       <p id="platform-admin-candidates-message" class="message" role="status" aria-live="polite">Choose a university to load verified staff.</p>
       <div class="table-wrap"><table><caption class="sr-only">Eligible verified staff who can be assigned as campus administrators</caption><thead><tr><th scope="col">Username</th><th scope="col">Account role</th><th scope="col">Account status</th><th scope="col">Campus status</th><th scope="col">Faculty / department</th><th scope="col">Action</th></tr></thead><tbody id="platform-admin-candidates-table"><tr><td colspan="6">Choose a university above.</td></tr></tbody></table></div>
+    </section>
+    <section class="panel" id="platform-service-directory-crawler">
+      <div class="panel-heading">
+        <div>
+          <h2>Official university services crawler</h2>
+          <p>Crawl registered public university websites to find medical services, Student Affairs and Registrar / Registry pages.</p>
+        </div>
+      </div>
+      <p class="muted">Restricted to trusted platform administrators. The crawler uses HTTPS, checks robots.txt, stays on each university's registered host, skips login/account paths, and never fabricates contact details. A crawl may find no office page when the website blocks bots or uses a JavaScript-only portal.</p>
+      <div class="actions">
+        <button class="btn" type="button" id="platform-service-crawler-batch">Crawl next batch</button>
+        <button class="btn secondary" type="button" id="platform-service-crawler-one">Crawl selected university</button>
+      </div>
+      <p id="platform-service-crawler-status" class="message" role="status" aria-live="polite">Ready. Select a university above for a targeted crawl, or run the next small batch from the national directory.</p>
+      <div id="platform-service-crawler-results" class="platform-service-crawler-results" aria-live="polite"></div>
     </section>
   </div>
 </section>
@@ -6157,6 +6180,76 @@ button,input,select,textarea{max-width:100%;min-width:0}
   $('platform-admin-refresh-requests').addEventListener('click', loadPlatformUniversityRequests);
   $('platform-admin-refresh-candidates').addEventListener('click', loadPlatformAdminCandidates);
   $('platform-admin-university-select').addEventListener('change', loadPlatformAdminCandidates);
+
+  async function runPlatformServiceDirectoryCrawl(action) {
+    const status = $('platform-service-crawler-status');
+    const results = $('platform-service-crawler-results');
+    const batchButton = $('platform-service-crawler-batch');
+    const oneButton = $('platform-service-crawler-one');
+    const select = $('platform-admin-university-select');
+    if (!status || !results || !batchButton || !oneButton) return;
+    if (action === 'crawl_university' && !select?.value) {
+      status.textContent = 'Choose a university in the selector above first.';
+      return;
+    }
+    batchButton.disabled = true;
+    oneButton.disabled = true;
+    results.replaceChildren();
+    status.textContent = action === 'crawl_batch'
+      ? 'Crawling the next small batch of official university sites. This may take a little while.'
+      : 'Crawling the selected official university site. This may take a little while.';
+    try {
+      const client = window.CampusShieldBackend?.client;
+      if (!client) throw new Error('CampusShield is not connected to Supabase.');
+      const body = action === 'crawl_batch'
+        ? { action: 'crawl_batch', batch_size: 2 }
+        : { action: 'crawl_university', university_id: select.value };
+      const { data, error } = await client.functions.invoke('campus-service-directory-crawler', { body });
+      if (error) throw error;
+      if (!data || data.error) throw new Error(data?.error || 'The crawler returned no result.');
+      if (data.done) {
+        status.textContent = data.message || 'No university websites are due for crawling.';
+        return;
+      }
+      const siteCount = Number(data.batch_size || 0);
+      const pages = Number(data.pages_scanned || 0);
+      const offices = Number(data.office_pages_found || 0);
+      const fields = Number(data.fields_populated || 0);
+      const blocked = Number(data.failed_or_blocked || 0);
+      status.textContent = 'Finished ' + siteCount + ' university crawl(s): ' + pages + ' public page(s) scanned, ' +
+        offices + ' office-specific page(s) found, ' + fields + ' new field(s) added. ' +
+        (blocked ? blocked + ' site(s) were blocked or failed. ' : '') +
+        (data.more_available === true ? 'More university sites are queued; run the next batch to continue.' :
+          data.more_available === false ? 'No more university sites are currently due.' :
+          'Targeted crawl complete.');
+      results.innerHTML = (Array.isArray(data.results) ? data.results : []).map(function (item) {
+        return '<article class="platform-service-crawler-result">' +
+          '<h3>' + esc(item.university_name || 'University') + '</h3>' +
+          '<p class="status">' + esc(String(item.status || 'unknown').replace(/[_-]+/g, ' ')) +
+            ' · ' + Number(item.pages_scanned || 0) + ' page(s) · ' +
+            Number(item.office_pages_found || 0) + ' office page(s)</p>' +
+          '<p>' + esc(item.message || 'No additional details available.') + '</p>' +
+          '</article>';
+      }).join('');
+      if (Array.isArray(data.results) && data.results.some(item => item.status === 'success' || item.populated_fields > 0)) {
+        // Refresh the public directory view after fresh office links have been written.
+        window.CampusShieldServiceDirectory?.load();
+      }
+    } catch (error) {
+      status.textContent = error?.message || 'The official university crawler could not run. Check the function logs and try again.';
+    } finally {
+      batchButton.disabled = false;
+      oneButton.disabled = false;
+    }
+  }
+
+  $('platform-service-crawler-batch').addEventListener('click', function () {
+    runPlatformServiceDirectoryCrawl('crawl_batch');
+  });
+  $('platform-service-crawler-one').addEventListener('click', function () {
+    runPlatformServiceDirectoryCrawl('crawl_university');
+  });
+
 
   $('platform-admin-requests-table').addEventListener('click', async function(event) {
     const button = event.target.closest('[data-platform-university-review]');
