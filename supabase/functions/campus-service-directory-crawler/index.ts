@@ -23,7 +23,7 @@ type CrawlResult = {
   office_pages_found: number;
   populated_fields: number;
   message: string;
-  discovered_pages?: Array<{ category: string; url: string; title: string; status: string }>;
+  discovered_pages?: Array<{ category: string; url: string; title: string; status: string; phone?: string | null; email?: string | null; reviewed_at?: string; reviewed_by?: string; review_note?: string }>;
 };
 
 const CATEGORY_DEFS: Record<Category, {
@@ -524,7 +524,7 @@ async function crawlUniversity(
         ? "Crawled public pages and recorded candidate office URLs from the official site."
         : "Crawled public pages; no office-specific page could be verified from accessible HTML links."),
       discovered_pages: Array.from(officeCandidates.entries()).map(([category, office]) => ({
-        category, url: office.url, title: office.title, status: "candidate_requires_review",
+        category, url: office.url, title: office.title, phone: office.phone, email: office.email, status: "candidate_requires_review",
       })),
     };
   } catch (error) {
@@ -603,8 +603,8 @@ Deno.serve(async (req: Request) => {
     if (accessError || allowed !== true) return reply({ error: "Only a trusted platform administrator can run the national university crawler." }, 403, origin);
 
     const body = await req.json().catch(() => null);
-    if (!body || !["crawl_batch", "crawl_university", "crawl_history"].includes(String(body.action || ""))) {
-      return reply({ error: "Choose crawl_batch or crawl_university." }, 400, origin);
+    if (!body || !["crawl_batch", "crawl_university", "crawl_history", "review_candidate"].includes(String(body.action || ""))) {
+      return reply({ error: "Choose a supported crawler action." }, 400, origin);
     }
 
     const admin = createClient(supabaseUrl, secretKey, {
@@ -617,6 +617,134 @@ Deno.serve(async (req: Request) => {
         .order("started_at", { ascending: false }).limit(limit);
       if (historyError) return reply({ error: "Crawl history could not be loaded." }, 503, origin);
       return reply({ runs: runs || [] }, 200, origin);
+    }
+
+    if (body.action === "review_candidate") {
+      const runId = String(body.run_id || "");
+      const universityId = String(body.university_id || "");
+      const candidateUrl = String(body.url || "");
+      const category = String(body.category || "") as Category;
+      const decision = String(body.decision || "");
+      if (!/^[0-9a-f-]{36}$/i.test(runId) || !/^[0-9a-f-]{36}$/i.test(universityId)) {
+        return reply({ error: "A valid crawl run and university are required." }, 400, origin);
+      }
+      if (!Object.prototype.hasOwnProperty.call(CATEGORY_DEFS, category)) {
+        return reply({ error: "Choose a supported office category." }, 400, origin);
+      }
+      if (!["approve", "reject"].includes(decision)) {
+        return reply({ error: "Choose approve or reject for this candidate." }, 400, origin);
+      }
+      const { data: run, error: runError } = await admin.from("campus_crawler_runs")
+        .select("id,started_by,status,results").eq("id", runId).maybeSingle();
+      if (runError || !run) return reply({ error: "The saved crawl run was not found." }, 404, origin);
+      if (String(run.started_by) !== String(userData.user.id)) {
+        return reply({ error: "Only the owner who started this crawl can review its candidates." }, 403, origin);
+      }
+      const storedResults = Array.isArray(run.results) ? run.results as CrawlResult[] : [];
+      const universityResult = storedResults.find(item => item.university_id === universityId);
+      const candidate = universityResult?.discovered_pages?.find(page => page.url === candidateUrl && page.category === category);
+      if (!universityResult || !candidate) return reply({ error: "That candidate is not part of this saved crawl run." }, 404, origin);
+      if (candidate.status !== "candidate_requires_review") {
+        return reply({ error: "This candidate has already been reviewed.", candidate }, 409, origin);
+      }
+
+      const reviewedAt = new Date().toISOString();
+      const reviewNote = decision === "approve"
+        ? "Owner approved after manually reviewing the official source."
+        : "Owner rejected after manually reviewing the official source.";
+
+      if (decision === "reject") {
+        candidate.status = "rejected_by_owner";
+        candidate.reviewed_at = reviewedAt;
+        candidate.reviewed_by = userData.user.id;
+        candidate.review_note = reviewNote;
+        const { error: saveRunError } = await admin.from("campus_crawler_runs")
+          .update({ results: storedResults }).eq("id", runId);
+        if (saveRunError) return reply({ error: "The candidate decision could not be saved." }, 503, origin);
+        const { error: auditError } = await admin.from("campus_crawler_events").insert({
+          run_id: runId, event_type: "candidate_rejected", university_id: universityId,
+          university_name: universityResult.university_name, page_url: candidateUrl, category,
+          status: "rejected", message: reviewNote, metadata: { reviewed_by: userData.user.id }
+        });
+        return reply({ candidate, audit_event_saved: !auditError, message: "Candidate rejected. It was not added to the verified directory." }, 200, origin);
+      }
+
+      const { data: university, error: universityError } = await admin.from("campus_universities")
+        .select("id,name,official_website,is_active").eq("id", universityId).eq("is_active", true).maybeSingle();
+      if (universityError || !university?.official_website) {
+        return reply({ error: "The university's registered official website could not be verified." }, 422, origin);
+      }
+      let official: { base: URL; host: string };
+      let approvedUrl: URL;
+      try {
+        official = cleanHost(university.official_website);
+        approvedUrl = normalizePublicHttps(candidateUrl, official.base.toString());
+      } catch {
+        return reply({ error: "The candidate is not a safe public HTTPS URL." }, 422, origin);
+      }
+      if (approvedUrl.hostname.toLowerCase() !== official.host) {
+        return reply({ error: "Only pages on this university's registered official host can be approved." }, 422, origin);
+      }
+      const robots = await robotsRules(official.base);
+      if (!robots.ok || !robotsAllows(approvedUrl, robots.rules)) {
+        return reply({ error: "The page is no longer eligible under the official site's robots.txt rules." }, 422, origin);
+      }
+      let currentPage: { title: string; text: string; links: LinkCandidate[] };
+      try {
+        currentPage = pageTextFromHtml(await fetchHtml(approvedUrl, official.host));
+      } catch {
+        return reply({ error: "The official page could not be rechecked. The candidate was not approved." }, 422, origin);
+      }
+      if (!classifyPage(approvedUrl, currentPage.title).includes(category)) {
+        return reply({ error: "The current page no longer matches this office category. It was not approved." }, 422, origin);
+      }
+
+      const def = CATEGORY_DEFS[category];
+      const { data: existingService, error: existingError } = await admin.from("campus_university_service_directory")
+        .select("*").eq("university_id", universityId).maybeSingle();
+      if (existingError) return reply({ error: "The current service directory record could not be checked." }, 503, origin);
+      const currentUrl = String(existingService?.[def.urlField] || "");
+      if (currentUrl && currentUrl !== approvedUrl.toString()) {
+        return reply({ error: "A different source is already recorded for this category. Review it before replacing it." }, 409, origin);
+      }
+      const contacts = contactFromText(currentPage.title + "\n" + currentPage.text, category, official.host);
+      const updates: Record<string, unknown> = {
+        university_id: universityId,
+        [def.urlField]: approvedUrl.toString(),
+        [def.sourceField]: approvedUrl.toString(),
+        data_status: "official_office_pages_verified",
+        last_verified_at: reviewedAt,
+        updated_at: reviewedAt,
+      };
+      if (!existingService?.[def.phoneField] && contacts.phone) updates[def.phoneField] = contacts.phone;
+      if (!existingService?.[def.emailField] && contacts.email) updates[def.emailField] = contacts.email;
+      const { error: saveServiceError } = await admin.from("campus_university_service_directory")
+        .upsert(updates, { onConflict: "university_id" });
+      if (saveServiceError) return reply({ error: "The directory could not save the owner-approved source." }, 503, origin);
+
+      candidate.status = "approved_by_owner";
+      candidate.title = currentPage.title || candidate.title;
+      candidate.phone = contacts.phone;
+      candidate.email = contacts.email;
+      candidate.reviewed_at = reviewedAt;
+      candidate.reviewed_by = userData.user.id;
+      candidate.review_note = reviewNote;
+      const { error: saveRunError } = await admin.from("campus_crawler_runs")
+        .update({ results: storedResults }).eq("id", runId);
+      const { error: auditError } = await admin.from("campus_crawler_events").insert({
+        run_id: runId, event_type: "candidate_approved", university_id: universityId,
+        university_name: university.name, page_url: approvedUrl.toString(), category,
+        status: "approved", message: reviewNote,
+        metadata: { reviewed_by: userData.user.id, history_update_failed: Boolean(saveRunError) }
+      });
+      return reply({
+        candidate,
+        audit_event_saved: !auditError,
+        history_update_failed: Boolean(saveRunError),
+        message: saveRunError
+          ? "The source was added to the verified directory, but crawl-history status could not be updated. Refresh history and verify the directory."
+          : "Candidate approved and added to the verified service directory."
+      }, 200, origin);
     }
     let selected: Array<{ id: string; name: string; ownership: string; official_website: string | null }> = [];
     let totalWithHomepage = 0;
