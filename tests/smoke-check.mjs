@@ -519,10 +519,10 @@ assert.match(pushDispatchFunction, /subscriptions_found: 0, no_subscription: tru
 assert.match(pushDispatchFunction, /subscriptions_found: subscriptions\.length, no_subscription: false/);
 assert.match(html, /if \(delivered === 0 && result\?\.no_subscription === true\)/, "test repairs only a missing server subscription, not any generic delivery failure");
 assert.match(html, /Push delivery was not confirmed\. The subscription was kept/);
-assert.match(serviceWorker, /"\.\/?page=timetable"/);
-assert.match(serviceWorker, /"\.\/?page=campus-messages"/);
-assert.match(serviceWorker, /"\.\/?page=noticeboard"/);
-assert.match(serviceWorker, /"\.\/?page=profile-settings"/);
+assert.ok(serviceWorker.includes('"./?page=timetable"'), "service worker permits timetable notification routing");
+assert.ok(serviceWorker.includes('"./?page=campus-messages"'), "service worker permits campus messages notification routing");
+assert.ok(serviceWorker.includes('"./?page=noticeboard"'), "service worker permits campus noticeboard notification routing");
+assert.ok(serviceWorker.includes('"./?page=profile-settings"'), "service worker permits profile settings notification routing");
 console.log("PASS push destination routing, missing-subscription diagnosis, and non-destructive notification test retries");
 
 
