@@ -3453,6 +3453,30 @@ input,select,textarea,button,.btn{max-width:100%}
   let currentProfile = null;
   let communityProfile = null;
   let campusContext = null;
+
+  // Push notification destinations are an allowlist, not arbitrary page names.
+  const notificationDestinationPages = new Set(['timetable', 'campus-messages', 'noticeboard', 'profile-settings']);
+  let pendingNotificationPage = new URLSearchParams(window.location.search).get('page');
+  if (!notificationDestinationPages.has(pendingNotificationPage)) pendingNotificationPage = null;
+
+  function clearPendingNotificationPage() {
+    pendingNotificationPage = null;
+    try {
+      const url = new URL(window.location.href);
+      if (!url.searchParams.has('page')) return;
+      url.searchParams.delete('page');
+      window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+    } catch (_) {
+      // Navigation can continue if history APIs are unavailable.
+    }
+  }
+
+  // Once a signed-in user interacts with the workspace, discard the notification
+  // deep link so a later refresh does not keep forcing the previous destination.
+  document.addEventListener('click', function(event) {
+    if (!event.isTrusted || !event.target?.closest?.('#workspace')) return;
+    clearPendingNotificationPage();
+  }, true);
   let campusUniversitiesCache = null;
   let communityLoading = false;
   let studentIdentitySubmission = null;
@@ -4130,6 +4154,21 @@ input,select,textarea,button,.btn{max-width:100%}
       showLogin('Please sign in to access CampusShield.');
       return;
     }
+
+    // Existing startup paths may call navigate('dashboard') more than once
+    // while restoring/signing in. Honor the pending notification destination
+    // until the user interacts, while retaining normal role checks below.
+    if (page === 'dashboard' && pendingNotificationPage) {
+      const target = pendingNotificationPage;
+      if (['campus-messages', 'noticeboard'].includes(target) &&
+          currentProfile.verification_status !== 'verified') {
+        clearPendingNotificationPage();
+        toast('This notification destination requires a verified account. Showing Overview.');
+      } else {
+        page = target;
+      }
+    }
+
     const verified = currentProfile.verification_status === 'verified';
     const verifiedAdmin = verified && currentProfile.role === 'admin';
 
@@ -9013,6 +9052,7 @@ input,select,textarea,button,.btn{max-width:100%}
         await refreshIncidentsFromSupabase();
         loadCampusDashboardInsights();
         if (!campusContext?.university_id) {
+          clearPendingNotificationPage();
           navigate('community');
           await loadCommunityPage();
           toast('Choose your university to create your private campus space.');
@@ -9020,6 +9060,7 @@ input,select,textarea,button,.btn{max-width:100%}
           navigate('dashboard');
           await loadStudentIdentityStatus();
         } else if (isTeacherAccount() && currentProfile.verification_status !== 'verified') {
+          clearPendingNotificationPage();
           navigate('staff-verification');
           await loadCampusStaffVerificationStatus();
         }
@@ -9070,6 +9111,7 @@ input,select,textarea,button,.btn{max-width:100%}
       await refreshIncidentsFromSupabase();
       loadCampusDashboardInsights();
       if (!campusContext?.university_id) {
+        clearPendingNotificationPage();
         navigate('community');
         await loadCommunityPage();
         toast('Choose your university to create your private campus space.');
@@ -9077,6 +9119,7 @@ input,select,textarea,button,.btn{max-width:100%}
         navigate('dashboard');
         await loadStudentIdentityStatus();
       } else if (isTeacherAccount() && currentProfile.verification_status !== 'verified') {
+        clearPendingNotificationPage();
         navigate('staff-verification');
         await loadCampusStaffVerificationStatus();
       }
