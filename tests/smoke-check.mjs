@@ -440,6 +440,7 @@ assert.match(html, /maybeShowCampusWelcomeTour\(\)/);
 assert.match(html, /localStorage\.setItem\('campusshield-welcome-tour-v1', 'seen'\)/);
 assert.match(html, /data-campus-tour-page="report"/);
 assert.match(html, /data-campus-tour-page="community"/);
+assert.match(html, /\['community','noticeboard'\]\.includes\(page\) && currentProfile\?\.verification_status !== 'verified'/, "first-time tour links keep verified-only routes gated");
 assert.match(html, /data-campus-pulse-prompt="question"/);
 assert.match(html, /data-campus-pulse-prompt="campus_update"/);
 assert.match(html, /data-campus-pulse-prompt="lost_found"/);
