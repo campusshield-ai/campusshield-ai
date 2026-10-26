@@ -525,6 +525,10 @@ assert.match(pushDispatchFunction, /subscriptions_found: 0, no_subscription: tru
 assert.match(pushDispatchFunction, /subscriptions_found: subscriptions\.length, no_subscription: false/);
 assert.match(html, /if \(delivered === 0 && result\?\.no_subscription === true\)/, "test repairs only a missing server subscription, not any generic delivery failure");
 assert.match(html, /Push delivery was not confirmed\. The subscription was kept/);
+assert.match(html, /const notificationDestinationPages = new Set\(\['timetable', 'campus-messages', 'noticeboard', 'profile-settings'\]\)/, "only approved notification deep links are accepted");
+assert.match(html, /if \(page === 'dashboard' && pendingNotificationPage\)/, "startup redirects preserve the requested notification destination");
+assert.match(html, /\['campus-messages', 'noticeboard'\]\.includes\(target\)[\s\S]*?currentProfile\.verification_status !== 'verified'/, "verified-only notification destinations remain gated");
+assert.match(html, /document\.addEventListener\('click', function\(event\)\s*\{\s*if \(!event\.isTrusted \|\| !event\.target\?\.closest\?\.\('#workspace'\)\) return;\s*clearPendingNotificationPage\(\);\s*\}, true\)/, "workspace interaction clears stale notification routes");
 assert.ok(serviceWorker.includes('"./?page=timetable"'), "service worker permits timetable notification routing");
 assert.ok(serviceWorker.includes('"./?page=campus-messages"'), "service worker permits campus messages notification routing");
 assert.ok(serviceWorker.includes('"./?page=noticeboard"'), "service worker permits campus noticeboard notification routing");
