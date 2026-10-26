@@ -326,9 +326,23 @@ function contactFromText(text: string, category: Category, siteHost: string): { 
 
 function classifyPage(url: URL, title: string): Category[] {
   const found: Category[] = [];
-  for (const category of Object.keys(CATEGORY_DEFS) as Category[]) {
-    const def = CATEGORY_DEFS[category];
-    if (def.pathTerms.test(url.pathname) || def.titleTerms.test(title)) found.push(category);
+  const path = url.pathname.toLowerCase();
+  const label = (url.pathname + " " + title).toLowerCase();
+
+  // Only classify an actual health service: academic phrases such as
+  // "Department of Medical Biochemistry" and news stories mentioning wellbeing
+  // are not evidence of a campus clinic or health service.
+  const medicalService = /(?:clinic|hospital|medical[-_\\/ ]?(?:centre|center|service|services|unit)|health[-_\\/ ]?(?:centre|center|service|services|unit|clinic)|student[-_\\/ ]?health|campus[-_\\/ ]?health[-_\\/ ]?(?:centre|center|service|unit)|wellness[-_\\/ ]?services?)/i;
+  if (medicalService.test(label)) found.push("medical");
+
+  const studentAffairsTitle = /(?:student\\s*affairs|dean\\s*of\\s*students|student\\s*services|student\\s*welfare|student\\s*development)/i;
+  if (CATEGORY_DEFS.student_affairs.pathTerms.test(path) || studentAffairsTitle.test(title)) {
+    found.push("student_affairs");
+  }
+
+  const registrar = CATEGORY_DEFS.registrar;
+  if (registrar.pathTerms.test(path) || registrar.titleTerms.test(title)) {
+    found.push("registrar");
   }
   return found;
 }
@@ -469,40 +483,19 @@ async function crawlUniversity(
       last_crawl_by: userId,
       updated_at: new Date().toISOString(),
     };
-    let populatedFields = 0;
-    for (const category of Object.keys(CATEGORY_DEFS) as Category[]) {
-      const office = officeCandidates.get(category);
-      if (!office) continue;
-      const def = CATEGORY_DEFS[category];
-      if (!serviceRow?.[def.urlField]) {
-        updates[def.urlField] = office.url;
-        populatedFields++;
-      }
-      if (!serviceRow?.[def.sourceField]) {
-        updates[def.sourceField] = office.url;
-        populatedFields++;
-      }
-      if (!serviceRow?.[def.phoneField] && office.phone) {
-        updates[def.phoneField] = office.phone;
-        populatedFields++;
-      }
-      if (!serviceRow?.[def.emailField] && office.email) {
-        updates[def.emailField] = office.email;
-        populatedFields++;
-      }
-    }
-
+    // Crawl discoveries are candidates until an owner explicitly approves them.
+    // Do not copy heuristic matches into the verified campus service directory.
+    const populatedFields = 0;
     const hasOfficeFields =
-      Boolean(serviceRow?.medical_services_url || updates.medical_services_url) ||
-      Boolean(serviceRow?.student_affairs_url || updates.student_affairs_url) ||
-      Boolean(serviceRow?.registrar_url || updates.registrar_url) ||
-      Boolean(serviceRow?.medical_phone || updates.medical_phone || serviceRow?.medical_email || updates.medical_email) ||
-      Boolean(serviceRow?.student_affairs_phone || updates.student_affairs_phone || serviceRow?.student_affairs_email || updates.student_affairs_email) ||
-      Boolean(serviceRow?.registrar_phone || updates.registrar_phone || serviceRow?.registrar_email || updates.registrar_email);
-    updates.data_status = hasOfficeFields
+      Boolean(serviceRow?.medical_services_url) ||
+      Boolean(serviceRow?.student_affairs_url) ||
+      Boolean(serviceRow?.registrar_url) ||
+      Boolean(serviceRow?.medical_phone || serviceRow?.medical_email) ||
+      Boolean(serviceRow?.student_affairs_phone || serviceRow?.student_affairs_email) ||
+      Boolean(serviceRow?.registrar_phone || serviceRow?.registrar_email);
+    updates.data_status = hasOfficeFields && serviceRow?.data_status === "official_office_pages_verified"
       ? "official_office_pages_verified"
       : (university.official_website ? "official_homepage_only" : "nuc_listing_only");
-    if (populatedFields > 0) updates.last_verified_at = new Date().toISOString();
     if (note) {
       crawlStatus = pagesScanned ? "partial" : "failed";
       crawlError = note;
@@ -515,7 +508,7 @@ async function crawlUniversity(
     updates.last_crawl_status = crawlStatus;
     updates.last_crawl_error = crawlError;
 
-    await report({ event_type: "directory_update_started", status: "running", message: "Saving verified-source candidates and crawl metrics to the campus service directory." });
+    await report({ event_type: "directory_update_started", status: "running", message: "Saving crawl metrics only; discovered pages remain candidates until an owner reviews and approves them." });
     const { error: saveError } = await admin.from("campus_university_service_directory")
       .upsert(updates, { onConflict: "university_id" });
     if (saveError) throw new Error("service_record_save_failed");
