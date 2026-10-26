@@ -1795,7 +1795,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .crawler-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.crawler-stat{border:1px solid #1b3549;border-radius:12px;padding:14px;background:#091827;min-width:0}.crawler-stat span{display:block;font-size:12px;color:#91a9bd}.crawler-stat strong{display:block;font-size:26px;color:#f2f8ff;margin-top:4px}
 .crawler-section-heading h3{margin:0;font-size:16px}.crawler-section-heading>span{font-size:11px;font-weight:800;letter-spacing:.06em;color:#12e6b0}.crawler-live-activity ol{padding:0;margin:9px 0 0;list-style:none}.crawler-live-activity li{display:flex;gap:10px;align-items:flex-start;border-top:1px solid #173246;padding:11px 0}.crawler-activity-dot{width:10px;height:10px;border:2px solid #6d8ba0;border-radius:50%;margin-top:5px;flex:none}.crawler-live-activity li.done .crawler-activity-dot{background:#12e6b0;border-color:#12e6b0}.crawler-live-activity small{display:block;color:#8ea8bf;font-size:12px;margin-top:2px}
 .crawler-private-note{display:flex;gap:12px;align-items:center;border:1px solid #087b6c;background:#06302d;border-radius:12px;padding:13px;margin:12px 0;color:#dffdf5}.crawler-private-note>span{font-size:22px}.crawler-private-note small{display:block;color:#a6c8c3;margin-top:3px}.crawler-note{font-size:12px}.crawler-actions{margin-top:12px}
-.platform-service-crawler-result{padding:12px;border:1px solid #234457;border-radius:10px;background:#0b1e2d;margin-top:9px}.platform-service-crawler-result h3{margin:0 0 5px;color:#e8f8ff;font-size:14px}.platform-service-crawler-result p{margin:4px 0;color:#9bb2c6;font-size:12px;line-height:1.5}.platform-service-crawler-result .status{font-weight:800;color:#12e6b0}
+.platform-service-crawler-result{padding:12px;border:1px solid #234457;border-radius:10px;background:#0b1e2d;margin-top:9px}.platform-service-crawler-result h3{margin:0 0 5px;color:#e8f8ff;font-size:14px}.platform-service-crawler-result p{margin:4px 0;color:#9bb2c6;font-size:12px;line-height:1.5}.platform-service-crawler-result .status{font-weight:800;color:#12e6b0}\n.crawler-candidate-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.crawler-candidate-actions .btn{min-height:34px}.crawler-candidate-state{margin:8px 0 0;font-size:12px;font-weight:800}.crawler-candidate-contact{font-size:12px;color:#b8ccdc;overflow-wrap:anywhere}
 @keyframes crawlerDash{to{stroke-dashoffset:-48}}
 @media(max-width:600px){.crawler-stat-grid{grid-template-columns:1fr}.crawler-network{height:210px}.crawler-float{font-size:10px;padding:5px 6px}.crawler-live-panel{padding:12px}.crawler-owner-pill{font-size:12px}}
 </style>
@@ -3287,7 +3287,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <section class="panel crawler-live-panel" id="platform-service-directory-crawler" hidden aria-label="Owner-only university services crawler">
       <div class="crawler-live-top">
         <div><p class="crawler-eyebrow"><span class="crawler-live-dot"></span> PRIVATE LIVE CRAWLER</p><h2>University web crawler</h2>
-        <p>Discover official campus services and feed verified public information into CampusShield AI.</p></div>
+        <p>Discover official campus services. Review each source before it becomes verified CampusShield AI directory data.</p></div>
         <span class="crawler-owner-pill">♛ Owner only</span>
       </div>
       <div class="crawler-network" aria-label="Illustration of connected official university pages">
@@ -3304,13 +3304,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <div class="crawler-stat-grid">
         <div class="crawler-stat"><span>Pages scanned</span><strong id="platform-crawler-pages">—</strong></div>
         <div class="crawler-stat"><span>Office pages found</span><strong id="platform-crawler-offices">—</strong></div>
-        <div class="crawler-stat"><span>Fields populated</span><strong id="platform-crawler-fields">—</strong></div>
+        <div class="crawler-stat"><span>Verified fields updated</span><strong id="platform-crawler-fields">—</strong></div>
       </div>
       <div class="crawler-live-activity"><div class="crawler-section-heading"><h3>Activity feed</h3><span id="platform-service-crawler-run-state">READY</span></div>
         <ol id="platform-service-crawler-activity"><li><span class="crawler-activity-dot"></span><div>Ready to crawl<small>Run a batch or select a university.</small></div></li></ol>
       </div>
       <div class="crawler-live-discoveries"><div class="crawler-section-heading"><h3>Latest discoveries</h3><span id="platform-service-crawler-result-count">0 results</span></div>
-        <p class="muted crawler-note">Live activity streams from the staging crawler as each page is processed. Discovered URLs appear on the map and candidate office pages below as they are found.</p>
+        <p class="muted crawler-note">Live activity streams from this environment. Candidates stay out of the verified directory until the owner approves them.</p>
         <div id="platform-service-crawler-results" class="platform-service-crawler-results" aria-live="polite"></div>
       </div>
       <div class="crawler-live-discoveries"><div class="crawler-section-heading"><h3>Previous crawl runs</h3><button class="btn secondary" type="button" id="platform-service-crawler-history-refresh">Refresh history</button></div><div id="platform-service-crawler-history"><p class="muted crawler-note">Loading crawl history…</p></div></div>
@@ -6486,6 +6486,103 @@ button,input,select,textarea{max-width:100%;min-width:0}
   $('platform-admin-refresh-candidates').addEventListener('click', loadPlatformAdminCandidates);
   $('platform-admin-university-select').addEventListener('change', loadPlatformAdminCandidates);
 
+  async function reviewCrawlerCandidate(page, runId, article, decision) {
+    const owner = await window.CampusShieldBackend?.getCurrentUser().catch(() => null);
+    if (String(owner?.email || '').toLowerCase() !== 'campusshieldaitechnologies@gmail.com') {
+      const state = article.querySelector('[data-candidate-state]');
+      if (state) state.textContent = 'Review denied: owner account required.';
+      return;
+    }
+    const confirmText = decision === 'approve'
+      ? 'Approve this source into the verified university service directory? Check the official page and contact details first.'
+      : 'Reject this candidate? It will stay out of the verified service directory.';
+    if (!confirm(confirmText)) return;
+    const actions = article.querySelector('.crawler-candidate-actions');
+    const state = article.querySelector('[data-candidate-state]');
+    const buttons = actions ? Array.from(actions.querySelectorAll('button')) : [];
+    buttons.forEach(button => { button.disabled = true; });
+    if (state) state.textContent = decision === 'approve' ? 'Rechecking the official page before approval…' : 'Saving rejection…';
+    try {
+      const client = window.CampusShieldBackend?.client;
+      if (!client) throw new Error('CampusShield is not connected to Supabase.');
+      const response = await client.functions.invoke('campus-service-directory-crawler', {
+        body: { action: 'review_candidate', run_id: runId, university_id: page.university_id, url: page.url, category: page.category, decision: decision }
+      });
+      const data = response.data;
+      const error = response.error;
+      if (error || data?.error) throw new Error(data?.error || error?.message || 'Candidate review failed.');
+      page.status = data?.candidate?.status || (decision === 'approve' ? 'approved_by_owner' : 'rejected_by_owner');
+      if (state) state.textContent = page.status === 'approved_by_owner'
+        ? 'APPROVED BY OWNER · Added to verified directory'
+        : 'REJECTED BY OWNER · Not added to verified directory';
+      if (actions) actions.replaceChildren();
+      if (decision === 'approve') window.CampusShieldServiceDirectory?.load?.();
+      if (data?.history_update_failed) {
+        const warning = document.createElement('p');
+        warning.className = 'crawler-candidate-contact';
+        warning.textContent = 'The directory was updated, but refresh history to confirm the saved review status.';
+        article.appendChild(warning);
+      }
+    } catch (error) {
+      if (state) state.textContent = error?.message || 'Candidate review failed.';
+      buttons.forEach(button => { button.disabled = false; });
+    }
+  }
+
+  function renderCrawlerCandidateCard(page, runId) {
+    const article = document.createElement('article');
+    article.className = 'platform-service-crawler-result';
+    const h = document.createElement('h3');
+    h.textContent = page.title || page.category || 'Office page';
+    const meta = document.createElement('p');
+    meta.className = 'status';
+    meta.textContent = (page.university_name || 'University') + ' · ' + String(page.category || 'unknown').replaceAll('_', ' ');
+    const link = document.createElement('a');
+    let safeLink = false;
+    try { const parsed = new URL(page.url); safeLink = parsed.protocol === 'https:'; } catch {}
+    if (safeLink) {
+      link.href = page.url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+    }
+    link.textContent = page.url || 'Source URL unavailable';
+    link.style.overflowWrap = 'anywhere';
+    const state = document.createElement('p');
+    state.className = 'crawler-candidate-state';
+    state.setAttribute('data-candidate-state', 'true');
+    const status = String(page.status || 'candidate_requires_review');
+    state.textContent = status === 'approved_by_owner' ? 'APPROVED BY OWNER · Added to verified directory'
+      : status === 'rejected_by_owner' ? 'REJECTED BY OWNER · Not added to verified directory'
+      : 'CANDIDATE · Review the official source before approval';
+    article.append(h, meta, link, state);
+    const contactParts = [];
+    if (page.phone) contactParts.push('Detected phone: ' + page.phone);
+    if (page.email) contactParts.push('Detected email: ' + page.email);
+    if (contactParts.length) {
+      const contact = document.createElement('p');
+      contact.className = 'crawler-candidate-contact';
+      contact.textContent = contactParts.join(' · ');
+      article.appendChild(contact);
+    }
+    if (status === 'candidate_requires_review') {
+      const actions = document.createElement('div');
+      actions.className = 'crawler-candidate-actions';
+      const approve = document.createElement('button');
+      approve.type = 'button';
+      approve.className = 'btn';
+      approve.textContent = 'Approve source';
+      approve.addEventListener('click', () => reviewCrawlerCandidate(page, runId, article, 'approve'));
+      const reject = document.createElement('button');
+      reject.type = 'button';
+      reject.className = 'btn danger';
+      reject.textContent = 'Reject';
+      reject.addEventListener('click', () => reviewCrawlerCandidate(page, runId, article, 'reject'));
+      actions.append(approve, reject);
+      article.appendChild(actions);
+    }
+    return article;
+  }
+
   async function runPlatformServiceDirectoryCrawl(action) {
     const status = $('platform-service-crawler-status');
     const results = $('platform-service-crawler-results');
@@ -6557,21 +6654,15 @@ button,input,select,textarea{max-width:100%;min-width:0}
       });
       document.querySelectorAll('.crawler-float').forEach(el=>el.hidden=true);
     };
-    const renderResults = (items) => {
+    const renderResults = (items, activeRunId) => {
       const all = [];
-      (Array.isArray(items)?items:[]).forEach(item => (item.discovered_pages||[]).forEach(page => all.push({...page, university_name:item.university_name})));
-      if (resultCount) resultCount.textContent = all.length + ' candidate page(s) · requires review';
+      (Array.isArray(items)?items:[]).forEach(item => (item.discovered_pages||[]).forEach(page => all.push({...page, university_id:item.university_id, university_name:item.university_name})));
+      if (resultCount) resultCount.textContent = all.length + ' candidate page(s) · review each source';
       results.replaceChildren();
       if (!all.length) {
         const p=document.createElement('p');p.className='muted';p.textContent='No office-specific candidate pages were returned by this crawl.';results.appendChild(p);return;
       }
-      all.forEach(page => {
-        const article=document.createElement('article');article.className='platform-service-crawler-result';
-        const h=document.createElement('h3');h.textContent=page.title||page.category||'Office page';
-        const meta=document.createElement('p');meta.className='status';meta.textContent=(page.university_name||'University')+' · '+String(page.category||'unknown').replaceAll('_',' ')+' · Candidate — needs owner review';
-        const link=document.createElement('a');link.href=page.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=page.url;link.style.overflowWrap='anywhere';
-        article.append(h,meta,link);results.appendChild(article);
-      });
+      all.forEach(page => results.appendChild(renderCrawlerCandidateCard(page, activeRunId)));
     };
     const loadHistory = async () => {
       const target=$('platform-service-crawler-history'); if(!target)return;
@@ -6584,8 +6675,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
         runs.forEach(run=>{
           const row=document.createElement('article');row.className='platform-service-crawler-result';
           const h=document.createElement('h3');h.textContent=new Date(run.started_at).toLocaleString()+' · '+String(run.status||'unknown').toUpperCase();
-          const p=document.createElement('p');p.textContent=(run.action==='crawl_batch'?'Batch crawl':'Selected university')+' · '+Number(run.pages_scanned||0)+' pages · '+Number(run.office_pages_found||0)+' office pages · '+Number(run.fields_populated||0)+' fields · '+Number(run.failed_or_blocked||0)+' failed/blocked';
+          const p=document.createElement('p');p.textContent=(run.action==='crawl_batch'?'Batch crawl':'Selected university')+' · '+Number(run.pages_scanned||0)+' pages · '+Number(run.office_pages_found||0)+' candidates · '+Number(run.fields_populated||0)+' verified fields updated · '+Number(run.failed_or_blocked||0)+' failed/blocked';
           row.append(h,p);target.appendChild(row);
+          (Array.isArray(run.results)?run.results:[]).forEach(item=>(item.discovered_pages||[]).forEach(page=>{
+            target.appendChild(renderCrawlerCandidateCard({...page,university_id:item.university_id,university_name:item.university_name},run.id));
+          }));
         });
       } catch(err) {target.textContent=err?.message||'Crawl history could not be loaded.';}
     };
@@ -6654,8 +6748,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
             if(progressBar)progressBar.style.width='100%';
             if(progressLabel)progressLabel.textContent='Completed · '+Number(payload.batch_size||0)+' university site(s)';
             if(runState)runState.textContent=String(payload.status||'completed').toUpperCase();
-            status.textContent=payload.message+' '+Number(payload.pages_scanned||0)+' pages scanned, '+Number(payload.office_pages_found||0)+' office pages found, '+Number(payload.fields_populated||0)+' fields populated.';
-            renderResults(payload.results||[]);
+            status.textContent=payload.message+' '+Number(payload.pages_scanned||0)+' pages scanned, '+Number(payload.office_pages_found||0)+' office pages found, '+Number(payload.fields_populated||0)+' verified fields updated.';
+            renderResults(payload.results||[], payload.run_id || runId);
             activityLine('Crawl finished',status.textContent,true);
           } else if(payload.type==='error') {
             throw new Error(payload.message||'The crawl failed.');
@@ -6664,7 +6758,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       }
       if(!completed)throw new Error('The live stream ended before a completion summary arrived. Check saved crawl history.');
       await loadHistory();
-      if(finalPayload?.results?.some(item=>item.status==='success'||item.populated_fields>0))window.CampusShieldServiceDirectory?.load();
+      if(finalPayload?.results?.some(item=>item.populated_fields>0))window.CampusShieldServiceDirectory?.load?.();
     } catch(error) {
       if(progressLabel)progressLabel.textContent='Crawl interrupted or failed';
       if(runState)runState.textContent='ERROR';
@@ -6697,8 +6791,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
     runs.forEach(run => {
       const article = document.createElement('article'); article.className = 'platform-service-crawler-result';
       const heading = document.createElement('h3'); heading.textContent = new Date(run.started_at).toLocaleString() + ' · ' + String(run.status || 'unknown').toUpperCase();
-      const detail = document.createElement('p'); detail.textContent = Number(run.pages_scanned || 0) + ' pages · ' + Number(run.office_pages_found || 0) + ' office pages · ' + Number(run.fields_populated || 0) + ' fields · ' + Number(run.failed_or_blocked || 0) + ' failed/blocked';
+      const detail = document.createElement('p'); detail.textContent = Number(run.pages_scanned || 0) + ' pages · ' + Number(run.office_pages_found || 0) + ' candidates · ' + Number(run.fields_populated || 0) + ' verified fields updated · ' + Number(run.failed_or_blocked || 0) + ' failed/blocked';
       article.append(heading, detail); target.appendChild(article);
+      (Array.isArray(run.results) ? run.results : []).forEach(item => (item.discovered_pages || []).forEach(page => {
+        target.appendChild(renderCrawlerCandidateCard({ ...page, university_id: item.university_id, university_name: item.university_name }, run.id));
+      }));
     });
   });
 
