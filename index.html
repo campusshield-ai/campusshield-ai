@@ -3310,7 +3310,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <ol id="platform-service-crawler-activity"><li><span class="crawler-activity-dot"></span><div>Ready to crawl<small>Run a batch or select a university.</small></div></li></ol>
       </div>
       <div class="crawler-live-discoveries"><div class="crawler-section-heading"><h3>Latest discoveries</h3><span id="platform-service-crawler-result-count">0 results</span></div>
-        <p class="muted crawler-note">Results appear here after the server returns actual crawl data. This crawler does not stream per-page events, so progress is updated when the request completes.</p>
+        <p class="muted crawler-note">Live activity streams from the staging crawler as each page is processed. Discovered URLs appear on the map and candidate office pages below as they are found.</p>
         <div id="platform-service-crawler-results" class="platform-service-crawler-results" aria-live="polite"></div>
       </div>
       <div class="crawler-live-discoveries"><div class="crawler-section-heading"><h3>Previous crawl runs</h3><button class="btn secondary" type="button" id="platform-service-crawler-history-refresh">Refresh history</button></div><div id="platform-service-crawler-history"><p class="muted crawler-note">Loading crawl history…</p></div></div>
@@ -6339,7 +6339,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
       const signedInAdmin = await backend.getCurrentUser();
       const crawlerPanel = $('platform-service-directory-crawler');
       const isCrawlerOwner = String(signedInAdmin?.email || '').toLowerCase() === 'campusshieldaitechnologies@gmail.com';
-      if (crawlerPanel) crawlerPanel.hidden = !isCrawlerOwner;
+      const crawlerHost = String(window.location.hostname || '').toLowerCase();
+      const isStagingCrawlerHost = /^campusshield-ai-staging-preview-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || /^campusshield-ai-staging-p-git-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || crawlerHost === 'localhost' || crawlerHost === '127.0.0.1';
+      if (crawlerPanel) crawlerPanel.hidden = !isCrawlerOwner || !isStagingCrawlerHost;
       $('platform-admin-nav').hidden = false;
       syncNavSectionHeadings();
       accessPanel.hidden = true;
@@ -6488,6 +6490,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const status = $('platform-service-crawler-status');
     const results = $('platform-service-crawler-results');
     const signedInUser = await window.CampusShieldBackend?.getCurrentUser().catch(() => null);
+    const crawlerHost = String(window.location.hostname || '').toLowerCase();
+    const isStagingCrawlerHost = /^campusshield-ai-staging-preview-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || /^campusshield-ai-staging-p-git-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || crawlerHost === 'localhost' || crawlerHost === '127.0.0.1';
+    if (!isStagingCrawlerHost) { if (status) status.textContent = 'The crawler is staging-only until its production backend is explicitly deployed.'; return; }
     if (String(signedInUser?.email || '').toLowerCase() !== 'campusshieldaitechnologies@gmail.com') {
       if (status) status.textContent = 'This crawler is restricted to its designated owner.';
       return;
@@ -6675,6 +6680,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
     runPlatformServiceDirectoryCrawl('crawl_university');
   });
   $('platform-service-crawler-history-refresh')?.addEventListener('click', async function () {
+    const host = String(window.location.hostname || '').toLowerCase();
+    const stagingOnly = /^campusshield-ai-staging-preview-[a-z0-9-]+\.vercel\.app$/.test(host) || /^campusshield-ai-staging-p-git-[a-z0-9-]+\.vercel\.app$/.test(host) || host === 'localhost' || host === '127.0.0.1';
+    if (!stagingOnly) { $('platform-service-crawler-history').textContent = 'Crawler history is not enabled on the live website until its production backend is deployed.'; return; }
     const user = await window.CampusShieldBackend?.getCurrentUser().catch(() => null);
     if (String(user?.email || '').toLowerCase() !== 'campusshieldaitechnologies@gmail.com') return;
     const client = window.CampusShieldBackend?.client;
