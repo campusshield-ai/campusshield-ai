@@ -9483,6 +9483,313 @@ button,input,select,textarea{max-width:100%;min-width:0}
   }));
 
 
+
+  function feedbackStatusLabel(value) {
+    return ({
+      submitted: 'Submitted', triaged: 'Under review', in_progress: 'In progress',
+      planned: 'Planned', resolved: 'Resolved', declined: 'Not planned', duplicate: 'Duplicate'
+    })[String(value || '').toLowerCase()] || String(value || 'Submitted').replace(/_/g, ' ');
+  }
+  function feedbackKindLabel(value) {
+    return value === 'improvement' ? 'Improvement idea' : 'Problem report';
+  }
+  function feedbackDate(value) {
+    const date = value ? new Date(value) : null;
+    return date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : 'Date unavailable';
+  }
+  function feedbackIsGitHubIssueUrl(value) {
+    return /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/issues\/[0-9]+\/?$/.test(String(value || ''));
+  }
+  function feedbackElement(tag, className, text) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== undefined && text !== null) element.textContent = String(text);
+    return element;
+  }
+  async function submitCampusFeedbackForm(event, kind) {
+    event.preventDefault();
+    const isProblem = kind === 'problem';
+    const form = event.currentTarget;
+    const button = $(isProblem ? 'campus-problem-submit' : 'campus-improvement-submit');
+    const status = $(isProblem ? 'campus-problem-status' : 'campus-improvement-status');
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile) {
+      status.textContent = 'Sign in to submit feedback. Your submission has not been saved.';
+      return;
+    }
+    button.disabled = true;
+    status.dataset.state = '';
+    status.textContent = 'Submitting your feedback securely…';
+    try {
+      const saved = await backend.submitCampusFeedback({
+        kind,
+        category: $(isProblem ? 'campus-problem-category' : 'campus-improvement-category').value,
+        title: $(isProblem ? 'campus-problem-title' : 'campus-improvement-title').value.trim(),
+        description: $(isProblem ? 'campus-problem-description' : 'campus-improvement-description').value.trim(),
+        stepsToReproduce: isProblem ? $('campus-problem-steps').value.trim() : null,
+        expectedBehavior: isProblem ? null : $('campus-improvement-benefit').value.trim(),
+        impact: isProblem ? $('campus-problem-impact').value : 'normal'
+      });
+      form.reset();
+      status.dataset.state = 'success';
+      status.textContent = 'Submitted successfully. Your reference number is ' + saved.reference_code + '. Track status in My Submissions.';
+    } catch (error) {
+      console.warn('CampusShield feedback submission failed:', error?.code || error?.message || 'unknown');
+      status.dataset.state = 'error';
+      status.textContent = error?.message || 'Could not submit feedback. Please check your connection and try again.';
+    } finally {
+      button.disabled = false;
+    }
+  }
+  $('campusProblemForm')?.addEventListener('submit', event => submitCampusFeedbackForm(event, 'problem'));
+  $('campusImprovementForm')?.addEventListener('submit', event => submitCampusFeedbackForm(event, 'improvement'));
+
+  async function loadCampusFeedbackSubmissions() {
+    const status = $('campus-feedback-submissions-status');
+    const list = $('campus-feedback-submissions-list');
+    const backend = window.CampusShieldBackend;
+    if (!status || !list) return;
+    list.replaceChildren();
+    if (!currentProfile || !backend?.isConfigured) {
+      status.textContent = 'Sign in to see your private submissions.';
+      list.appendChild(feedbackElement('div','community-empty','Sign in to see your private submissions.'));
+      return;
+    }
+    status.textContent = 'Loading your submissions…';
+    try {
+      const items = await backend.listMyCampusFeedback();
+      if (!items.length) {
+        status.textContent = 'No submissions yet.';
+        list.appendChild(feedbackElement('div','community-empty','Your problem reports and improvement ideas will appear here after you submit them.'));
+        return;
+      }
+      status.textContent = items.length + ' submission' + (items.length === 1 ? '' : 's') + ' — newest first.';
+      items.forEach(item => {
+        const card = feedbackElement('article','feedback-ticket');
+        const head = feedbackElement('div','feedback-ticket-head');
+        const main = feedbackElement('div','feedback-ticket-head-main');
+        main.appendChild(feedbackElement('div','feedback-ticket-ref',item.reference_code));
+        main.appendChild(feedbackElement('h2','',item.title));
+        const meta = feedbackElement('div','feedback-ticket-meta');
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge',feedbackKindLabel(item.kind)));
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge status',feedbackStatusLabel(item.status)));
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge',String(item.priority || 'normal').toUpperCase() + ' PRIORITY'));
+        head.append(main,meta);
+        card.appendChild(head);
+        card.appendChild(feedbackElement('p','feedback-ticket-description',item.description));
+        card.appendChild(feedbackElement('div','feedback-ticket-detail','Category: ' + item.category + ' · Submitted ' + feedbackDate(item.created_at)));
+        if (item.steps_to_reproduce) card.appendChild(feedbackElement('div','feedback-ticket-detail','Steps to reproduce: ' + item.steps_to_reproduce));
+        if (item.expected_behavior) card.appendChild(feedbackElement('div','feedback-ticket-detail','Expected outcome / benefit: ' + item.expected_behavior));
+        if (item.github_issue_url && feedbackIsGitHubIssueUrl(item.github_issue_url)) {
+          const link = feedbackElement('a','', 'Linked GitHub issue');
+          link.href = item.github_issue_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          card.appendChild(link);
+        }
+        list.appendChild(card);
+      });
+    } catch (error) {
+      status.textContent = 'Your submissions could not be loaded. Check your connection and try again.';
+      list.appendChild(feedbackElement('div','community-empty',error?.message || 'Please try again.'));
+    }
+  }
+
+  async function loadCampusFeedbackAdminNotes(feedbackId, notesContainer, button) {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured) return;
+    if (button) { button.disabled = true; button.textContent = 'Loading notes…'; }
+    notesContainer.replaceChildren();
+    try {
+      const notes = await backend.listCampusFeedbackAdminNotes(feedbackId);
+      if (!notes.length) {
+        notesContainer.appendChild(feedbackElement('p','muted','No staff-only notes yet.'));
+      } else {
+        notes.forEach(note => {
+          const noteCard = feedbackElement('div','feedback-ticket-note',note.note);
+          noteCard.appendChild(feedbackElement('time','',feedbackDate(note.created_at) + ' · staff-only'));
+          notesContainer.appendChild(noteCard);
+        });
+      }
+      if (button) button.textContent = 'Refresh staff notes';
+    } catch (error) {
+      notesContainer.appendChild(feedbackElement('p','muted','Staff notes could not be loaded.'));
+      if (button) button.textContent = 'Load staff notes';
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async function loadCampusFeedbackAdmin() {
+    const status = $('campus-feedback-admin-status');
+    const queue = $('campus-feedback-admin-queue');
+    const backend = window.CampusShieldBackend;
+    if (!status || !queue) return;
+    queue.replaceChildren();
+    if (!currentProfile || currentProfile.role !== 'admin' || currentProfile.verification_status !== 'verified' || !backend?.isConfigured) {
+      status.textContent = 'This queue is restricted to verified administrators.';
+      queue.appendChild(feedbackElement('div','community-empty','This queue is restricted to verified administrators.'));
+      return;
+    }
+    status.textContent = 'Loading campus feedback…';
+    try {
+      const [items, campus] = await Promise.all([
+        backend.listMyCampusFeedback(),
+        backend.getMyCampusContext().catch(() => null)
+      ]);
+      if (!items.length) {
+        status.textContent = 'No feedback submissions are available to this admin account.';
+        queue.appendChild(feedbackElement('div','community-empty','New problem reports and improvement ideas will appear here when submitted.'));
+        return;
+      }
+      status.textContent = items.length + ' feedback item' + (items.length === 1 ? '' : 's') + ' available to this administrator. Internal notes are visible only to authorized staff.';
+      const assigneeCache = new Map();
+      const limitedItems = items.slice(0, 50);
+      for (const item of limitedItems) {
+        const universityId = item.university_id || campus?.university_id || null;
+        const cacheKey = universityId || 'global';
+        if (!assigneeCache.has(cacheKey)) {
+          assigneeCache.set(cacheKey, backend.listCampusFeedbackAssignees(universityId).catch(() => []));
+        }
+      }
+      const assigneeLists = new Map();
+      await Promise.all([...assigneeCache.entries()].map(async ([key,promise]) => assigneeLists.set(key, await promise)));
+      limitedItems.forEach(item => {
+        const card = feedbackElement('article','feedback-ticket');
+        const head = feedbackElement('div','feedback-ticket-head');
+        const main = feedbackElement('div','feedback-ticket-head-main');
+        main.appendChild(feedbackElement('div','feedback-ticket-ref',item.reference_code));
+        main.appendChild(feedbackElement('h2','',item.title));
+        const meta = feedbackElement('div','feedback-ticket-meta');
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge',feedbackKindLabel(item.kind)));
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge status',feedbackStatusLabel(item.status)));
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge',String(item.impact || 'normal').toUpperCase() + ' IMPACT'));
+        meta.appendChild(feedbackElement('span','feedback-ticket-badge',String(item.priority || 'normal').toUpperCase() + ' PRIORITY'));
+        head.append(main,meta);
+        card.appendChild(head);
+        card.appendChild(feedbackElement('p','feedback-ticket-description',item.description));
+        card.appendChild(feedbackElement('div','feedback-ticket-detail','Category: ' + item.category + ' · Submitted ' + feedbackDate(item.created_at) + ' · Submitter: ' + String(item.user_id || '').slice(0,8) + '…'));
+        if (item.steps_to_reproduce) card.appendChild(feedbackElement('div','feedback-ticket-detail','Steps to reproduce: ' + item.steps_to_reproduce));
+        if (item.expected_behavior) card.appendChild(feedbackElement('div','feedback-ticket-detail','Expected outcome / benefit: ' + item.expected_behavior));
+        if (item.github_issue_url && feedbackIsGitHubIssueUrl(item.github_issue_url)) {
+          const link = feedbackElement('a','', 'Open linked GitHub issue');
+          link.href = item.github_issue_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          card.appendChild(link);
+        }
+        const form = feedbackElement('form','feedback-ticket-form');
+        form.dataset.feedbackAdminForm = 'true';
+        form.dataset.feedbackId = item.id;
+        const statusWrap = feedbackElement('div','field');
+        const statusLabel = feedbackElement('label','','Status');
+        const statusSelect = document.createElement('select');
+        statusSelect.name = 'status';
+        statusSelect.setAttribute('aria-label','Feedback status');
+        [
+          ['submitted','Submitted'],['triaged','Under review'],['in_progress','In progress'],
+          ['planned','Planned'],['resolved','Resolved'],['declined','Not planned'],['duplicate','Duplicate']
+        ].forEach(([value,label]) => {
+          const option = document.createElement('option'); option.value = value; option.textContent = label; statusSelect.appendChild(option);
+        });
+        statusSelect.value = item.status;
+        statusLabel.htmlFor = 'feedback-status-' + item.id;
+        statusSelect.id = statusLabel.htmlFor;
+        statusWrap.append(statusLabel,statusSelect);
+        const priorityWrap = feedbackElement('div','field');
+        const priorityLabel = feedbackElement('label','','Priority');
+        const prioritySelect = document.createElement('select');
+        prioritySelect.name = 'priority';
+        priorityLabel.htmlFor = 'feedback-priority-' + item.id;
+        prioritySelect.id = priorityLabel.htmlFor;
+        [['low','Low'],['normal','Normal'],['high','High'],['urgent','Urgent']].forEach(([value,label]) => {
+          const option=document.createElement('option'); option.value=value; option.textContent=label; prioritySelect.appendChild(option);
+        });
+        prioritySelect.value = item.priority || 'normal';
+        priorityWrap.append(priorityLabel,prioritySelect);
+        const assigneeWrap = feedbackElement('div','field');
+        const assigneeLabel = feedbackElement('label','','Assign to verified staff');
+        const assignee = document.createElement('select');
+        assignee.name = 'assigned_to';
+        assigneeLabel.htmlFor = 'feedback-assignee-' + item.id;
+        assignee.id = assigneeLabel.htmlFor;
+        const noAssignee=document.createElement('option'); noAssignee.value=''; noAssignee.textContent='Unassigned'; assignee.appendChild(noAssignee);
+        const assigneeKey = item.university_id || campus?.university_id || 'global';
+        (assigneeLists.get(assigneeKey) || []).forEach(person => {
+          const option=document.createElement('option'); option.value=person.id; option.textContent=(person.display_name || 'Campus member') + ' · ' + person.role;
+          assignee.appendChild(option);
+        });
+        if (item.assigned_to && ![...assignee.options].some(option=>option.value===item.assigned_to)) {
+          const current=document.createElement('option'); current.value=item.assigned_to; current.textContent='Current assignee'; assignee.appendChild(current);
+        }
+        assignee.value = item.assigned_to || '';
+        assigneeWrap.append(assigneeLabel,assignee);
+        const githubWrap=feedbackElement('div','field');
+        const githubLabel=feedbackElement('label','','GitHub issue URL (optional)');
+        const github=document.createElement('input');
+        github.type='url'; github.name='github_issue_url'; github.maxLength=500;
+        github.placeholder='https://github.com/owner/repo/issues/123'; github.value=item.github_issue_url || '';
+        githubLabel.htmlFor='feedback-github-' + item.id; github.id=githubLabel.htmlFor;
+        githubWrap.append(githubLabel,github);
+        const noteWrap=feedbackElement('div','field wide');
+        const noteLabel=feedbackElement('label','','Add staff-only note (optional)');
+        const note=document.createElement('textarea');
+        note.name='internal_note'; note.maxLength=2000; note.rows=2;
+        note.placeholder='Internal triage note; only verified staff can read it.';
+        noteLabel.htmlFor='feedback-note-' + item.id; note.id=noteLabel.htmlFor;
+        noteWrap.append(noteLabel,note);
+        const actions=feedbackElement('div','feedback-admin-actions wide');
+        const save=document.createElement('button'); save.type='submit'; save.className='btn'; save.textContent='Save triage update';
+        actions.appendChild(save);
+        const result=feedbackElement('p','message wide','');
+        result.setAttribute('role','status'); result.setAttribute('aria-live','polite'); result.dataset.feedbackSaveStatus='true';
+        form.append(statusWrap,priorityWrap,assigneeWrap,githubWrap,noteWrap,actions,result);
+        card.appendChild(form);
+        const notesPanel=feedbackElement('div','feedback-ticket-notes');
+        const loadNotes=document.createElement('button'); loadNotes.type='button'; loadNotes.className='btn secondary'; loadNotes.textContent='Load staff notes';
+        const notesList=feedbackElement('div','feedback-ticket-notes-list');
+        loadNotes.addEventListener('click',()=>loadCampusFeedbackAdminNotes(item.id,notesList,loadNotes));
+        notesPanel.append(loadNotes,notesList);
+        card.appendChild(notesPanel);
+        queue.appendChild(card);
+      });
+      if (items.length > limitedItems.length) {
+        queue.appendChild(feedbackElement('p','muted','Showing the 50 most recent submissions.'));
+      }
+    } catch (error) {
+      status.textContent = error?.message || 'Feedback queue could not be loaded.';
+      queue.appendChild(feedbackElement('div','community-empty','You may not have access to feedback for this campus, or the staging feedback migration has not been applied.'));
+    }
+  }
+  $('campus-feedback-admin-queue')?.addEventListener('submit', async event => {
+    const form = event.target.closest('form[data-feedback-admin-form]');
+    if (!form) return;
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const status = form.querySelector('[data-feedback-save-status]');
+    const button = form.querySelector('button[type="submit"]');
+    if (!backend?.isConfigured) { if (status) status.textContent = 'Supabase is not configured.'; return; }
+    button.disabled = true;
+    if (status) status.textContent = 'Saving triage update…';
+    try {
+      await backend.updateCampusFeedback({
+        id: form.dataset.feedbackId,
+        status: form.elements.status.value,
+        priority: form.elements.priority.value,
+        assignedTo: form.elements.assigned_to.value || null,
+        githubIssueUrl: form.elements.github_issue_url.value.trim() || null,
+        internalNote: form.elements.internal_note.value.trim() || null
+      });
+      toast('Feedback triage update saved.');
+      await loadCampusFeedbackAdmin();
+    } catch (error) {
+      if (status) status.textContent = error?.message || 'Could not save the triage update.';
+      button.disabled = false;
+    }
+  });
+  $('campus-feedback-refresh')?.addEventListener('click', loadCampusFeedbackSubmissions);
+  $('campus-feedback-admin-refresh')?.addEventListener('click', loadCampusFeedbackAdmin);
+
   function markCampusWelcomeTourSeen() {
     try { localStorage.setItem('campusshield-welcome-tour-v1', 'seen'); } catch (_) {}
   }
