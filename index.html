@@ -1751,6 +1751,17 @@ button,input,select,textarea{max-width:100%;min-width:0}
 }
 @media(max-width:380px){.quick-action-button{gap:6px;font-size:10px;padding:8px}.quick-action-icon,.quick-action-icon svg{width:17px;height:17px;flex-basis:17px}.campus-welcome-tour{padding:18px}}
 
+/* Profile identity editing */
+.profile-identity-form{display:grid;gap:12px;margin:18px 0 20px;padding:16px;border:1px solid var(--line,#dfe6e2);border-radius:14px;background:#fbfdfc}
+.profile-identity-form .profile-contact-field{display:grid;gap:6px}
+.profile-identity-form input[type="text"],.profile-identity-form input[type="file"]{box-sizing:border-box;max-width:100%;width:100%;min-width:0}
+.profile-identity-form input[type="file"]{padding:9px;background:#fff;border:1px solid var(--line,#dfe6e2);border-radius:9px;font-size:12px}
+.profile-identity-form small{display:block;line-height:1.5}
+.profile-identity-actions{display:flex;gap:8px;flex-wrap:wrap}
+.profile-identity-actions .btn{margin:0}
+.profile-avatar-image{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+#profile-settings-avatar-fallback[hidden],#profile-settings-avatar[hidden]{display:none!important}
+@media(max-width:650px){.profile-identity-form{padding:12px}.profile-identity-actions .btn{flex:1 1 150px;justify-content:center}}
 </style>
 </head>
 <body>
@@ -2812,7 +2823,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <section class="panel profile-overview-card" aria-labelledby="profile-settings-account-title">
       <div class="profile-identity-header">
         <div class="profile-avatar" aria-hidden="true">
-          <svg viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="8" r="3.5"></circle><path d="M5.5 19c.8-3 3.2-4.7 6.5-4.7s5.7 1.7 6.5 4.7"></path><circle cx="12" cy="12" r="10"></circle></svg>
+          <img id="profile-settings-avatar" class="profile-avatar-image" alt="" hidden>
+          <svg id="profile-settings-avatar-fallback" viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="8" r="3.5"></circle><path d="M5.5 19c.8-3 3.2-4.7 6.5-4.7s5.7 1.7 6.5 4.7"></path><circle cx="12" cy="12" r="10"></circle></svg>
         </div>
         <div class="profile-identity-copy">
           <h2 id="profile-settings-account-title" class="profile-visually-hidden">Private account details</h2>
@@ -2820,6 +2832,23 @@ button,input,select,textarea{max-width:100%;min-width:0}
           <p id="profile-settings-email" class="profile-account-email">Checking secure session…</p>
         </div>
       </div>
+
+      <form id="profile-settings-identity-form" class="profile-identity-form">
+        <div class="profile-contact-field">
+          <label for="profile-settings-display-name">Your display name</label>
+          <input id="profile-settings-display-name" name="display_name" type="text" minlength="2" maxlength="60" required autocomplete="name" placeholder="Enter your name">
+        </div>
+        <div class="profile-contact-field">
+          <label for="profile-settings-avatar-file">Profile picture</label>
+          <input id="profile-settings-avatar-file" name="avatar" type="file" accept="image/jpeg,image/png,image/webp">
+          <small class="muted">JPG, PNG or WebP · Maximum 3 MB. Your uploaded image is stored privately.</small>
+        </div>
+        <div class="actions profile-identity-actions">
+          <button class="btn" id="profile-settings-save-identity" type="submit">Save profile</button>
+          <button class="btn secondary" id="profile-settings-remove-avatar" type="button" hidden>Remove picture</button>
+        </div>
+        <p id="profile-settings-identity-message" class="message profile-contact-message" role="status" aria-live="polite">Update the name and picture shown on your account.</p>
+      </form>
 
       <div class="profile-verification-row">
         <span class="profile-overline">VERIFICATION</span>
@@ -3201,7 +3230,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <p id="platform-admin-candidates-message" class="message" role="status" aria-live="polite">Choose a university to load verified staff.</p>
       <div class="table-wrap"><table><caption class="sr-only">Eligible verified staff who can be assigned as campus administrators</caption><thead><tr><th scope="col">Username</th><th scope="col">Account role</th><th scope="col">Account status</th><th scope="col">Campus status</th><th scope="col">Faculty / department</th><th scope="col">Action</th></tr></thead><tbody id="platform-admin-candidates-table"><tr><td colspan="6">Choose a university above.</td></tr></tbody></table></div>
     </section>
-    <section class="panel" id="platform-service-directory-crawler">
+    <section class="panel" id="platform-service-directory-crawler" hidden aria-label="Owner-only university services crawler">
       <div class="panel-heading">
         <div>
           <h2>Official university services crawler</h2>
@@ -4684,6 +4713,34 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
   }
 
+  let profileAvatarPreviewUrl = null;
+
+  async function renderProfileAvatar(backend, avatarPath) {
+    const image = $('profile-settings-avatar');
+    const fallback = $('profile-settings-avatar-fallback');
+    if (!image || !fallback) return;
+    image.hidden = true;
+    fallback.hidden = false;
+    image.removeAttribute('src');
+    if (!avatarPath || !backend?.client) return;
+    try {
+      const { data, error } = await backend.client.storage
+        .from('campus-profile-avatars')
+        .createSignedUrl(String(avatarPath), 3600);
+      if (error || !data?.signedUrl) return;
+      image.onerror = function() {
+        image.hidden = true;
+        fallback.hidden = false;
+      };
+      image.src = data.signedUrl;
+      image.hidden = false;
+      fallback.hidden = true;
+    } catch (_) {
+      image.hidden = true;
+      fallback.hidden = false;
+    }
+  }
+
   async function loadMyProfileSettings() {
     const profile = currentProfile;
     if (!profile) return;
@@ -4726,13 +4783,32 @@ button,input,select,textarea{max-width:100%;min-width:0}
       const user = response?.data?.user;
       if (currentProfile !== profile) return;
       if (response?.error || !user) throw new Error('Your secure session could not be verified. Please sign in again.');
+      const { data: editableProfile, error: editableProfileError } = await backend.client
+        .from('profiles')
+        .select('display_name, avatar_path')
+        .eq('id', user.id)
+        .single();
+      if (editableProfileError) throw editableProfileError;
+      Object.assign(profile, editableProfile || {});
+      const metadata = user.user_metadata || {};
+      const displayName = String(profile.display_name || metadata.display_name || metadata.full_name || metadata.name || '').trim();
+      if (name) name.textContent = displayName || 'Name not provided';
+      const displayNameInput = $('profile-settings-display-name');
+      if (displayNameInput) displayNameInput.value = displayName;
+      const removeAvatarButton = $('profile-settings-remove-avatar');
+      if (removeAvatarButton) {
+        removeAvatarButton.hidden = !profile.avatar_path;
+        removeAvatarButton.dataset.clearAvatar = 'false';
+      }
+      const identityMessage = $('profile-settings-identity-message');
+      if (identityMessage) identityMessage.textContent = 'Update the name and picture shown on your account.';
+      await renderProfileAvatar(backend, profile.avatar_path);
       if (email) email.textContent = user.email || 'Email is not available from this sign-in provider.';
       if (campus) campus.textContent = campusContext?.university_name || 'No university connected yet';
       if (membership) membership.textContent = campusContext?.membership_status === 'active' && campusContext?.verification_status === 'verified'
         ? 'Verified'
         : campusContext?.university_id ? 'Pending verification' : 'Not linked';
 
-      const metadata = user.user_metadata || {};
       const departmentInput = $('profile-settings-department');
       const phoneInput = $('profile-settings-contact-phone');
       if (departmentInput) departmentInput.value = String(metadata.department || '');
@@ -4859,6 +4935,119 @@ button,input,select,textarea{max-width:100%;min-width:0}
       if (status) status.textContent = error?.message || "Background notifications could not be updated.";
     } finally {
       all.forEach(function(control) { control.disabled = false; });
+    }
+  });
+
+  document.addEventListener('change', function(event) {
+    if (event.target?.id !== 'profile-settings-avatar-file') return;
+    const file = event.target.files?.[0];
+    const image = $('profile-settings-avatar');
+    const fallback = $('profile-settings-avatar-fallback');
+    const removeButton = $('profile-settings-remove-avatar');
+    const status = $('profile-settings-identity-message');
+    if (!file || !image || !fallback) return;
+    const accepted = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!accepted.includes(file.type) || file.size < 1 || file.size > 3 * 1024 * 1024) {
+      event.target.value = '';
+      if (status) status.textContent = 'Choose a JPG, PNG or WebP image smaller than 3 MB.';
+      return;
+    }
+    if (profileAvatarPreviewUrl) URL.revokeObjectURL(profileAvatarPreviewUrl);
+    profileAvatarPreviewUrl = URL.createObjectURL(file);
+    image.src = profileAvatarPreviewUrl;
+    image.hidden = false;
+    fallback.hidden = true;
+    if (removeButton) removeButton.dataset.clearAvatar = 'false';
+    if (status) status.textContent = 'Photo preview ready. Save profile to upload it.';
+  });
+
+  document.addEventListener('click', function(event) {
+    const button = event.target?.closest?.('#profile-settings-remove-avatar');
+    if (!button) return;
+    event.preventDefault();
+    button.dataset.clearAvatar = 'true';
+    const input = $('profile-settings-avatar-file');
+    if (input) input.value = '';
+    if (profileAvatarPreviewUrl) {
+      URL.revokeObjectURL(profileAvatarPreviewUrl);
+      profileAvatarPreviewUrl = null;
+    }
+    const image = $('profile-settings-avatar');
+    const fallback = $('profile-settings-avatar-fallback');
+    if (image) { image.hidden = true; image.removeAttribute('src'); }
+    if (fallback) fallback.hidden = false;
+    const status = $('profile-settings-identity-message');
+    if (status) status.textContent = 'Your picture will be removed when you save your profile.';
+  });
+
+  document.addEventListener('submit', async function(event) {
+    if (event.target?.id !== 'profile-settings-identity-form') return;
+    event.preventDefault();
+    const form = event.target;
+    const status = $('profile-settings-identity-message');
+    const button = $('profile-settings-save-identity');
+    const photoInput = $('profile-settings-avatar-file');
+    const removeButton = $('profile-settings-remove-avatar');
+    const backend = window.CampusShieldBackend;
+    let uploadedPath = null;
+    if (button) { button.disabled = true; button.textContent = 'Saving…'; }
+    try {
+      if (!backend?.isConfigured || !currentProfile) throw new Error('Sign in before editing your profile.');
+      const user = await backend.getCurrentUser();
+      if (!user) throw new Error('Your secure session could not be verified. Sign in again.');
+      const displayName = String($('profile-settings-display-name')?.value || '').trim().replace(/\s+/g, ' ');
+      if (displayName.length < 2 || displayName.length > 60) throw new Error('Enter a display name between 2 and 60 characters.');
+      const file = photoInput?.files?.[0] || null;
+      const clearAvatar = !file && removeButton?.dataset.clearAvatar === 'true';
+      const oldAvatarPath = currentProfile.avatar_path || null;
+      let newAvatarPath = null;
+
+      if (file) {
+        const accepted = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!accepted.includes(file.type) || file.size < 1 || file.size > 3 * 1024 * 1024) {
+          throw new Error('Choose a JPG, PNG or WebP image smaller than 3 MB.');
+        }
+        const ext = file.type === 'image/jpeg' ? 'jpg' : file.type === 'image/png' ? 'png' : 'webp';
+        if (!window.crypto?.randomUUID) throw new Error('Secure image upload is not supported in this browser. Please update Chrome.');
+        uploadedPath = user.id + '/' + window.crypto.randomUUID() + '.' + ext;
+        const { error: uploadError } = await backend.client.storage
+          .from('campus-profile-avatars')
+          .upload(uploadedPath, file, { cacheControl: '3600', upsert: false, contentType: file.type });
+        if (uploadError) throw uploadError;
+        newAvatarPath = uploadedPath;
+      }
+
+      const { data: savedProfile, error: saveError } = await backend.client.rpc('update_my_profile_identity', {
+        p_display_name: displayName,
+        p_avatar_path: newAvatarPath,
+        p_clear_avatar: clearAvatar
+      });
+      if (saveError) throw saveError;
+      currentProfile.display_name = savedProfile?.display_name || displayName;
+      currentProfile.avatar_path = savedProfile?.avatar_path || null;
+      const name = $('profile-settings-name');
+      if (name) name.textContent = currentProfile.display_name;
+      await renderProfileAvatar(backend, currentProfile.avatar_path);
+      if (oldAvatarPath && oldAvatarPath !== currentProfile.avatar_path && oldAvatarPath.startsWith(user.id + '/')) {
+        await backend.client.storage.from('campus-profile-avatars').remove([oldAvatarPath]).catch(() => {});
+      }
+      if (photoInput) photoInput.value = '';
+      if (profileAvatarPreviewUrl) {
+        URL.revokeObjectURL(profileAvatarPreviewUrl);
+        profileAvatarPreviewUrl = null;
+      }
+      if (removeButton) {
+        removeButton.dataset.clearAvatar = 'false';
+        removeButton.hidden = !currentProfile.avatar_path;
+      }
+      if (status) status.textContent = 'Your profile name and picture have been saved.';
+    } catch (error) {
+      if (uploadedPath && backend?.client) {
+        await backend.client.storage.from('campus-profile-avatars').remove([uploadedPath]).catch(() => {});
+      }
+      if (status) status.textContent = error?.message || 'Your profile could not be saved. Please try again.';
+    } finally {
+      if (button) { button.disabled = false; button.textContent = 'Save profile'; }
     }
   });
 
@@ -6037,6 +6226,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
         accessMessage.textContent = 'Access denied. This console is available only to user IDs provisioned by the database owner as trusted platform administrators.';
         return;
       }
+      const signedInAdmin = await backend.getCurrentUser();
+      const crawlerPanel = $('platform-service-directory-crawler');
+      const isCrawlerOwner = String(signedInAdmin?.email || '').toLowerCase() === 'campusshieldaitechnologies@gmail.com';
+      if (crawlerPanel) crawlerPanel.hidden = !isCrawlerOwner;
       $('platform-admin-nav').hidden = false;
       syncNavSectionHeadings();
       accessPanel.hidden = true;
@@ -6184,6 +6377,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
   async function runPlatformServiceDirectoryCrawl(action) {
     const status = $('platform-service-crawler-status');
     const results = $('platform-service-crawler-results');
+    const signedInUser = await window.CampusShieldBackend?.getCurrentUser().catch(() => null);
+    if (String(signedInUser?.email || '').toLowerCase() !== 'campusshieldaitechnologies@gmail.com') {
+      if (status) status.textContent = 'This crawler is restricted to its designated owner.';
+      return;
+    }
     const batchButton = $('platform-service-crawler-batch');
     const oneButton = $('platform-service-crawler-one');
     const select = $('platform-admin-university-select');
