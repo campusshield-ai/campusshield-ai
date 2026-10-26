@@ -1713,7 +1713,7 @@ async getCurrentUser() {
         .eq("id", id);
 
       if (error) throw error;
-    }
+    },
 
     async submitCampusFeedback(input) {
       if (!client) throw new Error("Supabase is not configured.");
