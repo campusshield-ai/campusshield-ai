@@ -15,5 +15,5 @@ CampusShield uses Supabase Auth passkeys (WebAuthn) for the website/PWA. The dev
 
 - Enrolment is optional and requires an already authenticated, confirmed account.
 - “Enable passkey sign-in” registers a passkey. “Disable” removes all passkeys on that account after a confirmation prompt.
-- Email/password sign-in remains available regardless of passkey state.
+- The password fallback remains available regardless of passkey state.
 - UI may display passkey provider metadata and timestamps only; never device biometric material.
