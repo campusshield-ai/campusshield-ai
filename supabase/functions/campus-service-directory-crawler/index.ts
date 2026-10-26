@@ -584,6 +584,10 @@ Deno.serve(async (req: Request) => {
     });
     const { data: userData, error: userError } = await userClient.auth.getUser();
     if (userError || !userData?.user) return reply({ error: "Your session could not be verified." }, 401, origin);
+    const crawlerOwnerEmail = "campusshieldaitechnologies@gmail.com";
+    if (String(userData.user.email || "").toLowerCase() !== crawlerOwnerEmail) {
+      return reply({ error: "This crawler is restricted to its designated owner." }, 403, origin);
+    }
     const { data: allowed, error: accessError } = await userClient.rpc("platform_is_admin");
     if (accessError || allowed !== true) return reply({ error: "Only a trusted platform administrator can run the national university crawler." }, 403, origin);
 
