@@ -3,18 +3,6 @@
 alter table public.profiles
   add column if not exists avatar_path text;
 
-create table if not exists storage.buckets (
-  id text primary key,
-  name text not null,
-  owner uuid,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  public boolean default false,
-  avif_autodetection boolean default false,
-  file_size_limit bigint,
-  allowed_mime_types text[]
-);
-
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('campus-profile-avatars','campus-profile-avatars',false,3145728,
         array['image/jpeg','image/png','image/webp'])
