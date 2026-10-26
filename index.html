@@ -3313,6 +3313,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <p class="muted crawler-note">Results appear here after the server returns actual crawl data. This crawler does not stream per-page events, so progress is updated when the request completes.</p>
         <div id="platform-service-crawler-results" class="platform-service-crawler-results" aria-live="polite"></div>
       </div>
+      <div class="crawler-live-discoveries"><div class="crawler-section-heading"><h3>Previous crawl runs</h3><button class="btn secondary" type="button" id="platform-service-crawler-history-refresh">Refresh history</button></div><div id="platform-service-crawler-history"><p class="muted crawler-note">Loading crawl history…</p></div></div>
       <div class="crawler-private-note"><span aria-hidden="true">🔒</span><div><strong>Visible only to the authorized platform owner</strong><small>Server-side authorization is required before the crawler will run.</small></div></div>
       <p class="muted crawler-note">Uses HTTPS, checks robots.txt, stays on the registered university host, skips login/account paths, and respects the configured page limits.</p>
       <div class="actions crawler-actions"><button class="btn" type="button" id="platform-service-crawler-batch">Start next batch</button><button class="btn secondary" type="button" id="platform-service-crawler-one">Crawl selected university</button></div>
@@ -6499,6 +6500,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
       status.textContent = 'Choose a university in the selector above first.';
       return;
     }
+    const client = window.CampusShieldBackend?.client;
+    if (!client) { status.textContent = 'CampusShield is not connected to Supabase.'; return; }
     const progressBar = $('platform-service-crawler-progress-bar');
     const progressLabel = $('platform-service-crawler-progress-label');
     const runState = $('platform-service-crawler-run-state');
@@ -6507,101 +6510,149 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const officesMetric = $('platform-crawler-offices');
     const fieldsMetric = $('platform-crawler-fields');
     const resultCount = $('platform-service-crawler-result-count');
-    let pulse = 8;
-    let pulseTimer = null;
-    const activityLine = (title, detail, done = false) => {
+    const discoveredUrls = [];
+    let pagesSeen = 0;
+    const activityLine = (title, detail, done = false, url = '') => {
       const li = document.createElement('li');
       if (done) li.classList.add('done');
       const dot = document.createElement('span'); dot.className = 'crawler-activity-dot';
-      const content = document.createElement('div'); content.textContent = title;
+      const content = document.createElement('div');
+      content.appendChild(document.createTextNode(title));
       const small = document.createElement('small'); small.textContent = detail; content.appendChild(small);
+      if (url) {
+        const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.textContent = url; a.className = 'crawler-source-link'; a.style.display = 'block'; a.style.overflowWrap = 'anywhere';
+        content.appendChild(a);
+      }
       li.append(dot, content); activity?.prepend(li);
     };
-    batchButton.disabled = true;
-    oneButton.disabled = true;
-    results.replaceChildren();
-    if (activity) activity.replaceChildren();
-    if (progressBar) progressBar.style.width = '8%';
-    if (progressLabel) progressLabel.textContent = 'Request sent · waiting for server';
-    if (runState) runState.textContent = 'RUNNING';
-    if (pagesMetric) pagesMetric.textContent = '…';
-    if (officesMetric) officesMetric.textContent = '…';
-    if (fieldsMetric) fieldsMetric.textContent = '…';
-    if (resultCount) resultCount.textContent = 'Waiting for results';
-    activityLine('Owner authorization checked', 'Signed-in owner account verified in the interface.', true);
-    activityLine('Request sent to Supabase', action === 'crawl_batch' ? 'Asking the server to crawl the next small batch.' : 'Asking the server to crawl the selected university.');
-    activityLine('Server is checking official websites', 'Actual metrics will appear when the crawler returns; this function does not stream per-page events.');
-    status.textContent = action === 'crawl_batch'
-      ? 'Crawling the next small batch of official university sites. Waiting for the real server response…'
-      : 'Crawling the selected official university site. Waiting for the real server response…';
-    pulseTimer = window.setInterval(() => {
-      pulse = Math.min(88, pulse + 7);
-      if (progressBar) progressBar.style.width = pulse + '%';
-      if (progressLabel) progressLabel.textContent = 'Server working · awaiting actual results';
-    }, 850);
+    const renderMap = (urls) => {
+      const svg = document.querySelector('.crawler-network svg');
+      if (!svg) return;
+      const ns = 'http://www.w3.org/2000/svg';
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      const unique = [...new Set(urls.filter(Boolean))].slice(-10);
+      const centerX = 400, centerY = 115;
+      const positions = unique.map((url, i) => {
+        const angle = (Math.PI * 2 * i / Math.max(unique.length, 1)) - Math.PI / 2;
+        return { url, x: centerX + Math.cos(angle) * 240, y: centerY + Math.sin(angle) * 82 };
+      });
+      const lines = document.createElementNS(ns, 'g'); lines.setAttribute('class','crawler-links');
+      positions.forEach(p => { const line=document.createElementNS(ns,'line'); line.setAttribute('x1',centerX);line.setAttribute('y1',centerY);line.setAttribute('x2',p.x);line.setAttribute('y2',p.y);lines.appendChild(line); });
+      svg.appendChild(lines);
+      const center = document.createElementNS(ns,'circle');center.setAttribute('cx',centerX);center.setAttribute('cy',centerY);center.setAttribute('r','42');center.setAttribute('class','crawler-center');svg.appendChild(center);
+      const centerText = document.createElementNS(ns,'text');centerText.setAttribute('x',centerX);centerText.setAttribute('y',111);centerText.setAttribute('class','crawler-svg-text');centerText.textContent='DISCOVERED';svg.appendChild(centerText);
+      const centerText2 = document.createElementNS(ns,'text');centerText2.setAttribute('x',centerX);centerText2.setAttribute('y',128);centerText2.setAttribute('class','crawler-svg-text');centerText2.textContent='PAGES';svg.appendChild(centerText2);
+      positions.forEach(p => {
+        const circle=document.createElementNS(ns,'circle');circle.setAttribute('cx',p.x);circle.setAttribute('cy',p.y);circle.setAttribute('r','11');circle.setAttribute('class','crawler-node');svg.appendChild(circle);
+        const label=document.createElementNS(ns,'text');label.setAttribute('x',p.x);label.setAttribute('y',p.y+26);label.setAttribute('class','crawler-svg-text');label.setAttribute('font-size','10');
+        try { const u=new URL(p.url); label.textContent=(u.pathname==='/'?u.hostname:u.pathname.split('/').filter(Boolean).slice(-1)[0]).slice(0,22); } catch { label.textContent='Page'; }
+        svg.appendChild(label);
+        circle.setAttribute('tabindex','0');circle.setAttribute('aria-label',p.url);circle.setAttribute('data-url',p.url);
+      });
+      document.querySelectorAll('.crawler-float').forEach(el=>el.hidden=true);
+    };
+    const renderResults = (items) => {
+      const all = [];
+      (Array.isArray(items)?items:[]).forEach(item => (item.discovered_pages||[]).forEach(page => all.push({...page, university_name:item.university_name})));
+      if (resultCount) resultCount.textContent = all.length + ' candidate page(s) · requires review';
+      results.replaceChildren();
+      if (!all.length) {
+        const p=document.createElement('p');p.className='muted';p.textContent='No office-specific candidate pages were returned by this crawl.';results.appendChild(p);return;
+      }
+      all.forEach(page => {
+        const article=document.createElement('article');article.className='platform-service-crawler-result';
+        const h=document.createElement('h3');h.textContent=page.title||page.category||'Office page';
+        const meta=document.createElement('p');meta.className='status';meta.textContent=(page.university_name||'University')+' · '+String(page.category||'unknown').replaceAll('_',' ')+' · Candidate — needs owner review';
+        const link=document.createElement('a');link.href=page.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=page.url;link.style.overflowWrap='anywhere';
+        article.append(h,meta,link);results.appendChild(article);
+      });
+    };
+    const loadHistory = async () => {
+      const target=$('platform-service-crawler-history'); if(!target)return;
+      try {
+        const {data,error}=await client.functions.invoke('campus-service-directory-crawler',{body:{action:'crawl_history',limit:10}});
+        if(error) throw error; if(data?.error) throw new Error(data.error);
+        const runs=Array.isArray(data?.runs)?data.runs:[];
+        target.replaceChildren();
+        if(!runs.length){const p=document.createElement('p');p.className='muted';p.textContent='No saved crawl runs yet.';target.appendChild(p);return;}
+        runs.forEach(run=>{
+          const row=document.createElement('article');row.className='platform-service-crawler-result';
+          const h=document.createElement('h3');h.textContent=new Date(run.started_at).toLocaleString()+' · '+String(run.status||'unknown').toUpperCase();
+          const p=document.createElement('p');p.textContent=(run.action==='crawl_batch'?'Batch crawl':'Selected university')+' · '+Number(run.pages_scanned||0)+' pages · '+Number(run.office_pages_found||0)+' office pages · '+Number(run.fields_populated||0)+' fields · '+Number(run.failed_or_blocked||0)+' failed/blocked';
+          row.append(h,p);target.appendChild(row);
+        });
+      } catch(err) {target.textContent=err?.message||'Crawl history could not be loaded.';}
+    };
+    batchButton.disabled = true; oneButton.disabled = true;
+    results.replaceChildren(); if(activity)activity.replaceChildren();
+    if(progressBar)progressBar.style.width='2%'; if(progressLabel)progressLabel.textContent='Starting live crawl…';
+    if(runState)runState.textContent='RUNNING';
+    if(pagesMetric)pagesMetric.textContent='0'; if(officesMetric)officesMetric.textContent='0'; if(fieldsMetric)fieldsMetric.textContent='0';
+    if(resultCount)resultCount.textContent='Waiting for real discoveries';
+    activityLine('Owner session checked','Checking authorization again on the server.');
+    status.textContent='Connecting to the staging crawler and waiting for actual page events…';
     try {
-      const client = window.CampusShieldBackend?.client;
-      if (!client) throw new Error('CampusShield is not connected to Supabase.');
-      const body = action === 'crawl_batch'
-        ? { action: 'crawl_batch', batch_size: 2 }
-        : { action: 'crawl_university', university_id: select.value };
-      const { data, error } = await client.functions.invoke('campus-service-directory-crawler', { body });
-      if (error) throw error;
-      if (!data || data.error) throw new Error(data?.error || 'The crawler returned no result.');
-      if (data.done) {
-        if (progressBar) progressBar.style.width = '100%';
-        if (progressLabel) progressLabel.textContent = 'No crawl performed';
-        if (runState) runState.textContent = 'IDLE';
-        if (resultCount) resultCount.textContent = '0 results';
-        status.textContent = data.message || 'No university websites are due for crawling.';
-        activityLine('Crawler returned without a run', status.textContent, true);
-        return;
+      const {data:sessionData,error:sessionError}=await client.auth.getSession();
+      if(sessionError||!sessionData?.session?.access_token)throw new Error('Please sign in again before running the crawler.');
+      const config=window.CAMPUSSHIELD_SUPABASE_CONFIG;
+      if(!config?.url||!config?.publishableKey)throw new Error('Supabase browser configuration is unavailable.');
+      const body=action==='crawl_batch'?{action:'crawl_batch',batch_size:2,stream:true}:{action:'crawl_university',university_id:select.value,stream:true};
+      const response=await fetch(config.url.replace(/\/$/,'')+'/functions/v1/campus-service-directory-crawler',{
+        method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sessionData.session.access_token,'apikey':config.publishableKey,'Accept':'text/event-stream'},body:JSON.stringify(body)
+      });
+      if(!response.ok) {
+        const errBody=await response.json().catch(()=>({}));
+        throw new Error(errBody.error||('Crawler request failed ('+response.status+').'));
       }
-      const siteCount = Number(data.batch_size || (Array.isArray(data.results) ? data.results.length : 0));
-      const pages = Number(data.pages_scanned || 0);
-      const offices = Number(data.office_pages_found || 0);
-      const fields = Number(data.fields_populated || 0);
-      const blocked = Number(data.failed_or_blocked || 0);
-      if (pagesMetric) pagesMetric.textContent = String(pages);
-      if (officesMetric) officesMetric.textContent = String(offices);
-      if (fieldsMetric) fieldsMetric.textContent = String(fields);
-      if (progressBar) progressBar.style.width = '100%';
-      if (progressLabel) progressLabel.textContent = 'Completed · ' + siteCount + ' university site(s)';
-      if (runState) runState.textContent = 'COMPLETED';
-      status.textContent = 'Finished ' + siteCount + ' university crawl(s): ' + pages + ' public page(s) scanned, ' +
-        offices + ' office-specific page(s) found, ' + fields + ' field(s) populated. ' +
-        (blocked ? blocked + ' site(s) were blocked or failed. ' : '') +
-        (data.more_available === true ? 'More university sites are queued; run the next batch to continue.' :
-          data.more_available === false ? 'No more university sites are currently due.' :
-          'Targeted crawl complete.');
-      activityLine('Crawl request completed', pages + ' page(s) scanned; ' + offices + ' office page(s) found.', true);
-      activityLine('Database update summary', fields + ' field(s) populated; ' + blocked + ' site(s) blocked or failed.', true);
-      const items = Array.isArray(data.results) ? data.results : [];
-      if (resultCount) resultCount.textContent = items.length + ' university result(s)';
-      results.innerHTML = items.map(function (item) {
-        return '<article class="platform-service-crawler-result">' +
-          '<h3>' + esc(item.university_name || 'University') + '</h3>' +
-          '<p class="status">' + esc(String(item.status || 'unknown').replace(/[_-]+/g, ' ')) +
-            ' · ' + Number(item.pages_scanned || 0) + ' page(s) · ' +
-            Number(item.office_pages_found || 0) + ' office page(s)</p>' +
-          '<p>' + esc(item.message || 'No additional details available.') + '</p>' +
-          '</article>';
-      }).join('') || '<p class="muted">The server returned no per-university result rows.</p>';
-      if (items.some(item => item.status === 'success' || item.populated_fields > 0)) {
-        window.CampusShieldServiceDirectory?.load();
+      if(!response.body)throw new Error('This browser does not support live crawl streaming.');
+      const reader=response.body.getReader();const decoder=new TextDecoder();let buffer='';let completed=false;let runId=null;let finalPayload=null;
+      while(true) {
+        const {value,done}=await reader.read(); if(done)break;
+        buffer+=decoder.decode(value,{stream:true});
+        const blocks=buffer.split('\n\n');buffer=blocks.pop()||'';
+        for(const block of blocks) {
+          const line=block.split('\n').find(l=>l.startsWith('data: '));if(!line)continue;
+          let payload;try{payload=JSON.parse(line.slice(6));}catch{continue;}
+          if(payload.type==='started') {
+            runId=payload.run_id;activityLine('Live crawl started','Run ID: '+runId,true);
+            if(progressLabel)progressLabel.textContent='0 pages processed · live events connected';
+          } else if(payload.type==='event'&&payload.event) {
+            const e=payload.event;const url=e.page_url||'';
+            if(url&&['page_fetch_started','page_scanned','office_candidate_found'].includes(e.event_type)){discoveredUrls.push(url);renderMap(discoveredUrls);}
+            activityLine(String(e.event_type||'crawl event').replaceAll('_',' '),e.message||'',e.status==='success'||e.status==='allowed',url);
+            if(e.event_type==='page_scanned') {
+              pagesSeen++;if(pagesMetric)pagesMetric.textContent=String(pagesSeen);
+              if(progressLabel)progressLabel.textContent=pagesSeen+' pages scanned · live';
+              if(progressBar)progressBar.style.width=Math.min(92,pagesSeen*8)+'%';
+            }
+          } else if(payload.type==='university_result') {
+            const item=payload.result;finalPayload=finalPayload||{results:[]};finalPayload.results.push(item);
+          } else if(payload.type==='completed') {
+            completed=true;finalPayload=payload;
+            if(pagesMetric)pagesMetric.textContent=String(payload.pages_scanned||0);
+            if(officesMetric)officesMetric.textContent=String(payload.office_pages_found||0);
+            if(fieldsMetric)fieldsMetric.textContent=String(payload.fields_populated||0);
+            if(progressBar)progressBar.style.width='100%';
+            if(progressLabel)progressLabel.textContent='Completed · '+Number(payload.batch_size||0)+' university site(s)';
+            if(runState)runState.textContent=String(payload.status||'completed').toUpperCase();
+            status.textContent=payload.message+' '+Number(payload.pages_scanned||0)+' pages scanned, '+Number(payload.office_pages_found||0)+' office pages found, '+Number(payload.fields_populated||0)+' fields populated.';
+            renderResults(payload.results||[]);
+            activityLine('Crawl finished',status.textContent,true);
+          } else if(payload.type==='error') {
+            throw new Error(payload.message||'The crawl failed.');
+          }
+        }
       }
-    } catch (error) {
-      if (progressBar) progressBar.style.width = '100%';
-      if (progressLabel) progressLabel.textContent = 'Request failed';
-      if (runState) runState.textContent = 'ERROR';
-      status.textContent = error?.message || 'The official university crawler could not run. Check the function logs and try again.';
-      activityLine('Crawler request failed', status.textContent, true);
-      if (resultCount) resultCount.textContent = 'No results';
-    } finally {
-      if (pulseTimer) window.clearInterval(pulseTimer);
-      batchButton.disabled = false;
-      oneButton.disabled = false;
-    }
+      if(!completed)throw new Error('The live stream ended before a completion summary arrived. Check saved crawl history.');
+      await loadHistory();
+      if(finalPayload?.results?.some(item=>item.status==='success'||item.populated_fields>0))window.CampusShieldServiceDirectory?.load();
+    } catch(error) {
+      if(progressLabel)progressLabel.textContent='Crawl interrupted or failed';
+      if(runState)runState.textContent='ERROR';
+      status.textContent=error?.message||'The live crawler could not complete.';
+      activityLine('Crawler request failed',status.textContent,true);
+    } finally {batchButton.disabled=false;oneButton.disabled=false;}
   }
 
   $('platform-service-crawler-batch').addEventListener('click', function () {
@@ -6609,6 +6660,25 @@ button,input,select,textarea{max-width:100%;min-width:0}
   });
   $('platform-service-crawler-one').addEventListener('click', function () {
     runPlatformServiceDirectoryCrawl('crawl_university');
+  });
+  $('platform-service-crawler-history-refresh')?.addEventListener('click', async function () {
+    const user = await window.CampusShieldBackend?.getCurrentUser().catch(() => null);
+    if (String(user?.email || '').toLowerCase() !== 'campusshieldaitechnologies@gmail.com') return;
+    const client = window.CampusShieldBackend?.client;
+    const target = $('platform-service-crawler-history');
+    if (!client || !target) return;
+    target.textContent = 'Loading crawl history…';
+    const { data, error } = await client.functions.invoke('campus-service-directory-crawler', { body: { action: 'crawl_history', limit: 10 } });
+    if (error || data?.error) { target.textContent = data?.error || error?.message || 'Could not load crawl history.'; return; }
+    target.replaceChildren();
+    const runs = Array.isArray(data?.runs) ? data.runs : [];
+    if (!runs.length) { target.textContent = 'No saved crawl runs yet.'; return; }
+    runs.forEach(run => {
+      const article = document.createElement('article'); article.className = 'platform-service-crawler-result';
+      const heading = document.createElement('h3'); heading.textContent = new Date(run.started_at).toLocaleString() + ' · ' + String(run.status || 'unknown').toUpperCase();
+      const detail = document.createElement('p'); detail.textContent = Number(run.pages_scanned || 0) + ' pages · ' + Number(run.office_pages_found || 0) + ' office pages · ' + Number(run.fields_populated || 0) + ' fields · ' + Number(run.failed_or_blocked || 0) + ' failed/blocked';
+      article.append(heading, detail); target.appendChild(article);
+    });
   });
 
 
