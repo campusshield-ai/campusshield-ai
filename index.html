@@ -6340,8 +6340,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
       const crawlerPanel = $('platform-service-directory-crawler');
       const isCrawlerOwner = String(signedInAdmin?.email || '').toLowerCase() === 'campusshieldaitechnologies@gmail.com';
       const crawlerHost = String(window.location.hostname || '').toLowerCase();
-      const isStagingCrawlerHost = /^campusshield-ai-staging-preview-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || /^campusshield-ai-staging-p-git-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || crawlerHost === 'localhost' || crawlerHost === '127.0.0.1';
-      if (crawlerPanel) crawlerPanel.hidden = !isCrawlerOwner || !isStagingCrawlerHost;
+      const isCrawlerEnabledHost = /^campusshield-ai-staging-preview-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || /^campusshield-ai-staging-p-git-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || crawlerHost === 'campusshield-ai.github.io' || crawlerHost === 'localhost' || crawlerHost === '127.0.0.1';
+      if (crawlerPanel) crawlerPanel.hidden = !isCrawlerOwner || !isCrawlerEnabledHost;
       $('platform-admin-nav').hidden = false;
       syncNavSectionHeadings();
       accessPanel.hidden = true;
@@ -6491,8 +6491,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const results = $('platform-service-crawler-results');
     const signedInUser = await window.CampusShieldBackend?.getCurrentUser().catch(() => null);
     const crawlerHost = String(window.location.hostname || '').toLowerCase();
-    const isStagingCrawlerHost = /^campusshield-ai-staging-preview-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || /^campusshield-ai-staging-p-git-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || crawlerHost === 'localhost' || crawlerHost === '127.0.0.1';
-    if (!isStagingCrawlerHost) { if (status) status.textContent = 'The crawler is staging-only until its production backend is explicitly deployed.'; return; }
+    const isCrawlerEnabledHost = /^campusshield-ai-staging-preview-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || /^campusshield-ai-staging-p-git-[a-z0-9-]+\.vercel\.app$/.test(crawlerHost) || crawlerHost === 'campusshield-ai.github.io' || crawlerHost === 'localhost' || crawlerHost === '127.0.0.1';
+    if (!isCrawlerEnabledHost) { if (status) status.textContent = 'Crawler controls are available only on the authorized staging or production website.'; return; }
     if (String(signedInUser?.email || '').toLowerCase() !== 'campusshieldaitechnologies@gmail.com') {
       if (status) status.textContent = 'This crawler is restricted to its designated owner.';
       return;
@@ -6681,8 +6681,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
   });
   $('platform-service-crawler-history-refresh')?.addEventListener('click', async function () {
     const host = String(window.location.hostname || '').toLowerCase();
-    const stagingOnly = /^campusshield-ai-staging-preview-[a-z0-9-]+\.vercel\.app$/.test(host) || /^campusshield-ai-staging-p-git-[a-z0-9-]+\.vercel\.app$/.test(host) || host === 'localhost' || host === '127.0.0.1';
-    if (!stagingOnly) { $('platform-service-crawler-history').textContent = 'Crawler history is not enabled on the live website until its production backend is deployed.'; return; }
+    const crawlerEnabledHost = /^campusshield-ai-staging-preview-[a-z0-9-]+\.vercel\.app$/.test(host) || /^campusshield-ai-staging-p-git-[a-z0-9-]+\.vercel\.app$/.test(host) || host === 'campusshield-ai.github.io' || host === 'localhost' || host === '127.0.0.1';
+    if (!crawlerEnabledHost) { $('platform-service-crawler-history').textContent = 'Crawler history is available only on the authorized staging or production website.'; return; }
     const user = await window.CampusShieldBackend?.getCurrentUser().catch(() => null);
     if (String(user?.email || '').toLowerCase() !== 'campusshieldaitechnologies@gmail.com') return;
     const client = window.CampusShieldBackend?.client;
