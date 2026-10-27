@@ -4855,30 +4855,72 @@ button,input,select,textarea{max-width:100%;min-width:0}
   }
 
   let profileAvatarPreviewUrl = null;
+  const profileAvatarObjectUrls = new Map();
+  const profileAvatarRenderTokens = new Map();
 
   async function renderProfileAvatar(backend, avatarPath, imageId = 'profile-settings-avatar', fallbackId = 'profile-settings-avatar-fallback') {
     const image = $(imageId);
     const fallback = $(fallbackId);
-    if (!image || !fallback) return;
+    if (!image || !fallback) return false;
+    const renderToken = (profileAvatarRenderTokens.get(imageId) || 0) + 1;
+    profileAvatarRenderTokens.set(imageId, renderToken);
     image.hidden = true;
     fallback.hidden = false;
     image.removeAttribute('src');
-    if (!avatarPath || !backend?.client) return;
+    const previousObjectUrl = profileAvatarObjectUrls.get(imageId);
+    if (previousObjectUrl) {
+      URL.revokeObjectURL(previousObjectUrl);
+      profileAvatarObjectUrls.delete(imageId);
+    }
+    if (!avatarPath || !backend?.client) return false;
+    const bucket = backend.client.storage.from('campus-profile-avatars');
     try {
-      const { data, error } = await backend.client.storage
-        .from('campus-profile-avatars')
-        .createSignedUrl(String(avatarPath), 3600);
-      if (error || !data?.signedUrl) return;
-      image.onerror = function() {
-        image.hidden = true;
-        fallback.hidden = false;
-      };
-      image.src = data.signedUrl;
-      image.hidden = false;
-      fallback.hidden = true;
-    } catch (_) {
+      // Prefer an authenticated download from the private bucket. This avoids
+      // stale/blocked signed image URLs and still enforces the user's storage RLS.
+      const { data: blob, error: downloadError } = await bucket.download(String(avatarPath));
+      if (profileAvatarRenderTokens.get(imageId) !== renderToken) return false;
+      if (!downloadError && blob instanceof Blob && blob.size > 0 && /^image\/(jpeg|png|webp)$/i.test(blob.type || '')) {
+        const objectUrl = URL.createObjectURL(blob);
+        profileAvatarObjectUrls.set(imageId, objectUrl);
+        image.onload = function() {
+          if (profileAvatarRenderTokens.get(imageId) !== renderToken) return;
+          image.hidden = false;
+          fallback.hidden = true;
+        };
+        image.onerror = function() {
+          if (profileAvatarRenderTokens.get(imageId) !== renderToken) return;
+          image.hidden = true;
+          fallback.hidden = false;
+          URL.revokeObjectURL(objectUrl);
+          profileAvatarObjectUrls.delete(imageId);
+        };
+        image.src = objectUrl;
+        return true;
+      }
+
+      // Fall back to a short-lived signed URL if download failed.
+      const { data, error } = await bucket.createSignedUrl(String(avatarPath), 3600);
+      if (profileAvatarRenderTokens.get(imageId) !== renderToken) return false;
+      if (error || !data?.signedUrl) throw (downloadError || error || new Error('The private profile image could not be retrieved.'));
+      const loaded = await new Promise(resolve => {
+        image.onload = () => resolve(true);
+        image.onerror = () => resolve(false);
+        image.src = data.signedUrl;
+      });
+      if (profileAvatarRenderTokens.get(imageId) !== renderToken) return false;
+      image.hidden = !loaded;
+      fallback.hidden = loaded;
+      if (!loaded) throw new Error('The saved profile image could not be displayed.');
+      return true;
+    } catch (error) {
+      if (profileAvatarRenderTokens.get(imageId) !== renderToken) return false;
       image.hidden = true;
       fallback.hidden = false;
+      const status = $('profile-settings-identity-message');
+      if (status && imageId === 'profile-settings-avatar-preview') {
+        status.textContent = 'Your profile photo could not be loaded. Please choose the image again and save your profile. ' + (error?.message || '');
+      }
+      return false;
     }
   }
 
