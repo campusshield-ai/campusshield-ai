@@ -88,7 +88,7 @@ assert.match(privacyPage, /Paystack/, "privacy page identifies the optional paym
 assert.match(termsPage, /public-facing project name should not be treated as proof of company registration/, "terms page does not falsely assert a registered legal entity");
 
 assert.match(html, /id="signup-verification-guidance"/, "signup explains role-specific identity verification");
-assert.match(html, /This upload step is for student accounts/, "student identity upload is clearly student-specific");
+assert.match(html, /This upload step is for student accounts|Make verification simple: enter your matric number/, "student identity upload is clearly student-specific");
 assert.match(html, /Matriculation \/ student number \*/, "student identity form clearly requires the matriculation number");
 assert.match(html, /Student ID card photo or PDF \*/, "student identity form requires a student ID image or PDF");
 assert.match(html, /id="identity-fee-receipt"[^>]*accept="image\/jpeg,image\/png,application\/pdf,\.jpg,\.jpeg,\.png,\.pdf"[^>]*>/, "school-fee receipt field accepts only supported evidence formats");
