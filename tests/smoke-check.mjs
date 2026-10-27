@@ -99,7 +99,9 @@ assert.match(paystackWebhookFunction, /expires_at:expiry\.toISOString\(\)/, "sub
 assert.match(paystackWebhookFunction, /if\(subError\)return json\(\{error:"Payment verified but activation needs reconciliation"\},503\)/, "activation failures remain retryable");
 console.log("PASS referenced local scripts exist and ShieldMind timetable actions are wired");
 assert.match(html, /class="campus-dashboard-hero" aria-labelledby="campus-dashboard-hero-title"/);
-assert.match(html, /id="campus-dashboard-hero-title">Welcome back,<br>CampusShield/);
+assert.match(html, /id="campus-dashboard-hero-title">Welcome back,<br><span id="campus-dashboard-welcome-name">CampusShield<\/span>/, "dashboard welcome heading has a safely updated profile-name target");
+assert.match(html, /function updateDashboardWelcomeName\(value\)/, "dashboard welcome can be updated from the saved profile name");
+assert.match(html, /updateDashboardWelcomeName\(currentProfile\.display_name\)/, "saving a profile refreshes the dashboard welcome name");
 assert.match(html, /data-page="report"><svg[\s\S]*?Report an incident/);
 assert.match(html, /data-page="shieldmind"><svg[\s\S]*?Ask the assistant/);
 assert.match(html, /Emergency guidance/);
