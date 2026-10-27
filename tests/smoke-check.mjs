@@ -55,6 +55,14 @@ assert.match(contactPage, /mailto:campusshieldaitechnologies@gmail\.com/, "conta
 assert.match(contactPage, /https:\/\/x\.com\/CampusShieldAI/, "contact page links the configured X profile");
 assert.match(contactPage, /https:\/\/www\.instagram\.com\/campusshieldai\//, "contact page links the configured Instagram profile");
 assert.match(contactPage, /https:\/\/www\.linkedin\.com\/in\/campusshield-ai-technologies-857b83446/, "contact page links the configured LinkedIn profile");
+assert.match(html, /Official TikTok profile is not yet configured/, "unconfirmed TikTok profile is not linked to an invented URL");
+assert.match(privacyPage, /registered legal entity name/, "privacy page discloses that the legal entity name is not verified");
+assert.match(privacyPage, /No fixed, time-based retention schedule was verified/, "privacy page avoids making up retention periods");
+assert.match(privacyPage, /GitHub Pages and Vercel/, "privacy page identifies hosting providers present in the deployment");
+assert.match(privacyPage, /Supabase/, "privacy page identifies the database/auth/storage provider");
+assert.match(privacyPage, /OpenAI/, "privacy page identifies the configured ShieldMind AI provider");
+assert.match(privacyPage, /Paystack/, "privacy page identifies the optional payment provider");
+assert.match(termsPage, /public-facing project name should not be treated as proof of company registration/, "terms page does not falsely assert a registered legal entity");
 
 
 for (const [index, source] of inlineScripts.entries()) {
