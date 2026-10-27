@@ -34,6 +34,7 @@ const profileAvatar20MbMigration = await readFile(new URL("../supabase/migration
 const profileAvatarPathFixMigration = await readFile(new URL("../supabase/migrations/20261027030000_fix_profile_avatar_path_validation.sql", import.meta.url), "utf8");
 const profileAvatarRlsFixMigration = await readFile(new URL("../supabase/migrations/20261027032000_fix_profile_avatar_upload_rls_size_check.sql", import.meta.url), "utf8");
 const studentIdentityPathFixMigration = await readFile(new URL("../supabase/migrations/20261027052000_fix_student_identity_uuid_path_regex.sql", import.meta.url), "utf8");
+const requestedRoleRpcMigration = await readFile(new URL("../supabase/migrations/20261027062000_add_save_my_requested_role_rpc.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -565,6 +566,13 @@ assert.match(profileAvatarRlsFixMigration, /image\/jpeg.*image\/png.*image\/webp
 assert.match(studentIdentityPathFixMigration, /\[\.\]\(jpg\|jpeg\|png\|pdf\)/, "student identity validation accepts UUID filenames with supported document extensions");
 assert.match(studentIdentityPathFixMigration, /p\.role='student' and p\.requested_role='student'/, "student identity submission remains limited to student accounts");
 assert.ok(studentIdentityPathFixMigration.includes("'^' || v_user_id::text || '/"), "student identity path remains scoped to the authenticated user");
+assert.match(backend, /rpc\("save_my_requested_role"/, "requested-role persistence uses the dedicated Supabase RPC");
+assert.match(requestedRoleRpcMigration, /create or replace function public\.save_my_requested_role\(p_requested_role text\)/i, "requested-role RPC is defined in a migration");
+assert.match(requestedRoleRpcMigration, /p_requested_role not in \('student', 'teacher'\)/, "requested-role RPC rejects elevated roles");
+assert.match(requestedRoleRpcMigration, /v_profile_role = 'student' and v_verification_status = 'pending'/, "requested-role RPC only updates pending base accounts");
+assert.doesNotMatch(requestedRoleRpcMigration, /set role\s*=|set verification_status\s*=/i, "requested-role RPC cannot grant roles or approve accounts");
+assert.match(requestedRoleRpcMigration, /revoke all on function public\.save_my_requested_role\(text\) from anon/i, "anonymous users cannot call requested-role RPC");
+assert.match(requestedRoleRpcMigration, /grant execute on function public\.save_my_requested_role\(text\) to authenticated/i, "requested-role RPC is granted to authenticated users only");
 assert.match(profileIdentityMigration, /security definer/i, "profile identity update RPC is database-owned");
 assert.match(profileIdentityMigration, /grant execute on function public\.update_my_profile_identity\(text,text,boolean\) to authenticated/i, "profile identity RPC is granted only to signed-in users");
 assert.match(profileIdentityMigration, /campus_profile_avatar_upload_own/, "avatar upload is scoped to the current user's folder");
