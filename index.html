@@ -4897,7 +4897,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const user = authData.user;
     const { data: saved, error } = await backend.client
       .from('profiles')
-      .select('display_name, full_name, name, avatar_path')
+      .select('display_name, avatar_path')
       .eq('id', user.id)
       .single();
     if (error || !saved) return;
