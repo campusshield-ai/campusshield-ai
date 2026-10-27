@@ -26,8 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SUPABASE_STAGING_URL: ${{ vars.SUPABASE_STAGING_URL }}
-      SUPABASE_STAGING_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
+      SUPABASE_STAGING_URL: https://hywcpnoqqhxvujnimhxl.supabase.co
+      SUPABASE_STAGING_ANON_KEY: sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP
       SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
     steps:
       - name: Check out PR branch
@@ -42,9 +42,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$SUPABASE_STAGING_URL" || { echo "::error::Add repository variable SUPABASE_STAGING_URL (staging URL only)."; exit 1; }
-          test -n "$SUPABASE_STAGING_ANON_KEY" || { echo "::error::Add repository secret SUPABASE_STAGING_ANON_KEY."; exit 1; }
-          test -n "$SUPABASE_STAGING_SERVICE_ROLE_KEY" || { echo "::error::Add repository secret SUPABASE_STAGING_SERVICE_ROLE_KEY."; exit 1; }
+          test -n "$SUPABASE_STAGING_URL" || { echo "::error::Staging URL must be present in this workflow."; exit 1; }
+          test -n "$SUPABASE_STAGING_ANON_KEY" || { echo "::error::Staging publishable key must be present in this workflow."; exit 1; }
+          test -n "$SUPABASE_STAGING_SERVICE_ROLE_KEY" || { echo "::error::Add repository secret SUPABASE_STAGING_SERVICE_ROLE_KEY (staging project only)."; exit 1; }
           actual_ref="$(node -e 'const u=new URL(process.env.SUPABASE_STAGING_URL); if(u.protocol!=="https:") process.exit(2); const m=u.hostname.match(/^([a-z0-9]+)\.supabase\.co$/); if(!m) process.exit(2); process.stdout.write(m[1])')"
           if [ "$actual_ref" != "hywcpnoqqhxvujnimhxl" ]; then
             echo "::error::Refusing to run: configured Supabase project is not the approved staging project."
@@ -57,7 +57,7 @@ jobs:
 
       - name: Run authenticated staging E2E
         env:
-          SUPABASE_STAGING_URL: ${{ vars.SUPABASE_STAGING_URL }}
-          SUPABASE_STAGING_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
+          SUPABASE_STAGING_URL: https://hywcpnoqqhxvujnimhxl.supabase.co
+          SUPABASE_STAGING_ANON_KEY: sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP
           SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
         run: node tests/e2e/staging-identity-e2e.mjs
