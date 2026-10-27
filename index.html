@@ -2037,7 +2037,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <section class="campus-dashboard-hero" aria-labelledby="campus-dashboard-hero-title">
   <div class="campus-dashboard-hero-main">
     <p class="hero-eyebrow">Campus safety network</p>
-    <h1 id="campus-dashboard-hero-title">Welcome back,<br>CampusShield</h1>
+    <h1 id="campus-dashboard-hero-title">Welcome back,<br><span id="campus-dashboard-welcome-name">CampusShield</span></h1>
     <p class="hero-description">No open incidents right now. Report anything that feels unsafe so your safety team can act on it.</p>
     <div class="hero-actions">
       <button class="btn" type="button" data-page="report"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.6 7.7 7 10 4.4-2.3 7-5.5 7-10V6l-7-3Z"/><path d="M12 8v4"/><path d="M12 15.5h.01"/></svg>Report an incident</button>
@@ -4879,6 +4879,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
   }
 
+  function updateDashboardWelcomeName(value) {
+    const target = $('campus-dashboard-welcome-name');
+    if (!target) return;
+    const name = String(value || '').trim();
+    target.textContent = name || 'CampusShield';
+  }
+
   async function loadMyProfileSettings() {
     const profile = currentProfile;
     if (!profile) return;
@@ -4892,6 +4899,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const identityPanel = $('profile-settings-identity-panel');
     const identityStatus = $('profile-settings-identity-status');
     if (name) name.textContent = profile.display_name || profile.full_name || profile.name || 'Name not provided';
+    updateDashboardWelcomeName(profile.display_name || profile.full_name || profile.name);
     if (role) role.textContent = String(profile.role || 'member').replace(/_/g, ' ').replace(/\b\w/g, function(char) { return char.toUpperCase(); });
     if (verification) {
       const verificationStatus = String(profile.verification_status || 'unknown').toLowerCase().replace(/[^a-z0-9-]+/g, '-');
@@ -4931,6 +4939,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       const metadata = user.user_metadata || {};
       const displayName = String(profile.display_name || metadata.display_name || metadata.full_name || metadata.name || '').trim();
       if (name) name.textContent = displayName || 'Name not provided';
+      updateDashboardWelcomeName(displayName);
       const displayNameInput = $('profile-settings-display-name');
       if (displayNameInput) displayNameInput.value = displayName;
       const removeAvatarButton = $('profile-settings-remove-avatar');
@@ -5198,6 +5207,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       currentProfile.avatar_path = savedProfile?.avatar_path || null;
       const name = $('profile-settings-name');
       if (name) name.textContent = currentProfile.display_name;
+      updateDashboardWelcomeName(currentProfile.display_name);
       await renderProfileAvatar(backend, currentProfile.avatar_path);
       await renderProfileAvatar(backend, currentProfile.avatar_path, 'profile-settings-avatar-preview', 'profile-settings-avatar-preview-fallback');
       if (oldAvatarPath && oldAvatarPath !== currentProfile.avatar_path && oldAvatarPath.startsWith(user.id + '/')) {
