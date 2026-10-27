@@ -58,8 +58,10 @@ async function generateAndConfirmSyntheticUser(role, university) {
   const user = generated.data?.user;
   const properties = generated.data?.properties;
   assert.ok(user?.id, `Supabase creates the synthetic ${role} account`);
-  assert.ok(properties?.hashed_token, `Supabase returns a confirmation token hash for synthetic ${role}`);
+  // Track the user before asserting token shape so finally/cleanup still owns it
+  // if a future Supabase Auth response changes or token creation fails.
   createdUsers.set(user.id, { email, role, displayName });
+  assert.ok(properties?.hashed_token, `Supabase returns a confirmation token hash for synthetic ${role}`);
   
   const metadataUpdate = await admin.auth.admin.updateUserById(user.id, {
     user_metadata: {
