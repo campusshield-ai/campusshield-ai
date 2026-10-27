@@ -120,9 +120,25 @@ test("sign-in and create-account mode remain reachable", async ({ page }) => {
   await expect(page.locator("#auth-password")).toBeVisible();
 });
 
+test("site-wide legal links and contact fallback remain explicit", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  const appFooter = page.locator(".app-legal-footer");
+  await expect(appFooter.locator('a[href="./privacy.html"]')).toHaveCount(1);
+  await expect(appFooter.locator('a[href="./terms.html"]')).toHaveCount(1);
+  await expect(appFooter.locator('a[href="./contact.html"]')).toHaveCount(1);
+  await expect(page.locator(".login-footer-links a[href='./privacy.html']")).toHaveCount(1);
+  await expect(page.locator(".login-footer-links a[href='./terms.html']")).toHaveCount(1);
+  await expect(page.locator(".login-footer-links a[href='./contact.html']")).toHaveCount(1);
+
+  await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
+  await expect(page.getByText(/on-site form is not connected/i)).toBeVisible();
+  await expect(page.locator('a[href^="mailto:campusshieldaitechnologies@gmail.com"]')).toHaveCount(4);
+  await expect(page.locator('a[href*="tiktok.com"], a[href*="youtube.com"]')).toHaveCount(0);
+});
+
 test("public privacy, terms and contact pages render without mobile overflow", async ({ page }) => {
   const pages = [
-    { route: "/privacy.html", title: /Privacy Notice/, heading: "Privacy Notice" },
+    { route: "/privacy.html", title: /Privacy Policy/, heading: "Privacy Policy" },
     { route: "/terms.html", title: /Terms of Use/, heading: "Terms of Use" },
     { route: "/contact.html", title: /Contact/, heading: "Contact CampusShield AI" },
   ];
