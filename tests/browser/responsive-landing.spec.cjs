@@ -35,7 +35,7 @@ test("landing page fits phone, tablet, iPad, laptop and desktop viewports", asyn
         const element = document.querySelector(selector);
         if (!element) return null;
         const box = element.getBoundingClientRect();
-        return { left: box.left, right: box.right, width: box.width, height: box.height };
+        return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: box.width, height: box.height };
       };
       const columns = (selector) => {
         const element = document.querySelector(selector);
@@ -49,6 +49,10 @@ test("landing page fits phone, tablet, iPad, laptop and desktop viewports", asyn
         intro: rect(".login-intro"),
         formWrap: rect(".login-form-wrap"),
         authPanel: rect(".auth-panel"),
+        authPanelClientHeight: document.querySelector(".auth-panel")?.clientHeight || 0,
+        authPanelScrollHeight: document.querySelector(".auth-panel")?.scrollHeight || 0,
+        submitButton: rect("#auth-submit"),
+        documentHeight: document.documentElement.scrollHeight,
         featureGrid: rect(".login-feature-grid"),
         featureColumns: columns(".login-feature-grid"),
         layoutColumns: columns("#login-screen"),
@@ -65,6 +69,16 @@ test("landing page fits phone, tablet, iPad, laptop and desktop viewports", asyn
     expect(metrics.featureGrid.right, `${viewport.name}: feature cards must stay within the right edge`).toBeLessThanOrEqual(viewport.width + 1);
     expect(metrics.featureColumns, `${viewport.name}: feature card columns`).toBe(viewport.featureColumns);
     expect(metrics.layoutColumns, `${viewport.name}: landing/form layout columns`).toBe(viewport.layoutColumns);
+    if (viewport.height <= 780 && viewport.width >= 961) {
+      expect(
+        metrics.authPanelScrollHeight,
+        `${viewport.name}: short landscape view must not hide auth controls inside a nested scroll panel`,
+      ).toBeLessThanOrEqual(metrics.authPanelClientHeight + 1);
+      expect(
+        metrics.submitButton.bottom,
+        `${viewport.name}: sign-in action must be reachable in the document scroll area`,
+      ).toBeLessThanOrEqual(metrics.documentHeight + 1);
+    }
     if (viewport.width > 650 && viewport.width <= 1440) {
       expect(metrics.illustrationDisplay, `${viewport.name}: illustration must not collide with tablet/laptop headline`).toBe("none");
     }
