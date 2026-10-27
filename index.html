@@ -11150,5 +11150,169 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
 }
 </script>
 <script src="./campusshield-i18n.js"></script>
+
+<style>
+/* Compact student identity form: reduce excess vertical space and improve file controls. */
+.signup-student-identity-panel {
+  width: min(100%, 760px);
+  max-width: 760px;
+  box-sizing: border-box;
+  padding: clamp(14px, 2.2vw, 24px);
+}
+.signup-student-identity-panel > .heading {
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+.signup-student-identity-panel > .heading h2 {
+  font-size: clamp(23px, 2.4vw, 30px);
+  line-height: 1.12;
+  margin-bottom: 7px;
+}
+.signup-student-identity-panel > .heading p {
+  max-width: 62ch;
+  font-size: 13px;
+  line-height: 1.5;
+}
+#studentIdentityForm {
+  padding: clamp(12px, 2vw, 20px);
+  gap: 2px 14px;
+  box-shadow: 0 6px 18px rgba(16,43,53,.035);
+}
+#identity-verification-status {
+  margin: 0 0 8px;
+  padding: 9px 11px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+#studentIdentityForm > .field {
+  margin: 3px 0 8px;
+}
+#studentIdentityForm > .field label {
+  margin-bottom: 5px;
+  line-height: 1.35;
+}
+#studentIdentityForm > .field input:not([type="file"]),
+#studentIdentityForm > .field select {
+  min-height: 40px;
+  padding: 9px 11px;
+}
+#studentIdentityForm > .field small {
+  margin-top: 4px;
+  font-size: 10.5px;
+  line-height: 1.42;
+}
+#studentIdentityForm > .field:has(#identity-document),
+#studentIdentityForm > .field:has(#identity-fee-receipt) {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+}
+#studentIdentityForm input[type="file"] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 1px dashed #c9ded6;
+  border-radius: 10px;
+  background: #f7faf8;
+  color: #47666a;
+  font-size: 12px;
+}
+#studentIdentityForm input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 7px 10px;
+  border: 1px solid #d3e2dc;
+  border-radius: 7px;
+  background: #fff;
+  color: #173840;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+#studentIdentityForm #identity-document-privacy-note {
+  margin: 4px 0 8px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+#studentIdentityForm .remember-field {
+  padding: 10px 11px;
+  font-size: 11px;
+}
+#studentIdentityForm .remember-field input {
+  width: 17px;
+  height: 17px;
+}
+#studentIdentityForm > p.muted {
+  margin: 7px 0 9px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+#identity-university-request {
+  margin-top: 10px !important;
+}
+#identity-university-request summary {
+  padding: 5px 0;
+  font-size: 13px;
+}
+.signup-student-identity-panel > .panel {
+  padding: 0;
+  border-radius: 16px;
+}
+@media (max-width: 650px) {
+  .signup-student-identity-panel {
+    width: 100%;
+    max-width: 100%;
+    padding: 11px;
+    border-radius: 14px;
+  }
+  .signup-student-identity-panel > .heading {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+  .signup-student-identity-panel > .heading:before {
+    margin-bottom: 6px;
+    font-size: 9px;
+  }
+  .signup-student-identity-panel > .heading h2 {
+    font-size: 24px;
+    line-height: 1.12;
+  }
+  .signup-student-identity-panel > .heading p {
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  #studentIdentityForm {
+    padding: 12px;
+    gap: 0;
+    border-radius: 12px;
+  }
+  #studentIdentityForm > .field {
+    margin: 3px 0 7px;
+  }
+  #studentIdentityForm > .field label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  #studentIdentityForm > .field input:not([type="file"]) {
+    min-height: 39px;
+  }
+  #studentIdentityForm input[type="file"] {
+    min-height: 44px;
+    padding: 7px;
+    font-size: 11px;
+  }
+  #studentIdentityForm input[type="file"]::file-selector-button {
+    margin-right: 7px;
+    padding: 6px 8px;
+  }
+  #studentIdentityForm .remember-field {
+    gap: 8px;
+    padding: 9px;
+  }
+}
+</style>
+
 </body>
 </html>
