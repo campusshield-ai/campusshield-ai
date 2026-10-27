@@ -102,6 +102,9 @@ assert.match(html, /class="campus-dashboard-hero" aria-labelledby="campus-dashbo
 assert.match(html, /id="campus-dashboard-hero-title">Welcome back,<br><span id="campus-dashboard-welcome-name">CampusShield<\/span>/, "dashboard welcome heading has a safely updated profile-name target");
 assert.match(html, /function updateDashboardWelcomeName\(value\)/, "dashboard welcome can be updated from the saved profile name");
 assert.match(html, /updateDashboardWelcomeName\(currentProfile\.display_name\)/, "saving a profile refreshes the dashboard welcome name");
+assert.match(html, /async function syncDashboardProfileIdentity\(\)/, "dashboard identity sync loads the saved profile identity");
+assert.match(html, /syncDashboardProfileIdentity\(\)\.catch\(\s*\(\)\s*=>\s*\{\}\s*\)/, "workspace entry refreshes the saved avatar and welcome name");
+assert.match(html, /await renderProfileAvatar\(backend, saved\.avatar_path\)/, "dashboard avatar uses a private signed URL for the saved profile photo");
 assert.match(html, /data-page="report"><svg[\s\S]*?Report an incident/);
 assert.match(html, /data-page="shieldmind"><svg[\s\S]*?Ask the assistant/);
 assert.match(html, /Emergency guidance/);
