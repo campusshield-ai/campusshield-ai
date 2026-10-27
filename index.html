@@ -2363,23 +2363,22 @@ button,input,select,textarea{max-width:100%;min-width:0}
           </div>
           </div>
 <div class="signup-student-identity-panel" id="signup-student-identity-panel" hidden>
-  <div class="heading"><h2>Student identity verification</h2><p>Make verification simple: enter your matric number and upload a clear photo of your university ID card. A school-fee receipt is optional if your ID card is unavailable or your reviewer requests supporting proof. Teachers and university staff use the separate staff workflow after signing in.</p></div>
+  <div class="heading"><h2>Verify student identity</h2><p>Confirm your matric number and add your student ID. Your document stays private.</p></div>
   <div class="panel">
           <p id="identity-verification-status" class="message" role="status" aria-live="polite">Loading your submission status…</p>
           <div id="studentIdentityForm">
             <div class="field">
-                    <label for="identity-institution-search">University selected for your account *</label>
+                    <label for="identity-institution-search">Your university *</label>
                     <input id="identity-institution-search" type="text" readonly aria-describedby="identity-university-help" required>
                     <datalist id="identity-university-options"></datalist>
                     <input id="identity-institution" type="hidden">
-                    <small id="identity-university-help">This value is set from your account setup and must match the campus membership enforced by Supabase.</small>
+                    <small id="identity-university-help">Locked to your account's campus.</small>
             </div>
-            <div class="field"><label for="identity-student-number">Matriculation / student number *</label><input id="identity-student-number" required maxlength="80" autocomplete="off" placeholder="Enter the number on your student record"><small>Enter it exactly as shown on your university record.</small></div>
-            <div class="field"><label for="identity-document">Student ID card photo or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>Upload a clear JPG, PNG, or PDF, up to 5 MiB. Make sure your name, institution, and ID details are readable. Your file is uploaded privately for authorized review.</small></div>
-            <div class="field"><label for="identity-fee-receipt">School-fee receipt (optional)</label><input id="identity-fee-receipt" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf"><small>Optional supporting proof only. Upload it only if your student ID is unavailable or the reviewer asks for it. JPG, PNG, or PDF, up to 5 MiB.</small></div>
-            <p class="muted" id="identity-document-privacy-note">Privacy tip: cover bank/card details and unrelated information on receipts before uploading. Never upload passwords, PINs, or full payment-card details.</p>
-            <label class="remember-field"><input id="identity-original-document-confirmation" type="checkbox" required> I confirm this is a genuine university-issued document and has not been AI-generated or digitally altered.</label>
-            <p class="muted">AI-generated or edited identity images are not accepted. Documents are reviewed by authorized campus staff; this checkbox is an attestation, not an automated AI detector.</p>
+            <div class="field"><label for="identity-student-number">Matric number *</label><input id="identity-student-number" required maxlength="80" autocomplete="off" placeholder="Enter your matric number"><small>Use the number on your student record.</small></div>
+            <div class="field"><label for="identity-document">Student ID card *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>JPG, PNG or PDF · up to 5 MiB. Details must be readable.</small></div>
+            <details class="identity-extra-proof"><summary>Add school-fee receipt <span>(optional)</span></summary><div class="field"><label for="identity-fee-receipt">Receipt file</label><input id="identity-fee-receipt" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf"><small>Only if your ID is unavailable or a reviewer asks. JPG, PNG or PDF · up to 5 MiB.</small></div></details>
+            <details class="identity-privacy-details"><summary>Privacy and document requirements</summary><p class="muted" id="identity-document-privacy-note">Cover bank/card details and unrelated information on receipts. Never upload passwords, PINs, or full payment-card details.</p><p class="muted">Submit only a genuine, unaltered university-issued document. Authorized campus staff review submissions; the checkbox below is an attestation, not an automated AI detector.</p></details>
+            <label class="remember-field"><input id="identity-original-document-confirmation" type="checkbox" required> I confirm this is a genuine, unaltered university document.</label>
             <button class="btn" type="button" id="identity-submit" hidden>Submit for review</button>
           </div>
           <details id="identity-university-request" style="margin-top:16px">
@@ -11311,6 +11310,42 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
     gap: 8px;
     padding: 9px;
   }
+}
+</style>
+
+
+<style>
+/* Ultra-compact identity verification: essential fields first, optional information folded away. */
+.signup-student-identity-panel { width:min(100%,620px); max-width:620px; padding:14px; }
+.signup-student-identity-panel > .heading { padding-bottom:8px; margin-bottom:8px; }
+.signup-student-identity-panel > .heading h2 { font-size:21px; margin:0 0 4px; }
+.signup-student-identity-panel > .heading p { font-size:12px; line-height:1.35; margin:0; }
+.signup-student-identity-panel > .panel { padding:0; }
+#studentIdentityForm { padding:12px; display:grid; grid-template-columns:minmax(0,1fr); gap:7px; }
+#studentIdentityForm > .field { margin:0; }
+#studentIdentityForm > .field label { margin-bottom:3px; font-size:12px; }
+#studentIdentityForm > .field small { margin-top:3px; font-size:10px; line-height:1.3; }
+#studentIdentityForm > .field input:not([type=file]) { min-height:36px; padding:7px 9px; }
+#studentIdentityForm input[type=file] { min-height:38px; padding:5px 7px; font-size:11px; border-radius:8px; }
+#studentIdentityForm input[type=file]::file-selector-button { padding:5px 7px; margin-right:6px; }
+#studentIdentityForm .identity-extra-proof, #studentIdentityForm .identity-privacy-details { border-top:1px solid #e4ece8; padding-top:7px; margin-top:1px; font-size:12px; }
+#studentIdentityForm .identity-extra-proof summary, #studentIdentityForm .identity-privacy-details summary { cursor:pointer; font-weight:650; padding:3px 0; }
+#studentIdentityForm .identity-extra-proof summary span { font-weight:400; color:#667d7b; }
+#studentIdentityForm .identity-extra-proof .field { margin:8px 0 2px; }
+#studentIdentityForm .identity-privacy-details p { font-size:11px; line-height:1.4; margin:7px 0; }
+#studentIdentityForm .remember-field { margin:2px 0; padding:8px; font-size:11px; line-height:1.35; gap:8px; }
+#studentIdentityForm .remember-field input { width:16px; height:16px; flex:0 0 16px; }
+#studentIdentityForm > .btn { min-height:38px; padding:8px 12px; }
+#identity-verification-status { margin:0; padding:7px 9px; font-size:11px; line-height:1.35; }
+@media (max-width:650px) {
+ .signup-student-identity-panel { padding:8px; border-radius:12px; }
+ .signup-student-identity-panel > .heading h2 { font-size:19px; }
+ .signup-student-identity-panel > .heading p { font-size:11px; }
+ #studentIdentityForm { padding:9px; gap:6px; }
+ #studentIdentityForm > .field { margin:0; }
+ #studentIdentityForm > .field label { font-size:11px; }
+ #studentIdentityForm input[type=file] { min-height:35px; font-size:10px; }
+ #studentIdentityForm input[type=file]::file-selector-button { padding:4px 6px; }
 }
 </style>
 
