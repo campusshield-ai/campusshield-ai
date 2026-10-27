@@ -131,6 +131,9 @@
       if (canReview()) await refreshReviewerQueue();
       state.loaded = true;
     } catch (error) {
+      state.context = null;
+      state.reviewer = false;
+      renderContext();
       message("pq-page-status", error?.message || "Exam-preparation data could not be loaded.", "error");
     }
   }
@@ -315,8 +318,8 @@
       state.lastResult = data;
       renderResult(data, quiz);
       state.quiz = null;
-      await refreshHistory();
       message("pq-quiz-status", "Attempt submitted successfully.", "success");
+      refreshHistory().catch(error => console.warn("Practice history refresh failed:", error?.message || "unavailable"));
     } catch (error) {
       // Keep the attempt visible so the student can retry after a temporary network/service error.
       quiz.submitting = false;
@@ -547,7 +550,7 @@
       reviewed_at: new Date().toISOString(),
       review_note: note || (decision === "approved" ? "Approved after source and permission review." : "Not approved for campus distribution."),
       updated_at: new Date().toISOString(),
-    }).eq("id", paperId).eq("university_id", state.context.universityId);
+    }).eq("id", paperId).eq("university_id", state.context.universityId).select("id,status").single();
     if (error) throw error;
     message("pq-review-status", decision === "approved" ? "Paper approved for verified campus members." : "Paper rejected; it remains outside the student library.", "success");
     await refreshLibrary();
