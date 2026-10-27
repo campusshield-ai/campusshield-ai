@@ -1883,7 +1883,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
   #login-screen .login-social-links{display:flex;align-items:center;gap:8px}
   #login-screen .login-social-links a{display:grid;place-items:center;width:34px;height:34px;border:1px solid #b8e2e421;border-radius:10px;background:#ffffff08;color:#e8f8ff;text-decoration:none;font-size:13px;font-weight:800;transition:background .18s ease,border-color .18s ease}
   #login-screen .login-social-links a:hover{background:#0a9f8a4a;border-color:#4ddfca6b}
-  #login-screen .login-social-pending{display:grid;place-items:center;width:34px;height:34px;border:1px dashed #b8e2e44d;border-radius:10px;background:#ffffff05;color:#819cac;font-size:15px;opacity:.82;cursor:help}
+  #login-screen .login-social-pending{display:grid;place-items:center;width:34px;height:34px;border:1px dashed #b8e2e44d;border-radius:10px;background:#ffffff05;color:#819cac;font-size:15px;opacity:.92;cursor:pointer;text-decoration:none;transition:background .18s ease,border-color .18s ease,color .18s ease}
+  #login-screen .login-social-pending:hover,#login-screen .login-social-pending:focus-visible{color:#e8f8ff;background:#0a9f8a4a;border-color:#4ddfca6b}
   #login-screen .login-social-pending::after{content:"";position:absolute}
 
   #login-screen .login-form-wrap{position:relative;isolation:isolate;z-index:2;display:grid;grid-template-rows:auto minmax(0,1fr);align-items:stretch;gap:13px;min-width:0;min-height:100vh;min-height:100svh;padding:17px clamp(20px,3.15vw,53px) 24px clamp(22px,3vw,48px);border-radius:clamp(54px,8vw,130px) 0 0 clamp(46px,6vw,96px);background:radial-gradient(ellipse at 100% 5%,#e1fbf5 0,transparent 42%),linear-gradient(140deg,#f9fcfd 0%,#f4f9fa 100%)}
@@ -2166,7 +2167,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <a href="https://x.com/CampusShieldAI" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI on X" title="X">𝕏</a>
         <a href="https://www.instagram.com/campusshieldai/" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI on Instagram" title="Instagram">◎</a>
         <a href="https://www.linkedin.com/in/campusshield-ai-technologies-857b83446" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI Technologies on LinkedIn" title="LinkedIn">in</a>
-        <span class="login-social-pending" role="img" aria-label="Official TikTok profile is not yet configured" title="TikTok profile not confirmed">♪</span>
+        <a class="login-social-pending" href="https://www.tiktok.com/search?q=CampusShield%20AI" target="_blank" rel="noopener noreferrer" aria-label="Search TikTok for CampusShield AI; official profile not confirmed" title="Search TikTok (official profile not confirmed)">♪</a>
       </nav>
     </footer>
   </div>
