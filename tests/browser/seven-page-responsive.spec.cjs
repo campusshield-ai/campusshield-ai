@@ -33,7 +33,9 @@ for (const width of widths) {
         expect(metrics.scroll, `document overflow at ${width}px on ${pageInfo.path}`).toBeLessThanOrEqual(metrics.viewport + 1);
         expect(metrics.bodyScroll, `body overflow at ${width}px on ${pageInfo.path}`).toBeLessThanOrEqual(metrics.viewport + 1);
         expect(metrics.fontSize).toBeGreaterThanOrEqual(16);
-        const footer = page.locator("footer").last();
+        const footer = pageInfo.name === "Home"
+          ? page.locator(".login-landing-footer")
+          : page.locator("footer").last();
         await expect(footer).toBeVisible();
         const footerLinks = footer.locator("a");
         await expect(footerLinks).toHaveCount(6);
