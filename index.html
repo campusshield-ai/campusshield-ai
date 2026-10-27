@@ -4960,6 +4960,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
       showLogin('Please sign in to access CampusShield.');
       return;
     }
+    if (page === 'past-questions' && !window.PastQuestionPractice?.isEnabled?.()) {
+      page = 'dashboard';
+      toast('Past Questions & Exam Prep is currently being validated in staging. Production remains unchanged until its database migration is approved.');
+    }
 
     // Session restoration can request Overview more than once. Honor a valid
     // notification deep link until the user interacts with the workspace.
