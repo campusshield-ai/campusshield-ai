@@ -1982,6 +1982,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
     #login-screen .login-right-top{margin-bottom:2px}
     #login-screen .auth-panel{justify-self:center;max-height:none;overflow:visible;width:100%;max-width:590px;padding:clamp(22px,3.3vw,32px)}
   }
+  @media (min-width:651px) and (max-width:960px){
+    /* The network illustration collides with long headline lines on iPad/tablet widths. */
+    #login-screen .login-visual{display:none}
+    #login-screen .login-hero-copy{max-width:100%}
+  }
   @media (max-width:650px){
     #login-screen .login-intro{gap:18px;padding:19px 17px 17px}
     #login-screen .login-intro-header{flex-wrap:wrap;gap:13px}
