@@ -709,15 +709,15 @@ assert.match(profileAvatarStorageMigration, /grant select on public\.community_p
 assert.match(profileAvatarStorageMigration, /RLS must be enabled on public\.community_posts/i, "migration refuses to grant reads unless community RLS is enabled");
 
 assert.match(campusServiceCrawler, /campusshieldaitechnologies@gmail\.com/, "crawler endpoint is restricted to its designated owner email");
-assert.match(html, /id="lost-found-nav"[^>]*data-lost-found-shortcut="true"[^>]*data-page="community"|<button data-page="community" id="lost-found-nav" data-lost-found-shortcut="true"/, "Lost & Found has a dedicated campus navigation shortcut");
+assert.ok(html.includes('<button data-page="community" id="lost-found-nav" data-lost-found-shortcut="true">'), "Lost & Found has a dedicated campus navigation shortcut");
 const lostFoundHandlerStart = html.indexOf("if (button.hasAttribute('data-lost-found-shortcut'))");
-const lostFoundHandlerEnd = html.indexOf("\\n    if (button.dataset.page === 'groups')", lostFoundHandlerStart);
+const lostFoundHandlerEnd = html.indexOf("if (button.dataset.page === 'groups')", lostFoundHandlerStart);
 assert.ok(lostFoundHandlerStart >= 0 && lostFoundHandlerEnd > lostFoundHandlerStart, "Lost & Found shortcut has a dedicated click handler");
 const lostFoundHandler = html.slice(lostFoundHandlerStart, lostFoundHandlerEnd);
-assert.match(lostFoundHandler, /postType\\.value = 'lost_found'/, "shortcut preselects the Lost & Found post type");
-assert.match(lostFoundHandler, /communityPostForm/, "shortcut targets the community composer");
-assert.match(lostFoundHandler, /scrollIntoView\\(\\{behavior: 'smooth', block: 'start'\\}\\)/, "shortcut scrolls to the composer");
-assert.match(lostFoundHandler, /Do not post private contact details or sensitive personal information/, "shortcut includes privacy guidance");
+assert.ok(lostFoundHandler.includes("postType.value = 'lost_found'"), "shortcut preselects the Lost & Found post type");
+assert.ok(lostFoundHandler.includes("communityPostForm"), "shortcut targets the community composer");
+assert.ok(lostFoundHandler.includes("scrollIntoView({behavior: 'smooth', block: 'start'})"), "shortcut scrolls to the composer");
+assert.ok(lostFoundHandler.includes("Do not post private contact details or sensitive personal information"), "shortcut includes privacy guidance");
 assert.match(html, /crawlerPanel\.hidden = !isCrawlerOwner/, "crawler panel is hidden for all other platform administrators");
 assert.match(html, /This crawler is restricted to its designated owner\./, "crawler UI repeats the owner-only guard");
 console.log("PASS self-service profile editing, private avatar storage, and owner-only crawler authorization");
