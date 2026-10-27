@@ -2126,6 +2126,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
     #login-screen .signup-verification-guidance{padding:10px 11px;font-size:11px}
     #login-screen #studentIdentityForm{padding:11px}
   }
+  /* Keep the language control visibly selectable on desktop and touch screens. */
+  #login-screen .login-language{position:relative;padding-inline-end:12px}
+  #login-screen .login-language:after{content:"⌄";position:absolute;inset-inline-end:0;top:50%;transform:translateY(-58%);color:#4e667b;font-size:12px;font-weight:850;pointer-events:none}
+  #login-screen .login-language select{appearance:none;-webkit-appearance:none;padding-inline-end:14px!important;background-color:transparent}
 </style>
 
 </head>
@@ -4403,6 +4407,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
     $('identity-document').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
     $('identity-institution-search').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
     $('identity-original-document-confirmation').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
+    // Refresh role-specific verification guidance in the currently selected language.
+    window.CampusShieldI18n?.apply();
   }
 
   $('auth-role').addEventListener('change', () => {
