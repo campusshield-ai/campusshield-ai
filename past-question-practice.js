@@ -14,6 +14,28 @@
   })[char]);
   const clean = (value, max = 500) => String(value ?? "").trim().slice(0, max);
   const client = () => window.CampusShieldBackend?.client || null;
+  // Keep the new tables and function confined to the staging project until the
+  // authenticated flow is validated and the additive migration is approved for production.
+  const STAGING_PROJECT_REF = "hywcpnoqqhxvujnimhxl";
+  function isEnabled() {
+    const url = String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url || "").toLowerCase();
+    try {
+      return new URL(url).hostname === STAGING_PROJECT_REF + ".supabase.co";
+    } catch (_error) {
+      return false;
+    }
+  }
+  function applyEnvironmentGate() {
+    const enabled = isEnabled();
+    const nav = $("past-questions-nav");
+    if (nav) nav.hidden = !enabled;
+    if (!enabled) {
+      ["pq-library-section", "pq-submit-section", "pq-ai-section", "pq-history-section", "pq-reviewer-tools", "pq-quiz-panel", "pq-result-panel"]
+        .forEach(id => { if ($(id)) $(id).hidden = true; });
+      message("pq-page-status", "Past Questions & Exam Prep is enabled in staging while its authenticated workflows are validated. Production remains unchanged.");
+    }
+    return enabled;
+  }
 
   function message(id, text, kind = "") {
     const el = $(id);
@@ -124,6 +146,7 @@
   }
 
   async function load(profileHint) {
+    if (!applyEnvironmentGate()) return;
     try {
       await resolveContext(profileHint);
       renderContext();
@@ -603,6 +626,7 @@
   }
 
   function wire() {
+    applyEnvironmentGate();
     if (state.wired) return;
     state.wired = true;
     $("pq-refresh")?.addEventListener("click", () => refreshLibrary().catch(error => message("pq-library-status", error?.message || "Could not refresh library.", "error")));
@@ -642,5 +666,5 @@
   }
   document.addEventListener("DOMContentLoaded", wire);
   wire();
-  window.PastQuestionPractice = { load };
+  window.PastQuestionPractice = { load, isEnabled };
 })();
