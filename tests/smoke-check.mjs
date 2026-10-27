@@ -48,7 +48,7 @@ assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/privacy\.html"/,
 assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/terms\.html"/, "landing footer links to Terms");
 assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/contact\.html"/, "landing footer links to Contact");
 assert.match(privacyPage, /<title>Privacy Notice \| CampusShield AI<\/title>/, "privacy page exists and is titled");
-assert.match(privacyPage, /Staging safety/, "privacy page warns against using real sensitive data in previews");
+assert.match(privacyPage, /Development-stage notice/, "privacy page warns against using real sensitive data in previews");
 assert.match(termsPage, /<title>Terms of Use \| CampusShield AI<\/title>/, "terms page exists and is titled");
 assert.match(termsPage, /does not automatically contact or dispatch emergency services/i, "terms page states the emergency limitation");
 assert.match(contactPage, /mailto:campusshieldaitechnologies@gmail\.com/, "contact page provides the configured support email");
