@@ -11022,9 +11022,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     );
   }
   
-  let shieldMindSessionUserId = null, shieldMindHistory = [];
+  let shieldMindSessionUserId = null, shieldMindHistory = [], shieldMindRecentQuestions = [];
   function resetShieldMindForSession() {
-    if (!currentProfile) { shieldMindSessionUserId=null; shieldMindHistory=[]; return; }
+    if (!currentProfile) { shieldMindSessionUserId=null; shieldMindHistory=[]; shieldMindRecentQuestions=[]; renderShieldMindRecentQuestions(); return; }
     // Let all signed-in accounts ask general academic questions. The backend independently
     // blocks campus-specific and sensitive actions when the account is not eligible.
     const allowed=true;
@@ -11032,6 +11032,8 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     if (shieldMindSessionUserId!==currentProfile.id) {
       shieldMindSessionUserId=currentProfile.id;
       shieldMindHistory=[];
+      shieldMindRecentQuestions=[];
+      renderShieldMindRecentQuestions();
       if ($('shieldmind-messages')) $('shieldmind-messages').innerHTML='<article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Chat ready. Ask a general academic question. Official campus details are only answered when approved campus sources support them.</p></article>';
     }
     if ($('shieldmind-status')) $('shieldmind-status').textContent='Ready for a general academic question.';
@@ -11125,8 +11127,74 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     const body=document.createElement('p'); body.textContent=message; article.append(title,body);
     $('shieldmind-messages').appendChild(article); $('shieldmind-messages').scrollTop=$('shieldmind-messages').scrollHeight;
   }
-  $('shieldmind-clear').addEventListener('click',()=>{shieldMindHistory=[];$('shieldmind-messages').innerHTML='';addShieldMindMessage('assistant','Chat cleared. Official campus policy answers remain unavailable until approved sources are configured.');$('shieldmind-status').textContent='Chat cleared. This interface does not save your conversation.';});
-  document.querySelectorAll('[data-shieldmind-prompt]').forEach(button=>button.addEventListener('click',()=>{$('shieldmind-question').value=button.dataset.shieldmindPrompt;$('shieldmind-question').focus();}));
+  function renderShieldMindRecentQuestions() {
+    const list=$('shieldmind-recent-list');
+    if(!list) return;
+    list.replaceChildren();
+    const recent=shieldMindRecentQuestions.slice(0,5);
+    if(!recent.length) {
+      const empty=document.createElement('p');
+      empty.className='shieldmind-recent-empty';
+      empty.textContent='Your recent questions will appear here during this session.';
+      list.appendChild(empty);
+      return;
+    }
+    recent.forEach(question=>{
+      const item=document.createElement('button');
+      item.type='button';
+      item.className='shieldmind-recent-item';
+      item.setAttribute('aria-label','Reuse previous question: '+question);
+      const label=document.createElement('span');
+      label.textContent=question;
+      item.appendChild(label);
+      item.addEventListener('click',()=>{
+        $('shieldmind-question').value=question;
+        $('shieldmind-question').focus();
+        document.querySelectorAll('#page-shieldmind .shieldmind-quick-action').forEach(action=>action.classList.toggle('is-active',action.hasAttribute('data-shieldmind-focus-chat')));
+      });
+      list.appendChild(item);
+    });
+  }
+  function setShieldMindQuickActionActive(button) {
+    const bar=button?.closest('.shieldmind-quick-actions');
+    if(!bar) return;
+    bar.querySelectorAll('.shieldmind-quick-action').forEach(action=>action.classList.toggle('is-active',action===button));
+  }
+  document.querySelectorAll('[data-shieldmind-focus-chat]').forEach(button=>button.addEventListener('click',()=>{
+    setShieldMindQuickActionActive(button);
+    $('shieldmind-question').focus();
+    $('shieldmind-question').scrollIntoView({behavior:'smooth',block:'center'});
+  }));
+  document.querySelectorAll('[data-shieldmind-scroll-tools]').forEach(button=>button.addEventListener('click',()=>{
+    setShieldMindQuickActionActive(button);
+    $('shieldmind-study-tools')?.scrollIntoView({behavior:'smooth',block:'center'});
+  }));
+  document.querySelectorAll('[data-shieldmind-focus-image]').forEach(button=>button.addEventListener('click',()=>{
+    setShieldMindQuickActionActive(button);
+    const details=document.querySelector('#page-shieldmind .shieldmind-upload-details');
+    if(details) details.open=true;
+    $('shieldmind-image')?.click();
+  }));
+  $('shieldmind-recent-clear')?.addEventListener('click',()=>{
+    shieldMindRecentQuestions=[];
+    renderShieldMindRecentQuestions();
+    $('shieldmind-status').textContent='Recent questions cleared for this session.';
+  });
+  $('shieldmind-clear').addEventListener('click',()=>{
+    shieldMindHistory=[];
+    shieldMindRecentQuestions=[];
+    renderShieldMindRecentQuestions();
+    $('shieldmind-messages').innerHTML='';
+    addShieldMindMessage('assistant','Chat cleared. Official campus policy answers remain unavailable until approved sources are configured.');
+    $('shieldmind-status').textContent='Chat cleared. This interface does not save your conversation.';
+  });
+  document.querySelectorAll('[data-shieldmind-prompt]').forEach(button=>button.addEventListener('click',()=>{
+    $('shieldmind-question').value=button.dataset.shieldmindPrompt;
+    $('shieldmind-question').focus();
+    setShieldMindQuickActionActive(button);
+    const quick=button.closest('.shieldmind-quick-actions');
+    if(quick) $('shieldmind-question').scrollIntoView({behavior:'smooth',block:'center'});
+  }));
   $('shieldmind-form').addEventListener('submit',async event=>{
     event.preventDefault(); const question=String($('shieldmind-question').value||'').trim(),backend=window.CampusShieldBackend,imageFile=$('shieldmind-image')?.files?.[0]||null;
     const allowed=Boolean(currentProfile);
@@ -11154,6 +11222,8 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if(currentProfile!==profileAtRequest||currentProfile?.id!==userId){shieldMindHistory=[];$('shieldmind-messages').innerHTML='';resetShieldMindForSession();return;}
       addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'));
       shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-8);
+      shieldMindRecentQuestions=[question,...shieldMindRecentQuestions.filter(item=>item!==question)].slice(0,5);
+      renderShieldMindRecentQuestions();
       $('shieldmind-status').textContent=result?.mode==='provider'?'Study support · Verify important facts against your course materials.':'Safe response · official campus sources are not connected, so verify important facts with your course materials.';
     }catch(error){
       const detail=String(error?.message||'').trim();
