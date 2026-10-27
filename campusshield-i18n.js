@@ -70,7 +70,7 @@
       [".auth-kicker","access"],["#signin-institution-field label","institution"],["#signin-institution-help","institutionHelp"],
       ["#signin-role-note","roleNote"],["#auth-tabs [data-auth-mode='signin']","signIn"],["#auth-tabs [data-auth-mode='signup']","createAccount"],
       ["#auth-email-field label","email"],["#auth-password-field label","password"],["#forgot-password-button","forgotPassword"],
-      ["#remember-email-field label","rememberEmail"],["#auth-helper","signInSafety"],["#resend-confirmation-button","resendConfirmation"],
+      ["#remember-email-field label","rememberEmail"],["#resend-confirmation-button","resendConfirmation"],
       ["#signup-fields label[for='auth-name']","fullName"],["#signup-fields label[for='auth-username']","username"],
       ["#signup-fields label[for='auth-role']","accountType"],["#signup-fields label[for='auth-university-search']","university"],
       ["#signup-fields label[for='auth-faculty']","faculty"],["#signup-fields label[for='auth-department']","department"],
