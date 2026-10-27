@@ -17,6 +17,7 @@ on:
     branches: [main]
     paths:
       - "index.html"
+      - "campusshield-i18n.js"
       - "privacy.html"
       - "terms.html"
       - "contact.html"
