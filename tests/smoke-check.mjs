@@ -331,6 +331,9 @@ assert.match(institutionalBillingMigration, /profile\.verification_status = 'ver
 assert.match(institutionalBillingMigration, /requester_id = \(SELECT auth\.uid\(\)\)/i);
 assert.match(institutionalBillingMigration, /public\.platform_is_admin\(\)/i);
 assert.match(html, /id="past-questions-nav"/, "Past Questions & Exam Prep has a dedicated campus navigation entry");
+assert.match(html, /!window\.PastQuestionPractice\?\.isEnabled\?\.\(\)/, "production navigation blocks the staging-only feature until production schema is approved");
+assert.match(pastQuestionScript, /STAGING_PROJECT_REF = "hywcpnoqqhxvujnimhxl"/, "new feature is gated to the staging Supabase project");
+assert.match(pastQuestionScript, /window\.PastQuestionPractice = \{ load, isEnabled \}/, "navigation can verify feature environment before routing");
 assert.match(html, /id="page-past-questions"/, "Past Questions & Exam Prep page is included");
 assert.match(html, /Babcock-first pilot/i, "Babcock University is named as the first pilot");
 assert.match(html, /data-page="past-questions"/, "past-question navigation is role-workspace navigation");
