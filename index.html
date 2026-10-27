@@ -2363,7 +2363,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
           </div>
           </div>
 <div class="signup-student-identity-panel" id="signup-student-identity-panel" hidden>
-  <div class="heading"><h2>Student identity verification</h2><p>This upload step is for student accounts. Teachers and university staff use the separate staff identity-verification workflow after signing in.</p></div>
+  <div class="heading"><h2>Student identity verification</h2><p>Make verification simple: enter your matric number and upload a clear photo of your university ID card. A school-fee receipt is optional if your ID card is unavailable or your reviewer requests supporting proof. Teachers and university staff use the separate staff workflow after signing in.</p></div>
   <div class="panel">
           <p id="identity-verification-status" class="message" role="status" aria-live="polite">Loading your submission status…</p>
           <div id="studentIdentityForm">
@@ -2374,8 +2374,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
                     <input id="identity-institution" type="hidden">
                     <small id="identity-university-help">This value is set from your account setup and must match the campus membership enforced by Supabase.</small>
             </div>
-            <div class="field"><label for="identity-student-number">Student / matric number *</label><input id="identity-student-number" required maxlength="80" autocomplete="off"></div>
-            <div class="field"><label for="identity-document">Student ID image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>Choose a JPG, PNG, or PDF file up to 5 MiB. CampusShield creates the secure filename automatically. Use synthetic test data only.</small></div>
+            <div class="field"><label for="identity-student-number">Matriculation / student number *</label><input id="identity-student-number" required maxlength="80" autocomplete="off" placeholder="Enter the number on your student record"><small>Enter it exactly as shown on your university record.</small></div>
+            <div class="field"><label for="identity-document">Student ID card photo or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>Upload a clear JPG, PNG, or PDF, up to 5 MiB. Make sure your name, institution, and ID details are readable. Your file is uploaded privately for authorized review.</small></div>
+            <div class="field"><label for="identity-fee-receipt">School-fee receipt (optional)</label><input id="identity-fee-receipt" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf"><small>Optional supporting proof only. Upload it only if your student ID is unavailable or the reviewer asks for it. JPG, PNG, or PDF, up to 5 MiB.</small></div>
+            <p class="muted" id="identity-document-privacy-note">Privacy tip: cover bank/card details and unrelated information on receipts before uploading. Never upload passwords, PINs, or full payment-card details.</p>
             <label class="remember-field"><input id="identity-original-document-confirmation" type="checkbox" required> I confirm this is a genuine university-issued document and has not been AI-generated or digitally altered.</label>
             <p class="muted">AI-generated or edited identity images are not accepted. Documents are reviewed by authorized campus staff; this checkbox is an attestation, not an automated AI detector.</p>
             <button class="btn" type="button" id="identity-submit" hidden>Submit for review</button>
