@@ -1,0 +1,69 @@
+name: CampusShield release readiness (no deployment)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "campusshield-i18n.js"
+      - "privacy.html"
+      - "terms.html"
+      - "contact.html"
+      - "tests/smoke-check.mjs"
+      - "tests/browser/**"
+      - "playwright.config.cjs"
+      - ".github/workflows/release-readiness.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-release-readiness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Full source and privacy regression suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run complete smoke suite
+        run: node tests/smoke-check.mjs
+
+  responsive-browser:
+    name: Responsive browser and navigation checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser-test dependency
+        run: npm install --no-save --no-package-lock @playwright/test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run responsive browser tests
+        env:
+          CI: "true"
+        run: npx playwright test --config=playwright.config.cjs
+      - name: Upload responsive screenshots and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: campusshield-release-readiness-evidence
+          path: |
+            test-results/responsive/*.png
+            test-results/playwright/
+            playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
