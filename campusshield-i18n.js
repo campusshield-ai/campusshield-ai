@@ -75,11 +75,11 @@
     for (const [selector,key] of map) setText(selector,key);
     const roles = [["administrator","administrator"],["teacher","teacher"],["student","student"]];
     for (const [role,key] of roles) setText(".auth-role-option[data-signin-role='"+role+"']",key);
+    const mode = currentMode();
     setPlaceholder("#signin-institution","institutionPlaceholder");
     setPlaceholder("#auth-password", mode === "signup" ? "signupPasswordPlaceholder" : "passwordPlaceholder");
     setPlaceholder("#auth-name","fullName");
     setPlaceholder("#auth-username","username");
-    const mode = currentMode();
     const titleKey = mode === "identity" ? "setupTitle" : mode === "reset" ? "resetTitle" : mode === "signup" ? "signupTitle" : "welcome";
     const subtitleKey = mode === "identity" ? "setupSubtitle" : mode === "reset" ? "resetSubtitle" : mode === "signup" ? "signupSubtitle" : "signInSubtitle";
     setText("#auth-title", titleKey);
