@@ -3201,35 +3201,98 @@ button,input,select,textarea{max-width:100%;min-width:0}
 </section>
 
 <section class="page" id="page-shieldmind">
-  <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · LEARNING ASSISTANT</span><h1>ShieldMind AI</h1><p>Study smarter with clear safeguards for campus information.</p></div></div>
-  <div class="shieldmind-hero"><div class="shieldmind-mark" aria-hidden="true">✦</div><div><h2>Study smarter with ShieldMind</h2><p>Ask questions, explore topics and plan revision. Campus answers require approved university sources.</p></div></div>
-  <div class="notice-inline" id="shieldmind-access-notice" role="status" aria-live="polite">AI requests need a verified account and university membership. Students also need approved identity verification.</div>
-
-  <section class="shieldmind-plan panel" aria-labelledby="shieldmind-plan-heading">
-    <div class="shieldmind-plan-copy">
-      <span class="shieldmind-pill">YOUR PLAN</span>
-      <h2 id="shieldmind-plan-heading">Your plan</h2>
-      <p>Manage AI limits and payments from Subscriptions &amp; billing.</p>
-      <p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p>
-      <div class="actions"><button class="btn" type="button" data-page="billing">View plans &amp; subscriptions</button></div>
+  <div class="shieldmind-workspace-header">
+    <div class="shieldmind-brand-lockup">
+      <span class="shieldmind-mark" aria-hidden="true">✦</span>
+      <div><span class="campus-hub-eyebrow">CAMPUSSHIELD AI · LEARNING ASSISTANT</span><h1>ShieldMind AI</h1><p>Your campus learning companion</p></div>
     </div>
-  </section>
-  <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Ask a question or explore a topic.</p></div><span class="shieldmind-pill">LIVE AI SERVICE</span></div>
-    <div class="notice-inline">Official policies and deadlines require approved campus sources.</div>
-    <div id="shieldmind-messages" class="shieldmind-messages" aria-live="polite"><article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Hi! Ask a general academic question. Verified campus-policy answers are unavailable until approved official sources are connected.</p></article></div>
-    <form id="shieldmind-form"><div class="field"><label for="shieldmind-question">Your question</label><textarea id="shieldmind-question" required maxlength="1200" placeholder="e.g. Explain photosynthesis in simple steps…" rows="3"></textarea><p class="muted">Never enter safety reports, IDs, passwords, medical details or private student records.</p></div>
-      <div class="field">
-        <label for="shieldmind-image">Optional study image (JPG, PNG or WebP · max 2.5 MB)</label>
-        <input id="shieldmind-image" type="file" accept="image/jpeg,image/png,image/webp">
-        <label class="shieldmind-image-confirm"><input id="shieldmind-image-confirm" type="checkbox"> I confirm this image contains only academic learning material and no student IDs, passwords, private records, medical details or other personal information.</label>
-        <p class="muted">Images go to the AI provider, are not saved in CampusShield storage, and follow server-enforced monthly limits.</p>
-      </div><div class="actions"><button class="btn" type="submit" id="shieldmind-submit">Ask ShieldMind</button><button class="btn secondary" type="button" id="shieldmind-clear">Clear chat</button></div><p id="shieldmind-status" class="message" role="status" aria-live="polite">Ready for a general academic question.</p></form></section>
-    <aside class="panel"><h2>Study tools</h2><p class="muted">Quick study shortcuts.</p>
-      <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Create a one-week revision plan for a subject I name. Ask me for the subject and available study hours."><span>01</span><div><strong>Revision planner</strong><small>Turn study goals into manageable sessions</small></div><b>›</b></button>
-      <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me create practice quiz questions from a topic I provide. Ask me the subject, level, and number of questions."><span>02</span><div><strong>Practice quizzes</strong><small>Review a topic with self-test questions</small></div><b>›</b></button>
-      <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me produce structured study notes for a topic I provide. Ask me the subject and level."><span>03</span><div><strong>Study notes</strong><small>Organise key ideas and definitions</small></div><b>›</b></button>
-      <div class="shieldmind-guardrail"><strong>✓ Privacy boundary</strong><p>ShieldMind does not receive CampusShield incident reports, identity documents, attendance, or private Helpdesk records.</p></div>
-    </aside></div>
+    <span class="shieldmind-workspace-badge"><span aria-hidden="true">●</span> AI assistant</span>
+  </div>
+
+  <div class="shieldmind-hero shieldmind-hero-compact">
+    <div class="shieldmind-hero-copy">
+      <h2>Your campus learning &amp; support AI</h2>
+      <p>Get study help, explore topics and find campus information supported by trusted sources.</p>
+      <div class="shieldmind-capability-list" aria-label="ShieldMind capabilities">
+        <span>✓ Study help</span><span>✓ Summaries &amp; quizzes</span><span>✓ Campus information</span><span>✓ Source-aware answers</span>
+      </div>
+    </div>
+    <div class="shieldmind-hero-art" aria-hidden="true"><span>✦</span><span>AI</span><span>＋</span></div>
+  </div>
+
+  <div class="notice-inline shieldmind-access-notice" id="shieldmind-access-notice" role="status" aria-live="polite">AI requests require a verified account and university membership. Student accounts also need approved identity verification.</div>
+
+  <div class="shieldmind-quick-actions" aria-label="ShieldMind quick actions">
+    <button type="button" class="shieldmind-quick-action is-active" data-shieldmind-focus-chat><span aria-hidden="true">⌕</span>Ask anything</button>
+    <button type="button" class="shieldmind-quick-action" data-shieldmind-scroll-tools><span aria-hidden="true">▤</span>Study tools</button>
+    <button type="button" class="shieldmind-quick-action" data-shieldmind-prompt="Help me find official campus information. Ask me which university and topic, and clearly distinguish approved source material from information that is not verified."><span aria-hidden="true">⌂</span>Campus info</button>
+    <button type="button" class="shieldmind-quick-action" data-shieldmind-focus-image><span aria-hidden="true">↥</span>Upload image</button>
+    <button type="button" class="shieldmind-quick-action" data-shieldmind-prompt="Help me prepare for an exam. Ask for the course, topics, exam date, and available study time, then build a realistic revision plan with practice questions."><span aria-hidden="true">✓</span>Exam prep</button>
+    <button type="button" class="shieldmind-quick-action" data-page="student-rewards"><span aria-hidden="true">◷</span>My progress</button>
+  </div>
+
+  <div class="shieldmind-grid shieldmind-workspace-grid">
+    <section class="panel shieldmind-chat-panel" aria-labelledby="shieldmind-chat-title">
+      <div class="panel-heading shieldmind-chat-heading">
+        <div><h2 id="shieldmind-chat-title">Ask ShieldMind</h2><p>Ask a question, explore a topic or work through your notes.</p></div>
+        <span class="shieldmind-pill">AI ASSISTANT</span>
+      </div>
+      <div class="notice-inline shieldmind-source-note"><strong>Trusted information.</strong> Official policies, fees and deadlines require approved campus sources.</div>
+      <div id="shieldmind-messages" class="shieldmind-messages" aria-live="polite" aria-relevant="additions text">
+        <article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Hi! What would you like to learn today? I can explain academic topics and help you practise. Campus-policy answers require approved official sources.</p></article>
+      </div>
+      <form id="shieldmind-form" class="shieldmind-composer">
+        <div class="field shieldmind-question-field">
+          <label for="shieldmind-question">Your question</label>
+          <textarea id="shieldmind-question" required maxlength="1200" placeholder="Ask about your studies, paste notes to summarize, or request a practice quiz…" rows="3"></textarea>
+          <p class="muted">Never enter safety reports, student IDs, passwords, medical details or private student records.</p>
+        </div>
+        <details class="shieldmind-upload-details">
+          <summary><span aria-hidden="true">↥</span> Attach a study image <small>JPG, PNG or WebP · max 2.5 MB</small></summary>
+          <div class="field">
+            <label for="shieldmind-image">Choose study image</label>
+            <input id="shieldmind-image" type="file" accept="image/jpeg,image/png,image/webp">
+            <label class="shieldmind-image-confirm"><input id="shieldmind-image-confirm" type="checkbox"> I confirm this image contains only academic material and no IDs, passwords, private records, medical details or other personal information.</label>
+            <p class="muted">Images are sent to the AI provider for the answer and are not saved in CampusShield storage. Server-enforced monthly limits apply.</p>
+          </div>
+        </details>
+        <div class="shieldmind-composer-footer">
+          <span class="shieldmind-composer-hint"><span aria-hidden="true">✧</span> Study support · Source-aware answers</span>
+          <div class="actions"><button class="btn" type="submit" id="shieldmind-submit"><span aria-hidden="true">↗</span> Ask ShieldMind</button><button class="btn secondary" type="button" id="shieldmind-clear">Clear chat</button></div>
+        </div>
+        <p id="shieldmind-status" class="message" role="status" aria-live="polite">Ready for a general academic question.</p>
+      </form>
+    </section>
+
+    <aside class="shieldmind-side-stack" aria-label="Study tools and recent prompts">
+      <section class="panel shieldmind-side-panel" id="shieldmind-study-tools">
+        <div class="shieldmind-side-heading"><div><h2>Study tools</h2><p>Choose a shortcut to get started.</p></div><span aria-hidden="true">✦</span></div>
+        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Explain a topic I name in simple language, with a short example and a three-point recap. Ask me for the topic first."><span>01</span><div><strong>Explain a topic</strong><small>Understand difficult concepts</small></div><b aria-hidden="true">›</b></button>
+        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me summarize lecture notes I paste into the chat. Extract the key ideas, important terms, and a short revision recap. Ask me to paste the notes first."><span>02</span><div><strong>Summarize notes</strong><small>Turn notes into key points</small></div><b aria-hidden="true">›</b></button>
+        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Create a practice quiz for a subject and topic I choose. Ask me the level and number of questions, then give one question at a time and explain answers."><span>03</span><div><strong>Practice quiz</strong><small>Test your understanding</small></div><b aria-hidden="true">›</b></button>
+        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me prepare for an upcoming exam. Ask for course, topics, date and available hours, then create a balanced revision timetable and practice tasks."><span>04</span><div><strong>Exam preparation</strong><small>Build a focused revision plan</small></div><b aria-hidden="true">›</b></button>
+        <button class="shieldmind-tool" type="button" data-page="timetable"><span>05</span><div><strong>Study planner</strong><small>Open saved sessions and reminders</small></div><b aria-hidden="true">›</b></button>
+      </section>
+
+      <section class="panel shieldmind-side-panel shieldmind-recent-panel">
+        <div class="shieldmind-side-heading"><div><h2>Recent chats</h2><p>Questions from this session</p></div><button type="button" class="shieldmind-text-button" id="shieldmind-recent-clear">Clear</button></div>
+        <div id="shieldmind-recent-list" class="shieldmind-recent-list"><p class="shieldmind-recent-empty">Your recent questions will appear here during this session.</p></div>
+        <p class="shieldmind-session-note">Recent prompts are kept in this page session only; they are not saved as a permanent chat history.</p>
+      </section>
+
+      <section class="panel shieldmind-side-panel shieldmind-campus-panel">
+        <div class="shieldmind-side-heading"><div><h2>Campus knowledge</h2><p>Use trusted university sources</p></div><span class="shieldmind-source-chip">Source-aware</span></div>
+        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="I need campus information. Ask which university and what I want to know. Give an official source link when the approved campus knowledge is available, and clearly say when you cannot verify an answer."><span>⌂</span><div><strong>Policies &amp; deadlines</strong><small>Registration, fees and academic dates</small></div><b aria-hidden="true">›</b></button>
+        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me find the official campus department or student-service information for the university I name. Ask for the university and service first. Do not invent contact details."><span>↗</span><div><strong>Departments &amp; services</strong><small>Find official service information</small></div><b aria-hidden="true">›</b></button>
+        <div class="shieldmind-guardrail"><strong>✓ Privacy boundary</strong><p>ShieldMind does not receive CampusShield incident reports, identity documents, attendance or private Helpdesk records.</p></div>
+      </section>
+
+      <section class="panel shieldmind-side-panel shieldmind-plan-mini" aria-labelledby="shieldmind-plan-heading">
+        <div class="shieldmind-side-heading"><div><h2 id="shieldmind-plan-heading">Your plan</h2><p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p></div><span aria-hidden="true">◈</span></div>
+        <button class="btn secondary" type="button" data-page="billing">Plans &amp; billing <span aria-hidden="true">→</span></button>
+      </section>
+    </aside>
+  </div>
   <section class="panel shieldmind-planner-panel" aria-labelledby="shieldmind-planner-title">
     <div class="panel-heading"><div><h2 id="shieldmind-planner-title">My timetable & reminders</h2><p>Private, cloud-synced study sessions, classes, assignments, exams and reminders.</p></div><button class="btn secondary" type="button" id="shieldmind-planner-refresh">Refresh</button></div>
     <div class="notice-inline">Your items are restricted to your signed-in account. Reminders can notify you while this app is open; background push notifications are not enabled yet.</div>
@@ -3246,9 +3309,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
     </form>
     <div id="shieldmind-planner-feed" class="shieldmind-planner-feed"><div class="community-empty">Your private timetable will appear here.</div></div>
   </section>
+
   <p class="shieldmind-disclaimer">Educational support only. Check course materials and ask your lecturer when accuracy matters. ShieldMind is not an emergency service or official university decision-maker.</p>
 </section>
-
 
 <section class="page" id="page-student-rewards">
   <div class="heading">
