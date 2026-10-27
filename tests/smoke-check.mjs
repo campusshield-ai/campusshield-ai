@@ -55,6 +55,7 @@ assert.match(contactPage, /mailto:campusshieldaitechnologies@gmail\.com/, "conta
 assert.match(contactPage, /https:\/\/x\.com\/CampusShieldAI/, "contact page links the configured X profile");
 assert.match(contactPage, /https:\/\/www\.instagram\.com\/campusshieldai\//, "contact page links the configured Instagram profile");
 assert.match(contactPage, /https:\/\/www\.linkedin\.com\/in\/campusshield-ai-technologies-857b83446/, "contact page links the configured LinkedIn profile");
+assert.match(contactPage, /https:\/\/www\.tiktok\.com\/search\?q=CampusShield%20AI/, "contact page offers a TikTok search link without claiming an official profile");
 assert.match(html, /Official TikTok profile is not yet configured/, "unconfirmed TikTok profile is not linked to an invented URL");
 assert.match(privacyPage, /registered legal entity name/, "privacy page discloses that the legal entity name is not verified");
 assert.match(privacyPage, /No fixed, time-based retention schedule was verified/, "privacy page avoids making up retention periods");
