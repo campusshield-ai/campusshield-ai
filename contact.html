@@ -23,6 +23,9 @@
     .email{display:inline-block;margin:8px 0;font-size:clamp(15px,2.5vw,19px);font-weight:850}
     .links{display:grid;gap:11px;margin-top:12px}.links a{font-weight:700;text-decoration:none}.links a:hover{text-decoration:underline}
     .note{margin-top:16px;padding:14px 16px;border:1px solid #f0dfbd;border-radius:12px;background:#fffaf0;color:#705622;font-size:13px}
+    .contact-form-status{margin:16px 0 20px;padding:15px 17px;border:1px solid #d8e9e4;border-radius:13px;background:#f0faf6;color:#275a54;font-size:13px}
+    .contact-form-status strong{display:block;margin-bottom:4px;font-size:13px}
+    .contact-form-status p{margin:0;color:#486b6a;font-size:12px;line-height:1.65}
     footer{display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;margin:20px 2px;color:var(--muted);font-size:12px}footer nav{display:flex;gap:14px;flex-wrap:wrap}
     @media(max-width:600px){.top{padding:22px 18px}main{width:calc(100% - 22px);margin:16px auto 28px}.grid{grid-template-columns:1fr}.card{padding:20px 17px}.button{flex:1 1 auto}}
   </style>
@@ -36,6 +39,10 @@
     <div class="actions"><a class="button" href="./index.html#login-screen">← Back to CampusShield</a></div>
     <h1>Contact CampusShield AI</h1>
     <p class="muted">For account or privacy requests, do not email passwords, authentication codes, service-role keys, or student identity documents.</p>
+    <div class="contact-form-status" role="note">
+      <strong>Online contact form status</strong>
+      <p>An on-site form is not connected to a trusted email-delivery or ticketing backend yet, so this page does not pretend to submit or store a message. Use one of the email links below. They open your email application; your message is sent only when you review it and press Send.</p>
+    </div>
     <div class="grid">
       <section class="card">
         <h2>Support and general enquiries</h2>
@@ -60,7 +67,7 @@
       </section>
     </div>
     <p class="note"><strong>Safety:</strong> CampusShield AI does not automatically contact or dispatch emergency services. If someone is in immediate danger, contact your campus security control room or local emergency services directly.</p>
-    <footer><span>© 2026 CampusShield AI</span><nav aria-label="Legal"><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a><a href="./contact.html" aria-current="page">Contact</a></nav></footer>
+    <footer><span>© 2026 CampusShield AI</span><nav aria-label="Legal"><a href="./privacy.html">Privacy Policy</a><a href="./terms.html">Terms</a><a href="./contact.html" aria-current="page">Contact</a></nav></footer>
   </main>
 </body>
 </html>
