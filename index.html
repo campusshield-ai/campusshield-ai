@@ -4788,6 +4788,69 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
   }
 
+  // Accept uploads up to 20 MiB, verify the file signature (not just its name/MIME),
+  // then normalize to a compact WebP avatar suitable for the existing private bucket.
+  const PROFILE_AVATAR_INPUT_LIMIT = 20 * 1024 * 1024;
+  const PROFILE_AVATAR_OUTPUT_LIMIT = 2.7 * 1024 * 1024;
+
+  async function prepareProfileAvatar(file) {
+    if (!file || !Number.isFinite(file.size) || file.size < 1) {
+      throw new Error('Choose a non-empty JPG, PNG or WebP image.');
+    }
+    if (file.size > PROFILE_AVATAR_INPUT_LIMIT) {
+      throw new Error('This image is larger than 20 MB. Choose a smaller image.');
+    }
+    const signatures = [
+      { type: 'image/jpeg', ext: 'jpg', test: b => b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+      { type: 'image/png', ext: 'png', test: b => b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 && b[4] === 0x0d && b[5] === 0x0a && b[6] === 0x1a && b[7] === 0x0a },
+      { type: 'image/webp', ext: 'webp', test: b => b.length >= 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50 }
+    ];
+    const header = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+    const detected = signatures.find(item => item.test(header));
+    if (!detected || (file.type && file.type !== detected.type)) {
+      throw new Error('The file content does not match a supported JPG, PNG or WebP image. Please choose a valid image.');
+    }
+
+    let bitmap;
+    try {
+      bitmap = await createImageBitmap(file);
+    } catch (_) {
+      throw new Error('This image could not be opened. Try a valid JPG, PNG or WebP file.');
+    }
+    try {
+      let width = bitmap.width;
+      let height = bitmap.height;
+      if (!width || !height) throw new Error('This image has invalid dimensions.');
+      const maxEdge = 1600;
+      const scale = Math.min(1, maxEdge / Math.max(width, height));
+      width = Math.max(1, Math.round(width * scale));
+      height = Math.max(1, Math.round(height * scale));
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('Image compression is unavailable in this browser.');
+      for (let attempt = 0; attempt < 7; attempt++) {
+        canvas.width = width;
+        canvas.height = height;
+        context.clearRect(0, 0, width, height);
+        context.drawImage(bitmap, 0, 0, width, height);
+        const quality = Math.max(0.48, 0.9 - attempt * 0.07);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+        if (!blob || blob.type !== 'image/webp') {
+          throw new Error('This browser cannot prepare a secure WebP photo. Update your browser and try again.');
+        }
+        if (blob.size <= PROFILE_AVATAR_OUTPUT_LIMIT) {
+          const output = new File([blob], 'profile-avatar.webp', { type: 'image/webp', lastModified: Date.now() });
+          return { file: output, originalSize: file.size, compressedSize: output.size, sourceType: detected.type };
+        }
+        width = Math.max(320, Math.round(width * 0.82));
+        height = Math.max(320, Math.round(height * 0.82));
+      }
+      throw new Error('This image could not be compressed enough. Try a smaller image.');
+    } finally {
+      bitmap.close?.();
+    }
+  }
+
   let profileAvatarPreviewUrl = null;
 
   async function renderProfileAvatar(backend, avatarPath, imageId = 'profile-settings-avatar', fallbackId = 'profile-settings-avatar-fallback') {
@@ -5048,27 +5111,29 @@ button,input,select,textarea{max-width:100%;min-width:0}
     });
   }
 
-  document.addEventListener('change', function(event) {
+  document.addEventListener('change', async function(event) {
     if (event.target?.id !== 'profile-settings-avatar-file') return;
-    const file = event.target.files?.[0];
+    const input = event.target;
+    const file = input.files?.[0];
     const image = $('profile-settings-avatar-preview');
     const fallback = $('profile-settings-avatar-preview-fallback');
     const removeButton = $('profile-settings-remove-avatar');
     const status = $('profile-settings-identity-message');
     if (!file || !image || !fallback) return;
-    const accepted = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!accepted.includes(file.type) || file.size < 1 || file.size > 20 * 1024 * 1024) {
-      event.target.value = '';
-      if (status) status.textContent = 'Choose a JPG, PNG or WebP image 20 MB or smaller.';
-      return;
+    if (status) status.textContent = 'Checking image and preparing a preview…';
+    try {
+      const prepared = await prepareProfileAvatar(file);
+      if (profileAvatarPreviewUrl) URL.revokeObjectURL(profileAvatarPreviewUrl);
+      profileAvatarPreviewUrl = URL.createObjectURL(prepared.file);
+      image.src = profileAvatarPreviewUrl;
+      image.hidden = false;
+      fallback.hidden = true;
+      if (removeButton) removeButton.dataset.clearAvatar = 'false';
+      if (status) status.textContent = 'Photo is valid. It will be compressed and stored privately when you save your profile.';
+    } catch (error) {
+      input.value = '';
+      if (status) status.textContent = error?.message || 'Choose a valid JPG, PNG or WebP image up to 20 MB.';
     }
-    if (profileAvatarPreviewUrl) URL.revokeObjectURL(profileAvatarPreviewUrl);
-    profileAvatarPreviewUrl = URL.createObjectURL(file);
-    image.src = profileAvatarPreviewUrl;
-    image.hidden = false;
-    fallback.hidden = true;
-    if (removeButton) removeButton.dataset.clearAvatar = 'false';
-    if (status) status.textContent = 'Photo preview ready. Save profile to upload it.';
   });
 
   document.addEventListener('click', function(event) {
@@ -5113,17 +5178,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
       let newAvatarPath = null;
 
       if (file) {
-        const accepted = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!accepted.includes(file.type) || file.size < 1 || file.size > 20 * 1024 * 1024) {
-          throw new Error('Choose a JPG, PNG or WebP image 20 MB or smaller.');
-        }
-        const ext = file.type === 'image/jpeg' ? 'jpg' : file.type === 'image/png' ? 'png' : 'webp';
+        const prepared = await prepareProfileAvatar(file);
         if (!window.crypto?.randomUUID) throw new Error('Secure image upload is not supported in this browser. Please update Chrome.');
-        uploadedPath = user.id + '/' + window.crypto.randomUUID() + '.' + ext;
+        uploadedPath = user.id + '/' + window.crypto.randomUUID() + '.webp';
         const { error: uploadError } = await backend.client.storage
           .from('campus-profile-avatars')
-          .upload(uploadedPath, file, { cacheControl: '3600', upsert: false, contentType: file.type });
-        if (uploadError) throw uploadError;
+          .upload(uploadedPath, prepared.file, { cacheControl: '3600', upsert: false, contentType: 'image/webp' });
+        if (uploadError) throw new Error(uploadError.message || 'The photo upload failed. Check your connection and try again.');
         newAvatarPath = uploadedPath;
       }
 
