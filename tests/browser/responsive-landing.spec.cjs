@@ -78,6 +78,10 @@ test("landing page fits phone, tablet, iPad, laptop and desktop viewports", asyn
         metrics.submitButton.bottom,
         `${viewport.name}: sign-in action must be reachable in the document scroll area`,
       ).toBeLessThanOrEqual(metrics.documentHeight + 1);
+      expect(
+        metrics.intro.height,
+        `${viewport.name}: dark landing panel must stretch to the full grid row with no blank strip`,
+      ).toBeGreaterThanOrEqual(metrics.login.height - 1);
     }
     if (viewport.width > 650 && viewport.width <= 1440) {
       expect(metrics.illustrationDisplay, `${viewport.name}: illustration must not collide with tablet/laptop headline`).toBe("none");
