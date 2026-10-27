@@ -2146,6 +2146,22 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .role-access-status[data-state="approved"]{border-color:#bfe8d9;background:#eaf9f2;color:#08745f}.role-access-status[data-state="pending"]{border-color:#f1dfb9;background:#fff7e6;color:#86601e}
 @media(max-width:650px){.staff-position-access-preview,.role-access-summary{padding:14px;border-radius:13px}.role-access-summary{margin-bottom:16px}.staff-position-access-preview li,.role-access-list li{font-size:11px}}
 </style>
+<style id="campusshield-sitewide-legal-footer-style">
+  .app-legal-footer{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    padding:18px clamp(14px,2.4vw,32px) calc(18px + env(safe-area-inset-bottom));
+    margin-top:12px;border-top:1px solid #dfe9e4;
+    background:#f8fbf9;color:#6d8187;font-size:11px;text-align:left;
+  }
+  .app-legal-footer nav{display:flex;align-items:center;justify-content:flex-end;gap:clamp(10px,1.5vw,18px);flex-wrap:wrap}
+  .app-legal-footer a{color:#386b68;text-decoration:none;font-size:11px;font-weight:750}
+  .app-legal-footer a:hover{text-decoration:underline;text-underline-offset:3px;color:#087f70}
+  .app-legal-footer a:focus-visible{outline:3px solid #19b99d;outline-offset:3px;border-radius:3px}
+  @media(max-width:600px){
+    .app-legal-footer{justify-content:center;text-align:center;gap:10px;padding:16px 14px calc(20px + env(safe-area-inset-bottom))}
+    .app-legal-footer nav{width:100%;justify-content:center;gap:16px}
+  }
+</style>
 </head>
 <body>
 
@@ -3786,7 +3802,14 @@ button,input,select,textarea{max-width:100%;min-width:0}
 </section>
 
 
-<div class="footer">CampusShield AI · Demonstration only</div>
+<footer class="app-legal-footer" aria-label="Legal and support links">
+  <span>CampusShield AI · Demonstration only</span>
+  <nav aria-label="Legal and support">
+    <a href="./privacy.html">Privacy Policy</a>
+    <a href="./terms.html">Terms of Use</a>
+    <a href="./contact.html">Contact support</a>
+  </nav>
+</footer>
 </main>
 </div>
 </div>
