@@ -499,9 +499,13 @@
     (answerRows || []).forEach(answer => {
       const key = clean(answer.topic_snapshot, 160) || "General";
       const stats = topicStats.get(key) || { earned: 0, max: 0, marked: 0, pending: 0, attempts: new Set() };
-      stats.max += Number(answer.maximum_marks || 0);
-      if (answer.awarded_marks === null || answer.awarded_marks === undefined) stats.pending++;
-      else { stats.earned += Number(answer.awarded_marks); stats.marked++; }
+      if (answer.awarded_marks === null || answer.awarded_marks === undefined) {
+        stats.pending++;
+      } else {
+        stats.max += Number(answer.maximum_marks || 0);
+        stats.earned += Number(answer.awarded_marks);
+        stats.marked++;
+      }
       stats.attempts.add(answer.attempt_id);
       topicStats.set(key, stats);
     });
