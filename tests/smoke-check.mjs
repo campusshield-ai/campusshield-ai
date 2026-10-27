@@ -89,6 +89,12 @@ assert.match(termsPage, /public-facing project name should not be treated as pro
 
 assert.match(html, /id="signup-verification-guidance"/, "signup explains role-specific identity verification");
 assert.match(html, /This upload step is for student accounts/, "student identity upload is clearly student-specific");
+assert.match(html, /Matriculation \/ student number \*/, "student identity form clearly requires the matriculation number");
+assert.match(html, /Student ID card photo or PDF \*/, "student identity form requires a student ID image or PDF");
+assert.match(html, /id="identity-fee-receipt"[^>]*accept="image\/jpeg,image\/png,application\/pdf,\.jpg,\.jpeg,\.png,\.pdf"[^>]*>/, "school-fee receipt field accepts only supported evidence formats");
+assert.match(html, /School-fee receipt \(optional\)/, "school-fee receipt is optional rather than a signup blocker");
+assert.match(html, /cover bank\/card details and unrelated information on receipts/, "receipt guidance protects unrelated financial information");
+
 assert.match(html, /id="campusStaffVerificationForm"/, "staff have a separate identity evidence form");
 assert.match(html, /Staff identity verification/, "staff verification workflow is named for non-student applicants");
 assert.match(html, /campusshield-verification-responsive-fix/, "responsive verification layout override is present");
