@@ -1,0 +1,50 @@
+name: CampusShield staging identity workflow
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-staging-identity-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  staging-preflight:
+    name: Staging-only safety preflight and regression checks
+    if: github.ref == 'refs/heads/codex/fix-registration-confirmation-role'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ vars.SUPABASE_STAGING_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
+      SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
+      EXPECTED_STAGING_REF: hywcpnoqqhxvujnimhxl
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate staging target and required credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_URL" || { echo "::error::Set repository variable SUPABASE_STAGING_URL to the staging project URL."; exit 1; }
+          test -n "$SUPABASE_ANON_KEY" || { echo "::error::Set secret SUPABASE_STAGING_ANON_KEY."; exit 1; }
+          test -n "$SUPABASE_STAGING_SERVICE_ROLE_KEY" || { echo "::error::Set secret SUPABASE_STAGING_SERVICE_ROLE_KEY."; exit 1; }
+          actual_ref="$(node -e 'const u=new URL(process.env.SUPABASE_URL); const m=u.hostname.match(/^([a-z0-9]+)\.supabase\.co$/); if(!m) process.exit(2); process.stdout.write(m[1])')"
+          if [ "$actual_ref" != "$EXPECTED_STAGING_REF" ]; then
+            echo "::error::Refusing to run: configured Supabase project is not the approved staging project."
+            exit 1
+          fi
+          echo "Staging URL project reference verified. Credentials are present; values are not printed."
+      - name: Run repository regression suite
+        run: node tests/smoke-check.mjs
+      - name: Report scope
+        if: always()
+        run: |
+          echo "This workflow performs staging-target preflight and static regression checks only."
+          echo "It does not yet claim authenticated signup, identity upload, administrator approval/rejection, or cleanup E2E coverage."

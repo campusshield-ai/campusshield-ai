@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
 const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
@@ -33,8 +34,83 @@ const profileAvatarStorageMigration = await readFile(new URL("../supabase/migrat
 const profileAvatar20MbMigration = await readFile(new URL("../supabase/migrations/20261027001000_profile_avatar_20mb.sql", import.meta.url), "utf8");
 const profileAvatarPathFixMigration = await readFile(new URL("../supabase/migrations/20261027030000_fix_profile_avatar_path_validation.sql", import.meta.url), "utf8");
 const profileAvatarRlsFixMigration = await readFile(new URL("../supabase/migrations/20261027032000_fix_profile_avatar_upload_rls_size_check.sql", import.meta.url), "utf8");
+const studentIdentityPathFixMigration = await readFile(new URL("../supabase/migrations/20261027052000_fix_student_identity_uuid_path_regex.sql", import.meta.url), "utf8");
+const requestedRoleRpcMigration = await readFile(new URL("../supabase/migrations/20261027062000_add_save_my_requested_role_rpc.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
+const privacyPage = await readFile(new URL("../privacy.html", import.meta.url), "utf8");
+const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf8");
+const contactPage = await readFile(new URL("../contact.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
+
+assert.match(html, /id="login-features"/, "landing navigation has a Features destination");
+assert.match(html, /id="login-about"/, "landing navigation has an About destination");
+assert.match(html, /id="auth-helper"/, "landing Help navigation has a destination");
+assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/privacy\.html"/, "landing footer links to Privacy");
+assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/terms\.html"/, "landing footer links to Terms");
+assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/contact\.html"/, "landing footer links to Contact");
+assert.match(privacyPage, /<title>Privacy Policy \| CampusShield AI<\/title>/, "privacy policy page exists and is titled");
+assert.match(privacyPage, /Development-stage notice/, "privacy page warns against using real sensitive data in previews");
+assert.match(termsPage, /<title>Terms of Use \| CampusShield AI<\/title>/, "terms page exists and is titled");
+assert.match(termsPage, /does not automatically contact or dispatch emergency services/i, "terms page states the emergency limitation");
+assert.match(contactPage, /mailto:campusshieldaitechnologies@gmail\.com/, "contact page provides the configured support email");
+assert.match(contactPage, /https:\/\/x\.com\/CampusShieldAI/, "contact page links the configured X profile");
+assert.match(contactPage, /https:\/\/www\.instagram\.com\/campusshieldai\//, "contact page links the configured Instagram profile");
+assert.match(contactPage, /https:\/\/www\.linkedin\.com\/in\/campusshield-ai-technologies-857b83446/, "contact page links the configured LinkedIn profile");
+assert.doesNotMatch(contactPage, /href=["'][^"']*(?:tiktok\.com|youtube\.com)[^"']*["']/i, "Contact page does not link nonexistent TikTok or YouTube accounts");
+assert.doesNotMatch(html, /href=["'][^"']*(?:tiktok\.com|youtube\.com)[^"']*["']/i, "Landing page does not link nonexistent TikTok or YouTube accounts");
+assert.match(contactPage, /does not currently maintain official TikTok or YouTube pages/i, "Contact page accurately states that TikTok and YouTube pages do not exist");
+assert.ok(html.includes('<select id="campusshield-language"'), "language picker is a selectable control");
+assert.ok(html.includes('<option value="yo" lang="yo">Yorùbá</option>'), "language picker includes Yoruba");
+assert.ok(html.includes('<option value="ha" lang="ha">Hausa</option>'), "language picker includes Hausa");
+assert.ok(html.includes('<option value="ig" lang="ig">Igbo</option>'), "language picker includes Igbo");
+assert.ok(html.includes('<script src="./campusshield-i18n.js"></script>'), "language bundle is loaded by the landing page");
+assert.doesNotThrow(() => new Function(i18nScript), "multilingual UI bundle parses");
+assert.ok(i18nScript.includes('localStorage.setItem("campusshield_language", locale)'), "language choice is saved on this device");
+assert.match(i18nScript, /"fr"/, "French is available");
+assert.match(i18nScript, /"es"/, "Spanish is available");
+assert.match(i18nScript, /"pt"/, "Portuguese is available");
+assert.match(i18nScript, /"sw"/, "Swahili is available");
+assert.match(i18nScript, /"ar"/, "Arabic is available");
+assert.match(i18nScript, /"zh"/, "Simplified Chinese is available");
+assert.match(privacyPage, /registered legal entity name/, "privacy page discloses that the legal entity name is not verified");
+assert.match(privacyPage, /Nigeria Data Protection Act 2023/, "privacy policy references applicable Nigerian data-protection law without claiming compliance");
+assert.ok(privacyPage.includes("https://ndpc.gov.ng/ndp-act-2023/"), "privacy policy links to the official NDPC Act resource");
+assert.ok(html.includes('class="app-legal-footer"') && html.includes('href="./privacy.html">Privacy Policy</a>'), "signed-in workspace footer links to the canonical Privacy Policy page");
+assert.ok(html.includes('href="./terms.html">Terms of Use</a>'), "signed-in workspace footer links to the canonical Terms page");
+assert.ok(html.includes('href="./contact.html">Contact support</a>'), "signed-in workspace footer links to the canonical Contact page");
+assert.match(contactPage, /on-site form is not connected/i, "contact page does not pretend a web form sends messages");
+assert.match(contactPage, /press Send/, "contact page explains that the user must send the drafted email themselves");
+assert.match(privacyPage, /No fixed, time-based retention schedule was verified/, "privacy page avoids making up retention periods");
+assert.match(privacyPage, /GitHub Pages and Vercel/, "privacy page identifies hosting providers present in the deployment");
+assert.match(privacyPage, /Supabase/, "privacy page identifies the database/auth/storage provider");
+assert.match(privacyPage, /OpenAI/, "privacy page identifies the configured ShieldMind AI provider");
+assert.match(privacyPage, /Paystack/, "privacy page identifies the optional payment provider");
+assert.match(termsPage, /public-facing project name should not be treated as proof of company registration/, "terms page does not falsely assert a registered legal entity");
+
+assert.match(html, /id="signup-verification-guidance"/, "signup explains role-specific identity verification");
+assert.match(html, /This upload step is for student accounts|Make verification simple: enter your matric number/, "student identity upload is clearly student-specific");
+assert.match(html, /Matriculation \/ student number \*/, "student identity form clearly requires the matriculation number");
+assert.match(html, /Student ID card photo or PDF \*/, "student identity form requires a student ID image or PDF");
+assert.match(html, /id="identity-fee-receipt"[^>]*accept="image\/jpeg,image\/png,application\/pdf,\.jpg,\.jpeg,\.png,\.pdf"[^>]*>/, "school-fee receipt field accepts only supported evidence formats");
+assert.match(html, /School-fee receipt \(optional\)/, "school-fee receipt is optional rather than a signup blocker");
+assert.match(html, /cover bank\/card details and unrelated information on receipts/, "receipt guidance protects unrelated financial information");
+
+assert.match(html, /id="campusStaffVerificationForm"/, "staff have a separate identity evidence form");
+assert.match(html, /Staff identity verification/, "staff verification workflow is named for non-student applicants");
+assert.match(html, /campusshield-verification-responsive-fix/, "responsive verification layout override is present");
+assert.ok(html.includes('#login-screen .signup-student-identity-panel>.heading{') && html.includes('display:block!important'), "identity heading is stacked instead of inheriting the workspace's side-by-side heading");
+assert.ok(html.includes('@media(max-width:820px)') && html.includes('#studentIdentityForm{grid-template-columns:minmax(0,1fr)'), "identity fields stack before phone/tablet content becomes cramped");
+assert.ok(i18nScript.includes('EXTRA_TRANSLATIONS[currentLocale()]'), "additional language translations are available");
+assert.match(i18nScript, /studentVerificationGuide/, "student verification guidance is translated");
+assert.match(i18nScript, /staffVerificationGuide/, "staff verification guidance is translated");
+assert.ok(i18nScript.includes('["ar","fa","ur"].includes(locale)'), "right-to-left language direction is configured");
+assert.equal((html.match(/<option value="(?:en|yo|ha|ig|fr|es|pt|sw|ar|zh|de|hi|ja|ko|ru|bn|id|it|nl|tr|ur|vi|th|fil|fa|pl)"/g)||[]).length, 26, "language menu contains 26 distinct language options");
+assert.ok(i18nScript.includes('["de","Deutsch","Deutsch"]'), "German is selectable");
+assert.ok(i18nScript.includes('["hi","हिन्दी","हिन्दी"]'), "Hindi is selectable");
+assert.ok(i18nScript.includes('["ja","日本語","日本語"]'), "Japanese is selectable");
+assert.ok(i18nScript.includes('["ur","اردو","اردو"]'), "Urdu is selectable");
+
+
 
 for (const [index, source] of inlineScripts.entries()) {
   assert.doesNotThrow(() => new Function(source), `inline script ${index + 1} parses`);
@@ -72,6 +148,10 @@ assert.match(html, /id="billing-reconcile-button"/, "users can retry payment ver
 assert.match(html, /isStrongPasswordBaseline\(password\)/, "signup and password reset use a stronger password baseline");
 assert.match(backend, /Choose a 12\+ character password with uppercase, lowercase, a number, and a symbol/);
 assert.match(backend, /function getAuthRedirectUrl\(\)/, "auth confirmation returns to the current app URL");
+assert.match(backend, /emailRedirectTo: getAuthRedirectUrl\(\)/, "signup and resend use the current app URL for confirmation");
+assert.match(html, /const metadataRequestedRole = String\(user\.user_metadata\?\.requested_role \|\| ''\)\.trim\(\)\.toLowerCase\(\)/, "confirmation return restores requested role from the authenticated account metadata");
+assert.match(html, /const pendingRole = \['student', 'teacher'\]\.includes\(metadataRequestedRole\)[\s\S]*?\? metadataRequestedRole[\s\S]*?: storedRequestedRole/, "account metadata takes precedence over stale role state in browser storage");
+assert.match(html, /const user = await backend\.getCurrentUser\(\);[\s\S]*?const metadataRequestedRole/, "sign-in resolves the authenticated account before restoring its requested role");
 assert.match(backend, /Open CampusShield through HTTPS or localhost to complete sign-up/, "auth confirmation does not generate unusable file or insecure preview redirects");
 assert.equal((backend.match(/emailRedirectTo: getAuthRedirectUrl\(\)/g) || []).length, 2, "signup and confirmation resend use the current app URL");
 assert.doesNotMatch(backend, /AUTH_REDIRECT_URL/, "no hard-coded confirmation redirect remains");
@@ -154,6 +234,19 @@ assert.match(backend, /reporter_id:\s*user\.id/);
 assert.match(backend, /client\.auth\.getUser\(\)/);
 assert.match(backend, /update\(\{\s*status\s*\}/);
 assert.match(html, /function canManageIncidents\(\)/);
+assert.match(html, /function getWorkspaceAccountType\(profile = currentProfile\)/, "workspace classification is explicit");
+assert.match(html, /if \(\['admin','security','teacher'\]\.includes\(actualRole\)\) return actualRole/, "assigned elevated roles override requested onboarding metadata");
+assert.match(html, /function renderRoleAccessSummary\(metadata = \{\}\)/, "signed-in users receive a role and verification access summary");
+assert.match(html, /function updateStaffPositionAccessPreview\(\)/, "staff position chooser previews post-approval access");
+assert.match(html, /Security staff: this title alone does not unlock incident management/, "security job title does not grant the security console");
+assert.match(html, /this title and the campus-admin request checkbox do not grant campus administrator powers/, "leadership titles and admin requests do not self-grant admin permissions");
+assert.match(html, /role==='security' && campusOk/, "security operations require the assigned security role and verified campus membership");
+assert.match(html, /role==='teacher' && campusOk/, "staff workspace requires the assigned teacher role and verified campus membership");
+assert.ok((html.match(/\$\('staff-verification-nav'\)\.hidden = !isTeacherAccount\(\);/g) || []).length >= 2, "pending staff applicants can reach their own verification page");
+for (const position of ["Vice-Chancellor","Deputy Vice-Chancellor","Registrar","Bursar","University Librarian","Dean","Head of Department","Professor","Lecturer","Administrative staff","Security staff","Other university employee"]) {
+  assert.ok(html.includes("<option>" + position + "</option>"), "staff position option is present: " + position);
+}
+
 assert.match(html, /\['security', 'admin'\]\.includes\(currentProfile\.role\)/);
 assert.match(html, /if \(!canManageIncidents\(\)\)/);
 assert.match(html, /const total = incidents\.length/);
@@ -557,6 +650,16 @@ assert.match(profileAvatarRlsFixMigration, /file_size_limit|Storage enforces the
 assert.doesNotMatch(profileAvatarRlsFixMigration, /metadata ->> 'size'/, "avatar upload RLS does not reject files when Storage size metadata is absent");
 assert.match(profileAvatarRlsFixMigration, /storage\.foldername\(name\).*auth\.uid/s, "avatar uploads remain restricted to the owner folder");
 assert.match(profileAvatarRlsFixMigration, /image\/jpeg.*image\/png.*image\/webp/s, "avatar uploads remain restricted to supported image MIME types");
+assert.match(studentIdentityPathFixMigration, /\[\.\]\(jpg\|jpeg\|png\|pdf\)/, "student identity validation accepts UUID filenames with supported document extensions");
+assert.match(studentIdentityPathFixMigration, /p\.role='student' and p\.requested_role='student'/, "student identity submission remains limited to student accounts");
+assert.ok(studentIdentityPathFixMigration.includes("'^' || v_user_id::text || '/"), "student identity path remains scoped to the authenticated user");
+assert.match(backend, /rpc\("save_my_requested_role"/, "requested-role persistence uses the dedicated Supabase RPC");
+assert.match(requestedRoleRpcMigration, /create or replace function public\.save_my_requested_role\(p_requested_role text\)/i, "requested-role RPC is defined in a migration");
+assert.match(requestedRoleRpcMigration, /p_requested_role not in \('student', 'teacher'\)/, "requested-role RPC rejects elevated roles");
+assert.match(requestedRoleRpcMigration, /v_profile_role = 'student' and v_verification_status = 'pending'/, "requested-role RPC only updates pending base accounts");
+assert.doesNotMatch(requestedRoleRpcMigration, /set role\s*=|set verification_status\s*=/i, "requested-role RPC cannot grant roles or approve accounts");
+assert.match(requestedRoleRpcMigration, /revoke all on function public\.save_my_requested_role\(text\) from anon/i, "anonymous users cannot call requested-role RPC");
+assert.match(requestedRoleRpcMigration, /grant execute on function public\.save_my_requested_role\(text\) to authenticated/i, "requested-role RPC is granted to authenticated users only");
 assert.match(profileIdentityMigration, /security definer/i, "profile identity update RPC is database-owned");
 assert.match(profileIdentityMigration, /grant execute on function public\.update_my_profile_identity\(text,text,boolean\) to authenticated/i, "profile identity RPC is granted only to signed-in users");
 assert.match(profileIdentityMigration, /campus_profile_avatar_upload_own/, "avatar upload is scoped to the current user's folder");

@@ -1800,61 +1800,529 @@ button,input,select,textarea{max-width:100%;min-width:0}
 @keyframes crawlerDash{to{stroke-dashoffset:-48}}
 @media(max-width:600px){.crawler-stat-grid{grid-template-columns:1fr}.crawler-network{height:210px}.crawler-float{font-size:10px;padding:5px 6px}.crawler-live-panel{padding:12px}.crawler-owner-pill{font-size:12px}}
 </style>
+
+<style id="campusshield-responsive-login-refresh">
+  :root{
+    --cs-ink:#0b213d;--cs-navy:#061c32;--cs-teal:#12d6b0;
+    --cs-green:#078e7b;--cs-line:#dfe9ed;--cs-muted:#61758c;
+  }
+  #login-screen.login-screen{
+    display:grid;grid-template-columns:minmax(0,1.6fr) minmax(430px,1fr);
+    align-items:stretch;gap:0;min-height:100vh;min-height:100svh;
+    background:#f7fbfc;overflow:clip;
+  }
+  #login-screen .login-intro{
+    position:relative;isolation:isolate;z-index:1;display:flex;flex-direction:column;
+    justify-content:space-between;gap:clamp(14px,1.9vh,24px);
+    min-width:0;min-height:100vh;min-height:100svh;
+    padding:clamp(22px,2.5vw,40px) clamp(22px,4.1vw,70px) 18px;
+    overflow:hidden;color:#f5fbff;
+    background:
+      radial-gradient(ellipse at 82% 31%,rgba(0,152,171,.22),transparent 37%),
+      radial-gradient(ellipse at 12% 88%,rgba(0,208,174,.13),transparent 34%),
+      linear-gradient(137deg,#031426 0%,#06233d 54%,#062a3d 100%);
+  }
+  #login-screen .login-intro::before{
+    content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;
+    background:linear-gradient(#b8e9f108 1px,transparent 1px),linear-gradient(90deg,#b8e9f108 1px,transparent 1px);
+    background-size:48px 48px;mask-image:linear-gradient(140deg,#000c,transparent 77%);
+  }
+  #login-screen .login-intro::after{
+    content:"";position:absolute;z-index:-2;right:-170px;bottom:-240px;width:min(54vw,660px);aspect-ratio:1;
+    border:1px solid #5bddd51f;border-radius:50%;
+    box-shadow:0 0 0 30px #5bddd50a,0 0 0 86px #5bddd507,0 0 0 150px #5bddd504;
+    pointer-events:none;
+  }
+  #login-screen .login-intro-header{display:flex;align-items:center;justify-content:space-between;gap:22px;position:relative;z-index:3;min-width:0}
+  #login-screen .login-brand{display:flex;align-items:center;gap:11px;min-width:0;margin:0;text-decoration:none;color:#19d8b4}
+  #login-screen .login-brand-shield{width:39px;height:44px;flex:0 0 auto;filter:drop-shadow(0 0 12px #08cba826)}
+  #login-screen .login-brand-copy{display:grid;gap:0;min-width:0}
+  #login-screen .login-brand-wordmark{display:block;color:#f5fbff;font-size:clamp(17px,1.5vw,23px);font-weight:900;letter-spacing:-.055em;white-space:nowrap;line-height:1.08}
+  #login-screen .login-brand-wordmark strong{color:#16dbb5}
+  #login-screen .login-brand-copy small{margin-top:5px;color:#b6cbdc;font-size:10px;letter-spacing:.015em;font-weight:550}
+  #login-screen .login-public-nav{display:flex;align-items:center;justify-content:flex-end;gap:clamp(13px,2.2vw,32px);min-width:0}
+  #login-screen .login-public-nav a{position:relative;padding:8px 0;color:#d6e4f1;text-decoration:none;font-size:12px;font-weight:680;white-space:nowrap;transition:color .18s ease}
+  #login-screen .login-public-nav a:hover,#login-screen .login-public-nav a:focus-visible,#login-screen .login-public-nav a.is-current{color:#69f0d8}
+  #login-screen .login-public-nav a.is-current::after{content:"";position:absolute;left:0;right:0;bottom:1px;height:2px;border-radius:4px;background:#17dcb6}
+  #login-screen .login-hero-copy{position:relative;z-index:2;max-width:760px;margin-top:clamp(15px,3vh,34px)}
+  #login-screen .eyebrow{margin:0;color:#48e4ca;font-size:10px;letter-spacing:.2em;font-weight:900}
+  #login-screen .login-hero-copy h1{max-width:760px;margin:15px 0 17px;color:#f7fbff;font-size:clamp(36px,4vw,64px);font-weight:850;line-height:1.01;letter-spacing:-.065em;text-wrap:balance}
+  #login-screen .login-hero-copy h1 .hero-highlight{color:#18d9b5}
+  #login-screen .login-hero-description{max-width:590px;margin:0;color:#c5d7e8;font-size:clamp(13px,1.18vw,16px);line-height:1.7}
+  #login-screen .login-visual{position:absolute;z-index:0;pointer-events:none;right:-5%;top:17%;width:min(49%,560px);opacity:.86;filter:drop-shadow(0 14px 38px #02152255)}
+  #login-screen .login-visual svg{display:block;width:100%;height:auto}
+  #login-screen .login-feature-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:clamp(18px,2.2vh,26px);min-width:0}
+  #login-screen .login-feature-card{min-width:0;padding:15px 15px 14px;border:1px solid #a8e8e91b;border-radius:17px;background:linear-gradient(145deg,#0c2c46e8,#071e34e9);box-shadow:0 12px 28px #00000012;backdrop-filter:blur(8px);transition:transform .18s ease,border-color .18s ease,background .18s ease}
+  #login-screen .login-feature-card:hover{transform:translateY(-2px);border-color:#46d9c44f;background:linear-gradient(145deg,#123b53f0,#08253cf2)}
+  #login-screen .login-feature-icon{display:grid;place-items:center;width:39px;height:39px;margin-bottom:10px;border-radius:13px;color:#fff;background:linear-gradient(145deg,#07be9d,#087663);box-shadow:0 8px 18px #0cc5a52b}
+  #login-screen .login-feature-icon.community{background:linear-gradient(145deg,#2689ef,#1352b6);box-shadow:0 8px 18px #197ae82b}
+  #login-screen .login-feature-icon.opportunity{background:linear-gradient(145deg,#9571f5,#633cc2);box-shadow:0 8px 18px #7851df2b}
+  #login-screen .login-feature-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  #login-screen .login-feature-card h2{margin:0 0 6px;color:#f6fbff;font-size:clamp(12px,1vw,15px);font-weight:850;letter-spacing:-.025em}
+  #login-screen .login-feature-card p{margin:0;color:#c6d9e8;font-size:clamp(10px,.84vw,12px);line-height:1.5}
+  #login-screen .login-trust-strip{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;padding:12px 15px;border:1px solid #9ddde421;border-radius:15px;background:#061a2bb8;backdrop-filter:blur(10px)}
+  #login-screen .login-trust-strip>div{display:flex;align-items:center;gap:9px;min-width:0}
+  #login-screen .login-trust-strip>div>span:last-child{display:grid;min-width:0;gap:1px}
+  #login-screen .login-trust-strip strong{color:#f4fbff;font-size:11px;font-weight:850}
+  #login-screen .login-trust-strip small{color:#aec5d7;font-size:9px;line-height:1.35}
+  #login-screen .login-trust-icon{display:grid;place-items:center;flex:0 0 33px;width:33px;height:33px;border-radius:11px;color:#70f0d9;background:#0ba48932;font-weight:900}
+  #login-screen .login-trust-icon.community{color:#56d9ff;background:#1484cb35}
+  #login-screen .login-trust-icon.opportunity{color:#d1baff;background:#7954d53c}
+  #login-screen .login-series-details{position:relative;z-index:2;border:1px solid #c0e6e31f;border-radius:12px;background:#061b2b88;color:#cee2ed}
+  #login-screen .login-series-details summary{padding:9px 12px;cursor:pointer;font-size:10px;font-weight:750;list-style-position:inside}
+  #login-screen .login-series-details summary::marker{color:#3ae3ca}
+  #login-screen .login-series-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 12px 12px}
+  #login-screen .login-series-detail-grid>div{padding:10px;border-radius:10px;background:#ffffff08}
+  #login-screen .login-series-detail-grid strong{font-size:11px;color:#eaf9ff}
+  #login-screen .login-series-detail-grid p{margin:4px 0 0;color:#b7cfdd;font-size:10px;line-height:1.45}
+  #login-screen .login-landing-footer{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#9ab4c8;font-size:10px}
+  #login-screen .login-footer-links{display:flex;align-items:center;justify-content:center;gap:clamp(9px,1.4vw,16px);flex-wrap:wrap}
+  #login-screen .login-footer-links a{color:#aac5d5;text-decoration:none;font-size:10px;font-weight:650;white-space:nowrap;transition:color .16s ease}
+  #login-screen .login-footer-links a:hover,#login-screen .login-footer-links a:focus-visible{color:#57ead0;text-decoration:underline;text-underline-offset:3px}
+  @media(max-width:650px){#login-screen .login-footer-links{order:3;width:100%;justify-content:flex-start;gap:16px}#login-screen .login-landing-footer{column-gap:10px;row-gap:10px}}
+  #login-screen .login-social-links{display:flex;align-items:center;gap:8px}
+  #login-screen .login-social-links a{display:grid;place-items:center;width:34px;height:34px;border:1px solid #b8e2e421;border-radius:10px;background:#ffffff08;color:#e8f8ff;text-decoration:none;font-size:13px;font-weight:800;transition:background .18s ease,border-color .18s ease}
+  #login-screen .login-social-links a:hover{background:#0a9f8a4a;border-color:#4ddfca6b}
+  #login-screen .login-social-pending{display:grid;place-items:center;width:34px;height:34px;border:1px dashed #b8e2e44d;border-radius:10px;background:#ffffff05;color:#819cac;font-size:15px;opacity:.92;cursor:pointer;text-decoration:none;transition:background .18s ease,border-color .18s ease,color .18s ease}
+  #login-screen .login-social-pending:hover,#login-screen .login-social-pending:focus-visible{color:#e8f8ff;background:#0a9f8a4a;border-color:#4ddfca6b}
+  #login-screen .login-social-pending::after{content:"";position:absolute}
+
+  #login-screen .login-form-wrap{position:relative;isolation:isolate;z-index:2;display:grid;grid-template-rows:auto minmax(0,1fr);align-items:stretch;gap:13px;min-width:0;min-height:100vh;min-height:100svh;padding:17px clamp(20px,3.15vw,53px) 24px clamp(22px,3vw,48px);border-radius:clamp(54px,8vw,130px) 0 0 clamp(46px,6vw,96px);background:radial-gradient(ellipse at 100% 5%,#e1fbf5 0,transparent 42%),linear-gradient(140deg,#f9fcfd 0%,#f4f9fa 100%)}
+  #login-screen .login-form-wrap::before{content:"";position:absolute;z-index:-1;top:14%;right:0;width:100%;height:70%;background:radial-gradient(ellipse at 70% 45%,#d2f9f0 0,transparent 60%);pointer-events:none}
+  #login-screen .login-right-top{display:flex;align-items:center;justify-content:flex-end;gap:clamp(12px,2vw,25px);min-width:0;position:relative;z-index:2}
+  #login-screen .login-language{display:inline-flex;align-items:center;gap:7px;color:#324e65;font-size:11px;font-weight:700;white-space:nowrap}
+  #login-screen .login-language svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+  #login-screen .login-official-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 16px;border:1px solid #a8bac8;border-radius:999px;background:#ffffffb8;color:#17314d;text-decoration:none;font-size:11px;font-weight:800;white-space:nowrap;box-shadow:0 2px 8px #102b3510;transition:background .18s ease,border-color .18s ease}
+  #login-screen .login-official-link:hover{background:#fff;border-color:#138d7d}
+  #login-screen .auth-panel{position:relative;z-index:1;align-self:center;width:100%;max-width:530px;max-height:calc(100svh - 103px);margin:0;padding:clamp(21px,2.15vw,34px);overflow-y:auto;overscroll-behavior:contain;border:1px solid #e3ecee;border-radius:27px;background:#ffffffed;box-shadow:0 24px 72px #12314712,0 3px 12px #12314708;scrollbar-width:thin;scrollbar-color:#c7d9dc transparent}
+  #login-screen .auth-panel::-webkit-scrollbar{width:7px}
+  #login-screen .auth-panel::-webkit-scrollbar-thumb{border-radius:20px;background:#c7d9dc}
+  #login-screen .auth-kicker{margin:0 0 8px;color:#069d86;font-size:10px;font-weight:950;letter-spacing:.19em}
+  #login-screen .auth-panel h2{margin:0 0 6px;color:#0c2340;font-size:clamp(23px,2vw,30px);font-weight:900;letter-spacing:-.055em;line-height:1.16}
+  #login-screen .auth-panel>p.muted{margin:0 0 18px;color:#5e738b;font-size:12px;line-height:1.5}
+  #login-screen .auth-panel .field{margin:11px 0}
+  #login-screen .auth-panel .field label{display:block;margin-bottom:6px;color:#142a45;font-size:11px;font-weight:850}
+  #login-screen .auth-panel .field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),#login-screen .auth-panel .field select,#login-screen .auth-panel .field textarea{width:100%;max-width:100%;min-width:0;min-height:45px;padding:11px 13px;border:1px solid #dce6ec;border-radius:11px;background:#fff;color:#16304b;font-size:13px;box-shadow:0 2px 5px #122d4506;transition:border-color .15s ease,box-shadow .15s ease}
+  #login-screen .auth-panel .field input:focus,#login-screen .auth-panel .field select:focus,#login-screen .auth-panel .field textarea:focus{outline:none;border-color:#19b89e;box-shadow:0 0 0 3px #17b99d1c}
+  #login-screen .auth-panel .field input::placeholder{color:#8b9caf}
+  #login-screen #signin-institution-help,#login-screen #auth-university-help{margin:6px 0 0;color:#718399;font-size:10px;line-height:1.45}
+  #login-screen #signin-institution-search-status,#login-screen #auth-university-search-status{margin:4px 0 0}
+  #login-screen .auth-role-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 8px}
+  #login-screen .auth-role-option{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:68px;padding:9px 5px;border:1px solid #dce6eb;border-radius:13px;background:#fff;color:#36516a;font-size:10px;font-weight:800;line-height:1.25;transition:border-color .15s ease,background .15s ease,color .15s ease}
+  #login-screen .auth-role-option svg{width:21px;height:21px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  #login-screen .auth-role-option[aria-pressed="true"]{border-color:#0cb79a;background:#eafaf6;color:#087a6b;box-shadow:inset 0 0 0 1px #0cb79a18}
+  #login-screen #signin-role-note{margin:6px 0 2px;color:#718399;font-size:10px;line-height:1.4}
+  #login-screen .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:15px 0 16px;padding:0;border:0;border-bottom:1px solid #e3ebef;border-radius:0;background:transparent}
+  #login-screen .auth-tabs button{position:relative;min-height:40px;padding:8px 4px;border:0;border-radius:0;background:transparent;color:#6a7f95;font-size:12px;font-weight:800}
+  #login-screen .auth-tabs button[aria-pressed="true"]{color:#0c2948;background:transparent;box-shadow:none}
+  #login-screen .auth-tabs button[aria-pressed="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:4px;background:#10b99c}
+  #login-screen .auth-panel .password-input-wrap{position:relative;display:flex;align-items:center}
+  #login-screen .auth-panel .password-input-wrap input{padding-right:45px!important}
+  #login-screen .auth-panel .password-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:35px;height:35px;min-height:35px;border:0;border-radius:8px;background:transparent;color:#637b91}
+  #login-screen .auth-panel .password-toggle svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  #login-screen #forgot-password-field{display:flex;justify-content:flex-end;margin:0 0 2px}
+  #login-screen #forgot-password-button,#login-screen #resend-confirmation-button{min-height:32px;padding:4px 0;border:0;background:transparent;color:#087e70;font-size:11px;font-weight:800;box-shadow:none}
+  #login-screen #remember-email-field{margin:4px 0 10px;color:#405c72;font-size:11px}
+  #login-screen #remember-email-field label{display:flex;align-items:center;gap:8px}
+  #login-screen #remember-email-field input{width:17px;height:17px;min-height:17px;accent-color:#098b78}
+  #login-screen #resend-field{margin:0 0 8px}
+  #login-screen #auth-helper{margin:7px 0 10px;color:#6e8295;font-size:10px;line-height:1.55}
+  #login-screen #auth-message{margin:8px 0 0;color:#526a7d;font-size:12px;line-height:1.5}
+  #login-screen .auth-panel .actions{margin-top:12px}
+  #login-screen #auth-submit{width:100%;min-height:46px;border:0;border-radius:12px;background:linear-gradient(105deg,#079c82,#006d65);color:#fff;font-size:12px;font-weight:900;box-shadow:0 7px 16px #078b792b;transition:transform .16s ease,box-shadow .16s ease}
+  #login-screen #auth-submit:hover{transform:translateY(-1px);box-shadow:0 10px 22px #078b793d}
+  #login-screen .auth-panel #google-signin-button{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:44px;border:1px solid #dce6ec;border-radius:11px;background:#fff;color:#25445e;font-size:12px;font-weight:800}
+  #login-screen .auth-panel #google-signin-button svg{width:18px;height:18px}
+  #login-screen .google-auth-note{color:#718399;font-size:10px;line-height:1.5}
+  #login-screen .install-card{margin-top:12px}
+  #login-screen .install-copy strong{font-size:11px}
+  #login-screen .install-copy p{font-size:10px}
+  #login-screen .login-form-wrap a:focus-visible,#login-screen .login-intro a:focus-visible,#login-screen .auth-panel button:focus-visible{outline:3px solid #19b99d;outline-offset:3px}
+  @media (min-width:961px) and (max-height:780px){
+    #login-screen .login-intro{gap:12px;padding-top:18px;padding-bottom:13px}
+    #login-screen .login-brand-shield{width:33px;height:37px}
+    #login-screen .login-hero-copy{margin-top:12px}
+    #login-screen .login-hero-copy h1{font-size:clamp(34px,3.2vw,48px);margin:10px 0 11px}
+    #login-screen .login-feature-grid{margin-top:12px;gap:9px}
+    #login-screen .login-feature-card{padding:11px}
+    #login-screen .login-feature-icon{width:32px;height:32px;margin-bottom:7px}
+    #login-screen .login-trust-strip{padding:9px 11px}
+    #login-screen .login-form-wrap{padding-top:12px;padding-bottom:14px}
+    #login-screen .auth-panel{max-height:calc(100svh - 82px);padding:19px 22px}
+    #login-screen .auth-panel .field{margin:8px 0}
+    #login-screen .auth-role-option{min-height:58px}
+    #login-screen .auth-tabs{margin:10px 0}
+  }
+  /* On short landscape laptop/tablet screens, let the page scroll naturally.
+     Avoid putting the sign-in submit button below a nested, clipped auth card. */
+  @media (min-width:961px) and (max-height:780px){
+    #login-screen.login-screen{align-items:start}
+    #login-screen .login-intro{align-self:stretch}
+    #login-screen .login-form-wrap{display:block;min-height:100svh;padding-top:12px;padding-bottom:20px;overflow:visible}
+    #login-screen .login-right-top{margin-bottom:12px}
+    #login-screen .auth-panel{max-height:none;overflow:visible;margin:0 auto}
+  }
+  @media (max-width:1200px) and (min-width:961px){
+    #login-screen.login-screen{grid-template-columns:minmax(0,1.2fr) minmax(400px,.95fr)}
+    #login-screen .login-intro{padding-left:clamp(22px,3vw,40px);padding-right:clamp(22px,3vw,40px)}
+    #login-screen .login-public-nav{gap:14px}
+    #login-screen .login-public-nav a{font-size:11px}
+    #login-screen .login-hero-copy h1{font-size:clamp(36px,3.5vw,47px)}
+    #login-screen .login-visual{right:-16%;width:50%;opacity:.55}
+    #login-screen .login-feature-grid{gap:8px}
+    #login-screen .login-feature-card{padding:12px 11px}
+    #login-screen .login-feature-card p{font-size:10px}
+    #login-screen .login-form-wrap{padding-left:24px;padding-right:22px}
+    #login-screen .auth-panel{padding:22px}
+  }
+  @media (max-width:960px){
+    #login-screen.login-screen{grid-template-columns:minmax(0,1fr);overflow:visible;min-height:100vh;min-height:100svh}
+    #login-screen .login-intro{min-height:auto;gap:21px;padding:25px clamp(18px,4.5vw,44px) 20px}
+    #login-screen .login-intro-header{gap:15px}
+    #login-screen .login-public-nav{gap:clamp(12px,2.5vw,24px)}
+    #login-screen .login-hero-copy{margin-top:10px;max-width:780px}
+    #login-screen .login-hero-copy h1{font-size:clamp(40px,6.4vw,59px)}
+    #login-screen .login-hero-description{max-width:660px;font-size:14px}
+    #login-screen .login-visual{top:12%;right:-1%;width:min(43%,430px);opacity:.34}
+    #login-screen .login-feature-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:5px}
+    #login-screen .login-feature-card{padding:14px}
+    #login-screen .login-feature-card p{font-size:11px}
+    #login-screen .login-form-wrap{min-height:auto;padding:22px clamp(18px,4.5vw,44px) 34px;border-radius:0;background:linear-gradient(180deg,#f3faf9,#f7fbfc)}
+    #login-screen .login-form-wrap::before{top:0;height:100%}
+    #login-screen .login-right-top{margin-bottom:2px}
+    #login-screen .auth-panel{justify-self:center;max-height:none;overflow:visible;width:100%;max-width:590px;padding:clamp(22px,3.3vw,32px)}
+  }
+  @media (min-width:651px) and (max-width:1440px){
+    /* Keep decorative network art out of the title area on tablets and smaller laptops. */
+    #login-screen .login-visual{display:none}
+    #login-screen .login-hero-copy{max-width:100%}
+  }
+  @media (min-width:1441px){
+    /* On wide desktops, keep the network illustration to the far right of the headline. */
+    #login-screen .login-visual{right:-8%;top:22%;width:min(42%,500px);opacity:.42}
+  }
+  @media (max-width:650px){
+    #login-screen .login-intro{gap:18px;padding:19px 17px 17px}
+    #login-screen .login-intro-header{flex-wrap:wrap;gap:13px}
+    #login-screen .login-brand-shield{width:34px;height:38px}
+    #login-screen .login-brand-wordmark{font-size:18px}
+    #login-screen .login-public-nav{width:100%;justify-content:space-between;gap:12px;padding:0 1px}
+    #login-screen .login-public-nav a{font-size:11px;padding:6px 0}
+    #login-screen .login-hero-copy{margin-top:0}
+    #login-screen .login-hero-copy h1{font-size:clamp(35px,9.2vw,47px);letter-spacing:-.06em;line-height:1.03;margin:10px 0 12px}
+    #login-screen .login-hero-description{max-width:100%;font-size:13px;line-height:1.6}
+    #login-screen .login-visual{top:21%;right:-20%;width:70%;opacity:.18}
+    #login-screen .login-feature-grid{grid-template-columns:1fr;gap:9px;margin-top:1px}
+    #login-screen .login-feature-card{display:grid;grid-template-columns:38px minmax(0,1fr);column-gap:10px;align-items:center;padding:12px;border-radius:14px}
+    #login-screen .login-feature-icon{grid-row:span 2;width:35px;height:35px;margin:0}
+    #login-screen .login-feature-card h2{align-self:end;margin:0 0 3px;font-size:12px}
+    #login-screen .login-feature-card p{align-self:start;font-size:10px;line-height:1.4}
+    #login-screen .login-trust-strip{gap:6px;padding:9px 8px}
+    #login-screen .login-trust-strip>div{gap:6px}
+    #login-screen .login-trust-icon{width:28px;height:28px;flex-basis:28px;border-radius:9px}
+    #login-screen .login-trust-strip strong{font-size:10px}
+    #login-screen .login-trust-strip small{font-size:8px}
+    #login-screen .login-series-detail-grid{grid-template-columns:1fr}
+    #login-screen .login-landing-footer{align-items:flex-start;font-size:9px}
+    #login-screen .login-social-links{gap:5px}
+    #login-screen .login-social-links a{width:31px;height:31px}
+    #login-screen .login-form-wrap{gap:12px;padding:15px 12px calc(24px + env(safe-area-inset-bottom))}
+    #login-screen .login-right-top{gap:12px}
+    #login-screen .login-official-link{min-height:40px;padding:0 12px;font-size:10px}
+    #login-screen .login-language{font-size:10px}
+    #login-screen .auth-panel{padding:22px 17px;border-radius:21px}
+    #login-screen .auth-panel h2{font-size:25px}
+    #login-screen .auth-panel .field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),#login-screen .auth-panel .field select,#login-screen .auth-panel .field textarea{min-height:46px;font-size:16px}
+    #login-screen .auth-role-picker{gap:6px}
+    #login-screen .auth-role-option{min-height:66px;font-size:10px}
+  }
+  @media (max-width:390px){
+    #login-screen .login-intro{padding-left:13px;padding-right:13px}
+    #login-screen .login-brand{gap:8px}
+    #login-screen .login-brand-wordmark{font-size:16px}
+    #login-screen .login-brand-copy small{font-size:9px}
+    #login-screen .login-public-nav{gap:8px}
+    #login-screen .login-public-nav a{font-size:10px}
+    #login-screen .login-hero-copy h1{font-size:34px}
+    #login-screen .login-trust-strip{grid-template-columns:1fr}
+    #login-screen .login-trust-strip small{font-size:9px}
+    #login-screen .login-form-wrap{padding-left:10px;padding-right:10px}
+    #login-screen .auth-panel{padding:20px 14px}
+    #login-screen .auth-role-option{font-size:9px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #login-screen *{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
+  }
+</style>
+
+<style id="campusshield-language-picker-style">
+  #login-screen .login-language{display:inline-flex;align-items:center;gap:8px;min-width:0}
+  #login-screen .login-language select{max-width:clamp(105px,11vw,165px);min-width:0;min-height:40px;padding:7px 24px 7px 1px;border:0;border-radius:8px;background:transparent;color:#324e65;font:inherit;font-weight:750;cursor:pointer;outline-offset:3px}
+  #login-screen .login-language select option{background:#fff;color:#17314d;font-weight:600}
+  #login-screen .login-language select:focus-visible{outline:2px solid #11a98f}
+  @media(max-width:650px){#login-screen .login-language select{max-width:130px;min-height:40px;font-size:11px}}
+  @media(max-width:390px){#login-screen .login-language select{max-width:112px;font-size:10px}}
+  html[dir="rtl"] #login-screen .login-language{flex-direction:row}
+</style>
+
+<style id="campusshield-verification-responsive-fix">
+  /* Keep the verification heading from inheriting the workspace's multi-column heading layout. */
+  #login-screen .signup-student-identity-panel,
+  #login-screen .signup-student-identity-panel>.heading,
+  #login-screen .signup-student-identity-panel>.panel,
+  #login-screen #studentIdentityForm{width:100%;max-width:100%;min-width:0}
+  #login-screen .signup-student-identity-panel>.heading{
+    display:block!important;align-items:initial;justify-content:initial;flex:none;
+    padding:0 0 20px;margin:0 0 20px;border-bottom:1px solid #dce7e2;
+  }
+  #login-screen .signup-student-identity-panel>.heading h2{
+    display:block;width:100%;max-width:100%;margin:0 0 9px;
+    font-size:clamp(24px,3vw,34px);line-height:1.16;letter-spacing:-.04em;
+    overflow-wrap:normal;word-break:normal;
+  }
+  #login-screen .signup-student-identity-panel>.heading p{
+    display:block;width:100%;max-width:720px;margin:0;font-size:14px;line-height:1.6;
+    overflow-wrap:break-word;
+  }
+  #login-screen .signup-verification-guidance{
+    margin:10px 0 15px;padding:12px 14px;border:1px solid #cfe7df;border-radius:12px;
+    background:#f1faf6;color:#365f5b;font-size:12px;line-height:1.6;
+  }
+  #login-screen .signup-verification-guidance:before{
+    content:"VERIFICATION GUIDE";display:block;margin-bottom:4px;color:#187a6a;
+    font-size:9px;font-weight:900;letter-spacing:.14em;
+  }
+  #login-screen #studentIdentityForm{
+    grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;
+  }
+  #login-screen #studentIdentityForm>*{min-width:0}
+  #login-screen #studentIdentityForm input,
+  #login-screen #studentIdentityForm select,
+  #login-screen #studentIdentityForm textarea{max-width:100%;min-width:0}
+  @media(max-width:820px){
+    #login-screen .signup-student-identity-panel{padding:clamp(13px,3vw,20px);border-radius:16px}
+    #login-screen .signup-student-identity-panel>.heading{display:block!important;padding-bottom:17px;margin-bottom:17px}
+    #login-screen .signup-student-identity-panel>.heading h2{font-size:clamp(23px,5.5vw,30px);line-height:1.2;letter-spacing:-.035em}
+    #login-screen .signup-student-identity-panel>.heading p{font-size:13px}
+    #login-screen .signup-student-identity-panel>.panel{padding:clamp(12px,3vw,18px)}
+    #login-screen #studentIdentityForm{grid-template-columns:minmax(0,1fr);gap:0;padding:clamp(12px,3vw,18px);border-radius:14px}
+    #login-screen #studentIdentityForm>*,
+    #login-screen #studentIdentityForm>.field:has(#identity-document),
+    #login-screen #identity-verification-status,
+    #login-screen #studentIdentityForm .remember-field,
+    #login-screen #studentIdentityForm>p.muted,
+    #login-screen #studentIdentityForm>.actions,
+    #login-screen #studentIdentityForm>button{grid-column:1/-1}
+    #login-screen #studentIdentityForm>.field{width:100%;margin:6px 0 12px}
+    #login-screen #studentIdentityForm>.field label{overflow-wrap:break-word}
+    #login-screen #studentIdentityForm>.field input:not([type="file"]),
+    #login-screen #studentIdentityForm>.field select,
+    #login-screen #studentIdentityForm>.field textarea{width:100%;font-size:16px}
+    #login-screen #studentIdentityForm>.field:has(#identity-document) input[type="file"]{width:100%;min-height:64px;padding:11px;font-size:13px}
+  }
+  @media(max-width:390px){
+    #login-screen .signup-student-identity-panel{padding:12px}
+    #login-screen .signup-student-identity-panel>.heading h2{font-size:23px}
+    #login-screen .signup-verification-guidance{padding:10px 11px;font-size:11px}
+    #login-screen #studentIdentityForm{padding:11px}
+  }
+  /* Keep the language control visibly selectable on desktop and touch screens. */
+  #login-screen .login-language{position:relative;padding-inline-end:12px}
+  #login-screen .login-language:after{content:"⌄";position:absolute;inset-inline-end:0;top:50%;transform:translateY(-58%);color:#4e667b;font-size:12px;font-weight:850;pointer-events:none}
+  #login-screen .login-language select{appearance:none;-webkit-appearance:none;padding-inline-end:14px!important;background-color:transparent}
+</style>
+
+<style id="campusshield-role-capabilities-style">
+.staff-position-access-preview,.role-access-summary{min-width:0;padding:16px 18px;border:1px solid #cfe8e0;border-radius:15px;background:linear-gradient(145deg,#f4fbf8,#fff);color:#173b43}
+.staff-position-access-preview{margin:4px 0 14px}.staff-position-access-preview h3,.role-access-summary h2{margin:3px 0 8px;color:#123348;font-size:clamp(17px,2vw,21px);line-height:1.25;letter-spacing:-.03em}
+.staff-position-access-preview p,.role-access-summary p{margin:6px 0;color:#566e7b;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.staff-position-access-preview .staff-access-kicker,.role-access-kicker{color:#078b77;font-size:9px;font-weight:950;letter-spacing:.16em;text-transform:uppercase}
+.staff-position-access-preview ul,.role-access-list{display:grid;gap:7px;margin:11px 0;padding:0;list-style:none}
+.staff-position-access-preview li,.role-access-list li{position:relative;padding-left:21px;color:#294957;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.staff-position-access-preview li::before,.role-access-list li::before{content:"✓";position:absolute;left:0;top:0;color:#078b77;font-weight:950}
+.staff-position-access-preview .staff-access-limit,.role-access-summary .role-access-limit{margin-top:10px;padding:11px 12px;border:1px solid #f0dfba;border-radius:10px;background:#fff9ec;color:#75591f;font-size:11px;line-height:1.55}
+.role-access-summary{margin:0 0 20px;padding:18px 20px;box-shadow:0 12px 30px #173b4310}.role-access-topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.role-access-status{display:inline-flex;align-items:center;max-width:100%;padding:5px 9px;border:1px solid #d9e5eb;border-radius:999px;background:#fff;color:#506b7c;font-size:10px;font-weight:850;overflow-wrap:anywhere}
+.role-access-status[data-state="approved"]{border-color:#bfe8d9;background:#eaf9f2;color:#08745f}.role-access-status[data-state="pending"]{border-color:#f1dfb9;background:#fff7e6;color:#86601e}
+@media(max-width:650px){.staff-position-access-preview,.role-access-summary{padding:14px;border-radius:13px}.role-access-summary{margin-bottom:16px}.staff-position-access-preview li,.role-access-list li{font-size:11px}}
+</style>
+<style id="campusshield-sitewide-legal-footer-style">
+  .app-legal-footer{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    padding:18px clamp(14px,2.4vw,32px) calc(18px + env(safe-area-inset-bottom));
+    margin-top:12px;border-top:1px solid #dfe9e4;
+    background:#f8fbf9;color:#6d8187;font-size:11px;text-align:left;
+  }
+  .app-legal-footer nav{display:flex;align-items:center;justify-content:flex-end;gap:clamp(10px,1.5vw,18px);flex-wrap:wrap}
+  .app-legal-footer a{color:#386b68;text-decoration:none;font-size:11px;font-weight:750}
+  .app-legal-footer a:hover{text-decoration:underline;text-underline-offset:3px;color:#087f70}
+  .app-legal-footer a:focus-visible{outline:3px solid #19b99d;outline-offset:3px;border-radius:3px}
+  @media(max-width:600px){
+    .app-legal-footer{justify-content:center;text-align:center;gap:10px;padding:16px 14px calc(20px + env(safe-area-inset-bottom))}
+    .app-legal-footer nav{width:100%;justify-content:center;gap:16px}
+  }
+</style>
 </head>
 <body>
+
 <section id="login-screen" class="login-screen">
   <div class="login-intro">
-    <div class="login-brand"><span class="brand-mark" aria-hidden="true">CS</span><span class="login-brand-name">Campus<strong>Shield</strong> AI</span></div>
-    <p class="eyebrow">CAMPUS SAFETY · COMMUNITY · STUDENT SUCCESS</p>
-    <h1>One trusted home for campus life.</h1>
-    <p>Find your campus community, explore events and services, and use safety tools built around privacy and accountable review.</p>
-    <div class="login-points">
-      <div><span>01</span><strong>Stay safe</strong><small>Share a private report and follow its review status.</small></div>
-      <div><span>02</span><strong>Find your people</strong><small>Join campus conversations, groups and events.</small></div>
-      <div><span>03</span><strong>Grow your future</strong><small>Discover study circles, career events and campus services.</small></div>
-    </div>
-    <p class="login-footnote">Campus safety reporting and campus support · Does not automatically contact emergency services</p>
+    <header class="login-intro-header">
+      <a class="login-brand" href="#login-screen" aria-label="CampusShield AI home">
+        <svg class="login-brand-shield" viewBox="0 0 48 52" aria-hidden="true">
+          <path d="M24 3 43 10v14c0 12-7.2 20-19 25C12.2 44 5 36 5 24V10L24 3Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+          <path d="m14.5 25 6.2 6.1L34 17.5" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="login-brand-copy"><span class="login-brand-wordmark">Campus<strong>Shield</strong> AI</span><small>Intelligent Campus Safety</small></span>
+      </a>
+      <nav class="login-public-nav" aria-label="Public navigation">
+        <a class="is-current" href="#login-screen">Home</a>
+        <a href="#login-features">Features</a>
+        <a href="#login-about">About</a>
+        <a href="#auth-helper">Help</a>
+      </nav>
+    </header>
 
-    <div class="campus-hub" aria-label="Official CampusShield AI hub">
-  <div class="campus-hub-head">
-    <span class="campus-hub-mark" aria-hidden="true">
-      <svg viewBox="0 0 32 32"><path fill="#34d399" d="M16 1.5l4.1 3 5.1-.1 1.4 4.9 4.1 3-1.2 5 1.2 5-4.1 3-1.4 4.9-5.1-.1-4.1 3-4.1-3-5.1.1-1.4-4.9-4.1-3 1.2-5-1.2-5 4.1-3 1.4-4.9 5.1.1z"/><path d="M10 16.2l3.7 3.7L22.3 11" fill="none" stroke="#073b32" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </span>
-    <div class="campus-hub-brand">
-      <span class="campus-hub-eyebrow">THE OFFICIAL CAMPUSSHIELD HUB</span>
-      <h2>Good campus ideas start here.</h2>
-      <p>Safety insights · student voices · ideas in action</p>
+    <div class="login-hero-copy" id="login-about">
+      <p class="eyebrow">INTELLIGENT CAMPUS SAFETY</p>
+      <h1><span data-i18n="heroOne">Safer Campuses.</span><br><span class="hero-highlight" data-i18n="heroTwo">Stronger Communities.</span><br><span data-i18n="heroThree">Brighter Futures.</span></h1>
+      <p class="login-hero-description">CampusShield AI brings campus safety, community, opportunities and support together in one trusted platform for students, staff and university communities.</p>
     </div>
-    <a class="campus-hub-official" href="https://campusshield-ai.github.io/campusshield-ai/" target="_blank" rel="noopener noreferrer">Official site <span aria-hidden="true">↗</span></a>
-  </div>
-  <div class="campus-hub-section-title">UPCOMING CONTENT SERIES</div>
-  <div class="campus-hub-series-grid">
-    <article class="campus-hub-series">
-      <span class="campus-hub-series-kicker">01 / SHIELD NOTES</span>
-      <strong>Small steps. Safer days.</strong>
-      <p>Practical, student-friendly safety explainers.</p>
-    </article>
-    <article class="campus-hub-series">
-      <span class="campus-hub-series-kicker">02 / CAMPUS VOICES</span>
-      <strong>Stories from student life.</strong>
-      <p>Student stories shared with care and consent.</p>
-    </article>
-    <article class="campus-hub-series">
-      <span class="campus-hub-series-kicker">03 / BUILD LAB</span>
-      <strong>Ideas made together.</strong>
-      <p>Projects, collaborators and campus innovation.</p>
-    </article>
-  </div>
-  <div class="campus-hub-social campus-hub-social-icons" aria-label="CampusShield social profiles">
-    <div class="campus-hub-channel-grid">
-      <a class="campus-hub-channel campus-hub-channel-link" href="https://x.com/CampusShieldAI" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI on X" title="X"><span class="campus-hub-channel-icon channel-x" aria-hidden="true">𝕏</span></a>
-      <a class="campus-hub-channel campus-hub-channel-link" href="https://www.instagram.com/campusshieldai/" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI on Instagram" title="Instagram @campusshieldai"><span class="campus-hub-channel-icon channel-instagram" aria-hidden="true">◎</span></a>
-      <a class="campus-hub-channel campus-hub-channel-link" href="https://www.linkedin.com/in/campusshield-ai-technologies-857b83446" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI Technologies on LinkedIn" title="LinkedIn CampusShield AI Technologies"><span class="campus-hub-channel-icon channel-linkedin" aria-hidden="true">in</span></a>
+
+    <div class="login-visual" aria-hidden="true">
+      <svg viewBox="0 0 560 440" role="presentation">
+        <defs>
+          <linearGradient id="loginTowerFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#12647b" stop-opacity=".78"/>
+            <stop offset="1" stop-color="#071c32" stop-opacity=".12"/>
+          </linearGradient>
+          <linearGradient id="loginTowerGlow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#16e4bb" stop-opacity=".75"/>
+            <stop offset="1" stop-color="#16e4bb" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <g fill="none" stroke="#45e8d0" stroke-opacity=".48" stroke-width="1.5">
+          <path d="M73 169 177 95 300 143 414 70 501 143"/>
+          <path d="M73 169 216 230 300 143 432 250 501 143"/>
+          <path d="M177 95 216 230 414 70 432 250"/>
+          <path d="M216 230 300 143 332 324 432 250"/>
+        </g>
+        <g fill="#58f3dd">
+          <circle cx="73" cy="169" r="5"/><circle cx="177" cy="95" r="5"/><circle cx="300" cy="143" r="6"/><circle cx="414" cy="70" r="5"/><circle cx="501" cy="143" r="5"/><circle cx="216" cy="230" r="5"/><circle cx="432" cy="250" r="5"/>
+        </g>
+        <path d="M175 218 310 176 439 220V390H175Z" fill="url(#loginTowerFill)" stroke="#1b7b92" stroke-opacity=".85" stroke-width="2"/>
+        <path d="M175 218 310 176 439 220 310 260Z" fill="#0b354c" stroke="#25859a" stroke-width="2"/>
+        <path d="M205 228 310 195 408 225 310 254Z" fill="#0d2c43" stroke="#1a6c83"/>
+        <path d="M205 228V374L310 411 408 374V225" fill="#09263d" fill-opacity=".78" stroke="#1a6c83" stroke-width="2"/>
+        <g stroke="#f5c67c" stroke-width="2" stroke-opacity=".72">
+          <path d="M230 250v17m0 11v17m0 11v17m0 11v17"/>
+          <path d="M254 242v17m0 11v17m0 11v17m0 11v17"/>
+          <path d="M278 236v17m0 11v17m0 11v17m0 11v17"/>
+          <path d="M345 239v17m0 11v17m0 11v17m0 11v17"/>
+          <path d="M369 246v17m0 11v17m0 11v17m0 11v17"/>
+          <path d="M393 253v17m0 11v17m0 11v17m0 11v17"/>
+        </g>
+        <path d="M310 176V117" stroke="url(#loginTowerGlow)" stroke-width="2"/>
+        <circle cx="310" cy="115" r="26" fill="#0c394c" fill-opacity=".9" stroke="#4debd4" stroke-width="1.5"/>
+        <path d="m293 113 17-9 17 9-17 9Z" fill="#e9fffb"/>
+        <path d="M299 115v9q11 9 22 0v-9" fill="#e9fffb"/>
+        <circle cx="73" cy="169" r="21" fill="#132e69" fill-opacity=".88" stroke="#9c9bff" stroke-width="1.5"/>
+        <g fill="#f4f5ff"><circle cx="68" cy="165" r="4"/><circle cx="79" cy="165" r="4"/><path d="M61 178q1-9 7-9t7 9m0 0q1-9 7-9t7 9Z"/></g>
+        <circle cx="501" cy="143" r="21" fill="#0e5272" fill-opacity=".88" stroke="#7adcf7" stroke-width="1.5"/>
+        <path d="M501 130q-8 0-8 8c0 6 8 14 8 14s8-8 8-14q0-8-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" fill="#e9fcff"/>
+      </svg>
     </div>
-  </div>
-</div>
+
+    <div class="login-feature-grid" id="login-features">
+      <article class="login-feature-card">
+        <span class="login-feature-icon safety" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        </span>
+        <h2>Campus Safety</h2>
+        <p>Report incidents, get support, and help build safer campuses.</p>
+      </article>
+      <article class="login-feature-card">
+        <span class="login-feature-icon community" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19v-1.5A4.5 4.5 0 0 1 7.5 13h3a4.5 4.5 0 0 1 4.5 4.5V19Zm13-5.5h1.5A3.5 3.5 0 0 1 21 17v2h-4"/></svg>
+        </span>
+        <h2>Campus Community</h2>
+        <p>Join groups, discover events, and stay informed with verified notices.</p>
+      </article>
+      <article class="login-feature-card">
+        <span class="login-feature-icon opportunity" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18m-11 0v2h4v-2"/></svg>
+        </span>
+        <h2>Student Opportunities</h2>
+        <p>Find internships, scholarships, jobs, and career growth.</p>
+      </article>
+    </div>
+
+    <div class="login-trust-strip" aria-label="CampusShield platform highlights">
+      <div><span class="login-trust-icon">✓</span><span><strong>Safety</strong><small>A safer campus for everyone</small></span></div>
+      <div><span class="login-trust-icon community">◎</span><span><strong>Community</strong><small>More connected students</small></span></div>
+      <div><span class="login-trust-icon opportunity">↗</span><span><strong>Opportunities</strong><small>A brighter future ahead</small></span></div>
+    </div>
+
+    <details class="login-series-details">
+      <summary>Explore Shield Notes, Campus Voices and Build Lab</summary>
+      <div class="login-series-detail-grid">
+        <div><strong>Shield Notes</strong><p>Practical, student-friendly safety explainers.</p></div>
+        <div><strong>Campus Voices</strong><p>Student stories shared with care and consent.</p></div>
+        <div><strong>Build Lab</strong><p>Projects, collaborators and campus innovation.</p></div>
+      </div>
+    </details>
+
+    <footer class="login-landing-footer">
+      <span>© 2026 CampusShield AI. All rights reserved.</span>
+      <nav class="login-footer-links" aria-label="Legal and support links">
+        <a href="./privacy.html">Privacy</a>
+        <a href="./terms.html">Terms</a>
+        <a href="./contact.html">Contact</a>
+      </nav>
+      <nav class="login-social-links" aria-label="CampusShield social profiles">
+        <a href="https://x.com/CampusShieldAI" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI on X" title="X">𝕏</a>
+        <a href="https://www.instagram.com/campusshieldai/" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI on Instagram" title="Instagram">◎</a>
+        <a href="https://www.linkedin.com/in/campusshield-ai-technologies-857b83446" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI Technologies on LinkedIn" title="LinkedIn">in</a>
+      </nav>
+    </footer>
   </div>
   <div class="login-form-wrap">
+
+  <div class="login-right-top">
+    <label class="login-language" for="campusshield-language">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+      <span id="campusshield-language-label" class="sr-only">Choose language</span>
+      <select id="campusshield-language" aria-label="Choose language">
+        <option value="en" lang="en">English</option>
+        <option value="yo" lang="yo">Yorùbá</option>
+        <option value="ha" lang="ha">Hausa</option>
+        <option value="ig" lang="ig">Igbo</option>
+        <option value="fr" lang="fr">Français</option>
+        <option value="es" lang="es">Español</option>
+        <option value="pt" lang="pt">Português</option>
+        <option value="sw" lang="sw">Kiswahili</option>
+        <option value="ar" lang="ar">العربية</option>
+        <option value="zh" lang="zh-CN">简体中文</option>
+        <option value="de" lang="de">Deutsch</option>
+        <option value="hi" lang="hi">हिन्दी</option>
+        <option value="ja" lang="ja">日本語</option>
+        <option value="ko" lang="ko">한국어</option>
+        <option value="ru" lang="ru">Русский</option>
+        <option value="bn" lang="bn">বাংলা</option>
+        <option value="id" lang="id">Bahasa Indonesia</option>
+        <option value="it" lang="it">Italiano</option>
+        <option value="nl" lang="nl">Nederlands</option>
+        <option value="tr" lang="tr">Türkçe</option>
+        <option value="ur" lang="ur">اردو</option>
+        <option value="vi" lang="vi">Tiếng Việt</option>
+        <option value="th" lang="th">ไทย</option>
+        <option value="fil" lang="fil">Filipino</option>
+        <option value="fa" lang="fa">فارسی</option>
+        <option value="pl" lang="pl">Polski</option>
+      </select>
+    </label>
+    <a class="login-official-link" href="https://campusshield-ai.github.io/campusshield-ai/" target="_blank" rel="noopener noreferrer"><span data-i18n="officialText">Visit Official Site</span> <span aria-hidden="true">↗</span></a>
+  </div>
     <section class="panel auth-panel">
       <p class="auth-kicker">CAMPUSSHIELD ACCESS</p>
       <h2 id="auth-title">Welcome back</h2>
@@ -1877,6 +2345,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
           <div class="field"><label for="auth-name">Full name *</label><input id="auth-name" autocomplete="name" required maxlength="120" placeholder="Your official full name"></div>
           <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
           <div class="field"><label for="auth-role">Campus account type *</label><select id="auth-role" required><option value="student">Student</option><option value="teacher">Teacher / university staff</option></select><p class="muted">Choose the role that matches your institution. Staff applications require separate verification.</p></div>
+          <div id="signup-verification-guidance" class="signup-verification-guidance" role="status" aria-live="polite">Students submit a student ID or matriculation document for review. Teachers and university staff submit staff ID or employment evidence after account creation and sign-in. Administrator access is assigned separately by an authorized platform administrator.</div>
           <div class="field institution-picker-field"><label for="auth-university-search">University or institution *</label><input id="auth-university-search" type="search" list="auth-university-suggestions" autocomplete="off" placeholder="Start typing your university name…" aria-describedby="auth-university-help" required><datalist id="auth-university-suggestions"></datalist><select id="auth-university" class="institution-id-select" aria-label="Selected university record" tabindex="-1" aria-hidden="true"><option value="">Loading university directory…</option></select><p class="muted" id="auth-university-help">Type to search the campus directory, then choose an exact match. Your campus membership is verified separately.</p><p class="message" id="auth-university-search-status" role="status" aria-live="polite"></p></div>
           <div id="signup-student-fields">
             <div class="field"><label for="auth-faculty">Faculty / school *</label><input id="auth-faculty" maxlength="120" required placeholder="e.g. Faculty of Engineering"></div>
@@ -1885,7 +2354,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
             <div class="field"><label for="auth-year-of-study">Current level / year *</label><select id="auth-year-of-study" required><option value="">Choose your level</option><option>100 Level</option><option>200 Level</option><option>300 Level</option><option>400 Level</option><option>500 Level</option><option>600 Level</option><option>Postgraduate Diploma</option><option>Masters</option><option>Doctoral</option><option>Other</option></select></div>
           </div>
           <div id="signup-staff-fields" hidden>
-            <div class="field"><label for="auth-staff-position">Official university position *</label><select id="auth-staff-position"><option value="">Choose your position</option><option>Vice-Chancellor</option><option>Deputy Vice-Chancellor</option><option>Registrar</option><option>Bursar</option><option>University Librarian</option><option>Dean</option><option>Head of Department</option><option>Professor</option><option>Lecturer</option><option>Administrative staff</option><option>Security staff</option><option>Other university employee</option></select><p class="muted">Your title is reviewed and does not automatically grant administrator permissions.</p></div>
+            <div class="field"><label for="auth-staff-position">Official university position *</label><select id="auth-staff-position"><option value="">Choose your position</option><option>Vice-Chancellor</option><option>Deputy Vice-Chancellor</option><option>Registrar</option><option>Bursar</option><option>University Librarian</option><option>Dean</option><option>Head of Department</option><option>Professor</option><option>Lecturer</option><option>Administrative staff</option><option>Security staff</option><option>Other university employee</option></select><p class="muted">Your title is recorded for verification. Access depends on your approved system role and campus membership, not your title.</p></div>
+<section id="staff-position-access-preview" class="staff-position-access-preview" role="status" aria-live="polite" hidden><p class="staff-access-kicker">ACCESS AFTER SIGN-IN</p><h3 id="staff-position-access-title">What your staff position means</h3><p id="staff-position-access-description">Your selected position helps reviewers understand your application. All listed positions start with the same standard staff application.</p><ul id="staff-position-access-list"></ul><p id="staff-position-access-limit" class="staff-access-limit">A job title or checkbox never grants security, administrator, or platform-wide permissions.</p></section>
             <div class="field"><label for="auth-staff-number">Staff / employee ID number</label><input id="auth-staff-number" maxlength="80" placeholder="If available"></div>
             <div class="field"><label for="auth-official-email">Official university email</label><input id="auth-official-email" type="email" maxlength="254" placeholder="name@university.edu.ng"><p class="muted">A university email helps review your application, but may not be available to every employee. You can submit a staff ID after sign-in.</p></div>
             <label class="remember-field"><input type="checkbox" id="auth-request-campus-admin"> Request consideration for university administrator access</label>
@@ -1893,7 +2363,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
           </div>
           </div>
 <div class="signup-student-identity-panel" id="signup-student-identity-panel" hidden>
-  <div class="heading"><h2>Student identity document</h2><p>Submit your student ID or matriculation document during account setup for identity verification.</p></div>
+  <div class="heading"><h2>Student identity verification</h2><p>Make verification simple: enter your matric number and upload a clear photo of your university ID card. A school-fee receipt is optional if your ID card is unavailable or your reviewer requests supporting proof. Teachers and university staff use the separate staff workflow after signing in.</p></div>
   <div class="panel">
           <p id="identity-verification-status" class="message" role="status" aria-live="polite">Loading your submission status…</p>
           <div id="studentIdentityForm">
@@ -1904,8 +2374,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
                     <input id="identity-institution" type="hidden">
                     <small id="identity-university-help">This value is set from your account setup and must match the campus membership enforced by Supabase.</small>
             </div>
-            <div class="field"><label for="identity-student-number">Student / matric number *</label><input id="identity-student-number" required maxlength="80" autocomplete="off"></div>
-            <div class="field"><label for="identity-document">Student ID image or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>Choose a JPG, PNG, or PDF file up to 5 MiB. CampusShield creates the secure filename automatically. Use synthetic test data only.</small></div>
+            <div class="field"><label for="identity-student-number">Matriculation / student number *</label><input id="identity-student-number" required maxlength="80" autocomplete="off" placeholder="Enter the number on your student record"><small>Enter it exactly as shown on your university record.</small></div>
+            <div class="field"><label for="identity-document">Student ID card photo or PDF *</label><input id="identity-document" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" required><small>Upload a clear JPG, PNG, or PDF, up to 5 MiB. Make sure your name, institution, and ID details are readable. Your file is uploaded privately for authorized review.</small></div>
+            <div class="field"><label for="identity-fee-receipt">School-fee receipt (optional)</label><input id="identity-fee-receipt" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf"><small>Optional supporting proof only. Upload it only if your student ID is unavailable or the reviewer asks for it. JPG, PNG, or PDF, up to 5 MiB.</small></div>
+            <p class="muted" id="identity-document-privacy-note">Privacy tip: cover bank/card details and unrelated information on receipts before uploading. Never upload passwords, PINs, or full payment-card details.</p>
             <label class="remember-field"><input id="identity-original-document-confirmation" type="checkbox" required> I confirm this is a genuine university-issued document and has not been AI-generated or digitally altered.</label>
             <p class="muted">AI-generated or edited identity images are not accepted. Documents are reviewed by authorized campus staff; this checkbox is an attestation, not an automated AI detector.</p>
             <button class="btn" type="button" id="identity-submit" hidden>Submit for review</button>
@@ -2049,6 +2521,14 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <p>If someone is in immediate danger, contact your campus security control room or local emergency services straight away. This platform records reports — it does not dispatch help.</p>
     <a href="#page-campus-contacts" data-page="campus-contacts">Campus service contacts <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
   </aside>
+</section>
+<section id="role-access-summary" class="role-access-summary" aria-labelledby="role-access-title" hidden>
+  <div class="role-access-topline"><span class="role-access-kicker">YOUR CAMPUSSHIELD ACCESS</span><span id="role-access-status" class="role-access-status">Checking access</span></div>
+  <h2 id="role-access-title">Your access and permissions</h2>
+  <p id="role-access-description">Your available tools depend on your approved system role and verified campus membership.</p>
+  <p id="role-access-position" class="role-access-position" hidden></p>
+  <ul id="role-access-list" class="role-access-list"></ul>
+  <p id="role-access-limit" class="role-access-limit"></p>
 </section>
 <section class="campus-alerts-strip" aria-labelledby="campus-alerts-title">
   <span class="campus-alerts-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 3 20h18L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg></span>
@@ -3324,7 +3804,14 @@ button,input,select,textarea{max-width:100%;min-width:0}
 </section>
 
 
-<div class="footer">CampusShield AI · Demonstration only</div>
+<footer class="app-legal-footer" aria-label="Legal and support links">
+  <span>CampusShield AI · Demonstration only</span>
+  <nav aria-label="Legal and support">
+    <a href="./privacy.html">Privacy Policy</a>
+    <a href="./terms.html">Terms of Use</a>
+    <a href="./contact.html">Contact support</a>
+  </nav>
+</footer>
 </main>
 </div>
 </div>
@@ -3500,6 +3987,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   let campusUniversitiesCache = null;
   let communityLoading = false;
   let studentIdentitySubmission = null;
+  let currentStaffPosition = '';
 
   function hasApprovedStudentIdentity() {
     return isStudentAccount() &&
@@ -3582,6 +4070,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         : state === 'rejected' ? 'Your student ID was rejected. Open Complete student setup to correct it and resubmit.'
         : student ? 'Complete student setup to submit your student ID privately for review.' : '';
     }
+    renderRoleAccessSummary();
     syncNavSectionHeadings();
   }
 
@@ -3604,7 +4093,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const verified = currentProfile?.verification_status === 'verified';
     const staffCampusApproved = hasVerifiedCampusStaffMembership();
     $('approvals-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
-    $('staff-verification-nav').hidden = currentProfile?.role !== 'teacher';
+    $('staff-verification-nav').hidden = !isTeacherAccount();
     $('staff-review-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
     syncNavSectionHeadings();
   }
@@ -3765,12 +4254,97 @@ button,input,select,textarea{max-width:100%;min-width:0}
     });
   });
 
-  function isStudentAccount() {
-    return ['student'].includes(currentProfile?.requested_role || currentProfile?.role);
+  // Database-assigned elevated roles are authoritative; requested metadata is for onboarding only.
+  function getWorkspaceAccountType(profile = currentProfile) {
+    const actualRole = String(profile?.role || '').trim().toLowerCase();
+    if (['admin','security','teacher'].includes(actualRole)) return actualRole;
+    return String(profile?.requested_role || '').trim().toLowerCase() === 'teacher' ? 'teacher' : 'student';
   }
+  function isStudentAccount() { return getWorkspaceAccountType() === 'student'; }
+  function isTeacherAccount() { return getWorkspaceAccountType() === 'teacher'; }
 
-  function isTeacherAccount() {
-    return ['teacher'].includes(currentProfile?.requested_role || currentProfile?.role);
+  function setRoleAccessList(items) {
+    const list = $('role-access-list');
+    if (list) list.replaceChildren(...items.map(text => { const li=document.createElement('li'); li.textContent=text; return li; }));
+  }
+  function renderRoleAccessSummary(metadata = {}) {
+    const panel=$('role-access-summary');
+    if(!panel || !currentProfile){if(panel)panel.hidden=true;return;}
+    panel.hidden=false;
+    const role=String(currentProfile.role||'').toLowerCase();
+    const requested=String(currentProfile.requested_role||metadata.requested_role||'').toLowerCase();
+    const verified=currentProfile.verification_status==='verified';
+    const campusOk=hasVerifiedCampusStaffMembership();
+    const position=String(currentStaffPosition||metadata.campus_position||currentProfile.campus_position||'').trim();
+    const positionLine=$('role-access-position');
+    if(positionLine){positionLine.hidden=!position;positionLine.textContent=position?'Position on record: '+position+'. This is a verification detail, not a permissions grant.':'';}
+    let state='restricted',badge='Limited access',title='Your access and permissions',description='Access depends on the approved system role and verified campus membership.',items=[],limit='A selected title or requested role cannot unlock protected actions. Supabase authorization and the approved account role determine access.';
+    if(!verified){
+      state='pending';badge='Verification pending';
+      if(requested==='teacher'){
+        title='Staff application workspace';
+        description='Your account is not yet approved for protected staff functions. Complete staff identity verification and wait for an authorized campus administrator to review it.';
+        items=['Submit your staff ID, official university email, staff number, or employment evidence through your own staff-verification page.','Use basic account and onboarding screens while the application is pending.','After approval, use the standard staff workspace tools available to verified staff.'];
+        limit='A Vice-Chancellor, Registrar, Dean, Professor, Lecturer, Bursar, Administrative Staff, or Security Staff title does not itself grant administrator or security-console access.';
+      } else {
+        title='Finish account verification';description='Complete your account and student identity steps before relying on protected campus features.';
+        items=['Complete your account and campus identity setup.','Use general academic assistance and basic onboarding screens available to your account.','After approval, use student features enabled for your verified campus membership.'];
+        limit='Protected reports and verified campus services may remain unavailable while verification is pending. CampusShield does not contact emergency services.';
+      }
+    } else if(role==='admin' && campusOk){
+      state='approved';badge='Verified campus administrator';title='Campus administrator workspace';description='You have administrator access for your approved campus, subject to database authorization.';
+      items=['Review campus staff and account-verification applications available to your role.','Use incident management, risk analysis and analytics for your authorized campus.','Use campus administrative controls and institutional billing only where server-side policies permit.'];
+      limit='Platform-wide administration and trusted platform-admin assignments require separate platform-level provisioning. Your campus role does not grant access to another university.';
+    } else if(role==='security' && campusOk){
+      state='approved';badge='Verified campus security';title='Campus safety operations';description='Your approved security role unlocks safety operations for your verified campus.';
+      items=['Review and manage incident reports available to your security role.','Use risk analysis and incident analytics for your authorized campus.','Resolve or update incidents only through actions permitted by your role and database policies.'];
+      limit='Security access does not grant staff-application approvals, institutional billing administration, campus administrator powers, or platform-wide controls.';
+    } else if(role==='teacher' && campusOk){
+      state='approved';badge='Verified university staff';title='University staff workspace';description='Your verified staff workspace is based on the teacher/staff system role, not your job title.';
+      items=['Create and manage classroom spaces where enabled for verified teachers.','Use campus opportunities, community and student-support features available to verified staff.','Publish official campus notices where the feature and campus policies allow it.'];
+      limit='The standard staff role cannot manage/resolve incident reports, access staff-review queues, administer institutional billing, or grant campus/platform administrator access. Security-console access requires a separate security-role assignment.';
+    } else if(['teacher','security','admin'].includes(role) && !campusOk){
+      state='restricted';badge='Campus membership not verified';title='Campus access is not fully enabled';description='Your account exists, but the campus membership required for these tools is not currently verified.';
+      items=['Check your account and identity-verification status.','Contact the authorized administrator for your campus if the membership status is incorrect.','Only use actions currently shown and permitted for your account.'];
+      limit='Incident management, staff review and other campus-scoped privileged actions remain gated until the required membership is approved.';
+    } else {
+      state=verified&&campusOk?'approved':'restricted';badge=verified&&campusOk?'Verified student':'Campus access limited';title='Student campus workspace';description='Use CampusShield for your own campus safety and student-life activity.';
+      items=['Submit and follow up on your own safety reports when the database says your account is eligible.','Use community, groups, events, helpdesk and opportunities available to verified campus members.','Manage your own profile and private account information.'];
+      limit='Students cannot review other users’ private reports, resolve incidents, access staff-only risk analytics, approve staff accounts, or administer campus settings.';
+    }
+    $('role-access-status').textContent=badge;$('role-access-status').dataset.state=state;
+    $('role-access-title').textContent=title;$('role-access-description').textContent=description;setRoleAccessList(items);$('role-access-limit').textContent=limit;
+  }
+  async function loadRoleAccessSummaryContext() {
+    const profileId=currentProfile?.id, backend=window.CampusShieldBackend;
+    if(!backend?.isConfigured){renderRoleAccessSummary();return;}
+    try{
+      const user=await backend.getCurrentUser();
+      if(!currentProfile||(profileId&&currentProfile.id!==profileId))return;
+      const metadata=user?.user_metadata||{};currentStaffPosition=String(metadata.campus_position||'').trim();
+      if(!currentStaffPosition && ['teacher','security'].includes(String(currentProfile.role||'').toLowerCase())){
+        const row=await backend.getMyCampusStaffVerification().catch(()=>null);
+        if(!currentProfile||(profileId&&currentProfile.id!==profileId))return;
+        currentStaffPosition=String(row?.position_title||'').trim();
+      }
+      renderRoleAccessSummary(metadata);
+    }catch(_){renderRoleAccessSummary();}
+  }
+  function updateStaffPositionAccessPreview() {
+    const preview=$('staff-position-access-preview'), role=$('auth-role'), position=String($('auth-staff-position')?.value||'').trim();
+    if(!preview||!role)return;
+    preview.hidden=authMode!=='signup'||role.value!=='teacher';if(preview.hidden)return;
+    const security=position.toLowerCase()==='security staff';
+    const leadership=['vice-chancellor','deputy vice-chancellor','registrar','bursar','university librarian','dean','head of department'].includes(position.toLowerCase());
+    $('staff-position-access-title').textContent=position?position+': access after approval':'What your staff position means';
+    $('staff-position-access-description').textContent=position?'Your selected position is saved for verification. After staff identity and campus membership are approved, the standard staff workspace is enabled.':'Choose your university appointment. Every listed position follows the same staff-verification and least-privilege process.';
+    const items=['Use classroom tools, campus opportunities, student-support features and official notices where enabled for verified staff.','Submit and track your own staff identity-verification application.','See only pages and actions allowed by your approved system role and verified campus membership.'];
+    $('staff-position-access-list').replaceChildren(...items.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
+    $('staff-position-access-limit').textContent=security
+      ? 'Security staff: this title alone does not unlock incident management, report resolution or risk analytics. A trusted administrator must separately provision the security system role.'
+      : leadership
+        ? 'Leadership/administration: this title and the campus-admin request checkbox do not grant campus administrator powers. A separate authorized appointment is required.'
+        : 'A job title never grants incident-management, risk-analysis, staff-approval, institutional-billing or administrator permissions. Those require separate system-role authorization.';
   }
 
   function showWorkspace(profile) {
@@ -3787,7 +4361,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
 
     currentProfile = profile;
+    currentStaffPosition = '';
     studentIdentitySubmission = null;
+    renderRoleAccessSummary();
+    void loadRoleAccessSummaryContext();
     // Hydrate the saved identity immediately so both the profile card and dashboard
     // greeting reflect this signed-in user's own name and private avatar.
     syncDashboardProfileIdentity().catch(() => {});
@@ -3808,7 +4385,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     document.querySelectorAll('[data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
       el.hidden = !canManageIncidents;
     });
-    $('staff-verification-nav').hidden = currentProfile?.role !== 'teacher';
+    $('staff-verification-nav').hidden = !isTeacherAccount();
     $('staff-review-nav').hidden = !(verified && currentProfile.role === 'admin' && hasVerifiedCampusStaffMembership());
     const dashboardTitle = $('page-dashboard h1');
     const dashboardIntro = $('page-dashboard .heading p');
@@ -3968,16 +4545,22 @@ button,input,select,textarea{max-width:100%;min-width:0}
     $('identity-document').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
     $('identity-institution-search').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
     $('identity-original-document-confirmation').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
+    // Refresh role-specific verification guidance in the currently selected language.
+    window.CampusShieldI18n?.apply();
+    updateStaffPositionAccessPreview();
   }
 
   $('auth-role').addEventListener('change', () => {
     syncSignupRoleFields();
+    updateStaffPositionAccessPreview();
     $('signup-student-identity-panel').hidden = authMode !== 'signup' || ($('auth-role').value === 'teacher' && !identityCompletionMode);
     const selected = $('auth-university').selectedOptions?.[0];
     const institution = $('auth-university').value && selected ? selected.textContent.split(' · ')[0] : '';
     $('identity-institution-search').value = institution;
     $('identity-institution').value = institution;
   });
+
+  $('auth-staff-position').addEventListener('change', updateStaffPositionAccessPreview);
 
   $('auth-university').addEventListener('change', () => {
     const selected = $('auth-university').selectedOptions?.[0];
@@ -9644,7 +10227,18 @@ button,input,select,textarea{max-width:100%;min-width:0}
       const {error} = await backend.signIn(email, password);
       if (error) throw error;
 
-      const pendingRole = sessionStorage.getItem('campusshield_requested_role');
+      // Read the authenticated user's metadata before restoring the requested role.
+      // Email-confirmation links often open in a new tab/device where sessionStorage
+      // from the original signup tab is unavailable. Prefer this user's own signup
+      // metadata over any stale role left in the browser from a different account.
+      const user = await backend.getCurrentUser();
+      if (!user) throw new Error('No active user session was found.');
+
+      const metadataRequestedRole = String(user.user_metadata?.requested_role || '').trim().toLowerCase();
+      const storedRequestedRole = sessionStorage.getItem('campusshield_requested_role');
+      const pendingRole = ['student', 'teacher'].includes(metadataRequestedRole)
+        ? metadataRequestedRole
+        : storedRequestedRole;
 
       if (pendingRole && ['student', 'teacher'].includes(pendingRole)) {
         const {error:roleError} = await backend.saveRequestedRole(pendingRole);
@@ -9660,12 +10254,6 @@ button,input,select,textarea{max-width:100%;min-width:0}
         } else {
           sessionStorage.removeItem('campusshield_requested_role');
         }
-      }
-
-      const user = await backend.getCurrentUser();
-
-      if (!user) {
-        throw new Error('No active user session was found.');
       }
 
       const onboarding = user.user_metadata || {};
@@ -9863,6 +10451,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
       $('staff-verification-email').value = meta.campus_official_email || $('staff-verification-email').value || '';
       $('staff-request-campus-admin').checked = Boolean(meta.requested_campus_admin);
       const existing = await window.CampusShieldBackend.getMyCampusStaffVerification();
+      currentStaffPosition = String(existing?.position_title || meta.campus_position || '').trim();
+      renderRoleAccessSummary(meta);
       if (existing?.status === 'pending') {
         status.textContent = 'Your staff application is pending review. You can use the permitted onboarding screens while waiting.';
         form.hidden = true;
@@ -10559,5 +11149,6 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
   });
 }
 </script>
+<script src="./campusshield-i18n.js"></script>
 </body>
 </html>

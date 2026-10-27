@@ -1,0 +1,63 @@
+name: Staging authenticated identity end-to-end
+
+on:
+  push:
+    branches:
+      - codex/fix-registration-confirmation-role
+    paths:
+      - "tests/e2e/staging-identity-e2e.mjs"
+      - ".github/workflows/staging-identity-e2e.yml"
+      - "supabase-config.js"
+      - "supabase/migrations/20261027052000_fix_student_identity_uuid_path_regex.sql"
+      - "supabase/migrations/20261027062000_add_save_my_requested_role_rpc.sql"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-staging-authenticated-identity-e2e
+  cancel-in-progress: false
+
+jobs:
+  authenticated-e2e:
+    name: Confirmation, identity upload, review, and cleanup
+    if: github.ref == 'refs/heads/codex/fix-registration-confirmation-role'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_STAGING_URL: https://hywcpnoqqhxvujnimhxl.supabase.co
+      SUPABASE_STAGING_ANON_KEY: sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP
+      SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate staging-only target and secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_STAGING_URL" || { echo "::error::Staging URL must be present in this workflow."; exit 1; }
+          test -n "$SUPABASE_STAGING_ANON_KEY" || { echo "::error::Staging publishable key must be present in this workflow."; exit 1; }
+          test -n "$SUPABASE_STAGING_SERVICE_ROLE_KEY" || { echo "::error::Add repository secret SUPABASE_STAGING_SERVICE_ROLE_KEY (staging project only)."; exit 1; }
+          actual_ref="$(node -e 'const u=new URL(process.env.SUPABASE_STAGING_URL); if(u.protocol!=="https:") process.exit(2); const m=u.hostname.match(/^([a-z0-9]+)\.supabase\.co$/); if(!m) process.exit(2); process.stdout.write(m[1])')"
+          if [ "$actual_ref" != "hywcpnoqqhxvujnimhxl" ]; then
+            echo "::error::Refusing to run: configured Supabase project is not the approved staging project."
+            exit 1
+          fi
+          echo "Staging project reference verified; credential values will not be printed."
+
+      - name: Install pinned Supabase client
+        run: npm install --no-save --no-package-lock @supabase/supabase-js@2.95.0
+
+      - name: Run authenticated staging E2E
+        env:
+          SUPABASE_STAGING_URL: https://hywcpnoqqhxvujnimhxl.supabase.co
+          SUPABASE_STAGING_ANON_KEY: sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP
+          SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
+        run: node tests/e2e/staging-identity-e2e.mjs
