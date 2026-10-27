@@ -564,7 +564,7 @@ assert.match(profileAvatarRlsFixMigration, /storage\.foldername\(name\).*auth\.u
 assert.match(profileAvatarRlsFixMigration, /image\/jpeg.*image\/png.*image\/webp/s, "avatar uploads remain restricted to supported image MIME types");
 assert.match(studentIdentityPathFixMigration, /\[\.\]\(jpg\|jpeg\|png\|pdf\)/, "student identity validation accepts UUID filenames with supported document extensions");
 assert.match(studentIdentityPathFixMigration, /p\.role='student' and p\.requested_role='student'/, "student identity submission remains limited to student accounts");
-assert.match(studentIdentityPathFixMigration, /v_user_id::text \|\| '\/'/, "student identity path remains scoped to the authenticated user");
+assert.ok(studentIdentityPathFixMigration.includes("'^' || v_user_id::text || '/"), "student identity path remains scoped to the authenticated user");
 assert.match(profileIdentityMigration, /security definer/i, "profile identity update RPC is database-owned");
 assert.match(profileIdentityMigration, /grant execute on function public\.update_my_profile_identity\(text,text,boolean\) to authenticated/i, "profile identity RPC is granted only to signed-in users");
 assert.match(profileIdentityMigration, /campus_profile_avatar_upload_own/, "avatar upload is scoped to the current user's folder");
