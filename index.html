@@ -9644,7 +9644,18 @@ button,input,select,textarea{max-width:100%;min-width:0}
       const {error} = await backend.signIn(email, password);
       if (error) throw error;
 
-      const pendingRole = sessionStorage.getItem('campusshield_requested_role');
+      // Read the authenticated user's metadata before restoring the requested role.
+      // Email-confirmation links often open in a new tab/device where sessionStorage
+      // from the original signup tab is unavailable. Prefer this user's own signup
+      // metadata over any stale role left in the browser from a different account.
+      const user = await backend.getCurrentUser();
+      if (!user) throw new Error('No active user session was found.');
+
+      const metadataRequestedRole = String(user.user_metadata?.requested_role || '').trim().toLowerCase();
+      const storedRequestedRole = sessionStorage.getItem('campusshield_requested_role');
+      const pendingRole = ['student', 'teacher'].includes(metadataRequestedRole)
+        ? metadataRequestedRole
+        : storedRequestedRole;
 
       if (pendingRole && ['student', 'teacher'].includes(pendingRole)) {
         const {error:roleError} = await backend.saveRequestedRole(pendingRole);
@@ -9660,12 +9671,6 @@ button,input,select,textarea{max-width:100%;min-width:0}
         } else {
           sessionStorage.removeItem('campusshield_requested_role');
         }
-      }
-
-      const user = await backend.getCurrentUser();
-
-      if (!user) {
-        throw new Error('No active user session was found.');
       }
 
       const onboarding = user.user_metadata || {};
