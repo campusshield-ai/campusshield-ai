@@ -543,6 +543,9 @@ for (const providerQuotaCode of [
 ]) assert.ok(shieldmindFunction.includes(`"${providerQuotaCode}"`), `ShieldMind classifies ${providerQuotaCode}`);
 assert.match(shieldmindFunction, /"Retry-After": retryAfter/);
 assert.match(shieldmindFunction, /ShieldMind usage quota check failed/,"usage RPC failures have a safe diagnostic log");
+assert.match(shieldmindFunction, /ShieldMind image quota check failed/, "image quota failures are attributed without logging user content");
+assert.match(shieldmindFunction, /errorName: _error instanceof Error/, "unexpected runtime diagnostics record only an error class");
+assert.doesNotMatch(shieldmindFunction, /console\\.(?:log|warn|error)\\([^\\n]*(?:question|messages|providerKey|Authorization|data_base64)/i, "diagnostic logs exclude prompts, secrets, and uploaded-image payloads");
 assert.match(shieldmindFunction, /ShieldMind provider billing or usage limit reached/,"provider quota errors are distinguishable in server logs");
 assert.match(shieldmindFunction, /ShieldMind provider rate limit returned/,"provider rate limits are logged separately");
 assert.match(shieldmindFunction, /ShieldMind provider returned a non-success response/,"provider server errors record status and structured code only");
