@@ -221,6 +221,19 @@ assert.match(backend, /reporter_id:\s*user\.id/);
 assert.match(backend, /client\.auth\.getUser\(\)/);
 assert.match(backend, /update\(\{\s*status\s*\}/);
 assert.match(html, /function canManageIncidents\(\)/);
+assert.match(html, /function getWorkspaceAccountType\(profile = currentProfile\)/, "workspace classification is explicit");
+assert.match(html, /if \(\['admin','security','teacher'\]\.includes\(actualRole\)\) return actualRole/, "assigned elevated roles override requested onboarding metadata");
+assert.match(html, /function renderRoleAccessSummary\(metadata = \{\}\)/, "signed-in users receive a role and verification access summary");
+assert.match(html, /function updateStaffPositionAccessPreview\(\)/, "staff position chooser previews post-approval access");
+assert.match(html, /Security staff: this title alone does not unlock incident management/, "security job title does not grant the security console");
+assert.match(html, /this title and the campus-admin request checkbox do not grant campus administrator powers/, "leadership titles and admin requests do not self-grant admin permissions");
+assert.match(html, /role==='security' && campusOk/, "security operations require the assigned security role and verified campus membership");
+assert.match(html, /role==='teacher' && campusOk/, "staff workspace requires the assigned teacher role and verified campus membership");
+assert.ok((html.match(/\$\('staff-verification-nav'\)\.hidden = !isTeacherAccount\(\);/g) || []).length >= 2, "pending staff applicants can reach their own verification page");
+for (const position of ["Vice-Chancellor","Deputy Vice-Chancellor","Registrar","Bursar","University Librarian","Dean","Head of Department","Professor","Lecturer","Administrative staff","Security staff","Other university employee"]) {
+  assert.ok(html.includes("<option>" + position + "</option>"), "staff position option is present: " + position);
+}
+
 assert.match(html, /\['security', 'admin'\]\.includes\(currentProfile\.role\)/);
 assert.match(html, /if \(!canManageIncidents\(\)\)/);
 assert.match(html, /const total = incidents\.length/);
