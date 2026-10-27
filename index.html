@@ -2064,6 +2064,70 @@ button,input,select,textarea{max-width:100%;min-width:0}
   @media(max-width:390px){#login-screen .login-language select{max-width:112px;font-size:10px}}
   html[dir="rtl"] #login-screen .login-language{flex-direction:row}
 </style>
+
+<style id="campusshield-verification-responsive-fix">
+  /* Keep the verification heading from inheriting the workspace's multi-column heading layout. */
+  #login-screen .signup-student-identity-panel,
+  #login-screen .signup-student-identity-panel>.heading,
+  #login-screen .signup-student-identity-panel>.panel,
+  #login-screen #studentIdentityForm{width:100%;max-width:100%;min-width:0}
+  #login-screen .signup-student-identity-panel>.heading{
+    display:block!important;align-items:initial;justify-content:initial;flex:none;
+    padding:0 0 20px;margin:0 0 20px;border-bottom:1px solid #dce7e2;
+  }
+  #login-screen .signup-student-identity-panel>.heading h2{
+    display:block;width:100%;max-width:100%;margin:0 0 9px;
+    font-size:clamp(24px,3vw,34px);line-height:1.16;letter-spacing:-.04em;
+    overflow-wrap:normal;word-break:normal;
+  }
+  #login-screen .signup-student-identity-panel>.heading p{
+    display:block;width:100%;max-width:720px;margin:0;font-size:14px;line-height:1.6;
+    overflow-wrap:break-word;
+  }
+  #login-screen .signup-verification-guidance{
+    margin:10px 0 15px;padding:12px 14px;border:1px solid #cfe7df;border-radius:12px;
+    background:#f1faf6;color:#365f5b;font-size:12px;line-height:1.6;
+  }
+  #login-screen .signup-verification-guidance:before{
+    content:"VERIFICATION GUIDE";display:block;margin-bottom:4px;color:#187a6a;
+    font-size:9px;font-weight:900;letter-spacing:.14em;
+  }
+  #login-screen #studentIdentityForm{
+    grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;
+  }
+  #login-screen #studentIdentityForm>*{min-width:0}
+  #login-screen #studentIdentityForm input,
+  #login-screen #studentIdentityForm select,
+  #login-screen #studentIdentityForm textarea{max-width:100%;min-width:0}
+  @media(max-width:820px){
+    #login-screen .signup-student-identity-panel{padding:clamp(13px,3vw,20px);border-radius:16px}
+    #login-screen .signup-student-identity-panel>.heading{display:block!important;padding-bottom:17px;margin-bottom:17px}
+    #login-screen .signup-student-identity-panel>.heading h2{font-size:clamp(23px,5.5vw,30px);line-height:1.2;letter-spacing:-.035em}
+    #login-screen .signup-student-identity-panel>.heading p{font-size:13px}
+    #login-screen .signup-student-identity-panel>.panel{padding:clamp(12px,3vw,18px)}
+    #login-screen #studentIdentityForm{grid-template-columns:minmax(0,1fr);gap:0;padding:clamp(12px,3vw,18px);border-radius:14px}
+    #login-screen #studentIdentityForm>*,
+    #login-screen #studentIdentityForm>.field:has(#identity-document),
+    #login-screen #identity-verification-status,
+    #login-screen #studentIdentityForm .remember-field,
+    #login-screen #studentIdentityForm>p.muted,
+    #login-screen #studentIdentityForm>.actions,
+    #login-screen #studentIdentityForm>button{grid-column:1/-1}
+    #login-screen #studentIdentityForm>.field{width:100%;margin:6px 0 12px}
+    #login-screen #studentIdentityForm>.field label{overflow-wrap:break-word}
+    #login-screen #studentIdentityForm>.field input:not([type="file"]),
+    #login-screen #studentIdentityForm>.field select,
+    #login-screen #studentIdentityForm>.field textarea{width:100%;font-size:16px}
+    #login-screen #studentIdentityForm>.field:has(#identity-document) input[type="file"]{width:100%;min-height:64px;padding:11px;font-size:13px}
+  }
+  @media(max-width:390px){
+    #login-screen .signup-student-identity-panel{padding:12px}
+    #login-screen .signup-student-identity-panel>.heading h2{font-size:23px}
+    #login-screen .signup-verification-guidance{padding:10px 11px;font-size:11px}
+    #login-screen #studentIdentityForm{padding:11px}
+  }
+</style>
+
 </head>
 <body>
 
@@ -2205,6 +2269,22 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <option value="sw" lang="sw">Kiswahili</option>
         <option value="ar" lang="ar">العربية</option>
         <option value="zh" lang="zh-CN">简体中文</option>
+        <option value="de" lang="de">Deutsch</option>
+        <option value="hi" lang="hi">हिन्दी</option>
+        <option value="ja" lang="ja">日本語</option>
+        <option value="ko" lang="ko">한국어</option>
+        <option value="ru" lang="ru">Русский</option>
+        <option value="bn" lang="bn">বাংলা</option>
+        <option value="id" lang="id">Bahasa Indonesia</option>
+        <option value="it" lang="it">Italiano</option>
+        <option value="nl" lang="nl">Nederlands</option>
+        <option value="tr" lang="tr">Türkçe</option>
+        <option value="ur" lang="ur">اردو</option>
+        <option value="vi" lang="vi">Tiếng Việt</option>
+        <option value="th" lang="th">ไทย</option>
+        <option value="fil" lang="fil">Filipino</option>
+        <option value="fa" lang="fa">فارسی</option>
+        <option value="pl" lang="pl">Polski</option>
       </select>
     </label>
     <a class="login-official-link" href="https://campusshield-ai.github.io/campusshield-ai/" target="_blank" rel="noopener noreferrer"><span data-i18n="officialText">Visit Official Site</span> <span aria-hidden="true">↗</span></a>
@@ -2231,6 +2311,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
           <div class="field"><label for="auth-name">Full name *</label><input id="auth-name" autocomplete="name" required maxlength="120" placeholder="Your official full name"></div>
           <div class="field"><label for="auth-username">Public username *</label><input id="auth-username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required placeholder="e.g. CampusGuardian"><p class="muted">3–20 letters, numbers, or underscores. Other students see this username, not your real name or email.</p></div>
           <div class="field"><label for="auth-role">Campus account type *</label><select id="auth-role" required><option value="student">Student</option><option value="teacher">Teacher / university staff</option></select><p class="muted">Choose the role that matches your institution. Staff applications require separate verification.</p></div>
+          <div id="signup-verification-guidance" class="signup-verification-guidance" role="status" aria-live="polite">Students submit a student ID or matriculation document for review. Teachers and university staff submit staff ID or employment evidence after account creation and sign-in. Administrator access is assigned separately by an authorized platform administrator.</div>
           <div class="field institution-picker-field"><label for="auth-university-search">University or institution *</label><input id="auth-university-search" type="search" list="auth-university-suggestions" autocomplete="off" placeholder="Start typing your university name…" aria-describedby="auth-university-help" required><datalist id="auth-university-suggestions"></datalist><select id="auth-university" class="institution-id-select" aria-label="Selected university record" tabindex="-1" aria-hidden="true"><option value="">Loading university directory…</option></select><p class="muted" id="auth-university-help">Type to search the campus directory, then choose an exact match. Your campus membership is verified separately.</p><p class="message" id="auth-university-search-status" role="status" aria-live="polite"></p></div>
           <div id="signup-student-fields">
             <div class="field"><label for="auth-faculty">Faculty / school *</label><input id="auth-faculty" maxlength="120" required placeholder="e.g. Faculty of Engineering"></div>
@@ -2247,7 +2328,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
           </div>
           </div>
 <div class="signup-student-identity-panel" id="signup-student-identity-panel" hidden>
-  <div class="heading"><h2>Student identity document</h2><p>Submit your student ID or matriculation document during account setup for identity verification.</p></div>
+  <div class="heading"><h2>Student identity verification</h2><p>This upload step is for student accounts. Teachers and university staff use the separate staff identity-verification workflow after signing in.</p></div>
   <div class="panel">
           <p id="identity-verification-status" class="message" role="status" aria-live="polite">Loading your submission status…</p>
           <div id="studentIdentityForm">
