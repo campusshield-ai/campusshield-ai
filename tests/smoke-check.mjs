@@ -80,6 +80,24 @@ assert.match(privacyPage, /OpenAI/, "privacy page identifies the configured Shie
 assert.match(privacyPage, /Paystack/, "privacy page identifies the optional payment provider");
 assert.match(termsPage, /public-facing project name should not be treated as proof of company registration/, "terms page does not falsely assert a registered legal entity");
 
+assert.match(html, /id="signup-verification-guidance"/, "signup explains role-specific identity verification");
+assert.match(html, /This upload step is for student accounts/, "student identity upload is clearly student-specific");
+assert.match(html, /id="campusStaffVerificationForm"/, "staff have a separate identity evidence form");
+assert.match(html, /Staff identity verification/, "staff verification workflow is named for non-student applicants");
+assert.match(html, /campusshield-verification-responsive-fix/, "responsive verification layout override is present");
+assert.match(html, /signup-student-identity-panel>\\.heading\\{[\\s\\S]*?display:block!important/, "identity heading is stacked instead of inheriting the workspace's side-by-side heading");
+assert.match(html, /@media\\(max-width:820px\\)[\\s\\S]*?#studentIdentityForm\\{grid-template-columns:minmax\\(0,1fr\\)/, "identity fields stack before phone/tablet content becomes cramped");
+assert.match(i18nScript, /EXTRA_TRANSLATIONS\\[currentLocale\\]/, "additional language translations are available");
+assert.match(i18nScript, /studentVerificationGuide/, "student verification guidance is translated");
+assert.match(i18nScript, /staffVerificationGuide/, "staff verification guidance is translated");
+assert.match(i18nScript, /\\["ar","fa","ur"\\]\\.includes\\(locale\\)/, "right-to-left language direction is configured");
+assert.equal((html.match(/<option value="(?:en|yo|ha|ig|fr|es|pt|sw|ar|zh|de|hi|ja|ko|ru|bn|id|it|nl|tr|ur|vi|th|fil|fa|pl)"/g)||[]).length, 26, "language menu contains 26 distinct language options");
+assert.match(i18nScript, /\\["de","Deutsch","Deutsch"\\]/, "German is selectable");
+assert.match(i18nScript, /\\["hi","हिन्दी","हिन्दी"\\]/, "Hindi is selectable");
+assert.match(i18nScript, /\\["ja","日本語","日本語"\\]/, "Japanese is selectable");
+assert.match(i18nScript, /\\["ur","اردو","اردو"\\]/, "Urdu is selectable");
+
+
 
 for (const [index, source] of inlineScripts.entries()) {
   assert.doesNotThrow(() => new Function(source), `inline script ${index + 1} parses`);
