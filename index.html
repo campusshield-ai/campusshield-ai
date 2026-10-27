@@ -2132,6 +2132,20 @@ button,input,select,textarea{max-width:100%;min-width:0}
   #login-screen .login-language select{appearance:none;-webkit-appearance:none;padding-inline-end:14px!important;background-color:transparent}
 </style>
 
+<style id="campusshield-role-capabilities-style">
+.staff-position-access-preview,.role-access-summary{min-width:0;padding:16px 18px;border:1px solid #cfe8e0;border-radius:15px;background:linear-gradient(145deg,#f4fbf8,#fff);color:#173b43}
+.staff-position-access-preview{margin:4px 0 14px}.staff-position-access-preview h3,.role-access-summary h2{margin:3px 0 8px;color:#123348;font-size:clamp(17px,2vw,21px);line-height:1.25;letter-spacing:-.03em}
+.staff-position-access-preview p,.role-access-summary p{margin:6px 0;color:#566e7b;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.staff-position-access-preview .staff-access-kicker,.role-access-kicker{color:#078b77;font-size:9px;font-weight:950;letter-spacing:.16em;text-transform:uppercase}
+.staff-position-access-preview ul,.role-access-list{display:grid;gap:7px;margin:11px 0;padding:0;list-style:none}
+.staff-position-access-preview li,.role-access-list li{position:relative;padding-left:21px;color:#294957;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.staff-position-access-preview li::before,.role-access-list li::before{content:"✓";position:absolute;left:0;top:0;color:#078b77;font-weight:950}
+.staff-position-access-preview .staff-access-limit,.role-access-summary .role-access-limit{margin-top:10px;padding:11px 12px;border:1px solid #f0dfba;border-radius:10px;background:#fff9ec;color:#75591f;font-size:11px;line-height:1.55}
+.role-access-summary{margin:0 0 20px;padding:18px 20px;box-shadow:0 12px 30px #173b4310}.role-access-topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.role-access-status{display:inline-flex;align-items:center;max-width:100%;padding:5px 9px;border:1px solid #d9e5eb;border-radius:999px;background:#fff;color:#506b7c;font-size:10px;font-weight:850;overflow-wrap:anywhere}
+.role-access-status[data-state="approved"]{border-color:#bfe8d9;background:#eaf9f2;color:#08745f}.role-access-status[data-state="pending"]{border-color:#f1dfb9;background:#fff7e6;color:#86601e}
+@media(max-width:650px){.staff-position-access-preview,.role-access-summary{padding:14px;border-radius:13px}.role-access-summary{margin-bottom:16px}.staff-position-access-preview li,.role-access-list li{font-size:11px}}
+</style>
 </head>
 <body>
 
@@ -2324,7 +2338,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
             <div class="field"><label for="auth-year-of-study">Current level / year *</label><select id="auth-year-of-study" required><option value="">Choose your level</option><option>100 Level</option><option>200 Level</option><option>300 Level</option><option>400 Level</option><option>500 Level</option><option>600 Level</option><option>Postgraduate Diploma</option><option>Masters</option><option>Doctoral</option><option>Other</option></select></div>
           </div>
           <div id="signup-staff-fields" hidden>
-            <div class="field"><label for="auth-staff-position">Official university position *</label><select id="auth-staff-position"><option value="">Choose your position</option><option>Vice-Chancellor</option><option>Deputy Vice-Chancellor</option><option>Registrar</option><option>Bursar</option><option>University Librarian</option><option>Dean</option><option>Head of Department</option><option>Professor</option><option>Lecturer</option><option>Administrative staff</option><option>Security staff</option><option>Other university employee</option></select><p class="muted">Your title is reviewed and does not automatically grant administrator permissions.</p></div>
+            <div class="field"><label for="auth-staff-position">Official university position *</label><select id="auth-staff-position"><option value="">Choose your position</option><option>Vice-Chancellor</option><option>Deputy Vice-Chancellor</option><option>Registrar</option><option>Bursar</option><option>University Librarian</option><option>Dean</option><option>Head of Department</option><option>Professor</option><option>Lecturer</option><option>Administrative staff</option><option>Security staff</option><option>Other university employee</option></select><p class="muted">Your title is recorded for verification. Access depends on your approved system role and campus membership, not your title.</p></div>
+<section id="staff-position-access-preview" class="staff-position-access-preview" role="status" aria-live="polite" hidden><p class="staff-access-kicker">ACCESS AFTER SIGN-IN</p><h3 id="staff-position-access-title">What your staff position means</h3><p id="staff-position-access-description">Your selected position helps reviewers understand your application. All listed positions start with the same standard staff application.</p><ul id="staff-position-access-list"></ul><p id="staff-position-access-limit" class="staff-access-limit">A job title or checkbox never grants security, administrator, or platform-wide permissions.</p></section>
             <div class="field"><label for="auth-staff-number">Staff / employee ID number</label><input id="auth-staff-number" maxlength="80" placeholder="If available"></div>
             <div class="field"><label for="auth-official-email">Official university email</label><input id="auth-official-email" type="email" maxlength="254" placeholder="name@university.edu.ng"><p class="muted">A university email helps review your application, but may not be available to every employee. You can submit a staff ID after sign-in.</p></div>
             <label class="remember-field"><input type="checkbox" id="auth-request-campus-admin"> Request consideration for university administrator access</label>
@@ -2488,6 +2503,14 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <p>If someone is in immediate danger, contact your campus security control room or local emergency services straight away. This platform records reports — it does not dispatch help.</p>
     <a href="#page-campus-contacts" data-page="campus-contacts">Campus service contacts <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
   </aside>
+</section>
+<section id="role-access-summary" class="role-access-summary" aria-labelledby="role-access-title" hidden>
+  <div class="role-access-topline"><span class="role-access-kicker">YOUR CAMPUSSHIELD ACCESS</span><span id="role-access-status" class="role-access-status">Checking access</span></div>
+  <h2 id="role-access-title">Your access and permissions</h2>
+  <p id="role-access-description">Your available tools depend on your approved system role and verified campus membership.</p>
+  <p id="role-access-position" class="role-access-position" hidden></p>
+  <ul id="role-access-list" class="role-access-list"></ul>
+  <p id="role-access-limit" class="role-access-limit"></p>
 </section>
 <section class="campus-alerts-strip" aria-labelledby="campus-alerts-title">
   <span class="campus-alerts-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 3 20h18L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg></span>
@@ -3939,6 +3962,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   let campusUniversitiesCache = null;
   let communityLoading = false;
   let studentIdentitySubmission = null;
+  let currentStaffPosition = '';
 
   function hasApprovedStudentIdentity() {
     return isStudentAccount() &&
@@ -4021,6 +4045,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         : state === 'rejected' ? 'Your student ID was rejected. Open Complete student setup to correct it and resubmit.'
         : student ? 'Complete student setup to submit your student ID privately for review.' : '';
     }
+    renderRoleAccessSummary();
     syncNavSectionHeadings();
   }
 
@@ -4043,7 +4068,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     const verified = currentProfile?.verification_status === 'verified';
     const staffCampusApproved = hasVerifiedCampusStaffMembership();
     $('approvals-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
-    $('staff-verification-nav').hidden = currentProfile?.role !== 'teacher';
+    $('staff-verification-nav').hidden = !isTeacherAccount();
     $('staff-review-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
     syncNavSectionHeadings();
   }
@@ -4204,12 +4229,97 @@ button,input,select,textarea{max-width:100%;min-width:0}
     });
   });
 
-  function isStudentAccount() {
-    return ['student'].includes(currentProfile?.requested_role || currentProfile?.role);
+  // Database-assigned elevated roles are authoritative; requested metadata is for onboarding only.
+  function getWorkspaceAccountType(profile = currentProfile) {
+    const actualRole = String(profile?.role || '').trim().toLowerCase();
+    if (['admin','security','teacher'].includes(actualRole)) return actualRole;
+    return String(profile?.requested_role || '').trim().toLowerCase() === 'teacher' ? 'teacher' : 'student';
   }
+  function isStudentAccount() { return getWorkspaceAccountType() === 'student'; }
+  function isTeacherAccount() { return getWorkspaceAccountType() === 'teacher'; }
 
-  function isTeacherAccount() {
-    return ['teacher'].includes(currentProfile?.requested_role || currentProfile?.role);
+  function setRoleAccessList(items) {
+    const list = $('role-access-list');
+    if (list) list.replaceChildren(...items.map(text => { const li=document.createElement('li'); li.textContent=text; return li; }));
+  }
+  function renderRoleAccessSummary(metadata = {}) {
+    const panel=$('role-access-summary');
+    if(!panel || !currentProfile){if(panel)panel.hidden=true;return;}
+    panel.hidden=false;
+    const role=String(currentProfile.role||'').toLowerCase();
+    const requested=String(currentProfile.requested_role||metadata.requested_role||'').toLowerCase();
+    const verified=currentProfile.verification_status==='verified';
+    const campusOk=hasVerifiedCampusStaffMembership();
+    const position=String(currentStaffPosition||metadata.campus_position||currentProfile.campus_position||'').trim();
+    const positionLine=$('role-access-position');
+    if(positionLine){positionLine.hidden=!position;positionLine.textContent=position?'Position on record: '+position+'. This is a verification detail, not a permissions grant.':'';}
+    let state='restricted',badge='Limited access',title='Your access and permissions',description='Access depends on the approved system role and verified campus membership.',items=[],limit='A selected title or requested role cannot unlock protected actions. Supabase authorization and the approved account role determine access.';
+    if(!verified){
+      state='pending';badge='Verification pending';
+      if(requested==='teacher'){
+        title='Staff application workspace';
+        description='Your account is not yet approved for protected staff functions. Complete staff identity verification and wait for an authorized campus administrator to review it.';
+        items=['Submit your staff ID, official university email, staff number, or employment evidence through your own staff-verification page.','Use basic account and onboarding screens while the application is pending.','After approval, use the standard staff workspace tools available to verified staff.'];
+        limit='A Vice-Chancellor, Registrar, Dean, Professor, Lecturer, Bursar, Administrative Staff, or Security Staff title does not itself grant administrator or security-console access.';
+      } else {
+        title='Finish account verification';description='Complete your account and student identity steps before relying on protected campus features.';
+        items=['Complete your account and campus identity setup.','Use general academic assistance and basic onboarding screens available to your account.','After approval, use student features enabled for your verified campus membership.'];
+        limit='Protected reports and verified campus services may remain unavailable while verification is pending. CampusShield does not contact emergency services.';
+      }
+    } else if(role==='admin' && campusOk){
+      state='approved';badge='Verified campus administrator';title='Campus administrator workspace';description='You have administrator access for your approved campus, subject to database authorization.';
+      items=['Review campus staff and account-verification applications available to your role.','Use incident management, risk analysis and analytics for your authorized campus.','Use campus administrative controls and institutional billing only where server-side policies permit.'];
+      limit='Platform-wide administration and trusted platform-admin assignments require separate platform-level provisioning. Your campus role does not grant access to another university.';
+    } else if(role==='security' && campusOk){
+      state='approved';badge='Verified campus security';title='Campus safety operations';description='Your approved security role unlocks safety operations for your verified campus.';
+      items=['Review and manage incident reports available to your security role.','Use risk analysis and incident analytics for your authorized campus.','Resolve or update incidents only through actions permitted by your role and database policies.'];
+      limit='Security access does not grant staff-application approvals, institutional billing administration, campus administrator powers, or platform-wide controls.';
+    } else if(role==='teacher' && campusOk){
+      state='approved';badge='Verified university staff';title='University staff workspace';description='Your verified staff workspace is based on the teacher/staff system role, not your job title.';
+      items=['Create and manage classroom spaces where enabled for verified teachers.','Use campus opportunities, community and student-support features available to verified staff.','Publish official campus notices where the feature and campus policies allow it.'];
+      limit='The standard staff role cannot manage/resolve incident reports, access staff-review queues, administer institutional billing, or grant campus/platform administrator access. Security-console access requires a separate security-role assignment.';
+    } else if(['teacher','security','admin'].includes(role) && !campusOk){
+      state='restricted';badge='Campus membership not verified';title='Campus access is not fully enabled';description='Your account exists, but the campus membership required for these tools is not currently verified.';
+      items=['Check your account and identity-verification status.','Contact the authorized administrator for your campus if the membership status is incorrect.','Only use actions currently shown and permitted for your account.'];
+      limit='Incident management, staff review and other campus-scoped privileged actions remain gated until the required membership is approved.';
+    } else {
+      state=verified&&campusOk?'approved':'restricted';badge=verified&&campusOk?'Verified student':'Campus access limited';title='Student campus workspace';description='Use CampusShield for your own campus safety and student-life activity.';
+      items=['Submit and follow up on your own safety reports when the database says your account is eligible.','Use community, groups, events, helpdesk and opportunities available to verified campus members.','Manage your own profile and private account information.'];
+      limit='Students cannot review other users’ private reports, resolve incidents, access staff-only risk analytics, approve staff accounts, or administer campus settings.';
+    }
+    $('role-access-status').textContent=badge;$('role-access-status').dataset.state=state;
+    $('role-access-title').textContent=title;$('role-access-description').textContent=description;setRoleAccessList(items);$('role-access-limit').textContent=limit;
+  }
+  async function loadRoleAccessSummaryContext() {
+    const profileId=currentProfile?.id, backend=window.CampusShieldBackend;
+    if(!backend?.isConfigured){renderRoleAccessSummary();return;}
+    try{
+      const user=await backend.getCurrentUser();
+      if(!currentProfile||(profileId&&currentProfile.id!==profileId))return;
+      const metadata=user?.user_metadata||{};currentStaffPosition=String(metadata.campus_position||'').trim();
+      if(!currentStaffPosition && ['teacher','security'].includes(String(currentProfile.role||'').toLowerCase())){
+        const row=await backend.getMyCampusStaffVerification().catch(()=>null);
+        if(!currentProfile||(profileId&&currentProfile.id!==profileId))return;
+        currentStaffPosition=String(row?.position_title||'').trim();
+      }
+      renderRoleAccessSummary(metadata);
+    }catch(_){renderRoleAccessSummary();}
+  }
+  function updateStaffPositionAccessPreview() {
+    const preview=$('staff-position-access-preview'), role=$('auth-role'), position=String($('auth-staff-position')?.value||'').trim();
+    if(!preview||!role)return;
+    preview.hidden=authMode!=='signup'||role.value!=='teacher';if(preview.hidden)return;
+    const security=position.toLowerCase()==='security staff';
+    const leadership=['vice-chancellor','deputy vice-chancellor','registrar','bursar','university librarian','dean','head of department'].includes(position.toLowerCase());
+    $('staff-position-access-title').textContent=position?position+': access after approval':'What your staff position means';
+    $('staff-position-access-description').textContent=position?'Your selected position is saved for verification. After staff identity and campus membership are approved, the standard staff workspace is enabled.':'Choose your university appointment. Every listed position follows the same staff-verification and least-privilege process.';
+    const items=['Use classroom tools, campus opportunities, student-support features and official notices where enabled for verified staff.','Submit and track your own staff identity-verification application.','See only pages and actions allowed by your approved system role and verified campus membership.'];
+    $('staff-position-access-list').replaceChildren(...items.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
+    $('staff-position-access-limit').textContent=security
+      ? 'Security staff: this title alone does not unlock incident management, report resolution or risk analytics. A trusted administrator must separately provision the security system role.'
+      : leadership
+        ? 'Leadership/administration: this title and the campus-admin request checkbox do not grant campus administrator powers. A separate authorized appointment is required.'
+        : 'A job title never grants incident-management, risk-analysis, staff-approval, institutional-billing or administrator permissions. Those require separate system-role authorization.';
   }
 
   function showWorkspace(profile) {
@@ -4226,7 +4336,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
     }
 
     currentProfile = profile;
+    currentStaffPosition = '';
     studentIdentitySubmission = null;
+    renderRoleAccessSummary();
+    void loadRoleAccessSummaryContext();
     // Hydrate the saved identity immediately so both the profile card and dashboard
     // greeting reflect this signed-in user's own name and private avatar.
     syncDashboardProfileIdentity().catch(() => {});
@@ -4247,7 +4360,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     document.querySelectorAll('[data-page="manage"], [data-page="risk"], [data-page="analytics"]').forEach(el => {
       el.hidden = !canManageIncidents;
     });
-    $('staff-verification-nav').hidden = currentProfile?.role !== 'teacher';
+    $('staff-verification-nav').hidden = !isTeacherAccount();
     $('staff-review-nav').hidden = !(verified && currentProfile.role === 'admin' && hasVerifiedCampusStaffMembership());
     const dashboardTitle = $('page-dashboard h1');
     const dashboardIntro = $('page-dashboard .heading p');
@@ -4409,16 +4522,20 @@ button,input,select,textarea{max-width:100%;min-width:0}
     $('identity-original-document-confirmation').required = Boolean((enabled && !isTeacher) || identityCompletionMode);
     // Refresh role-specific verification guidance in the currently selected language.
     window.CampusShieldI18n?.apply();
+    updateStaffPositionAccessPreview();
   }
 
   $('auth-role').addEventListener('change', () => {
     syncSignupRoleFields();
+    updateStaffPositionAccessPreview();
     $('signup-student-identity-panel').hidden = authMode !== 'signup' || ($('auth-role').value === 'teacher' && !identityCompletionMode);
     const selected = $('auth-university').selectedOptions?.[0];
     const institution = $('auth-university').value && selected ? selected.textContent.split(' · ')[0] : '';
     $('identity-institution-search').value = institution;
     $('identity-institution').value = institution;
   });
+
+  $('auth-staff-position').addEventListener('change', updateStaffPositionAccessPreview);
 
   $('auth-university').addEventListener('change', () => {
     const selected = $('auth-university').selectedOptions?.[0];
@@ -10309,6 +10426,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
       $('staff-verification-email').value = meta.campus_official_email || $('staff-verification-email').value || '';
       $('staff-request-campus-admin').checked = Boolean(meta.requested_campus_admin);
       const existing = await window.CampusShieldBackend.getMyCampusStaffVerification();
+      currentStaffPosition = String(existing?.position_title || meta.campus_position || '').trim();
+      renderRoleAccessSummary(meta);
       if (existing?.status === 'pending') {
         status.textContent = 'Your staff application is pending review. You can use the permitted onboarding screens while waiting.';
         form.hidden = true;
