@@ -32,6 +32,7 @@ const profileIdentityMigration = await readFile(new URL("../supabase/migrations/
 const profileAvatarStorageMigration = await readFile(new URL("../supabase/migrations/20261026230000_fix_profile_avatar_storage_policy_permissions.sql", import.meta.url), "utf8");
 const profileAvatar20MbMigration = await readFile(new URL("../supabase/migrations/20261027001000_profile_avatar_20mb.sql", import.meta.url), "utf8");
 const profileAvatarPathFixMigration = await readFile(new URL("../supabase/migrations/20261027030000_fix_profile_avatar_path_validation.sql", import.meta.url), "utf8");
+const profileAvatarRlsFixMigration = await readFile(new URL("../supabase/migrations/20261027032000_fix_profile_avatar_upload_rls_size_check.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -552,6 +553,10 @@ assert.match(html, /rpc\('update_my_profile_identity'/, "profile identity saves 
 assert.match(profileIdentityMigration, /add column if not exists avatar_path text/i, "profile table stores avatar object path");
 assert.match(profileIdentityMigration, /create or replace function public\.update_my_profile_identity/i, "profile identity RPC exists");
 assert.match(profileAvatarPathFixMigration, /\[\.\]\(jpg\|png\|webp\)/, "avatar path validation accepts generated UUID filenames with supported image extensions");
+assert.match(profileAvatarRlsFixMigration, /file_size_limit|Storage enforces the bucket/i, "avatar upload size is enforced by the private bucket limit");
+assert.doesNotMatch(profileAvatarRlsFixMigration, /metadata ->> 'size'/, "avatar upload RLS does not reject files when Storage size metadata is absent");
+assert.match(profileAvatarRlsFixMigration, /storage\.foldername\(name\).*auth\.uid/s, "avatar uploads remain restricted to the owner folder");
+assert.match(profileAvatarRlsFixMigration, /image\/jpeg.*image\/png.*image\/webp/s, "avatar uploads remain restricted to supported image MIME types");
 assert.match(profileIdentityMigration, /security definer/i, "profile identity update RPC is database-owned");
 assert.match(profileIdentityMigration, /grant execute on function public\.update_my_profile_identity\(text,text,boolean\) to authenticated/i, "profile identity RPC is granted only to signed-in users");
 assert.match(profileIdentityMigration, /campus_profile_avatar_upload_own/, "avatar upload is scoped to the current user's folder");
