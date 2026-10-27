@@ -1847,7 +1847,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   #login-screen .login-hero-copy{position:relative;z-index:2;max-width:760px;margin-top:clamp(15px,3vh,34px)}
   #login-screen .eyebrow{margin:0;color:#48e4ca;font-size:10px;letter-spacing:.2em;font-weight:900}
   #login-screen .login-hero-copy h1{max-width:760px;margin:15px 0 17px;color:#f7fbff;font-size:clamp(36px,4vw,64px);font-weight:850;line-height:1.01;letter-spacing:-.065em;text-wrap:balance}
-  #login-screen .login-hero-copy h1 span{color:#18d9b5}
+  #login-screen .login-hero-copy h1 .hero-highlight{color:#18d9b5}
   #login-screen .login-hero-description{max-width:590px;margin:0;color:#c5d7e8;font-size:clamp(13px,1.18vw,16px);line-height:1.7}
   #login-screen .login-visual{position:absolute;z-index:0;pointer-events:none;right:-5%;top:17%;width:min(49%,560px);opacity:.86;filter:drop-shadow(0 14px 38px #02152255)}
   #login-screen .login-visual svg{display:block;width:100%;height:auto}
@@ -2055,6 +2055,15 @@ button,input,select,textarea{max-width:100%;min-width:0}
   }
 </style>
 
+<style id="campusshield-language-picker-style">
+  #login-screen .login-language{display:inline-flex;align-items:center;gap:8px;min-width:0}
+  #login-screen .login-language select{max-width:clamp(105px,11vw,165px);min-width:0;min-height:40px;padding:7px 24px 7px 1px;border:0;border-radius:8px;background:transparent;color:#324e65;font:inherit;font-weight:750;cursor:pointer;outline-offset:3px}
+  #login-screen .login-language select option{background:#fff;color:#17314d;font-weight:600}
+  #login-screen .login-language select:focus-visible{outline:2px solid #11a98f}
+  @media(max-width:650px){#login-screen .login-language select{max-width:130px;min-height:40px;font-size:11px}}
+  @media(max-width:390px){#login-screen .login-language select{max-width:112px;font-size:10px}}
+  html[dir="rtl"] #login-screen .login-language{flex-direction:row}
+</style>
 </head>
 <body>
 
@@ -2078,7 +2087,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
     <div class="login-hero-copy" id="login-about">
       <p class="eyebrow">INTELLIGENT CAMPUS SAFETY</p>
-      <h1>Safer Campuses.<br><span>Stronger Communities.</span><br>Brighter Futures.</h1>
+      <h1><span data-i18n="heroOne">Safer Campuses.</span><br><span class="hero-highlight" data-i18n="heroTwo">Stronger Communities.</span><br><span data-i18n="heroThree">Brighter Futures.</span></h1>
       <p class="login-hero-description">CampusShield AI brings campus safety, community, opportunities and support together in one trusted platform for students, staff and university communities.</p>
     </div>
 
@@ -2176,18 +2185,29 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <a href="https://x.com/CampusShieldAI" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI on X" title="X">𝕏</a>
         <a href="https://www.instagram.com/campusshieldai/" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI on Instagram" title="Instagram">◎</a>
         <a href="https://www.linkedin.com/in/campusshield-ai-technologies-857b83446" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI Technologies on LinkedIn" title="LinkedIn">in</a>
-        <a class="login-social-pending" href="https://www.tiktok.com/search?q=CampusShield%20AI" target="_blank" rel="noopener noreferrer" aria-label="Search TikTok for CampusShield AI; official profile not confirmed" title="Search TikTok (official profile not confirmed)">♪</a>
       </nav>
     </footer>
   </div>
   <div class="login-form-wrap">
 
   <div class="login-right-top">
-    <span class="login-language" aria-label="Interface language">
+    <label class="login-language" for="campusshield-language">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-      English
-    </span>
-    <a class="login-official-link" href="https://campusshield-ai.github.io/campusshield-ai/" target="_blank" rel="noopener noreferrer">Visit Official Site <span aria-hidden="true">↗</span></a>
+      <span id="campusshield-language-label" class="sr-only">Choose language</span>
+      <select id="campusshield-language" aria-label="Choose language">
+        <option value="en" lang="en">English</option>
+        <option value="yo" lang="yo">Yorùbá</option>
+        <option value="ha" lang="ha">Hausa</option>
+        <option value="ig" lang="ig">Igbo</option>
+        <option value="fr" lang="fr">Français</option>
+        <option value="es" lang="es">Español</option>
+        <option value="pt" lang="pt">Português</option>
+        <option value="sw" lang="sw">Kiswahili</option>
+        <option value="ar" lang="ar">العربية</option>
+        <option value="zh" lang="zh-CN">简体中文</option>
+      </select>
+    </label>
+    <a class="login-official-link" href="https://campusshield-ai.github.io/campusshield-ai/" target="_blank" rel="noopener noreferrer"><span data-i18n="officialText">Visit Official Site</span> <span aria-hidden="true">↗</span></a>
   </div>
     <section class="panel auth-panel">
       <p class="auth-kicker">CAMPUSSHIELD ACCESS</p>
@@ -10898,5 +10918,6 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
   });
 }
 </script>
+<script src="./campusshield-i18n.js"></script>
 </body>
 </html>
