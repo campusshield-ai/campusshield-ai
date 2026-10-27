@@ -65,8 +65,11 @@ test("landing page fits phone, tablet, iPad, laptop and desktop viewports", asyn
     expect(metrics.featureGrid.right, `${viewport.name}: feature cards must stay within the right edge`).toBeLessThanOrEqual(viewport.width + 1);
     expect(metrics.featureColumns, `${viewport.name}: feature card columns`).toBe(viewport.featureColumns);
     expect(metrics.layoutColumns, `${viewport.name}: landing/form layout columns`).toBe(viewport.layoutColumns);
-    if (viewport.width > 650 && viewport.width <= 960) {
-      expect(metrics.illustrationDisplay, `${viewport.name}: illustration must not collide with tablet headline`).toBe("none");
+    if (viewport.width > 650 && viewport.width <= 1440) {
+      expect(metrics.illustrationDisplay, `${viewport.name}: illustration must not collide with tablet/laptop headline`).toBe("none");
+    }
+    if (viewport.width >= 1441) {
+      expect(metrics.illustrationDisplay, `${viewport.name}: illustration remains available on wide desktop`).not.toBe("none");
     }
 
     if (["phone-390", "ipad-portrait", "ipad-landscape", "laptop", "desktop"].includes(viewport.name)) {
