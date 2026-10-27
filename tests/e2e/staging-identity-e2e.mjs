@@ -135,6 +135,8 @@ async function cleanup() {
   }
 
   for (const [userId, metadata] of createdUsers) {
+    const scanDelete = await admin.from("student_identity_upload_scans").delete().eq("user_id", userId);
+    if (scanDelete.error) cleanupErrors.push("identity scan-record cleanup failed");
     const identityDelete = await admin.from("student_identity_verifications").delete().eq("user_id", userId);
     if (identityDelete.error) cleanupErrors.push("identity-record cleanup failed");
     const membershipDelete = await admin.from("campus_memberships").delete().eq("user_id", userId);
