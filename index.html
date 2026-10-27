@@ -1876,6 +1876,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
   #login-screen .login-series-detail-grid strong{font-size:11px;color:#eaf9ff}
   #login-screen .login-series-detail-grid p{margin:4px 0 0;color:#b7cfdd;font-size:10px;line-height:1.45}
   #login-screen .login-landing-footer{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#9ab4c8;font-size:10px}
+  #login-screen .login-footer-links{display:flex;align-items:center;justify-content:center;gap:clamp(9px,1.4vw,16px);flex-wrap:wrap}
+  #login-screen .login-footer-links a{color:#aac5d5;text-decoration:none;font-size:10px;font-weight:650;white-space:nowrap;transition:color .16s ease}
+  #login-screen .login-footer-links a:hover,#login-screen .login-footer-links a:focus-visible{color:#57ead0;text-decoration:underline;text-underline-offset:3px}
+  @media(max-width:650px){#login-screen .login-footer-links{order:3;width:100%;justify-content:flex-start;gap:16px}#login-screen .login-landing-footer{column-gap:10px;row-gap:10px}}
   #login-screen .login-social-links{display:flex;align-items:center;gap:8px}
   #login-screen .login-social-links a{display:grid;place-items:center;width:34px;height:34px;border:1px solid #b8e2e421;border-radius:10px;background:#ffffff08;color:#e8f8ff;text-decoration:none;font-size:13px;font-weight:800;transition:background .18s ease,border-color .18s ease}
   #login-screen .login-social-links a:hover{background:#0a9f8a4a;border-color:#4ddfca6b}
@@ -2141,6 +2145,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
     <footer class="login-landing-footer">
       <span>© 2026 CampusShield AI. All rights reserved.</span>
+      <nav class="login-footer-links" aria-label="Legal and support links">
+        <a href="./privacy.html">Privacy</a>
+        <a href="./terms.html">Terms</a>
+        <a href="./contact.html">Contact</a>
+      </nav>
       <nav class="login-social-links" aria-label="CampusShield social profiles">
         <a href="https://x.com/CampusShieldAI" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI on X" title="X">𝕏</a>
         <a href="https://www.instagram.com/campusshieldai/" target="_blank" rel="noopener noreferrer" aria-label="CampusShield AI on Instagram" title="Instagram">◎</a>
