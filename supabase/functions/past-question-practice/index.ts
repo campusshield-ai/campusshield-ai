@@ -94,6 +94,10 @@ async function requireEligibleUser(req: Request, supabaseUrl: string, anonKey: s
   });
   const { data: { user }, error: authError } = await userClient.auth.getUser();
   if (authError || !user) throw new Error("Your session could not be confirmed. Sign in again.");
+  const { data: hasExamPrepAccess, error: eligibilityError } = await userClient.rpc("past_question_exam_prep_access");
+  if (eligibilityError || hasExamPrepAccess !== true) {
+    throw new Error("Complete all required identity and campus verification steps before using exam preparation.");
+  }
   const { data: profile, error: profileError } = await service
     .from("profiles").select("id,university_id,role,verification_status,department,faculty,year_of_study")
     .eq("id", user.id).maybeSingle();
