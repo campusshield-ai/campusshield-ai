@@ -1953,6 +1953,14 @@ button,input,select,textarea{max-width:100%;min-width:0}
     #login-screen .auth-role-option{min-height:58px}
     #login-screen .auth-tabs{margin:10px 0}
   }
+  /* On short landscape laptop/tablet screens, let the page scroll naturally.
+     Avoid putting the sign-in submit button below a nested, clipped auth card. */
+  @media (min-width:961px) and (max-height:780px){
+    #login-screen.login-screen{align-items:start}
+    #login-screen .login-form-wrap{display:block;min-height:100svh;padding-top:12px;padding-bottom:20px;overflow:visible}
+    #login-screen .login-right-top{margin-bottom:12px}
+    #login-screen .auth-panel{max-height:none;overflow:visible;margin:0 auto}
+  }
   @media (max-width:1200px) and (min-width:961px){
     #login-screen.login-screen{grid-template-columns:minmax(0,1.2fr) minmax(400px,.95fr)}
     #login-screen .login-intro{padding-left:clamp(22px,3vw,40px);padding-right:clamp(22px,3vw,40px)}
