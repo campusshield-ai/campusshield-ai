@@ -35,8 +35,11 @@
     <article>
       <h1>Privacy Notice</h1>
       <p class="muted">Last updated: 27 October 2026</p>
-      <p>This notice explains, in plain language, the categories of information CampusShield AI may handle and why. CampusShield AI is a developing campus safety and student-life platform. The exact features and service providers available can differ between staging previews and an approved production deployment.</p>
-      <div class="notice"><strong>Staging safety:</strong> Do not upload real student IDs, personal incident details, or other sensitive personal information to a staging or preview environment. Use fictional test data there.</div>
+      <p>This notice describes the CampusShield AI service as currently implemented in the repository and the integrations that may be enabled. Features, hosting and processors can differ between preview and production deployments.</p>
+      <div class="notice"><strong>Development-stage notice:</strong> Do not upload real student IDs, incident details, or other sensitive personal information to staging or preview environments. Use fictional test data only. This page is an interim operational notice, not a substitute for legal review before public production use.</div>
+
+      <h2>Who operates the service?</h2>
+      <p><strong>Public project/contact name:</strong> CampusShield AI Technologies. <strong>Privacy contact:</strong> <a href="mailto:campusshieldaitechnologies@gmail.com?subject=CampusShield%20AI%20privacy%20request">campusshieldaitechnologies@gmail.com</a>. The project materials available for this deployment do not confirm a registered legal entity name, registration number, registered address, or designated statutory data-protection contact. We do not claim that the public-facing project name is a registered company. Those details must be verified and published by the operator before production launch.</p>
 
       <h2>1. Information you provide</h2>
       <ul>
@@ -48,12 +51,24 @@
       </ul>
 
       <h2>2. Information handled by the service</h2>
-      <p>Authentication, hosting, and security providers may process technical information such as request timestamps, browser/session information, diagnostic events, and security logs. The app may also use device-local storage for settings or limited app functionality. The exact technical data depends on the features and providers enabled for the deployment you use.</p>
+      <p>Authentication, hosting and security components may process request timestamps, browser/session information, technical diagnostics and security logs. The app uses device-local storage for limited settings and session-related functionality. Technical details and data flows depend on which integrations are enabled in the deployment you use.</p>
 
-      <h2>3. Why information is used</h2>
+      <h2>3. Service providers and when they may receive data</h2>
+      <p>The current code identifies the following services. Inclusion here does not mean every optional integration is enabled in every environment.</p>
+      <ul>
+        <li><strong>GitHub Pages and Vercel:</strong> serve the public website or development/preview deployments. Hosting providers may process normal request and deployment logs.</li>
+        <li><strong>Supabase:</strong> provides application authentication, database, private object storage and server-side functions. Account/profile data, campus membership, safety reports, identity-review records, and notification subscription records may be stored in the configured Supabase project.</li>
+        <li><strong>OpenAI:</strong> ShieldMind sends a user's permitted academic question and selected chat history to the OpenAI API when the server-side OpenAI key is configured and the request passes the app's checks. Where the user has verified campus access, excerpts from approved public campus pages may also be included. Do not submit sensitive information; automated checks cannot guarantee that every sensitive detail is detected.</li>
+        <li><strong>Paystack:</strong> if checkout is enabled, the billing function sends the confirmed account email, plan/amount/currency, payment reference and checkout metadata for transaction initiation and verification. Payment processing is subject to Paystack's own terms and privacy notice.</li>
+        <li><strong>Google and Supabase Auth email delivery:</strong> Google sign-in is optional and is only available where configured. Account confirmation and recovery emails are handled through Supabase Auth and the email-delivery configuration for that project; the configured SMTP/email vendor was not identifiable from the repository review.</li>
+        <li><strong>Browser push infrastructure:</strong> when a user enables background notifications, the app stores a push subscription with the configured backend and sends generic notification messages through web-push. The relevant browser/platform push service may process the subscription endpoint and delivery request.</li>
+      </ul>
+      <p>We did not verify the final production provider configuration, provider contracts, data-processing terms, or data-residency settings from repository code alone. Confirm them in the actual production dashboards before launch.</p>
+
+      <h2>4. Why information is used</h2>
       <p>Information may be used to create and secure accounts, maintain campus membership, review identity or staff applications, receive and route reports to authorized reviewers, operate community features, send requested service notifications, prevent abuse, troubleshoot failures, and meet applicable legal or security obligations.</p>
 
-      <h2>4. Who may see information</h2>
+      <h2>5. Who may see information</h2>
       <ul>
         <li>Authorized campus reviewers may access information necessary for their assigned verification, incident, or support responsibilities, subject to configured access controls.</li>
         <li>Public or community content may be visible to other users when you submit or publish it in a feature designed for sharing. Do not place private information in public posts.</li>
@@ -62,20 +77,28 @@
       </ul>
       <p>Access depends on configuration and authorization rules; choosing a role on a sign-in screen does not itself grant the role's permissions.</p>
 
-      <h2>5. AI features and external services</h2>
+      <h2>6. AI features and external services</h2>
       <p>If an AI assistant or other AI-powered feature is enabled and you use it, the text or context you submit may be sent to the AI provider configured for that feature so it can produce a response. Avoid including unnecessary sensitive details. AI output can be incomplete or wrong and is not a substitute for human review or professional advice. If Google sign-in or payment checkout is enabled, those services are governed by their own privacy notices and terms.</p>
 
-      <h2>6. Retention and security</h2>
-      <p>Information is retained for as long as needed to operate the service, complete review and follow-up, maintain security, resolve disputes, or meet applicable obligations. Retention periods may differ for account records, incident reports, community posts, and identity documents. A precise retention schedule and the final list of production processors must be confirmed before broad public launch.</p>
-      <p>CampusShield AI is designed to use authentication, role-based access, database policies, and private storage for sensitive submissions. No online service can guarantee absolute security. Never send passwords or secret keys to support.</p>
+      <h2>7. Retention and security</h2>
+      <p><strong>No fixed, time-based retention schedule was verified in the project materials.</strong> Therefore this notice does not promise deletion after a specific number of days. At present, records may remain in the configured services while they are needed to operate accounts, review incidents or identity applications, preserve safety/audit history, reconcile payments, or address security and legal obligations. Backups and provider logs may follow separate service-specific retention settings.</p>
+      <ul>
+        <li><strong>Accounts and profiles:</strong> no published automatic deletion timeline was verified.</li>
+        <li><strong>Safety reports, identity-review records and community moderation:</strong> no universal expiration period was verified; retention must be set according to approved safety, review and legal requirements.</li>
+        <li><strong>Payment records:</strong> retained in accordance with the enabled billing workflow and applicable accounting requirements; no exact period is stated here.</li>
+        <li><strong>Push subscriptions:</strong> intended to be removed when a user disables the feature or the subscription is invalidated, subject to the configured implementation.</li>
+        <li><strong>Hosting, database and security logs/backups:</strong> governed in part by the configured service-provider settings, which must be checked in the relevant dashboards.</li>
+      </ul>
+      <p>This is a disclosure of what is currently known, not a claim that a retention policy has been fully implemented. The operator must approve and publish category-specific retention periods, deletion processes, backup windows and exception handling before public production launch.</p>
+      <p>CampusShield AI is designed to use authentication, role-based access, database policies and private storage for sensitive submissions. No online service can guarantee absolute security. Never send passwords or secret keys to support.</p>
 
-      <h2>7. Your choices and requests</h2>
+      <h2>8. Your choices and requests</h2>
       <p>You can review or update available profile fields in the app. For access, correction, or deletion requests, contact <a href="mailto:campusshieldaitechnologies@gmail.com?subject=CampusShield%20AI%20privacy%20request">campusshieldaitechnologies@gmail.com</a> from the account address where possible. We may need to verify your request and may retain some records where required for safety, security, or legal reasons.</p>
 
-      <h2>8. Emergency limitations</h2>
+      <h2>9. Emergency limitations</h2>
       <p>CampusShield AI is not an emergency dispatch service and does not automatically contact emergency services. In immediate danger, contact your campus security control room or the appropriate local emergency service directly.</p>
 
-      <h2>9. Updates and questions</h2>
+      <h2>10. Updates and questions</h2>
       <p>This notice may be updated as the product and its providers change. Material updates should be reflected here before production use. For privacy questions, contact <a href="./contact.html">CampusShield AI support</a>.</p>
     </article>
     <footer><span>© 2026 CampusShield AI</span><nav aria-label="Legal"><a href="./privacy.html" aria-current="page">Privacy</a><a href="./terms.html">Terms</a><a href="./contact.html">Contact</a></nav></footer>
