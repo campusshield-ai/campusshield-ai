@@ -498,4 +498,19 @@ using (
   and (storage.foldername(name))[1] = (select auth.uid())::text
 );
 
+
+-- Public invoker wrapper lets Edge Functions enforce the same database eligibility rule
+-- used by row policies, including any identity-verification requirements.
+create or replace function public.past_question_exam_prep_access()
+returns boolean
+language sql
+stable
+security invoker
+set search_path = public, pg_temp
+as $function$
+  select coalesce((select private.current_user_has_verified_campus_access()), false);
+$function$;
+revoke all on function public.past_question_exam_prep_access() from public, anon;
+grant execute on function public.past_question_exam_prep_access() to authenticated;
+
 commit;
