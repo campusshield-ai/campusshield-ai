@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: campusshield-staging-identity-{{ github.ref }}
+  group: campusshield-staging-identity-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
