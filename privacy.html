@@ -24,6 +24,16 @@
     footer{display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;margin:20px 2px;color:var(--muted);font-size:12px}footer nav{display:flex;gap:14px;flex-wrap:wrap}
     @media(max-width:520px){.top{padding:22px 18px}article{padding:20px 17px;border-radius:15px}main{width:min(100% - 22px,900px);margin:16px auto 28px}.button{flex:1 1 auto}}
   </style>
+
+<style id="campusshield-responsive-navigation-polish">
+  footer nav a{display:inline-flex;align-items:center;min-height:36px;padding:4px 0}
+  @media(max-width:640px){
+    footer{align-items:flex-start;flex-direction:column;gap:8px}
+    footer nav{width:100%;justify-content:flex-start;column-gap:14px;row-gap:4px}
+    footer nav a{min-height:40px}
+  }
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}
+</style>
 </head>
 <body>
   <header class="top">
