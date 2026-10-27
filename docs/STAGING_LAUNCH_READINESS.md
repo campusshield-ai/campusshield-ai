@@ -55,12 +55,11 @@ Code can indicate possible integrations, but it cannot prove which settings/cont
 
 The website's Privacy Notice describes providers visible from the current code and explicitly says that optional services may not be enabled. Update it only after these facts are confirmed.
 
-## 5. TikTok profile
+## 5. Social profiles
 
-The UI currently opens TikTok search for “CampusShield AI” and labels it as search; it does not claim that search results are an official account. No official profile URL was verifiable from the project links available during this review.
+The project owner has confirmed that CampusShield AI does not currently have TikTok or YouTube pages. Those links are intentionally omitted from the landing page and Contact page; they are not launch blockers. Do not create or label a social profile as official unless the owner later supplies and verifies the exact URL.
 
-- [ ] The account owner supplies or confirms the exact TikTok profile URL.
-- [ ] Verify that the profile is controlled by CampusShield AI before replacing the search link with an official-profile label.
+The current configured social links are the official website, X, Instagram, and LinkedIn.
 
 ## 6. Release decision
 
