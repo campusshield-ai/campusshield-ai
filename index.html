@@ -3201,30 +3201,30 @@ button,input,select,textarea{max-width:100%;min-width:0}
 </section>
 
 <section class="page" id="page-shieldmind">
-  <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · LEARNING ASSISTANT</span><h1>Meet ShieldMind AI</h1><p>Study support for campus life. Official university answers will only appear when trusted campus sources are available.</p></div></div>
-  <div class="shieldmind-hero"><div class="shieldmind-mark" aria-hidden="true">✦</div><div><h2>Your campus learning companion</h2><p>Ask an academic question, explore a topic, or get a study plan. Official university answers are only provided when approved campus sources support them.</p></div></div>
-  <div class="notice-inline" id="shieldmind-access-notice" role="status" aria-live="polite">ShieldMind AI is available in the live workspace. Sending questions requires a verified CampusShield account and an active, verified university membership. Student accounts must also have approved student identity verification.</div>
+  <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · LEARNING ASSISTANT</span><h1>ShieldMind AI</h1><p>Study smarter with clear safeguards for campus information.</p></div></div>
+  <div class="shieldmind-hero"><div class="shieldmind-mark" aria-hidden="true">✦</div><div><h2>Study smarter with ShieldMind</h2><p>Ask questions, explore topics and plan revision. Campus answers require approved university sources.</p></div></div>
+  <div class="notice-inline" id="shieldmind-access-notice" role="status" aria-live="polite">AI requests need a verified account and university membership. Students also need approved identity verification.</div>
 
   <section class="shieldmind-plan panel" aria-labelledby="shieldmind-plan-heading">
     <div class="shieldmind-plan-copy">
       <span class="shieldmind-pill">YOUR PLAN</span>
-      <h2 id="shieldmind-plan-heading">Your ShieldMind plan</h2>
-      <p>Stay here to study with ShieldMind AI. Compare Free and premium limits, renew access, and manage payments on the dedicated Subscriptions &amp; billing page.</p>
+      <h2 id="shieldmind-plan-heading">Your plan</h2>
+      <p>Manage AI limits and payments from Subscriptions &amp; billing.</p>
       <p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p>
       <div class="actions"><button class="btn" type="button" data-page="billing">View plans &amp; subscriptions</button></div>
     </div>
   </section>
-  <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Start with a general academic question.</p></div><span class="shieldmind-pill">LIVE AI SERVICE</span></div>
-    <div class="notice-inline">ShieldMind will not guess official university policies or deadlines. Official answers require approved campus source pages.</div>
+  <div class="shieldmind-grid"><section class="panel"><div class="panel-heading"><div><h2>Ask ShieldMind</h2><p>Ask a question or explore a topic.</p></div><span class="shieldmind-pill">LIVE AI SERVICE</span></div>
+    <div class="notice-inline">Official policies and deadlines require approved campus sources.</div>
     <div id="shieldmind-messages" class="shieldmind-messages" aria-live="polite"><article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Hi! Ask a general academic question. Verified campus-policy answers are unavailable until approved official sources are connected.</p></article></div>
-    <form id="shieldmind-form"><div class="field"><label for="shieldmind-question">Your question</label><textarea id="shieldmind-question" required maxlength="1200" placeholder="e.g. Explain photosynthesis in simple steps…" rows="3"></textarea><p class="muted">Do not enter safety reports, ID details, passwords, medical details, or other private student information.</p></div>
+    <form id="shieldmind-form"><div class="field"><label for="shieldmind-question">Your question</label><textarea id="shieldmind-question" required maxlength="1200" placeholder="e.g. Explain photosynthesis in simple steps…" rows="3"></textarea><p class="muted">Never enter safety reports, IDs, passwords, medical details or private student records.</p></div>
       <div class="field">
         <label for="shieldmind-image">Optional study image (JPG, PNG or WebP · max 2.5 MB)</label>
         <input id="shieldmind-image" type="file" accept="image/jpeg,image/png,image/webp">
         <label class="shieldmind-image-confirm"><input id="shieldmind-image-confirm" type="checkbox"> I confirm this image contains only academic learning material and no student IDs, passwords, private records, medical details or other personal information.</label>
-        <p class="muted">Images are sent to the AI provider for the answer and are not saved in CampusShield storage. Paid monthly image limits are enforced by the staging server.</p>
+        <p class="muted">Images go to the AI provider, are not saved in CampusShield storage, and follow server-enforced monthly limits.</p>
       </div><div class="actions"><button class="btn" type="submit" id="shieldmind-submit">Ask ShieldMind</button><button class="btn secondary" type="button" id="shieldmind-clear">Clear chat</button></div><p id="shieldmind-status" class="message" role="status" aria-live="polite">Ready for a general academic question.</p></form></section>
-    <aside class="panel"><h2>Study tools</h2><p class="muted">Quick prompts for the next rollout stage.</p>
+    <aside class="panel"><h2>Study tools</h2><p class="muted">Quick study shortcuts.</p>
       <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Create a one-week revision plan for a subject I name. Ask me for the subject and available study hours."><span>01</span><div><strong>Revision planner</strong><small>Turn study goals into manageable sessions</small></div><b>›</b></button>
       <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me create practice quiz questions from a topic I provide. Ask me the subject, level, and number of questions."><span>02</span><div><strong>Practice quizzes</strong><small>Review a topic with self-test questions</small></div><b>›</b></button>
       <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me produce structured study notes for a topic I provide. Ask me the subject and level."><span>03</span><div><strong>Study notes</strong><small>Organise key ideas and definitions</small></div><b>›</b></button>
@@ -11369,6 +11369,69 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
  #studentIdentityForm > .field label { font-size:11px; }
  #studentIdentityForm input[type=file] { min-height:35px; font-size:10px; }
  #studentIdentityForm input[type=file]::file-selector-button { padding:4px 6px; }
+}
+</style>
+
+
+<style id="shieldmind-compact-polish">
+/* ShieldMind AI: compact, responsive learning workspace. */
+#page-shieldmind > .heading{margin-bottom:12px}
+#page-shieldmind > .heading h1{font-size:clamp(24px,2.6vw,31px);letter-spacing:-.045em}
+#page-shieldmind > .heading p{margin-top:5px;max-width:62ch}
+#page-shieldmind .shieldmind-hero{gap:12px;padding:13px 16px;margin-bottom:12px;border-radius:15px}
+#page-shieldmind .shieldmind-mark{width:42px;height:42px;flex:0 0 42px;border-radius:12px;font-size:23px}
+#page-shieldmind .shieldmind-hero h2{font-size:15px;margin:0 0 3px}
+#page-shieldmind .shieldmind-hero p{font-size:11px;line-height:1.45}
+#page-shieldmind #shieldmind-access-notice{margin-bottom:12px;padding:10px 13px;font-size:11px;line-height:1.45}
+#page-shieldmind .shieldmind-plan{padding:13px 16px;margin-bottom:12px;border-radius:15px}
+#page-shieldmind .shieldmind-plan .shieldmind-plan-copy h2{font-size:16px;margin:7px 0 3px}
+#page-shieldmind .shieldmind-plan .shieldmind-plan-copy>p:not(.message){max-width:68ch;margin:3px 0 7px;font-size:11px;line-height:1.45}
+#page-shieldmind #shieldmind-plan-status{min-height:0;margin:4px 0 7px;font-size:11px}
+#page-shieldmind .shieldmind-plan .btn{min-height:35px;padding:7px 11px}
+#page-shieldmind .shieldmind-grid{grid-template-columns:minmax(0,1.55fr) minmax(270px,.8fr);gap:14px}
+#page-shieldmind .shieldmind-grid>.panel{min-width:0;padding:18px}
+#page-shieldmind .shieldmind-grid .panel-heading{margin-bottom:10px;gap:10px}
+#page-shieldmind .shieldmind-grid .panel-heading h2,
+#page-shieldmind .shieldmind-grid>aside>h2{font-size:16px}
+#page-shieldmind .shieldmind-grid .panel-heading p,
+#page-shieldmind .shieldmind-grid>aside>p{font-size:11px;margin:3px 0 0}
+#page-shieldmind .shieldmind-messages{min-height:112px;max-height:300px;gap:8px;padding:11px;border-radius:12px}
+#page-shieldmind .shieldmind-message{max-width:96%;padding:10px 12px;border-radius:11px}
+#page-shieldmind .shieldmind-message p{font-size:12px;line-height:1.5}
+#page-shieldmind #shieldmind-form .field{margin:10px 0}
+#page-shieldmind #shieldmind-form .field>label:not(.shieldmind-image-confirm){margin-bottom:5px}
+#page-shieldmind #shieldmind-question{min-height:88px;height:96px;max-height:190px;padding:10px 12px;resize:vertical}
+#page-shieldmind #shieldmind-form .muted{margin:6px 0;font-size:10.5px;line-height:1.45}
+#page-shieldmind #shieldmind-image{display:block;width:100%;max-width:100%;min-width:0;min-height:40px;padding:7px 9px;border:1px dashed #c9ded6;border-radius:10px;background:#f8fbf9;font-size:11px}
+#page-shieldmind #shieldmind-image::file-selector-button{margin-right:8px;padding:6px 9px;border:1px solid #d6e4de;border-radius:7px;background:#fff;color:#24474d;font:inherit;font-weight:650;cursor:pointer}
+#page-shieldmind .field label.shieldmind-image-confirm{display:flex;align-items:flex-start;gap:8px;margin:9px 0 6px;font-size:10.5px;line-height:1.45;font-weight:650}
+#page-shieldmind #shieldmind-image-confirm{appearance:auto;display:inline-block;flex:0 0 16px;width:16px!important;min-width:16px;max-width:16px;height:16px;min-height:16px!important;margin:2px 0 0;padding:0;border:0;border-radius:3px;box-shadow:none;background:initial}
+#page-shieldmind #shieldmind-form .actions{gap:8px}
+#page-shieldmind #shieldmind-form .actions .btn{min-height:38px;padding:8px 12px}
+#page-shieldmind #shieldmind-status{min-height:16px;margin:8px 0 0;font-size:11px}
+#page-shieldmind .shieldmind-tool{gap:9px;padding:9px 0}
+#page-shieldmind .shieldmind-tool>span{width:30px;height:30px;flex-basis:30px;border-radius:9px}
+#page-shieldmind .shieldmind-tool strong{font-size:11px}
+#page-shieldmind .shieldmind-tool small{font-size:10px;line-height:1.4}
+#page-shieldmind .shieldmind-guardrail{margin-top:12px;padding:11px;border-radius:11px}
+#page-shieldmind .shieldmind-guardrail p{font-size:10px;line-height:1.45}
+#page-shieldmind .shieldmind-planner-panel{margin-top:14px;padding:18px}
+#page-shieldmind .shieldmind-planner-panel .panel-heading{margin-bottom:10px}
+#page-shieldmind .shieldmind-disclaimer{margin:10px 0 0;font-size:10px}
+@media(max-width:900px){
+ #page-shieldmind .shieldmind-grid{grid-template-columns:minmax(0,1fr)}
+ #page-shieldmind .shieldmind-grid>aside{display:block}
+}
+@media(max-width:520px){
+ #page-shieldmind > .heading h1{font-size:24px}
+ #page-shieldmind .shieldmind-hero{align-items:flex-start;padding:11px 12px}
+ #page-shieldmind .shieldmind-grid>.panel{padding:14px}
+ #page-shieldmind .shieldmind-messages{min-height:105px;max-height:250px;padding:9px}
+ #page-shieldmind #shieldmind-question{height:100px}
+ #page-shieldmind #shieldmind-form .actions .btn{flex:1 1 135px}
+}
+@media(prefers-reduced-motion:reduce){
+ #page-shieldmind *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
 }
 </style>
 
