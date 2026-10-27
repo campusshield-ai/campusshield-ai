@@ -33,6 +33,7 @@ const profileAvatarStorageMigration = await readFile(new URL("../supabase/migrat
 const profileAvatar20MbMigration = await readFile(new URL("../supabase/migrations/20261027001000_profile_avatar_20mb.sql", import.meta.url), "utf8");
 const profileAvatarPathFixMigration = await readFile(new URL("../supabase/migrations/20261027030000_fix_profile_avatar_path_validation.sql", import.meta.url), "utf8");
 const profileAvatarRlsFixMigration = await readFile(new URL("../supabase/migrations/20261027032000_fix_profile_avatar_upload_rls_size_check.sql", import.meta.url), "utf8");
+const studentIdentityPathFixMigration = await readFile(new URL("../supabase/migrations/20261027052000_fix_student_identity_uuid_path_regex.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -561,6 +562,9 @@ assert.match(profileAvatarRlsFixMigration, /file_size_limit|Storage enforces the
 assert.doesNotMatch(profileAvatarRlsFixMigration, /metadata ->> 'size'/, "avatar upload RLS does not reject files when Storage size metadata is absent");
 assert.match(profileAvatarRlsFixMigration, /storage\.foldername\(name\).*auth\.uid/s, "avatar uploads remain restricted to the owner folder");
 assert.match(profileAvatarRlsFixMigration, /image\/jpeg.*image\/png.*image\/webp/s, "avatar uploads remain restricted to supported image MIME types");
+assert.match(studentIdentityPathFixMigration, /\[\.\]\(jpg\|jpeg\|png\|pdf\)/, "student identity validation accepts UUID filenames with supported document extensions");
+assert.match(studentIdentityPathFixMigration, /p\.role='student' and p\.requested_role='student'/, "student identity submission remains limited to student accounts");
+assert.match(studentIdentityPathFixMigration, /v_user_id::text \|\| '\/'/, "student identity path remains scoped to the authenticated user");
 assert.match(profileIdentityMigration, /security definer/i, "profile identity update RPC is database-owned");
 assert.match(profileIdentityMigration, /grant execute on function public\.update_my_profile_identity\(text,text,boolean\) to authenticated/i, "profile identity RPC is granted only to signed-in users");
 assert.match(profileIdentityMigration, /campus_profile_avatar_upload_own/, "avatar upload is scoped to the current user's folder");
