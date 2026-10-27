@@ -347,6 +347,9 @@ assert.match(pastQuestionMigration, /create table if not exists public\.past_que
 assert.match(pastQuestionMigration, /create table if not exists public\.practice_attempts/i);
 assert.match(pastQuestionMigration, /create table if not exists public\.practice_answers/i);
 assert.match(pastQuestionMigration, /private\.current_user_has_verified_campus_access\(\)/i, "library and attempt access require verified campus access");
+assert.match(pastQuestionMigration, /public\.past_question_exam_prep_access\(\)/i, "Edge Functions can enforce the database's full verified-access rule");
+assert.match(pastQuestionFunction, /rpc\("past_question_exam_prep_access"\)/, "AI-generated content requires the database eligibility check");
+assert.doesNotMatch(pastQuestionFunction, /profile\.university_id|profile\.department/, "Edge Function uses the actual profile and membership schema");
 assert.match(pastQuestionMigration, /past_question_answer_keys_reviewer_only/i, "answer keys are reviewer-protected");
 assert.match(pastQuestionMigration, /grant select on public\.practice_answers to authenticated/i, "students can read only their RLS-filtered results");
 assert.doesNotMatch(pastQuestionMigration, /grant select on public\.past_question_answer_keys to anon/i, "answer keys are never public");
