@@ -39,8 +39,8 @@ for (const width of widths) {
         await expect(footer).toBeVisible();
         const footerLinks = footer.locator("nav").first().locator("a");
         await expect(footerLinks).toHaveCount(6);
-        for (const target of ["/features.html", "/about.html", "/help.html", "/privacy.html", "/terms.html", "/contact.html"]) {
-          await expect(footerLinks.filter({ has: page.locator(`a[href="./${target.slice(1)}"]`) }).first()).toBeVisible();
+        for (const target of ["features.html", "about.html", "help.html", "privacy.html", "terms.html", "contact.html"]) {
+          await expect(footer.locator(`nav a[href="./${target}"]`).first()).toBeVisible();
         }
         const firstLink = footerLinks.first();
         await firstLink.focus();
