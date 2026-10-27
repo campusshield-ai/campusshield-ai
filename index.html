@@ -3788,6 +3788,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
     currentProfile = profile;
     studentIdentitySubmission = null;
+    // Hydrate the saved identity immediately so both the profile card and dashboard
+    // greeting reflect this signed-in user's own name and private avatar.
+    syncDashboardProfileIdentity().catch(() => {});
     $('login-screen').hidden = true;
     $('workspace').hidden = false;
     maybeShowCampusWelcomeTour();
@@ -4886,6 +4889,29 @@ button,input,select,textarea{max-width:100%;min-width:0}
     target.textContent = name || 'CampusShield';
   }
 
+  async function syncDashboardProfileIdentity() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !backend?.client) return;
+    const { data: authData, error: authError } = await backend.client.auth.getUser();
+    if (authError || !authData?.user) return;
+    const user = authData.user;
+    const { data: saved, error } = await backend.client
+      .from('profiles')
+      .select('display_name, full_name, name, avatar_path')
+      .eq('id', user.id)
+      .single();
+    if (error || !saved) return;
+    // Do not let a late response for a previous session overwrite the current account.
+    const { data: latestAuth } = await backend.client.auth.getUser();
+    if (latestAuth?.user?.id !== user.id) return;
+    Object.assign(currentProfile || {}, saved);
+    const metadata = user.user_metadata || {};
+    const displayName = String(saved.display_name || saved.full_name || saved.name ||
+      metadata.display_name || metadata.full_name || metadata.name || '').trim();
+    updateDashboardWelcomeName(displayName);
+    await renderProfileAvatar(backend, saved.avatar_path);
+  }
+
   async function loadMyProfileSettings() {
     const profile = currentProfile;
     if (!profile) return;
@@ -4951,6 +4977,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       if (identityMessage) identityMessage.textContent = 'Update the name and picture shown on your account.';
       await renderProfileAvatar(backend, profile.avatar_path);
       await renderProfileAvatar(backend, profile.avatar_path, 'profile-settings-avatar-preview', 'profile-settings-avatar-preview-fallback');
+      updateDashboardWelcomeName(displayName);
       if (email) email.textContent = user.email || 'Email is not available from this sign-in provider.';
       if (campus) campus.textContent = campusContext?.university_name || 'No university connected yet';
       if (membership) membership.textContent = campusContext?.membership_status === 'active' && campusContext?.verification_status === 'verified'
@@ -5210,6 +5237,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       updateDashboardWelcomeName(currentProfile.display_name);
       await renderProfileAvatar(backend, currentProfile.avatar_path);
       await renderProfileAvatar(backend, currentProfile.avatar_path, 'profile-settings-avatar-preview', 'profile-settings-avatar-preview-fallback');
+      await syncDashboardProfileIdentity();
       if (oldAvatarPath && oldAvatarPath !== currentProfile.avatar_path && oldAvatarPath.startsWith(user.id + '/')) {
         await backend.client.storage.from('campus-profile-avatars').remove([oldAvatarPath]).catch(() => {});
       }
