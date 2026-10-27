@@ -37,7 +37,7 @@ for (const width of widths) {
           ? page.locator(".login-landing-footer")
           : page.locator("footer").last();
         await expect(footer).toBeVisible();
-        const footerLinks = footer.locator("a");
+        const footerLinks = footer.locator("nav").first().locator("a");
         await expect(footerLinks).toHaveCount(6);
         for (const label of ["Features", "About", "Help", "Privacy", "Terms", "Contact"]) {
           await expect(footerLinks.filter({ hasText: label }).first()).toBeVisible();
