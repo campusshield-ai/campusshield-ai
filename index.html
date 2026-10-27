@@ -2162,6 +2162,26 @@ button,input,select,textarea{max-width:100%;min-width:0}
     .app-legal-footer nav{width:100%;justify-content:center;gap:16px}
   }
 </style>
+
+<style id="campusshield-responsive-navigation-polish">
+  /* Comfortable tap targets and predictable wrapping across phone, tablet and desktop widths. */
+  #login-screen .login-public-nav a{display:inline-flex;align-items:center;min-height:40px}
+  #login-screen .login-footer-links a{display:inline-flex;align-items:center;min-height:36px;padding:5px 0}
+  .app-legal-footer nav a{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:4px 0}
+  @media(max-width:650px){
+    #login-screen .login-public-nav{flex-wrap:wrap;row-gap:4px}
+    #login-screen .login-public-nav a{min-height:40px}
+    #login-screen .login-landing-footer{align-items:flex-start}
+    #login-screen .login-footer-links{row-gap:4px;column-gap:14px}
+    .app-legal-footer nav{row-gap:4px;column-gap:14px}
+    .nav{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+    .nav button{min-height:40px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto!important}
+    #login-screen .login-public-nav a,#login-screen .login-footer-links a,.app-legal-footer a{transition:none!important}
+  }
+</style>
 </head>
 <body>
 
