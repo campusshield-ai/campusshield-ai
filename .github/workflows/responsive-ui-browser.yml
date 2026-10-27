@@ -1,0 +1,69 @@
+name: Responsive landing browser checks
+
+on:
+  push:
+    branches:
+      - codex/fix-registration-confirmation-role
+    paths:
+      - "index.html"
+      - "privacy.html"
+      - "terms.html"
+      - "contact.html"
+      - "playwright.config.cjs"
+      - "tests/browser/**"
+      - ".github/workflows/responsive-ui-browser.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "privacy.html"
+      - "terms.html"
+      - "contact.html"
+      - "playwright.config.cjs"
+      - "tests/browser/**"
+      - ".github/workflows/responsive-ui-browser.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-responsive-ui-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  responsive-browser:
+    name: Browser layout and access checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install browser-test dependency
+        run: npm install --no-save --no-package-lock @playwright/test
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run responsive browser tests
+        env:
+          CI: "true"
+        run: npx playwright test --config=playwright.config.cjs
+
+      - name: Upload responsive screenshots and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: campusshield-responsive-ui-evidence
+          path: |
+            test-results/responsive/*.png
+            test-results/playwright/
+            playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
