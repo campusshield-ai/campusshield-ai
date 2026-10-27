@@ -148,3 +148,36 @@ test("public privacy, terms and contact pages render without mobile overflow", a
     }
   }
 });
+
+
+test("language selector translates the access experience and remembers the choice", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  const language = page.locator("#campusshield-language");
+  await expect(language).toBeVisible();
+  await expect(language.locator("option")).toHaveCount(10);
+
+  await language.selectOption("yo");
+  await expect(page.locator(".login-public-nav a").nth(0)).toHaveText("Ilé");
+  await expect(page.locator("#auth-title")).toHaveText("Ẹ kú àbọ̀");
+  await expect(page.locator("#auth-tabs [data-auth-mode='signup']")).toHaveText("Ṣẹ̀dá àkọọ́lẹ̀");
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("#campusshield-language")).toHaveValue("yo");
+  await expect(page.locator(".login-public-nav a").nth(0)).toHaveText("Ilé");
+
+  await page.locator("#campusshield-language").selectOption("fr");
+  await expect(page.locator(".login-public-nav a").nth(0)).toHaveText("Accueil");
+  await page.locator('[data-auth-mode="signup"]').click();
+  await expect(page.locator("#auth-title")).toHaveText("Créer votre compte");
+  await expect(page.locator('#signup-fields label[for="auth-name"]')).toHaveText("Nom complet");
+
+  await page.locator("#campusshield-language").selectOption("ar");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await page.locator("#campusshield-language").selectOption("en");
+  await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+
+  await expect(page.locator('a[href*="tiktok.com"], a[href*="youtube.com"]')).toHaveCount(0);
+  const contactResponse = await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
+  expect(contactResponse && contactResponse.status()).toBe(200);
+  await expect(page.locator('a[href*="tiktok.com"], a[href*="youtube.com"]')).toHaveCount(0);
+});
