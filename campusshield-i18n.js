@@ -20,11 +20,10 @@
     const value = pick(key);
     const directText = Array.from(element.childNodes).find(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
     if (directText) {
-      const lead = /^\s*/.exec(directText.textContent)?.[0] || "";
-      const trail = /\s*$/.exec(directText.textContent)?.[0] || "";
-      const spacing = lead || trail ? " " : "";
-      const replaceWith = (element.matches(".auth-role-option,.login-official-link") ? " " : "") + value;
-      directText.textContent = lead ? replaceWith : replaceWith + (trail ? " " : "");
+      if (directText.textContent.trim() === value) return;
+      const lead = /^\\s*/.exec(directText.textContent)?.[0] || "";
+      const trail = /\\s*$/.exec(directText.textContent)?.[0] || "";
+      directText.textContent = lead + value + trail;
     } else if (!element.children.length) {
       if (element.textContent !== value) element.textContent = value;
     }
@@ -92,21 +91,17 @@
       if (option.value === "teacher") option.textContent = locale === "en" ? "Teacher / university staff" : dict.teacher;
     });
     const helper = $("#auth-helper");
-    if (helper && !helper.hidden) {
-      const key = mode === "signup" ? "signupHelper" : "signInSafety";
-      if (helper.dataset.lastDefaultText === undefined || helper.textContent === helper.dataset.lastAppliedText || helper.dataset.lastDefaultText === helper.textContent) {
-        helper.dataset.lastDefaultText = helper.textContent;
-        helper.textContent = pick(key);
-        helper.dataset.lastAppliedText = helper.textContent;
-      }
-    }
+    if (helper && !helper.hidden) setText("#auth-helper", mode === "signup" ? "signupSubtitle" : "signInSafety");
     const message = $("#auth-message");
     if (message) {
       const old = message.textContent.trim();
-      if (["Please sign in or create an account.","Create an account to get started."].includes(old) || old === DICTIONARIES.en.signInMessage || old === DICTIONARIES.en.signupMessage || old === dict.signInMessage || old === dict.signupMessage) {
-        message.textContent = pick(mode === "signup" ? "signupMessage" : "signInMessage");
-      }
+      const isDefaultMessage = Object.values(DICTIONARIES).some(language =>
+        old === language.signInMessage || old === language.signupMessage
+      ) || old === "Please sign in or create an account." || old === "Create an account to get started.";
+      const nextMessage = pick(mode === "signup" ? "signupMessage" : "signInMessage");
+      if (isDefaultMessage && old !== nextMessage) message.textContent = nextMessage;
     }
+    setText("#google-signin-button", "googleSignIn");
     $("#google-signin-button")?.setAttribute("aria-label", pick("googleSignIn"));
     const label = $("#campusshield-language-label");
     if (label) label.textContent = pick("languageLabel");
