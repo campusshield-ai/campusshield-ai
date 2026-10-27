@@ -31,6 +31,7 @@ const campusServiceDirectoryMigration = await readFile(new URL("../supabase/migr
 const profileIdentityMigration = await readFile(new URL("../supabase/migrations/20261026223000_profile_identity_owner_only_crawler.sql", import.meta.url), "utf8");
 const profileAvatarStorageMigration = await readFile(new URL("../supabase/migrations/20261026230000_fix_profile_avatar_storage_policy_permissions.sql", import.meta.url), "utf8");
 const profileAvatar20MbMigration = await readFile(new URL("../supabase/migrations/20261027001000_profile_avatar_20mb.sql", import.meta.url), "utf8");
+const profileAvatarPathFixMigration = await readFile(new URL("../supabase/migrations/20261027030000_fix_profile_avatar_path_validation.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
@@ -532,6 +533,7 @@ assert.match(html, /id="profile-settings-avatar-trigger"/, "avatar is the contro
 assert.match(html, /id="profile-settings-identity-dialog"/, "profile editing opens in a dialog instead of staying inline");
 assert.match(html, /showModal\(\)/, "profile dialog uses the accessible native modal API");
 assert.match(html, /id="profile-settings-avatar-preview"/, "avatar changes preview inside the dialog");
+assert.match(html, /#profile-settings-avatar-preview\\[hidden\\],#profile-settings-avatar-preview-fallback\\[hidden\\]\\{display:none!important\\}/, "profile preview hides the image and fallback mutually exclusively");
 
 assert.match(html, /campus-profile-avatars/, "profile photo uses private per-user Storage");
 assert.match(html, /Maximum 20 MB\./, "profile avatar UI advertises a 20 MB maximum");
@@ -549,6 +551,7 @@ assert.match(profileAvatar20MbMigration, /metadata ->> 'size'.*20971520/s, "stor
 assert.match(html, /rpc\('update_my_profile_identity'/, "profile identity saves through the database-enforced self-update RPC");
 assert.match(profileIdentityMigration, /add column if not exists avatar_path text/i, "profile table stores avatar object path");
 assert.match(profileIdentityMigration, /create or replace function public\.update_my_profile_identity/i, "profile identity RPC exists");
+assert.match(profileAvatarPathFixMigration, /\[\.\]\(jpg\|png\|webp\)/, "avatar path validation accepts generated UUID filenames with supported image extensions");
 assert.match(profileIdentityMigration, /security definer/i, "profile identity update RPC is database-owned");
 assert.match(profileIdentityMigration, /grant execute on function public\.update_my_profile_identity\(text,text,boolean\) to authenticated/i, "profile identity RPC is granted only to signed-in users");
 assert.match(profileIdentityMigration, /campus_profile_avatar_upload_own/, "avatar upload is scoped to the current user's folder");
