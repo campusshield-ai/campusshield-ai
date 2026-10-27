@@ -81,9 +81,9 @@ async function callModel(apiKey: string, model: string, messages: Array<Record<s
 }
 type UserContext = {
   user: { id: string };
-  profile: { id: string; university_id: string | null; role: string; verification_status: string; department?: string | null; faculty?: string | null; year_of_study?: string | null };
+  profile: { id: string; role: string; verification_status: string };
   universityId: string;
-  membership: { university_id: string; campus_role: string; membership_status: string; verification_status: string };
+  membership: { university_id: string; campus_role: string; membership_status: string; verification_status: string; department?: string | null; faculty?: string | null; course?: string | null; year_of_study?: string | null };
 };
 async function requireEligibleUser(req: Request, supabaseUrl: string, anonKey: string, service: SupabaseClient): Promise<UserContext> {
   const authorization = req.headers.get("Authorization");
@@ -99,17 +99,18 @@ async function requireEligibleUser(req: Request, supabaseUrl: string, anonKey: s
     throw new Error("Complete all required identity and campus verification steps before using exam preparation.");
   }
   const { data: profile, error: profileError } = await service
-    .from("profiles").select("id,university_id,role,verification_status,department,faculty,year_of_study")
+    .from("profiles").select("id,role,verification_status")
     .eq("id", user.id).maybeSingle();
   if (profileError || !profile) throw new Error("Your campus account could not be loaded.");
-  if (profile.verification_status !== "verified" || !profile.university_id) {
+  if (profile.verification_status !== "verified") {
     throw new Error("Complete account and university verification before using exam preparation.");
   }
-  const { data: membership, error: membershipError } = await service
+  const { data: memberships, error: membershipError } = await service
     .from("campus_memberships")
-    .select("university_id,campus_role,membership_status,verification_status")
-    .eq("user_id", user.id).eq("university_id", profile.university_id)
-    .eq("membership_status", "active").eq("verification_status", "verified").maybeSingle();
+    .select("university_id,campus_role,membership_status,verification_status,department,faculty,course,year_of_study,updated_at")
+    .eq("user_id", user.id).eq("membership_status", "active").eq("verification_status", "verified")
+    .order("updated_at", { ascending: false }).limit(10);
+  const membership = Array.isArray(memberships) ? memberships[0] : null;
   if (membershipError || !membership) throw new Error("An active, verified membership at your university is required.");
   return { user: { id: user.id }, profile, universityId: membership.university_id, membership };
 }
@@ -120,7 +121,7 @@ async function generatePractice(
   const courseTitle = text(body.course_title, 160);
   const topic = text(body.topic, 180);
   const academicLevel = text(body.academic_level, 20);
-  const department = text(body.department, 120) || text(context.profile.department, 120) || "General";
+  const department = text(body.department, 120) || text(context.membership.department, 120) || "General";
   const questionCount = Math.max(3, Math.min(10, Math.floor(Number(body.question_count) || 5)));
   if (!courseCode || courseCode.length < 2 || !courseTitle || !topic || topic.length < 3
       || !["100", "200", "300", "400", "500", "600", "postgraduate"].includes(academicLevel)) {
