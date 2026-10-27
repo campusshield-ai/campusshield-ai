@@ -533,7 +533,7 @@ assert.match(html, /id="profile-settings-avatar-trigger"/, "avatar is the contro
 assert.match(html, /id="profile-settings-identity-dialog"/, "profile editing opens in a dialog instead of staying inline");
 assert.match(html, /showModal\(\)/, "profile dialog uses the accessible native modal API");
 assert.match(html, /id="profile-settings-avatar-preview"/, "avatar changes preview inside the dialog");
-assert.match(html, /#profile-settings-avatar-preview\\[hidden\\],#profile-settings-avatar-preview-fallback\\[hidden\\]\\{display:none!important\\}/, "profile preview hides the image and fallback mutually exclusively");
+assert.ok(html.includes("#profile-settings-avatar-preview[hidden],#profile-settings-avatar-preview-fallback[hidden]{display:none!important}"), "profile preview hides the image and fallback mutually exclusively");
 
 assert.match(html, /campus-profile-avatars/, "profile photo uses private per-user Storage");
 assert.match(html, /Maximum 20 MB\./, "profile avatar UI advertises a 20 MB maximum");
