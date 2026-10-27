@@ -154,7 +154,11 @@ test("language selector translates the access experience and remembers the choic
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   const language = page.locator("#campusshield-language");
   await expect(language).toBeVisible();
-  await expect(language.locator("option")).toHaveCount(10);
+  await expect(language.locator("option")).toHaveCount(26);
+
+  await language.selectOption("de");
+  await expect(page.locator(".login-public-nav a").nth(0)).toHaveText("Startseite");
+  await expect(page.locator("#auth-title")).toHaveText("Willkommen zurück");
 
   await language.selectOption("yo");
   await expect(page.locator(".login-public-nav a").nth(0)).toHaveText("Ilé");
@@ -175,6 +179,40 @@ test("language selector translates the access experience and remembers the choic
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await page.locator("#campusshield-language").selectOption("en");
   await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+
+
+test("student and staff get separate identity-verification instructions and responsive form layout", async ({ page }) => {
+  for (const viewport of [
+    { name: "phone", width: 375, height: 812 },
+    { name: "large-phone", width: 390, height: 844 },
+    { name: "ipad-portrait", width: 768, height: 1024 },
+  ]) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+    await page.locator('[data-auth-mode="signup"]').click();
+    const guidance = page.locator("#signup-verification-guidance");
+    const studentPanel = page.locator("#signup-student-identity-panel");
+    await expect(guidance).toContainText("Students submit");
+    await expect(studentPanel).toBeVisible();
+
+    const layout = await page.evaluate(() => ({
+      headingDisplay: getComputedStyle(document.querySelector(".signup-student-identity-panel>.heading")).display,
+      headingWidth: document.querySelector(".signup-student-identity-panel>.heading").getBoundingClientRect().width,
+      formColumns: getComputedStyle(document.querySelector("#studentIdentityForm")).gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+      viewportWidth: innerWidth,
+      documentWidth: document.documentElement.scrollWidth,
+    }));
+    expect(layout.headingDisplay, viewport.name + ": identity heading should be a normal full-width block").toBe("block");
+    expect(layout.headingWidth, viewport.name + ": identity heading should not collapse into a narrow flex column").toBeGreaterThan(240);
+    expect(layout.documentWidth, viewport.name + ": identity form must not create horizontal page overflow").toBeLessThanOrEqual(layout.viewportWidth + 1);
+    if (viewport.width <= 820) expect(layout.formColumns, viewport.name + ": fields should stack on phone and portrait tablet").toBe(1);
+
+    await page.locator("#auth-role").selectOption("teacher");
+    await expect(guidance).toContainText("Teachers and university staff");
+    await expect(studentPanel).toBeHidden();
+    await expect(page.locator("#signup-staff-fields")).toBeVisible();
+  }
+});
 
   await expect(page.locator('a[href*="tiktok.com"], a[href*="youtube.com"]')).toHaveCount(0);
   const contactResponse = await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
