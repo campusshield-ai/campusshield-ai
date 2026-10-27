@@ -181,6 +181,13 @@ test("language selector translates the access experience and remembers the choic
   await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
 
 
+  await expect(page.locator('a[href*="tiktok.com"], a[href*="youtube.com"]')).toHaveCount(0);
+  const contactResponse = await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
+  expect(contactResponse && contactResponse.status()).toBe(200);
+  await expect(page.locator('a[href*="tiktok.com"], a[href*="youtube.com"]')).toHaveCount(0);
+});
+
+
 test("student and staff get separate identity-verification instructions and responsive form layout", async ({ page }) => {
   for (const viewport of [
     { name: "phone", width: 375, height: 812 },
@@ -214,8 +221,3 @@ test("student and staff get separate identity-verification instructions and resp
   }
 });
 
-  await expect(page.locator('a[href*="tiktok.com"], a[href*="youtube.com"]')).toHaveCount(0);
-  const contactResponse = await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
-  expect(contactResponse && contactResponse.status()).toBe(200);
-  await expect(page.locator('a[href*="tiktok.com"], a[href*="youtube.com"]')).toHaveCount(0);
-});
