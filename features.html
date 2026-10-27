@@ -25,6 +25,16 @@
     footer nav{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
     @media(max-width:640px){.grid{grid-template-columns:1fr}main{margin-top:18px}.top{padding:22px 18px}}
   </style>
+
+<style id="campusshield-responsive-navigation-polish">
+  footer nav a{display:inline-flex;align-items:center;min-height:36px;padding:4px 0}
+  @media(max-width:640px){
+    footer{align-items:flex-start;flex-direction:column;gap:8px}
+    footer nav{width:100%;justify-content:flex-start;column-gap:14px;row-gap:4px}
+    footer nav a{min-height:40px}
+  }
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}
+</style>
 </head>
 <body>
   <header class="top">
