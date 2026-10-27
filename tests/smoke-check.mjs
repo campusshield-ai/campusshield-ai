@@ -44,17 +44,17 @@ const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script
 assert.match(html, /id="login-features"/, "landing navigation has a Features destination");
 assert.match(html, /id="login-about"/, "landing navigation has an About destination");
 assert.match(html, /id="auth-helper"/, "landing Help navigation has a destination");
-assert.match(html, /class="login-footer-links"[\\s\\S]*?href="\\.\\/privacy\\.html"/, "landing footer links to Privacy");
-assert.match(html, /class="login-footer-links"[\\s\\S]*?href="\\.\\/terms\\.html"/, "landing footer links to Terms");
-assert.match(html, /class="login-footer-links"[\\s\\S]*?href="\\.\\/contact\\.html"/, "landing footer links to Contact");
-assert.match(privacyPage, /<title>Privacy Notice \\| CampusShield AI<\\/title>/, "privacy page exists and is titled");
+assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/privacy\.html"/, "landing footer links to Privacy");
+assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/terms\.html"/, "landing footer links to Terms");
+assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/contact\.html"/, "landing footer links to Contact");
+assert.match(privacyPage, /<title>Privacy Notice \| CampusShield AI<\/title>/, "privacy page exists and is titled");
 assert.match(privacyPage, /Staging safety/, "privacy page warns against using real sensitive data in previews");
-assert.match(termsPage, /<title>Terms of Use \\| CampusShield AI<\\/title>/, "terms page exists and is titled");
+assert.match(termsPage, /<title>Terms of Use \| CampusShield AI<\/title>/, "terms page exists and is titled");
 assert.match(termsPage, /does not automatically contact or dispatch emergency services/i, "terms page states the emergency limitation");
-assert.match(contactPage, /mailto:campusshieldaitechnologies@gmail\\.com/, "contact page provides the configured support email");
-assert.match(contactPage, /https:\\/\\/x\\.com\\/CampusShieldAI/, "contact page links the configured X profile");
-assert.match(contactPage, /https:\\/\\/www\\.instagram\\.com\\/campusshieldai\\//, "contact page links the configured Instagram profile");
-assert.match(contactPage, /https:\\/\\/www\\.linkedin\\.com\\/in\\/campusshield-ai-technologies-857b83446/, "contact page links the configured LinkedIn profile");
+assert.match(contactPage, /mailto:campusshieldaitechnologies@gmail\.com/, "contact page provides the configured support email");
+assert.match(contactPage, /https:\/\/x\.com\/CampusShieldAI/, "contact page links the configured X profile");
+assert.match(contactPage, /https:\/\/www\.instagram\.com\/campusshieldai\//, "contact page links the configured Instagram profile");
+assert.match(contactPage, /https:\/\/www\.linkedin\.com\/in\/campusshield-ai-technologies-857b83446/, "contact page links the configured LinkedIn profile");
 
 
 for (const [index, source] of inlineScripts.entries()) {
