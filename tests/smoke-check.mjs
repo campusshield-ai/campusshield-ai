@@ -527,7 +527,13 @@ assert.match(html, /id="profile-settings-avatar-preview"/, "avatar changes previ
 
 assert.match(html, /campus-profile-avatars/, "profile photo uses private per-user Storage");
 assert.match(html, /Maximum 20 MB\./, "profile avatar UI advertises a 20 MB maximum");
-assert.match(html, /file\.size > 20 \* 1024 \* 1024/g, "client validation allows image files up to 20 MiB");
+assert.match(html, /PROFILE_AVATAR_INPUT_LIMIT = 20 \* 1024 \* 1024/, "client image validation accepts source images up to 20 MiB");
+assert.match(html, /PROFILE_AVATAR_OUTPUT_LIMIT = 2\.7 \* 1024 \* 1024/, "profile images are compressed to fit the private bucket");
+assert.match(html, /prepareProfileAvatar\(file\)/, "selected images are validated and prepared before upload");
+assert.match(html, /file\.slice\(0, 16\)\.arrayBuffer\(\)/, "client checks the actual file signature");
+assert.match(html, /createImageBitmap\(file\)/, "client verifies the image can be decoded");
+assert.match(html, /canvas\.toBlob\(resolve, 'image\/webp', quality\)/, "large images are resized and compressed to WebP");
+assert.match(html, /contentType: 'image\/webp'/, "compressed avatar upload uses the correct MIME type");
 assert.doesNotMatch(html, /3 MB|3 \* 1024 \* 1024/, "no stale 3 MB profile avatar limit remains");
 assert.match(profileAvatar20MbMigration, /file_size_limit = 20971520/i, "private storage bucket is configured for 20 MiB");
 assert.match(profileAvatar20MbMigration, /metadata ->> 'size'.*20971520/s, "storage RLS caps an avatar at 20 MiB");
