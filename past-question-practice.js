@@ -53,20 +53,21 @@
     if (authError || !authData?.user) throw new Error("Sign in to access your university's exam-preparation library.");
     const user = authData.user;
     const { data: profile, error: profileError } = await db.from("profiles")
-      .select("id,university_id,role,verification_status,faculty,department,year_of_study")
+      .select("id,role,verification_status")
       .eq("id", user.id).maybeSingle();
     if (profileError) throw profileError;
     if (!profile) throw new Error("Your campus profile could not be loaded. Sign in again.");
 
     const { data: memberships, error: membershipError } = await db.from("campus_memberships")
-      .select("university_id,campus_role,membership_status,verification_status")
+      .select("university_id,campus_role,membership_status,verification_status,faculty,department,course,year_of_study,updated_at")
       .eq("user_id", user.id)
       .eq("membership_status", "active")
       .eq("verification_status", "verified")
+      .order("updated_at", { ascending: false })
       .limit(10);
     if (membershipError) throw membershipError;
     const membershipList = Array.isArray(memberships) ? memberships : [];
-    const membership = membershipList.find(item => item.university_id === profile.university_id) || membershipList[0] || null;
+    const membership = membershipList[0] || null;
     if (profile.verification_status !== "verified" || !membership) {
       state.context = { user, profile, membership: null, universityId: null, university: null, hint: profileHint };
       return state.context;
@@ -95,6 +96,10 @@
     const name = currentUniversityName();
     const label = $("pq-campus-label");
     if (label) label.textContent = ctx?.universityId ? name : "Verification needed";
+    if (ctx?.membership?.department) {
+      if ($("pq-ai-department") && !$("pq-ai-department").value) $("pq-ai-department").value = ctx.membership.department;
+      if ($("pq-submit-department") && !$("pq-submit-department").value) $("pq-submit-department").value = ctx.membership.department;
+    }
     const gate = $("pq-access-gate");
     const ready = Boolean(ctx?.universityId && ctx?.membership && ctx?.profile?.verification_status === "verified");
     if (gate) {
