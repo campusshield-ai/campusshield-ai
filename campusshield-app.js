@@ -927,7 +927,7 @@
     }
     if (page === 'past-questions' && !window.PastQuestionPractice?.isEnabled?.()) {
       page = 'dashboard';
-      toast('Past Questions & Exam Prep is currently being validated in staging. Production remains unchanged until its database migration is approved.');
+      toast('Past Questions & Exam Prep is coming soon. We’re preparing verified study materials before launch.');
     }
 
     // Session restoration can request Overview more than once. Honor a valid
