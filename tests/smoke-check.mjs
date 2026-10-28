@@ -6,7 +6,11 @@ const appScript = await readFile(new URL("../campusshield-app.js", import.meta.u
 const html = htmlMarkup + "\n" + appScript;
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
-const responsiveCss = htmlMarkup.match(/<style id="campusshield-responsive-final">([\\s\\S]*?)<\\/style>/)?.[1] || "";
+const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
+const responsiveCssEnd = htmlMarkup.indexOf("</style>", responsiveCssStart);
+const responsiveCss = responsiveCssStart >= 0 && responsiveCssEnd > responsiveCssStart
+  ? htmlMarkup.slice(htmlMarkup.indexOf(">", responsiveCssStart) + 1, responsiveCssEnd)
+  : "";
 const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.js", import.meta.url), "utf8");
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
@@ -598,10 +602,10 @@ assert.match(html, /Mobile-first layout hardening: prevent clipped headers, hori
 assert.ok(htmlMarkup.includes('<script src="./campusshield-app.js" defer></script>'), "large app code is external and deferred instead of parser-blocking inline JS");
 assert.doesNotThrow(() => new Function(appScript), "externalized main application bundle parses");
 assert.ok(appScript.includes("function canManageIncidents()"), "external application bundle retains role-gated incident controls");
-assert.ok(css.includes("CampusShield cross-device layout guardrails and responsive fit pass"), "global cross-device layout guardrails are loaded");
+assert.ok(responsiveCss.includes("CampusShield cross-device layout guardrails and responsive fit pass"), "global cross-device layout guardrails are loaded");
 assert.ok(responsiveCss.includes('input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])'), "responsive field sizing does not stretch checkboxes, radio buttons or hidden inputs");
 assert.ok(responsiveCss.includes('input[type="search"]'), "touch target sizing is limited to text-like controls");
-assert.ok(responsiveCss.includes("@media(max-width:420px)"), "small-phone layout has dedicated responsive rules");
+assert.ok(responsiveCss.includes("@media (max-width: 420px)"), "small-phone layout has dedicated responsive rules");
 assert.ok(responsiveCss.includes("@media (min-width: 1441px)"), "wide desktop layout has dedicated responsive rules");
 const externalScriptTags = [...htmlMarkup.matchAll(/<script\b[^>]*src=["'][^"']+["'][^>]*><\/script>/gi)].map((match) => match[0]);
 assert.ok(externalScriptTags.length >= 10, "application dependencies are externalized");
