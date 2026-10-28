@@ -6413,7 +6413,7 @@
       $('auth-email').focus();
       return;
     }
-    if (!/^\\d{6,8}$/.test(code)) {
+    if (!/^\d{6,8}$/.test(code)) {
       msg.textContent = 'Enter the 6–8 digit code from your CampusShield confirmation email.';
       $('signup-confirmation-code').focus();
       return;
@@ -7055,6 +7055,12 @@
   emailInput.addEventListener('input', saveEmailPreference);
   rememberCheckbox.addEventListener('change', saveEmailPreference);
 
+$('signup-confirmation-back').addEventListener('click', () => {
+  confirmationCodePending = false;
+  setAuthMode('signin');
+  $('auth-message').textContent = 'Sign in with your email and password to continue.';
+});
+
 $('resend-confirmation-button').addEventListener('click', async () => {
   const backend = window.CampusShieldBackend;
   const email = $('auth-email').value.trim();
@@ -7075,14 +7081,18 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   button.disabled = true;
 
   try {
-    msg.textContent = 'Sending confirmation email...';
+    msg.textContent = 'Requesting a fresh email confirmation code…';
 
     const { error } = await backend.resendConfirmation(email);
 
     if (error) throw error;
 
+    confirmationPending = true;
+    confirmationCodePending = true;
+    $('signup-confirmation-code').value = '';
+    setAuthMode('confirm');
     msg.textContent =
-      'If this account requires confirmation, a new email has been requested. Check your inbox and spam folder.';
+      'If this account needs confirmation, a new code has been requested. Enter the latest code from your email. If the address is already confirmed, return to sign in.';
   } catch (error) {
     console.error('Resend confirmation failed:', error);
 
