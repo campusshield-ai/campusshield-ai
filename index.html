@@ -2435,6 +2435,12 @@ button,input,select,textarea{max-width:100%;min-width:0}
 </div>
         </div>
         <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+        <div class="field" id="signup-confirmation-code-field" hidden>
+          <label for="signup-confirmation-code">Email confirmation code</label>
+          <input id="signup-confirmation-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" minlength="6" maxlength="8" aria-describedby="signup-confirmation-code-help" placeholder="Enter the code from your email">
+          <small id="signup-confirmation-code-help">Use the one-time code from CampusShield AI. You do not need to open a link.</small>
+          <button type="button" class="btn secondary" id="signup-confirmation-back">Back to sign in</button>
+        </div>
         <div class="field" id="auth-password-field"><label for="auth-password">Password</label><div class="password-input-wrap"><input id="auth-password" type="password" autocomplete="current-password" minlength="1" required placeholder="Enter your password"><button type="button" class="password-toggle" data-toggle-password="auth-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
         <div class="field" id="forgot-password-field"><button type="button" id="forgot-password-button" class="btn secondary">Forgot password?</button></div>
         <div id="password-reset-fields" hidden>
