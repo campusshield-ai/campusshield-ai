@@ -49,7 +49,7 @@ const offlinePage = await readFile(new URL("../offline.html", import.meta.url), 
 const privacyPage = await readFile(new URL("../privacy.html", import.meta.url), "utf8");
 const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf8");
 const contactPage = await readFile(new URL("../contact.html", import.meta.url), "utf8");
-const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
+const inlineScripts = [...htmlMarkup.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
 assert.ok(html.includes('href="./campus-dashboard-upgrade.css"'), "dashboard upgrade stylesheet is loaded");
 assert.ok(html.includes('src="./campus-dashboard-upgrade.js" defer'), "dashboard upgrade behavior is loaded after the workspace markup");
@@ -600,7 +600,9 @@ assert.ok(appScript.includes("function canManageIncidents()"), "external applica
 assert.ok(css.includes("CampusShield cross-device layout guardrails and responsive fit pass"), "global cross-device layout guardrails are loaded");
 assert.ok(css.includes("@media (max-width: 420px)"), "small-phone layout has dedicated responsive rules");
 assert.ok(css.includes("@media (min-width: 1441px)"), "wide desktop layout has dedicated responsive rules");
-assert.ok(![...htmlMarkup.matchAll(/<script\\b([^>]*)src=["']([^"']+)["']([^>]*)><\\/script>/gi)].some(match => !/\\bdefer\\b|\\basync\\b|type=["']module["']/i.test(match[1] + match[3])), "no external script is left parser-blocking");
+const externalScriptTags = [...htmlMarkup.matchAll(/<script\b[^>]*src=["'][^"']+["'][^>]*><\/script>/gi)].map((match) => match[0]);
+assert.ok(externalScriptTags.length >= 10, "application dependencies are externalized");
+assert.ok(externalScriptTags.every((tag) => /\bdefer\b|\basync\b|type=["']module["']/i.test(tag)), "no external script is left parser-blocking");
 assert.match(html, /html,body\{min-width:320px\}/);
 assert.match(html, /\.topbar-actions\{flex:1 1 100%;width:100%;justify-content:flex-start;gap:7px\}/);
 assert.match(html, /\.field input,\.field select,\.field textarea,\.institution-picker-field input\[list\]\{width:100%;min-height:46px;padding:11px 12px;font-size:16px\}/);
