@@ -1782,6 +1782,19 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .profile-avatar-image{width:100%;height:100%;object-fit:cover;border-radius:inherit}
 #profile-settings-avatar-fallback[hidden],#profile-settings-avatar[hidden],#profile-settings-avatar-preview[hidden],#profile-settings-avatar-preview-fallback[hidden]{display:none!important}
 @media(max-width:650px){.profile-identity-form{padding:12px}.profile-identity-actions .btn{flex:1 1 150px;justify-content:center}}
+
+/* Past-question source discovery and empty-library actions */
+#page-past-questions .pq-source-guide{margin-bottom:16px;padding:clamp(15px,2.4vw,24px)}
+#page-past-questions .pq-source-guide h2{margin:6px 0;font-size:clamp(17px,2vw,22px);color:var(--ink)}
+#page-past-questions .pq-source-guide .pq-side-intro{max-width:850px;font-size:12px}
+#page-past-questions .pq-source-links{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0 4px}
+#page-past-questions .pq-source-links .btn{display:inline-flex;align-items:center;min-height:38px;text-decoration:none}
+#page-past-questions .pq-source-guide .actions{margin-top:13px}
+#page-past-questions .pq-source-guide .pq-legal-note{font-size:10px}
+#page-past-questions .pq-empty-actions{grid-column:2;display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+#page-past-questions .pq-empty-actions .btn{min-height:32px;padding:7px 10px;font-size:10px}
+@media(max-width:600px){#page-past-questions .pq-source-links{display:grid;grid-template-columns:1fr}#page-past-questions .pq-source-links .btn{justify-content:center}#page-past-questions .pq-empty-actions{grid-column:1/-1}}
+
 </style>
 <style>
 .crawler-live-panel{overflow:hidden;background:radial-gradient(ellipse at top,#102c39 0,#0a1725 58%);border:1px solid #1b4350}
@@ -3325,6 +3338,22 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <div class="pq-pilot-mark" aria-hidden="true">✦</div>
     <div><span class="pq-pilot-label">BABCOCK-FIRST PILOT</span><h2>A better way to prepare for exams</h2><p id="pq-pilot-note">Your library is scoped to your verified university. Authentic papers are kept separate from AI-generated practice.</p></div>
     <div class="pq-pilot-pill">Campus-verified</div>
+  </section>
+
+  <section class="panel pq-source-guide" id="pq-source-guide" aria-labelledby="pq-source-guide-title">
+    <div class="pq-panel-eyebrow">WHERE PAPERS COME FROM</div>
+    <h2 id="pq-source-guide-title">Build a trusted Babcock past-question library</h2>
+    <p class="pq-side-intro">CampusShield does not invent or scrape exam papers and call them authentic. We accept papers from authorized university sources, lecturers, departments, and students who have permission to share them. Every submission stays private until a campus reviewer approves it.</p>
+    <div class="pq-source-links">
+      <a class="btn secondary" href="https://legacy.babcock.edu.ng/library" target="_blank" rel="noopener noreferrer">Babcock University Library ↗</a>
+      <a class="btn secondary" href="https://elibrary.babcock.edu.ng/" target="_blank" rel="noopener noreferrer">Babcock E-Library ↗</a>
+      <a class="btn secondary" href="https://www.babcock.edu.ng/codel" target="_blank" rel="noopener noreferrer">Open Educational Resources ↗</a>
+    </div>
+    <p class="pq-legal-note">These are official resource-discovery links, not a claim that past exam papers are publicly downloadable. Follow each service's access rules and obtain permission before sharing any paper in CampusShield.</p>
+    <div class="actions">
+      <button class="btn" type="button" id="pq-source-contribute">Contribute an authorized paper</button>
+      <button class="btn secondary" type="button" id="pq-source-practice">Practise with original AI questions</button>
+    </div>
   </section>
 
   <div class="pq-main-layout">

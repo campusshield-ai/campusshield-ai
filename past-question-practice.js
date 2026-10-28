@@ -198,7 +198,11 @@
         && (!semester || paper.semester === semester);
     });
     if (!filtered.length) {
-      list.innerHTML = '<div class="pq-empty"><span aria-hidden="true">⌕</span><strong>No matching papers</strong><p>Try another course code, year, level or semester. If a paper is missing, its upload may still be awaiting review.</p></div>';
+      if (state.papers.length === 0) {
+        list.innerHTML = '<div class="pq-empty"><span aria-hidden="true">⌕</span><strong>No reviewed past papers yet</strong><p>This campus library has no approved papers at the moment. Ask your department or library for materials that may be shared, contribute an authorized copy for review, or use original AI-generated practice below.</p><div class="pq-empty-actions"><button class="btn" type="button" data-pq-empty-contribute>Contribute a paper</button><button class="btn secondary" type="button" data-pq-empty-practice>Generate practice questions</button></div></div>';
+      } else {
+        list.innerHTML = '<div class="pq-empty"><span aria-hidden="true">⌕</span><strong>No matching papers</strong><p>Try another course code, year, level or semester. If a paper is missing, its upload may still be awaiting review.</p></div>';
+      }
       return;
     }
     list.innerHTML = filtered.map(paper => {
@@ -629,6 +633,13 @@
     applyEnvironmentGate();
     if (state.wired) return;
     state.wired = true;
+    const scrollToPanel = id => $(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    $("pq-source-contribute")?.addEventListener("click", () => scrollToPanel("pq-submit-section"));
+    $("pq-source-practice")?.addEventListener("click", () => scrollToPanel("pq-ai-section"));
+    $("pq-library-cards")?.addEventListener("click", event => {
+      if (event.target.closest("[data-pq-empty-contribute]")) scrollToPanel("pq-submit-section");
+      if (event.target.closest("[data-pq-empty-practice]")) scrollToPanel("pq-ai-section");
+    });
     $("pq-refresh")?.addEventListener("click", () => refreshLibrary().catch(error => message("pq-library-status", error?.message || "Could not refresh library.", "error")));
     ["pq-filter-search", "pq-filter-year", "pq-filter-level", "pq-filter-semester"].forEach(id => {
       $(id)?.addEventListener(id === "pq-filter-search" ? "input" : "change", renderLibrary);
