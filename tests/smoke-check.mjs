@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const htmlMarkup = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const appScript = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
+const html = htmlMarkup + "\\n" + appScript;
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
+const css = dashboardUpgradeCss;
 const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.js", import.meta.url), "utf8");
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
@@ -77,7 +80,7 @@ assert.ok(html.includes('<select id="campusshield-language"'), "language picker 
 assert.ok(html.includes('<option value="yo" lang="yo">Yorùbá</option>'), "language picker includes Yoruba");
 assert.ok(html.includes('<option value="ha" lang="ha">Hausa</option>'), "language picker includes Hausa");
 assert.ok(html.includes('<option value="ig" lang="ig">Igbo</option>'), "language picker includes Igbo");
-assert.ok(html.includes('<script src="./campusshield-i18n.js"></script>'), "language bundle is loaded by the landing page");
+assert.match(htmlMarkup, /<script src="\\.\\/campusshield-i18n\\.js" defer><\\/script>/, "language bundle is deferred in dependency order");
 assert.doesNotThrow(() => new Function(i18nScript), "multilingual UI bundle parses");
 assert.ok(i18nScript.includes('localStorage.setItem("campusshield_language", locale)'), "language choice is saved on this device");
 assert.match(i18nScript, /"fr"/, "French is available");
@@ -591,6 +594,13 @@ console.log("PASS ShieldMind surfaces safe provider rate-limit and billing error
 
 // Mobile workspace layout: protect narrow screens from horizontal overflow and cramped controls.
 assert.match(html, /Mobile-first layout hardening: prevent clipped headers, horizontal overflow, and cramped controls/);
+assert.match(htmlMarkup, /<script src="\\.\\/campusshield-app\\.js" defer><\\/script>/, "large app code is external and deferred instead of parser-blocking inline JS");
+assert.doesNotThrow(() => new Function(appScript), "externalized main application bundle parses");
+assert.match(appScript, /function canManageIncidents\\(\\)/, "external application bundle retains role-gated incident controls");
+assert.match(css, /CampusShield cross-device layout guardrails and responsive fit pass/, "global cross-device layout guardrails are loaded");
+assert.match(css, /@media \\(max-width: 420px\\)/, "small-phone layout has dedicated responsive rules");
+assert.match(css, /@media \\(min-width: 1441px\\)/, "wide desktop layout has dedicated responsive rules");
+assert.doesNotMatch(htmlMarkup, /<script src="[^"]+"(?:\\s+[^>]*)?><\\/script>/, "no local or vendor script is left parser-blocking");
 assert.match(html, /html,body\{min-width:320px\}/);
 assert.match(html, /\.topbar-actions\{flex:1 1 100%;width:100%;justify-content:flex-start;gap:7px\}/);
 assert.match(html, /\.field input,\.field select,\.field textarea,\.institution-picker-field input\[list\]\{width:100%;min-height:46px;padding:11px 12px;font-size:16px\}/);
