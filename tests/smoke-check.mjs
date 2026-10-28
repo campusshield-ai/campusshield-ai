@@ -1,8 +1,16 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const htmlMarkup = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const appScript = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
+const html = htmlMarkup + "\n" + appScript;
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
+const css = dashboardUpgradeCss;
+const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
+const responsiveCssEnd = htmlMarkup.indexOf("</style>", responsiveCssStart);
+const responsiveCss = responsiveCssStart >= 0 && responsiveCssEnd > responsiveCssStart
+  ? htmlMarkup.slice(htmlMarkup.indexOf(">", responsiveCssStart) + 1, responsiveCssEnd)
+  : "";
 const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.js", import.meta.url), "utf8");
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
@@ -46,7 +54,7 @@ const offlinePage = await readFile(new URL("../offline.html", import.meta.url), 
 const privacyPage = await readFile(new URL("../privacy.html", import.meta.url), "utf8");
 const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf8");
 const contactPage = await readFile(new URL("../contact.html", import.meta.url), "utf8");
-const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
+const inlineScripts = [...htmlMarkup.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
 assert.ok(html.includes('href="./campus-dashboard-upgrade.css"'), "dashboard upgrade stylesheet is loaded");
 assert.ok(html.includes('src="./campus-dashboard-upgrade.js" defer'), "dashboard upgrade behavior is loaded after the workspace markup");
@@ -77,7 +85,7 @@ assert.ok(html.includes('<select id="campusshield-language"'), "language picker 
 assert.ok(html.includes('<option value="yo" lang="yo">Yorùbá</option>'), "language picker includes Yoruba");
 assert.ok(html.includes('<option value="ha" lang="ha">Hausa</option>'), "language picker includes Hausa");
 assert.ok(html.includes('<option value="ig" lang="ig">Igbo</option>'), "language picker includes Igbo");
-assert.ok(html.includes('<script src="./campusshield-i18n.js"></script>'), "language bundle is loaded by the landing page");
+assert.ok(htmlMarkup.includes('<script src="./campusshield-i18n.js" defer></script>'), "language bundle is deferred in dependency order");
 assert.doesNotThrow(() => new Function(i18nScript), "multilingual UI bundle parses");
 assert.ok(i18nScript.includes('localStorage.setItem("campusshield_language", locale)'), "language choice is saved on this device");
 assert.match(i18nScript, /"fr"/, "French is available");
@@ -141,7 +149,7 @@ assert.match(timetable, /escapeCalendarText/);
 assert.match(timetable, /foldCalendarLine/);
 assert.match(timetable, /occurrence\?\.recurring/, "recurring class occurrences are expanded for calendar export");
 assert.match(timetable, /campusEvents\.forEach/, "published campus events are included in the calendar export");
-assert.match(html, /<script src="\.\/shieldmind-planner\.js"><\/script>/);
+assert.ok(htmlMarkup.includes('<script src="./shieldmind-planner.js" defer></script>'), "ShieldMind planner is deferred in dependency order");
 assert.doesNotMatch(html, /campusshield-backend-identity-addon\.js/);
 assert.match(planner, /create_my_shieldmind_planner_item/);
 assert.match(planner, /list_my_shieldmind_planner_items/);
@@ -376,7 +384,7 @@ assert.match(html, /id="pq-submit-form"/, "students can submit permitted past pa
 assert.match(html, /id="pq-quiz-form"/, "the exam simulator has an answer submission form");
 assert.match(html, /id="pq-reviewer-tools" hidden/, "review and marking-key tools are hidden by default");
 assert.match(html, /id="pq-topic-weaknesses"/, "practice results include topic-level revision suggestions");
-assert.match(html, /<script src="\.\/past-question-practice\.js"><\/script>/, "past-question UI logic is loaded");
+assert.ok(htmlMarkup.includes('<script src="./past-question-practice.js" defer></script>'), "past-question UI logic is deferred in dependency order");
 assert.doesNotThrow(() => new Function(pastQuestionScript), "past-question UI script parses");
 assert.match(pastQuestionMigration, /create table if not exists public\.past_question_papers/i);
 assert.match(pastQuestionMigration, /create table if not exists public\.past_question_items/i);
@@ -591,6 +599,17 @@ console.log("PASS ShieldMind surfaces safe provider rate-limit and billing error
 
 // Mobile workspace layout: protect narrow screens from horizontal overflow and cramped controls.
 assert.match(html, /Mobile-first layout hardening: prevent clipped headers, horizontal overflow, and cramped controls/);
+assert.ok(htmlMarkup.includes('<script src="./campusshield-app.js" defer></script>'), "large app code is external and deferred instead of parser-blocking inline JS");
+assert.doesNotThrow(() => new Function(appScript), "externalized main application bundle parses");
+assert.ok(appScript.includes("function canManageIncidents()"), "external application bundle retains role-gated incident controls");
+assert.ok(responsiveCss.includes("CampusShield cross-device layout guardrails and responsive fit pass"), "global cross-device layout guardrails are loaded");
+assert.ok(responsiveCss.includes('input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])'), "responsive field sizing does not stretch checkboxes, radio buttons or hidden inputs");
+assert.ok(responsiveCss.includes('input[type="search"]'), "touch target sizing is limited to text-like controls");
+assert.ok(responsiveCss.includes("@media (max-width: 420px)"), "small-phone layout has dedicated responsive rules");
+assert.ok(responsiveCss.includes("@media (min-width: 1441px)"), "wide desktop layout has dedicated responsive rules");
+const externalScriptTags = [...htmlMarkup.matchAll(/<script\b[^>]*src=["'][^"']+["'][^>]*><\/script>/gi)].map((match) => match[0]);
+assert.ok(externalScriptTags.length >= 10, "application dependencies are externalized");
+assert.ok(externalScriptTags.every((tag) => /\bdefer\b|\basync\b|type=["']module["']/i.test(tag)), "no external script is left parser-blocking");
 assert.match(html, /html,body\{min-width:320px\}/);
 assert.match(html, /\.topbar-actions\{flex:1 1 100%;width:100%;justify-content:flex-start;gap:7px\}/);
 assert.match(html, /\.field input,\.field select,\.field textarea,\.institution-picker-field input\[list\]\{width:100%;min-height:46px;padding:11px 12px;font-size:16px\}/);

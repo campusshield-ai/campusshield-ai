@@ -53,3 +53,5 @@ html[data-theme="dark"] .theme-toggle{background:#19333a;color:#a8f0dc;border-co
 @media(max-width:1100px){.topbar{flex-wrap:wrap}.global-search{order:3;flex-basis:100%;max-width:none;margin:0}.topbar-actions{gap:6px}.student-shortcuts-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.global-search-input{height:40px}.global-search-kbd{display:none}.student-shortcuts-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.student-shortcut-card{min-height:126px;padding:13px}.student-shortcuts-heading{align-items:flex-start}.theme-toggle{height:38px;min-width:38px;padding:0 8px}.theme-toggle-label{display:none}}
 @media(prefers-reduced-motion:reduce){.student-shortcut-card,.global-search-input{transition:none}}
+
+/* Final responsive overrides live at the end of index.html to win against legacy inline styles. */
