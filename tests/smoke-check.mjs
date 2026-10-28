@@ -344,6 +344,14 @@ assert.match(html, /id="past-questions-nav"/, "Past Questions & Exam Prep has a 
 assert.match(html, /!window\.PastQuestionPractice\?\.isEnabled\?\.\(\)/, "production navigation blocks the staging-only feature until production schema is approved");
 assert.match(pastQuestionScript, /STAGING_PROJECT_REF = "hywcpnoqqhxvujnimhxl"/, "new feature is gated to the staging Supabase project");
 assert.match(pastQuestionScript, /window\.PastQuestionPractice = \{ load, isEnabled \}/, "navigation can verify feature environment before routing");
+assert.match(html, /id="pq-source-guide"/, "past-question page explains how authentic papers are sourced");
+assert.match(html, /https:\/\/legacy\.babcock\.edu\.ng\/library/, "past-question page links to Babcock's official library");
+assert.match(html, /https:\/\/elibrary\.babcock\.edu\.ng\//, "past-question page links to Babcock's official e-library");
+assert.match(html, /authorized campus reviewer approves them/, "past-question submissions remain private until review");
+assert.match(html, /AI practice set is not an authentic past paper/, "AI practice is clearly distinguished from authentic papers");
+assert.match(pastQuestionScript, /No reviewed past papers yet/, "empty library explains the initial zero-paper state");
+assert.match(pastQuestionScript, /data-pq-empty-contribute/, "empty library offers an actionable contribution path");
+assert.match(pastQuestionScript, /data-pq-empty-practice/, "empty library offers an AI-practice path");
 assert.match(html, /id="page-past-questions"/, "Past Questions & Exam Prep page is included");
 assert.match(html, /Babcock-first pilot/i, "Babcock University is named as the first pilot");
 assert.match(html, /data-page="past-questions"/, "past-question navigation is role-workspace navigation");
