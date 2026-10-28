@@ -80,7 +80,7 @@ assert.ok(html.includes('<select id="campusshield-language"'), "language picker 
 assert.ok(html.includes('<option value="yo" lang="yo">Yorùbá</option>'), "language picker includes Yoruba");
 assert.ok(html.includes('<option value="ha" lang="ha">Hausa</option>'), "language picker includes Hausa");
 assert.ok(html.includes('<option value="ig" lang="ig">Igbo</option>'), "language picker includes Igbo");
-assert.match(htmlMarkup, /<script src="\\.\\/campusshield-i18n\\.js" defer><\\/script>/, "language bundle is deferred in dependency order");
+assert.ok(htmlMarkup.includes('<script src="./campusshield-i18n.js" defer></script>'), "language bundle is deferred in dependency order");
 assert.doesNotThrow(() => new Function(i18nScript), "multilingual UI bundle parses");
 assert.ok(i18nScript.includes('localStorage.setItem("campusshield_language", locale)'), "language choice is saved on this device");
 assert.match(i18nScript, /"fr"/, "French is available");
