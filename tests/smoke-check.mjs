@@ -41,6 +41,7 @@ const requestedRoleRpcMigration = await readFile(new URL("../supabase/migrations
 const pastQuestionMigration = await readFile(new URL("../supabase/migrations/20261027230000_past_questions_exam_prep.sql", import.meta.url), "utf8");
 const pastQuestionFunction = await readFile(new URL("../supabase/functions/past-question-practice/index.ts", import.meta.url), "utf8");
 const pastQuestionScript = await readFile(new URL("../past-question-practice.js", import.meta.url), "utf8");
+const pastQuestionCoverageMigration = await readFile(new URL("../supabase/migrations/20261028023527_past_question_nationwide_coverage.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const privacyPage = await readFile(new URL("../privacy.html", import.meta.url), "utf8");
 const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf8");
@@ -345,6 +346,21 @@ assert.match(html, /!window\.PastQuestionPractice\?\.isEnabled\?\.\(\)/, "produc
 assert.match(pastQuestionScript, /STAGING_PROJECT_REF = "hywcpnoqqhxvujnimhxl"/, "new feature is gated to the staging Supabase project");
 assert.match(pastQuestionScript, /window\.PastQuestionPractice = \{ load, isEnabled \}/, "navigation can verify feature environment before routing");
 assert.match(html, /id="pq-source-guide"/, "past-question page explains how authentic papers are sourced");
+assert.match(html, /id="pq-university-directory"/, "past-question page has a nationwide university directory");
+assert.match(html, /https:\/\/enuc\.nuc\.edu\.ng\/nus/, "students can verify institutions through the official NUC directory");
+assert.match(html, /id="pq-university-search"/, "nationwide directory supports fast university search");
+assert.match(html, /id="pq-university-ownership"/, "nationwide directory filters federal, state and private universities");
+assert.match(html, /id="pq-university-state"/, "nationwide directory filters by state");
+assert.match(html, /pq-nationwide-responsive/, "responsive layout hardening is included");
+assert.match(pastQuestionScript, /listCampusUniversities\(\)/, "directory uses the active campus institution registry");
+assert.match(pastQuestionScript, /get_past_question_coverage/, "directory reads aggregate approved-paper coverage");
+assert.match(pastQuestionScript, /data-pq-directory-more/, "directory incrementally renders results for performance");
+assert.match(pastQuestionScript, /verified campus membership/, "university selection cannot bypass campus access controls");
+assert.match(pastQuestionCoverageMigration, /security definer/i, "coverage function executes as a controlled aggregate");
+assert.match(pastQuestionCoverageMigration, /rights_confirmed is true/i, "coverage only counts permission-confirmed papers");
+assert.match(pastQuestionCoverageMigration, /p\.status = 'approved'/i, "coverage only counts approved papers");
+assert.match(pastQuestionCoverageMigration, /p\.source_type <> 'ai_generated'/i, "coverage excludes AI-generated questions");
+assert.match(pastQuestionCoverageMigration, /grant execute on function public\.get_past_question_coverage\(\) to anon, authenticated/i, "only aggregate coverage is public to app clients");
 assert.match(html, /https:\/\/legacy\.babcock\.edu\.ng\/library/, "past-question page links to Babcock's official library");
 assert.match(html, /https:\/\/elibrary\.babcock\.edu\.ng\//, "past-question page links to Babcock's official e-library");
 assert.match(html, /authorized campus reviewer approves them/, "past-question submissions remain private until review");
@@ -353,7 +369,7 @@ assert.match(pastQuestionScript, /No reviewed past papers yet/, "empty library e
 assert.match(pastQuestionScript, /data-pq-empty-contribute/, "empty library offers an actionable contribution path");
 assert.match(pastQuestionScript, /data-pq-empty-practice/, "empty library offers an AI-practice path");
 assert.match(html, /id="page-past-questions"/, "Past Questions & Exam Prep page is included");
-assert.match(html, /Babcock-first pilot/i, "Babcock University is named as the first pilot");
+assert.match(html, /Babcock-first pilot/i, "Babcock University is retained as an early pilot while the directory is nationwide");
 assert.match(html, /data-page="past-questions"/, "past-question navigation is role-workspace navigation");
 assert.match(html, /id="pq-ai-form"/, "students can request AI-generated practice questions");
 assert.match(html, /id="pq-submit-form"/, "students can submit permitted past papers for review");

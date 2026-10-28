@@ -290,7 +290,7 @@ async getCurrentUser() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client
         .from("campus_universities")
-        .select("id, name, slug, ownership, state")
+        .select("id, name, slug, ownership, state, official_website")
         .eq("is_active", true)
         .order("name", { ascending: true })
         .limit(500);

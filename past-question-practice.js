@@ -7,6 +7,7 @@
   const $ = id => document.getElementById(id);
   const state = {
     loaded: false, busy: false, context: null, papers: [], attempts: [],
+    universities: [], directoryCoverage: null, directoryLoaded: false, directoryLoading: false, directoryVisible: 30,
     reviewer: false, quiz: null, timer: null, lastResult: null,
   };
   const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -30,7 +31,7 @@
     const nav = $("past-questions-nav");
     if (nav) nav.hidden = !enabled;
     if (!enabled) {
-      ["pq-library-section", "pq-submit-section", "pq-ai-section", "pq-history-section", "pq-reviewer-tools", "pq-quiz-panel", "pq-result-panel"]
+      ["pq-library-section", "pq-submit-section", "pq-ai-section", "pq-history-section", "pq-reviewer-tools", "pq-quiz-panel", "pq-result-panel", "pq-university-directory"]
         .forEach(id => { if ($(id)) $(id).hidden = true; });
       message("pq-page-status", "Past Questions & Exam Prep is enabled in staging while its authenticated workflows are validated. Production remains unchanged.");
     }
@@ -118,6 +119,7 @@
     const name = currentUniversityName();
     const label = $("pq-campus-label");
     if (label) label.textContent = ctx?.universityId ? name : "Verification needed";
+    if (state.directoryLoaded) renderUniversityDirectory();
     if (ctx?.membership?.department) {
       if ($("pq-ai-department") && !$("pq-ai-department").value) $("pq-ai-department").value = ctx.membership.department;
       if ($("pq-submit-department") && !$("pq-submit-department").value) $("pq-submit-department").value = ctx.membership.department;
@@ -145,8 +147,170 @@
     }
   }
 
+  function safeDirectoryUrl(value) {
+    try {
+      const url = new URL(String(value || ""));
+      return url.protocol === "https:" ? url.href : "";
+    } catch (_error) {
+      return "";
+    }
+  }
+
+  function universityCoverageRows(universityId) {
+    if (!Array.isArray(state.directoryCoverage)) return [];
+    return state.directoryCoverage.filter(row => String(row.university_id) === String(universityId));
+  }
+
+  async function loadUniversityDirectory() {
+    if (state.directoryLoaded || state.directoryLoading || !isEnabled()) return;
+    state.directoryLoading = true;
+    message("pq-university-status", "Loading active universities and approved-paper coverage…");
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.listCampusUniversities) throw new Error("The campus directory is not available in this preview.");
+      const data = await backend.listCampusUniversities();
+      state.universities = (Array.isArray(data) ? data : [])
+        .filter(university => university?.id && university?.name)
+        .sort((a, b) => String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }));
+
+      // This RPC returns aggregate counts only, never files, source URLs, pending submissions,
+      // answer keys, or submitter identities.
+      state.directoryCoverage = null;
+      try {
+        const { data: coverage, error } = await client().rpc("get_past_question_coverage");
+        if (error) throw error;
+        state.directoryCoverage = Array.isArray(coverage) ? coverage : [];
+      } catch (coverageError) {
+        console.warn("Nationwide past-question coverage is not available yet:", coverageError?.message || "RPC unavailable");
+      }
+
+      const stateSelect = $("pq-university-state");
+      if (stateSelect) {
+        const selected = stateSelect.value;
+        const states = [...new Set(state.universities.map(university => clean(university.state, 80)).filter(Boolean))]
+          .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+        stateSelect.innerHTML = '<option value="">All states and FCT</option>'
+          + states.map(value => '<option value="' + escapeHtml(value) + '">' + escapeHtml(value) + '</option>').join("");
+        if (states.includes(selected)) stateSelect.value = selected;
+      }
+      state.directoryLoaded = true;
+      renderUniversityDirectory();
+    } catch (error) {
+      state.directoryLoaded = true;
+      const count = $("pq-university-directory-count");
+      if (count) count.textContent = "Directory unavailable";
+      message("pq-university-status", "CampusShield could not load the directory just now. Verify institutions through the National Universities Commission directory linked below.", "error");
+      const results = $("pq-university-results");
+      if (results) results.innerHTML = '<div class="pq-empty"><strong>Directory temporarily unavailable</strong><p>Refresh the page to try again, or use the official NUC directory below.</p></div>';
+      console.warn("Nationwide university directory failed to load:", error?.message || "unknown error");
+    } finally {
+      state.directoryLoading = false;
+    }
+  }
+
+  function renderUniversityDirectory(resetVisible = false) {
+    const results = $("pq-university-results");
+    if (!results) return;
+    if (resetVisible) state.directoryVisible = 30;
+
+    const term = clean($("pq-university-search")?.value, 160).toLocaleLowerCase();
+    const ownership = clean($("pq-university-ownership")?.value, 30);
+    const stateFilter = clean($("pq-university-state")?.value, 80);
+    const filtered = state.universities.filter(university => {
+      const search = [university.name, university.state, university.ownership, university.slug].join(" ").toLocaleLowerCase();
+      return (!term || search.includes(term))
+        && (!ownership || university.ownership === ownership)
+        && (!stateFilter || university.state === stateFilter);
+    });
+    const count = $("pq-university-directory-count");
+    if (count) count.textContent = state.universities.length.toLocaleString() + " active universities";
+    const coveredCount = state.directoryCoverage
+      ? new Set(state.directoryCoverage.filter(row => Number(row.approved_paper_count || 0) > 0).map(row => String(row.university_id))).size
+      : null;
+    const coverageNote = coveredCount === null
+      ? "Coverage totals are temporarily unavailable."
+      : coveredCount.toLocaleString() + " institution(s) currently have approved authentic paper records.";
+    message("pq-university-status",
+      filtered.length.toLocaleString() + " of " + state.universities.length.toLocaleString() + " active universities match. " + coverageNote,
+      state.directoryCoverage ? "" : "error");
+
+    if (!filtered.length) {
+      results.innerHTML = '<div class="pq-empty"><strong>No universities match this search</strong><p>Try another spelling, ownership type or state.</p></div>';
+      return;
+    }
+
+    const visible = filtered.slice(0, state.directoryVisible);
+    const currentId = state.context?.universityId ? String(state.context.universityId) : "";
+    results.innerHTML = visible.map(university => {
+      const records = universityCoverageRows(university.id);
+      const knownCoverage = Array.isArray(state.directoryCoverage);
+      const approvedCount = knownCoverage ? records.reduce((sum, row) => sum + Number(row.approved_paper_count || 0), 0) : 0;
+      const courses = [...new Map(records.filter(row => row.course_code)
+        .map(row => [String(row.course_code).toUpperCase(), String(row.course_title || "")])).entries()];
+      const isCurrent = currentId && currentId === String(university.id);
+      let coverageLabel = "Coverage not loaded";
+      let coverageClass = "is-unknown";
+      let coverageDetail = "Approved-paper coverage could not be checked just now.";
+      if (knownCoverage && approvedCount > 0) {
+        coverageLabel = approvedCount + " approved paper" + (approvedCount === 1 ? "" : "s");
+        coverageClass = "";
+        coverageDetail = courses.length + " course(s) represented by reviewed, permission-confirmed papers.";
+      } else if (knownCoverage) {
+        coverageLabel = "No approved papers yet";
+        coverageClass = "is-empty";
+        coverageDetail = "No approved, permission-confirmed authentic paper records are currently counted.";
+      }
+      const courseTags = courses.slice(0, 4).map(([code]) => '<span class="pq-course-tag">' + escapeHtml(code) + '</span>').join("");
+      const moreCourses = courses.length > 4 ? '<span class="pq-course-tag">+' + (courses.length - 4) + ' more</span>' : "";
+      const website = safeDirectoryUrl(university.official_website);
+      const action = isCurrent
+        ? '<button type="button" class="btn" data-pq-directory-library="' + escapeHtml(university.id) + '">View your library</button>'
+        : '<button type="button" class="btn secondary" data-pq-directory-access="' + escapeHtml(university.id) + '">Access details</button>';
+      return '<article class="pq-university-card">'
+        + '<div class="pq-university-card-top"><span class="pq-university-kind">' + escapeHtml(university.ownership || "University") + '</span>'
+        + '<span class="pq-university-coverage ' + coverageClass + '">' + escapeHtml(coverageLabel) + '</span></div>'
+        + '<h3>' + escapeHtml(university.name) + '</h3>'
+        + '<p class="pq-university-meta">' + escapeHtml(university.state || "Nigeria") + (isCurrent ? " · Your verified campus" : "") + '</p>'
+        + '<p class="pq-university-coverage-detail">' + escapeHtml(coverageDetail) + '</p>'
+        + (courses.length ? '<div class="pq-course-tags" aria-label="Courses with approved papers">' + courseTags + moreCourses + '</div>' : "")
+        + '<div class="pq-university-card-actions">' + action
+        + (website ? '<a class="btn secondary" href="' + escapeHtml(website) + '" target="_blank" rel="noopener noreferrer">Official website ↗</a>' : "")
+        + '</div></article>';
+    }).join("");
+
+    if (filtered.length > visible.length) {
+      results.insertAdjacentHTML("beforeend",
+        '<button type="button" class="btn secondary pq-university-more" data-pq-directory-more>Load ' +
+        Math.min(30, filtered.length - visible.length) + ' more (' + (filtered.length - visible.length) + ' remaining)</button>');
+    }
+  }
+
+  function handleUniversityDirectoryClick(event) {
+    const more = event.target.closest("[data-pq-directory-more]");
+    if (more) {
+      state.directoryVisible += 30;
+      renderUniversityDirectory();
+      return;
+    }
+    const libraryButton = event.target.closest("[data-pq-directory-library]");
+    if (libraryButton) {
+      $("pq-library-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const accessButton = event.target.closest("[data-pq-directory-access]");
+    if (accessButton) {
+      const university = state.universities.find(item => String(item.id) === String(accessButton.dataset.pqDirectoryAccess));
+      if (university) {
+        message("pq-university-status",
+          "Access to " + university.name + " papers requires an active, verified campus membership for that institution. Selecting it here does not change your verified campus or unlock private papers.");
+      }
+    }
+  }
+
   async function load(profileHint) {
     if (!applyEnvironmentGate()) return;
+    // Load the public directory independently so it remains useful before a student signs in.
+    loadUniversityDirectory();
     try {
       await resolveContext(profileHint);
       renderContext();
@@ -636,6 +800,10 @@
     const scrollToPanel = id => $(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     $("pq-source-contribute")?.addEventListener("click", () => scrollToPanel("pq-submit-section"));
     $("pq-source-practice")?.addEventListener("click", () => scrollToPanel("pq-ai-section"));
+    $("pq-university-search")?.addEventListener("input", () => renderUniversityDirectory(true));
+    $("pq-university-ownership")?.addEventListener("change", () => renderUniversityDirectory(true));
+    $("pq-university-state")?.addEventListener("change", () => renderUniversityDirectory(true));
+    $("pq-university-results")?.addEventListener("click", handleUniversityDirectoryClick);
     $("pq-library-cards")?.addEventListener("click", event => {
       if (event.target.closest("[data-pq-empty-contribute]")) scrollToPanel("pq-submit-section");
       if (event.target.closest("[data-pq-empty-practice]")) scrollToPanel("pq-ai-section");
