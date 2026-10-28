@@ -1782,6 +1782,19 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .profile-avatar-image{width:100%;height:100%;object-fit:cover;border-radius:inherit}
 #profile-settings-avatar-fallback[hidden],#profile-settings-avatar[hidden],#profile-settings-avatar-preview[hidden],#profile-settings-avatar-preview-fallback[hidden]{display:none!important}
 @media(max-width:650px){.profile-identity-form{padding:12px}.profile-identity-actions .btn{flex:1 1 150px;justify-content:center}}
+
+/* Past-question source discovery and empty-library actions */
+#page-past-questions .pq-source-guide{margin-bottom:16px;padding:clamp(15px,2.4vw,24px)}
+#page-past-questions .pq-source-guide h2{margin:6px 0;font-size:clamp(17px,2vw,22px);color:var(--ink)}
+#page-past-questions .pq-source-guide .pq-side-intro{max-width:850px;font-size:12px}
+#page-past-questions .pq-source-links{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0 4px}
+#page-past-questions .pq-source-links .btn{display:inline-flex;align-items:center;min-height:38px;text-decoration:none}
+#page-past-questions .pq-source-guide .actions{margin-top:13px}
+#page-past-questions .pq-source-guide .pq-legal-note{font-size:10px}
+#page-past-questions .pq-empty-actions{grid-column:2;display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+#page-past-questions .pq-empty-actions .btn{min-height:32px;padding:7px 10px;font-size:10px}
+@media(max-width:600px){#page-past-questions .pq-source-links{display:grid;grid-template-columns:1fr}#page-past-questions .pq-source-links .btn{justify-content:center}#page-past-questions .pq-empty-actions{grid-column:1/-1}}
+
 </style>
 <style>
 .crawler-live-panel{overflow:hidden;background:radial-gradient(ellipse at top,#102c39 0,#0a1725 58%);border:1px solid #1b4350}
