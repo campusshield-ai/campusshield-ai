@@ -95,6 +95,23 @@ async resendConfirmation(email) {
   });
 },
 
+async verifySignupOtp(email, token) {
+  if (!client) {
+    throw new Error("Supabase is not configured.");
+  }
+  const normalizedEmail = String(email || "").trim();
+  const normalizedToken = String(token || "").trim();
+  if (!normalizedEmail) throw new Error("Enter your email address.");
+  if (!/^\d{6,8}$/.test(normalizedToken)) {
+    throw new Error("Enter the verification code from your email.");
+  }
+  return client.auth.verifyOtp({
+    email: normalizedEmail,
+    token: normalizedToken,
+    type: "email"
+  });
+},
+
     async requestPasswordReset(email, redirectTo) {
       if (!client) throw new Error("Supabase is not configured.");
       const normalizedEmail = String(email || "").trim();
