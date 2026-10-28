@@ -351,6 +351,8 @@ assert.match(institutionalBillingMigration, /requester_id = \(SELECT auth\.uid\(
 assert.match(institutionalBillingMigration, /public\.platform_is_admin\(\)/i);
 assert.match(html, /id="past-questions-nav"/, "Past Questions & Exam Prep has a dedicated campus navigation entry");
 assert.match(html, /!window\.PastQuestionPractice\?\.isEnabled\?\.\(\)/, "production navigation blocks the staging-only feature until production schema is approved");
+assert.match(appScript, /toast\('Past Questions & Exam Prep is coming soon\./, "production shows a user-facing notice when past-question prep is unavailable");
+assert.doesNotMatch(appScript, /Production remains unchanged until its database migration is approved/, "internal staging and migration status is not shown to end users");
 assert.match(pastQuestionScript, /STAGING_PROJECT_REF = "hywcpnoqqhxvujnimhxl"/, "new feature is gated to the staging Supabase project");
 assert.match(pastQuestionScript, /window\.PastQuestionPractice = \{ load, isEnabled \}/, "navigation can verify feature environment before routing");
 assert.match(html, /id="pq-source-guide"/, "past-question page explains how authentic papers are sourced");
