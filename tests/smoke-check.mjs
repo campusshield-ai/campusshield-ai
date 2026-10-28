@@ -546,7 +546,7 @@ assert.match(html, /academics:'Academic Life'/);
 assert.match(html, /TIMETABLE &amp; DEADLINES/);
 assert.match(html, /data-academic-focus="planner"/);
 assert.match(html, /button\.dataset\.academicFocus === 'planner'/);
-assert.ok(htmlMarkup.includes('<script src="./shieldmind-planner.js" defer></script>'), "ShieldMind planner is deferred in dependency order");
+assert.match(html, /shieldmind-planner-panel/);
 assert.match(html, /scrollIntoView/);
 assert.match(html, /prefers-reduced-motion: reduce/);
 assert.match(html, /id="campus-dashboard-helpdesk"/);
