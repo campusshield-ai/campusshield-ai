@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
+const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.js", import.meta.url), "utf8");
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
@@ -45,6 +47,14 @@ const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf
 const contactPage = await readFile(new URL("../contact.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
+assert.ok(html.includes('href="./campus-dashboard-upgrade.css"'), "dashboard upgrade stylesheet is loaded");
+assert.ok(html.includes('src="./campus-dashboard-upgrade.js" defer'), "dashboard upgrade behavior is loaded after the workspace markup");
+assert.match(dashboardUpgradeCss, /data-theme="dark"/, "dashboard supports an explicit dark theme");
+assert.match(dashboardUpgradeCss, /prefers-reduced-motion:reduce/, "dashboard respects reduced-motion preferences");
+assert.match(dashboardUpgradeJs, /campusshield_theme/, "theme preference is persisted per device");
+assert.match(dashboardUpgradeJs, /campus-global-search/, "global campus search is wired");
+assert.match(dashboardUpgradeJs, /student-shortcuts/, "student dashboard shortcuts are wired");
+assert.doesNotThrow(() => new Function(dashboardUpgradeJs), "dashboard upgrade script parses");
 assert.match(html, /id="login-features"/, "landing navigation has a Features destination");
 assert.match(html, /id="login-about"/, "landing navigation has an About destination");
 assert.match(html, /id="auth-helper"/, "landing Help navigation has a destination");
