@@ -161,6 +161,14 @@ test("verified synthetic student can open Lost & Found and submit a post for mod
   await expect(page.locator("#lost-found-nav")).toBeVisible();
   await expect(page.locator("#login-screen")).toBeHidden();
 
+  // First sign-in deliberately opens the welcome tour as a modal; finish it
+  // the same way a new student would before interacting with the sidebar.
+  const welcomeTour = page.locator("#campus-welcome-tour");
+  if (await welcomeTour.isVisible()) {
+    await page.locator("#campus-tour-finish").click();
+    await expect(welcomeTour).toBeHidden();
+  }
+
   await page.locator("#lost-found-nav").click();
   await expect(page.locator("#page-community")).toBeVisible();
   await expect(page.locator("#community-post-type")).toHaveValue("lost_found");
