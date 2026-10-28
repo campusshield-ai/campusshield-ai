@@ -4752,6 +4752,68 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
   }
 </style>
 
+<style id="campusshield-responsive-final">
+/* CampusShield cross-device layout guardrails and responsive fit pass. */
+:root { --cs-page-gutter: clamp(12px, 2.1vw, 28px); }
+html, body { max-width: 100%; overflow-x: clip; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+#workspace, .app, .main, .content, .page, .panel, .card, .grid, .stats,
+.heading, .heading > div, .panel-heading, .topbar, .topbar > *, .topbar-actions,
+.quick-action-bar, .quick-action-buttons, .campus-dashboard-hero, .settings-card,
+.auth-panel, .modal-card, .community-card, .pq-university-card { min-width: 0; }
+img, picture, video, canvas, iframe, svg { max-width: 100%; }
+input, select, textarea, button { max-width: 100%; }
+input, select, textarea { box-sizing: border-box; }
+table { max-width: 100%; }
+.table-wrap, .table-responsive, [data-table-scroll] { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-inline: contain; }
+.topbar-title, .heading h1, .heading h2, .heading p, .panel h2, .panel p,
+.stat-label, .stat-note, .muted, .message, .campus-dashboard-card,
+.settings-card, .modal-card { overflow-wrap: anywhere; }
+.actions, .heading-actions, .panel-heading, .quick-action-buttons,
+.campus-service-directory-heading, .campus-service-directory-filters { flex-wrap: wrap; }
+:where(.btn, button, input, select, textarea, a) { touch-action: manipulation; }
+:where(button, .btn, select, input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="tel"], input[type="number"], input[type="url"], input[type="date"], input[type="file"]) { min-height: 40px; }
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) { width: 100%; min-width: 0; }
+:where(.field, .form-group, .grid > *, .stats > *, .card, .panel) { min-width: 0; }
+@media (min-width: 1441px) {
+  #workspace .content { max-width: 1680px; margin-inline: auto; padding-inline: clamp(28px, 2.4vw, 42px); }
+  #workspace .page > .heading h1 { font-size: clamp(27px, 1.9vw, 34px); }
+}
+@media (min-width: 761px) and (max-width: 1040px) {
+  #workspace .content { padding-inline: 18px; }
+  .quick-action-bar { grid-template-columns: minmax(0, 1fr); }
+  .quick-action-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  #workspace .content { width: 100%; max-width: 100%; padding: 13px 12px calc(84px + env(safe-area-inset-bottom)); }
+  #workspace .page > .heading { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+  #workspace .page > .heading > div { width: 100%; }
+  #workspace .page > .heading .heading-actions { display: flex; width: 100%; flex-wrap: wrap; gap: 8px; }
+  #workspace .page > .heading .heading-actions > * { flex: 1 1 140px; min-width: 0; }
+  .panel-heading { align-items: flex-start; gap: 10px; }
+  .panel-heading > * { min-width: 0; }
+  .quick-action-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .campus-dashboard-hero { grid-template-columns: minmax(0,1fr) !important; gap: 14px; }
+  .campus-dashboard-hero > * { min-width: 0; }
+  .modal-card, dialog { width: min(100% - 20px, 620px); max-width: calc(100vw - 20px); max-height: calc(100dvh - 24px); overflow: auto; }
+  .settings-grid, .form-grid, .grid.two, .grid.three { grid-template-columns: minmax(0,1fr); }
+  .field input, .field select, .field textarea { font-size: 16px; }
+  .quick-action-bar { grid-template-columns: minmax(0,1fr); padding: 12px; }
+  .table-wrap { margin-inline: 0; }
+}
+@media (max-width: 420px) {
+  #workspace .content { padding-inline: 10px; }
+  .quick-action-buttons { grid-template-columns: minmax(0,1fr); }
+  .quick-action-button { min-height: 44px; }
+  .actions > .btn, .heading-actions > .btn { flex: 1 1 100%; justify-content: center; white-space: normal; }
+  .modal-card, dialog { width: calc(100vw - 16px); max-width: calc(100vw - 16px); }
+  .field label { line-height: 1.4; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+
 <script src="./campus-dashboard-upgrade.js" defer></script>
 </body>
 </html>
