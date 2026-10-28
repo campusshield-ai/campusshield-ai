@@ -1,0 +1,55 @@
+/* CampusShield AI dashboard upgrade: accessible theme tokens, global search and student shortcuts. */
+:root{--cs-surface:#fff;--cs-surface-soft:#f4f8f6;--cs-text:#17313a;--cs-muted:#71828a;--cs-border:#e2eae6;--cs-topbar:rgba(255,255,255,.94);--cs-search:#f2f6f5}
+html[data-theme="dark"]{color-scheme:dark;--bg:#0b171b;--card:#11262c;--ink:#e5f1ee;--line:#294047;--muted:#a0b5b5;--cs-surface:#11262c;--cs-surface-soft:#172f35;--cs-text:#e5f1ee;--cs-muted:#a0b5b5;--cs-border:#294047;--cs-topbar:rgba(13,31,36,.96);--cs-search:#183139;--shadow:0 18px 44px rgba(0,0,0,.2);--shadow-soft:0 7px 22px rgba(0,0,0,.16)}
+html[data-theme="dark"] body{background:#0b171b;color:#e5f1ee}
+html[data-theme="dark"] .topbar{background:var(--cs-topbar);border-color:var(--cs-border);color:var(--cs-text)}
+html[data-theme="dark"] .topbar-title strong,html[data-theme="dark"] .heading h1,html[data-theme="dark"] .panel h2,html[data-theme="dark"] .stat-num,html[data-theme="dark"] .dashboard-section-heading{color:var(--cs-text)}
+html[data-theme="dark"] .panel,html[data-theme="dark"] .stat,html[data-theme="dark"] .auth-panel,html[data-theme="dark"] .community-card,html[data-theme="dark"] .modal-card,html[data-theme="dark"] .settings-card{background:var(--cs-surface);border-color:var(--cs-border);color:var(--cs-text)}
+html[data-theme="dark"] .field input,html[data-theme="dark"] .field select,html[data-theme="dark"] .field textarea,html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#10242a;color:var(--cs-text);border-color:#355058}
+html[data-theme="dark"] .btn.secondary{background:#1a353c;color:#e5f1ee;border-color:#355058}
+html[data-theme="dark"] th{background:#172e34;color:#bfd0cf}html[data-theme="dark"] td{border-color:#294047}
+html[data-theme="dark"] .stat-label,html[data-theme="dark"] .stat-note,html[data-theme="dark"] .panel-heading p,html[data-theme="dark"] .heading p,html[data-theme="dark"] .muted{color:var(--cs-muted)}
+html[data-theme="dark"] .stat::after{border-color:#294047;box-shadow:0 0 0 13px #142a30,0 0 0 14px #1a343b}
+html[data-theme="dark"] .notice-inline{background:#2c2a20;border-color:#5d5031;color:#f0dfb4}
+html[data-theme="dark"] .campus-alerts-strip{background:#2b2920;border-color:#5c5031;color:#f0dfb4}
+html[data-theme="dark"] .toast{background:#e4f5ef;color:#102b35}
+html[data-theme="dark"] .global-search-input{background:#19333a;border-color:#355058;color:#e5f1ee}
+html[data-theme="dark"] .global-search-input::placeholder{color:#a0b5b5}
+html[data-theme="dark"] .global-search-results{background:#11262c;border-color:#355058;box-shadow:0 18px 45px #0008}
+html[data-theme="dark"] .global-search-result{color:#e5f1ee}
+html[data-theme="dark"] .global-search-result:hover,html[data-theme="dark"] .global-search-result:focus-visible{background:#1b3b42}
+html[data-theme="dark"] .student-shortcut-card{background:#142e34;border-color:#315058;color:#e5f1ee}
+html[data-theme="dark"] .student-shortcut-card p{color:#b4c9c7}
+html[data-theme="dark"] .theme-toggle{background:#19333a;color:#a8f0dc;border-color:#355058}
+.topbar{gap:clamp(8px,1.4vw,20px)}
+.global-search{position:relative;flex:1;min-width:170px;max-width:470px;margin:0 auto 0 8px}
+.global-search-input{width:100%;height:42px;border:1px solid #e0e9e5;border-radius:13px;background:#f2f6f5;color:#17313a;padding:0 42px 0 40px;font-size:12px;outline-offset:2px;transition:border-color .18s,box-shadow .18s,background .18s}
+.global-search-input:focus{border-color:#67cdb4;box-shadow:0 0 0 3px #79e0c425}
+.global-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#829792;pointer-events:none}
+.global-search-kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:#81918f;border:1px solid var(--cs-border);border-radius:5px;padding:2px 5px;pointer-events:none}
+.global-search-results{position:absolute;top:calc(100% + 9px);left:0;right:0;z-index:30;max-height:min(65vh,430px);overflow:auto;background:#fff;border:1px solid #e2eae6;border-radius:15px;box-shadow:0 18px 45px #17313a20;padding:7px}
+.global-search-results[hidden]{display:none}
+.global-search-heading{padding:9px 10px 6px;color:#82918f;font-size:10px;font-weight:850;letter-spacing:.1em;text-transform:uppercase}
+.global-search-result{width:100%;display:flex;align-items:center;gap:11px;border:0;background:transparent;color:#17313a;text-align:left;padding:10px;border-radius:10px;font-size:12px}
+.global-search-result:hover,.global-search-result:focus-visible{background:#eff7f3;outline:none}
+.global-search-result-icon{display:grid;place-items:center;width:31px;height:31px;flex:0 0 31px;border-radius:9px;background:#def5ed;color:#17634f;font-size:15px}
+.global-search-result strong{display:block;font-size:12px}.global-search-result small{display:block;margin-top:2px;color:#81918f;font-size:10px}
+.global-search-empty{padding:14px 10px;color:#81918f;font-size:12px}
+.topbar-theme-area{display:flex;align-items:center;gap:8px}
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:40px;height:40px;padding:0 10px;border:1px solid #e0e9e5;border-radius:12px;background:#f2f6f5;color:#294e53}
+.theme-toggle svg{width:18px;height:18px}
+.theme-toggle-label{font-size:11px;font-weight:750}
+.student-shortcuts{margin:0 0 22px}
+.student-shortcuts-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.student-shortcuts-heading h2{margin:0;font-size:17px;letter-spacing:-.03em}
+.student-shortcuts-heading p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.student-shortcuts-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.student-shortcut-card{display:flex;flex-direction:column;align-items:flex-start;min-height:138px;padding:17px;border:1px solid #dce9e4;border-radius:16px;background:linear-gradient(145deg,#fff,#f6faf8);color:#17313a;text-align:left;box-shadow:0 6px 20px #17313a08;transition:transform .18s,border-color .18s,box-shadow .18s}
+.student-shortcut-card:hover{transform:translateY(-2px);border-color:#91d9c6;box-shadow:0 12px 28px #17313a12}
+.student-shortcut-icon{display:grid;place-items:center;width:36px;height:36px;margin-bottom:12px;border-radius:11px;background:#ddf5ec;color:#16745f;font-size:18px}
+.student-shortcut-card strong{font-size:13px;letter-spacing:-.015em}
+.student-shortcut-card p{margin:5px 0 0;color:#71828a;font-size:11px;line-height:1.45}
+.student-shortcut-card:focus-visible{outline:3px solid #61cdb5;outline-offset:3px}
+@media(max-width:1100px){.topbar{flex-wrap:wrap}.global-search{order:3;flex-basis:100%;max-width:none;margin:0}.topbar-actions{gap:6px}.student-shortcuts-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.global-search-input{height:40px}.global-search-kbd{display:none}.student-shortcuts-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.student-shortcut-card{min-height:126px;padding:13px}.student-shortcuts-heading{align-items:flex-start}.theme-toggle{height:38px;min-width:38px;padding:0 8px}.theme-toggle-label{display:none}}
+@media(prefers-reduced-motion:reduce){.student-shortcut-card,.global-search-input{transition:none}}
