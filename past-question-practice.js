@@ -119,6 +119,7 @@
     const name = currentUniversityName();
     const label = $("pq-campus-label");
     if (label) label.textContent = ctx?.universityId ? name : "Verification needed";
+    if (state.directoryLoaded) renderUniversityDirectory();
     if (ctx?.membership?.department) {
       if ($("pq-ai-department") && !$("pq-ai-department").value) $("pq-ai-department").value = ctx.membership.department;
       if ($("pq-submit-department") && !$("pq-submit-department").value) $("pq-submit-department").value = ctx.membership.department;
