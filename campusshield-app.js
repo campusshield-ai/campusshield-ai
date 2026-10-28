@@ -75,7 +75,6 @@
   let identityCompletionMode = false;
   let authBusy = false;
   let confirmationPending = false;
-  let confirmationCodePending = false;
   const initialRecoveryHash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
   let passwordRecoveryActive =
     new URLSearchParams(window.location.search).get('password-reset') === '1' ||
@@ -6379,7 +6378,6 @@
       } else {
         sessionStorage.setItem('campusshield_requested_role', requestedRole);
         confirmationPending = true;
-        confirmationCodePending = true;
         $('resend-field').hidden = false;
         $('signup-confirmation-code').value = '';
         setAuthMode('confirm');
@@ -6427,7 +6425,6 @@
       if (!data?.user) throw new Error('Email was verified, but no user account was returned.');
 
       confirmationPending = false;
-      confirmationCodePending = false;
       $('signup-confirmation-code').value = '';
       setAuthMode('signin');
       if (passwordAvailable) {
@@ -7056,7 +7053,6 @@
   rememberCheckbox.addEventListener('change', saveEmailPreference);
 
 $('signup-confirmation-back').addEventListener('click', () => {
-  confirmationCodePending = false;
   setAuthMode('signin');
   $('auth-message').textContent = 'Sign in with your email and password to continue.';
 });
@@ -7088,7 +7084,6 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     if (error) throw error;
 
     confirmationPending = true;
-    confirmationCodePending = true;
     $('signup-confirmation-code').value = '';
     setAuthMode('confirm');
     msg.textContent =
