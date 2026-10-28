@@ -6379,10 +6379,11 @@
       } else {
         sessionStorage.setItem('campusshield_requested_role', requestedRole);
         confirmationPending = true;
+        confirmationCodePending = true;
         $('resend-field').hidden = false;
-        msg.textContent = isTeacher
-          ? 'Account created. Open the confirmation link sent to your email, then return here to sign in and finish staff verification. You can resend the email below.'
-          : 'Account created. Open the confirmation link sent to your email, then sign in and choose Complete student setup to securely upload your ID. You can resend the email below.';
+        $('signup-confirmation-code').value = '';
+        setAuthMode('confirm');
+        msg.textContent = 'Account created. Enter the one-time confirmation code sent to ' + email + '. You do not need to open an email link.';
       }
     } catch (e) {
       console.error('Sign-up failed:', e);
@@ -6395,6 +6396,55 @@
       } else {
         msg.textContent = 'Sign-up failed: ' + errorMessage;
       }
+    }
+  }
+
+  async function handleSignupEmailCode() {
+    const backend = window.CampusShieldBackend;
+    const email = $('auth-email').value.trim();
+    const code = $('signup-confirmation-code').value.trim();
+    const msg = $('auth-message');
+    if (!backend?.isConfigured || typeof backend.verifySignupOtp !== 'function') {
+      msg.textContent = 'Email confirmation is not available right now. Please try again later.';
+      return;
+    }
+    if (!email) {
+      msg.textContent = 'Enter the email address that received the confirmation code.';
+      $('auth-email').focus();
+      return;
+    }
+    if (!/^\\d{6,8}$/.test(code)) {
+      msg.textContent = 'Enter the 6–8 digit code from your CampusShield confirmation email.';
+      $('signup-confirmation-code').focus();
+      return;
+    }
+
+    const passwordAvailable = Boolean($('auth-password').value);
+    try {
+      msg.textContent = 'Verifying your email code…';
+      const { data, error } = await backend.verifySignupOtp(email, code);
+      if (error) throw error;
+      if (!data?.user) throw new Error('Email was verified, but no user account was returned.');
+
+      confirmationPending = false;
+      confirmationCodePending = false;
+      $('signup-confirmation-code').value = '';
+      setAuthMode('signin');
+      if (passwordAvailable) {
+        msg.textContent = 'Email confirmed. Finishing sign-in…';
+        await handleSignIn();
+      } else {
+        if (data.session) {
+          const { error: signOutError } = await backend.signOut();
+          if (signOutError) console.warn('Email confirmed, but the temporary session could not be closed.');
+        }
+        msg.textContent = 'Email confirmed successfully. Sign in with your password to continue.';
+      }
+    } catch (error) {
+      console.error('Email confirmation code verification failed:', error);
+      msg.textContent = /expired|invalid|otp|token/i.test(String(error?.message || ''))
+        ? 'That code is invalid or expired. Request a fresh confirmation email and enter its latest code.'
+        : 'Could not verify the code right now. Check the code and try again.';
     }
   }
 
@@ -6615,9 +6665,10 @@
     authBusy = true;
     const button = $('auth-submit');
     button.disabled = true;
-    button.textContent = authMode === 'signup' ? 'Creating account…' : authMode === 'reset' ? 'Updating password…' : 'Signing in…';
+    button.textContent = authMode === 'signup' ? 'Creating account…' : authMode === 'confirm' ? 'Verifying email code…' : authMode === 'reset' ? 'Updating password…' : 'Signing in…';
     try {
       if (authMode === 'signup') await handleSignUp();
+      else if (authMode === 'confirm') await handleSignupEmailCode();
       else if (authMode === 'reset') await handlePasswordReset();
       else await handleSignIn();
     } catch (error) {
@@ -6628,7 +6679,7 @@
     } finally {
       authBusy = false;
       button.disabled = false;
-      button.textContent = authMode === 'signup' ? 'Create account' : authMode === 'reset' ? 'Update password' : 'Sign in';
+      button.textContent = authMode === 'signup' ? 'Create account' : authMode === 'confirm' ? 'Verify email code' : authMode === 'reset' ? 'Update password' : 'Sign in';
     }
   });
 
