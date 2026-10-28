@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 
 const htmlMarkup = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const appScript = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
-const html = htmlMarkup + "\\n" + appScript;
+const html = htmlMarkup + "\n" + appScript;
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
 const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.js", import.meta.url), "utf8");
@@ -594,13 +594,13 @@ console.log("PASS ShieldMind surfaces safe provider rate-limit and billing error
 
 // Mobile workspace layout: protect narrow screens from horizontal overflow and cramped controls.
 assert.match(html, /Mobile-first layout hardening: prevent clipped headers, horizontal overflow, and cramped controls/);
-assert.match(htmlMarkup, /<script src="\\.\\/campusshield-app\\.js" defer><\\/script>/, "large app code is external and deferred instead of parser-blocking inline JS");
+assert.ok(htmlMarkup.includes('<script src="./campusshield-app.js" defer></script>'), "large app code is external and deferred instead of parser-blocking inline JS");
 assert.doesNotThrow(() => new Function(appScript), "externalized main application bundle parses");
-assert.match(appScript, /function canManageIncidents\\(\\)/, "external application bundle retains role-gated incident controls");
-assert.match(css, /CampusShield cross-device layout guardrails and responsive fit pass/, "global cross-device layout guardrails are loaded");
-assert.match(css, /@media \\(max-width: 420px\\)/, "small-phone layout has dedicated responsive rules");
-assert.match(css, /@media \\(min-width: 1441px\\)/, "wide desktop layout has dedicated responsive rules");
-assert.doesNotMatch(htmlMarkup, /<script src="[^"]+"(?:\\s+[^>]*)?><\\/script>/, "no local or vendor script is left parser-blocking");
+assert.ok(appScript.includes("function canManageIncidents()"), "external application bundle retains role-gated incident controls");
+assert.ok(css.includes("CampusShield cross-device layout guardrails and responsive fit pass"), "global cross-device layout guardrails are loaded");
+assert.ok(css.includes("@media (max-width: 420px)"), "small-phone layout has dedicated responsive rules");
+assert.ok(css.includes("@media (min-width: 1441px)"), "wide desktop layout has dedicated responsive rules");
+assert.ok(![...htmlMarkup.matchAll(/<script\\b([^>]*)src=["']([^"']+)["']([^>]*)><\\/script>/gi)].some(match => !/\\bdefer\\b|\\basync\\b|type=["']module["']/i.test(match[1] + match[3])), "no external script is left parser-blocking");
 assert.match(html, /html,body\{min-width:320px\}/);
 assert.match(html, /\.topbar-actions\{flex:1 1 100%;width:100%;justify-content:flex-start;gap:7px\}/);
 assert.match(html, /\.field input,\.field select,\.field textarea,\.institution-picker-field input\[list\]\{width:100%;min-height:46px;padding:11px 12px;font-size:16px\}/);
