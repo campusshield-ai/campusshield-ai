@@ -75,6 +75,7 @@
   let identityCompletionMode = false;
   let authBusy = false;
   let confirmationPending = false;
+  let confirmationCodePending = false;
   const initialRecoveryHash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
   let passwordRecoveryActive =
     new URLSearchParams(window.location.search).get('password-reset') === '1' ||
@@ -635,29 +636,33 @@
   }
 
   function setAuthMode(mode) {
-    authMode = mode === 'signup' ? 'signup' : mode === 'reset' ? 'reset' : 'signin';
+    authMode = mode === 'signup' ? 'signup' : mode === 'reset' ? 'reset' : mode === 'confirm' ? 'confirm' : 'signin';
     const isSignUp = authMode === 'signup';
     const isReset = authMode === 'reset';
+    const isConfirm = authMode === 'confirm';
 
-    $('auth-tabs').hidden = isReset;
-    $('google-signin-wrap').hidden = isSignUp || isReset || !isStagingSupabaseEnvironment();
-    $('signin-institution-field').hidden = isSignUp || isReset;
-    $('signin-role-picker').hidden = isSignUp || isReset;
-    $('signin-role-note').hidden = isSignUp || isReset;
+    $('auth-tabs').hidden = isReset || identityCompletionMode || isConfirm;
+    $('google-signin-wrap').hidden = isSignUp || isReset || isConfirm || !isStagingSupabaseEnvironment();
+    $('signin-institution-field').hidden = isSignUp || isReset || isConfirm;
+    $('signin-role-picker').hidden = isSignUp || isReset || isConfirm;
+    $('signin-role-note').hidden = isSignUp || isReset || isConfirm;
     $('signup-fields').hidden = !isSignUp;
     $('signup-profile-fields').hidden = !isSignUp || identityCompletionMode;
     $('signup-student-identity-panel').hidden = !isSignUp || ($('auth-role').value === 'teacher' && !identityCompletionMode);
     $('identity-submit').hidden = !identityCompletionMode;
-    $('auth-tabs').hidden = isReset || identityCompletionMode;
+    $('auth-tabs').hidden = isReset || identityCompletionMode || isConfirm;
     $('auth-email-field').hidden = isReset || identityCompletionMode;
     $('auth-email').required = !isReset && !identityCompletionMode;
-    $('auth-password-field').hidden = isReset || identityCompletionMode;
-    $('auth-password').required = !isReset && !identityCompletionMode;
+    $('auth-email').readOnly = isConfirm;
+    $('auth-password-field').hidden = isReset || identityCompletionMode || isConfirm;
+    $('auth-password').required = !isReset && !identityCompletionMode && !isConfirm;
+    $('signup-confirmation-code-field').hidden = !isConfirm;
+    $('signup-confirmation-code').required = isConfirm;
     $('password-reset-fields').hidden = !isReset;
     $('new-password').required = isReset;
     $('confirm-new-password').required = isReset;
-    $('forgot-password-field').hidden = isSignUp || isReset || identityCompletionMode;
-    $('remember-email-field').hidden = isSignUp || isReset || identityCompletionMode;
+    $('forgot-password-field').hidden = isSignUp || isReset || identityCompletionMode || isConfirm;
+    $('remember-email-field').hidden = isSignUp || isReset || identityCompletionMode || isConfirm;
     // Required controls in hidden signup panels must never block normal sign-in.
     if (!isSignUp || identityCompletionMode) {
       ['auth-name','auth-username','auth-role','auth-university-search','auth-faculty','auth-department','auth-course','auth-year-of-study','auth-staff-position','auth-staff-number','identity-student-number','identity-document','identity-institution-search','identity-original-document-confirmation'].forEach(function(id) {
@@ -677,32 +682,36 @@
     $('auth-university').required = false; // hidden ID select is populated only after an exact directory match
     if ($('auth-university-search')) $('auth-university-search').required = isSignUp && !identityCompletionMode;
     syncSignupRoleFields(isSignUp && !identityCompletionMode);
-    $('resend-field').hidden = isReset || (isSignUp && !confirmationPending);
-    $('auth-helper').hidden = isReset;
+    $('resend-field').hidden = isReset || ((isSignUp || isConfirm) && !confirmationPending);
+    $('auth-helper').hidden = isReset || isConfirm;
     $('install-card').hidden = isReset;
-    $('auth-title').textContent = identityCompletionMode ? 'Complete student setup' : isSignUp ? 'Create your account' : isReset ? 'Choose a new password' : 'Welcome back';
+    $('auth-title').textContent = identityCompletionMode ? 'Complete student setup' : isSignUp ? 'Create your account' : isConfirm ? 'Confirm your email' : isReset ? 'Choose a new password' : 'Welcome back';
     $('auth-subtitle').textContent = identityCompletionMode ? 'Submit your student ID document using the university linked to your account.' : isSignUp
       ? 'Set up a CampusShield account to submit reports.'
-      : isReset
-        ? 'Set a new password to finish recovering your account.'
-        : "Sign in to your university's CampusShield workspace.";
+      : isConfirm
+        ? 'Enter the one-time code sent to your email address.'
+        : isReset
+          ? 'Set a new password to finish recovering your account.'
+          : "Sign in to your university's CampusShield workspace.";
     $('auth-password').autocomplete = isSignUp ? 'new-password' : 'current-password';
     $('auth-password').minLength = isSignUp ? 12 : 1;
     $('auth-password').placeholder = isSignUp ? '12+ characters with mixed case, number & symbol' : 'Enter your password';
     $('auth-submit').hidden = identityCompletionMode;
-    $('auth-submit').textContent = identityCompletionMode ? 'Submit student ID for review' : isSignUp ? 'Create account' : isReset ? 'Update password' : 'Sign in';
-    $('auth-helper').hidden = identityCompletionMode || isReset;
+    $('auth-submit').textContent = identityCompletionMode ? 'Submit student ID for review' : isSignUp ? 'Create account' : isConfirm ? 'Verify email code' : isReset ? 'Update password' : 'Sign in';
+    $('auth-helper').hidden = identityCompletionMode || isReset || isConfirm;
     $('auth-helper').textContent = isSignUp
-      ? 'Choose your university and complete your student or staff details now. Student ID files upload privately after authentication. If email confirmation is required, sign in and choose Complete student setup.'
+      ? 'Choose your university and complete your student or staff details now. Student ID files upload privately after authentication. If email confirmation is required, enter the code sent to your email.'
       : 'CampusShield AI does not automatically contact emergency services.';
     document.querySelectorAll('[data-auth-mode]').forEach(button =>
       button.setAttribute('aria-pressed', String(button.dataset.authMode === authMode))
     );
     $('auth-message').textContent = isSignUp
       ? 'Create an account to get started.'
-      : isReset
-        ? 'Enter and confirm your new password.'
-        : 'Please sign in or create an account.';
+      : isConfirm
+        ? 'Enter the one-time code from your email to verify your address.'
+        : isReset
+          ? 'Enter and confirm your new password.'
+          : 'Please sign in or create an account.';
   }
 
   function syncSignupRoleFields(enabled = authMode === 'signup') {
