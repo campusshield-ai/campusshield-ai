@@ -53,7 +53,7 @@
     {title:"Campus services & contacts", description:"Find university support contacts", page:"campus-contacts", keywords:"help clinic security contact support"},
     {title:"Verified campus noticeboard", description:"Updates from verified campus staff", page:"noticeboard", keywords:"announcements alerts notices"},
     {title:"My timetable", description:"Review your classes and schedule", page:"timetable", keywords:"schedule classes calendar"},
-    {title:"Profile & settings", description:"Manage your profile and preferences", page:"profile", keywords:"account settings personal"}
+    {title:"Profile & settings", description:"Manage your profile and preferences", page:"profile-settings", keywords:"account settings personal"}
   ];
   function visibleDestination(item) {
     const nav = document.querySelector('.nav [data-page="' + item.page + '"]');
@@ -101,7 +101,7 @@
         const icon = document.createElement("span");
         icon.className = "global-search-result-icon";
         icon.setAttribute("aria-hidden", "true");
-        icon.textContent = ({dashboard:"⌂",report:"＋",shieldmind:"✧","past-questions":"▤",courses:"▦",community:"◎",events:"▣",opportunities:"↗","campus-contacts":"☎",noticeboard:"◉",timetable:"▦",profile:"◌"})[item.page] || "↗";
+        icon.textContent = ({dashboard:"⌂",report:"＋",shieldmind:"✧","past-questions":"▤",courses:"▦",community:"◎",events:"▣",opportunities:"↗","campus-contacts":"☎",noticeboard:"◉",timetable:"▦","profile-settings":"◌"})[item.page] || "↗";
         const copy = document.createElement("span");
         const title = document.createElement("strong");
         title.textContent = item.title;
