@@ -171,6 +171,11 @@ assert.match(html, /isStrongPasswordBaseline\(password\)/, "signup and password 
 assert.match(backend, /Choose a 12\+ character password with uppercase, lowercase, a number, and a symbol/);
 assert.match(backend, /function getAuthRedirectUrl\(\)/, "auth confirmation returns to the current app URL");
 assert.match(backend, /emailRedirectTo: getAuthRedirectUrl\(\)/, "signup and resend use the current app URL for confirmation");
+assert.match(backend, /async verifySignupOtp\(email, token\)[\s\S]*?client\.auth\.verifyOtp\(\{[\s\S]*?email: normalizedEmail,[\s\S]*?token: normalizedToken,[\s\S]*?type: "email"/, "signup email codes are verified with Supabase Auth");
+assert.match(html, /id="signup-confirmation-code"/, "signup has an accessible one-time confirmation code field");
+assert.match(html, /async function handleSignupEmailCode\(\)[\s\S]*?backend\.verifySignupOtp\(email, code\)/, "signup confirmation validates a code rather than opening a tracked link");
+assert.match(html, /setAuthMode\('confirm'\)/, "unconfirmed signup and resend enter the email code view");
+
 assert.match(html, /const metadataRequestedRole = String\(user\.user_metadata\?\.requested_role \|\| ''\)\.trim\(\)\.toLowerCase\(\)/, "confirmation return restores requested role from the authenticated account metadata");
 assert.match(html, /const pendingRole = \['student', 'teacher'\]\.includes\(metadataRequestedRole\)[\s\S]*?\? metadataRequestedRole[\s\S]*?: storedRequestedRole/, "account metadata takes precedence over stale role state in browser storage");
 assert.match(html, /const user = await backend\.getCurrentUser\(\);[\s\S]*?const metadataRequestedRole/, "sign-in resolves the authenticated account before restoring its requested role");
