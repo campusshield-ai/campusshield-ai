@@ -598,6 +598,8 @@ assert.ok(htmlMarkup.includes('<script src="./campusshield-app.js" defer></scrip
 assert.doesNotThrow(() => new Function(appScript), "externalized main application bundle parses");
 assert.ok(appScript.includes("function canManageIncidents()"), "external application bundle retains role-gated incident controls");
 assert.ok(css.includes("CampusShield cross-device layout guardrails and responsive fit pass"), "global cross-device layout guardrails are loaded");
+assert.ok(css.includes('input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])'), "responsive field sizing does not stretch checkboxes, radio buttons or hidden inputs");
+assert.ok(css.includes('input[type="search"]'), "touch target sizing is limited to text-like controls");
 assert.ok(css.includes("@media (max-width: 420px)"), "small-phone layout has dedicated responsive rules");
 assert.ok(css.includes("@media (min-width: 1441px)"), "wide desktop layout has dedicated responsive rules");
 const externalScriptTags = [...htmlMarkup.matchAll(/<script\b[^>]*src=["'][^"']+["'][^>]*><\/script>/gi)].map((match) => match[0]);
