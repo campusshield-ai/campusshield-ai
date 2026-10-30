@@ -39,6 +39,7 @@ const campusStoryRewardsMigration = await readFile(new URL("../supabase/migratio
 const courseDiscussionPushMigration = await readFile(new URL("../supabase/migrations/20261030174000_course_discussion_push_notifications.sql", import.meta.url), "utf8");
 const campusStoryMediaScanPreflightMigration = await readFile(new URL("../supabase/migrations/20261030205040_story_media_scan_preflight.sql", import.meta.url), "utf8");
 const campusStoryMediaUploadFunction = await readFile(new URL("../supabase/functions/campus-story-media-upload/index.ts", import.meta.url), "utf8");
+const campusStoryMediaScanEnforcementMigration = await readFile(new URL("../supabase/migrations/20261030210000_enforce_story_media_scan_before_storage_upload.sql", import.meta.url), "utf8");
 
 
 const pushSubscriptionsFunction = await readFile(new URL("../supabase/functions/push-subscriptions/index.ts", import.meta.url), "utf8");
@@ -849,6 +850,17 @@ assert.match(campusStoryMediaUploadFunction, /redirect: "error"/, "Story malware
 assert.match(campusStoryMediaUploadFunction, /result\?\.sha256 !== fileHash/, "scanner response must attest to the exact uploaded file hash");
 assert.match(campusStoryMediaUploadFunction, /scanStatus !== "clean"/, "infected or unverified Story media never reaches permanent Storage");
 assert.match(campusStoryMediaUploadFunction, /metadata|attach_campus_story_media/, "clean Story media is attached only after scanning");
+assert.match(campusStoryMediaUploadFunction, /SUPABASE_SERVICE_ROLE_KEY/, "Story scanner has a server-only capability to issue one-time upload approvals");
+assert.match(campusStoryMediaUploadFunction, /campus_story_media_scan_approvals[\\s\\S]*?scan_status: "clean"/, "only a verified clean scan can create a one-time Storage approval");
+assert.ok(campusStoryMediaUploadFunction.indexOf('if (scanStatus !== "clean")') < campusStoryMediaUploadFunction.indexOf('from("campus_story_media_scan_approvals").insert'), "Story scan approval is created only after the clean verdict");
+assert.match(campusStoryMediaScanEnforcementMigration, /alter table public\\.campus_story_media_scan_approvals enable row level security/i, "server-issued Story scan approvals have RLS enabled");
+assert.match(campusStoryMediaScanEnforcementMigration, /revoke all on public\\.campus_story_media_scan_approvals from public, anon, authenticated/i, "browser users cannot forge Story scan approvals");
+assert.match(campusStoryMediaScanEnforcementMigration, /grant all on public\\.campus_story_media_scan_approvals to service_role/i, "only the server service role can create Story scan approvals");
+assert.match(campusStoryMediaScanEnforcementMigration, /a\\.scan_status='clean'[\\s\\S]*?a\\.expires_at>now\\(\)[\\s\\S]*?a\\.consumed_at is null/i, "Storage insert requires a current unused clean scan approval");
+assert.match(campusStoryMediaScanEnforcementMigration, /drop policy if exists campus_media_upload_same_campus[\\s\\S]*?not private\\.is_campus_story_media_path\(name\)/i, "generic community media uploads cannot bypass Story scanning");
+assert.match(campusStoryMediaScanEnforcementMigration, /drop policy if exists platform_owner_full_access_user_buckets[\\s\\S]*?private\\.is_campus_story_media_path\(name\)/i, "platform-owner Storage convenience policy cannot bypass Story scanning");
+assert.match(campusStoryMediaScanEnforcementMigration, /v_actual_size[\\s\\S]*?v_actual_mime[\\s\\S]*?campus_story_media_scan_approvals[\\s\\S]*?consumed_at=now\(\)/i, "Story attachment consumes the matching approval after verifying actual Storage metadata");
+
 assert.match(campusStoryMediaScanPreflightMigration, /private\.can_upload_campus_story_media/, "scan preflight reuses the existing private Story upload authorization predicate");
 assert.match(campusStoryMediaScanPreflightMigration, /revoke all[\s\S]*from public, anon[\s\S]*grant execute[\s\S]*to authenticated/, "Story scan preflight is limited to authenticated callers");
 console.log("PASS Campus Stories private media scanning, Study Circles, Reputation and scoped push notifications");
