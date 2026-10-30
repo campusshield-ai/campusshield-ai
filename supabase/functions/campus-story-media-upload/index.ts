@@ -200,7 +200,6 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "The clean file could not be saved to private Story storage." }, 503);
     }
 
-    const mediaKind = isImage ? "video" : "image";
     const { error: attachError } = await userClient.rpc("attach_campus_story_media", {
       p_story_id: storyId,
       p_object_path: objectPath,
