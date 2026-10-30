@@ -39,7 +39,16 @@ Deno.serve(async (req: Request) => {
   const origin = (req.headers.get("origin") || "").replace(/\/$/, "");
   const configuredOrigin = (Deno.env.get("CAMPUSSHIELD_APP_ORIGIN") || "").replace(/\/$/, "");
   const local = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-  const allowed = !origin || (configuredOrigin ? origin === configuredOrigin : origin === DEFAULT_ORIGIN || local);
+  const previewOrigins = new Set([
+    "https://campusshield-ai-staging-preview-2olhtbzac.vercel.app",
+    "https://campusshield-ai-staging-p-git-546f84-chinedugabrielanunobi-8135.vercel.app"
+  ]);
+  const allowed = !origin || (
+    origin === DEFAULT_ORIGIN ||
+    previewOrigins.has(origin) ||
+    local ||
+    Boolean(configuredOrigin && origin === configuredOrigin)
+  );
   if (origin && !allowed) return json({ error: "App origin is not allowed." }, 403);
   const respond = (body: Record<string, unknown>, status = 200) => json(body, status, origin || DEFAULT_ORIGIN);
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin || DEFAULT_ORIGIN) });
