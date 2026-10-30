@@ -869,9 +869,12 @@ async getCurrentUser() {
 
     async listCampusGroups() {
       if (!client) throw new Error("Supabase is not configured.");
+      const campus = await this.getMyCampusContext();
+      if (!campus?.university_id) return [];
       const { data, error } = await client.from("campus_groups")
         .select("id,university_id,course_id,name,description,group_type,privacy,status,creator_username,created_at")
-        .eq("status", "active").order("name", { ascending: true }).limit(100);
+        .eq("university_id", campus.university_id).eq("status", "active")
+        .order("name", { ascending: true }).limit(100);
       if (error) throw error;
       return data || [];
     },
@@ -1228,8 +1231,11 @@ async getCurrentUser() {
 
     async listCampusCourseGroups() {
       if (!client) throw new Error("Supabase is not configured.");
+      const campus = await this.getMyCampusContext();
+      if (!campus?.university_id) return [];
       const { data, error } = await client.from("campus_groups")
         .select("id,university_id,course_id,name,description,group_type,privacy,status,creator_username,created_at")
+        .eq("university_id", campus.university_id).eq("status", "active")
         .not("course_id", "is", null)
         .order("name", { ascending: true }).limit(200);
       if (error) throw error;
@@ -1249,9 +1255,12 @@ async getCurrentUser() {
 
     async listCampusCourses() {
       if (!client) throw new Error("Supabase is not configured.");
+      const campus = await this.getMyCampusContext();
+      if (!campus?.university_id) return [];
       const { data, error } = await client.from("campus_courses")
         .select("id,university_id,course_code,title,faculty,department,level,summary,status,created_at")
-        .eq("status", "published").order("course_code", { ascending: true }).limit(200);
+        .eq("university_id", campus.university_id).eq("status", "published")
+        .order("course_code", { ascending: true }).limit(200);
       if (error) throw error;
       return data || [];
     },
@@ -1281,9 +1290,12 @@ async getCurrentUser() {
 
     async listCampusCourseResources() {
       if (!client) throw new Error("Supabase is not configured.");
+      const campus = await this.getMyCampusContext();
+      if (!campus?.university_id) return [];
       const { data, error } = await client.from("campus_course_resources")
         .select("id,university_id,course_id,title,description,resource_type,source_url,source_label,status,created_at")
-        .eq("status", "published").order("created_at", { ascending: false }).limit(200);
+        .eq("university_id", campus.university_id).eq("status", "published")
+        .order("created_at", { ascending: false }).limit(200);
       if (error) throw error;
       return data || [];
     },
@@ -1702,25 +1714,86 @@ async getCurrentUser() {
       return this.callPushFunction("delivery", { action: "test" });
     },
 
-    async createCampusStory(body) {
+    async createCampusStory(body, mediaFile, altText) {
       if (!client) throw new Error("Supabase is not configured.");
-      const { data, error } = await client.rpc("create_campus_story", { p_body: String(body || "").trim() });
+      const storyBody = String(body || "").trim();
+      const { data: storyId, error } = await client.rpc("create_campus_story", { p_body: storyBody });
       if (error) throw error;
-      return data;
+      if (!mediaFile) return storyId;
+
+      const user = await this.getCurrentUser();
+      const campus = await this.getMyCampusContext();
+      const allowedTypes = new Set(["image/jpeg","image/png","image/webp","image/gif","video/mp4","video/webm"]);
+      if (!user || !campus?.university_id) throw new Error("Sign in and choose your university before attaching media.");
+      if (!allowedTypes.has(mediaFile.type)) {
+        await client.rpc("discard_campus_story_submission", { p_story_id: storyId });
+        throw new Error("Use JPG, PNG, WEBP, GIF, MP4 or WEBM files only.");
+      }
+      const maxBytes = mediaFile.type.startsWith("image/") ? 15 * 1024 * 1024 : 30 * 1024 * 1024;
+      if (!mediaFile.size || mediaFile.size > maxBytes) {
+        await client.rpc("discard_campus_story_submission", { p_story_id: storyId });
+        throw new Error(mediaFile.type.startsWith("image/") ? "Images must be 15 MB or smaller." : "Videos must be 30 MB or smaller.");
+      }
+
+      const cleanedName = String(mediaFile.name || "story-media")
+        .normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-80) || "story-media";
+      const objectPath = campus.university_id + "/" + storyId + "/" +
+        Date.now() + "-" + Math.random().toString(36).slice(2, 9) + "-" + cleanedName;
+      const bucket = client.storage.from("campus-community-media");
+      const { error: uploadError } = await bucket.upload(objectPath, mediaFile, {
+        cacheControl: "1800", upsert: false, contentType: mediaFile.type
+      });
+      if (uploadError) {
+        await client.rpc("discard_campus_story_submission", { p_story_id: storyId });
+        throw uploadError;
+      }
+
+      try {
+        const mediaKind = mediaFile.type.startsWith("video/") ? "video" : "image";
+        const { error: attachError } = await client.rpc("attach_campus_story_media", {
+          p_story_id: storyId, p_object_path: objectPath, p_media_kind: mediaKind,
+          p_mime_type: mediaFile.type, p_byte_size: mediaFile.size,
+          p_alt_text: String(altText || "").trim().slice(0, 250) || null
+        });
+        if (attachError) throw attachError;
+      } catch (attachError) {
+        await bucket.remove([objectPath]);
+        await client.rpc("discard_campus_story_submission", { p_story_id: storyId });
+        throw attachError;
+      }
+      return storyId;
+    },
+
+    async addSignedCampusStoryMedia(stories) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const rows = Array.isArray(stories) ? stories : [];
+      if (!rows.length) return rows;
+      const { data, error } = await client.rpc("list_campus_story_media", {
+        p_story_ids: rows.map(story => story.story_id).filter(Boolean)
+      });
+      if (error) throw error;
+      const signedMedia = await Promise.all((data || []).map(async item => {
+        const { data: signed, error: signedError } = await client.storage
+          .from("campus-community-media").createSignedUrl(item.object_path, 1800);
+        return Object.assign({}, item, { signed_url: signedError ? null : (signed?.signedUrl || null) });
+      }));
+      const byStory = Object.create(null);
+      signedMedia.forEach(item => { byStory[item.story_id] = item; });
+      return rows.map(story => Object.assign({}, story, { media: byStory[story.story_id] || null }));
     },
 
     async listCampusStories() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("list_campus_stories");
       if (error) throw error;
-      return data || [];
+      return this.addSignedCampusStoryMedia(data || []);
     },
 
     async listCampusStoryModeration() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("list_campus_story_moderation");
       if (error) throw error;
-      return data || [];
+      return this.addSignedCampusStoryMedia(data || []);
     },
 
     async moderateCampusStory(storyId, decision) {
