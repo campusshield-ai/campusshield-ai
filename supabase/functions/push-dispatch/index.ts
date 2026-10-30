@@ -139,7 +139,22 @@ Deno.serve(async (req: Request) => {
           console.error("Study Circle recipient lookup failed", { code: membershipError.code });
           return respond({ error: "Could not load Study Circle notification recipients." }, 503);
         }
-        const recipients = [...new Set((memberships || []).map((row: { user_id?: string }) => String(row.user_id || "")).filter(Boolean))];
+        const groupMemberIds = [...new Set((memberships || []).map((row: { user_id?: string }) => String(row.user_id || "")).filter(Boolean))];
+        if (!groupMemberIds.length) return respond({ processed: 0, delivered: 0, no_recipients: true });
+
+        // A stale group membership must not receive notifications after campus access ends
+        // or when the account's active campus has changed.
+        const { data: activeMemberships, error: activeMembershipError } = await db.from("campus_memberships")
+          .select("user_id")
+          .eq("university_id", sentMessage.university_id)
+          .eq("membership_status", "active")
+          .in("user_id", groupMemberIds)
+          .limit(500);
+        if (activeMembershipError) {
+          console.error("Study Circle active campus membership lookup failed", { code: activeMembershipError.code });
+          return respond({ error: "Could not verify Study Circle notification recipients." }, 503);
+        }
+        const recipients = [...new Set((activeMemberships || []).map((row: { user_id?: string }) => String(row.user_id || "")).filter(Boolean))];
         if (!recipients.length) return respond({ processed: 0, delivered: 0, no_recipients: true });
         if (!expected) return respond({ error: "Internal push delivery is not configured." }, 503);
 
