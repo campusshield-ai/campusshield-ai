@@ -5085,7 +5085,7 @@
         status.textContent = 'Choose your university on the Campus community page first.';
         $('campus-groups-feed').innerHTML = '';
         $('campus-study-circles-feed').innerHTML = '';
-        $('campus-study-circles-course').innerHTML = '<option value="">Choose a published course…</option>';
+        $('campus-study-circle-course').innerHTML = '<option value="">Choose a published course…</option>';
         $('campus-study-circles-status').textContent = 'Choose your university to discover Study Circles.';
         return;
       }
