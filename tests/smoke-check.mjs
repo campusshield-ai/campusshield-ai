@@ -810,7 +810,7 @@ assert.match(campusStoryMediaMetadataMigration, /owner_id=v_user::text/, "Story 
 
 assert.ok(htmlMarkup.includes('id="campus-study-circle-form"'), "Study Circles have a dedicated course-based create form");
 assert.ok(htmlMarkup.includes('id="campus-study-circle-course"'), "Study Circles are selected from the published course catalogue");
-assert.match(appScript, /backend\.createCampusCourseGroup\(/, "Study Circle creation reuses the existing course-group RPC");
+assert.match(appScript, /window\.CampusShieldBackend\.createCampusCourseGroup\(/, "Study Circle creation reuses the existing course-group RPC");
 assert.match(backend, /async createCampusCourseGroup\(courseId, description\)/, "backend wrapper creates course groups through Supabase RPC");
 assert.match(backend, /rpc\("create_campus_course_group"/, "Study Circles do not create a parallel group system");
 assert.match(backend, /eq\("university_id", campus\.university_id\)/, "course and group discovery is scoped to the active university");
