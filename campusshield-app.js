@@ -4969,7 +4969,7 @@
     $('campus-course-discussion-subtitle').textContent = 'Verified members of this approved course community can share questions, revision tips and resources.';
     panel.hidden = false;
     input.disabled = false;
-    $('campus-course-discussion-submit').disabled = false;
+    $('campus-course-discussion-send').disabled = false;
     $('campus-course-discussion-status').textContent = 'Loading discussion…';
     $('campus-course-discussion-messages').innerHTML = '';
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -4994,7 +4994,7 @@
     }
     activeCampusCourseDiscussionId = null;
     $('campus-course-discussion-input').disabled = true;
-    $('campus-course-discussion-submit').disabled = true;
+    $('campus-course-discussion-send').disabled = true;
     $('campus-course-discussion-panel').hidden = true;
   });
 
@@ -5002,7 +5002,7 @@
     event.preventDefault();
     const groupId = activeCampusCourseDiscussionId;
     const input = $('campus-course-discussion-input');
-    const button = $('campus-course-discussion-submit');
+    const button = $('campus-course-discussion-send');
     const status = $('campus-course-discussion-status');
     const body = input.value.trim();
     if (!groupId || !body) return;
