@@ -479,9 +479,29 @@
       items=['Create and manage classroom spaces where enabled for verified teachers.','Use campus opportunities, community and student-support features available to verified staff.','Publish official campus notices where the feature and campus policies allow it.'];
       limit='The standard staff role cannot manage/resolve incident reports, access staff-review queues, administer institutional billing, or grant campus/platform administrator access. Security-console access requires a separate security-role assignment.';
     } else if(['teacher','security','admin'].includes(role) && !campusOk){
-      state='restricted';badge='Campus membership not verified';title='Campus access is not fully enabled';description='Your account exists, but the campus membership required for these tools is not currently verified.';
-      items=['Check your account and identity-verification status.','Contact the authorized administrator for your campus if the membership status is incorrect.','Only use actions currently shown and permitted for your account.'];
-      limit='Incident management, staff review and other campus-scoped privileged actions remain gated until the required membership is approved.';
+      state='restricted';badge='Campus membership not verified';title='Campus access is not fully enabled';
+      const campusName=String(campusContext?.university_name||'').trim();
+      const membershipState=String(campusContext?.membership_status||'').toLowerCase();
+      const campusVerification=String(campusContext?.verification_status||'').toLowerCase();
+      if(!campusContext?.university_id){
+        description='Your staff account is verified, but no university membership is linked to it yet.';
+        items=['Open CampusPulse and select your real university to create the campus membership request.','A first-campus administrator setup is available only to a trusted platform administrator when the university has no approved campus administrator.','Do not change your role or choose another university to bypass verification.'];
+      } else if(membershipState!=='active'){
+        description='Your membership at '+campusName+' is not active ('+(membershipState||'unknown status')+').';
+        items=['Contact an authorized administrator for '+campusName+' to review the membership status.','Do not create a second account or select another university to work around the restriction.','Only use actions currently shown and permitted for your account.'];
+      } else if(campusVerification==='pending'){
+        description='Your active membership at '+campusName+' is waiting for an authorized campus administrator to approve it.';
+        items=['Ask your campus administrator to review the pending campus membership.','Teachers must also have their staff identity evidence approved before staff tools are enabled.','Your incident-management and staff-review permissions remain protected until approval is complete.'];
+      } else if(campusVerification==='rejected'){
+        description='Your campus membership at '+campusName+' was not approved.';
+        items=['Contact the authorized administrator for '+campusName+' to understand the decision and request a correction if appropriate.','Resubmit supporting staff evidence only when requested by the reviewer.','Do not attempt to unlock campus tools by changing profile metadata.'];
+      } else {
+        description='Your account is verified, but your '+campusName+' membership has not yet been approved by an authorized campus administrator.';
+        items=role==='teacher'
+          ? ['Complete Staff Identity Verification if you have not already submitted your university employment evidence.','After staff evidence is approved, ask a campus administrator to approve your campus membership.','Your staff workspace becomes available only after both account and campus membership checks pass.']
+          : ['Ask a verified campus administrator or the trusted platform administrator to review your membership and assigned campus role.','Campus administrator and security permissions are granted separately; a profile title cannot enable them.','Only use actions currently shown and permitted for your account.'];
+      }
+      limit='Incident management, staff review and other campus-scoped privileged actions remain gated until the database confirms an active, verified membership for this university.';
     } else {
       state=verified&&campusOk?'approved':'restricted';badge=verified&&campusOk?'Verified student':'Campus access limited';title='Student campus workspace';description='Use CampusShield for your own campus safety and student-life activity.';
       items=['Submit and follow up on your own safety reports when the database says your account is eligible.','Use community, groups, events, helpdesk and opportunities available to verified campus members.','Manage your own profile and private account information.'];
