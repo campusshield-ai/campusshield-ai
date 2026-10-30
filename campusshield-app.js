@@ -265,6 +265,11 @@
     $('approvals-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
     $('staff-verification-nav').hidden = !isTeacherAccount();
     $('staff-review-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
+    // Recompute the access panel after the signed-in campus context is hydrated.
+    // showWorkspace first renders the profile before get_my_campus_context resolves;
+    // without this refresh a verified staff member can remain stuck on a stale
+    // "Campus membership not verified" message for the entire session.
+    renderRoleAccessSummary();
     syncNavSectionHeadings();
   }
 
