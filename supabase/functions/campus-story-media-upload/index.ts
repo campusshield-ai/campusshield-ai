@@ -55,8 +55,22 @@ Deno.serve(async (req: Request) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!supabaseUrl || !anonKey || !serviceKey) {
+    // Prefer Supabase's current server-only secret-key set. Fall back to the
+    // legacy service-role JWT for projects that have not enabled the new key format.
+    let serverKey: string | null = null;
+    const secretKeysEnv = Deno.env.get("SUPABASE_SECRET_KEYS");
+    if (secretKeysEnv) {
+      try {
+        const secretKeys = JSON.parse(secretKeysEnv);
+        if (typeof secretKeys?.default === "string" && secretKeys.default.trim()) {
+          serverKey = secretKeys.default.trim();
+        }
+      } catch {
+        console.error("Supabase server secret-key configuration could not be parsed.");
+      }
+    }
+    serverKey = serverKey || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || null;
+    if (!supabaseUrl || !anonKey || !serverKey) {
       return reply({ error: "Secure Story upload is not configured." }, 503);
     }
 
@@ -66,7 +80,7 @@ Deno.serve(async (req: Request) => {
     });
     // Service-role access is used only to create the one-time clean-scan approval.
     // The actual Storage upload still uses the caller JWT, preserving Storage ownership.
-    const adminClient = createClient(supabaseUrl, serviceKey, {
+    const adminClient = createClient(supabaseUrl, serverKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const { data: userResult, error: userError } = await userClient.auth.getUser();
@@ -185,6 +199,7 @@ Deno.serve(async (req: Request) => {
       scan_status: "clean",
     });
     if (approvalError) {
+      console.error("Story scan approval insert failed:", approvalError.code || "unknown_code", approvalError.message || "unknown_error");
       return reply({ error: "A one-time clean-scan approval could not be recorded. No Story media was uploaded." }, 503);
     }
 
