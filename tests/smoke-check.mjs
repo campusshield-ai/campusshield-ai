@@ -801,7 +801,7 @@ assert.match(appScript, /mediaFile\.type\.startsWith\('image\/'\) \? 15 \* 1024 
 assert.match(backend, /async createCampusStory\(body, mediaFile, altText\)/, "Story upload uses a single media-aware backend operation");
 assert.match(backend, /client\.storage\.from\("campus-community-media"\)/, "Story media reuses the existing private campus media bucket");
 assert.match(backend, /createSignedUrl\(item\.object_path, 1800\)/, "Story media is read using short-lived signed URLs");
-assert.match(backend, /attach_campus_story_media/, "Story media is attached only through the validated database RPC");
+assert.match(campusStoryMediaUploadFunction, /attach_campus_story_media/, "Story media is attached through the validated database RPC only after malware scanning");
 assert.match(campusStoryMediaMigration, /story_id uuid not null unique/i, "a Story can have at most one media attachment");
 assert.match(campusStoryMediaMigration, /campus-community-media/, "Story Storage policies target the existing private media bucket");
 assert.match(campusStoryMediaMigration, /campus_story_media_no_direct_access/, "Story media metadata has a deny-all direct-access policy");
