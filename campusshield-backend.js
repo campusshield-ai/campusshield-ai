@@ -1702,6 +1702,97 @@ async getCurrentUser() {
       return this.callPushFunction("delivery", { action: "test" });
     },
 
+    async createCampusStory(body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_campus_story", { p_body: String(body || "").trim() });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusStories() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_stories");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async listCampusStoryModeration() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_story_moderation");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async moderateCampusStory(storyId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("moderate_campus_story", { p_story_id: storyId, p_decision: decision });
+      if (error) throw error;
+    },
+
+    async createCampusConfession(category, body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_campus_confession", {
+        p_category: category, p_body: String(body || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusConfessions() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_confessions");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async listCampusConfessionModeration() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_confession_moderation");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async moderateCampusConfession(confessionId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("moderate_campus_confession", {
+        p_confession_id: confessionId, p_decision: decision
+      });
+      if (error) throw error;
+    },
+
+    async reportCampusConfession(confessionId, reason, details) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("report_campus_confession", {
+        p_confession_id: confessionId, p_reason: reason, p_details: details || null
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusConfessionReports() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_confession_reports");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async resolveCampusConfessionReport(reportId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("resolve_campus_confession_report", {
+        p_report_id: reportId, p_decision: decision
+      });
+      if (error) throw error;
+    },
+
+    async investigateCampusConfessionAuthor(confessionId, purpose) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("investigate_campus_confession_author", {
+        p_confession_id: confessionId, p_purpose: String(purpose || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
     async deleteIncident(id) {
       if (!client) throw new Error("Supabase is not configured.");
 
