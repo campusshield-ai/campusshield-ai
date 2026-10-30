@@ -1724,10 +1724,9 @@ async getCurrentUser() {
     async createCampusStory(body, mediaFile, altText) {
       if (!client) throw new Error("Supabase is not configured.");
       const storyBody = String(body || "").trim();
-      let campus = null;
       if (mediaFile) {
         const user = await this.getCurrentUser();
-        campus = await this.getMyCampusContext();
+        const campus = await this.getMyCampusContext();
         const allowedTypes = new Set(["image/jpeg","image/png","image/webp","image/gif","video/mp4","video/webm"]);
         if (!user || !campus?.university_id) throw new Error("Sign in and choose your university before attaching media.");
         if (!allowedTypes.has(mediaFile.type)) throw new Error("Use JPG, PNG, WEBP, GIF, MP4 or WEBM files only.");
@@ -1741,31 +1740,25 @@ async getCurrentUser() {
       if (error) throw error;
       if (!mediaFile) return storyId;
 
-      const cleanedName = String(mediaFile.name || "story-media")
-        .normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-80) || "story-media";
-      const objectPath = campus.university_id + "/" + storyId + "/" +
-        Date.now() + "-" + Math.random().toString(36).slice(2, 9) + "-" + cleanedName;
-      const bucket = client.storage.from("campus-community-media");
-      const { error: uploadError } = await bucket.upload(objectPath, mediaFile, {
-        cacheControl: "1800", upsert: false, contentType: mediaFile.type
-      });
-      if (uploadError) {
+      const form = new FormData();
+      form.set("story_id", storyId);
+      form.set("file", mediaFile);
+      form.set("alt_text", String(altText || "").trim().slice(0, 250));
+      const { data: scanResult, error: scanError } = await client.functions.invoke(
+        "campus-story-media-upload",
+        { body: form }
+      );
+      if (scanError || scanResult?.status !== "clean") {
+        let message = scanResult?.error || scanError?.message || "Story media could not be scanned safely.";
+        const context = scanError?.context;
+        if (context && typeof context.json === "function") {
+          try {
+            const details = await context.json();
+            if (details?.error) message = details.error;
+          } catch { /* Keep the safe fallback message. */ }
+        }
         await client.rpc("discard_campus_story_submission", { p_story_id: storyId });
-        throw uploadError;
-      }
-
-      try {
-        const mediaKind = mediaFile.type.startsWith("video/") ? "video" : "image";
-        const { error: attachError } = await client.rpc("attach_campus_story_media", {
-          p_story_id: storyId, p_object_path: objectPath, p_media_kind: mediaKind,
-          p_mime_type: mediaFile.type, p_byte_size: mediaFile.size,
-          p_alt_text: String(altText || "").trim().slice(0, 250) || null
-        });
-        if (attachError) throw attachError;
-      } catch (attachError) {
-        await bucket.remove([objectPath]);
-        await client.rpc("discard_campus_story_submission", { p_story_id: storyId });
-        throw attachError;
+        throw new Error(message);
       }
       return storyId;
     },
