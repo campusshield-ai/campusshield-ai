@@ -270,6 +270,7 @@ assert.match(html, /function canManageIncidents\(\)/);
 assert.match(html, /function getWorkspaceAccountType\(profile = currentProfile\)/, "workspace classification is explicit");
 assert.match(html, /if \(\['admin','security','teacher'\]\.includes\(actualRole\)\) return actualRole/, "assigned elevated roles override requested onboarding metadata");
 assert.match(html, /function renderRoleAccessSummary\(metadata = \{\}\)/, "signed-in users receive a role and verification access summary");
+assert.match(html, /function syncCampusAccessNavigation\(\) \{[\s\S]*?renderRoleAccessSummary\(\);[\s\S]*?syncNavSectionHeadings\(\);/, "campus access summary refreshes after the verified campus context loads");
 assert.match(html, /function updateStaffPositionAccessPreview\(\)/, "staff position chooser previews post-approval access");
 assert.match(html, /Security staff: this title alone does not unlock incident management/, "security job title does not grant the security console");
 assert.match(html, /this title and the campus-admin request checkbox do not grant campus administrator powers/, "leadership titles and admin requests do not self-grant admin permissions");
