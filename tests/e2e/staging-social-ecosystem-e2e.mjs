@@ -217,7 +217,13 @@ async function run() {
   }
 
   const cleanUpload = await callStoryUpload(student, cleanStoryId, PNG, "clean.png");
-  mustSucceed(cleanUpload.error, "Authenticated clean Story upload through ClamAV scanner");
+  if (cleanUpload.error) {
+    const details = await responsePayload(cleanUpload.error);
+    throw new Error("Authenticated clean Story upload through ClamAV scanner failed (HTTP " +
+      String(details.status ?? "unknown") + "): " +
+      String(details.body?.error || cleanUpload.error.message || "No safe error detail returned.") +
+      (details.body?.status ? " [status=" + details.body.status + "]" : ""));
+  }
   assert.equal(cleanUpload.data?.status, "clean", "ClamAV confirms the clean Story sample");
 
   const media = await admin.from("campus_story_media")
