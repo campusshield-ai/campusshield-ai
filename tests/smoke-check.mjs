@@ -37,6 +37,9 @@ const campusStoryMediaHardeningMigration = await readFile(new URL("../supabase/m
 const campusStoryMediaMetadataMigration = await readFile(new URL("../supabase/migrations/20261030172000_verify_story_media_storage_metadata.sql", import.meta.url), "utf8");
 const campusStoryRewardsMigration = await readFile(new URL("../supabase/migrations/20261030173000_campus_story_reputation_challenge.sql", import.meta.url), "utf8");
 const courseDiscussionPushMigration = await readFile(new URL("../supabase/migrations/20261030174000_course_discussion_push_notifications.sql", import.meta.url), "utf8");
+const campusStoryMediaScanPreflightMigration = await readFile(new URL("../supabase/migrations/20261030210000_story_media_scan_preflight.sql", import.meta.url), "utf8");
+const campusStoryMediaUploadFunction = await readFile(new URL("../supabase/functions/campus-story-media-upload/index.ts", import.meta.url), "utf8");
+
 
 const pushSubscriptionsFunction = await readFile(new URL("../supabase/functions/push-subscriptions/index.ts", import.meta.url), "utf8");
 const pushDispatchFunction = await readFile(new URL("../supabase/functions/push-dispatch/index.ts", import.meta.url), "utf8");
@@ -831,5 +834,17 @@ assert.match(pushDispatchFunction, /course_discussion: \{ title: "CampusShield S
 assert.match(pushDispatchFunction, /campusshield-ai-staging-preview-\[a-z0-9\]/, "push dispatcher accepts the current staging preview hostname pattern");
 assert.match(pushSubscriptionsFunction, /campusshield-ai-staging-preview-\[a-z0-9\]/, "push subscriptions accept the current staging preview hostname pattern");
 assert.doesNotMatch(pushDispatchFunction, /\*\.vercel\.app/, "push dispatcher does not trust arbitrary Vercel preview origins");
-console.log("PASS Campus Stories private media, Study Circles, Reputation and scoped push notifications");
+assert.match(backend, /functions\.invoke\([\s\S]*?campus-story-media-upload/, "Story attachments use the authenticated malware-scanning Edge Function");
+assert.doesNotMatch(backend.slice(backend.indexOf("async createCampusStory"), backend.indexOf("async addSignedCampusStoryMedia")), /storage\.from\("campus-community-media"\)\.upload/, "the browser never writes unscanned Story media directly to permanent storage");
+assert.match(campusStoryMediaUploadFunction, /auth\.getUser\(\)/, "Story media scanner verifies the caller's authenticated user");
+assert.match(campusStoryMediaUploadFunction, /get_my_campus_context/, "Story media scanner obtains the active campus from the authenticated session");
+assert.match(campusStoryMediaUploadFunction, /can_upload_campus_story_media/, "Story media scan checks ownership and pending-story eligibility before scanning");
+assert.match(campusStoryMediaUploadFunction, /MALWARE_SCANNER_URL[\s\S]*MALWARE_SCANNER_TOKEN/, "Story media uploads require the configured private malware scanner");
+assert.match(campusStoryMediaUploadFunction, /redirect: "error"/, "Story malware scanner requests do not follow redirects");
+assert.match(campusStoryMediaUploadFunction, /result\?\.sha256 !== fileHash/, "scanner response must attest to the exact uploaded file hash");
+assert.match(campusStoryMediaUploadFunction, /scanStatus !== "clean"/, "infected or unverified Story media never reaches permanent Storage");
+assert.match(campusStoryMediaUploadFunction, /metadata|attach_campus_story_media/, "clean Story media is attached only after scanning");
+assert.match(campusStoryMediaScanPreflightMigration, /private\.can_upload_campus_story_media/, "scan preflight reuses the existing private Story upload authorization predicate");
+assert.match(campusStoryMediaScanPreflightMigration, /revoke all[\s\S]*from public, anon[\s\S]*grant execute[\s\S]*to authenticated/, "Story scan preflight is limited to authenticated callers");
+console.log("PASS Campus Stories private media scanning, Study Circles, Reputation and scoped push notifications");
 
