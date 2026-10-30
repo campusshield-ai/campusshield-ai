@@ -4447,6 +4447,7 @@
       syncCampusAccessNavigation();
       const needsCampus = !campus?.university_id;
       $('campus-onboarding').hidden = !needsCampus;
+      $('campus-social-extras').hidden = needsCampus;
       $('community-main-layout').hidden = needsCampus;
       $('community-feed-panel').hidden = needsCampus;
       $('campus-context-banner').hidden = needsCampus;
@@ -5523,7 +5524,6 @@
     finally { button.disabled = false; }
   });
 
-  $('campus-stories-feed').addEventListener('click', function() {});
   $('campus-confessions-feed').addEventListener('click', async function(event) {
     const button = event.target.closest('[data-report-campus-confession]');
     if (!button) return;
