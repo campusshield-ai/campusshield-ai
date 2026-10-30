@@ -805,7 +805,7 @@ assert.match(campusStoryMediaMigration, /campus_story_media_no_direct_access/, "
 assert.match(campusStoryMediaMigration, /private\.current_campus_university_id\(\)/, "Story media policy checks the active university");
 assert.match(campusStoryMediaHardeningMigration, /p_media_kind='image'.*15728640/s, "database enforces the 15 MiB Story image limit");
 assert.match(campusStoryMediaHardeningMigration, /p_media_kind='video'.*31457280/s, "database enforces the 30 MiB Story video limit");
-assert.match(campusStoryMediaMetadataMigration, /storage\.objects[\s\S]*metadata->>'size'[\s\S]*metadata->>'mimetype'/, "database compares attachment claims with recorded Storage metadata");
+assert.match(campusStoryMediaMetadataMigration, /metadata->>'size'[\s\S]*metadata->>'mimetype'[\s\S]*from storage\.objects/, "database compares attachment claims with recorded Storage metadata");
 assert.match(campusStoryMediaMetadataMigration, /owner_id=v_user::text/, "Story upload metadata must belong to the authenticated uploader");
 
 assert.ok(htmlMarkup.includes('id="campus-study-circle-form"'), "Study Circles have a dedicated course-based create form");
