@@ -5,6 +5,7 @@ import webpush from "npm:web-push@3.6.7";
 const genericMessages = {
   timetable_reminder: { title: "CampusShield timetable", body: "You have a scheduled campus item coming up.", page: "timetable" },
   new_message: { title: "CampusShield messages", body: "You have a new campus message. Sign in to view it.", page: "campus-messages" },
+  course_discussion: { title: "CampusShield Study Circles", body: "A member of your Study Circle posted a new discussion message. Sign in to view it.", page: "groups" },
   campus_announcement: { title: "CampusShield campus update", body: "There is a new campus update available.", page: "noticeboard" },
   account_update: { title: "CampusShield account update", body: "There is an update to your account. Sign in to view it.", page: "profile-settings" },
   test: { title: "CampusShield notifications are on", body: "Background notifications are working on this device.", page: "profile-settings" },
@@ -13,6 +14,7 @@ type PushKind = keyof typeof genericMessages;
 const notificationUrls: Record<PushKind, string> = {
   timetable_reminder: "./?page=timetable",
   new_message: "./?page=campus-messages",
+  course_discussion: "./?page=groups",
   campus_announcement: "./?page=noticeboard",
   account_update: "./?page=profile-settings",
   test: "./?page=profile-settings",
@@ -61,11 +63,11 @@ Deno.serve(async (req: Request) => {
     const body = await req.json().catch(() => null);
     let userId = String(body?.user_id || "");
     let kind = body?.kind as PushKind;
-    let eventKey: string | null = null;
+    let eventKey: string | null = internalAuthorized && typeof body?.event_key === "string" ? body.event_key : null;
     const db = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
     if (!internalAuthorized) {
       const token = (req.headers.get("authorization") || "").match(/^Bearer\s+(.+)$/i)?.[1];
-      if (!["test", "message"].includes(String(body?.action || "")) || !token || !anon) {
+      if (!["test", "message", "course_message"].includes(String(body?.action || "")) || !token || !anon) {
         return respond({ error: "Not authorized." }, 401);
       }
       const authClient = createClient(url, anon, {
@@ -102,13 +104,66 @@ Deno.serve(async (req: Request) => {
         userId = conversation.user_one_id === user.id ? conversation.user_two_id : conversation.user_one_id;
         kind = "new_message";
         eventKey = "direct-message:" + sentMessage.id + ":" + userId;
+      } else if (body.action === "course_message") {
+        const messageId = String(body?.message_id || "");
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(messageId)) {
+          return respond({ error: "A valid recent Study Circle message is required." }, 400);
+        }
+        const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const { data: sentMessage, error: messageError } = await db.from("campus_course_community_messages")
+          .select("id,group_id,university_id,author_id,status,created_at")
+          .eq("id", messageId).eq("author_id", user.id).eq("status", "published")
+          .gte("created_at", since).maybeSingle();
+        if (messageError || !sentMessage) {
+          return respond({ error: "Only a recently published Study Circle message can trigger a notification." }, 403);
+        }
+        const { data: group, error: groupError } = await db.from("campus_groups")
+          .select("id,university_id,course_id,status")
+          .eq("id", sentMessage.group_id).eq("university_id", sentMessage.university_id)
+          .eq("status", "active").not("course_id", "is", null).maybeSingle();
+        if (groupError || !group) {
+          return respond({ error: "An active course Study Circle is required." }, 403);
+        }
+        const { data: memberships, error: membershipError } = await db.from("campus_group_members")
+          .select("user_id").eq("group_id", group.id).neq("user_id", user.id).limit(500);
+        if (membershipError) {
+          console.error("Study Circle recipient lookup failed", { code: membershipError.code });
+          return respond({ error: "Could not load Study Circle notification recipients." }, 503);
+        }
+        const recipients = [...new Set((memberships || []).map((row: { user_id?: string }) => String(row.user_id || "")).filter(Boolean))];
+        if (!recipients.length) return respond({ processed: 0, delivered: 0, no_recipients: true });
+        if (!expected) return respond({ error: "Internal push delivery is not configured." }, 503);
+
+        const dispatchUrl = url.replace(/\/$/, "") + "/functions/v1/push-dispatch";
+        const results = await Promise.all(recipients.map(async recipientId => {
+          const eventKey = "course-discussion:" + sentMessage.id + ":" + recipientId;
+          try {
+            const response = await fetch(dispatchUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "x-campus-push-secret": expected },
+              body: JSON.stringify({ user_id: recipientId, kind: "course_discussion", event_key: eventKey }),
+            });
+            const payload = await response.json().catch(() => ({}));
+            return { ok: response.ok, delivered: Number(payload?.delivered || 0), expired: Number(payload?.expired || 0) };
+          } catch {
+            return { ok: false, delivered: 0, expired: 0 };
+          }
+        }));
+        return respond({
+          recipients: recipients.length,
+          processed: results.filter(result => result.ok).length,
+          delivered: results.reduce((sum, result) => sum + result.delivered, 0),
+          expired: results.reduce((sum, result) => sum + result.expired, 0),
+          failed: results.filter(result => !result.ok).length,
+        });
       } else {
         return respond({ error: "Unsupported push action." }, 400);
       }
     }
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId) ||
         !Object.prototype.hasOwnProperty.call(genericMessages, kind) ||
-        (!internalAuthorized && !["test", "new_message"].includes(kind))) {
+        (!internalAuthorized && !["test", "new_message"].includes(kind)) ||
+        (eventKey !== null && (eventKey.length < 10 || eventKey.length > 220))) {
       return respond({ error: "A valid recipient and notification kind are required." }, 400);
     }
     if (eventKey) {
