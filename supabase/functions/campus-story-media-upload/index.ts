@@ -55,10 +55,18 @@ Deno.serve(async (req: Request) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    if (!supabaseUrl || !anonKey) return reply({ error: "Secure Story upload is not configured." }, 503);
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !anonKey || !serviceKey) {
+      return reply({ error: "Secure Story upload is not configured." }, 503);
+    }
 
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authorization } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    // Service-role access is used only to create the one-time clean-scan approval.
+    // The actual Storage upload still uses the caller JWT, preserving Storage ownership.
+    const adminClient = createClient(supabaseUrl, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const { data: userResult, error: userError } = await userClient.auth.getUser();
@@ -162,29 +170,48 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "The malware scanner flagged this file. It was not uploaded.", status: "infected" }, 422);
     }
 
-    // Upload only after a definitive clean scan. The caller's JWT is retained so Storage
-    // records the real uploader and its RLS policy independently rechecks the pending Story.
+    // A one-time, server-issued approval is recorded only after an exact-hash clean result.
+    // Storage RLS requires this record, so direct browser uploads cannot bypass the scanner.
     const extension = MIME_EXT[detectedMime];
     const objectPath = campus.university_id + "/" + storyId + "/" + crypto.randomUUID() + "." + extension;
+    const { error: approvalError } = await adminClient.from("campus_story_media_scan_approvals").insert({
+      story_id: storyId,
+      university_id: campus.university_id,
+      uploader_id: user.id,
+      object_path: objectPath,
+      file_sha256: fileHash,
+      mime_type: detectedMime,
+      byte_size: bytes.byteLength,
+      scan_status: "clean",
+    });
+    if (approvalError) {
+      return reply({ error: "A one-time clean-scan approval could not be recorded. No Story media was uploaded." }, 503);
+    }
+
+    // Upload with the user's JWT so Storage records the actual uploader.
     const bucket = userClient.storage.from("campus-community-media");
     const { error: uploadError } = await bucket.upload(objectPath, bytes, {
       cacheControl: "1800",
       upsert: false,
       contentType: detectedMime,
     });
-    if (uploadError) return reply({ error: "The clean file could not be saved to private Story storage." }, 503);
+    if (uploadError) {
+      await adminClient.from("campus_story_media_scan_approvals").delete().eq("object_path", objectPath);
+      return reply({ error: "The clean file could not be saved to private Story storage." }, 503);
+    }
 
-    const mediaKind = isImage ? "image" : "video";
+    const mediaKind = isImage ? "video" : "image";
     const { error: attachError } = await userClient.rpc("attach_campus_story_media", {
       p_story_id: storyId,
       p_object_path: objectPath,
-      p_media_kind: mediaKind,
+      p_media_kind: isImage ? "image" : "video",
       p_mime_type: detectedMime,
       p_byte_size: bytes.byteLength,
       p_alt_text: altText || null,
     });
     if (attachError) {
       await bucket.remove([objectPath]);
+      await adminClient.from("campus_story_media_scan_approvals").delete().eq("object_path", objectPath);
       return reply({ error: "The clean file could not be attached to this Story. The uploaded object was removed." }, 409);
     }
 
