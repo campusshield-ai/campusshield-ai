@@ -4491,6 +4491,7 @@
       }));
       pollResults.forEach(function(entry) { pollsByPost[entry[0]] = entry[1]; });
       renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost);
+      await loadCampusSocialExtras();
       $('community-feed-status').textContent = posts.length + (posts.length === 1 ? ' published post' : ' published posts') + ' · refreshed ' + new Date().toLocaleTimeString();
 
       $('community-moderation').hidden = !canModerateCommunity();
@@ -4636,6 +4637,7 @@
       }).join('') : '<div class="community-empty">No new community reports.</div>';
 
       $('community-moderation-message').textContent = posts.length + ' post(s) awaiting review · ' + reports.length + ' report(s) to review.';
+      await loadCampusSocialModeration();
     } catch (err) {
       console.error('Could not load community moderation:', err);
       $('community-moderation-message').textContent = 'The moderation queue could not be loaded: ' + (err.message || 'unknown error');
@@ -5411,6 +5413,165 @@
       status.textContent = err.message || 'Campus moderation queue is unavailable.';
     }
   }
+
+  function renderCampusStories(rows) {
+    const host = $('campus-stories-feed');
+    if (!rows.length) {
+      host.innerHTML = '<div class="community-empty">No active stories yet. Share a helpful campus moment.</div>';
+      return;
+    }
+    host.innerHTML = rows.map(function(story) {
+      const expiry = story.expires_at ? new Date(story.expires_at) : null;
+      const remaining = expiry ? Math.max(0, Math.ceil((expiry.getTime() - Date.now()) / 3600000)) : 0;
+      return '<article class="campus-story-card"><div class="campus-story-card-head"><strong class="community-handle">@' + esc(story.author_username) + '</strong><span class="campus-story-expiry">' + (remaining ? remaining + 'h left' : 'Expiring soon') + '</span></div><p>' + esc(story.body) + '</p></article>';
+    }).join('');
+  }
+
+  function renderCampusConfessions(rows) {
+    const host = $('campus-confessions-feed');
+    if (!rows.length) {
+      host.innerHTML = '<div class="community-empty">No published confessions yet. Submissions are reviewed before appearing.</div>';
+      return;
+    }
+    const labels = { campus_life:'Campus life', friendship:'Friendship', relationships:'Relationships', academic_stress:'Academic stress', general:'General' };
+    host.innerHTML = rows.map(function(item) {
+      return '<article class="campus-confession-card"><div class="campus-confession-card-head"><span class="campus-confession-anon">◉ Anonymous campus member</span><span class="campus-story-expiry">' + esc(labels[item.category] || 'General') + ' · ' + esc(dateText(item.created_at)) + '</span></div><p>' + esc(item.body) + '</p><button type="button" class="btn secondary" data-report-campus-confession="' + esc(item.confession_id) + '">Report confession</button></article>';
+    }).join('');
+  }
+
+  async function loadCampusSocialExtras() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile || !campusContext?.university_id) return;
+    const [storiesResult, confessionsResult] = await Promise.allSettled([
+      backend.listCampusStories(), backend.listCampusConfessions()
+    ]);
+    if (storiesResult.status === 'fulfilled') {
+      renderCampusStories(storiesResult.value);
+      $('campus-stories-status').textContent = storiesResult.value.length + ' active campus story/stories · each expires 24 hours after approval.';
+    } else {
+      $('campus-stories-status').textContent = storiesResult.reason?.message || 'Stories are temporarily unavailable.';
+    }
+    if (confessionsResult.status === 'fulfilled') {
+      renderCampusConfessions(confessionsResult.value);
+      $('campus-confessions-status').textContent = confessionsResult.value.length + ' published anonymous confession(s).';
+    } else {
+      $('campus-confessions-status').textContent = confessionsResult.reason?.message || 'Confessions are temporarily unavailable.';
+    }
+  }
+
+  async function loadCampusSocialModeration() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !canModerateCommunity()) return;
+    const [storiesResult, confessionsResult, reportsResult] = await Promise.allSettled([
+      backend.listCampusStoryModeration(),
+      backend.listCampusConfessionModeration(),
+      backend.listCampusConfessionReports()
+    ]);
+    const stories = storiesResult.status === 'fulfilled' ? storiesResult.value : [];
+    const confessions = confessionsResult.status === 'fulfilled' ? confessionsResult.value : [];
+    const reports = reportsResult.status === 'fulfilled' ? reportsResult.value : [];
+    $('campus-story-moderation-queue').innerHTML = stories.length ? stories.map(function(item) {
+      return '<article class="community-moderation-item"><div class="community-meta">@' + esc(item.author_username) + ' · ' + esc(dateText(item.created_at)) + '</div><p>' + esc(item.body) + '</p><div class="community-post-actions"><button type="button" class="btn" data-campus-story-decision="publish" data-campus-story-id="' + esc(item.story_id) + '">Approve 24h</button><button type="button" class="btn danger" data-campus-story-decision="reject" data-campus-story-id="' + esc(item.story_id) + '">Reject</button></div></article>';
+    }).join('') : '<div class="community-empty">No stories awaiting review.</div>';
+    $('campus-confession-moderation-queue').innerHTML = confessions.length ? confessions.map(function(item) {
+      return '<article class="community-moderation-item"><div class="community-meta">Anonymous submission · ' + esc(item.category.replaceAll('_',' ')) + ' · ' + esc(dateText(item.created_at)) + ' · ' + Number(item.report_count || 0) + ' reports</div><p>' + esc(item.body) + '</p><div class="community-post-actions"><button type="button" class="btn" data-campus-confession-decision="publish" data-campus-confession-id="' + esc(item.confession_id) + '">Approve</button><button type="button" class="btn danger" data-campus-confession-decision="reject" data-campus-confession-id="' + esc(item.confession_id) + '">Reject</button></div></article>';
+    }).join('') : '<div class="community-empty">No confessions awaiting review.</div>';
+    $('campus-confession-reports-queue').innerHTML = reports.length ? reports.map(function(item) {
+      return '<article class="community-report-item"><div class="community-meta">Anonymous confession · ' + esc(item.reason.replaceAll('_',' ')) + ' · ' + esc(dateText(item.created_at)) + '</div><p>' + esc(item.details || 'No additional details.') + '</p><div class="community-post-actions"><button type="button" class="btn secondary" data-campus-confession-report-decision="reviewed" data-campus-confession-report-id="' + esc(item.report_id) + '">Mark reviewed</button><button type="button" class="btn secondary" data-campus-confession-report-decision="dismissed" data-campus-confession-report-id="' + esc(item.report_id) + '">Dismiss</button></div></article>';
+    }).join('') : '<div class="community-empty">No pending confession reports.</div>';
+  }
+
+  $('campus-story-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const body = $('campus-story-body').value.trim();
+    const button = $('campus-story-submit');
+    const message = $('campus-story-message');
+    if (!backend?.isConfigured) { message.textContent = 'Supabase is not configured.'; return; }
+    if (!body || body.length > 500) { message.textContent = 'Stories must contain 1–500 characters.'; return; }
+    button.disabled = true;
+    message.textContent = 'Submitting story for campus review…';
+    try {
+      await backend.createCampusStory(body);
+      $('campus-story-form').reset();
+      message.textContent = 'Story submitted. It will appear for your university after moderation and remain visible for 24 hours.';
+      toast('Campus story submitted for review.');
+      await loadCampusSocialExtras();
+      if (canModerateCommunity()) await loadCampusSocialModeration();
+    } catch (err) { message.textContent = err.message || 'Could not submit your story.'; }
+    finally { button.disabled = false; }
+  });
+
+  $('campus-confession-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const body = $('campus-confession-body').value.trim();
+    const category = $('campus-confession-category').value;
+    const button = $('campus-confession-submit');
+    const message = $('campus-confession-message');
+    if (!backend?.isConfigured) { message.textContent = 'Supabase is not configured.'; return; }
+    if (body.length < 10 || body.length > 1200) { message.textContent = 'Confessions must contain 10–1,200 characters.'; return; }
+    button.disabled = true;
+    message.textContent = 'Submitting anonymously for moderation…';
+    try {
+      await backend.createCampusConfession(category, body);
+      $('campus-confession-form').reset();
+      message.textContent = 'Your confession was submitted. Your username will not appear if it is approved.';
+      toast('Anonymous confession submitted for review.');
+      if (canModerateCommunity()) await loadCampusSocialModeration();
+    } catch (err) { message.textContent = err.message || 'Could not submit your confession.'; }
+    finally { button.disabled = false; }
+  });
+
+  $('campus-stories-feed').addEventListener('click', function() {});
+  $('campus-confessions-feed').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-report-campus-confession]');
+    if (!button) return;
+    const reasonInput = window.prompt('Report reason: 1 Harassment, 2 Threats, 3 Personal information, 4 Self-harm concern, 5 Spam, 6 Other', '6');
+    if (reasonInput === null) return;
+    const reasons = {'1':'harassment','2':'threats','3':'personal_information','4':'self_harm_concern','5':'spam','6':'other'};
+    const reason = reasons[String(reasonInput).trim()];
+    if (!reason) { toast('Choose a reason from 1 to 6.'); return; }
+    const details = window.prompt('Optional context (do not include private details):', '') || '';
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.reportCampusConfession(button.dataset.reportCampusConfession, reason, details.trim());
+      toast('Confession report sent to campus moderation.');
+    } catch (err) { toast(err.message || 'Could not report confession.'); }
+    finally { button.disabled = false; }
+  });
+
+  $('community-moderation').addEventListener('click', async function(event) {
+    const storyButton = event.target.closest('[data-campus-story-decision]');
+    const confessionButton = event.target.closest('[data-campus-confession-decision]');
+    const reportButton = event.target.closest('[data-campus-confession-report-decision]');
+    const backend = window.CampusShieldBackend;
+    try {
+      if (storyButton) {
+        storyButton.disabled = true;
+        await backend.moderateCampusStory(storyButton.dataset.campusStoryId, storyButton.dataset.campusStoryDecision);
+        toast('Campus story moderation saved.');
+      } else if (confessionButton) {
+        confessionButton.disabled = true;
+        await backend.moderateCampusConfession(confessionButton.dataset.campusConfessionId, confessionButton.dataset.campusConfessionDecision);
+        toast('Confession moderation saved.');
+      } else if (reportButton) {
+        reportButton.disabled = true;
+        await backend.resolveCampusConfessionReport(reportButton.dataset.campusConfessionReportId, reportButton.dataset.campusConfessionReportDecision);
+        toast('Confession report updated.');
+      } else return;
+      await loadCampusSocialExtras();
+      await loadCampusSocialModeration();
+    } catch (err) {
+      toast(err.message || 'Could not save moderation decision.');
+      if (storyButton) storyButton.disabled = false;
+      if (confessionButton) confessionButton.disabled = false;
+      if (reportButton) reportButton.disabled = false;
+    }
+  });
+
+  $('refresh-campus-stories').addEventListener('click', loadCampusSocialExtras);
+  $('refresh-campus-confessions').addEventListener('click', loadCampusSocialExtras);
 
   $('communityUsernameForm').addEventListener('submit', async function(event) {
     event.preventDefault();
