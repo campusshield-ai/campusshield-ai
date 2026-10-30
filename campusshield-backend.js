@@ -820,6 +820,13 @@ async getCurrentUser() {
         p_body: String(body || "").trim()
       });
       if (error) throw error;
+      // Delivery is best-effort: a missing push subscription or provider outage must
+      // never turn a successfully persisted Study Circle message into a failed send.
+      try {
+        await this.callPushFunction("delivery", { action: "course_message", message_id: data });
+      } catch (notificationError) {
+        console.warn("Study Circle push notification could not be sent.", notificationError?.message || "delivery unavailable");
+      }
       return data;
     },
 
