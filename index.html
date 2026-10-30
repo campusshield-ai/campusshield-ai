@@ -2925,6 +2925,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <form id="campus-story-form" class="campus-social-compose">
       <label class="sr-only" for="campus-story-body">Write a campus story</label>
       <textarea id="campus-story-body" rows="2" maxlength="500" minlength="1" required placeholder="What's happening on campus today? (500 characters max)"></textarea>
+      <div class="field"><label for="campus-story-media">Photo or video (optional)</label><input id="campus-story-media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>One attachment per story · images up to 15 MB · videos up to 30 MB</small></div>
+      <div class="field"><label for="campus-story-alt">Image description (optional)</label><input id="campus-story-alt" type="text" maxlength="250" placeholder="Describe the image for accessibility"></div>
       <div class="campus-social-compose-footer"><span>Stories are reviewed before appearing. Keep people’s private information out.</span><button class="btn" type="submit" id="campus-story-submit">Submit story</button></div>
       <p id="campus-story-message" class="message" role="status" aria-live="polite"></p>
     </form>
@@ -3129,6 +3131,16 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <section class="page" id="page-groups">
   <div class="heading"><h1>Campus groups</h1><p>Find study circles, departments, societies and interest groups inside your university only.</p></div>
   <div class="notice-inline"><strong>Campus-only groups.</strong> A group can only contain members of your selected university. New groups are checked by campus staff before becoming visible.</div>
+  <section class="panel campus-study-circles-panel" aria-labelledby="campus-study-circles-title">
+    <div class="panel-heading"><div><span class="campus-social-kicker">ACADEMIC COMMUNITY</span><h2 id="campus-study-circles-title">Study Circles</h2><p>Join a course-focused learning group built on existing Campus Groups and course discussions.</p></div></div>
+    <form id="campus-study-circle-form" class="campus-study-circle-compose">
+      <div class="field"><label for="campus-study-circle-course">Published course *</label><select id="campus-study-circle-course" required><option value="">Choose a published course…</option></select></div>
+      <div class="field"><label for="campus-study-circle-description">Study Circle purpose (optional)</label><textarea id="campus-study-circle-description" rows="2" maxlength="1000" placeholder="e.g. Weekly revision, assignment explanations and exam preparation."></textarea></div>
+      <button class="btn" type="submit" id="campus-study-circle-submit">Create Study Circle</button>
+    </form>
+    <p id="campus-study-circles-status" class="message" role="status" aria-live="polite">Loading approved courses and Study Circles…</p>
+    <div id="campus-study-circles-feed" class="campus-study-circles-feed"><div class="community-empty">Loading Study Circles…</div></div>
+  </section>
   <div class="community-layout">
     <section class="panel" aria-labelledby="campus-groups-create-title">
       <div class="panel-heading"><div><h2 id="campus-groups-create-title">Create a group</h2><p>Build a space for study, courses or shared interests.</p></div></div>
@@ -4858,6 +4870,21 @@ table { max-width: 100%; }
 }
 </style>
 
+<style id="campus-social-next-stage-styles">
+.campus-story-media{margin-top:11px;overflow:hidden;border-radius:13px;background:#edf5f1}
+.campus-story-media img,.campus-story-media video{display:block;width:100%;max-height:420px;object-fit:contain;border-radius:13px;background:#102b35}
+.campus-story-media video{aspect-ratio:16/9}
+.campus-study-circles-panel{border-color:#d7e9df;background:linear-gradient(150deg,#f7fcf8,#fff 65%)}
+.campus-study-circle-compose{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) auto;align-items:end;gap:12px;padding:13px;border:1px solid #dcebe2;border-radius:14px;background:#f8fcf9}
+.campus-study-circle-compose .field{margin:0}
+.campus-study-circle-compose textarea{min-height:43px}
+.campus-study-circles-feed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.campus-study-circle-card{margin:0}
+.campus-course-discussion-messages{display:grid;gap:9px;max-height:440px;overflow:auto;padding:10px;border:1px solid #e4ede8;border-radius:12px;background:#f8fbf9}
+.campus-course-discussion-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-top:12px}
+.campus-course-discussion-compose textarea{width:100%;min-height:70px;border:1px solid #d9e4df;border-radius:10px;padding:10px 12px}
+@media(max-width:760px){.campus-study-circle-compose{grid-template-columns:1fr}.campus-study-circles-feed{grid-template-columns:1fr}.campus-course-discussion-compose{grid-template-columns:1fr}.campus-course-discussion-compose .btn{width:100%}}
+</style>
 <script src="./campus-dashboard-upgrade.js" defer></script>
 </body>
 </html>
