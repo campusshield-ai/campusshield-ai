@@ -4936,6 +4936,7 @@
   $('refresh-campus-notices').addEventListener('click', loadCampusNoticeboardPage);
 
   let activeCampusCourseDiscussionId = null;
+  let activeCampusCourseDiscussionUniversityId = null;
   let activeCampusCourseDiscussionSubscription = null;
 
   async function refreshCampusCourseDiscussion(groupId) {
@@ -4965,6 +4966,7 @@
       activeCampusCourseDiscussionSubscription = null;
     }
     activeCampusCourseDiscussionId = groupId;
+    activeCampusCourseDiscussionUniversityId = campusContext?.university_id || null;
     $('campus-course-discussion-title').textContent = groupName || 'Study Circle discussion';
     $('campus-course-discussion-subtitle').textContent = 'Verified members of this approved course community can share questions, revision tips and resources.';
     panel.hidden = false;
@@ -4993,6 +4995,7 @@
       activeCampusCourseDiscussionSubscription = null;
     }
     activeCampusCourseDiscussionId = null;
+    activeCampusCourseDiscussionUniversityId = null;
     $('campus-course-discussion-input').disabled = true;
     $('campus-course-discussion-send').disabled = true;
     $('campus-course-discussion-panel').hidden = true;
@@ -5066,9 +5069,24 @@
     status.textContent = 'Loading your university groups…';
     try {
       campusContext = await backend.getMyCampusContext();
+      if (activeCampusCourseDiscussionId && activeCampusCourseDiscussionUniversityId !== campusContext?.university_id) {
+        if (activeCampusCourseDiscussionSubscription) {
+          await backend.unsubscribeCampusCourseCommunityMessages(activeCampusCourseDiscussionSubscription);
+          activeCampusCourseDiscussionSubscription = null;
+        }
+        activeCampusCourseDiscussionId = null;
+        activeCampusCourseDiscussionUniversityId = null;
+        $('campus-course-discussion-input').disabled = true;
+        $('campus-course-discussion-send').disabled = true;
+        $('campus-course-discussion-panel').hidden = true;
+        $('campus-course-discussion-messages').innerHTML = '';
+      }
       if (!campusContext?.university_id) {
         status.textContent = 'Choose your university on the Campus community page first.';
         $('campus-groups-feed').innerHTML = '';
+        $('campus-study-circles-feed').innerHTML = '';
+        $('campus-study-circles-course').innerHTML = '<option value="">Choose a published course…</option>';
+        $('campus-study-circles-status').textContent = 'Choose your university to discover Study Circles.';
         return;
       }
       const [groups, joined] = await Promise.all([
