@@ -37,7 +37,7 @@ const campusStoryMediaHardeningMigration = await readFile(new URL("../supabase/m
 const campusStoryMediaMetadataMigration = await readFile(new URL("../supabase/migrations/20261030172000_verify_story_media_storage_metadata.sql", import.meta.url), "utf8");
 const campusStoryRewardsMigration = await readFile(new URL("../supabase/migrations/20261030173000_campus_story_reputation_challenge.sql", import.meta.url), "utf8");
 const courseDiscussionPushMigration = await readFile(new URL("../supabase/migrations/20261030174000_course_discussion_push_notifications.sql", import.meta.url), "utf8");
-const campusStoryMediaScanPreflightMigration = await readFile(new URL("../supabase/migrations/20261030210000_story_media_scan_preflight.sql", import.meta.url), "utf8");
+const campusStoryMediaScanPreflightMigration = await readFile(new URL("../supabase/migrations/20261030205040_story_media_scan_preflight.sql", import.meta.url), "utf8");
 const campusStoryMediaUploadFunction = await readFile(new URL("../supabase/functions/campus-story-media-upload/index.ts", import.meta.url), "utf8");
 
 
