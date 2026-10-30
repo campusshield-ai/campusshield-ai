@@ -86,6 +86,10 @@ begin
   if char_length(btrim(coalesce(p_body,''))) not between 1 and 500 then
     raise exception 'A story must contain 1–500 characters.';
   end if;
+  if (select count(*) from public.campus_stories
+      where author_id=v_user and university_id=v_campus and created_at>now()-interval '24 hours') >= 5 then
+    raise exception 'You can submit up to five stories in a 24-hour period.';
+  end if;
   select username into v_username from public.community_profiles where user_id=v_user;
   if v_username is null then raise exception 'Your campus username is not ready yet.'; end if;
   insert into public.campus_stories(university_id,author_id,author_username,body)
@@ -152,6 +156,10 @@ begin
   end if;
   if char_length(btrim(coalesce(p_body,''))) not between 10 and 1200 then
     raise exception 'A confession must contain 10–1,200 characters.';
+  end if;
+  if (select count(*) from public.campus_confessions
+      where author_id=v_user and university_id=v_campus and created_at>now()-interval '24 hours') >= 3 then
+    raise exception 'You can submit up to three confessions in a 24-hour period.';
   end if;
   insert into public.campus_confessions(university_id,author_id,category,body)
   values(v_campus,v_user,p_category,btrim(p_body)) returning id into v_id;
