@@ -1724,23 +1724,22 @@ async getCurrentUser() {
     async createCampusStory(body, mediaFile, altText) {
       if (!client) throw new Error("Supabase is not configured.");
       const storyBody = String(body || "").trim();
+      let campus = null;
+      if (mediaFile) {
+        const user = await this.getCurrentUser();
+        campus = await this.getMyCampusContext();
+        const allowedTypes = new Set(["image/jpeg","image/png","image/webp","image/gif","video/mp4","video/webm"]);
+        if (!user || !campus?.university_id) throw new Error("Sign in and choose your university before attaching media.");
+        if (!allowedTypes.has(mediaFile.type)) throw new Error("Use JPG, PNG, WEBP, GIF, MP4 or WEBM files only.");
+        const maxBytes = mediaFile.type.startsWith("image/") ? 15 * 1024 * 1024 : 30 * 1024 * 1024;
+        if (!mediaFile.size || mediaFile.size > maxBytes) {
+          throw new Error(mediaFile.type.startsWith("image/") ? "Images must be 15 MB or smaller." : "Videos must be 30 MB or smaller.");
+        }
+      }
+
       const { data: storyId, error } = await client.rpc("create_campus_story", { p_body: storyBody });
       if (error) throw error;
       if (!mediaFile) return storyId;
-
-      const user = await this.getCurrentUser();
-      const campus = await this.getMyCampusContext();
-      const allowedTypes = new Set(["image/jpeg","image/png","image/webp","image/gif","video/mp4","video/webm"]);
-      if (!user || !campus?.university_id) throw new Error("Sign in and choose your university before attaching media.");
-      if (!allowedTypes.has(mediaFile.type)) {
-        await client.rpc("discard_campus_story_submission", { p_story_id: storyId });
-        throw new Error("Use JPG, PNG, WEBP, GIF, MP4 or WEBM files only.");
-      }
-      const maxBytes = mediaFile.type.startsWith("image/") ? 15 * 1024 * 1024 : 30 * 1024 * 1024;
-      if (!mediaFile.size || mediaFile.size > maxBytes) {
-        await client.rpc("discard_campus_story_submission", { p_story_id: storyId });
-        throw new Error(mediaFile.type.startsWith("image/") ? "Images must be 15 MB or smaller." : "Videos must be 30 MB or smaller.");
-      }
 
       const cleanedName = String(mediaFile.name || "story-media")
         .normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-80) || "story-media";
