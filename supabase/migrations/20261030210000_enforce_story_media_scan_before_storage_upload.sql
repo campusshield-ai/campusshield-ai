@@ -24,6 +24,22 @@ alter table public.campus_story_media_scan_approvals enable row level security;
 revoke all on public.campus_story_media_scan_approvals from public, anon, authenticated;
 grant all on public.campus_story_media_scan_approvals to service_role;
 
+create or replace function private.is_campus_story_media_path(p_object_path text)
+returns boolean
+language sql
+stable
+security definer
+set search_path to ''
+as $function$
+  select exists (
+    select 1 from public.campus_stories story
+    where story.id::text=split_part(coalesce(p_object_path,''),'/',2)
+      and story.university_id::text=split_part(coalesce(p_object_path,''),'/',1)
+  );
+$function$;
+revoke all on function private.is_campus_story_media_path(text) from public, anon;
+grant execute on function private.is_campus_story_media_path(text) to authenticated;
+
 create or replace function private.can_start_campus_story_media_scan(p_story_id uuid)
 returns boolean
 language sql
@@ -107,11 +123,7 @@ create policy campus_media_upload_same_campus
   on storage.objects for insert to authenticated
   with check (
     bucket_id='campus-community-media'
-    and not exists (
-      select 1 from public.campus_stories s
-      where s.id::text=split_part(objects.name,'/',2)
-        and s.university_id=(select private.current_campus_university_id())
-    )
+    and not private.is_campus_story_media_path(name)
     and split_part(name,'/',1)=(select private.current_campus_university_id())::text
     and (select private.current_user_has_verified_campus_access())
     and private.owns_community_post_for_media(split_part(name,'/',2),(select private.current_campus_university_id()))
@@ -124,26 +136,12 @@ create policy platform_owner_full_access_user_buckets
   using (
     private.is_campusshield_owner_admin()
     and bucket_id=any(array['campus-community-media','campus-profile-avatars','campus-staff-documents','student-identity-documents'])
-    and not (
-      bucket_id='campus-community-media'
-      and exists (
-        select 1 from public.campus_stories s
-        where s.id::text=split_part(objects.name,'/',2)
-          and s.university_id::text=split_part(objects.name,'/',1)
-      )
-    )
+    and not (bucket_id='campus-community-media' and private.is_campus_story_media_path(name))
   )
   with check (
     private.is_campusshield_owner_admin()
     and bucket_id=any(array['campus-community-media','campus-profile-avatars','campus-staff-documents','student-identity-documents'])
-    and not (
-      bucket_id='campus-community-media'
-      and exists (
-        select 1 from public.campus_stories s
-        where s.id::text=split_part(objects.name,'/',2)
-          and s.university_id::text=split_part(objects.name,'/',1)
-      )
-    )
+    and not (bucket_id='campus-community-media' and private.is_campus_story_media_path(name))
   );
 
 -- Recheck the server-issued approval and actual Storage metadata at attachment time.
