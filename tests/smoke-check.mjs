@@ -30,6 +30,14 @@ const campusLifeParityMigration = await readFile(new URL("../supabase/migrations
 const institutionalBillingMigration = await readFile(new URL("../supabase/migrations/20261025153000_restrict_institutional_billing_to_admins.sql", import.meta.url), "utf8");
 const staffIdentityParityMigration = await readFile(new URL("../supabase/migrations/20261025160000_restore_staff_identity_audit_and_platform_rpcs.sql", import.meta.url), "utf8");
 const campusPushMigration = await readFile(new URL("../supabase/migrations/20261025203000_campus_push_notifications.sql", import.meta.url), "utf8");
+
+const campusStoriesMigration = await readFile(new URL("../supabase/migrations/20261030140000_campus_stories_anonymous_confessions.sql", import.meta.url), "utf8");
+const campusStoryMediaMigration = await readFile(new URL("../supabase/migrations/20261030170000_campus_story_private_media.sql", import.meta.url), "utf8");
+const campusStoryMediaHardeningMigration = await readFile(new URL("../supabase/migrations/20261030171000_harden_campus_story_media_upload.sql", import.meta.url), "utf8");
+const campusStoryMediaMetadataMigration = await readFile(new URL("../supabase/migrations/20261030172000_verify_story_media_storage_metadata.sql", import.meta.url), "utf8");
+const campusStoryRewardsMigration = await readFile(new URL("../supabase/migrations/20261030173000_campus_story_reputation_challenge.sql", import.meta.url), "utf8");
+const courseDiscussionPushMigration = await readFile(new URL("../supabase/migrations/20261030174000_course_discussion_push_notifications.sql", import.meta.url), "utf8");
+
 const pushSubscriptionsFunction = await readFile(new URL("../supabase/functions/push-subscriptions/index.ts", import.meta.url), "utf8");
 const pushDispatchFunction = await readFile(new URL("../supabase/functions/push-dispatch/index.ts", import.meta.url), "utf8");
 const pushSecretSetup = await readFile(new URL("../scripts/configure-staging-push-secrets.ps1", import.meta.url), "utf8");
@@ -781,3 +789,47 @@ assert.match(html, /This crawler is restricted to its designated owner\./, "craw
 console.log("PASS self-service profile editing, private avatar storage, and owner-only crawler authorization");
 
 console.log("PASS searchable national service directory, verified-source crawler restrictions, admin gate, and crawl status migration");
+
+// Social ecosystem regression coverage: these checks deliberately exercise the
+// security and integration contracts, not just the presence of feature headings.
+assert.match(htmlMarkup, /id="campus-story-media"[^>]*accept="image\/jpeg,image\/png,image\/webp,image\/gif,video\/mp4,video\/webm"/, "Campus Stories accepts only the declared image/video formats");
+assert.match(htmlMarkup, /Images up to 15 MB · videos up to 30 MB/i, "Story media limits are visible to students");
+assert.match(appScript, /mediaFile\.type\.startsWith\('image\/'\) \? 15 \* 1024 \* 1024 : 30 \* 1024 \* 1024/, "browser enforces image and video Story media limits");
+assert.match(backend, /async createCampusStory\(body, mediaFile, altText\)/, "Story upload uses a single media-aware backend operation");
+assert.match(backend, /client\.storage\.from\("campus-community-media"\)/, "Story media reuses the existing private campus media bucket");
+assert.match(backend, /createSignedUrl\(item\.object_path, 1800\)/, "Story media is read using short-lived signed URLs");
+assert.match(backend, /attach_campus_story_media/, "Story media is attached only through the validated database RPC");
+assert.match(campusStoryMediaMigration, /story_id uuid not null unique/i, "a Story can have at most one media attachment");
+assert.match(campusStoryMediaMigration, /campus-community-media/, "Story Storage policies target the existing private media bucket");
+assert.match(campusStoryMediaMigration, /campus_story_media_no_direct_access/, "Story media metadata has a deny-all direct-access policy");
+assert.match(campusStoryMediaMigration, /private\.current_campus_university_id\(\)/, "Story media policy checks the active university");
+assert.match(campusStoryMediaHardeningMigration, /p_media_kind='image'.*15728640/s, "database enforces the 15 MiB Story image limit");
+assert.match(campusStoryMediaHardeningMigration, /p_media_kind='video'.*31457280/s, "database enforces the 30 MiB Story video limit");
+assert.match(campusStoryMediaMetadataMigration, /storage\.objects[\s\S]*metadata->>'size'[\s\S]*metadata->>'mimetype'/, "database compares attachment claims with recorded Storage metadata");
+assert.match(campusStoryMediaMetadataMigration, /owner_id=v_user::text/, "Story upload metadata must belong to the authenticated uploader");
+
+assert.ok(htmlMarkup.includes('id="campus-study-circle-form"'), "Study Circles have a dedicated course-based create form");
+assert.ok(htmlMarkup.includes('id="campus-study-circle-course"'), "Study Circles are selected from the published course catalogue");
+assert.match(appScript, /backend\.createCampusCourseGroup\(/, "Study Circle creation reuses the existing course-group RPC");
+assert.match(backend, /async createCampusCourseGroup\(courseId, description\)/, "backend wrapper creates course groups through Supabase RPC");
+assert.match(backend, /rpc\("create_campus_course_group"/, "Study Circles do not create a parallel group system");
+assert.match(backend, /eq\("university_id", campus\.university_id\)/, "course and group discovery is scoped to the active university");
+assert.match(appScript, /data-open-course-discussion/, "Study Circle members can open course discussions");
+assert.match(backend, /send_campus_course_community_message/, "Study Circle discussion sends through the existing membership-checked RPC");
+assert.match(backend, /subscribeCampusCourseCommunityMessages/, "Study Circle discussions subscribe to Supabase Realtime");
+assert.match(appScript, /activeCampusCourseDiscussionUniversityId !== campusContext\?\.university_id/, "changing university closes a previous Study Circle discussion");
+assert.match(appScript, /campus-course-discussion-messages'\)\.innerHTML = ''/, "changing university clears the previous discussion content");
+
+assert.match(campusStoryRewardsMigration, /campus_story_weekly[\s\S]*?'campus_story'[\s\S]*?15/s, "approved Stories are recognised by the existing 15-point weekly challenge");
+assert.match(campusStoryRewardsMigration, /s\.status='published'[\s\S]*?s\.published_at>=v_week_start/s, "only moderated published Stories count toward Reputation");
+assert.doesNotMatch(campusStoryRewardsMigration, /campus_confessions/, "anonymous confessions are not rewarded");
+assert.match(courseDiscussionPushMigration, /'course_discussion'/, "push delivery ledger permits Study Circle notifications");
+assert.match(pushDispatchFunction, /course_message/, "push dispatcher validates a Study Circle message trigger");
+assert.match(pushDispatchFunction, /eq\("author_id", user\.id\)\.eq\("status", "published"\)/, "only the authenticated author can trigger a Study Circle alert");
+assert.match(pushDispatchFunction, /activeMemberships/, "Study Circle alert recipients must still have active campus membership");
+assert.match(pushDispatchFunction, /course_discussion: \{ title: "CampusShield Study Circles", body: "A member of your Study Circle posted a new discussion message/, "Study Circle push copy is generic and contains no private message text");
+assert.match(pushDispatchFunction, /campusshield-ai-staging-preview-\[a-z0-9\]/, "push dispatcher accepts the current staging preview hostname pattern");
+assert.match(pushSubscriptionsFunction, /campusshield-ai-staging-preview-\[a-z0-9\]/, "push subscriptions accept the current staging preview hostname pattern");
+assert.doesNotMatch(pushDispatchFunction, /\*\.vercel\.app/, "push dispatcher does not trust arbitrary Vercel preview origins");
+console.log("PASS Campus Stories private media, Study Circles, Reputation and scoped push notifications");
+
