@@ -43,9 +43,15 @@ Deno.serve(async (req: Request) => {
     "https://campusshield-ai-staging-preview-2olhtbzac.vercel.app",
     "https://campusshield-ai-staging-p-git-546f84-chinedugabrielanunobi-8135.vercel.app"
   ]);
+  // Vercel assigns a new immutable hostname to each preview. Permit only this
+  // project's two known hostname patterns, not arbitrary Vercel deployments.
+  const isCampusShieldStagingPreview =
+    /^https:\/\/campusshield-ai-staging-preview-[a-z0-9]+\.vercel\.app$/.test(origin) ||
+    /^https:\/\/campusshield-ai-staging-p-git-[a-z0-9]+-chinedugabrielanunobi-8135\.vercel\.app$/.test(origin);
   const allowed = !origin || (
     origin === DEFAULT_ORIGIN ||
     previewOrigins.has(origin) ||
+    isCampusShieldStagingPreview ||
     local ||
     Boolean(configuredOrigin && origin === configuredOrigin)
   );
