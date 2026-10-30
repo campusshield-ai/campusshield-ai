@@ -30,7 +30,22 @@ Deno.serve(async (req: Request) => {
   const origin = (req.headers.get("origin") || "").replace(/\/$/, "");
   const configuredOrigin = (Deno.env.get("CAMPUSSHIELD_APP_ORIGIN") || "").replace(/\/$/, "");
   const local = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-  const allowed = Boolean(origin) && (configuredOrigin ? origin === configuredOrigin : origin === DEFAULT_ORIGIN || local);
+  const previewOrigins = new Set([
+    "https://campusshield-ai-staging-preview-2olhtbzac.vercel.app",
+    "https://campusshield-ai-staging-p-git-546f84-chinedugabrielanunobi-8135.vercel.app"
+  ]);
+  // Vercel assigns a new immutable hostname to each preview. Permit only this
+  // project's two known hostname patterns, not arbitrary Vercel deployments.
+  const isCampusShieldStagingPreview =
+    /^https:\/\/campusshield-ai-staging-preview-[a-z0-9]+\.vercel\.app$/.test(origin) ||
+    /^https:\/\/campusshield-ai-staging-p-git-[a-z0-9]+-chinedugabrielanunobi-8135\.vercel\.app$/.test(origin);
+  const allowed = Boolean(origin) && (
+    origin === DEFAULT_ORIGIN ||
+    previewOrigins.has(origin) ||
+    isCampusShieldStagingPreview ||
+    local ||
+    Boolean(configuredOrigin && origin === configuredOrigin)
+  );
   if (!allowed) return json({ error: "App origin is not allowed. Configure CAMPUSSHIELD_APP_ORIGIN for this preview." }, 403);
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin) });
   if (req.method !== "POST") return json({ error: "Method not allowed." }, 405, origin);
