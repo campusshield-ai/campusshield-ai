@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 15
     env:
       SUPABASE_STAGING_URL: https://hywcpnoqqhxvujnimhxl.supabase.co
-      SUPABASE_STAGING_ANON_KEY: sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP
+      SUPABASE_STAGING_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
       SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
     steps:
       - name: Check out PR branch
@@ -58,6 +58,6 @@ jobs:
       - name: Run authenticated staging E2E
         env:
           SUPABASE_STAGING_URL: https://hywcpnoqqhxvujnimhxl.supabase.co
-          SUPABASE_STAGING_ANON_KEY: sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP
+          SUPABASE_STAGING_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
           SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
         run: node tests/e2e/staging-identity-e2e.mjs
