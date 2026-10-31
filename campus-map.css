@@ -390,3 +390,24 @@
   .campus-map-profile-title{align-items:flex-start;flex-direction:column}
   .campus-map-profile-title .campus-map-action{width:100%}
 }
+
+
+.campus-map-profile-setup textarea{
+  width:100%;min-width:0;box-sizing:border-box;resize:vertical;
+  padding:8px;border:1px solid #d8e5dc;border-radius:8px;
+  background:#fff;color:#23453c;font:10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+.campus-map-model-upload{
+  display:grid;gap:8px;padding:11px;border:1px dashed #c9ddd0;border-radius:11px;background:#f8fcf9;
+}
+.campus-map-model-upload h5{margin:0;color:#1b5144;font-size:11px}
+.campus-map-model-upload p{margin:0;color:#6d8077;font-size:9px;line-height:1.5}
+.campus-map-model-upload label{display:grid;gap:5px}
+.campus-map-model-upload input[type=file]{
+  width:100%;min-width:0;box-sizing:border-box;padding:8px;
+  border:1px solid #d8e5dc;border-radius:8px;background:#fff;color:#50685f;font-size:9px;
+}
+.campus-map-model-upload button{min-height:38px}
+.campus-map-profile-coverage[data-state="pending_review"]{border-color:#e7d2aa;background:#fffaf0;color:#8a621f!important}
+.campus-map-profile-coverage[data-state="approved"]{border-color:#c5e0d0;background:#f2faf5;color:#226a48!important}
+.campus-map-profile-coverage[data-state="rejected"]{border-color:#e8c4c4;background:#fff6f6;color:#8b4040!important}
