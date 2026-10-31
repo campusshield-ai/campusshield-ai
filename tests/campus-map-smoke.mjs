@@ -5,6 +5,7 @@ const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8'
 const html = read('index.html');
 const js = read('campus-map.js');
 const mapConfig = read('campus-map-config.js');
+const mapLoader = read('campus-map-loader.js');
 const css = read('campus-map.css');
 const sql = read('supabase/migrations/20261031115759_campus_map_verified_locations_and_emergency_layers.sql');
 const policySql = read('supabase/migrations/20261031115831_campus_map_public_read_policy_split.sql');
@@ -33,7 +34,10 @@ assert.match(html, /id="campus-map-pick-pin"/, 'Administrators can place a pin d
 assert.match(html, /id="campus-map-use-gps"/, 'Administrators can capture a GPS candidate with device accuracy');
 assert.match(html, /id="campus-map-preview-pin"/, 'Administrators can preview manually entered coordinates');
 assert.match(html, /campus-map\.js/, 'CampusMap module is loaded');
-assert.match(html, /maplibre-gl@6\.16\.0/, 'MapLibre is pinned to the current tested 6.x release');
+assert.match(html, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.css/, 'MapLibre CSS is pinned to v6.16.0');
+assert.match(html, /type="module" src="\.\/campus-map-loader\.js"/, 'MapLibre 6 is loaded using an ordered ES-module bootstrap');
+assert.match(mapLoader, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.mjs/, 'MapLibre 6 is imported from its ES-module build');
+assert.match(mapLoader, /window\.maplibregl = maplibregl;[\s\S]*await import\('\.\/campus-map\.js'\)/, 'CampusMap loads only after its MapLibre global is ready');
 assert.match(html, /report-use-location/, 'Incident form offers optional GPS attachment');
 assert.match(js, /getMyCampusContext\(\)/, 'Map resolves the signed-in university context');
 assert.match(js, /\.eq\('university_id', campus\.university_id\)/, 'Feature query is scoped to the current university');
