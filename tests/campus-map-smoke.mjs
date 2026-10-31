@@ -127,6 +127,9 @@ assert.match(js, /import_campus_map_building_candidates/, 'Building import calls
 assert.match(js, /review_campus_map_building/, 'Building review calls the checked Staging RPC');
 assert.match(js, /function buildingFeatureCollection/, 'Building outlines are converted to GeoJSON for the map');
 assert.match(js, /height_method/, 'Building height provenance is retained for the 3D view');
+assert.match(js, /Math\.max\(baseRenderHeight, minHeight \+ 1\.5\)/, 'Rendered building tops remain above any mapped minimum height');
+assert.match(js, /\['no','false','0'\]/, 'Explicit OSM building=no records are excluded');
+assert.match(js, /\['get', 'roof_colour'\]/, 'Available roof colours inform 2D building footprints');
 assert.match(js, /updateCampusBoundarySource/, 'Saved campus boundaries are drawn on the map');
 assert.match(js, /validateCampusBoundaryGeometry/, 'Campus boundary polygons are validated before saving');
 assert.match(js, /const preferredLayer = hasCurated \? 'campus-curated-building-extrusions' : 'campus-osm-3d-buildings'/, 'Map prefers university-curated footprints and falls back to global OSM buildings');
