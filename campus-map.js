@@ -169,7 +169,7 @@
       features: items.map(item => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [Number(item.longitude), Number(item.latitude)] },
-        properties: { id: item.id, name: item.name, feature_type: item.feature_type }
+        properties: { id: item.id, name: item.name, feature_type: item.feature_type, category: item.category, severity: item.severity, status: item.status, location: item.location }
       }))
     };
   }
@@ -429,6 +429,27 @@
     map.setLayoutProperty('campus-satellite-layer', 'visibility', visible ? 'none' : 'visible');
     $('campus-map-satellite').classList.toggle('active', !visible);
     setStatus(visible ? 'Satellite imagery hidden.' : 'Satellite imagery enabled.');
+  });
+
+  $('report-use-location')?.addEventListener('click', () => {
+    const status = $('report-location-status');
+    if (!navigator.geolocation) {
+      if (status) status.textContent = 'Location services are unavailable in this browser.';
+      return;
+    }
+    if (status) status.textContent = 'Requesting location permission…';
+    navigator.geolocation.getCurrentPosition(position => {
+      $('report-latitude').value = String(position.coords.latitude);
+      $('report-longitude').value = String(position.coords.longitude);
+      if (status) status.textContent = 'GPS location attached to this report. It will be visible only under your campus incident access rules.';
+    }, () => {
+      if (status) status.textContent = 'Location permission was denied or your position could not be determined. You can still submit the text location.';
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+  });
+  $('reportForm')?.addEventListener('reset', () => {
+    if ($('report-latitude')) $('report-latitude').value = '';
+    if ($('report-longitude')) $('report-longitude').value = '';
+    if ($('report-location-status')) $('report-location-status').textContent = 'Optional: attach your GPS location to help authorized campus responders find the place.';
   });
 
   search?.addEventListener('input', () => filterFeatures(search.value));
