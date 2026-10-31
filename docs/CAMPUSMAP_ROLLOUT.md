@@ -62,6 +62,7 @@ The Babcock University Teaching Hospital draft stores its official emergency lin
 - Administrators can select the exact point by clicking the map, enter a coordinate pair manually and preview it, or capture device GPS. GPS accuracy reported by the browser is displayed; it is not treated as proof of building identity.
 - The provisional amber marker is draggable for refinement. Pending coordinates appear in a separate admin-only draft layer and can be clicked to reopen their edit form. Public and student views never receive unpublished draft coordinates.
 - Verification and publication remain separate actions. The interface requires a coordinate pair and HTTPS evidence source before marking a pin verified; publication also requires the verified flag. All draft candidates remain unpublished until a verified university administrator checks the location on site or against an approved survey.
+- The OSM candidate's place-name source and coordinate source are kept separately. When an administrator edits a community-mapped candidate, the exact-coordinate evidence field is intentionally cleared; the admin must supply an approved survey or other evidence for that precise point before verification.
 - Map scale is labelled as regional, campus-area or building-level to avoid suggesting false precision.
 
 ### Community-mapped coordinate candidates
