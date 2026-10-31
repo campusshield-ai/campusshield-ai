@@ -22,6 +22,7 @@ const campusModelSql = read('supabase/migrations/20261031150500_campus_map_priva
 const campusBuildingsSql = read('supabase/migrations/20261031142127_campus_map_building_footprint_import_pipeline.sql');
 const campusBuildingsHardeningSql = read('supabase/migrations/20261031142749_harden_campus_building_geometry_review.sql');
 const campusBuildingsNullGuardSql = read('supabase/migrations/20261031142958_guard_empty_building_import_payload.sql');
+const campusBuildingsCentreGuardSql = read('supabase/migrations/20261031185500_campus_building_import_verified_centre_guard.sql');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
 assert.match(html, /id="page-campus-map"/, 'CampusMap page container is present');
@@ -152,6 +153,12 @@ assert.match(campusBuildingsHardeningSql, /building_coverage_status=CASE/, 'A ve
 assert.match(html, /id="campus-map-building-discover"/, 'Verified campus administrators can discover building footprints');
 assert.match(html, /id="campus-map-building-review"/, 'Building candidate review panel is present');
 assert.match(js, /import_campus_map_building_candidates/, 'Building import calls the checked Staging RPC');
+assert.match(js, /profile\.center_status !== 'verified'/, 'Browser refuses building discovery from an unverified campus centre');
+assert.match(js, /updateBuildingDiscoveryControl\(\)/, 'Building discovery button follows verified-centre readiness');
+assert.match(html, /id="campus-map-building-discover" disabled/, 'Building discovery starts disabled until the saved centre is verified');
+assert.match(campusBuildingsCentreGuardSql, /RENAME TO import_campus_map_building_candidates_impl_unverified_centre_legacy/, 'Existing import implementation is wrapped with a stricter centre-verification guard');
+assert.match(campusBuildingsCentreGuardSql, /center_status\s*=\s*'verified'/, 'Database refuses building imports without a verified campus centre');
+assert.match(campusBuildingsCentreGuardSql, /verified campus-centre point/, 'Database reports why an unverified centre cannot be used');
 assert.match(js, /review_campus_map_building/, 'Building review calls the checked Staging RPC');
 assert.match(js, /function buildingFeatureCollection/, 'Building outlines are converted to GeoJSON for the map');
 assert.match(js, /height_method/, 'Building height provenance is retained for the 3D view');
