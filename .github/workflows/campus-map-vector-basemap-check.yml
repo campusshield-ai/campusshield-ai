@@ -41,6 +41,7 @@ jobs:
         run: |
           node --check campus-map.js
           node --check campus-map-config.js
+          node --check campus-map-geometry.js
       - name: Run CampusMap smoke tests
         run: node tests/campus-map-smoke.mjs
       - name: Run complete regression smoke suite
