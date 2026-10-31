@@ -84,3 +84,21 @@
 
 
 .campus-map-admin label>small{color:#84958d;font-size:8px;font-weight:500;line-height:1.45}
+
+
+/* Reference-style 2D / satellite / 3D map mode picker */
+.campus-map-overlay{inset:14px;display:block;pointer-events:none}
+.campus-map-search-wrap{position:absolute;top:0;left:0;right:72px;max-width:540px;pointer-events:auto}
+.campus-map-controls{position:absolute;top:54%;right:0;transform:translateY(-50%);display:flex;flex-direction:column;gap:3px;margin:0;padding:5px;border:1px solid #d8e5dc;border-radius:999px;background:#fffF;box-shadow:0 8px 24px #173d302b;pointer-events:auto}
+.campus-map-controls button{min-width:48px;min-height:44px;padding:10px 12px;border-radius:999px;background:transparent;color:#294c43;font-size:11px;font-weight:900;letter-spacing:.02em}
+.campus-map-controls button.active{background:#102f31;color:#fff}
+.campus-map-controls #campus-map-satellite{display:block}
+.campus-map-controls #campus-map-satellite.available{display:block}
+.campus-map-attribution{max-width:calc(100% - 22px);right:10px;bottom:8px;padding:4px 8px;text-align:right;font-size:8px;line-height:1.4}
+@media(max-width:600px){
+ .campus-map-overlay{inset:9px}
+ .campus-map-search-wrap{left:0;right:62px;max-width:none}
+ .campus-map-controls{right:0;top:56%;gap:2px;padding:4px}
+ .campus-map-controls button{min-width:42px;min-height:42px;padding:9px}
+ .campus-map-attribution{font-size:7px;bottom:6px}
+}
