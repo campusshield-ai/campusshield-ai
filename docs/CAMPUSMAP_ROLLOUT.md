@@ -41,3 +41,6 @@ The 2D and tilted MapLibre views work without a key. Satellite tiles, terrain an
 6. Configure a restricted MapTiler key before testing satellite, terrain and building extrusion layers.
 7. Run mobile browser tests and verify walking route behavior and provider failure states.
 8. Do not merge to production until authenticated staging tests and security review pass.
+
+
+The Babcock Main Campus map now opens at the university-level Google Maps locator embedded on its official contact page (approximately 6.8910932, 3.7191259). It is explicitly labelled as a campus locator, not a building entrance. Individual building pins remain unpublished until verified.
