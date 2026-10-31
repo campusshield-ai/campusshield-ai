@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const html = read('index.html');
 const js = read('campus-map.js');
 const mapConfig = read('campus-map-config.js');
+const geometrySource = read('campus-map-geometry.js');
+const geometryContext = {};
+runInNewContext(geometrySource, geometryContext);
+const geometry = geometryContext.CampusMapGeometry;
 const css = read('campus-map.css');
 const sql = read('supabase/migrations/20261031115759_campus_map_verified_locations_and_emergency_layers.sql');
 const policySql = read('supabase/migrations/20261031115831_campus_map_public_read_policy_split.sql');
@@ -147,4 +152,67 @@ assert.match(js, /updateCampusBoundarySource/, 'Saved campus boundaries are draw
 assert.match(js, /validateCampusBoundaryGeometry/, 'Campus boundary polygons are validated before saving');
 assert.match(js, /const preferredLayer = hasCurated \? 'campus-curated-building-extrusions' : 'campus-osm-3d-buildings'/, 'Map prefers university-curated footprints and falls back to global OSM buildings');
 assert.match(js, /queryRenderedFeatures\(\{ layers: \[preferredLayer\] \}\)/, 'Map coverage indicator counts the active building source');
+
+assert.ok(geometry && typeof geometry.osmWayToBuildingCandidate === 'function', 'CampusMap geometry helpers are exported');
+
+const irregularWay = {
+  id: 123456789,
+  tags: {
+    building: 'yes',
+    name: 'Test Hall',
+    height: '12 ft',
+    min_height: '3 m',
+    'building:levels': '4',
+  },
+  // Extra vertices on the left edge deliberately bias a simple vertex-average.
+  // The area-weighted centroid of this rectangle is still exactly (2, 1).
+  geometry: [
+    { lon: 0, lat: 0 },
+    { lon: 4, lat: 0 },
+    { lon: 4, lat: 2 },
+    { lon: 0, lat: 2 },
+    { lon: 0, lat: 1 },
+    { lon: 0, lat: 0 },
+  ],
+};
+const irregularCandidate = geometry.osmWayToBuildingCandidate(irregularWay);
+assert.ok(irregularCandidate, 'valid OSM building way converts to a candidate');
+assert.ok(Math.abs(irregularCandidate.center_longitude - 2) < 1e-9, 'area centroid longitude is not biased by vertex density');
+assert.ok(Math.abs(irregularCandidate.center_latitude - 1) < 1e-9, 'area centroid latitude is not biased by vertex density');
+assert.ok(Math.abs(irregularCandidate.height_m - 3.6576) < 1e-9, 'feet are converted to metres');
+assert.equal(irregularCandidate.min_height_m, 3, 'minimum height tags are parsed');
+assert.equal(irregularCandidate.levels, 4, 'integer building levels are retained');
+assert.equal(irregularCandidate.height_method, 'tagged', 'tagged height provenance is preserved');
+assert.equal(irregularCandidate.verification_status, undefined, 'OSM conversion does not fabricate review status');
+
+const unclosedWay = {
+  ...irregularWay,
+  geometry: irregularWay.geometry.slice(0, -1),
+};
+const unclosedCandidate = geometry.osmWayToBuildingCandidate(unclosedWay);
+assert.ok(unclosedCandidate, 'valid unclosed Overpass ring is safely closed');
+const firstPoint = unclosedCandidate.geometry_geojson.coordinates[0][0];
+const finalPoint = unclosedCandidate.geometry_geojson.coordinates[0].at(-1);
+assert.equal(firstPoint[0], finalPoint[0], 'candidate polygon ring closes longitude');
+assert.equal(firstPoint[1], finalPoint[1], 'candidate polygon ring closes latitude');
+
+assert.equal(geometry.parseOsmLevels('4.5'), null, 'fractional floor counts are not truncated');
+assert.equal(geometry.osmWayToBuildingCandidate({
+  ...irregularWay, tags: { building: 'no' },
+}), null, 'explicit building=no ways are rejected');
+assert.equal(geometry.osmWayToBuildingCandidate({
+  ...irregularWay,
+  geometry: irregularWay.geometry.map((point, index) => index === 2 ? { ...point, lat: 95 } : point),
+}), null, 'an invalid coordinate rejects the whole outline instead of silently corrupting it');
+assert.equal(geometry.osmWayToBuildingCandidate({
+  ...irregularWay,
+  tags: { ...irregularWay.tags, height: '3 m', min_height: '5 m' },
+}), null, 'inconsistent height and min-height tags are rejected');
+assert.equal(geometry.osmWayToBuildingCandidate({
+  ...irregularWay,
+  geometry: [
+    { lon: 1, lat: 1 }, { lon: 2, lat: 2 }, { lon: 3, lat: 3 }, { lon: 1, lat: 1 },
+  ],
+}), null, 'zero-area geometry is rejected');
+
 console.log('CampusMap static smoke checks passed.');
