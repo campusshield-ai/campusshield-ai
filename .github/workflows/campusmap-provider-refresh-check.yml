@@ -10,6 +10,8 @@ on:
       - "campus-map-loader.js"
       - "index.html"
       - "tests/campus-map-smoke.mjs"
+      - "docs/CAMPUSMAP_ROLLOUT.md"
+      - "docs/CAMPUSMAP_PROVIDER_EVALUATION.md"
       - ".github/workflows/campusmap-provider-refresh-check.yml"
 
 permissions:
