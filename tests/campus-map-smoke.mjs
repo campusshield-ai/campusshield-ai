@@ -13,6 +13,9 @@ const docs = read('docs/CAMPUSMAP_ROLLOUT.md');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
 assert.match(html, /id="page-campus-map"/, 'CampusMap page container is present');
+const campusMapRootId = html.match(/<section class="page" id="([^"]+)" aria-labelledby="campus-map-title">/)?.[1];
+assert.ok(campusMapRootId, 'CampusMap page root can be identified');
+assert.ok(js.includes(`document.getElementById('${campusMapRootId}')`), 'CampusMap module binds to the actual HTML page root');
 assert.match(html, /id="campus-map-canvas"/, 'Interactive map canvas is present');
 assert.match(html, /campus-map\.js/, 'CampusMap module is loaded');
 assert.match(html, /maplibre-gl@4\.7\.1/, 'MapLibre is pinned to a known version');
