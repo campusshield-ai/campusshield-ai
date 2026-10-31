@@ -65,7 +65,9 @@ assert.match(js, /maxzoom: 14/, 'OpenMapTiles vector source is overzoomed from i
 assert.match(js, /campus-osm-3d-building-edges/, '3D building blocks have subtle outline detail');
 assert.doesNotMatch(js, /campus-osm-3d-building-labels/, 'The non-existent named-building source layer is not requested');
 assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles provide OSM building geometry');
-assert.match(js, /tiles\.openfreemap\.org\/fonts\/\{fontstack\}\/\{range\}\.pbf/, 'OpenFreeMap glyphs are configured for readable map labels');
+assert.match(js, /return 'https:\/\/tiles\.openfreemap\.org\/styles\/liberty';/, 'OpenFreeMap Liberty provides the primary vector basemap');
+assert.match(js, /const SATELLITE_ROAD_LAYER_IDS/, 'Custom mapped road overlays are grouped for satellite and 3D modes');
+assert.match(js, /SATELLITE_ROAD_LAYER_IDS\.forEach\(id => setLayerVisibility\(id, satelliteOn\)\)/, 'Custom road overlays do not duplicate the vector street basemap in 2D');
 assert.match(js, /Noto Sans Regular/, 'Map labels use OpenFreeMap supported Noto Sans glyphs');
 assert.match(js, /Noto Sans Bold/, 'Cluster count labels use OpenFreeMap supported bold glyphs');
 assert.match(js, /'source-layer': 'transportation'/, 'Road styling uses mapped OpenMapTiles transportation geometry');
