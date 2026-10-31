@@ -9,6 +9,8 @@ ShieldMind may answer university-specific questions only from approved public so
 The university directory in Staging currently registers the official site as `https://babcock.edu.ng`. The following same-host pages are candidate crawl starting points. They are not yet registered in the Staging knowledge library and have not been crawled or approved by CampusShield:
 
 - `https://babcock.edu.ng/` — official homepage
+- `https://babcock.edu.ng/new-students-info` — new-student arrival and registration guide
+- `https://babcock.edu.ng/library` — official library services and locations
 - `https://babcock.edu.ng/sitemap` — official sitemap
 - `https://babcock.edu.ng/admission/tuition-and-fees` — tuition and fees
 - `https://babcock.edu.ng/food-services/cafe-hours` — café hours
