@@ -471,6 +471,292 @@
     if (source) source.setData(featureCollection(features));
   }
 
+  function validMapColour(value) {
+    return typeof value === 'string' && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value) ? value : null;
+  }
+
+  function buildingFeatureCollection(items) {
+    return {
+      type: 'FeatureCollection',
+      features: items.filter(item =>
+        item.geometry_geojson && ['Polygon','MultiPolygon'].includes(item.geometry_geojson.type)
+      ).map(item => {
+        const taggedHeight = Number(item.height_m);
+        const levels = Number(item.levels);
+        const hasTaggedHeight = item.height_m != null && Number.isFinite(taggedHeight) && taggedHeight > 0;
+        const hasLevels = item.levels != null && Number.isFinite(levels) && levels > 0;
+        const renderHeight = hasTaggedHeight ? taggedHeight : hasLevels ? levels * 3.2 : 6.5;
+        return {
+          type: 'Feature',
+          id: item.id,
+          geometry: item.geometry_geojson,
+          properties: {
+            id: item.id,
+            name: item.name || '',
+            building_class: item.building_class || 'building',
+            verification_status: item.verification_status || 'pending',
+            height_m: hasTaggedHeight ? taggedHeight : null,
+            min_height_m: item.min_height_m == null ? 0 : Number(item.min_height_m),
+            levels: hasLevels ? levels : null,
+            render_height_m: renderHeight,
+            height_method: hasTaggedHeight ? 'OpenStreetMap height tag' : hasLevels ? 'estimated from floor count' : 'visual fallback only',
+            roof_shape: item.roof_shape || '',
+            roof_material: item.roof_material || '',
+            roof_colour: validMapColour(item.roof_colour) || '',
+            facade_material: item.facade_material || '',
+            facade_colour: validMapColour(item.facade_colour) || ''
+          }
+        };
+      })
+    };
+  }
+
+  function updateCampusBuildingSource() {
+    const source = map?.getSource('campus-curated-buildings');
+    if (source) source.setData(buildingFeatureCollection(campusBuildings));
+    updateBuildingCoverageSummary();
+  }
+
+  async function loadCampusBuildings() {
+    if (!campus?.university_id || !activeCampusProfile?.id) {
+      campusBuildings = [];
+      selectedBuildingForReview = null;
+      updateCampusBuildingSource();
+      renderAdminBuildingCandidates();
+      return;
+    }
+    const { data, error } = await client().from('campus_map_buildings')
+      .select('id,university_id,campus_id,campus_slug,source_provider,source_feature_id,name,building_class,geometry_geojson,center_latitude,center_longitude,height_m,min_height_m,levels,roof_shape,roof_material,roof_colour,facade_material,facade_colour,source_url,source_license,verification_evidence_url,verification_status,is_published,metadata')
+      .eq('university_id', campus.university_id)
+      .eq('campus_id', activeCampusProfile.id)
+      .order('name', { ascending: true })
+      .limit(1500);
+    if (error) {
+      campusBuildings = [];
+      updateCampusBuildingSource();
+      renderAdminBuildingCandidates();
+      console.warn('Curated campus building footprints are unavailable.', error);
+      return;
+    }
+    campusBuildings = data || [];
+    updateCampusBuildingSource();
+    renderAdminBuildingCandidates();
+    if (selectedBuildingForReview && !campusBuildings.some(item => item.id === selectedBuildingForReview)) {
+      selectedBuildingForReview = null;
+      $('campus-map-building-review')?.setAttribute('hidden', '');
+    }
+  }
+
+  function renderAdminBuildingCandidates() {
+    const host = $('campus-map-building-candidates');
+    if (!host) return;
+    if (!isCampusAdmin) {
+      host.innerHTML = '';
+      return;
+    }
+    const pending = campusBuildings.filter(item => !item.is_published && item.verification_status === 'pending');
+    const visible = pending.slice(0, 120);
+    host.innerHTML = pending.length ? visible.map(item => {
+      const title = item.name || 'Unlabelled building';
+      const detail = item.height_m != null ? Number(item.height_m).toFixed(1) + ' m tagged height'
+        : item.levels != null ? item.levels + ' floors · estimated height'
+        : 'height not mapped';
+      return '<div class="campus-map-building-candidate">' +
+        '<span><strong>' + esc(title) + '</strong><small>' + esc(item.building_class || 'building') + ' · ' + esc(detail) + '</small></span>' +
+        '<button type="button" data-review-building-id="' + esc(item.id) + '">Review</button>' +
+        '</div>';
+    }).join('') + (pending.length > visible.length ? '<p class="campus-map-profile-help">Showing 120 of ' + pending.length + ' candidates. Use the map to inspect the rest.</p>' : '')
+      : '<p class="campus-map-profile-help">No pending building footprints for this campus yet.</p>';
+    const count = $('campus-map-building-import-status');
+    if (count && !count.dataset.importing) {
+      count.textContent = pending.length
+        ? pending.length + ' building footprints awaiting local review. None are published.'
+        : 'No imported building footprints yet.';
+    }
+  }
+
+  function selectCampusBuildingForReview(buildingId) {
+    if (!isCampusAdmin) return;
+    const item = campusBuildings.find(building => building.id === buildingId);
+    if (!item) return;
+    selectedBuildingForReview = item.id;
+    $('campus-map-building-review').hidden = false;
+    $('campus-map-building-review-name').textContent = item.name || 'Unlabelled building · OSM way ' + item.source_feature_id;
+    $('campus-map-building-review-evidence').value = '';
+    $('campus-map-building-review-confirm').checked = false;
+    const dimensions = [
+      item.height_m != null ? Number(item.height_m).toFixed(1) + ' m tagged' : null,
+      item.levels != null ? item.levels + ' levels' : null,
+      item.roof_shape ? 'roof: ' + item.roof_shape : null
+    ].filter(Boolean);
+    $('campus-map-building-review-details').textContent =
+      (item.building_class || 'building') + ' · ' + (dimensions.join(' · ') || 'height/roof data not mapped');
+    if (map && Number.isFinite(Number(item.center_latitude)) && Number.isFinite(Number(item.center_longitude))) {
+      map.flyTo({
+        center: [Number(item.center_longitude), Number(item.center_latitude)],
+        zoom: 18,
+        pitch: mapMode === '3d' ? 48 : 0,
+        bearing: mapMode === '3d' ? -14 : 0,
+        duration: motionDuration(550)
+      });
+    }
+    setStatus('Building candidate selected. Compare its outline and entrance with a university plan or on-site survey before verifying.', 'warning');
+  }
+
+  function parseOsmLength(value) {
+    if (value == null || value === '') return null;
+    const match = String(value).trim().match(/^([0-9]+(?:\\.[0-9]+)?)\\s*(m|meter|meters|metre|metres|ft|feet)?$/i);
+    if (!match) return null;
+    const amount = Number(match[1]);
+    if (!Number.isFinite(amount) || amount <= 0) return null;
+    return /^(ft|feet)$/i.test(match[2] || '') ? amount * 0.3048 : amount;
+  }
+
+  function parseOsmLevels(value) {
+    if (value == null || value === '') return null;
+    const parsed = Number.parseInt(String(value).trim(), 10);
+    return Number.isInteger(parsed) && parsed > 0 && parsed <= 200 ? parsed : null;
+  }
+
+  function osmWayToBuildingCandidate(way) {
+    const tags = way.tags || {};
+    if (!Array.isArray(way.geometry) || way.geometry.length < 4) return null;
+    const ring = way.geometry
+      .filter(point => Number.isFinite(Number(point.lat)) && Number.isFinite(Number(point.lon)))
+      .map(point => [Number(point.lon), Number(point.lat)]);
+    if (ring.length < 4) return null;
+    const first = ring[0], last = ring[ring.length - 1];
+    if (first[0] !== last[0] || first[1] !== last[1]) ring.push([...first]);
+    if (ring.length > 2000) return null;
+    const openRing = ring.slice(0, -1);
+    const centerLongitude = openRing.reduce((sum, point) => sum + point[0], 0) / openRing.length;
+    const centerLatitude = openRing.reduce((sum, point) => sum + point[1], 0) / openRing.length;
+    const height = parseOsmLength(tags.height);
+    const minHeight = parseOsmLength(tags.min_height);
+    const levels = parseOsmLevels(tags['building:levels'] ?? tags.levels);
+    return {
+      source_feature_id: String(way.id),
+      name: tags.name || tags['name:en'] || null,
+      building_class: tags.building || 'yes',
+      geometry_geojson: { type: 'Polygon', coordinates: [ring] },
+      center_latitude: centerLatitude,
+      center_longitude: centerLongitude,
+      height_m: height,
+      min_height_m: minHeight,
+      levels,
+      roof_shape: tags['roof:shape'] || null,
+      roof_material: tags['roof:material'] || null,
+      roof_colour: tags['roof:colour'] || null,
+      facade_material: tags['building:material'] || tags.material || null,
+      facade_colour: tags['building:colour'] || tags.colour || null,
+      source_url: 'https://www.openstreetmap.org/way/' + way.id,
+      height_method: height != null ? 'tagged' : levels != null ? 'estimated_from_levels' : 'visual_fallback_only',
+      source_tags: tags
+    };
+  }
+
+  async function discoverCampusBuildings() {
+    if (!isCampusAdmin) return setStatus('Only a verified campus administrator can import building footprints.', 'warning');
+    const profile = activeCampusProfile;
+    if (!profile?.id || profile.center_latitude == null || profile.center_longitude == null
+        || !['candidate','official_locator','verified'].includes(profile.center_status)) {
+      return setStatus('Set a campus centre from a real campus reference point before searching for building footprints. State overview centroids cannot be used for a campus import.', 'warning');
+    }
+    const radius = Number($('campus-map-building-radius')?.value || 800);
+    if (![500,800,1200].includes(radius)) return setStatus('Choose a supported building discovery radius.', 'warning');
+    const latitude = Number(profile.center_latitude);
+    const longitude = Number(profile.center_longitude);
+    const query = '[out:json][timeout:45];way["building"](around:' + radius + ',' +
+      latitude.toFixed(7) + ',' + longitude.toFixed(7) + ');out tags geom 300;';
+    const button = $('campus-map-building-discover');
+    const progress = $('campus-map-building-import-status');
+    button.disabled = true;
+    button.textContent = 'Discovering buildings…';
+    progress.dataset.importing = 'true';
+    progress.textContent = 'Requesting mapped building outlines from OpenStreetMap. This request runs only when an administrator starts it.';
+    try {
+      let payload = null;
+      let lastError = null;
+      const endpoints = [
+        'https://overpass-api.de/api/interpreter',
+        'https://overpass.kumi.systems/api/interpreter'
+      ];
+      for (const endpoint of endpoints) {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 50000);
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+            body: new URLSearchParams({ data: query }).toString(),
+            signal: controller.signal
+          });
+          if (!response.ok) throw new Error('OpenStreetMap query service returned HTTP ' + response.status);
+          payload = await response.json();
+          break;
+        } catch (error) {
+          lastError = error;
+        } finally {
+          window.clearTimeout(timeout);
+        }
+      }
+      if (!payload) throw lastError || new Error('No OpenStreetMap query service responded.');
+      const elements = Array.isArray(payload.elements) ? payload.elements : [];
+      const candidates = elements
+        .filter(element => element.type === 'way' && element.tags?.building)
+        .map(osmWayToBuildingCandidate)
+        .filter(Boolean);
+      if (!candidates.length) {
+        progress.textContent = 'No mapped building outlines were found within ' + radius + ' metres. Try a larger radius or ask the university GIS team for a campus plan.';
+        return;
+      }
+      const { data, error } = await client().rpc('import_campus_map_building_candidates', {
+        p_campus_id: profile.id,
+        p_buildings: candidates
+      });
+      if (error) throw error;
+      await loadCampusBuildings();
+      const saved = Number(data?.saved_or_refreshed || 0);
+      progress.textContent = saved + ' building outline candidates saved from ' + candidates.length +
+        ' OpenStreetMap ways. They remain private and unpublished until the university checks them.';
+      setStatus('Building footprint discovery completed. Verify each outline, floor count and entrance before publication.', 'success');
+    } catch (error) {
+      console.error('Campus building footprint import failed.', error);
+      progress.textContent = error.message || 'Could not retrieve building footprints. Try again later or upload a university GIS file.';
+      setStatus('Building discovery failed. The existing map remains available.', 'warning');
+    } finally {
+      delete progress.dataset.importing;
+      button.disabled = false;
+      button.textContent = 'Discover building footprints';
+    }
+  }
+
+  async function reviewCampusBuilding(decision, publish = false) {
+    if (!isCampusAdmin || !selectedBuildingForReview) return;
+    const evidence = $('campus-map-building-review-evidence').value.trim();
+    const confirmed = $('campus-map-building-review-confirm').checked;
+    if (decision === 'verified' && (!confirmed || !/^https:\\/\\/[^\\s]+$/i.test(evidence))) {
+      return setStatus('Compare this exact footprint against an approved university plan or site survey, then add its HTTPS evidence link.', 'warning');
+    }
+    try {
+      const { data, error } = await client().rpc('review_campus_map_building', {
+        p_building_id: selectedBuildingForReview,
+        p_decision: decision,
+        p_verification_evidence_url: decision === 'verified' ? evidence : null,
+        p_publish: decision === 'verified' && publish
+      });
+      if (error) throw error;
+      selectedBuildingForReview = null;
+      $('campus-map-building-review').hidden = true;
+      await loadCampusBuildings();
+      setStatus(decision === 'rejected'
+        ? 'Incorrect building footprint rejected. It remains hidden from public maps.'
+        : data?.is_published ? 'Verified building footprint published to this university.' : 'Building footprint verified but kept unpublished.', 'success');
+    } catch (error) {
+      setStatus(error.message || 'Could not review this building footprint.', 'error');
+    }
+  }
+
   function updateDraftSource() {
     const source = map?.getSource('campus-drafts');
     if (!source) return;
