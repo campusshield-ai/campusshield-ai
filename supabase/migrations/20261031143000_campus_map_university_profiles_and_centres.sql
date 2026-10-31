@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS public.campus_map_campuses (
   model_attribution text,
   model_status text NOT NULL DEFAULT 'not_submitted'
     CHECK (model_status IN ('not_submitted','pending_review','approved','rejected')),
+  is_active boolean NOT NULL DEFAULT true,
   model_verified_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   model_verified_at timestamptz,
   metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
