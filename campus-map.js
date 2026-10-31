@@ -845,16 +845,18 @@
       target.textContent = `3D building footprints: ${declaredStatus} · switch to 3D to inspect this area`;
       return;
     }
-    if (!map?.isStyleLoaded() || !map.getLayer('campus-osm-3d-buildings')) {
-      target.textContent = '3D building layer is loading or unavailable.';
+    if (!map?.isStyleLoaded()) {
+      target.textContent = '3D building layers are loading.';
       return;
     }
-    if (map.getZoom() < 15) {
-      target.textContent = `Zoom in to level 15+ to inspect mapped footprints · profile status: ${declaredStatus}`;
+    const hasCurated = campusBuildings.length > 0;
+    const preferredLayer = hasCurated ? 'campus-curated-building-extrusions' : 'campus-osm-3d-buildings';
+    const minZoom = hasCurated ? 14 : 15;
+    if (map.getZoom() < minZoom) {
+      target.textContent = `Zoom in to level ${minZoom}+ to inspect mapped footprints · ${hasCurated ? campusBuildings.length + ' university building records' : 'global OSM layer'} · profile: ${declaredStatus}`;
       return;
     }
     try {
-      const preferredLayer = campusBuildings.length ? 'campus-curated-building-extrusions' : 'campus-osm-3d-buildings';
       const rendered = map.getLayer(preferredLayer) ? map.queryRenderedFeatures({ layers: [preferredLayer] }) : [];
       const keys = new Set();
       for (const feature of rendered) {
@@ -869,10 +871,19 @@
           (Array.isArray(first) ? first.map(value => Number(value).toFixed(5)).join(',') : null);
         if (key !== null && key !== undefined) keys.add(String(key));
       }
-      const placeLabels = map.queryRenderedFeatures({ layers: ['campus-osm-3d-poi-labels'] });
-      target.textContent = keys.size
-        ? `${keys.size.toLocaleString()} OSM building footprints visible · ${placeLabels.length} named places · heights approximate · profile: ${declaredStatus}`
-        : `No OSM building footprints in the current view · profile status: ${declaredStatus}`;
+      const placeLabels = map.getLayer('campus-osm-3d-poi-labels')
+        ? map.queryRenderedFeatures({ layers: ['campus-osm-3d-poi-labels'] }) : [];
+      if (hasCurated) {
+        const verified = campusBuildings.filter(item => item.verification_status === 'verified').length;
+        const pending = campusBuildings.filter(item => item.verification_status === 'pending').length;
+        const taggedHeights = campusBuildings.filter(item => item.height_m != null).length;
+        const levelEstimates = campusBuildings.filter(item => item.height_m == null && item.levels != null).length;
+        target.textContent = `${keys.size.toLocaleString()} imported footprints in view · ${verified} verified · ${pending} pending · heights: ${taggedHeights} tagged, ${levelEstimates} estimated, ${campusBuildings.length - taggedHeights - levelEstimates} visual fallback`;
+      } else {
+        target.textContent = keys.size
+          ? `${keys.size.toLocaleString()} global OSM footprints visible · ${placeLabels.length} named places · building heights approximate · profile: ${declaredStatus}`
+          : `No global OSM building footprints in the current view · profile status: ${declaredStatus}`;
+      }
     } catch (error) {
       target.textContent = `Could not inspect 3D building coverage · profile status: ${declaredStatus}`;
     }
@@ -886,13 +897,14 @@
     const buildingsOn = mode === '3d';
     setLayerVisibility('osm-base', !satelliteOn);
     setLayerVisibility('campus-esri-imagery-layer', satelliteOn);
-    setLayerVisibility('campus-osm-3d-buildings', buildingsOn);
-    setLayerVisibility('campus-osm-3d-building-edges', buildingsOn);
+    const hasCuratedFootprints = campusBuildings.length > 0;
+    setLayerVisibility('campus-osm-3d-buildings', buildingsOn && !hasCuratedFootprints);
+    setLayerVisibility('campus-osm-3d-building-edges', buildingsOn && !hasCuratedFootprints);
     setLayerVisibility('campus-osm-3d-poi-labels', labelsOn);
     setLayerVisibility('campus-curated-building-footprints', !buildingsOn);
-    setLayerVisibility('campus-curated-building-extrusions', buildingsOn);
-    setLayerVisibility('campus-curated-building-3d-outline', buildingsOn);
-    setLayerVisibility('campus-curated-building-labels', labelsOn && campusBuildings.length > 0);
+    setLayerVisibility('campus-curated-building-extrusions', buildingsOn && hasCuratedFootprints);
+    setLayerVisibility('campus-curated-building-3d-outline', buildingsOn && hasCuratedFootprints);
+    setLayerVisibility('campus-curated-building-labels', labelsOn && hasCuratedFootprints);
     if (mode !== '3d' && map?.getTerrain()) map.setTerrain(null);
     if (mode === '3d' && map?.getSource('campus-terrain')) map.setTerrain({ source: 'campus-terrain', exaggeration: 1.1 });
     if (map) {
@@ -1014,6 +1026,29 @@
     if ($('campus-map-profile-coverage')) $('campus-map-profile-coverage').textContent = `Candidate centre from ${source}: ${lat.toFixed(7)}, ${lng.toFixed(7)}${accuracyText}. Save as candidate or verify with an official source.`;
   }
 
+  function validateCampusBoundaryGeometry(geometry) {
+    const polygons = geometry?.type === 'Polygon'
+      ? [geometry.coordinates]
+      : geometry?.type === 'MultiPolygon'
+        ? geometry.coordinates
+        : null;
+    if (!Array.isArray(polygons) || !polygons.length || polygons.length > 200) return false;
+    return polygons.every(rings =>
+      Array.isArray(rings) && rings.length > 0 && rings.length <= 20 &&
+      rings.every(ring => {
+        if (!Array.isArray(ring) || ring.length < 4 || ring.length > 2000) return false;
+        const first = ring[0], last = ring[ring.length - 1];
+        if (!Array.isArray(first) || !Array.isArray(last) || first[0] !== last[0] || first[1] !== last[1]) return false;
+        return ring.every(point =>
+          Array.isArray(point) && point.length === 2 &&
+          Number.isFinite(Number(point[0])) && Number.isFinite(Number(point[1])) &&
+          Number(point[0]) >= -180 && Number(point[0]) <= 180 &&
+          Number(point[1]) >= -90 && Number(point[1]) <= 90
+        );
+      })
+    );
+  }
+
   async function saveCampusProfile() {
     if (!isCampusAdmin) return setStatus('Only a verified campus administrator can update campus setup.', 'warning');
     const numberOrNull = value => value === '' ? null : Number(value);
@@ -1029,6 +1064,9 @@
     }
     if (boundaryGeoJson && !['Polygon','MultiPolygon'].includes(boundaryGeoJson.type)) {
       return setStatus('Campus boundary GeoJSON must be a Polygon or MultiPolygon geometry.', 'error');
+    }
+    if (boundaryGeoJson && !validateCampusBoundaryGeometry(boundaryGeoJson)) {
+      return setStatus('Campus boundary rings need at least four valid longitude/latitude pairs, must be closed, and must stay within geographic coordinate limits.', 'error');
     }
     const boundarySource = $('campus-map-profile-boundary-source').value.trim() || activeCampusProfile?.boundary_source_url || null;
     const boundaryVerified = $('campus-map-profile-boundary-verified').checked;
