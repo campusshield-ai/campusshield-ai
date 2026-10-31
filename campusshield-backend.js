@@ -367,7 +367,7 @@ async getCurrentUser() {
     async createStudentIdentityDocumentUrl(path) {
       if (!client) throw new Error("Supabase is not configured.");
       const objectPath = String(path || "").trim();
-      if (!objectPath || objectPath.startsWith("/") || objectPath.includes("..") || objectPath.includes("\\\\")) {
+      if (!objectPath || objectPath.startsWith("/") || objectPath.includes("..")) {
         throw new Error("Choose a valid private student identity document.");
       }
       const { data, error } = await client.storage
