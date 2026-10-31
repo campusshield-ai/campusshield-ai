@@ -14,6 +14,8 @@
   let map = null;
   let campusProfiles = [];
   let activeCampusProfile = null;
+  let campusBuildings = [];
+  let selectedBuildingForReview = null;
   let features = [];
   let allFeatures = [];
   let adminDrafts = [];
@@ -199,6 +201,80 @@
         },
         paint: { 'text-color': '#563b14', 'text-halo-color': '#fff', 'text-halo-width': 1.7 }
       });
+
+      map.addSource('campus-curated-buildings', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({
+        id: 'campus-curated-building-footprints',
+        type: 'fill',
+        source: 'campus-curated-buildings',
+        layout: { visibility: 'visible' },
+        paint: { 'fill-color': ['case', ['==', ['get', 'verification_status'], 'verified'], '#9fbca9', '#d9a552'], 'fill-opacity': 0.18 }
+      });
+      map.addLayer({
+        id: 'campus-curated-building-verified-outline',
+        type: 'line',
+        source: 'campus-curated-buildings',
+        filter: ['==', ['get', 'verification_status'], 'verified'],
+        layout: { visibility: 'visible', 'line-join': 'round' },
+        paint: { 'line-color': '#3d7962', 'line-width': ['interpolate', ['linear'], ['zoom'], 14, 0.7, 19, 1.6], 'line-opacity': 0.85 }
+      });
+      map.addLayer({
+        id: 'campus-curated-building-candidate-outline',
+        type: 'line',
+        source: 'campus-curated-buildings',
+        filter: ['==', ['get', 'verification_status'], 'pending'],
+        layout: { visibility: 'visible', 'line-join': 'round' },
+        paint: { 'line-color': '#b97719', 'line-width': ['interpolate', ['linear'], ['zoom'], 14, 1, 19, 2], 'line-dasharray': [2, 2], 'line-opacity': 0.95 }
+      });
+      map.addLayer({
+        id: 'campus-curated-building-extrusions',
+        type: 'fill-extrusion',
+        source: 'campus-curated-buildings',
+        minzoom: 14,
+        layout: { visibility: 'none' },
+        paint: {
+          'fill-extrusion-color': ['case', ['==', ['get', 'verification_status'], 'verified'], ['coalesce', ['get', 'facade_colour'], '#d5c1a0'], '#dfb56f'],
+          'fill-extrusion-height': ['get', 'render_height_m'],
+          'fill-extrusion-base': ['coalesce', ['get', 'min_height_m'], 0],
+          'fill-extrusion-opacity': 0.98,
+          'fill-extrusion-vertical-gradient': true
+        }
+      });
+      map.addLayer({
+        id: 'campus-curated-building-3d-outline',
+        type: 'line',
+        source: 'campus-curated-buildings',
+        minzoom: 15,
+        layout: { visibility: 'none', 'line-join': 'round' },
+        paint: { 'line-color': '#6e5c45', 'line-width': ['interpolate', ['linear'], ['zoom'], 15, 0.45, 19, 1.1], 'line-opacity': 0.7 }
+      });
+      map.addLayer({
+        id: 'campus-curated-building-labels',
+        type: 'symbol',
+        source: 'campus-curated-buildings',
+        minzoom: 17,
+        filter: ['all', ['has', 'name'], ['!=', ['get', 'name'], '']],
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'name'],
+          'text-font': ['Noto Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 17, 9, 19, 12],
+          'text-anchor': 'center',
+          'text-allow-overlap': false
+        },
+        paint: { 'text-color': '#2b3e34', 'text-halo-color': '#fff8e8', 'text-halo-width': 1.8 }
+      });
+      map.on('click', 'campus-curated-building-extrusions', event => {
+        const item = event.features?.[0]?.properties || {};
+        const elevation = item.height_m ? `${Number(item.height_m).toFixed(1)} m tagged height` : item.levels ? `${item.levels} levels · rendered using an estimated floor height` : 'Height not mapped · shown with a visual fallback';
+        if (isCampusAdmin && item.verification_status === 'pending' && item.id) selectCampusBuildingForReview(item.id);
+        new maplibregl.Popup({ closeButton: true, maxWidth: '280px' })
+          .setLngLat(event.lngLat)
+          .setHTML(`<strong>${esc(item.name || 'Unlabelled campus building')}</strong><br>${esc(item.building_class || 'Building')}<br>${esc(elevation)}<br>${esc(item.verification_status || 'pending review')}`)
+          .addTo(map);
+      });
+      map.on('mouseenter', 'campus-curated-building-extrusions', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'campus-curated-building-extrusions', () => { map.getCanvas().style.cursor = placementMode || profilePlacementMode ? 'crosshair' : ''; });
 
       // Esri World Imagery has much broader worldwide coverage at small/medium scales.
       // Babcock may not have high-detail tiles at every requested zoom. Cap the imagery
@@ -472,6 +548,10 @@
     setLayerVisibility('campus-osm-3d-buildings', buildingsOn);
     setLayerVisibility('campus-osm-3d-building-edges', buildingsOn);
     setLayerVisibility('campus-osm-3d-poi-labels', labelsOn);
+    setLayerVisibility('campus-curated-building-footprints', !buildingsOn);
+    setLayerVisibility('campus-curated-building-extrusions', buildingsOn);
+    setLayerVisibility('campus-curated-building-3d-outline', buildingsOn);
+    setLayerVisibility('campus-curated-building-labels', labelsOn);
     if (mode !== '3d' && map?.getTerrain()) map.setTerrain(null);
     if (mode === '3d' && map?.getSource('campus-terrain')) map.setTerrain({ source: 'campus-terrain', exaggeration: 1.1 });
     if (map) {
@@ -955,6 +1035,7 @@
       allFeatures = data || [];
       renderCampusOptions();
       currentCampusFeatures();
+      await loadCampusBuildings();
       await loadIncidentPins();
       setStatus(features.length
         ? features.length + ' verified campus locations loaded.'
@@ -1003,7 +1084,10 @@
   });
 
   $('campus-map-campus-select')?.addEventListener('change', () => {
+    activeCampusProfile = campusProfiles.find(item => item.campus_slug === $('campus-map-campus-select').value) || null;
+    renderCampusProfileForm();
     currentCampusFeatures();
+    loadCampusBuildings().catch(error => console.warn('Campus building footprints unavailable.', error));
     incidentPins = [];
     loadIncidentPins().catch(error => console.warn('Incident pins unavailable.', error));
   });
