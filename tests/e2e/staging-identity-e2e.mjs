@@ -154,6 +154,7 @@ async function cleanup() {
   if (cleanupErrors.length) {
     throw new Error(`Staging E2E cleanup did not fully succeed (${cleanupErrors.length} cleanup operation(s)). Review the job's cleanup step before another run.`);
   }
+  console.log("PASS: staging synthetic users, identity records, scan records, memberships, profiles, and private files cleaned up.");
 }
 
 async function run() {
