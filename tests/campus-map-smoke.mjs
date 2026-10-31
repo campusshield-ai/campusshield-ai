@@ -5,6 +5,7 @@ const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8'
 const html = read('index.html');
 const js = read('campus-map.js');
 const mapConfig = read('campus-map-config.js');
+const mapLoader = read('campus-map-loader.js');
 const css = read('campus-map.css');
 const sql = read('supabase/migrations/20261031115759_campus_map_verified_locations_and_emergency_layers.sql');
 const policySql = read('supabase/migrations/20261031115831_campus_map_public_read_policy_split.sql');
@@ -32,8 +33,11 @@ assert.match(html, /id="campus-map-scale-summary"/, 'Live map scale label is pre
 assert.match(html, /id="campus-map-pick-pin"/, 'Administrators can place a pin directly on the map');
 assert.match(html, /id="campus-map-use-gps"/, 'Administrators can capture a GPS candidate with device accuracy');
 assert.match(html, /id="campus-map-preview-pin"/, 'Administrators can preview manually entered coordinates');
-assert.match(html, /campus-map\.js/, 'CampusMap module is loaded');
-assert.match(html, /maplibre-gl@4\.7\.1/, 'MapLibre is pinned to a known version');
+assert.match(mapLoader, /import\('\.\/campus-map\.js'\)/, 'CampusMap module is loaded after the MapLibre ESM bootstrap');
+assert.match(html, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.css/, 'MapLibre CSS is pinned to v6.16.0');
+assert.match(html, /type="module" src="\.\/campus-map-loader\.js"/, 'MapLibre 6 is loaded using an ordered ES-module bootstrap');
+assert.match(mapLoader, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.mjs/, 'MapLibre 6 is imported from its ES-module build');
+assert.match(mapLoader, /window\.maplibregl = maplibregl;[\s\S]*await import\('\.\/campus-map\.js'\)/, 'CampusMap loads only after its MapLibre global is ready');
 assert.match(html, /report-use-location/, 'Incident form offers optional GPS attachment');
 assert.match(js, /getMyCampusContext\(\)/, 'Map resolves the signed-in university context');
 assert.match(js, /\.eq\('university_id', campus\.university_id\)/, 'Feature query is scoped to the current university');
@@ -65,7 +69,12 @@ assert.match(js, /maxzoom: 14/, 'OpenMapTiles vector source is overzoomed from i
 assert.match(js, /campus-osm-3d-building-edges/, '3D building blocks have subtle outline detail');
 assert.doesNotMatch(js, /campus-osm-3d-building-labels/, 'The non-existent named-building source layer is not requested');
 assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles provide OSM building geometry');
-assert.match(js, /tiles\.openfreemap\.org\/fonts\/\{fontstack\}\/\{range\}\.pbf/, 'OpenFreeMap glyphs are configured for readable map labels');
+assert.match(js, /tiles\.openfreemap\.org\/styles\/liberty/, 'OpenFreeMap Liberty vector style is used as the no-key 2D base');
+assert.doesNotMatch(js, /tile\.openstreetmap\.org/, 'The donation-funded public OSM raster endpoint is not hard-coded');
+assert.match(js, /baseStyleLayerIds/, 'Provider base layers can be hidden without affecting app overlays');
+assert.match(js, /setBaseStyleVisibility\(!satelliteOn\)/, '2D/SAT/3D modes switch the provider base style safely');
+assert.match(js, /campus-roads-main-casing[\s\S]*campus-road-labels[\s\S]*forEach\(id => setLayerVisibility\(id, satelliteOn\)\)/, 'Custom road overlays are shown only over satellite imagery');
+assert.match(js, /fill-extrusion-rounded-corner-distance/, 'MapLibre 6 rounded extrusion corners improve block-model edges');
 assert.match(js, /Noto Sans Regular/, 'Map labels use OpenFreeMap supported Noto Sans glyphs');
 assert.match(js, /Noto Sans Bold/, 'Cluster count labels use OpenFreeMap supported bold glyphs');
 assert.match(js, /'source-layer': 'transportation'/, 'Road styling uses mapped OpenMapTiles transportation geometry');

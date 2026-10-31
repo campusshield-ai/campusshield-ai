@@ -12,6 +12,7 @@
   const featureList = $('campus-map-feature-list');
   const mapKey = 'campus-map';
   let map = null;
+  let baseStyleLayerIds = [];
   let campusProfiles = [];
   let activeCampusProfile = null;
   let campusBuildings = [];
@@ -80,20 +81,20 @@
     return STATE_OVERVIEWS[key] || null;
   }
 
+  // Use a provider-hosted vector style instead of the donation-funded OSM public
+  // raster tile endpoint. Keep the URL configurable for an SLA-backed provider or
+  // a self-hosted PMTiles/MapLibre style when production traffic grows.
+  const DEFAULT_BASE_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
+
   function mapStyle() {
-    return {
-      version: 8,
-      glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
-      sources: {
-        osm: {
-          type: 'raster',
-          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          attribution: '© OpenStreetMap contributors'
-        }
-      },
-      layers: [{ id: 'osm-base', type: 'raster', source: 'osm', minzoom: 0, maxzoom: 19 }]
-    };
+    const configured = window.CampusShieldMapConfig?.baseStyleUrl;
+    if (typeof configured === 'string' && configured.trim()) {
+      try {
+        const url = new URL(configured.trim());
+        if (url.protocol === 'https:' && !url.username && !url.password) return url.href;
+      } catch (_) { /* use the known-safe default style below */ }
+    }
+    return DEFAULT_BASE_STYLE_URL;
   }
 
   function ensureMap() {
@@ -115,6 +116,9 @@
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), 'bottom-left');
     map.on('load', () => {
+      // Capture only provider style layers before app-owned overlays are installed.
+      // This lets SAT/3D hide the base map without hiding campus roads, pins or routes.
+      baseStyleLayerIds = (map.getStyle()?.layers || []).map(layer => layer.id);
       map.addSource('campus-features', { type: 'geojson', data: featureCollection([]) });
       map.addLayer({
         id: 'campus-feature-points',
@@ -257,7 +261,7 @@
         type: 'fill-extrusion',
         source: 'campus-curated-buildings',
         minzoom: 14,
-        layout: { visibility: 'none' },
+        layout: { visibility: 'none', 'fill-extrusion-rounded-corner-distance': 0.8 },
         paint: {
           'fill-extrusion-color': ['case', ['==', ['get', 'verification_status'], 'verified'], ['coalesce', ['get', 'facade_colour'], '#d5c1a0'], '#dfb56f'],
           'fill-extrusion-height': ['get', 'render_height_m'],
@@ -452,7 +456,7 @@
         source: 'campus-openfreemap-buildings',
         'source-layer': 'building',
         minzoom: 15,
-        layout: { visibility: 'none' },
+        layout: { visibility: 'none', 'fill-extrusion-rounded-corner-distance': 0.8 },
         filter: ['!=', ['get', 'hide_3d'], true],
         paint: {
           'fill-extrusion-color': ['coalesce', ['get', 'colour'], '#d8c6a7'],
@@ -962,6 +966,10 @@
     if (map?.getLayer(id)) map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
   }
 
+  function setBaseStyleVisibility(visible) {
+    baseStyleLayerIds.forEach(id => setLayerVisibility(id, visible));
+  }
+
   function updateBuildingCoverageSummary() {
     const target = $('campus-map-3d-coverage');
     if (!target) return;
@@ -1020,8 +1028,19 @@
     const satelliteOn = mode !== '2d';
     const labelsOn = mode !== '2d';
     const buildingsOn = mode === '3d';
-    setLayerVisibility('osm-base', !satelliteOn);
+    setBaseStyleVisibility(!satelliteOn);
     setLayerVisibility('campus-esri-imagery-layer', satelliteOn);
+    // The vector base style already renders streets in 2D. Our custom OSM road
+    // overlays are reserved for imagery modes so they do not double-draw in 2D.
+    [
+      'campus-roads-main-casing',
+      'campus-roads-main',
+      'campus-roads-secondary-casing',
+      'campus-roads-secondary',
+      'campus-roads-local',
+      'campus-footpaths',
+      'campus-road-labels'
+    ].forEach(id => setLayerVisibility(id, satelliteOn));
     const hasCuratedFootprints = campusBuildings.length > 0;
     setLayerVisibility('campus-osm-3d-buildings', buildingsOn && !hasCuratedFootprints);
     setLayerVisibility('campus-osm-3d-building-edges', buildingsOn && !hasCuratedFootprints);
