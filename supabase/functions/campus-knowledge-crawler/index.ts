@@ -248,12 +248,46 @@ Deno.serve(async (req: Request) => {
       if (!pageHost || pageHost !== String((page as any).source?.domain || "").toLowerCase()) {
         return reply({ error: "The page URL no longer matches its approved source domain." }, 400);
       }
-      if (decision === "keep_hidden") return reply({ reviewed: true, published: false, status: "hidden", page_id: pageId });
+      const { data: stageEvent, error: stageEventError } = await client.from("campus_crawler_events")
+        .select("run_id,metadata")
+        .eq("event_type", "knowledge_page_staged")
+        .eq("university_id", campus.university_id)
+        .contains("metadata", { page_id: pageId })
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (stageEventError || !stageEvent?.run_id) {
+        return reply({ error: "The page's original crawl audit record is missing; it cannot be reviewed safely." }, 503);
+      }
+      const reviewedAt = new Date().toISOString();
+      if (decision === "keep_hidden") {
+        const { error: keepAuditError } = await client.from("campus_crawler_events").insert({
+          run_id: stageEvent.run_id, event_type: "knowledge_page_kept_hidden",
+          university_id: campus.university_id, page_url: page.url, status: "hidden",
+          message: "Owner reviewed the page and chose to keep it hidden.",
+          metadata: { page_id: pageId, reviewed_by: user.id, reviewed_at: reviewedAt, content_hash: stageEvent.metadata?.content_hash || null },
+        });
+        if (keepAuditError) return reply({ error: "The review decision could not be audited; the page remains hidden." }, 503);
+        return reply({ reviewed: true, published: false, status: "hidden", page_id: pageId });
+      }
       const { data: updated, error: updateError } = await client.from("campus_knowledge_pages")
-        .update({ status: "published", updated_at: new Date().toISOString() })
+        .update({ status: "published", updated_at: reviewedAt })
         .eq("id", pageId).eq("university_id", campus.university_id).eq("status", "hidden")
         .select("id,title,url,status,updated_at").maybeSingle();
       if (updateError || !updated) return reply({ error: "The page could not be published. It may have changed since review." }, 409);
+      const { error: publishAuditError } = await client.from("campus_crawler_events").insert({
+        run_id: stageEvent.run_id, event_type: "knowledge_page_published",
+        university_id: campus.university_id, page_url: page.url, status: "published",
+        message: "Owner approved the page after manually reviewing its official source and content.",
+        metadata: { page_id: pageId, reviewed_by: user.id, reviewed_at: reviewedAt, content_hash: stageEvent.metadata?.content_hash || null },
+      });
+      if (publishAuditError) {
+        const { error: rollbackError } = await client.from("campus_knowledge_pages")
+          .update({ status: "hidden", updated_at: new Date().toISOString() })
+          .eq("id", pageId).eq("university_id", campus.university_id).eq("status", "published");
+        if (rollbackError) return reply({ error: "The audit log failed and the page could not be returned to hidden. Stop crawler use and escalate this review immediately." }, 500);
+        return reply({ error: "The review audit could not be saved; the page was returned to hidden and was not published." }, 503);
+      }
       return reply({ reviewed: true, published: true, page: updated });
     }
     if (body.action === "add_source") {
@@ -285,6 +319,15 @@ Deno.serve(async (req: Request) => {
         .select("id,title,base_url,domain,status,university_id")
         .eq("id", sourceId).eq("university_id", campus.university_id).maybeSingle();
       if (sourceError || !source || source.status !== "approved") return reply({ error: "Approved source not found for this campus." }, 404);
+      const { data: run, error: runError } = await client.from("campus_crawler_runs").insert({
+        started_by: user.id,
+        action: "crawl_university",
+        status: "running",
+        universities_requested: 1,
+        results: [{ crawler: "campus-knowledge-crawler", source_id: source.id, university_id: source.university_id }],
+      }).select("id").single();
+      if (runError || !run?.id) return reply({ error: "Could not create the private knowledge-crawl history record." }, 503);
+      const runId = run.id;
       const base = normalizeUrl(source.base_url);
       const queue: URL[] = [base];
       const visited = new Set<string>();
@@ -308,12 +351,24 @@ Deno.serve(async (req: Request) => {
           if (existingPageError) throw new Error("Existing page review state could not be checked.");
           const preservePublished = existingPage?.status === "published" && existingPage.content_hash === hash;
           const pageStatus = preservePublished ? "published" : "hidden";
-          const { error: upsertError } = await client.from("campus_knowledge_pages").upsert({
+          const { data: savedPage, error: upsertError } = await client.from("campus_knowledge_pages").upsert({
             university_id: source.university_id, source_id: source.id, url: url.toString(),
             title: page.title || url.hostname, body_text: page.text, content_hash: hash,
             status: pageStatus, fetched_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-          }, { onConflict: "university_id,url" });
-          if (upsertError) throw new Error("Database refused to store the crawled page.");
+          }, { onConflict: "university_id,url" }).select("id").single();
+          if (upsertError || !savedPage?.id) throw new Error("Database refused to store the crawled page.");
+          const { error: auditError } = await client.from("campus_crawler_events").insert({
+            run_id: runId,
+            event_type: preservePublished ? "knowledge_page_unchanged" : "knowledge_page_staged",
+            university_id: source.university_id,
+            page_url: url.toString(),
+            status: pageStatus,
+            message: preservePublished
+              ? "Previously approved page content is unchanged; publication was preserved."
+              : "New or changed public page saved hidden pending owner review.",
+            metadata: { page_id: savedPage.id, source_id: source.id, content_hash: hash, pending_review: !preservePublished },
+          });
+          if (auditError) throw new Error("The page review audit event could not be saved.");
           saved++;
           if (!preservePublished) pendingReview++;
           for (const href of page.links) {
@@ -331,12 +386,25 @@ Deno.serve(async (req: Request) => {
           lastError = e instanceof Error ? e.message.slice(0, 180) : "A page could not be fetched.";
         }
       }
-      const crawlStatus = saved ? (lastError ? "partial" : "success") : "failed";
+      const crawlStatus = saved ? (lastError ? "partial" : "completed") : "failed";
+      const completedAt = new Date().toISOString();
+      const { error: runUpdateError } = await client.from("campus_crawler_runs").update({
+        status: crawlStatus, completed_at: completedAt, pages_scanned: visited.size,
+        failed_or_blocked: skipped,
+        results: [{ crawler: "campus-knowledge-crawler", source_id: source.id, university_id: source.university_id, saved, skipped, pending_review: pendingReview, status: crawlStatus }],
+      }).eq("id", runId);
+      const { error: completionAuditError } = await client.from("campus_crawler_events").insert({
+        run_id: runId, event_type: "knowledge_crawl_completed",
+        university_id: source.university_id, status: crawlStatus,
+        message: "Knowledge crawl finished; new or changed pages remain hidden until explicit review.",
+        metadata: { source_id: source.id, saved, skipped, pending_review: pendingReview, run_history_update_failed: Boolean(runUpdateError) },
+      });
       await client.from("campus_knowledge_sources").update({
-        last_crawled_at: new Date().toISOString(), last_crawl_status: `${crawlStatus}; saved=${saved}; skipped=${skipped}`,
+        last_crawled_at: completedAt, last_crawl_status: `${crawlStatus}; saved=${saved}; skipped=${skipped}; pending_review=${pendingReview}`,
       }).eq("id", source.id).eq("university_id", source.university_id);
       return reply({
-        saved, skipped, visited: visited.size, pending_review: pendingReview, status: crawlStatus,
+        run_id: runId, saved, skipped, visited: visited.size, pending_review: pendingReview, status: crawlStatus,
+        audit_saved: !runUpdateError && !completionAuditError,
         message: saved
           ? `Fetched ${saved} public page(s); ${pendingReview} new or changed page(s) are hidden pending explicit owner review.`
           : "No pages were indexed. Check the official site's robots.txt and access rules.",
