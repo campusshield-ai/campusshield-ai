@@ -209,11 +209,22 @@ Deno.serve(async (req: Request) => {
       return reply({ sources: data || [], indexed_pages: count || 0, pending_review: pendingCount || 0 });
     }
     if (body.action === "list_pending_pages") {
+      const { data: stagedEvents, error: eventError } = await client.from("campus_crawler_events")
+        .select("metadata,created_at")
+        .eq("university_id", campus.university_id)
+        .eq("event_type", "knowledge_page_staged")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (eventError) return reply({ error: "Pending-page audit history could not be loaded." }, 503);
+      const pageIds = [...new Set((stagedEvents || []).map((event: any) => String(event.metadata?.page_id || ""))
+        .filter((id: string) => /^[0-9a-f-]{36}$/i.test(id)))].slice(0, 50);
+      if (!pageIds.length) return reply({ pages: [] });
       const { data, error } = await client.from("campus_knowledge_pages")
         .select("id,title,url,body_text,fetched_at,updated_at,content_hash,source:campus_knowledge_sources!inner(status,domain)")
         .eq("university_id", campus.university_id)
         .eq("status", "hidden")
         .eq("source.status", "approved")
+        .in("id", pageIds)
         .order("fetched_at", { ascending: false })
         .limit(50);
       if (error) return reply({ error: "Pending pages could not be loaded. Confirm that this account has platform-owner review access." }, 503);
