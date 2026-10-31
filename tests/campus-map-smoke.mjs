@@ -33,7 +33,7 @@ assert.match(html, /id="campus-map-pick-pin"/, 'Administrators can place a pin d
 assert.match(html, /id="campus-map-use-gps"/, 'Administrators can capture a GPS candidate with device accuracy');
 assert.match(html, /id="campus-map-preview-pin"/, 'Administrators can preview manually entered coordinates');
 assert.match(html, /campus-map\.js/, 'CampusMap module is loaded');
-assert.match(html, /maplibre-gl@4\.7\.1/, 'MapLibre is pinned to a known version');
+assert.match(html, /maplibre-gl@6\.16\.0/, 'MapLibre is pinned to the current tested 6.x release');
 assert.match(html, /report-use-location/, 'Incident form offers optional GPS attachment');
 assert.match(js, /getMyCampusContext\(\)/, 'Map resolves the signed-in university context');
 assert.match(js, /\.eq\('university_id', campus\.university_id\)/, 'Feature query is scoped to the current university');
@@ -65,7 +65,12 @@ assert.match(js, /maxzoom: 14/, 'OpenMapTiles vector source is overzoomed from i
 assert.match(js, /campus-osm-3d-building-edges/, '3D building blocks have subtle outline detail');
 assert.doesNotMatch(js, /campus-osm-3d-building-labels/, 'The non-existent named-building source layer is not requested');
 assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles provide OSM building geometry');
-assert.match(js, /tiles\.openfreemap\.org\/fonts\/\{fontstack\}\/\{range\}\.pbf/, 'OpenFreeMap glyphs are configured for readable map labels');
+assert.match(js, /tiles\.openfreemap\.org\/styles\/liberty/, 'OpenFreeMap Liberty vector style is used as the no-key 2D base');
+assert.doesNotMatch(js, /tile\.openstreetmap\.org/, 'The donation-funded public OSM raster endpoint is not hard-coded');
+assert.match(js, /baseStyleLayerIds/, 'Provider base layers can be hidden without affecting app overlays');
+assert.match(js, /setBaseStyleVisibility\(!satelliteOn\)/, '2D/SAT/3D modes switch the provider base style safely');
+assert.match(js, /campus-roads-main-casing[\s\S]*campus-road-labels[\s\S]*forEach\(id => setLayerVisibility\(id, satelliteOn\)\)/, 'Custom road overlays are shown only over satellite imagery');
+assert.match(js, /fill-extrusion-rounded-corner-distance/, 'MapLibre 6 rounded extrusion corners improve block-model edges');
 assert.match(js, /Noto Sans Regular/, 'Map labels use OpenFreeMap supported Noto Sans glyphs');
 assert.match(js, /Noto Sans Bold/, 'Cluster count labels use OpenFreeMap supported bold glyphs');
 assert.match(js, /'source-layer': 'transportation'/, 'Road styling uses mapped OpenMapTiles transportation geometry');
