@@ -44,6 +44,7 @@ assert.match(html, /Coordinate evidence source \(HTTPS\)/, 'Evidence field is ex
 assert.match(js, /maptiler\.com/, 'Optional terrain elevation source is supported');
 assert.doesNotMatch(js, /Satellite imagery needs a domain-restricted MapTiler key/, 'Satellite imagery is not gated on a MapTiler key');
 assert.match(js, /services\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery/, 'Esri satellite imagery is available without a MapTiler key');
+assert.match(js, /maxzoom: 12/, 'Esri imagery is capped at the worldwide baseline zoom to avoid unavailable local close-up tiles');
 assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles provide OSM building geometry');
 assert.match(js, /campus-osm-3d-buildings/, '3D mode renders building footprints as extrusions');
 assert.match(js, /render_height/, 'Building extrusion height uses OSM-derived height attributes');
