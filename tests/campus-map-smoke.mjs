@@ -7,6 +7,7 @@ const js = read('campus-map.js');
 const css = read('campus-map.css');
 const sql = read('supabase/migrations/20261031115759_campus_map_verified_locations_and_emergency_layers.sql');
 const policySql = read('supabase/migrations/20261031115831_campus_map_public_read_policy_split.sql');
+const finalPolicySql = read('supabase/migrations/20261031120234_campus_map_single_read_policy_and_audit_index.sql');
 const docs = read('docs/CAMPUSMAP_ROLLOUT.md');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
@@ -32,6 +33,10 @@ assert.match(sql, /Iperu Campus/, 'Babcock Iperu campus is seeded separately');
 assert.match(policySql, /FOR SELECT TO anon, authenticated/, 'Anonymous users have a published-only policy');
 assert.match(policySql, /campus_map_features_read_admin_drafts/, 'Verified campus admins can read their drafts');
 assert.match(policySql, /current_user_has_verified_campus_access/, 'Draft reads require verified campus access');
+assert.match(finalPolicySql, /SECURITY INVOKER/, 'Draft access helper runs with invoker permissions');
+assert.match(finalPolicySql, /IF \(SELECT auth\.uid\(\)\) IS NULL/, 'Anonymous requests do not enter private membership helpers');
+assert.match(finalPolicySql, /can_read_campus_map_drafts\(university_id\)/, 'Single read policy gates unpublished drafts');
+assert.match(finalPolicySql, /campus_map_features_verified_by_idx/, 'Verification audit foreign key is indexed');
 assert.match(docs, /Campus Map Manager/, 'Documentation covers the admin manager');
 assert.match(docs, /No building coordinates have been guessed/, 'Babcock place names are not assigned fabricated coordinates');
 console.log('CampusMap static smoke checks passed.');
