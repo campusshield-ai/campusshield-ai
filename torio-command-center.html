@@ -19,7 +19,7 @@
     .modebar{display:flex;gap:8px;margin:0 0 15px;flex-wrap:wrap}.modebar button{border:1px solid var(--line);background:#0c2224;color:#9abbb0;border-radius:9px;padding:9px 13px}.modebar button.active{background:#154c40;color:#eafff4;border-color:#2d8c6e}
     .workspace{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(240px,.75fr);gap:16px;align-items:start}.panel{background:linear-gradient(180deg,#0d2425,#0a1d20);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}.panel-head h2{margin:0;font-size:14px}.panel-head p{margin:3px 0 0;color:var(--muted);font-size:11px}.panel-body{padding:16px 18px}
     .chatlog{height:min(52vh,510px);min-height:270px;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:16px;background:#071719;border:1px solid #163b38;border-radius:12px}.msg{max-width:92%;padding:11px 13px;border:1px solid #214d45;background:#102b29;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere}.msg.user{align-self:flex-end;background:#12463b;border-color:#26755e}.msg.system{align-self:center;color:var(--amber);font-size:11px;background:#2b2619;border-color:#5a4b2b}.msg strong{display:block;color:var(--green);font-size:10px;margin-bottom:5px;letter-spacing:.08em}.msg p{margin:0}
-    .composer{display:flex;gap:8px;margin-top:12px;align-items:flex-end}.composer textarea{flex:1;min-width:0;resize:vertical;min-height:48px;max-height:150px;padding:12px;border:1px solid #28524c;border-radius:11px;background:#071719;color:var(--text);outline:none}.composer textarea:focus,input:focus{border-color:var(--teal);box-shadow:0 0 0 3px #55d9d01b}.hint{font-size:10px;color:var(--muted);margin:8px 2px 0}
+    .composer{display:flex;gap:8px;margin-top:12px;align-items:flex-end}.composer textarea{flex:1;min-width:0;resize:vertical;min-height:48px;max-height:150px;padding:12px;border:1px solid #28524c;border-radius:11px;background:#071719;color:var(--text);outline:none}.composer textarea:focus,input:focus{border-color:var(--teal);box-shadow:0 0 0 3px #55d9d01b}.voice-btn{white-space:nowrap}.voice-status{min-height:16px;color:var(--muted);font-size:10px;margin:8px 2px 0}.hint{font-size:10px;color:var(--muted);margin:8px 2px 0}
     .tool-list{display:grid;gap:8px}.tool{width:100%;text-align:left;display:flex;gap:11px;align-items:center;padding:12px;border:1px solid #1b4541;border-radius:11px;background:#0b2021;color:var(--text)}.tool:hover{border-color:#3b9d80;background:#10302c}.tool .ico{width:28px;height:28px;border-radius:8px;background:#174638;color:#7ef0c1;display:grid;place-items:center}.tool b{display:block;font-size:12px}.tool small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
     .terminal{background:#050f11;border:1px solid #22544d;border-radius:12px;overflow:hidden}.term-top{display:flex;justify-content:space-between;padding:10px 13px;background:#0d2626;border-bottom:1px solid #1b4841;color:#9bbcb1;font-size:10px}.term-out{height:390px;overflow:auto;padding:16px;font:12px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;color:#b5d8c8;white-space:pre-wrap}.term-out .good{color:#66e6ae}.term-out .warn{color:#e7bd72}.term-input{display:flex;gap:8px;border-top:1px solid #1b4841;padding:11px}.term-input span{color:var(--green);font-family:monospace}.term-input input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#e5f5ef;font:12px ui-monospace,monospace}
     .info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.info{border:1px solid var(--line);border-radius:11px;padding:12px;background:#0a2021}.info small{color:var(--muted);font-size:10px}.info b{display:block;margin-top:4px;font-size:13px}
@@ -49,7 +49,8 @@
       <section class="panel" id="assistant-view">
         <div class="panel-head"><div><h2>ShieldMind conversation</h2><p>Responses are generated through the existing Supabase Edge Function.</p></div><span class="chip">AI CONNECTED VIA SUPABASE</span></div>
         <div class="panel-body"><div class="chatlog" id="chatlog" aria-live="polite"><div class="msg"><strong>TORIO · CAMPUSSHIELD</strong><p>Good day. I’m ready to help with academic questions, planning, explanations and campus knowledge. What would you like to work on?</p></div></div>
-          <form class="composer" id="chat-form"><textarea id="question" maxlength="1200" required rows="2" placeholder="Ask TORIO anything academic…"></textarea><button class="btn" id="send-btn" type="submit">Send ↗</button></form>
+          <form class="composer" id="chat-form"><textarea id="question" maxlength="1200" required rows="2" placeholder="Ask TORIO anything academic…"></textarea><button class="btn secondary voice-btn" id="listen-btn" type="button" aria-label="Speak your question">🎙 Voice</button><button class="btn secondary voice-btn" id="speak-btn" type="button" aria-label="Read the last TORIO answer aloud" disabled>🔊 Read</button><button class="btn" id="send-btn" type="submit">Send ↗</button></form>
+          <div class="voice-status" id="voice-status" role="status" aria-live="polite">Voice input is optional. Review spoken text before sending.</div>
           <div class="hint" id="chat-status">Please sign in to CampusShield AI. Never share passwords, student IDs, private incident details or sensitive records here.</div>
         </div>
       </section>
@@ -62,7 +63,7 @@ AI service: ShieldMind Edge Function
 Security: authenticated session required
 
 Type <span class="good">help</span> to view available commands.
-<span class="warn">Notice: this terminal does not execute operating-system or arbitrary shell commands.</span></div><form class="term-input" id="term-form"><span>›</span><input id="term-command" autocomplete="off" spellcheck="false" placeholder="help, status, clear, assistant"><button class="btn" type="submit">Run</button></form></div><div class="hint">Commands: help · status · clear · assistant · overview · time</div></div>
+<span class="warn">Notice: this terminal does not execute operating-system or arbitrary shell commands.</span></div><form class="term-input" id="term-form"><span>›</span><input id="term-command" autocomplete="off" spellcheck="false" placeholder="help, status, clear, assistant"><button class="btn secondary" id="term-listen-btn" type="button" aria-label="Speak a terminal command">🎙</button><button class="btn" type="submit">Run</button></form></div><div class="hint">Commands: help · status · clear · assistant · overview · time. Spoken commands are transcribed for review and are never run automatically.</div><div class="voice-status" id="term-voice-status" role="status" aria-live="polite"></div></div>
       </section>
       <section class="panel hidden" id="overview-view">
         <div class="panel-head"><div><h2>System overview</h2><p>Connection and capability summary for this browser session.</p></div><span class="chip">READ-ONLY</span></div>
@@ -94,6 +95,9 @@ Type <span class="good">help</span> to view available commands.
   let history=[];
   let signedIn=false;
   let busy=false;
+  let lastAssistantAnswer="";
+  let activeRecognition=null;
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
   const views=["assistant","terminal","overview"];
   function showView(name){
     if(!views.includes(name))return;
@@ -107,6 +111,52 @@ Type <span class="good">help</span> to view available commands.
   }
   function term(text,kind){const out=$("term-out");const line=document.createElement("div");if(kind)line.className=kind;line.textContent=text;out.append(line);out.scrollTop=out.scrollHeight;}
   function setStatus(text){$("chat-status").textContent=text;}
+  function startVoiceCapture(target, statusTarget, label){
+    if(!SpeechRecognition){
+      statusTarget.textContent="Voice input is not supported by this browser. You can still type normally.";
+      return;
+    }
+    try{
+      if(activeRecognition){activeRecognition.abort();activeRecognition=null;}
+      const recognition=new SpeechRecognition();
+      activeRecognition=recognition;
+      recognition.lang=navigator.language||"en-NG";
+      recognition.interimResults=false;
+      recognition.maxAlternatives=1;
+      recognition.onstart=()=>{statusTarget.textContent="Listening… Speak clearly, then review the transcription.";};
+      recognition.onresult=event=>{
+        const transcript=String(event.results?.[0]?.[0]?.transcript||"").trim();
+        if(transcript){
+          target.value=transcript;
+          statusTarget.textContent=label+" captured. Review it before continuing.";
+          target.focus();
+        }else statusTarget.textContent="No speech was detected. Try again or type instead.";
+      };
+      recognition.onerror=event=>{
+        const message=event.error==="not-allowed"?"Microphone permission was denied. Enable it in your browser settings.":event.error==="no-speech"?"No speech was detected. Try again.":"Voice input could not start. You can type instead.";
+        statusTarget.textContent=message;
+      };
+      recognition.onend=()=>{if(activeRecognition===recognition)activeRecognition=null;};
+      recognition.start();
+    }catch(error){
+      activeRecognition=null;
+      statusTarget.textContent="Voice input could not start. Check microphone permission or type instead.";
+    }
+  }
+  function readLastAnswer(){
+    if(!lastAssistantAnswer)return;
+    if(!("speechSynthesis" in window)||typeof SpeechSynthesisUtterance==="undefined"){
+      $("voice-status").textContent="Read-aloud is not supported by this browser.";
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance=new SpeechSynthesisUtterance(lastAssistantAnswer);
+    utterance.lang=navigator.language||"en-NG";
+    utterance.rate=1;
+    utterance.onerror=()=>{$("voice-status").textContent="The answer could not be read aloud.";};
+    window.speechSynthesis.speak(utterance);
+    $("voice-status").textContent="Reading the latest TORIO response aloud.";
+  }
   async function checkSession(){
     try{
       if(!backend?.isConfigured||!backend?.client)throw new Error("Supabase client is unavailable.");
@@ -122,12 +172,15 @@ Type <span class="good">help</span> to view available commands.
     try{
       const result=await backend.askShieldMind(question,history,null);
       const answer=String(result?.answer||"I could not produce an answer.");
-      addMessage("assistant",answer);history.push({role:"user",content:question},{role:"assistant",content:answer});history=history.slice(-8);
+      lastAssistantAnswer=answer;$("speak-btn").disabled=false;addMessage("assistant",answer);history.push({role:"user",content:question},{role:"assistant",content:answer});history=history.slice(-8);
       setStatus(result?.mode==="provider"?"ShieldMind response received. Verify important facts against official sources.":"Response received. Verify campus policies and deadlines with official university sources.");
     }catch(err){const msg=String(err?.message||"ShieldMind is temporarily unavailable.");addMessage("assistant",msg+" For urgent campus matters, use official university channels.");setStatus(msg);}
     finally{busy=false;$("send-btn").disabled=false;}
   }
   $("chat-form").addEventListener("submit",async e=>{e.preventDefault();const q=$("question").value.trim();if(!q)return;$("question").value="";await ask(q);});
+  $("listen-btn").addEventListener("click",()=>startVoiceCapture($("question"),$("voice-status"),"Question"));
+  $("speak-btn").addEventListener("click",readLastAnswer);
+  $("term-listen-btn").addEventListener("click",()=>startVoiceCapture($("term-command"),$("term-voice-status"),"Command"));
   document.querySelectorAll("[data-view],[data-mode]").forEach(el=>el.addEventListener("click",()=>showView(el.dataset.view||el.dataset.mode)));
   document.querySelectorAll("[data-prompt]").forEach(el=>el.addEventListener("click",()=>{showView("assistant");$("question").value=el.dataset.prompt;$("question").focus();}));
   $("back-btn").addEventListener("click",()=>{window.location.href="./index.html";});
