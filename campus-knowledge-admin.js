@@ -16,10 +16,10 @@
     if (tools.hidden) return;
     const panel = $(PANEL_ID);
     if (!panel || panel.dataset.initialized === 'true') return;
-    panel.dataset.initialized = 'true';
 
     const backend = window.CampusShieldBackend;
     if (!backend?.getCurrentUser) return;
+    panel.dataset.initialized = 'true';
     backend.getCurrentUser().then(user => {
       const isOwner = String(user?.email || '').toLowerCase() === OWNER_EMAIL;
       panel.hidden = !isOwner;
