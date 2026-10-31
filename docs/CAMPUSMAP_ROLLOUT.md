@@ -108,5 +108,5 @@ These are community-mapped point features. The coordinates locate mapped POIs, n
 - Admin draft pins are clustered at campus scale, expand on click, shrink at high zoom and reveal names only when there is enough screen space. This prevents a dense orange marker field.
 - OpenMapTiles vector data uses maxzoom 14 and is overzoomed for closer inspection, which avoids unnecessary requests beyond its generated zoom range. The 3D layer has subtle building outlines and uses the named POI layer for mapped place labels; the building source is not incorrectly treated as if it carries names.
 - MapLibre is capped at a 60-degree pitch to avoid experimental pitches beyond the normal supported range. Camera transitions are shorter, and the selected point camera respects the current 2D or 3D mode.
-- Reduced-motion preferences are respected for CSS controls. Resource errors now report a relevant fallback message instead of leaving the map status silent.
+- Reduced-motion preferences are respected by CSS controls and JavaScript camera transitions. Resource errors now report a relevant fallback message instead of leaving the map status silent.
 - All MapLibre text layers now share the OpenFreeMap Noto Sans glyph service, fixing missing location, POI and cluster labels in the custom raster-plus-vector style.
