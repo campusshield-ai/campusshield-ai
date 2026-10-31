@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
-import { retrieveApprovedCampusKnowledge } from "../_shared/shieldmind-knowledge-agent.js";
+import { retrieveApprovedCampusKnowledge } from "../_shared/shieldmind-knowledge-agent.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
