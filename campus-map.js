@@ -1382,6 +1382,14 @@
     saveCampusProfile();
   });
   $('campus-map-profile-model-upload')?.addEventListener('click', uploadCampusGlbModel);
+  $('campus-map-building-discover')?.addEventListener('click', discoverCampusBuildings);
+  $('campus-map-building-candidates')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-review-building-id]');
+    if (button) selectCampusBuildingForReview(button.dataset.reviewBuildingId);
+  });
+  $('campus-map-building-verify-save')?.addEventListener('click', () => reviewCampusBuilding('verified', false));
+  $('campus-map-building-verify-publish')?.addEventListener('click', () => reviewCampusBuilding('verified', true));
+  $('campus-map-building-reject')?.addEventListener('click', () => reviewCampusBuilding('rejected', false));
   $('campus-map-profile-new')?.addEventListener('click', () => {
     if (!isCampusAdmin) return;
     $('campus-map-profile-id').value = '';
