@@ -820,6 +820,13 @@ async getCurrentUser() {
         p_body: String(body || "").trim()
       });
       if (error) throw error;
+      // Delivery is best-effort: a missing push subscription or provider outage must
+      // never turn a successfully persisted Study Circle message into a failed send.
+      try {
+        await this.callPushFunction("delivery", { action: "course_message", message_id: data });
+      } catch (notificationError) {
+        console.warn("Study Circle push notification could not be sent.", notificationError?.message || "delivery unavailable");
+      }
       return data;
     },
 
@@ -869,9 +876,12 @@ async getCurrentUser() {
 
     async listCampusGroups() {
       if (!client) throw new Error("Supabase is not configured.");
+      const campus = await this.getMyCampusContext();
+      if (!campus?.university_id) return [];
       const { data, error } = await client.from("campus_groups")
         .select("id,university_id,course_id,name,description,group_type,privacy,status,creator_username,created_at")
-        .eq("status", "active").order("name", { ascending: true }).limit(100);
+        .eq("university_id", campus.university_id).eq("status", "active")
+        .order("name", { ascending: true }).limit(100);
       if (error) throw error;
       return data || [];
     },
@@ -1228,8 +1238,11 @@ async getCurrentUser() {
 
     async listCampusCourseGroups() {
       if (!client) throw new Error("Supabase is not configured.");
+      const campus = await this.getMyCampusContext();
+      if (!campus?.university_id) return [];
       const { data, error } = await client.from("campus_groups")
         .select("id,university_id,course_id,name,description,group_type,privacy,status,creator_username,created_at")
+        .eq("university_id", campus.university_id).eq("status", "active")
         .not("course_id", "is", null)
         .order("name", { ascending: true }).limit(200);
       if (error) throw error;
@@ -1249,9 +1262,12 @@ async getCurrentUser() {
 
     async listCampusCourses() {
       if (!client) throw new Error("Supabase is not configured.");
+      const campus = await this.getMyCampusContext();
+      if (!campus?.university_id) return [];
       const { data, error } = await client.from("campus_courses")
         .select("id,university_id,course_code,title,faculty,department,level,summary,status,created_at")
-        .eq("status", "published").order("course_code", { ascending: true }).limit(200);
+        .eq("university_id", campus.university_id).eq("status", "published")
+        .order("course_code", { ascending: true }).limit(200);
       if (error) throw error;
       return data || [];
     },
@@ -1281,9 +1297,12 @@ async getCurrentUser() {
 
     async listCampusCourseResources() {
       if (!client) throw new Error("Supabase is not configured.");
+      const campus = await this.getMyCampusContext();
+      if (!campus?.university_id) return [];
       const { data, error } = await client.from("campus_course_resources")
         .select("id,university_id,course_id,title,description,resource_type,source_url,source_label,status,created_at")
-        .eq("status", "published").order("created_at", { ascending: false }).limit(200);
+        .eq("university_id", campus.university_id).eq("status", "published")
+        .order("created_at", { ascending: false }).limit(200);
       if (error) throw error;
       return data || [];
     },
@@ -1700,6 +1719,150 @@ async getCurrentUser() {
 
     async sendPushTest() {
       return this.callPushFunction("delivery", { action: "test" });
+    },
+
+    async createCampusStory(body, mediaFile, altText) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const storyBody = String(body || "").trim();
+      if (mediaFile) {
+        const user = await this.getCurrentUser();
+        const campus = await this.getMyCampusContext();
+        const allowedTypes = new Set(["image/jpeg","image/png","image/webp","image/gif","video/mp4","video/webm"]);
+        if (!user || !campus?.university_id) throw new Error("Sign in and choose your university before attaching media.");
+        if (!allowedTypes.has(mediaFile.type)) throw new Error("Use JPG, PNG, WEBP, GIF, MP4 or WEBM files only.");
+        const maxBytes = mediaFile.type.startsWith("image/") ? 15 * 1024 * 1024 : 30 * 1024 * 1024;
+        if (!mediaFile.size || mediaFile.size > maxBytes) {
+          throw new Error(mediaFile.type.startsWith("image/") ? "Images must be 15 MB or smaller." : "Videos must be 30 MB or smaller.");
+        }
+      }
+
+      const { data: storyId, error } = await client.rpc("create_campus_story", { p_body: storyBody });
+      if (error) throw error;
+      if (!mediaFile) return storyId;
+
+      const form = new FormData();
+      form.set("story_id", storyId);
+      form.set("file", mediaFile);
+      form.set("alt_text", String(altText || "").trim().slice(0, 250));
+      const { data: scanResult, error: scanError } = await client.functions.invoke(
+        "campus-story-media-upload",
+        { body: form }
+      );
+      if (scanError || scanResult?.status !== "clean") {
+        let message = scanResult?.error || scanError?.message || "Story media could not be scanned safely.";
+        const context = scanError?.context;
+        if (context && typeof context.json === "function") {
+          try {
+            const details = await context.json();
+            if (details?.error) message = details.error;
+          } catch { /* Keep the safe fallback message. */ }
+        }
+        await client.rpc("discard_campus_story_submission", { p_story_id: storyId });
+        throw new Error(message);
+      }
+      return storyId;
+    },
+
+    async addSignedCampusStoryMedia(stories) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const rows = Array.isArray(stories) ? stories : [];
+      if (!rows.length) return rows;
+      const { data, error } = await client.rpc("list_campus_story_media", {
+        p_story_ids: rows.map(story => story.story_id).filter(Boolean)
+      });
+      if (error) throw error;
+      const signedMedia = await Promise.all((data || []).map(async item => {
+        const { data: signed, error: signedError } = await client.storage
+          .from("campus-community-media").createSignedUrl(item.object_path, 1800);
+        return Object.assign({}, item, { signed_url: signedError ? null : (signed?.signedUrl || null) });
+      }));
+      const byStory = Object.create(null);
+      signedMedia.forEach(item => { byStory[item.story_id] = item; });
+      return rows.map(story => Object.assign({}, story, { media: byStory[story.story_id] || null }));
+    },
+
+    async listCampusStories() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_stories");
+      if (error) throw error;
+      return this.addSignedCampusStoryMedia(data || []);
+    },
+
+    async listCampusStoryModeration() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_story_moderation");
+      if (error) throw error;
+      return this.addSignedCampusStoryMedia(data || []);
+    },
+
+    async moderateCampusStory(storyId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("moderate_campus_story", { p_story_id: storyId, p_decision: decision });
+      if (error) throw error;
+    },
+
+    async createCampusConfession(category, body) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_campus_confession", {
+        p_category: category, p_body: String(body || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusConfessions() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_confessions");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async listCampusConfessionModeration() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_confession_moderation");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async moderateCampusConfession(confessionId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("moderate_campus_confession", {
+        p_confession_id: confessionId, p_decision: decision
+      });
+      if (error) throw error;
+    },
+
+    async reportCampusConfession(confessionId, reason, details) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("report_campus_confession", {
+        p_confession_id: confessionId, p_reason: reason, p_details: details || null
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusConfessionReports() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_confession_reports");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async resolveCampusConfessionReport(reportId, decision) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { error } = await client.rpc("resolve_campus_confession_report", {
+        p_report_id: reportId, p_decision: decision
+      });
+      if (error) throw error;
+    },
+
+    async investigateCampusConfessionAuthor(confessionId, purpose) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("investigate_campus_confession_author", {
+        p_confession_id: confessionId, p_purpose: String(purpose || "").trim()
+      });
+      if (error) throw error;
+      return data;
     },
 
     async deleteIncident(id) {

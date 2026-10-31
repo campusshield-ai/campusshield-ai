@@ -2481,11 +2481,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
 <div class="app" id="workspace" hidden>
 <nav class="mobile-bottom-nav" aria-label="Primary mobile navigation">
-  <button type="button" data-page="dashboard" aria-label="Overview"><span aria-hidden="true">⌂</span><small>Home</small></button>
-  <button type="button" data-page="community" aria-label="CampusPulse"><span aria-hidden="true">◎</span><small>Campus</small></button>
-  <button type="button" data-page="timetable" aria-label="My timetable"><span aria-hidden="true">▦</span><small>Timetable</small></button>
-  <button type="button" data-page="courses" aria-label="Courses"><span aria-hidden="true">▤</span><small>Courses</small></button>
-  <button type="button" data-page="student-rewards" aria-label="Challenges and rewards" hidden><span aria-hidden="true">✧</span><small>Rewards</small></button>
+  <button type="button" data-page="dashboard" aria-label="Home"><span aria-hidden="true">⌂</span><small>Home</small></button>
+  <button type="button" data-page="community" aria-label="Community"><span aria-hidden="true">◎</span><small>Community</small></button>
+  <button type="button" data-page="campus-messages" aria-label="Messages"><span aria-hidden="true">✉</span><small>Messages</small></button>
+  <button type="button" data-page="profile-settings" aria-label="Profile"><span aria-hidden="true">◉</span><small>Profile</small></button>
 </nav>
 <aside class="sidebar" id="app-sidebar" aria-label="Main navigation">
 <div class="brand"><img class="brand-logo" src="./assets/campusshield-logo.svg" alt="CampusShield AI logo" width="42" height="42"><span class="brand-copy">Campus<strong>Shield</strong> AI<small>SAFETY WORKSPACE</small></span></div>
@@ -2920,6 +2919,33 @@ button,input,select,textarea{max-width:100%;min-width:0}
   </details>
 </section>
 <div class="notice-inline" id="campus-context-banner" hidden><strong>Your university space:</strong> <span id="campus-context-name"></span>. Student interaction is limited to members of this university. <span id="campus-context-status"></span></div>
+<section class="campus-social-extras" id="campus-social-extras" hidden aria-label="Campus Stories and Anonymous Confessions">
+  <section class="panel campus-story-panel" aria-labelledby="campus-stories-title">
+    <div class="panel-heading"><div><span class="campus-social-kicker">24-HOUR CAMPUS MOMENTS</span><h2 id="campus-stories-title">Campus Stories</h2><p>Short campus updates that disappear 24 hours after approval.</p></div><button class="btn secondary" type="button" id="refresh-campus-stories">Refresh</button></div>
+    <form id="campus-story-form" class="campus-social-compose">
+      <label class="sr-only" for="campus-story-body">Write a campus story</label>
+      <textarea id="campus-story-body" rows="2" maxlength="500" minlength="1" required placeholder="What's happening on campus today? (500 characters max)"></textarea>
+      <div class="field"><label for="campus-story-media">Photo or video (optional)</label><input id="campus-story-media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"><small>One attachment per story · images up to 15 MB · videos up to 30 MB</small></div>
+      <div class="field"><label for="campus-story-alt">Image description (optional)</label><input id="campus-story-alt" type="text" maxlength="250" placeholder="Describe the image for accessibility"></div>
+      <div class="campus-social-compose-footer"><span>Stories are reviewed before appearing. Keep people’s private information out.</span><button class="btn" type="submit" id="campus-story-submit">Submit story</button></div>
+      <p id="campus-story-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+    <p id="campus-stories-status" class="message" role="status" aria-live="polite">Loading stories…</p>
+    <div id="campus-stories-feed" class="campus-stories-feed"><div class="community-empty">Your campus stories will appear here.</div></div>
+  </section>
+  <section class="panel campus-confession-panel" aria-labelledby="campus-confessions-title">
+    <div class="panel-heading"><div><span class="campus-social-kicker">ANONYMOUS · MODERATED</span><h2 id="campus-confessions-title">Anonymous Confessions</h2><p>Share a thought without displaying your username or profile to other students.</p></div><button class="btn secondary" type="button" id="refresh-campus-confessions">Refresh</button></div>
+    <div class="notice-inline"><strong>Privacy matters.</strong> Your identity is hidden from the public feed, but submissions are not end-to-end anonymous: authorized campus administrators or security staff may access the author identity only for a documented investigation. Do not use this space for emergencies, accusations, threats or private incident reports.</div>
+    <form id="campus-confession-form" class="campus-social-compose">
+      <div class="field"><label for="campus-confession-category">Topic</label><select id="campus-confession-category"><option value="general">Something on my mind</option><option value="campus_life">Campus life</option><option value="friendship">Friendship</option><option value="relationships">Relationships</option><option value="academic_stress">Academic stress</option></select></div>
+      <div class="field"><label for="campus-confession-body">Your confession *</label><textarea id="campus-confession-body" rows="4" maxlength="1200" minlength="10" required placeholder="Share respectfully. Do not name or identify another person."></textarea><small>10–1,200 characters. Submissions are reviewed before publication.</small></div>
+      <div class="campus-social-compose-footer"><span>Your username is not shown with a published confession.</span><button class="btn" type="submit" id="campus-confession-submit">Submit anonymously</button></div>
+      <p id="campus-confession-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+    <p id="campus-confessions-status" class="message" role="status" aria-live="polite">Loading confessions…</p>
+    <div id="campus-confessions-feed" class="campus-confessions-feed"><div class="community-empty">No published confessions yet.</div></div>
+  </section>
+</section>
 <div class="community-layout" id="community-main-layout">
   <section class="panel" aria-labelledby="community-profile-title">
     <div class="panel-heading"><div><h2 id="community-profile-title">Your public profile</h2><p>Students see your username only.</p></div></div>
@@ -2964,7 +2990,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
   <div class="panel-heading"><div><h2 id="community-moderation-title">Community moderation</h2><p>Review student submissions and reports. Moderation actions are checked again by Supabase.</p></div><button type="button" class="btn secondary" id="refresh-community-moderation">Refresh queue</button></div>
   <h3>Posts awaiting review</h3>
   <div id="community-moderation-posts"><p class="muted">Loading moderation queue…</p></div>
-  <h3>Reports from the community</h3>
+  <h3>Stories awaiting review</h3><div id="campus-story-moderation-queue"><p class="muted">No stories loaded.</p></div><h3>Anonymous confessions awaiting review</h3><div id="campus-confession-moderation-queue"><p class="muted">No confessions loaded.</p></div><h3>Reports on anonymous confessions</h3><div id="campus-confession-reports-queue"><p class="muted">No reports loaded.</p></div><h3>Reports from the community</h3>
   <div id="community-reports-queue"><p class="muted">Loading reports…</p></div>
   <p id="community-moderation-message" class="message" role="status" aria-live="polite"></p>
 </section>
@@ -3105,6 +3131,16 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <section class="page" id="page-groups">
   <div class="heading"><h1>Campus groups</h1><p>Find study circles, departments, societies and interest groups inside your university only.</p></div>
   <div class="notice-inline"><strong>Campus-only groups.</strong> A group can only contain members of your selected university. New groups are checked by campus staff before becoming visible.</div>
+  <section class="panel campus-study-circles-panel" aria-labelledby="campus-study-circles-title">
+    <div class="panel-heading"><div><span class="campus-social-kicker">ACADEMIC COMMUNITY</span><h2 id="campus-study-circles-title">Study Circles</h2><p>Join a course-focused learning group built on existing Campus Groups and course discussions.</p></div></div>
+    <form id="campus-study-circle-form" class="campus-study-circle-compose">
+      <div class="field"><label for="campus-study-circle-course">Published course *</label><select id="campus-study-circle-course" required><option value="">Choose a published course…</option></select></div>
+      <div class="field"><label for="campus-study-circle-description">Study Circle purpose (optional)</label><textarea id="campus-study-circle-description" rows="2" maxlength="1000" placeholder="e.g. Weekly revision, assignment explanations and exam preparation."></textarea></div>
+      <button class="btn" type="submit" id="campus-study-circle-submit">Create Study Circle</button>
+    </form>
+    <p id="campus-study-circles-status" class="message" role="status" aria-live="polite">Loading approved courses and Study Circles…</p>
+    <div id="campus-study-circles-feed" class="campus-study-circles-feed"><div class="community-empty">Loading Study Circles…</div></div>
+  </section>
   <div class="community-layout">
     <section class="panel" aria-labelledby="campus-groups-create-title">
       <div class="panel-heading"><div><h2 id="campus-groups-create-title">Create a group</h2><p>Build a space for study, courses or shared interests.</p></div></div>
@@ -4750,6 +4786,26 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
   @media(prefers-reduced-motion:reduce) {
     *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; }
   }
+
+/* Campus Stories and Anonymous Confessions */
+.campus-social-extras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0;align-items:start}
+.campus-social-extras>.panel{min-width:0}
+.campus-social-kicker{display:block;margin-bottom:5px;color:#278166;font-size:9px;font-weight:900;letter-spacing:.15em}
+.campus-social-compose{display:grid;gap:10px;padding:13px;border:1px solid #dcebe2;border-radius:14px;background:#f8fcf9}
+.campus-social-compose textarea{width:100%;min-height:72px;resize:vertical;border:1px solid #d7e5dc;border-radius:10px;padding:11px;background:#fff;color:#173b34}
+.campus-social-compose-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.campus-social-compose-footer>span{flex:1 1 180px;color:#71817a;font-size:10px;line-height:1.45}
+.campus-stories-feed,.campus-confessions-feed{display:grid;gap:9px;margin-top:10px}
+.campus-story-card{padding:14px;border:1px solid #d5e9dc;border-radius:14px;background:linear-gradient(145deg,#eff9f2,#fff 78%)}
+.campus-story-card-head,.campus-confession-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.campus-story-card p,.campus-confession-card p{margin:0;color:#24483e;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.campus-story-expiry{color:#71817a;font-size:10px}
+.campus-confession-card{padding:14px;border:1px solid #e5e3ee;border-radius:14px;background:linear-gradient(145deg,#f8f6fc,#fff 78%)}
+.campus-confession-anon{display:inline-flex;align-items:center;gap:6px;color:#66558b;font-size:10px;font-weight:850}
+.campus-confession-card .btn{margin-top:10px}
+@media(max-width:900px){.campus-social-extras{grid-template-columns:1fr}}
+@media(max-width:600px){.campus-social-compose-footer{align-items:stretch;flex-direction:column}.campus-social-compose-footer .btn{width:100%}}
+
 </style>
 
 <style id="campusshield-responsive-final">
@@ -4814,6 +4870,21 @@ table { max-width: 100%; }
 }
 </style>
 
+<style id="campus-social-next-stage-styles">
+.campus-story-media{margin-top:11px;overflow:hidden;border-radius:13px;background:#edf5f1}
+.campus-story-media img,.campus-story-media video{display:block;width:100%;max-height:420px;object-fit:contain;border-radius:13px;background:#102b35}
+.campus-story-media video{aspect-ratio:16/9}
+.campus-study-circles-panel{border-color:#d7e9df;background:linear-gradient(150deg,#f7fcf8,#fff 65%)}
+.campus-study-circle-compose{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) auto;align-items:end;gap:12px;padding:13px;border:1px solid #dcebe2;border-radius:14px;background:#f8fcf9}
+.campus-study-circle-compose .field{margin:0}
+.campus-study-circle-compose textarea{min-height:43px}
+.campus-study-circles-feed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.campus-study-circle-card{margin:0}
+.campus-course-discussion-messages{display:grid;gap:9px;max-height:440px;overflow:auto;padding:10px;border:1px solid #e4ede8;border-radius:12px;background:#f8fbf9}
+.campus-course-discussion-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-top:12px}
+.campus-course-discussion-compose textarea{width:100%;min-height:70px;border:1px solid #d9e4df;border-radius:10px;padding:10px 12px}
+@media(max-width:760px){.campus-study-circle-compose{grid-template-columns:1fr}.campus-study-circles-feed{grid-template-columns:1fr}.campus-course-discussion-compose{grid-template-columns:1fr}.campus-course-discussion-compose .btn{width:100%}}
+</style>
 <script src="./campus-dashboard-upgrade.js" defer></script>
 </body>
 </html>

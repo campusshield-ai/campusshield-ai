@@ -265,6 +265,11 @@
     $('approvals-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
     $('staff-verification-nav').hidden = !isTeacherAccount();
     $('staff-review-nav').hidden = !(verified && currentProfile?.role === 'admin' && staffCampusApproved);
+    // Recompute the access panel after the signed-in campus context is hydrated.
+    // showWorkspace first renders the profile before get_my_campus_context resolves;
+    // without this refresh a verified staff member can remain stuck on a stale
+    // "Campus membership not verified" message for the entire session.
+    renderRoleAccessSummary();
     syncNavSectionHeadings();
   }
 
@@ -474,9 +479,29 @@
       items=['Create and manage classroom spaces where enabled for verified teachers.','Use campus opportunities, community and student-support features available to verified staff.','Publish official campus notices where the feature and campus policies allow it.'];
       limit='The standard staff role cannot manage/resolve incident reports, access staff-review queues, administer institutional billing, or grant campus/platform administrator access. Security-console access requires a separate security-role assignment.';
     } else if(['teacher','security','admin'].includes(role) && !campusOk){
-      state='restricted';badge='Campus membership not verified';title='Campus access is not fully enabled';description='Your account exists, but the campus membership required for these tools is not currently verified.';
-      items=['Check your account and identity-verification status.','Contact the authorized administrator for your campus if the membership status is incorrect.','Only use actions currently shown and permitted for your account.'];
-      limit='Incident management, staff review and other campus-scoped privileged actions remain gated until the required membership is approved.';
+      state='restricted';badge='Campus membership not verified';title='Campus access is not fully enabled';
+      const campusName=String(campusContext?.university_name||'').trim();
+      const membershipState=String(campusContext?.membership_status||'').toLowerCase();
+      const campusVerification=String(campusContext?.verification_status||'').toLowerCase();
+      if(!campusContext?.university_id){
+        description='Your staff account is verified, but no university membership is linked to it yet.';
+        items=['Open CampusPulse and select your real university to create the campus membership request.','A first-campus administrator setup is available only to a trusted platform administrator when the university has no approved campus administrator.','Do not change your role or choose another university to bypass verification.'];
+      } else if(membershipState!=='active'){
+        description='Your membership at '+campusName+' is not active ('+(membershipState||'unknown status')+').';
+        items=['Contact an authorized administrator for '+campusName+' to review the membership status.','Do not create a second account or select another university to work around the restriction.','Only use actions currently shown and permitted for your account.'];
+      } else if(campusVerification==='pending'){
+        description='Your active membership at '+campusName+' is waiting for an authorized campus administrator to approve it.';
+        items=['Ask your campus administrator to review the pending campus membership.','Teachers must also have their staff identity evidence approved before staff tools are enabled.','Your incident-management and staff-review permissions remain protected until approval is complete.'];
+      } else if(campusVerification==='rejected'){
+        description='Your campus membership at '+campusName+' was not approved.';
+        items=['Contact the authorized administrator for '+campusName+' to understand the decision and request a correction if appropriate.','Resubmit supporting staff evidence only when requested by the reviewer.','Do not attempt to unlock campus tools by changing profile metadata.'];
+      } else {
+        description='Your account is verified, but your '+campusName+' membership has not yet been approved by an authorized campus administrator.';
+        items=role==='teacher'
+          ? ['Complete Staff Identity Verification if you have not already submitted your university employment evidence.','After staff evidence is approved, ask a campus administrator to approve your campus membership.','Your staff workspace becomes available only after both account and campus membership checks pass.']
+          : ['Ask a verified campus administrator or the trusted platform administrator to review your membership and assigned campus role.','Campus administrator and security permissions are granted separately; a profile title cannot enable them.','Only use actions currently shown and permitted for your account.'];
+      }
+      limit='Incident management, staff review and other campus-scoped privileged actions remain gated until the database confirms an active, verified membership for this university.';
     } else {
       state=verified&&campusOk?'approved':'restricted';badge=verified&&campusOk?'Verified student':'Campus access limited';title='Student campus workspace';description='Use CampusShield for your own campus safety and student-life activity.';
       items=['Submit and follow up on your own safety reports when the database says your account is eligible.','Use community, groups, events, helpdesk and opportunities available to verified campus members.','Manage your own profile and private account information.'];
@@ -4447,6 +4472,7 @@
       syncCampusAccessNavigation();
       const needsCampus = !campus?.university_id;
       $('campus-onboarding').hidden = !needsCampus;
+      $('campus-social-extras').hidden = needsCampus;
       $('community-main-layout').hidden = needsCampus;
       $('community-feed-panel').hidden = needsCampus;
       $('campus-context-banner').hidden = needsCampus;
@@ -4491,6 +4517,7 @@
       }));
       pollResults.forEach(function(entry) { pollsByPost[entry[0]] = entry[1]; });
       renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost);
+      await loadCampusSocialExtras();
       $('community-feed-status').textContent = posts.length + (posts.length === 1 ? ' published post' : ' published posts') + ' · refreshed ' + new Date().toLocaleTimeString();
 
       $('community-moderation').hidden = !canModerateCommunity();
@@ -4636,6 +4663,7 @@
       }).join('') : '<div class="community-empty">No new community reports.</div>';
 
       $('community-moderation-message').textContent = posts.length + ' post(s) awaiting review · ' + reports.length + ' report(s) to review.';
+      await loadCampusSocialModeration();
     } catch (err) {
       console.error('Could not load community moderation:', err);
       $('community-moderation-message').textContent = 'The moderation queue could not be loaded: ' + (err.message || 'unknown error');
@@ -4932,6 +4960,133 @@
 
   $('refresh-campus-notices').addEventListener('click', loadCampusNoticeboardPage);
 
+  let activeCampusCourseDiscussionId = null;
+  let activeCampusCourseDiscussionUniversityId = null;
+  let activeCampusCourseDiscussionSubscription = null;
+
+  async function refreshCampusCourseDiscussion(groupId) {
+    if (!groupId || activeCampusCourseDiscussionId !== groupId) return;
+    const host = $('campus-course-discussion-messages');
+    const status = $('campus-course-discussion-status');
+    try {
+      const rows = await window.CampusShieldBackend.listCampusCourseCommunityMessages(groupId);
+      if (activeCampusCourseDiscussionId !== groupId) return;
+      host.innerHTML = rows.length ? rows.map(function(item) {
+        return '<article class="community-comment"><div class="community-meta"><strong>@' + esc(item.author_username || 'campus member') + '</strong><span>·</span><time>' + esc(dateText(item.created_at)) + '</time>' + (item.is_mine ? '<span class="tag low">You</span>' : '') + '</div><p>' + esc(item.body) + '</p></article>';
+      }).join('') : '<div class="community-empty">No messages yet. Start the study discussion with a question or a useful learning tip.</div>';
+      status.textContent = rows.length + ' message(s) · members of this Study Circle only.';
+      host.scrollTop = host.scrollHeight;
+    } catch (err) {
+      status.textContent = err.message || 'Could not load this discussion.';
+    }
+  }
+
+  async function openCampusCourseDiscussion(groupId, groupName) {
+    if (!groupId) return;
+    const backend = window.CampusShieldBackend;
+    const panel = $('campus-course-discussion-panel');
+    const input = $('campus-course-discussion-input');
+    if (activeCampusCourseDiscussionSubscription) {
+      await backend.unsubscribeCampusCourseCommunityMessages(activeCampusCourseDiscussionSubscription);
+      activeCampusCourseDiscussionSubscription = null;
+    }
+    activeCampusCourseDiscussionId = groupId;
+    activeCampusCourseDiscussionUniversityId = campusContext?.university_id || null;
+    $('campus-course-discussion-title').textContent = groupName || 'Study Circle discussion';
+    $('campus-course-discussion-subtitle').textContent = 'Verified members of this approved course community can share questions, revision tips and resources.';
+    panel.hidden = false;
+    input.disabled = false;
+    $('campus-course-discussion-send').disabled = false;
+    $('campus-course-discussion-status').textContent = 'Loading discussion…';
+    $('campus-course-discussion-messages').innerHTML = '';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    await refreshCampusCourseDiscussion(groupId);
+    activeCampusCourseDiscussionSubscription = backend.subscribeCampusCourseCommunityMessages(
+      groupId,
+      function(record, eventType) {
+        if (eventType === 'INSERT' && record?.status === 'published') refreshCampusCourseDiscussion(groupId);
+      },
+      function(state) {
+        if (activeCampusCourseDiscussionId === groupId && state === 'CHANNEL_ERROR') {
+          $('campus-course-discussion-status').textContent = 'Live updates are temporarily unavailable. Refresh the discussion to see new messages.';
+        }
+      }
+    );
+  }
+
+  $('campus-course-discussion-close').addEventListener('click', async function() {
+    if (activeCampusCourseDiscussionSubscription) {
+      await window.CampusShieldBackend.unsubscribeCampusCourseCommunityMessages(activeCampusCourseDiscussionSubscription);
+      activeCampusCourseDiscussionSubscription = null;
+    }
+    activeCampusCourseDiscussionId = null;
+    activeCampusCourseDiscussionUniversityId = null;
+    $('campus-course-discussion-input').disabled = true;
+    $('campus-course-discussion-send').disabled = true;
+    $('campus-course-discussion-panel').hidden = true;
+  });
+
+  $('campus-course-discussion-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const groupId = activeCampusCourseDiscussionId;
+    const input = $('campus-course-discussion-input');
+    const button = $('campus-course-discussion-send');
+    const status = $('campus-course-discussion-status');
+    const body = input.value.trim();
+    if (!groupId || !body) return;
+    if (body.length > 1200) { status.textContent = 'Messages must be 1,200 characters or fewer.'; return; }
+    button.disabled = true;
+    status.textContent = 'Sending message…';
+    try {
+      await window.CampusShieldBackend.sendCampusCourseCommunityMessage(groupId, body);
+      input.value = '';
+      await refreshCampusCourseDiscussion(groupId);
+    } catch (err) {
+      status.textContent = err.message || 'Could not send this message.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  async function loadCampusStudyCirclesPage() {
+    const backend = window.CampusShieldBackend;
+    const status = $('campus-study-circles-status');
+    const feed = $('campus-study-circles-feed');
+    const select = $('campus-study-circle-course');
+    if (!status || !feed || !select || !currentProfile || !backend?.isConfigured) return;
+    try {
+      const [courses, groups, joined] = await Promise.all([
+        backend.listCampusCourses(),
+        backend.listCampusCourseGroups(),
+        backend.listMyCampusGroupMemberships()
+      ]);
+      const memberIds = new Set(joined);
+      const courseById = Object.create(null);
+      courses.forEach(course => { courseById[course.id] = course; });
+      const previous = select.value;
+      select.innerHTML = '<option value="">Choose a published course…</option>' + courses.map(function(course) {
+        return '<option value="' + esc(course.id) + '">' + esc(course.course_code + ' · ' + course.title) + '</option>';
+      }).join('');
+      if (courses.some(course => course.id === previous)) select.value = previous;
+      feed.innerHTML = groups.length ? groups.map(function(group) {
+        const course = courseById[group.course_id] || {};
+        const joinedGroup = memberIds.has(group.id);
+        return '<article class="community-post campus-study-circle-card">' +
+          '<div class="community-meta"><span class="tag low">Study Circle</span><span>·</span>' + esc(course.course_code || 'Course community') + '</div>' +
+          '<h3 class="community-post-title">' + esc(course.title || group.name) + '</h3>' +
+          '<p class="community-post-body">' + esc(group.description || 'A campus study community for this course.') + '</p>' +
+          '<p class="community-meta">' + esc(course.faculty || course.department || 'University course') + (course.level && course.level !== 'all' ? ' · ' + esc(course.level) + ' level' : '') + '</p>' +
+          '<div class="actions"><button type="button" class="btn ' + (joinedGroup ? 'secondary' : '') + '" data-campus-group-action="' + (joinedGroup ? 'leave' : 'join') + '" data-campus-group-id="' + esc(group.id) + '">' + (joinedGroup ? 'Leave circle' : 'Join circle') + '</button>' +
+          (joinedGroup ? '<button type="button" class="btn" data-open-course-discussion data-course-group-id="' + esc(group.id) + '" data-course-group-name="' + esc(group.name) + '">Open study discussion</button>' : '') + '</div></article>';
+      }).join('') : '<div class="community-empty">No approved Study Circles yet. Choose a published course to start one; campus staff review new circles before they open.</div>';
+      status.textContent = groups.length + ' approved Study Circle(s) at your university · ' + courses.length + ' published course(s) available.';
+      if (!courses.length) status.textContent += ' Published courses will appear here when available.';
+    } catch (err) {
+      status.textContent = err.message || 'Study Circles could not be loaded.';
+      feed.innerHTML = '<div class="community-empty">Study Circles are temporarily unavailable.</div>';
+    }
+  }
+
   async function loadCampusGroupsPage() {
     const backend = window.CampusShieldBackend;
     const status = $('campus-groups-status');
@@ -4939,9 +5094,24 @@
     status.textContent = 'Loading your university groups…';
     try {
       campusContext = await backend.getMyCampusContext();
+      if (activeCampusCourseDiscussionId && activeCampusCourseDiscussionUniversityId !== campusContext?.university_id) {
+        if (activeCampusCourseDiscussionSubscription) {
+          await backend.unsubscribeCampusCourseCommunityMessages(activeCampusCourseDiscussionSubscription);
+          activeCampusCourseDiscussionSubscription = null;
+        }
+        activeCampusCourseDiscussionId = null;
+        activeCampusCourseDiscussionUniversityId = null;
+        $('campus-course-discussion-input').disabled = true;
+        $('campus-course-discussion-send').disabled = true;
+        $('campus-course-discussion-panel').hidden = true;
+        $('campus-course-discussion-messages').innerHTML = '';
+      }
       if (!campusContext?.university_id) {
         status.textContent = 'Choose your university on the Campus community page first.';
         $('campus-groups-feed').innerHTML = '';
+        $('campus-study-circles-feed').innerHTML = '';
+        $('campus-study-circle-course').innerHTML = '<option value="">Choose a published course…</option>';
+        $('campus-study-circles-status').textContent = 'Choose your university to discover Study Circles.';
         return;
       }
       const [groups, joined] = await Promise.all([
@@ -4967,6 +5137,7 @@
           '</article>';
       }).join('') : '<div class="community-empty"><strong>No approved groups yet.</strong><p>Create one for your course, department, study circle or society. It will be reviewed before appearing.</p></div>';
       status.textContent = visibleGroups.length + ' group(s) match your search.';
+      await loadCampusStudyCirclesPage();
       if (canModerateCommunity()) await loadCampusContentModeration();
     } catch (err) {
       status.textContent = err.message || 'Could not load campus groups.';
@@ -5411,6 +5582,181 @@
       status.textContent = err.message || 'Campus moderation queue is unavailable.';
     }
   }
+
+  function campusStoryMediaMarkup(media) {
+    if (!media?.signed_url) return '';
+    const url = esc(media.signed_url);
+    if (media.media_kind === 'video') {
+      return '<div class="campus-story-media"><video controls playsinline preload="metadata" src="' + url + '">Your browser does not support this video.</video></div>';
+    }
+    return '<div class="campus-story-media"><img loading="lazy" src="' + url + '" alt="' + esc(media.alt_text || 'Campus story image') + '"></div>';
+  }
+
+  function renderCampusStories(rows) {
+    const host = $('campus-stories-feed');
+    if (!rows.length) {
+      host.innerHTML = '<div class="community-empty">No active stories yet. Share a helpful campus moment.</div>';
+      return;
+    }
+    host.innerHTML = rows.map(function(story) {
+      const expiry = story.expires_at ? new Date(story.expires_at) : null;
+      const remaining = expiry ? Math.max(0, Math.ceil((expiry.getTime() - Date.now()) / 3600000)) : 0;
+      return '<article class="campus-story-card"><div class="campus-story-card-head"><strong class="community-handle">@' + esc(story.author_username) + '</strong><span class="campus-story-expiry">' + (remaining ? remaining + 'h left' : 'Expiring soon') + '</span></div><p>' + esc(story.body) + '</p>' + campusStoryMediaMarkup(story.media) + '</article>';
+    }).join('');
+  }
+
+  function renderCampusConfessions(rows) {
+    const host = $('campus-confessions-feed');
+    if (!rows.length) {
+      host.innerHTML = '<div class="community-empty">No published confessions yet. Submissions are reviewed before appearing.</div>';
+      return;
+    }
+    const labels = { campus_life:'Campus life', friendship:'Friendship', relationships:'Relationships', academic_stress:'Academic stress', general:'General' };
+    host.innerHTML = rows.map(function(item) {
+      return '<article class="campus-confession-card"><div class="campus-confession-card-head"><span class="campus-confession-anon">◉ Anonymous campus member</span><span class="campus-story-expiry">' + esc(labels[item.category] || 'General') + ' · ' + esc(dateText(item.created_at)) + '</span></div><p>' + esc(item.body) + '</p><button type="button" class="btn secondary" data-report-campus-confession="' + esc(item.confession_id) + '">Report confession</button></article>';
+    }).join('');
+  }
+
+  async function loadCampusSocialExtras() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile || !campusContext?.university_id) return;
+    const [storiesResult, confessionsResult] = await Promise.allSettled([
+      backend.listCampusStories(), backend.listCampusConfessions()
+    ]);
+    if (storiesResult.status === 'fulfilled') {
+      renderCampusStories(storiesResult.value);
+      $('campus-stories-status').textContent = storiesResult.value.length + ' active campus story/stories · each expires 24 hours after approval.';
+    } else {
+      $('campus-stories-status').textContent = storiesResult.reason?.message || 'Stories are temporarily unavailable.';
+    }
+    if (confessionsResult.status === 'fulfilled') {
+      renderCampusConfessions(confessionsResult.value);
+      $('campus-confessions-status').textContent = confessionsResult.value.length + ' published anonymous confession(s).';
+    } else {
+      $('campus-confessions-status').textContent = confessionsResult.reason?.message || 'Confessions are temporarily unavailable.';
+    }
+  }
+
+  async function loadCampusSocialModeration() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !canModerateCommunity()) return;
+    const [storiesResult, confessionsResult, reportsResult] = await Promise.allSettled([
+      backend.listCampusStoryModeration(),
+      backend.listCampusConfessionModeration(),
+      backend.listCampusConfessionReports()
+    ]);
+    const stories = storiesResult.status === 'fulfilled' ? storiesResult.value : [];
+    const confessions = confessionsResult.status === 'fulfilled' ? confessionsResult.value : [];
+    const reports = reportsResult.status === 'fulfilled' ? reportsResult.value : [];
+    $('campus-story-moderation-queue').innerHTML = stories.length ? stories.map(function(item) {
+      return '<article class="community-moderation-item"><div class="community-meta">@' + esc(item.author_username) + ' · ' + esc(dateText(item.created_at)) + '</div><p>' + esc(item.body) + '</p>' + campusStoryMediaMarkup(item.media) + '<div class="community-post-actions"><button type="button" class="btn" data-campus-story-decision="publish" data-campus-story-id="' + esc(item.story_id) + '">Approve 24h</button><button type="button" class="btn danger" data-campus-story-decision="reject" data-campus-story-id="' + esc(item.story_id) + '">Reject</button></div></article>';
+    }).join('') : '<div class="community-empty">No stories awaiting review.</div>';
+    $('campus-confession-moderation-queue').innerHTML = confessions.length ? confessions.map(function(item) {
+      return '<article class="community-moderation-item"><div class="community-meta">Anonymous submission · ' + esc(item.category.replaceAll('_',' ')) + ' · ' + esc(dateText(item.created_at)) + ' · ' + Number(item.report_count || 0) + ' reports</div><p>' + esc(item.body) + '</p><div class="community-post-actions"><button type="button" class="btn" data-campus-confession-decision="publish" data-campus-confession-id="' + esc(item.confession_id) + '">Approve</button><button type="button" class="btn danger" data-campus-confession-decision="reject" data-campus-confession-id="' + esc(item.confession_id) + '">Reject</button></div></article>';
+    }).join('') : '<div class="community-empty">No confessions awaiting review.</div>';
+    $('campus-confession-reports-queue').innerHTML = reports.length ? reports.map(function(item) {
+      return '<article class="community-report-item"><div class="community-meta">Anonymous confession · ' + esc(item.reason.replaceAll('_',' ')) + ' · ' + esc(dateText(item.created_at)) + '</div><p>' + esc(item.details || 'No additional details.') + '</p><div class="community-post-actions"><button type="button" class="btn danger" data-campus-confession-report-decision="hide_and_review" data-campus-confession-report-id="' + esc(item.report_id) + '">Hide confession &amp; review</button><button type="button" class="btn secondary" data-campus-confession-report-decision="reviewed" data-campus-confession-report-id="' + esc(item.report_id) + '">Mark reviewed</button><button type="button" class="btn secondary" data-campus-confession-report-decision="dismissed" data-campus-confession-report-id="' + esc(item.report_id) + '">Dismiss</button></div></article>';
+    }).join('') : '<div class="community-empty">No pending confession reports.</div>';
+  }
+
+  $('campus-story-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const body = $('campus-story-body').value.trim();
+    const mediaFile = $('campus-story-media')?.files?.[0] || null;
+    const altText = $('campus-story-alt')?.value || '';
+    const button = $('campus-story-submit');
+    const message = $('campus-story-message');
+    if (!backend?.isConfigured) { message.textContent = 'Supabase is not configured.'; return; }
+    if (!body || body.length > 500) { message.textContent = 'Stories must contain 1–500 characters.'; return; }
+    if (mediaFile) {
+      const allowed = ['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm'];
+      const limit = mediaFile.type.startsWith('image/') ? 15 * 1024 * 1024 : 30 * 1024 * 1024;
+      if (!allowed.includes(mediaFile.type)) { message.textContent = 'Use JPG, PNG, WEBP, GIF, MP4 or WEBM files only.'; return; }
+      if (!mediaFile.size || mediaFile.size > limit) { message.textContent = mediaFile.type.startsWith('image/') ? 'Images must be 15 MB or smaller.' : 'Videos must be 30 MB or smaller.'; return; }
+    }
+    button.disabled = true;
+    message.textContent = mediaFile ? 'Uploading media and submitting story for review…' : 'Submitting story for campus review…';
+    try {
+      await backend.createCampusStory(body, mediaFile, altText);
+      $('campus-story-form').reset();
+      message.textContent = 'Story submitted. It will appear for your university after moderation and remain visible for 24 hours.';
+      toast('Campus story submitted for review.');
+      await loadCampusSocialExtras();
+      if (canModerateCommunity()) await loadCampusSocialModeration();
+    } catch (err) { message.textContent = err.message || 'Could not submit your story.'; }
+    finally { button.disabled = false; }
+  });
+
+  $('campus-confession-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const body = $('campus-confession-body').value.trim();
+    const category = $('campus-confession-category').value;
+    const button = $('campus-confession-submit');
+    const message = $('campus-confession-message');
+    if (!backend?.isConfigured) { message.textContent = 'Supabase is not configured.'; return; }
+    if (body.length < 10 || body.length > 1200) { message.textContent = 'Confessions must contain 10–1,200 characters.'; return; }
+    button.disabled = true;
+    message.textContent = 'Submitting anonymously for moderation…';
+    try {
+      await backend.createCampusConfession(category, body);
+      $('campus-confession-form').reset();
+      message.textContent = 'Your confession was submitted. Your username will not appear if it is approved.';
+      toast('Anonymous confession submitted for review.');
+      if (canModerateCommunity()) await loadCampusSocialModeration();
+    } catch (err) { message.textContent = err.message || 'Could not submit your confession.'; }
+    finally { button.disabled = false; }
+  });
+
+  $('campus-confessions-feed').addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-report-campus-confession]');
+    if (!button) return;
+    const reasonInput = window.prompt('Report reason: 1 Harassment, 2 Threats, 3 Personal information, 4 Self-harm concern, 5 Spam, 6 Other', '6');
+    if (reasonInput === null) return;
+    const reasons = {'1':'harassment','2':'threats','3':'personal_information','4':'self_harm_concern','5':'spam','6':'other'};
+    const reason = reasons[String(reasonInput).trim()];
+    if (!reason) { toast('Choose a reason from 1 to 6.'); return; }
+    const details = window.prompt('Optional context (do not include private details):', '') || '';
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.reportCampusConfession(button.dataset.reportCampusConfession, reason, details.trim());
+      toast('Confession report sent to campus moderation.');
+    } catch (err) { toast(err.message || 'Could not report confession.'); }
+    finally { button.disabled = false; }
+  });
+
+  $('community-moderation').addEventListener('click', async function(event) {
+    const storyButton = event.target.closest('[data-campus-story-decision]');
+    const confessionButton = event.target.closest('[data-campus-confession-decision]');
+    const reportButton = event.target.closest('[data-campus-confession-report-decision]');
+    const backend = window.CampusShieldBackend;
+    try {
+      if (storyButton) {
+        storyButton.disabled = true;
+        await backend.moderateCampusStory(storyButton.dataset.campusStoryId, storyButton.dataset.campusStoryDecision);
+        toast('Campus story moderation saved.');
+      } else if (confessionButton) {
+        confessionButton.disabled = true;
+        await backend.moderateCampusConfession(confessionButton.dataset.campusConfessionId, confessionButton.dataset.campusConfessionDecision);
+        toast('Confession moderation saved.');
+      } else if (reportButton) {
+        reportButton.disabled = true;
+        await backend.resolveCampusConfessionReport(reportButton.dataset.campusConfessionReportId, reportButton.dataset.campusConfessionReportDecision);
+        toast('Confession report updated.');
+      } else return;
+      await loadCampusSocialExtras();
+      await loadCampusSocialModeration();
+    } catch (err) {
+      toast(err.message || 'Could not save moderation decision.');
+      if (storyButton) storyButton.disabled = false;
+      if (confessionButton) confessionButton.disabled = false;
+      if (reportButton) reportButton.disabled = false;
+    }
+  });
+
+  $('refresh-campus-stories').addEventListener('click', loadCampusSocialExtras);
+  $('refresh-campus-confessions').addEventListener('click', loadCampusSocialExtras);
 
   $('communityUsernameForm').addEventListener('submit', async function(event) {
     event.preventDefault();
@@ -6070,6 +6416,33 @@
   $('refresh-campus-opportunities').addEventListener('click', loadCampusOpportunitiesPage);
   $('refresh-my-opportunities').addEventListener('click', loadCampusOpportunitiesPage);
 
+  $('campus-study-circle-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const button = $('campus-study-circle-submit');
+    const message = $('campus-study-circles-status');
+    const courseId = $('campus-study-circle-course').value;
+    if (!courseId) { message.textContent = 'Choose a published course first.'; return; }
+    button.disabled = true;
+    message.textContent = 'Creating your Study Circle…';
+    try {
+      const result = await window.CampusShieldBackend.createCampusCourseGroup(
+        courseId, $('campus-study-circle-description').value.trim()
+      );
+      const groupStatus = result?.group_status || 'pending';
+      $('campus-study-circle-description').value = '';
+      message.textContent = result?.already_exists
+        ? (groupStatus === 'active' ? 'A Study Circle already exists for this course.' : 'A Study Circle for this course is already awaiting campus review.')
+        : (groupStatus === 'active' ? 'Your Study Circle is ready.' : 'Your Study Circle has been submitted for campus staff approval.');
+      toast(groupStatus === 'active' ? 'Study Circle ready.' : 'Study Circle submitted for review.');
+      await loadCampusStudyCirclesPage();
+      await loadCampusGroupsPage();
+    } catch (err) {
+      message.textContent = err.message || 'Could not create this Study Circle.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
   $('campusGroupForm').addEventListener('submit', async function(event) {
     event.preventDefault();
     const button = $('campus-group-submit');
@@ -6157,9 +6530,16 @@
   $('refresh-campus-content-moderation').addEventListener('click', loadCampusContentModeration);
 
   $('page-groups').addEventListener('click', async function(event) {
+    const discussionButton = event.target.closest('[data-open-course-discussion]');
     const groupButton = event.target.closest('[data-campus-group-action]');
     const contentButton = event.target.closest('[data-campus-content-review]');
     const reportButton = event.target.closest('[data-marketplace-report-review]');
+    if (discussionButton) {
+      await openCampusCourseDiscussion(
+        discussionButton.dataset.courseGroupId, discussionButton.dataset.courseGroupName || 'Study Circle'
+      );
+      return;
+    }
     if (groupButton) {
       const action = groupButton.dataset.campusGroupAction;
       const groupId = groupButton.dataset.campusGroupId;

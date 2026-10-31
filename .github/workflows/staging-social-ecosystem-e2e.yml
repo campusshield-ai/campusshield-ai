@@ -1,0 +1,68 @@
+name: Staging authenticated social and Story malware E2E
+
+on:
+  push:
+    branches:
+      - feat/social-ecosystem-foundation
+    paths:
+      - "tests/e2e/staging-social-ecosystem-e2e.mjs"
+      - ".github/workflows/staging-social-ecosystem-e2e.yml"
+      - "campusshield-app.js"
+      - "campusshield-backend.js"
+      - "supabase/functions/campus-story-media-upload/**"
+      - "supabase/migrations/20261030210000_enforce_story_media_scan_before_storage_upload.sql"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tests/e2e/staging-social-ecosystem-e2e.mjs"
+      - ".github/workflows/staging-social-ecosystem-e2e.yml"
+      - "campusshield-app.js"
+      - "campusshield-backend.js"
+      - "supabase/functions/campus-story-media-upload/**"
+      - "supabase/migrations/20261030210000_enforce_story_media_scan_before_storage_upload.sql"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-staging-social-e2e
+  cancel-in-progress: false
+
+jobs:
+  authenticated-social-e2e:
+    name: Authenticated Story scan, moderation, Study Circle and campus isolation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_STAGING_URL: https://hywcpnoqqhxvujnimhxl.supabase.co
+      SUPABASE_STAGING_ANON_KEY: sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP
+      SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate staging-only target and secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_STAGING_URL" || { echo "::error::Staging URL is missing."; exit 1; }
+          test -n "$SUPABASE_STAGING_ANON_KEY" || { echo "::error::Staging publishable key is missing."; exit 1; }
+          test -n "$SUPABASE_STAGING_SERVICE_ROLE_KEY" || { echo "::error::Add repository secret SUPABASE_STAGING_SERVICE_ROLE_KEY (staging project only)."; exit 1; }
+          actual_ref="$(node -e 'const u=new URL(process.env.SUPABASE_STAGING_URL); if(u.protocol!=="https:") process.exit(2); const m=u.hostname.match(/^([a-z0-9]+)\.supabase\.co$/); if(!m) process.exit(2); process.stdout.write(m[1])')"
+          if [ "$actual_ref" != "hywcpnoqqhxvujnimhxl" ]; then
+            echo "::error::Refusing E2E test: target is not the approved staging Supabase project."
+            exit 1
+          fi
+          echo "Staging project verified. Secret values will not be printed."
+
+      - name: Install pinned Supabase client
+        run: npm install --no-save --no-package-lock @supabase/supabase-js@2.95.0
+
+      - name: Run authenticated Story malware and social E2E
+        run: node tests/e2e/staging-social-ecosystem-e2e.mjs
