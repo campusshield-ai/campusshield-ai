@@ -286,6 +286,97 @@ async getCurrentUser() {
       return data?.signedUrl || null;
     },
 
+    async getMyStudentIdentityVerification() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in before checking student identity status.");
+      const { data, error } = await client.from("student_identity_verifications")
+        .select("user_id, university_id, institution_name, student_number, object_path, status, rejection_reason, created_at, updated_at")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data || null;
+    },
+
+    async uploadStudentIdentityDocument(file, options = {}) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in before uploading your student ID document.");
+
+      const institutionName = String(options.institutionName || "").trim();
+      const studentNumber = String(options.studentNumber || "").trim();
+      if (institutionName.length < 2 || institutionName.length > 180) {
+        throw new Error("Enter the university connected to your campus account.");
+      }
+      if (studentNumber.length < 2 || studentNumber.length > 80) {
+        throw new Error("Student or matric number must be 2–80 characters.");
+      }
+      if (options.attestOriginalDocument !== true) {
+        throw new Error("Confirm that this is a genuine university-issued document.");
+      }
+      const allowedExtensions = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "application/pdf": "pdf"
+      };
+      const extension = allowedExtensions[file?.type];
+      if (!file || !extension) {
+        throw new Error("Use a JPEG, PNG, or PDF student ID document.");
+      }
+      if (!Number.isFinite(file.size) || file.size < 1 || file.size > 5 * 1024 * 1024) {
+        throw new Error("Student ID documents must be no larger than 5 MiB.");
+      }
+      if (!window.crypto || typeof window.crypto.randomUUID !== "function") {
+        throw new Error("This secure browser cannot create a safe upload identifier. Refresh the page or use an updated browser.");
+      }
+
+      const campus = await this.getMyCampusContext();
+      const lockedInstitution = String(campus?.university_name || "").trim();
+      if (!campus?.university_id || lockedInstitution.toLocaleLowerCase() !== institutionName.toLocaleLowerCase()) {
+        throw new Error("The university must match the campus connected to your signed-in account.");
+      }
+
+      // The database submission RPC accepts only a UUID filename in the signed-in
+      // user's private folder. Do not use the original filename or expose the bucket.
+      const objectPath = user.id + "/" + window.crypto.randomUUID() + "." + extension;
+      const bucket = client.storage.from("student-identity-documents");
+      const { error: uploadError } = await bucket.upload(objectPath, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type
+      });
+      if (uploadError) throw uploadError;
+
+      try {
+        const { error } = await client.rpc("submit_student_identity_verification", {
+          p_institution_name: lockedInstitution,
+          p_student_number: studentNumber,
+          p_object_path: objectPath
+        });
+        if (error) throw error;
+      } catch (error) {
+        const { error: cleanupError } = await bucket.remove([objectPath]);
+        if (cleanupError) {
+          console.error("Could not remove an unsubmitted student identity file from private storage:", cleanupError);
+        }
+        throw error;
+      }
+      return { status: "pending", objectPath };
+    },
+
+    async createStudentIdentityDocumentUrl(path) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const objectPath = String(path || "").trim();
+      if (!objectPath || objectPath.startsWith("/") || objectPath.includes("..") || objectPath.includes("\\\\")) {
+        throw new Error("Choose a valid private student identity document.");
+      }
+      const { data, error } = await client.storage
+        .from("student-identity-documents")
+        .createSignedUrl(objectPath, 90);
+      if (error) throw error;
+      return data?.signedUrl || null;
+    },
+
     async listCampusUniversities() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client
