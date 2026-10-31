@@ -159,6 +159,7 @@
         source: 'campus-openfreemap-buildings',
         'source-layer': 'building',
         minzoom: 16,
+        filter: ['has', 'name'],
         layout: {
           visibility: 'none',
           'text-field': ['get', 'name'],
@@ -168,6 +169,23 @@
           'text-ignore-placement': false
         },
         paint: { 'text-color': '#173b35', 'text-halo-color': '#fff8e8', 'text-halo-width': 1.6 }
+      }, 'campus-feature-points');
+      map.addLayer({
+        id: 'campus-osm-3d-poi-labels',
+        type: 'symbol',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'poi',
+        minzoom: 15,
+        filter: ['has', 'name'],
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'name'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 15, 9, 18, 12],
+          'text-offset': [0, 0.8],
+          'text-anchor': 'top',
+          'text-allow-overlap': false
+        },
+        paint: { 'text-color': '#172f2b', 'text-halo-color': '#fff8e8', 'text-halo-width': 1.7 }
       }, 'campus-feature-points');
       $('campus-map-satellite')?.classList.add('available');
 
@@ -283,11 +301,13 @@
     if (!['2d', 'satellite', '3d'].includes(mode)) return;
     mapMode = mode;
     const satelliteOn = mode !== '2d';
+    const labelsOn = mode !== '2d';
     const buildingsOn = mode === '3d';
     setLayerVisibility('osm-base', !satelliteOn);
     setLayerVisibility('campus-esri-imagery-layer', satelliteOn);
     setLayerVisibility('campus-osm-3d-buildings', buildingsOn);
-    setLayerVisibility('campus-osm-3d-building-labels', buildingsOn);
+    setLayerVisibility('campus-osm-3d-building-labels', labelsOn);
+    setLayerVisibility('campus-osm-3d-poi-labels', labelsOn);
     if (mode !== '3d' && map?.getTerrain()) map.setTerrain(null);
     if (mode === '3d' && map?.getSource('campus-terrain')) map.setTerrain({ source: 'campus-terrain', exaggeration: 1.1 });
     if (map) {
@@ -296,9 +316,11 @@
         : { pitch: 0, bearing: 0 };
       map.easeTo({ ...camera, duration: animate ? 700 : 0, essential: true });
     }
-    $('campus-map-2d')?.classList.toggle('active', mode === '2d');
-    $('campus-map-satellite')?.classList.toggle('active', mode === 'satellite');
-    $('campus-map-3d')?.classList.toggle('active', mode === '3d');
+    [['campus-map-2d', '2d'], ['campus-map-satellite', 'satellite'], ['campus-map-3d', '3d']].forEach(([id, key]) => {
+      const button = $(id);
+      button?.classList.toggle('active', mode === key);
+      button?.setAttribute('aria-pressed', mode === key ? 'true' : 'false');
+    });
     if (mode === '3d') {
       setStatus('3D campus view: satellite imagery with OpenStreetMap building footprints extruded to approximate heights. Building coverage and heights depend on local mapping; these are not surveyed architectural models.', 'info');
     } else if (mode === 'satellite') {
