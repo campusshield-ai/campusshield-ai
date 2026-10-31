@@ -10,7 +10,9 @@
 <meta name="apple-mobile-web-app-title" content="CampusShield">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./campus-dashboard-upgrade.css">\n<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">\n<link rel="stylesheet" href="./campus-map.css">
+<link rel="stylesheet" href="./campus-dashboard-upgrade.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="./campus-map.css">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <title>CampusShield AI | Intelligent Campus Safety</title>
@@ -2495,7 +2497,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <div class="nav-section-label">SAFETY & RESPONSE</div>
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span data-original-label="Overview">Dashboard</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span data-original-label="Safety &amp; Report Incident">Report incident</button><button data-page="manage" id="manage-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button><button data-page="risk" id="risk-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
-<div class="nav-section-label">CAMPUS LIFE</div>\n<button data-page="campus-map" id="campus-map-nav"><span class="nav-icon" aria-hidden="true">⌖</span>CampusMap</button>
+<div class="nav-section-label">CAMPUS LIFE</div>
+<button data-page="campus-map" id="campus-map-nav"><span class="nav-icon" aria-hidden="true">⌖</span>CampusMap</button>
 <button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span data-original-label="CampusPulse &amp; Groups">CampusPulse</button><button data-page="community" id="lost-found-nav" data-lost-found-shortcut="true"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg></span>Lost &amp; Found</button><button data-page="campus-chat" id="campus-chat-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus Chat</button><button data-page="campus-messages" id="campus-messages-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="3"/><path d="m8 18-3 3v-3M7 9h10M7 13h6"/></svg></span>Private Messages</button>
 <button data-page="events" id="events-services-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span data-original-label="Events &amp; Campus Services">Events &amp; Campus services</button><button data-page="student-rewards" id="student-rewards-nav"><span class="nav-icon" aria-hidden="true">✧</span>Challenges &amp; Rewards</button>
 <div class="nav-section-label">ACADEMICS & CAREERS</div>
@@ -2541,7 +2544,42 @@ button,input,select,textarea{max-width:100%;min-width:0}
   <p class="quick-action-safety-note"><strong>Immediate danger?</strong> CampusShield saves reports for review but does not contact or dispatch emergency services. Contact your campus security control room or local emergency services directly.</p>
 </div>
 
-\n<section class="page" id="page-campus-map" aria-labelledby="campus-map-title">\n  <div class="heading"><div><p class="hero-eyebrow">Explore your university</p><h1 id="campus-map-title">CampusMap</h1><p>Find verified campus buildings, facilities and walking directions.</p></div></div>\n  <div class="panel"><div class="campus-map-shell">\n    <div class="campus-map-stage"><div id="campus-map-canvas" role="application" aria-label="Interactive university map"></div>\n      <div class="campus-map-overlay"><label class="campus-map-search-wrap"><span aria-hidden="true">⌕</span><input id="campus-map-search" type="search" placeholder="Search buildings and facilities" autocomplete="off" aria-label="Search campus locations"></label>\n        <div class="campus-map-controls" aria-label="Map view"><button type="button" id="campus-map-2d" class="active">2D</button><button type="button" id="campus-map-3d">3D</button></div></div>\n      <span class="campus-map-attribution">Map data © OpenStreetMap contributors</span>\n    </div>\n    <aside class="campus-map-sidebar"><h2 id="campus-map-campus-name">Your university</h2><p>Campus locations and facilities</p>\n      <div class="campus-map-actions"><button class="campus-map-action" type="button" id="campus-map-locate">◎ My location</button><button class="campus-map-action primary" type="button" id="campus-map-route">↗ Walking route</button></div>\n      <div id="campus-map-results" hidden></div><div class="campus-map-feature-list" id="campus-map-feature-list"><p class="campus-map-empty">Open CampusMap to load your university locations.</p></div>\n      <p class="campus-map-status" id="campus-map-status" role="status" aria-live="polite">Map is ready.</p></aside>\n  </div></div>\n  <p class="muted">Map coverage depends on verified campus data. The tilted view is not a substitute for verified 3D building models. Location is used only after you grant permission.</p>\n</section>\n\n<section class="page active" id="page-dashboard">
+
+<section class="page" id="page-campus-map" aria-labelledby="campus-map-title">
+  <div class="heading"><div><p class="hero-eyebrow">Explore your university</p><h1 id="campus-map-title">CampusMap</h1><p>Find verified campus buildings, facilities and walking directions.</p></div></div>
+  <div class="panel"><div class="campus-map-shell">
+    <div class="campus-map-stage"><div id="campus-map-canvas" role="application" aria-label="Interactive university map"></div>
+      <div class="campus-map-overlay"><label class="campus-map-search-wrap"><span aria-hidden="true">⌕</span><input id="campus-map-search" type="search" placeholder="Search buildings and facilities" autocomplete="off" aria-label="Search campus locations"></label>
+        <div class="campus-map-controls" aria-label="Map view"><button type="button" id="campus-map-2d" class="active">2D</button><button type="button" id="campus-map-3d">3D</button><button type="button" id="campus-map-satellite" title="Satellite imagery requires a restricted MapTiler key">Satellite</button></div></div>
+      <span class="campus-map-attribution">Map data © OpenStreetMap contributors</span>
+    </div>
+    <aside class="campus-map-sidebar"><h2 id="campus-map-campus-name">Your university</h2><p>Campus locations and facilities</p>
+      <div class="campus-map-actions"><button class="campus-map-action" type="button" id="campus-map-locate">◎ My location</button><button class="campus-map-action primary" type="button" id="campus-map-route">↗ Walking route</button><button class="campus-map-action" type="button" id="campus-map-emergency">Emergency points</button><button class="campus-map-action" type="button" id="campus-map-incidents" hidden>Incident pins</button></div>
+      <div id="campus-map-results" hidden></div><div class="campus-map-feature-list" id="campus-map-feature-list"><p class="campus-map-empty">Open CampusMap to load your university locations.</p></div>
+      <div class="campus-map-admin" id="campus-map-admin" hidden>
+        <div class="campus-map-admin-heading"><h3>Campus Map Manager</h3><span class="campus-map-admin-tag">Verified campus admin</span></div>
+        <p>Save draft locations first. Publish only after checking the exact pin against an official source or on-campus survey.</p>
+        <form id="campus-map-admin-form">
+          <input type="hidden" id="campus-map-feature-id">
+          <label>Campus name<input id="campus-map-admin-campus" value="Main Campus" required maxlength="120"></label>
+          <label>Campus ID<input id="campus-map-admin-campus-slug" value="main-campus" pattern="[a-z0-9]+(-[a-z0-9]+)*" required></label>
+          <label>Location name<input id="campus-map-admin-name" required minlength="2" maxlength="180" placeholder="e.g. Laz Otti Memorial Library"></label>
+          <label>Category<select id="campus-map-admin-type"><option value="building">Building</option><option value="lecture_hall">Lecture hall</option><option value="hostel">Hostel</option><option value="library">Library</option><option value="cafeteria">Cafeteria</option><option value="medical">Medical / hospital</option><option value="security">Security</option><option value="gate">Gate</option><option value="parking">Parking</option><option value="sports">Sports</option><option value="facility">Facility</option><option value="assembly_point">Assembly point</option><option value="accessible_entry">Accessible entry</option><option value="emergency_point">Emergency point</option></select></label>
+          <label>Description<textarea id="campus-map-admin-description" rows="2" maxlength="1000"></textarea></label>
+          <div class="campus-map-admin-coords"><label>Latitude<input id="campus-map-admin-lat" type="number" step="any" min="-90" max="90"></label><label>Longitude<input id="campus-map-admin-lng" type="number" step="any" min="-180" max="180"></label></div>
+          <label>Evidence source (HTTPS)<input id="campus-map-admin-source" type="url" placeholder="Official campus source or survey record"></label>
+          <label class="campus-map-admin-check"><input id="campus-map-admin-verified" type="checkbox"> I checked this exact location and its source</label>
+          <label class="campus-map-admin-check"><input id="campus-map-admin-publish" type="checkbox"> Publish after verification</label>
+          <div class="campus-map-admin-actions"><button type="submit" class="campus-map-action primary">Save location</button><button type="button" class="campus-map-action" id="campus-map-admin-reset">Clear</button></div>
+        </form>
+        <h4>Locations awaiting verification</h4><div id="campus-map-admin-drafts" class="campus-map-admin-drafts"></div>
+      </div>
+      <p class="campus-map-status" id="campus-map-status" role="status" aria-live="polite">Map is ready.</p></aside>
+  </div></div>
+  <p class="muted">Map coverage depends on verified campus data. The tilted view is not a substitute for verified 3D building models. Location is used only after you grant permission.</p>
+</section>
+
+<section class="page active" id="page-dashboard">
 <section class="campus-dashboard-hero" aria-labelledby="campus-dashboard-hero-title">
   <div class="campus-dashboard-hero-main">
     <p class="hero-eyebrow">Campus safety network</p>
@@ -4084,7 +4122,9 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <script src="./campus-course-community.js" defer></script>
 <script src="./student-rewards.js" defer></script>
 <script src="./student-rewards-admin.js" defer></script>
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>\n<script src="./campus-map.js" defer></script>\n<script src="./campusshield-app.js" defer></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
+<script src="./campus-map.js" defer></script>
+<script src="./campusshield-app.js" defer></script>
 <script>
 if ('serviceWorker' in navigator && window.isSecureContext) {
   window.addEventListener('load', () => {
