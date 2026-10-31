@@ -4,6 +4,8 @@
 **Campus:** Babcock University Main Campus, Ilishan-Remo, Ogun State  
 **Purpose:** separate official evidence for place names from exact geometry/entrance evidence. This file is a research inventory; it does not publish or verify any map feature.
 
+The project owner's screenshots of the [StudentHub campus map](https://www.studenthub.com.ng/map), including its 2D, satellite and 3D views, are catalogued separately in [BABCOCK_STUDENTHUB_REFERENCE.md](./BABCOCK_STUDENTHUB_REFERENCE.md). That inventory records screenshot-visible names and qualitative layout observations as unverified leads only; it also records the owner's preferred architectural visual direction. It does not supply coordinates, surveyed footprints, entrances or approved campus geometry.
+
 ## Verified official references for names and campus context
 
 | Official reference | Information it supports | What it does not prove |
