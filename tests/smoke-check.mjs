@@ -148,6 +148,12 @@ assert.match(html, /id="billing-reconcile-button"/, "users can retry payment ver
 assert.match(html, /isStrongPasswordBaseline\(password\)/, "signup and password reset use a stronger password baseline");
 assert.match(backend, /Choose a 12\+ character password with uppercase, lowercase, a number, and a symbol/);
 assert.match(backend, /function getAuthRedirectUrl\(\)/, "auth confirmation returns to the current app URL");
+assert.match(backend, /async getMyStudentIdentityVerification\(/, "student profile can read its own private identity submission status");
+assert.match(backend, /async uploadStudentIdentityDocument\(/, "student identity UI has a private authenticated document upload adapter");
+assert.match(backend, /submit_student_identity_verification/, "identity upload is finalized through the protected student submission RPC");
+assert.match(backend, /student-identity-documents/, "identity documents use the private storage bucket");
+assert.match(backend, /async createStudentIdentityDocumentUrl\(/, "authorized reviewers can request a short-lived private identity document URL");
+
 assert.match(backend, /emailRedirectTo: getAuthRedirectUrl\(\)/, "signup and resend use the current app URL for confirmation");
 assert.match(html, /const metadataRequestedRole = String\(user\.user_metadata\?\.requested_role \|\| ''\)\.trim\(\)\.toLowerCase\(\)/, "confirmation return restores requested role from the authenticated account metadata");
 assert.match(html, /const pendingRole = \['student', 'teacher'\]\.includes\(metadataRequestedRole\)[\s\S]*?\? metadataRequestedRole[\s\S]*?: storedRequestedRole/, "account metadata takes precedence over stale role state in browser storage");
