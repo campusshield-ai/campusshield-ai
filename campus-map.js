@@ -44,6 +44,10 @@
     status.dataset.kind = kind;
   }
 
+  function motionDuration(milliseconds) {
+    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 0 : milliseconds;
+  }
+
   function mapStyle() {
     return {
       version: 8,
@@ -266,7 +270,7 @@
         const source = map.getSource('campus-drafts');
         source?.getClusterExpansionZoom(clusterId, (error, zoom) => {
           if (error) return setStatus('Could not expand this group of draft pins.', 'warning');
-          map.easeTo({ center: clusterFeature.geometry.coordinates, zoom, duration: 450 });
+          map.easeTo({ center: clusterFeature.geometry.coordinates, zoom, duration: motionDuration(450) });
         });
       });
       map.on('mouseenter', 'campus-draft-clusters', () => { map.getCanvas().style.cursor = 'zoom-in'; });
@@ -395,7 +399,7 @@
       const camera = mode === '3d'
         ? { pitch: 54, bearing: -16 }
         : { pitch: 0, bearing: 0 };
-      map.easeTo({ ...camera, duration: animate ? 520 : 0, essential: true });
+      map.easeTo({ ...camera, duration: animate ? motionDuration(520) : 0, essential: true });
     }
     [['campus-map-2d', '2d'], ['campus-map-satellite', 'satellite'], ['campus-map-3d', '3d']].forEach(([id, key]) => {
       const button = $(id);
@@ -447,18 +451,18 @@
       campusCenterMarker = null;
     }
     if (viewPoints.length === 1) {
-      map.flyTo({ center: [Number(viewPoints[0].longitude), Number(viewPoints[0].latitude)], zoom: 17, pitch: 0, bearing: 0, essential: true });
+      map.flyTo({ center: [Number(viewPoints[0].longitude), Number(viewPoints[0].latitude)], zoom: 17, pitch: 0, bearing: 0, duration: motionDuration(650), essential: true });
       return;
     }
     if (viewPoints.length > 1) {
       const bounds = new maplibregl.LngLatBounds();
       viewPoints.forEach(item => bounds.extend([Number(item.longitude), Number(item.latitude)]));
-      map.fitBounds(bounds, { padding: { top: 85, right: 85, bottom: 85, left: 85 }, maxZoom: 16.6, duration: 750 });
+      map.fitBounds(bounds, { padding: { top: 85, right: 85, bottom: 85, left: 85 }, maxZoom: 16.6, duration: motionDuration(700) });
       return;
     }
     const center = getCampusCentre();
     if (center) {
-      map.flyTo({ center, zoom: 16.1, pitch: 0, bearing: 0, essential: true });
+      map.flyTo({ center, zoom: 16.1, pitch: 0, bearing: 0, duration: motionDuration(700), essential: true });
       if (!campusCenterMarker) {
         campusCenterMarker = new maplibregl.Marker({ color: '#087f75' })
           .setLngLat(center)
@@ -495,7 +499,7 @@
         });
       }
       placementMarker.setLngLat([lng, lat]).addTo(map);
-      map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 17.5), duration: 500 });
+      map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 17.5), duration: motionDuration(450) });
     }
     const accuracyText = Number.isFinite(accuracy) ? ` GPS accuracy reported by the device: ±${Math.round(accuracy)} m.` : '';
     setStatus(`Candidate pin set from ${source}: ${lat.toFixed(7)}, ${lng.toFixed(7)}.${accuracyText} Drag the amber pin to refine it. It is not published or verified.`, 'warning');
@@ -525,7 +529,7 @@
     });
     const emergencyLine = item.metadata?.emergency_phone ? ' Emergency line: ' + item.metadata.emergency_phone + '.' : '';
     setStatus(item.name + (item.description ? ' — ' + item.description : '') + emergencyLine);
-    if (fly && map) map.flyTo({ center: [Number(item.longitude), Number(item.latitude)], zoom: 17, pitch: mapMode === '3d' ? 48 : 0, bearing: mapMode === '3d' ? -14 : 0, duration: 650, essential: true });
+    if (fly && map) map.flyTo({ center: [Number(item.longitude), Number(item.latitude)], zoom: 17, pitch: mapMode === '3d' ? 48 : 0, bearing: mapMode === '3d' ? -14 : 0, duration: motionDuration(600), essential: true });
   }
 
   function currentCampusFeatures() {
@@ -851,7 +855,7 @@
       const coords = [position.coords.longitude, position.coords.latitude];
       if (!userMarker) userMarker = new maplibregl.Marker({ color: '#087f75' }).setLngLat(coords).addTo(map);
       else userMarker.setLngLat(coords);
-      map.flyTo({ center: coords, zoom: 17, pitch: 40 });
+      map.flyTo({ center: coords, zoom: 17, pitch: mapMode === '3d' ? 48 : 0, duration: motionDuration(600) });
       setStatus('Your location is shown on this device. It is not shared with other users.');
     }, () => setStatus('Location permission was denied or your position is unavailable.', 'warning'), {
       enableHighAccuracy: true, timeout: 12000, maximumAge: 30000
