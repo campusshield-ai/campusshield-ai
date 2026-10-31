@@ -2555,12 +2555,12 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <div class="campus-map-shell">
     <div class="campus-map-stage"><div id="campus-map-canvas" role="application" aria-label="Interactive university map"></div>
       <div class="campus-map-overlay"><label class="campus-map-search-wrap"><span aria-hidden="true">⌕</span><input id="campus-map-search" type="search" placeholder="Search buildings and facilities" autocomplete="off" aria-label="Search campus locations"></label>
-        <div class="campus-map-controls" aria-label="Map view"><button type="button" id="campus-map-2d" class="active">2D</button><button type="button" id="campus-map-3d">3D</button><button type="button" id="campus-map-satellite" title="Satellite imagery requires a restricted MapTiler key">Satellite</button></div></div>
+        <div class="campus-map-controls" role="group" aria-label="Campus map style"><button type="button" id="campus-map-2d" class="active" aria-pressed="true" title="Street map">2D</button><button type="button" id="campus-map-satellite" aria-pressed="false" title="Satellite imagery">SAT</button><button type="button" id="campus-map-3d" aria-pressed="false" title="Satellite imagery with 3D building footprints">3D</button></div></div>
       <div class="campus-map-legend" aria-label="Map marker legend">
         <span><i class="campus-map-legend-verified"></i> Published location</span>
         <span><i class="campus-map-legend-draft"></i> Admin-only draft pin</span>
       </div>
-      <span class="campus-map-attribution">Map data © OpenStreetMap contributors</span>
+      <span class="campus-map-attribution">Imagery © Esri, Maxar, Earthstar Geographics · Building data © OpenStreetMap / OpenMapTiles</span>
     </div>
     <aside class="campus-map-sidebar"><h2 id="campus-map-campus-name">Your university</h2><p>Campus locations and facilities</p>
       <div class="campus-map-actions"><button class="campus-map-action" type="button" id="campus-map-locate">◎ My location</button><button class="campus-map-action primary" type="button" id="campus-map-route">↗ Walking route</button><button class="campus-map-action" type="button" id="campus-map-emergency">Emergency points</button><button class="campus-map-action" type="button" id="campus-map-incidents" hidden>Incident pins</button></div>
