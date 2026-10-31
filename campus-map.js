@@ -113,13 +113,17 @@
         paint: { 'text-color': '#815512', 'text-halo-color': '#fff', 'text-halo-width': 1.5 }
       });
 
-      // Esri World Imagery supplies the satellite base. It is a raster backdrop;
-      // OpenStreetMap vector footprints above it create the optional 3D campus view.
+      // Esri World Imagery has much broader worldwide coverage at small/medium scales.
+      // Babcock may not have high-detail tiles at every requested zoom. Cap the imagery
+      // source at the globally covered baseline so MapLibre overzooms the last valid tile
+      // instead of requesting close-up levels that render "Map data not yet available".
+      // OSM building geometry below remains available at high zoom for the 3D overlay.
       map.addSource('campus-esri-imagery', {
         type: 'raster',
         tiles: ['https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
         tileSize: 256,
-        maxzoom: 19,
+        minzoom: 0,
+        maxzoom: 12,
         attribution: 'Sources: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
       });
       map.addLayer({
