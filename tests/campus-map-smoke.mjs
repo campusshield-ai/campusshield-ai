@@ -74,5 +74,5 @@ assert.match(babcockSeedSql, /'Queen Esther Hall'/, 'Babcock candidate seed incl
 assert.match(babcockSeedSql, /'candidate_unverified'/, 'OSM candidate locations remain explicitly unverified');
 assert.match(babcockSeedSql, /false,\s*jsonb_build_object/, 'OSM candidate locations are inserted unpublished');
 assert.match(docs, /22 Babcock location entries/, 'Documentation lists the expanded Babcock directory');
-assert.match(docs, /No building coordinates have been guessed/, 'Babcock place names are not assigned fabricated coordinates');
+assert.match(docs, /not necessarily doorways or building footprints/, 'Community-mapped point coordinates are not treated as exact building entrances');
 console.log('CampusMap static smoke checks passed.');
