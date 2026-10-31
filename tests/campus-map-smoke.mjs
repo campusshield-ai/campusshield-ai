@@ -80,7 +80,8 @@ assert.match(js, /SATELLITE_ROAD_LAYER_IDS\.forEach\(id => setLayerVisibility\(i
 assert.match(js, /Noto Sans Regular/, 'Map labels use OpenFreeMap supported Noto Sans glyphs');
 assert.match(js, /Noto Sans Bold/, 'Cluster count labels use OpenFreeMap supported bold glyphs');
 assert.match(js, /'source-layer': 'transportation'/, 'Road styling uses mapped OpenMapTiles transportation geometry');
-assert.match(js, /campus-roads-main-casing/, 'Primary campus roads have a high-contrast casing');
+assert.match(js, /campus-roads-main-casing/, 'Primary campus roads have a defined casing');
+assert.match(js, /'line-opacity': 0\.72/, 'Satellite road casings are softened to avoid overwhelming imagery');
 assert.match(js, /campus-roads-secondary/, 'Secondary roads have a distinct thinner style');
 assert.match(js, /campus-roads-local/, 'Mapped local and access roads are visible at campus zoom');
 assert.match(js, /campus-footpaths/, 'Mapped paths are visually distinct and dashed');
@@ -93,10 +94,15 @@ assert.match(js, /never synthesize connecting lines/, 'The road renderer does no
 assert.match(js, /campus-osm-3d-buildings/, '3D mode renders building footprints as extrusions');
 assert.match(js, /render_height/, 'Building extrusion height uses OSM-derived height attributes');
 assert.match(js, /campus-osm-3d-poi-labels/, 'Satellite and 3D modes include OSM place labels');
+assert.match(js, /not campus-verified/, 'Global OpenStreetMap building shapes are distinguished from university-verified campus data');
+assert.match(js, /official campus locator only \(not a surveyed centre\)/, 'An official campus locator is not presented as a surveyed campus centre');
+assert.match(js, /Close-up view/, 'Map zoom level is not described as proof of building-level data accuracy');
+assert.match(js, /university-approved/, 'Global OSM place labels are explicitly marked as unverified context');
 assert.match(js, /applyMapMode\('satellite'\)/, 'SAT mode has an independent switch');
 assert.match(css, /@media\(max-width:600px\)/, 'Map layout includes mobile responsive rules');
 assert.match(css, /campus-map-pin-tools/, 'Precision pin controls are styled');
 assert.match(css, /campus-map-legend/, 'Published and draft markers have a visible legend');
+assert.match(css, /campus-map-legend-context/, 'Global OSM context has its own legend style');
 assert.match(css, /campus-map-controls\{position:absolute[\s\S]*flex-direction:column/, 'Map style controls are vertically arranged like the reference');
 assert.match(sql, /ENABLE ROW LEVEL SECURITY/, 'Map feature table enables RLS');
 assert.match(sql, /FORCE ROW LEVEL SECURITY/, 'Map feature table forces RLS');
