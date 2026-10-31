@@ -322,3 +322,19 @@
 @media(prefers-reduced-motion:reduce){
   .campus-map-controls button,.campus-map-admin-draft{transition:none}
 }
+
+
+/* Inline search result panel: published locations for all users, drafts for verified admins only */
+.campus-map-search-results{position:absolute;z-index:7;top:62px;left:14px;width:min(520px,calc(100% - 92px));max-height:min(46vh,360px);overflow:auto;border:1px solid #dce8e2;border-radius:14px;background:#fffffff5;box-shadow:0 12px 34px #163e3228;backdrop-filter:blur(14px)}
+.campus-map-search-result{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:0;border-bottom:1px solid #edf2ee;background:transparent;text-align:left}
+.campus-map-search-result:last-child{border-bottom:0}
+.campus-map-search-result:hover,.campus-map-search-result:focus-visible{background:#f1f8f4}
+.campus-map-search-result span{display:grid;gap:2px;min-width:0}
+.campus-map-search-result strong{overflow:hidden;color:#23473d;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.campus-map-search-result small{color:#7b8d85;font-size:9px;text-transform:capitalize}
+.campus-map-search-result em{flex:0 0 auto;padding:4px 7px;border-radius:999px;background:#e4f2eb;color:#296d52;font-size:8px;font-style:normal;font-weight:800}
+.campus-map-search-result.is-draft em{background:#fff1d8;color:#8a5a14}
+.campus-map-search-empty{margin:0;padding:14px;color:#72857c;font-size:10px}
+@media(max-width:760px){
+ .campus-map-search-results{top:56px;left:10px;right:60px;width:auto;max-height:40svh}
+}
