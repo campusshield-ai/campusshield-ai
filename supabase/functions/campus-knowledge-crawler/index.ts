@@ -292,13 +292,14 @@ Deno.serve(async (req: Request) => {
         });
         if (recoveryEventError) return reply({ error: "Could not save the recovery audit event. The page remains hidden." }, 503);
       }
+      const stagedContentHash = stageEvent?.metadata?.content_hash || page.content_hash || null;
       const reviewedAt = new Date().toISOString();
       if (decision === "keep_hidden") {
         const { error: keepAuditError } = await client.from("campus_crawler_events").insert({
           run_id: reviewRunId, event_type: "knowledge_page_kept_hidden",
           university_id: campus.university_id, page_url: page.url, status: "hidden",
           message: "Owner reviewed the page and chose to keep it hidden.",
-          metadata: { page_id: pageId, reviewed_by: user.id, reviewed_at: reviewedAt, content_hash: stageEvent.metadata?.content_hash || null },
+          metadata: { page_id: pageId, reviewed_by: user.id, reviewed_at: reviewedAt, content_hash: stagedContentHash },
         });
         if (keepAuditError) return reply({ error: "The review decision could not be audited; the page remains hidden." }, 503);
         return reply({ reviewed: true, published: false, status: "hidden", page_id: pageId });
@@ -312,7 +313,7 @@ Deno.serve(async (req: Request) => {
         run_id: reviewRunId, event_type: "knowledge_page_published",
         university_id: campus.university_id, page_url: page.url, status: "published",
         message: "Owner approved the page after manually reviewing its official source and content.",
-        metadata: { page_id: pageId, reviewed_by: user.id, reviewed_at: reviewedAt, content_hash: stageEvent.metadata?.content_hash || null },
+        metadata: { page_id: pageId, reviewed_by: user.id, reviewed_at: reviewedAt, content_hash: stagedContentHash },
       });
       if (publishAuditError) {
         const { error: rollbackError } = await client.from("campus_knowledge_pages")
