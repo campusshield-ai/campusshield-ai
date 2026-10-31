@@ -1,0 +1,28 @@
+name: CampusMap feature checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "campus-map.js"
+      - "campus-map.css"
+      - "supabase/migrations/*campus_map*"
+      - "docs/CAMPUSMAP_ROLLOUT.md"
+      - "tests/campus-map-smoke.mjs"
+      - ".github/workflows/campus-map-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  campus-map-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check CampusMap integration and access boundaries
+        run: node tests/campus-map-smoke.mjs
