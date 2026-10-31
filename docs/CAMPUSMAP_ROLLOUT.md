@@ -76,7 +76,7 @@ These are community-mapped OSM point candidates, not university-certified entran
 
 ## Reference-style satellite and 3D map modes
 - The CampusMap style picker offers **2D**, **SAT** and **3D** modes, with a vertical mobile-friendly control similar to the supplied reference.
-- SAT uses the Esri World Imagery raster tile service with its published attribution. Image capture date, resolution and sharpness vary by location.
+- SAT uses the Esri World Imagery raster tile service with its published attribution. The source is capped at zoom level 12 so MapLibre reuses the last broadly available worldwide imagery tile at building-scale camera zooms rather than requesting unavailable local high-detail tiles. Image capture date, resolution and sharpness vary by location.
 - 3D displays satellite imagery underneath OpenFreeMap vector building footprints from the OpenMapTiles `building` source layer. `render_height` and `render_min_height` are approximated from mapped OSM height/level tags; unmapped or unheighted buildings may appear as simple fallback-height extrusions.
 - The OSM `poi` and named-building layers add building/place labels where those names exist in the tile data.
 - The 3D view is an OSM-derived block extrusion. It is not a photogrammetric mesh like a fully textured 3D city model. Exact roof shapes, facade textures, tree canopies and completeness require mapped geometry or verified university-supplied models.
