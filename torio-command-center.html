@@ -142,6 +142,7 @@ Type <span class="good">help</span> to view available commands.
   let history=[];
   let guidedMode=false;
   let signedIn=false;
+  let currentUserId="";
   let busy=false;
   let lastAssistantAnswer="";
   let activeRecognition=null;
@@ -159,6 +160,8 @@ Type <span class="good">help</span> to view available commands.
   }
   function term(text,kind){const out=$("term-out");const line=document.createElement("div");if(kind)line.className=kind;line.textContent=text;out.append(line);out.scrollTop=out.scrollHeight;}
   function setStatus(text){$("chat-status").textContent=text;}
+  function contextStorageKey(){return currentUserId?"torio-user-context-v1:"+currentUserId:"";}
+  function restoreSavedContext(){const key=contextStorageKey();if(!key)return;try{const saved=localStorage.getItem(key)||"";$("saved-context").value=saved;showContextStatus(saved?"Saved for this account on this device":"Not saved for this account");}catch(storageError){showContextStatus("Local storage unavailable");}}
   function startVoiceCapture(target, statusTarget, label){
     if(!SpeechRecognition){
       statusTarget.textContent="Voice input is not supported by this browser. You can still type normally.";
@@ -211,7 +214,7 @@ Type <span class="good">help</span> to view available commands.
       const {data,error}=await backend.client.auth.getSession();if(error)throw error;
       const session=data?.session;
       if(!session?.access_token){$("connection-label").textContent="Sign-in required";$("auth-state").textContent="Not signed in";$("user-chip").textContent="Guest session";setStatus("Sign in to CampusShield AI first, then reopen TORIO.");addMessage("system","You are not signed in. Open CampusShield AI, sign in, and return to this page.");return;}
-      signedIn=true;$("connection-label").textContent="Session authenticated";$("auth-state").textContent="Authenticated";$("user-chip").textContent=session.user?.email||"Signed-in account";setStatus("Authenticated through Supabase. ShieldMind requests use the existing shieldmind-chat Edge Function.");
+      signedIn=true;currentUserId=session.user?.id||"";restoreSavedContext();$("connection-label").textContent="Session authenticated";$("auth-state").textContent="Authenticated";$("user-chip").textContent=session.user?.email||"Signed-in account";setStatus("Authenticated through Supabase. ShieldMind requests use the existing shieldmind-chat Edge Function.");
     }catch(err){$("connection-label").textContent="Connection unavailable";$("auth-state").textContent="Unavailable";setStatus(err.message||"Could not verify your session.");}
   }
   async function ask(question){
@@ -223,7 +226,7 @@ Type <span class="good">help</span> to view available commands.
       if(error)throw error;
       const session=data?.session;
       if(!session?.access_token){
-        signedIn=false;$("connection-label").textContent="Sign-in required";$("auth-state").textContent="Not signed in";$("user-chip").textContent="Guest session";
+        signedIn=false;currentUserId="";$("saved-context").value="";showContextStatus("Sign in to load this account’s context");$("connection-label").textContent="Sign-in required";$("auth-state").textContent="Not signed in";$("user-chip").textContent="Guest session";
         throw new Error("Your CampusShield session has expired. Sign in again, then reopen TORIO.");
       }
       signedIn=true;$("connection-label").textContent="Session authenticated";$("auth-state").textContent="Authenticated";$("user-chip").textContent=session.user?.email||"Signed-in account";
@@ -231,7 +234,8 @@ Type <span class="good">help</span> to view available commands.
       let taskPrompt=question;
       if(guidedMode)taskPrompt += "\n\nTORIO GUIDED WORKFLOW: For multi-step requests, briefly understand the goal, state a small plan, complete the work, then check the result for errors, unsupported claims and assumptions. Finish with a useful summary and one next action. For simple requests, answer directly without unnecessary process. Ask at most one essential clarification.";
       let savedContext="";
-      try{savedContext=localStorage.getItem("torio-user-context-v1")||"";}catch(storageError){}
+      const storageKey=contextStorageKey();
+      try{if(storageKey)savedContext=localStorage.getItem(storageKey)||"";}catch(storageError){}
       if(savedContext.trim())taskPrompt += "\n\nUSER-SAVED TORIO CONTEXT (user-controlled, non-sensitive):\n"+savedContext.trim()+"\nUse only when relevant; do not treat it as verified facts.";
       const result=await backend.askShieldMind(taskPrompt,history,null);
       const answer=String(result?.answer||"I could not produce an answer.");
@@ -248,9 +252,9 @@ Type <span class="good">help</span> to view available commands.
   $("guided-toggle").addEventListener("click",()=>{guidedMode=!guidedMode;$("guided-toggle").setAttribute("aria-pressed",String(guidedMode));$("guided-toggle").textContent=guidedMode?"Guided flow: On":"Guided flow: Off";setStatus(guidedMode?"Guided workflow enabled for multi-step requests.":"Direct response mode enabled.");});
   $("verify-answer").addEventListener("click",()=>{if(!lastAssistantAnswer||busy)return;showView("assistant");ask("Independently review your previous answer for accuracy, unsupported claims, missing caveats and practical errors. Correct it where needed. Clearly separate what can be checked from the conversation from anything that would require an external or official source.");});
   function showContextStatus(message){$("context-status").textContent=message;}
-  try{const stored=localStorage.getItem("torio-user-context-v1")||"";if(stored){$("saved-context").value=stored;showContextStatus("Saved on this device");}}catch(storageError){showContextStatus("Local storage unavailable");}
-  $("save-context").addEventListener("click",()=>{const value=$("saved-context").value.trim();try{if(value){localStorage.setItem("torio-user-context-v1",value);showContextStatus("Saved on this device");}else{localStorage.removeItem("torio-user-context-v1");showContextStatus("No context saved");}}catch(storageError){showContextStatus("Could not save in this browser");}});
-  $("clear-context").addEventListener("click",()=>{$("saved-context").value="";try{localStorage.removeItem("torio-user-context-v1");showContextStatus("Cleared from this device");}catch(storageError){showContextStatus("Could not clear browser storage");}});
+  showContextStatus("Sign in to load this account’s context");
+  $("save-context").addEventListener("click",()=>{const key=contextStorageKey();if(!key){showContextStatus("Sign in before saving account context");return;}const value=$("saved-context").value.trim();try{if(value){localStorage.setItem(key,value);showContextStatus("Saved for this account on this device");}else{localStorage.removeItem(key);showContextStatus("No context saved");}}catch(storageError){showContextStatus("Could not save in this browser");}});
+  $("clear-context").addEventListener("click",()=>{const key=contextStorageKey();$("saved-context").value="";if(!key){showContextStatus("Sign in to clear this account’s context");return;}try{localStorage.removeItem(key);showContextStatus("Cleared for this account on this device");}catch(storageError){showContextStatus("Could not clear browser storage");}});
   $("clear-chat").addEventListener("click",()=>{history=[];lastAssistantAnswer="";$("speak-btn").disabled=true;$("verify-answer").disabled=true;$("chatlog").replaceChildren();addMessage("assistant","Conversation cleared. What would you like to work on next?");setStatus(signedIn?"Ready for a new conversation.":"Sign in to CampusShield AI to start.");$("question").focus();});
   $("term-listen-btn").addEventListener("click",()=>startVoiceCapture($("term-command"),$("term-voice-status"),"Command"));
   document.querySelectorAll("[data-view],[data-mode]").forEach(el=>el.addEventListener("click",()=>showView(el.dataset.view||el.dataset.mode)));
