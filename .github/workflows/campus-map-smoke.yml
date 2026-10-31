@@ -24,5 +24,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Validate JavaScript syntax
+        run: |
+          node --check campus-map.js
+          node --check campusshield-backend.js
+          node --check campusshield-app.js
       - name: Check CampusMap integration and access boundaries
         run: node tests/campus-map-smoke.mjs
