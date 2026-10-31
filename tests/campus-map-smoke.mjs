@@ -5,7 +5,8 @@ const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8'
 const html = read('index.html');
 const js = read('campus-map.js');
 const css = read('campus-map.css');
-const sql = read('supabase/migrations/20261031120000_campus_map_features.sql');
+const sql = read('supabase/migrations/20261031115759_campus_map_verified_locations_and_emergency_layers.sql');
+const policySql = read('supabase/migrations/20261031115831_campus_map_public_read_policy_split.sql');
 const docs = read('docs/CAMPUSMAP_ROLLOUT.md');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
