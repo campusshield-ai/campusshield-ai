@@ -23,6 +23,7 @@ const campusBuildingsSql = read('supabase/migrations/20261031142127_campus_map_b
 const campusBuildingsHardeningSql = read('supabase/migrations/20261031142749_harden_campus_building_geometry_review.sql');
 const campusBuildingsNullGuardSql = read('supabase/migrations/20261031142958_guard_empty_building_import_payload.sql');
 const campusBuildingsCentreGuardSql = read('supabase/migrations/20261031182424_campus_building_import_verified_centre_guard.sql');
+const campusMapForeignKeyIndexesSql = read('supabase/migrations/20261031182500_campus_map_admin_fk_indexes.sql');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
 assert.match(html, /id="page-campus-map"/, 'CampusMap page container is present');
@@ -159,6 +160,11 @@ assert.match(html, /id="campus-map-building-discover" disabled/, 'Building disco
 assert.match(campusBuildingsCentreGuardSql, /RENAME TO import_campus_map_building_candidates_impl_unverified_centre_legacy/, 'Existing import implementation is wrapped with a stricter centre-verification guard');
 assert.match(campusBuildingsCentreGuardSql, /center_status\s*=\s*'verified'/, 'Database refuses building imports without a verified campus centre');
 assert.match(campusBuildingsCentreGuardSql, /campus_role\s*=\s*'admin'[\s\S]*p\.verification_status\s*=\s*'verified'/, 'Centre readiness is checked only after verified campus-admin membership is confirmed');
+assert.match(campusMapForeignKeyIndexesSql, /campus_map_buildings_campus_id_idx/, 'Building campus foreign key has a dedicated index');
+assert.match(campusMapForeignKeyIndexesSql, /campus_map_buildings_verified_by_idx/, 'Building verifier foreign key has a dedicated index');
+assert.match(campusMapForeignKeyIndexesSql, /campus_map_campuses_boundary_verified_by_idx/, 'Boundary verifier foreign key has a dedicated index');
+assert.match(campusMapForeignKeyIndexesSql, /campus_map_campuses_center_verified_by_idx/, 'Centre verifier foreign key has a dedicated index');
+assert.match(campusMapForeignKeyIndexesSql, /campus_map_campuses_model_verified_by_idx/, 'Model verifier foreign key has a dedicated index');
 assert.match(campusBuildingsCentreGuardSql, /verified campus-centre point/, 'Database reports why an unverified centre cannot be used');
 assert.match(js, /review_campus_map_building/, 'Building review calls the checked Staging RPC');
 assert.match(js, /function buildingFeatureCollection/, 'Building outlines are converted to GeoJSON for the map');
