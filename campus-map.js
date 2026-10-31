@@ -73,8 +73,8 @@
 
   function stateOverviewCentre(value) {
     const key = String(value || '').toLowerCase()
-      .replace(/federal capital territory|fct abuja|abuja fct/g, 'fct')
-      .replace(/\bstate\b/g, '').replace(/\s+/g, ' ').trim();
+      .replace(/\bfederal capital territory\b|\bfct(?:\s+abuja)?\b|\babuja\b/g, 'fct')
+      .replace(/[,.]/g, ' ').replace(/\bstate\b/g, '').replace(/\s+/g, ' ').trim();
     return STATE_OVERVIEWS[key] || null;
   }
 
@@ -837,6 +837,7 @@
     $('campus-map-profile-model-attribution').value = profile?.model_attribution || '';
     if ($('campus-map-profile-model-status')) {
       const modelState = profile?.model_status || 'not_submitted';
+      $('campus-map-profile-model-status').dataset.state = modelState;
       $('campus-map-profile-model-status').textContent = modelState === 'approved'
         ? 'Approved model recorded. Rendering remains gated on the 3D model review and renderer integration.'
         : modelState === 'pending_review'
