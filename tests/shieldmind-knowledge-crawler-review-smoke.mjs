@@ -12,6 +12,9 @@ assert.match(crawler, /body\.action === "list_pending_pages"/, 'owner can load p
 assert.match(crawler, /body\.action === "review_page"/, 'owner has an explicit page review action');
 assert.match(crawler, /\.eq\("status", "hidden"\)[\s\S]*\.eq\("source\.status", "approved"\)/, 'all hidden pages under approved sources can be recovered into the owner queue');
 assert.match(crawler, /knowledge_page_recovered_for_review/, 'a hidden page missing its original staging event gets a recovery audit before review');
+assert.match(crawler, /const stagedContentHash = stageEvent\?\.metadata\?\.content_hash \|\| page\.content_hash \|\| null/, 'recovery review tolerates a missing original staging event');
+assert.match(crawler, /metadata: \{ page_id: pageId, reviewed_by: user\.id, reviewed_at: reviewedAt, content_hash: stagedContentHash \}/, 'review audit uses the recovered or staged page hash');
+
 assert.match(crawler, /checkedPageUrl\.protocol !== "https:"[\s\S]*checkedPageUrl\.hostname\.toLowerCase\(\) !== approvedDomain/, 'page review enforces standard HTTPS and exact approved host');
 
 assert.match(crawler, /body\.confirm_review !== true/, 'publishing requires explicit human confirmation');
