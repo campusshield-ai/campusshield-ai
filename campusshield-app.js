@@ -1031,7 +1031,7 @@
       'student-rewards':'Challenges & Rewards',
       opportunities:'Opportunities & Scholarships',
       shieldmind:'ShieldMind AI',
-      jarvis:'JARVIS Command Centre',
+      torio:'TORIO Command Centre',
       billing:'Subscriptions & Billing',
       'profile-settings':'My Profile & Settings',
       'staff-verification':'Staff verification',
