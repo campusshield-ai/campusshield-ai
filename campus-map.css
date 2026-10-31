@@ -49,3 +49,8 @@
 .campus-map-controls #campus-map-satellite.available{display:block}
 .maplibregl-popup-content{font:12px/1.5 system-ui,sans-serif;border-radius:10px}
 @media(max-width:600px){.campus-map-admin-coords{grid-template-columns:1fr}.campus-map-controls{gap:2px}.campus-map-controls button{padding:8px}}
+
+.campus-map-campus-picker{display:grid;gap:5px;margin:0 0 12px;color:#597168;font-size:10px;font-weight:800}
+.campus-map-campus-picker select{width:100%;padding:9px;border:1px solid #dce8e2;border-radius:9px;background:#fff;color:#24473e;font-size:11px}
+.report-location-pin{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.report-location-pin small{font-size:10px;line-height:1.45}
