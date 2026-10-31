@@ -343,7 +343,7 @@
         source: 'campus-openfreemap-buildings',
         'source-layer': 'transportation',
         minzoom: 11,
-        filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary']]],
+        filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary', 'motorway_link', 'trunk_link', 'primary_link']]],
         layout: roadLineLayout,
         paint: {
           'line-color': '#ffffff',
@@ -371,7 +371,7 @@
         source: 'campus-openfreemap-buildings',
         'source-layer': 'transportation',
         minzoom: 12,
-        filter: ['in', ['get', 'class'], ['literal', ['secondary', 'tertiary', 'minor']]],
+        filter: ['in', ['get', 'class'], ['literal', ['secondary', 'tertiary', 'minor', 'secondary_link', 'tertiary_link']]],
         layout: roadLineLayout,
         paint: {
           'line-color': '#ffffff',
@@ -399,7 +399,7 @@
         source: 'campus-openfreemap-buildings',
         'source-layer': 'transportation',
         minzoom: 14,
-        filter: ['in', ['get', 'class'], ['literal', ['residential', 'service', 'living_street', 'unclassified']]],
+        filter: ['in', ['get', 'class'], ['literal', ['service', 'living_street']]],
         layout: roadLineLayout,
         paint: {
           'line-color': '#f8faf7',
@@ -431,7 +431,7 @@
         layout: {
           'symbol-placement': 'line',
           'text-field': ['coalesce', ['get', 'name'], ['get', 'ref']],
-          'text-font': ['Noto Sans Medium'],
+          'text-font': ['Noto Sans Regular'],
           'text-size': ['interpolate', ['linear'], ['zoom'], 14, 9, 18, 12],
           'text-max-angle': 35,
           'text-keep-upright': true,
