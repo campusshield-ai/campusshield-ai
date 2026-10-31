@@ -13,7 +13,15 @@
   const mapKey = 'campus-map';
   let map = null;
   let features = [];
+  let allFeatures = [];
+  let adminDrafts = [];
   let campus = null;
+  let campusRole = null;
+  let isVerifiedStaff = false;
+  let isCampusAdmin = false;
+  let incidentPins = [];
+  let emergencyOnly = false;
+  let incidentsVisible = false;
   let selectedFeature = null;
   let userMarker = null;
   let routeLayerAdded = false;
@@ -86,6 +94,63 @@
         },
         paint: { 'text-color': '#15343a', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 }
       });
+      map.addSource('campus-incidents', { type: 'geojson', data: featureCollection([]) });
+      map.addLayer({
+        id: 'campus-incident-points',
+        type: 'circle',
+        source: 'campus-incidents',
+        layout: { visibility: 'none' },
+        paint: { 'circle-radius': 8, 'circle-color': '#c43d4b', 'circle-stroke-width': 2, 'circle-stroke-color': '#fff' }
+      });
+      map.on('click', 'campus-incident-points', event => {
+        const p = event.features?.[0]?.properties || {};
+        new maplibregl.Popup({ closeButton: true, maxWidth: '260px' })
+          .setLngLat(event.lngLat)
+          .setHTML('<strong>' + esc(p.category || 'Incident') + '</strong><br>Severity: ' + esc(p.severity || 'Unspecified') + '<br>Status: ' + esc(p.status || 'Open') + '<br>' + esc(p.location || 'Location recorded'))
+          .addTo(map);
+      });
+      map.on('mouseenter', 'campus-incident-points', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'campus-incident-points', () => { map.getCanvas().style.cursor = ''; });
+
+      const maptilerKey = window.CampusShieldMapConfig?.maptilerKey;
+      if (typeof maptilerKey === 'string' && maptilerKey.trim()) {
+        const key = encodeURIComponent(maptilerKey.trim());
+        map.addSource('campus-satellite', {
+          type: 'raster',
+          tiles: ['https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key=' + key],
+          tileSize: 256,
+          attribution: '© MapTiler © OpenStreetMap contributors'
+        });
+        map.addLayer({ id: 'campus-satellite-layer', type: 'raster', source: 'campus-satellite', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0.96 } }, 'campus-feature-points');
+        map.addSource('campus-terrain', {
+          type: 'raster-dem',
+          tiles: ['https://api.maptiler.com/tiles/terrain-rgb-v2/{z}/{x}/{y}.webp?key=' + key],
+          tileSize: 256,
+          encoding: 'mapbox'
+        });
+        map.addSource('campus-buildings', {
+          type: 'vector',
+          tiles: ['https://api.maptiler.com/tiles/v3/{z}/{x}/{y}.pbf?key=' + key],
+          minzoom: 12,
+          maxzoom: 18
+        });
+        map.addLayer({
+          id: 'campus-3d-buildings',
+          type: 'fill-extrusion',
+          source: 'campus-buildings',
+          'source-layer': 'building',
+          minzoom: 14,
+          paint: {
+            'fill-extrusion-color': '#9eb9ac',
+            'fill-extrusion-height': ['coalesce', ['get', 'render_height'], ['get', 'height'], 8],
+            'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], ['get', 'min_height'], 0],
+            'fill-extrusion-opacity': 0.86
+          }
+        }, 'campus-feature-points');
+        $('campus-map-satellite')?.classList.add('available');
+      } else {
+        setStatus('For satellite imagery and 3D building footprints, configure a domain-restricted MapTiler key in CampusShieldMapConfig.', 'info');
+      }
       map.on('click', 'campus-feature-points', event => {
         const id = event.features?.[0]?.properties?.id;
         const feature = features.find(item => item.id === id);
@@ -152,6 +217,90 @@
     if (fly && map) map.flyTo({ center: [Number(item.longitude), Number(item.latitude)], zoom: 17, pitch: 45, essential: true });
   }
 
+  function currentCampusFeatures() {
+    const selected = $('campus-map-campus-select')?.value || 'main-campus';
+    features = allFeatures.filter(item => item.is_published && item.campus_slug === selected && item.latitude != null && item.longitude != null);
+    adminDrafts = isCampusAdmin ? allFeatures.filter(item => !item.is_published && item.campus_slug === selected) : [];
+    updateSource();
+    renderFeatures();
+    renderAdminDrafts();
+    fitCampus();
+  }
+
+  function renderAdminDrafts() {
+    const host = $('campus-map-admin-drafts');
+    if (!host) return;
+    host.innerHTML = adminDrafts.length ? adminDrafts.map(item => `
+      <div class="campus-map-admin-draft">
+        <span><strong>${esc(item.name)}</strong><small>${esc(item.verification_status || 'pending')} · ${item.latitude == null ? 'coordinates missing' : 'coordinates saved'}</small></span>
+        <button type="button" data-edit-map-id="${esc(item.id)}">Edit</button>
+      </div>`).join('') : '<p class="campus-map-empty">No draft locations for this campus.</p>';
+  }
+
+  function resetAdminForm() {
+    $('campus-map-feature-id').value = '';
+    $('campus-map-admin-name').value = '';
+    $('campus-map-admin-description').value = '';
+    $('campus-map-admin-lat').value = '';
+    $('campus-map-admin-lng').value = '';
+    $('campus-map-admin-source').value = '';
+    $('campus-map-admin-verified').checked = false;
+    $('campus-map-admin-publish').checked = false;
+  }
+
+  function editAdminFeature(item) {
+    $('campus-map-feature-id').value = item.id;
+    $('campus-map-admin-campus').value = item.campus_name || 'Main Campus';
+    $('campus-map-admin-campus-slug').value = item.campus_slug || 'main-campus';
+    $('campus-map-admin-name').value = item.name || '';
+    $('campus-map-admin-type').value = item.feature_type || 'building';
+    $('campus-map-admin-description').value = item.description || '';
+    $('campus-map-admin-lat').value = item.latitude ?? '';
+    $('campus-map-admin-lng').value = item.longitude ?? '';
+    $('campus-map-admin-source').value = item.source_url || '';
+    $('campus-map-admin-verified').checked = item.verification_status === 'verified';
+    $('campus-map-admin-publish').checked = !!item.is_published;
+    $('campus-map-admin-name').focus();
+  }
+
+  function renderCampusOptions() {
+    const select = $('campus-map-campus-select');
+    if (!select) return;
+    const current = select.value || 'main-campus';
+    const campuses = new Map();
+    allFeatures.forEach(item => campuses.set(item.campus_slug, item.campus_name));
+    if (!campuses.size) campuses.set('main-campus', 'Main Campus');
+    select.innerHTML = [...campuses.entries()].map(([slug, name]) =>
+      '<option value="' + esc(slug) + '">' + esc(name) + '</option>').join('');
+    select.value = campuses.has(current) ? current : campuses.keys().next().value;
+  }
+
+  function updateIncidentSource() {
+    const source = map?.getSource('campus-incidents');
+    if (!source) return;
+    source.setData(featureCollection(incidentPins.map(item => ({
+      id: item.id, name: item.category, feature_type: 'incident',
+      longitude: item.longitude, latitude: item.latitude,
+      category: item.category, severity: item.severity, status: item.status, location: item.location
+    }))));
+  }
+
+  async function loadIncidentPins() {
+    if (!isVerifiedStaff || !campus?.university_id) return;
+    const { data, error } = await client().from('incidents')
+      .select('id, category, severity, location, status, created_at, latitude, longitude')
+      .eq('university_id', campus.university_id)
+      .not('latitude', 'is', null)
+      .not('longitude', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    incidentPins = data || [];
+    const button = $('campus-map-incidents');
+    if (button) button.hidden = incidentPins.length === 0;
+    updateIncidentSource();
+  }
+
   async function loadCampus() {
     const backend = window.CampusShieldBackend;
     if (!backend?.isConfigured || !backend?.client) {
@@ -168,20 +317,37 @@
         return;
       }
       campusName.textContent = campus.university_name || 'Your university';
-      const { data, error } = await client().from('campus_map_features')
-        .select('id, university_id, feature_type, name, description, latitude, longitude, metadata')
+      const auth = await client().auth.getUser();
+      const user = auth.data?.user;
+      if (user) {
+        const [profileResult, membershipResult] = await Promise.all([
+          client().from('profiles').select('role, verification_status').eq('id', user.id).maybeSingle(),
+          client().from('campus_memberships').select('campus_role, membership_status, verification_status').eq('user_id', user.id).maybeSingle()
+        ]);
+        if (profileResult.error) throw profileResult.error;
+        if (membershipResult.error) throw membershipResult.error;
+        campusRole = membershipResult.data?.campus_role || null;
+        const verifiedProfile = profileResult.data?.verification_status === 'verified';
+        const verifiedMembership = membershipResult.data?.membership_status === 'active' && membershipResult.data?.verification_status === 'verified';
+        isVerifiedStaff = verifiedProfile && verifiedMembership && ['admin','security'].includes(profileResult.data?.role) && ['admin','security'].includes(campusRole);
+        isCampusAdmin = verifiedProfile && verifiedMembership && profileResult.data?.role === 'admin' && campusRole === 'admin';
+      }
+      $('campus-map-admin').hidden = !isCampusAdmin;
+      const query = client().from('campus_map_features')
+        .select('id, university_id, campus_name, campus_slug, feature_type, name, description, latitude, longitude, source_url, verification_status, verified_by, verified_at, is_published, metadata')
         .eq('university_id', campus.university_id)
-        .eq('is_published', true)
         .order('name', { ascending: true })
         .limit(500);
+      if (!isCampusAdmin) query.eq('is_published', true);
+      const { data, error } = await query;
       if (error) throw error;
-      features = data || [];
-      updateSource();
-      renderFeatures();
-      fitCampus();
+      allFeatures = data || [];
+      renderCampusOptions();
+      currentCampusFeatures();
+      await loadIncidentPins();
       setStatus(features.length
         ? features.length + ' verified campus locations loaded.'
-        : 'The map is ready. This university has no verified locations published yet.', 'info');
+        : 'This campus has no verified map pins yet. Administrators can review the prepared location directory.', 'info');
     } catch (error) {
       console.error('CampusMap could not load campus locations.', error);
       setStatus('Campus map data could not be loaded. Check your campus membership and staging migration.', 'error');
@@ -198,6 +364,73 @@
     if (matches.length === 1) selectFeature(matches[0], true);
   }
 
+  $('campus-map-campus-select')?.addEventListener('change', () => {
+    currentCampusFeatures();
+    incidentPins = [];
+    loadIncidentPins().catch(error => console.warn('Incident pins unavailable.', error));
+  });
+  $('campus-map-admin-form')?.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!isCampusAdmin) return setStatus('Only a verified campus administrator can save map locations.', 'warning');
+    const numberOrNull = value => value === '' ? null : Number(value);
+    const payload = {
+      p_feature_id: $('campus-map-feature-id').value || null,
+      p_campus_name: $('campus-map-admin-campus').value.trim(),
+      p_campus_slug: $('campus-map-admin-campus-slug').value.trim(),
+      p_feature_type: $('campus-map-admin-type').value,
+      p_name: $('campus-map-admin-name').value.trim(),
+      p_description: $('campus-map-admin-description').value.trim() || null,
+      p_latitude: numberOrNull($('campus-map-admin-lat').value),
+      p_longitude: numberOrNull($('campus-map-admin-lng').value),
+      p_source_url: $('campus-map-admin-source').value.trim() || null,
+      p_mark_verified: $('campus-map-admin-verified').checked,
+      p_publish: $('campus-map-admin-publish').checked
+    };
+    try {
+      const { error } = await client().rpc('manage_campus_map_feature', payload);
+      if (error) throw error;
+      resetAdminForm();
+      setStatus('Campus location saved. Published locations are now available to this university only.', 'success');
+      await loadCampus();
+    } catch (error) {
+      setStatus(error.message || 'Could not save this campus location.', 'error');
+    }
+  });
+  $('campus-map-admin-reset')?.addEventListener('click', resetAdminForm);
+  $('campus-map-admin-drafts')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-edit-map-id]');
+    if (!button) return;
+    const item = allFeatures.find(feature => feature.id === button.dataset.editMapId);
+    if (item) editAdminFeature(item);
+  });
+  $('campus-map-emergency')?.addEventListener('click', () => {
+    emergencyOnly = !emergencyOnly;
+    if (map?.getLayer('campus-feature-points')) {
+      map.setFilter('campus-feature-points', emergencyOnly
+        ? ['in', ['get', 'feature_type'], ['literal', ['medical','security','assembly_point','emergency_point','gate']]]
+        : null);
+    }
+    $('campus-map-emergency').classList.toggle('primary', emergencyOnly);
+    setStatus(emergencyOnly ? 'Showing medical, security, assembly and gate locations.' : 'Showing all published campus locations.');
+  });
+  $('campus-map-incidents')?.addEventListener('click', () => {
+    if (!isVerifiedStaff || !map?.getLayer('campus-incident-points')) return;
+    incidentsVisible = !incidentsVisible;
+    map.setLayoutProperty('campus-incident-points', 'visibility', incidentsVisible ? 'visible' : 'none');
+    $('campus-map-incidents').classList.toggle('primary', incidentsVisible);
+    setStatus(incidentsVisible ? 'Showing up to 100 geolocated incidents for your university. Reporter identities and descriptions are not displayed.' : 'Incident pins hidden.');
+  });
+  $('campus-map-satellite')?.addEventListener('click', () => {
+    if (!map?.getLayer('campus-satellite-layer')) {
+      setStatus('Satellite imagery needs a domain-restricted MapTiler key in CampusShieldMapConfig.', 'warning');
+      return;
+    }
+    const visible = map.getLayoutProperty('campus-satellite-layer', 'visibility') === 'visible';
+    map.setLayoutProperty('campus-satellite-layer', 'visibility', visible ? 'none' : 'visible');
+    $('campus-map-satellite').classList.toggle('active', !visible);
+    setStatus(visible ? 'Satellite imagery hidden.' : 'Satellite imagery enabled.');
+  });
+
   search?.addEventListener('input', () => filterFeatures(search.value));
   featureList?.addEventListener('click', event => {
     const button = event.target.closest('[data-feature-id]');
@@ -207,12 +440,12 @@
   });
 
   $('campus-map-2d')?.addEventListener('click', () => {
-    if (map) map.easeTo({ pitch: 0, bearing: 0, duration: 500 });
+    if (map) { map.easeTo({ pitch: 0, bearing: 0, duration: 500 }); if (map.getTerrain()) map.setTerrain(null); }
     $('campus-map-2d').classList.add('active');
     $('campus-map-3d').classList.remove('active');
   });
   $('campus-map-3d')?.addEventListener('click', () => {
-    if (map) map.easeTo({ pitch: 55, bearing: -18, duration: 650 });
+    if (map) { map.easeTo({ pitch: 55, bearing: -18, duration: 650 }); if (map.getSource('campus-terrain')) map.setTerrain({ source: 'campus-terrain', exaggeration: 1.15 }); }
     $('campus-map-3d').classList.add('active');
     $('campus-map-2d').classList.remove('active');
     setStatus('Tilted 3D-style view enabled. Detailed 3D building models require verified building geometry.');
@@ -282,5 +515,5 @@
     }
   });
 
-  window.CampusShieldCampusMap = { refresh: loadCampus };
+  window.CampusShieldCampusMap = { refresh: loadCampus, reloadIncidents: loadIncidentPins };
 })();
