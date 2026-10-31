@@ -9,6 +9,7 @@ const css = read('campus-map.css');
 const sql = read('supabase/migrations/20261031115759_campus_map_verified_locations_and_emergency_layers.sql');
 const policySql = read('supabase/migrations/20261031115831_campus_map_public_read_policy_split.sql');
 const finalPolicySql = read('supabase/migrations/20261031120234_campus_map_single_read_policy_and_audit_index.sql');
+const babcockSeedSql = read('supabase/migrations/20261031130909_seed_babcock_main_campus_osm_candidates.sql');
 const docs = read('docs/CAMPUSMAP_ROLLOUT.md');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
@@ -68,5 +69,10 @@ assert.match(finalPolicySql, /IF \(SELECT auth\.uid\(\)\) IS NULL/, 'Anonymous r
 assert.match(finalPolicySql, /can_read_campus_map_drafts\(university_id\)/, 'Single read policy gates unpublished drafts');
 assert.match(finalPolicySql, /campus_map_features_verified_by_idx/, 'Verification audit foreign key is indexed');
 assert.match(docs, /Campus Map Manager/, 'Documentation covers the admin manager');
+assert.match(babcockSeedSql, /'BBS Babcock Business School'/, 'Babcock candidate seed includes the business school');
+assert.match(babcockSeedSql, /'Queen Esther Hall'/, 'Babcock candidate seed includes named residences');
+assert.match(babcockSeedSql, /'candidate_unverified'/, 'OSM candidate locations remain explicitly unverified');
+assert.match(babcockSeedSql, /false,\s*jsonb_build_object/, 'OSM candidate locations are inserted unpublished');
+assert.match(docs, /22 Babcock location entries/, 'Documentation lists the expanded Babcock directory');
 assert.match(docs, /No building coordinates have been guessed/, 'Babcock place names are not assigned fabricated coordinates');
 console.log('CampusMap static smoke checks passed.');
