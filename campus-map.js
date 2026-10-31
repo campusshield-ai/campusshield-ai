@@ -159,6 +159,7 @@
       map.on('mouseenter', 'campus-feature-points', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'campus-feature-points', () => { map.getCanvas().style.cursor = ''; });
       updateSource();
+      updateIncidentSource();
     });
     return map;
   }
