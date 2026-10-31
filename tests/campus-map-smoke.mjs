@@ -129,5 +129,6 @@ assert.match(js, /function buildingFeatureCollection/, 'Building outlines are co
 assert.match(js, /height_method/, 'Building height provenance is retained for the 3D view');
 assert.match(js, /updateCampusBoundarySource/, 'Saved campus boundaries are drawn on the map');
 assert.match(js, /validateCampusBoundaryGeometry/, 'Campus boundary polygons are validated before saving');
-assert.match(js, /queryRenderedFeatures\(\{ layers: \['campus-osm-3d-buildings'\] \}\)/, 'Map reports visible OpenStreetMap building footprint coverage');
+assert.match(js, /const preferredLayer = hasCurated \? 'campus-curated-building-extrusions' : 'campus-osm-3d-buildings'/, 'Map prefers university-curated footprints and falls back to global OSM buildings');
+assert.match(js, /queryRenderedFeatures\(\{ layers: \[preferredLayer\] \}\)/, 'Map coverage indicator counts the active building source');
 console.log('CampusMap static smoke checks passed.');
