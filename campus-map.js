@@ -74,7 +74,7 @@
   function stateOverviewCentre(value) {
     const key = String(value || '').toLowerCase()
       .replace(/federal capital territory|fct abuja|abuja fct/g, 'fct')
-      .replace(/\\s+state$/, '').trim();
+      .replace(/\bstate\b/g, '').replace(/\s+/g, ' ').trim();
     return STATE_OVERVIEWS[key] || null;
   }
 
@@ -723,6 +723,11 @@
       $('campus-map-profile-coverage').textContent = profile
         ? `Centre: ${profile.center_status || 'missing'} · Boundary: ${profile.boundary_status || 'missing'} · Building data: ${profile.building_coverage_status || 'unassessed'} · 3D model: ${profile.model_status || 'not submitted'}`
         : 'No campus profile found. Create a profile to record this campus centre.';
+    }
+    if ($('campus-map-profile-status')) {
+      const centreStatus = profile?.center_status || 'missing';
+      const centreLabel = centreStatus === 'verified' ? 'verified campus centre' : centreStatus === 'official_locator' ? 'official campus locator' : centreStatus === 'candidate' ? 'candidate centre' : 'centre not mapped';
+      $('campus-map-profile-status').textContent = `${profile?.campus_name || 'Main Campus'} · ${centreLabel} · boundary ${profile?.boundary_status || 'missing'} · buildings ${profile?.building_coverage_status || 'unassessed'}`;
     }
   }
 
