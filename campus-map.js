@@ -132,7 +132,7 @@
         type: 'symbol',
         source: 'campus-drafts',
         filter: ['has', 'point_count'],
-        layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 11, 'text-font': ['Noto Sans Bold', 'Arial Unicode MS Bold'] },
+        layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 11, 'text-font': ['Noto Sans Bold'] },
         paint: { 'text-color': '#fff' }
       });
       map.addLayer({
