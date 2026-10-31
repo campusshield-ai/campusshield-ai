@@ -55,3 +55,18 @@ The Babcock Main Campus map now opens at the university-level Google Maps locato
 
 
 The Babcock University Teaching Hospital draft stores its official emergency line (+234 811 891 8368) as public location metadata. Once an authorized campus administrator verifies the hospital pin and publishes it, CampusMap can display the emergency line alongside that location.
+
+
+## Precision mapping update (staging)
+- Campus camera centring now waits for the MapLibre style-load lifecycle and re-applies the campus view after map layers load. The Babcock Main Campus opens near the official campus locator at building-level zoom rather than leaving the user at a Nigeria-wide view.
+- Administrators can select the exact point by clicking the map, enter a coordinate pair manually and preview it, or capture device GPS. GPS accuracy reported by the browser is displayed; it is not treated as proof of building identity.
+- The provisional amber marker is draggable for refinement. Pending coordinates appear in a separate admin-only draft layer and can be clicked to reopen their edit form. Public and student views never receive unpublished draft coordinates.
+- Verification and publication remain separate actions. The interface requires a coordinate pair and HTTPS evidence source before marking a pin verified; publication also requires the verified flag. All draft candidates remain unpublished until a verified university administrator checks the location on site or against an approved survey.
+- Map scale is labelled as regional, campus-area or building-level to avoid suggesting false precision.
+
+### Community-mapped coordinate candidates
+Two Main Campus names have candidate coordinates from OpenStreetMap features surfaced via Mapcarta:
+- Amphitheatre: 6.89088, 3.72242 — https://mapcarta.com/N11750218077
+- University Stadium: 6.89472, 3.72770 — https://mapcarta.com/N11750284266
+
+These are community-mapped OSM point candidates, not university-certified entrance coordinates. They are stored as pending, unpublished draft coordinates with the OSM source and object ID recorded in metadata. They must be independently checked before verification or publication. Other named places, including BUTH, Registry, halls, Student Development and the Iperu Campus facilities, remain without coordinates until a reliable exact source is available.
