@@ -33,7 +33,7 @@ assert.match(html, /id="campus-map-scale-summary"/, 'Live map scale label is pre
 assert.match(html, /id="campus-map-pick-pin"/, 'Administrators can place a pin directly on the map');
 assert.match(html, /id="campus-map-use-gps"/, 'Administrators can capture a GPS candidate with device accuracy');
 assert.match(html, /id="campus-map-preview-pin"/, 'Administrators can preview manually entered coordinates');
-assert.match(html, /campus-map\.js/, 'CampusMap module is loaded');
+assert.match(mapLoader, /import\('\.\/campus-map\.js'\)/, 'CampusMap module is loaded after the MapLibre ESM bootstrap');
 assert.match(html, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.css/, 'MapLibre CSS is pinned to v6.16.0');
 assert.match(html, /type="module" src="\.\/campus-map-loader\.js"/, 'MapLibre 6 is loaded using an ordered ES-module bootstrap');
 assert.match(mapLoader, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.mjs/, 'MapLibre 6 is imported from its ES-module build');
