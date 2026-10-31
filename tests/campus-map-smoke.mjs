@@ -22,7 +22,7 @@ const campusModelSql = read('supabase/migrations/20261031150500_campus_map_priva
 const campusBuildingsSql = read('supabase/migrations/20261031142127_campus_map_building_footprint_import_pipeline.sql');
 const campusBuildingsHardeningSql = read('supabase/migrations/20261031142749_harden_campus_building_geometry_review.sql');
 const campusBuildingsNullGuardSql = read('supabase/migrations/20261031142958_guard_empty_building_import_payload.sql');
-const campusBuildingsCentreGuardSql = read('supabase/migrations/20261031185500_campus_building_import_verified_centre_guard.sql');
+const campusBuildingsCentreGuardSql = read('supabase/migrations/20261031182424_campus_building_import_verified_centre_guard.sql');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
 assert.match(html, /id="page-campus-map"/, 'CampusMap page container is present');
