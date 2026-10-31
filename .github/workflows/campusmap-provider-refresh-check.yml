@@ -1,0 +1,39 @@
+name: CampusMap provider refresh checks
+
+on:
+  push:
+    branches:
+      - feat/campusmap-provider-refresh
+    paths:
+      - "campus-map.js"
+      - "campus-map-config.js"
+      - "campus-map-loader.js"
+      - "index.html"
+      - "tests/campus-map-smoke.mjs"
+      - ".github/workflows/campusmap-provider-refresh-check.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusmap-provider-refresh-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  campusmap-smoke:
+    name: MapLibre module and CampusMap smoke checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Check CampusMap source syntax
+        run: node --check campus-map.js
+      - name: Check MapLibre ES-module bootstrap syntax
+        run: node --input-type=module --check < campus-map-loader.js
+      - name: Run CampusMap feature smoke checks
+        run: node tests/campus-map-smoke.mjs
