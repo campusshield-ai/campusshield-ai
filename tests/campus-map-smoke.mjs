@@ -54,6 +54,7 @@ assert.match(js, /data-search-draft-id/, 'Verified campus admins can search thei
 assert.match(js, /isCampusAdmin && term/, 'Pending locations are excluded from non-admin search results');
 assert.match(css, /campus-map-search-results/, 'Search suggestions are styled responsively');
 assert.match(js, /ResizeObserver/, 'Map resizes when responsive containers change size');
+assert.match(js, /prefers-reduced-motion: reduce/, 'Camera movement respects reduced-motion accessibility settings');
 assert.match(js, /maxzoom: 14/, 'OpenMapTiles vector source is overzoomed from its generated max zoom');
 assert.match(js, /campus-osm-3d-building-edges/, '3D building blocks have subtle outline detail');
 assert.doesNotMatch(js, /campus-osm-3d-building-labels/, 'The non-existent named-building source layer is not requested');
