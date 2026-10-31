@@ -584,6 +584,9 @@
       });
       map.on('mouseenter', 'campus-feature-points', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'campus-feature-points', () => { map.getCanvas().style.cursor = ''; });
+      // Keep street names legible above raised buildings, while keeping interactive
+      // campus pins and verified features above the labels.
+      if (map.getLayer('campus-road-labels')) map.moveLayer('campus-road-labels', 'campus-feature-points');
       updateSource();
       updateDraftSource();
       updateIncidentSource();
