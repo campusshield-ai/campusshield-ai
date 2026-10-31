@@ -165,16 +165,19 @@ Deno.serve(async (req: Request) => {
     if (requestedUniversityId && !/^[0-9a-f-]{36}$/i.test(requestedUniversityId)) {
       return reply({ error: "Choose a valid university." }, 400);
     }
+    const crawlerOwnerEmail = "campusshieldaitechnologies@gmail.com";
+    const isCrawlerOwner = String(user.email || "").toLowerCase() === crawlerOwnerEmail;
     const { data: memberships, error: membershipError } = await client.from("campus_memberships")
       .select("university_id,campus_role,membership_status,verification_status")
       .eq("user_id", user.id).eq("membership_status", "active").eq("verification_status", "verified").limit(50);
-    if (membershipError || !memberships?.length) return reply({ error: "An active verified campus membership is required." }, 403);
-    const campus = requestedUniversityId
-      ? memberships.find(m => m.university_id === requestedUniversityId)
-      : (memberships.find(m => m.campus_role === "admin") || memberships[0]);
-    if (!campus) return reply({ error: "You do not have an active verified membership at the selected university." }, 403);
-    const isAdmin = campus.campus_role === "admin";
+    const memberCampus = !membershipError && memberships?.length
+      ? (requestedUniversityId
+        ? memberships.find(m => m.university_id === requestedUniversityId)
+        : (memberships.find(m => m.campus_role === "admin") || memberships[0]))
+      : null;
     if (body.action === "search") {
+      if (!memberCampus) return reply({ error: "An active verified campus membership at the selected university is required." }, 403);
+      const campus = memberCampus;
       const query = String(body.query || "").trim().replace(/[\u0000-\u001f]/g, " ").slice(0, 120);
       if (query.length < 2) return reply({ results: [] });
       const words = query.split(/\s+/).filter(w => w.length > 1).slice(0, 5);
@@ -192,11 +195,17 @@ Deno.serve(async (req: Request) => {
       }));
       return reply({ results });
     }
-    const crawlerOwnerEmail = "campusshieldaitechnologies@gmail.com";
-    if (String(user.email || "").toLowerCase() !== crawlerOwnerEmail) {
-      return reply({ error: "This crawler is restricted to its designated owner." }, 403);
+    if (!isCrawlerOwner || profile.role !== "admin") {
+      return reply({ error: "Only the verified CampusShield platform owner can manage knowledge sources." }, 403);
     }
-    if (!isAdmin || profile.role !== "admin") return reply({ error: "Only a verified campus administrator can manage crawler sources." }, 403);
+    if (!requestedUniversityId) return reply({ error: "Select the university to manage." }, 400);
+    // The platform owner is granted global access by private.is_campusshield_owner_admin()
+    // and the corresponding RLS policies. A per-university campus membership is not
+    // required for this owner-only workflow; the selected university must still exist.
+    const { data: selectedUniversity, error: universityError } = await client.from("campus_universities")
+      .select("id").eq("id", requestedUniversityId).maybeSingle();
+    if (universityError || !selectedUniversity) return reply({ error: "Selected university was not found or is not accessible." }, 404);
+    const campus = { university_id: selectedUniversity.id, campus_role: "admin" };
     if (body.action === "list_sources") {
       const { data, error } = await client.from("campus_knowledge_sources")
         .select("id,title,base_url,domain,status,last_crawled_at,last_crawl_status,created_at")
@@ -248,7 +257,8 @@ Deno.serve(async (req: Request) => {
       if (pageError || !page) return reply({ error: "The pending page was not found under an approved source for this university." }, 404);
       let checkedPageUrl: URL | null = null;
       try { checkedPageUrl = new URL(String(page.url || "")); } catch { /* invalid stored URL */ }
-      const approvedDomain = String((page as any).source?.domain || "").toLowerCase();
+      const pageSource = Array.isArray(page.source) ? page.source[0] || null : page.source || null;
+      const approvedDomain = String(pageSource?.domain || "").toLowerCase();
       if (
         !checkedPageUrl ||
         checkedPageUrl.protocol !== "https:" ||
@@ -290,7 +300,7 @@ Deno.serve(async (req: Request) => {
           message: "Hidden page had no matching staging event; owner review audit was recovered before a decision.",
           metadata: {
           page_id: pageId,
-          source_id: Array.isArray(page.source) ? page.source[0]?.id || null : null,
+          source_id: pageSource?.id || null,
           content_hash: page.content_hash || null,
           recovered_by: user.id,
         },
