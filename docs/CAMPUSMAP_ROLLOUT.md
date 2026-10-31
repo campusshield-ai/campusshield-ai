@@ -40,7 +40,7 @@ The OpenMapTiles building layer provides `render_height`, `render_min_height`, `
 3. Test two universities and Babcock Main Campus / Iperu Campus for strict data separation.
 4. Capture exact Babcock coordinates through an authorized campus survey or approved source; do not publish approximate pins.
 5. Verify GPS permission denied/allowed paths, incident coordinate persistence, staff-only incident visibility, and reporter privacy.
-6. Configure a restricted MapTiler key before testing satellite, terrain and building extrusion layers.
+6. Test 2D, SAT and 3D without a provider key. Configure an optional domain-restricted MapTiler public key only when terrain elevation is needed.
 7. Run mobile browser tests and verify walking route behavior and provider failure states.
 8. Do not merge to production until authenticated staging tests and security review pass.
 
@@ -48,12 +48,12 @@ The OpenMapTiles building layer provides `render_height`, `render_min_height`, `
 The Babcock Main Campus map now opens at the university-level Google Maps locator embedded on its official contact page (approximately 6.8910932, 3.7191259). It is explicitly labelled as a campus locator, not a building entrance. Individual building pins remain unpublished until verified.
 
 
-## MapTiler key setup
-1. Create a MapTiler account and generate a browser/public API key.
-2. Restrict the key by allowed HTTP referrers to the CampusShield staging preview hostname and the approved production domain(s). Do not use an unrestricted key.
-3. Put the restricted public key in campus-map-config.js as the value of window.CampusShieldMapConfig.maptilerKey.
-4. Keep secret/server keys out of the repository and browser code.
-5. Re-run the staging map tests and verify satellite imagery, terrain, and the building layer load before promoting the feature.
+## Optional MapTiler terrain setup
+1. The 2D, SAT and 3D modes do not require a MapTiler key. Only follow these steps when optional terrain elevation is required.
+2. Create a MapTiler account and generate a browser/public API key.
+3. Restrict the key by allowed HTTP referrers to the CampusShield staging preview hostname and the approved production domain(s). Do not use an unrestricted key.
+4. Put the restricted public key in `campus-map-config.js` as the value of `window.CampusShieldMapConfig.maptilerKey`.
+5. Keep secret/server keys out of the repository and browser code; verify terrain loads, while satellite imagery and OSM building extrusions continue to work without the key.
 
 
 The Babcock University Teaching Hospital draft stores its official emergency line (+234 811 891 8368) as public location metadata. Once an authorized campus administrator verifies the hospital pin and publishes it, CampusMap can display the emergency line alongside that location.
