@@ -30,3 +30,10 @@ Babcock University is the first pilot. The current implementation uses an approx
 
 ## Incident GPS pin capture
 The incident form now offers an explicit, optional browser geolocation action. The browser asks permission; the user can still submit a text-only location if permission is denied. Coordinates are stored on the existing incident row and are visible on the map only to authorized same-university staff under the existing incident RLS policies. The map overlay omits descriptions and reporter identifiers.
+
+
+## Official Babcock source references
+- Arrival guide: https://www.babcock.edu.ng/new-students-info
+- Laz Otti Memorial Library details: https://www.babcock.edu.ng/library
+- Babcock University Teaching Hospital emergency services: https://buth.babcock.edu.ng/emergency-services/
+The seed names and source references are traceable to these university pages. The pages do not supply building-level coordinates; no map point is published until an authorized administrator verifies the pin.
