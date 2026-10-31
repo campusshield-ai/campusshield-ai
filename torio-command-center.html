@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#092b2d">
   <meta name="description" content="TORIO AI — a secure CampusShield command workspace powered by ShieldMind and Supabase.">
+  <meta name="application-name" content="TORIO AI">
+  <link rel="manifest" href="./torio-manifest.webmanifest">
+  <link rel="icon" href="./icons/torio-ai.svg" type="image/svg+xml">
   <title>TORIO AI | CampusShield AI</title>
   <style>
     :root{color-scheme:dark;--bg:#071719;--surface:#0c2224;--surface2:#102d2e;--line:#1c4845;--text:#e5f5ef;--muted:#91b3a8;--green:#39d6a0;--teal:#55d9d0;--amber:#e7bd72;--danger:#ef8b8b;--shadow:0 18px 50px #0005}
@@ -42,7 +45,7 @@
     <div class="side-status"><span class="dot"></span><b id="connection-label">Checking session</b><small>Supabase authentication · ShieldMind AI</small></div>
   </aside>
   <main>
-    <header class="topbar"><div><div class="eyebrow">CAMPUSSHIELD AI / TORIO</div><div style="font-size:12px;color:var(--muted)">Secure intelligent command interface</div></div><div class="top-actions"><span class="chip" id="user-chip">Checking account…</span><button class="btn secondary" id="back-btn" type="button">← CampusShield</button></div></header>
+    <header class="topbar"><div><div class="eyebrow">CAMPUSSHIELD AI / TORIO</div><div style="font-size:12px;color:var(--muted)">Secure intelligent command interface</div></div><div class="top-actions"><span class="chip" id="user-chip">Checking account…</span><button class="btn" id="install-torio" type="button" hidden>Install TORIO</button><button class="btn secondary" id="back-btn" type="button">← CampusShield</button></div></header>
     <section class="hero"><div><div class="eyebrow">YOUR CAMPUS, CONNECTED INTELLIGENCE</div><h1>TORIO command centre</h1><p>One workspace with two ways to work: natural conversation with ShieldMind AI and a keyboard-driven command terminal for safe, built-in actions.</p></div><div class="orb" aria-hidden="true">✧</div></section>
     <div class="modebar" aria-label="Choose workspace"><button class="active" data-mode="assistant">01 · Conversational AI</button><button data-mode="terminal">02 · Terminal interface</button><button data-mode="overview">03 · System overview</button></div>
     <div class="workspace">
@@ -92,6 +95,36 @@ Type <span class="good">help</span> to view available commands.
   "use strict";
   const $=id=>document.getElementById(id);
   const backend=window.CampusShieldBackend;
+  const installButton=$("install-torio");
+  let deferredInstallPrompt=null;
+  const standalone=window.matchMedia("(display-mode: standalone)").matches || navigator.standalone===true;
+  if(!standalone && installButton){
+    window.addEventListener("beforeinstallprompt",event=>{
+      event.preventDefault();
+      deferredInstallPrompt=event;
+      installButton.hidden=false;
+    });
+    installButton.addEventListener("click",async()=>{
+      if(!deferredInstallPrompt){
+        $("chat-status").textContent="To install TORIO, open Chrome or Edge menu and choose Apps → Install this site as an app.";
+        return;
+      }
+      const prompt=deferredInstallPrompt;
+      deferredInstallPrompt=null;
+      installButton.disabled=true;
+      try{
+        await prompt.prompt();
+        const choice=await prompt.userChoice;
+        if(choice.outcome==="accepted") installButton.hidden=true;
+      }finally{
+        installButton.disabled=false;
+      }
+    });
+    window.addEventListener("appinstalled",()=>{installButton.hidden=true;});
+  }
+  if("serviceWorker" in navigator && window.isSecureContext){
+    navigator.serviceWorker.register("./service-worker.js",{scope:"./"}).catch(()=>{});
+  }
   let history=[];
   let signedIn=false;
   let busy=false;
