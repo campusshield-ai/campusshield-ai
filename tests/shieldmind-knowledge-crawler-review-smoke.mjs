@@ -10,6 +10,10 @@ assert.match(crawler, /const pageStatus = preservePublished \? "published" : "hi
 assert.doesNotMatch(crawler, /status: "published", fetched_at:/, 'crawler does not automatically publish every crawled page');
 assert.match(crawler, /body\.action === "list_pending_pages"/, 'owner can load pending hidden pages');
 assert.match(crawler, /body\.action === "review_page"/, 'owner has an explicit page review action');
+assert.match(crawler, /\.eq\("status", "hidden"\)[\s\S]*\.eq\("source\.status", "approved"\)/, 'all hidden pages under approved sources can be recovered into the owner queue');
+assert.match(crawler, /knowledge_page_recovered_for_review/, 'a hidden page missing its original staging event gets a recovery audit before review');
+assert.match(crawler, /checkedPageUrl\.protocol !== "https:"[\s\S]*checkedPageUrl\.hostname\.toLowerCase\(\) !== approvedDomain/, 'page review enforces standard HTTPS and exact approved host');
+
 assert.match(crawler, /body\.confirm_review !== true/, 'publishing requires explicit human confirmation');
 assert.match(crawler, /decision === "keep_hidden"/, 'review can explicitly leave a page hidden');
 assert.match(crawler, /requestedUniversityId/, 'crawler scopes actions to the university selected by the owner');
