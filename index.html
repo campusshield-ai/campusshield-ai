@@ -2585,6 +2585,17 @@ button,input,select,textarea{max-width:100%;min-width:0}
             </div>
             <label>Centre source (HTTPS)<input id="campus-map-profile-source" type="url" placeholder="Official campus map, survey or university source"></label>
             <label class="campus-map-admin-check"><input id="campus-map-profile-verified" type="checkbox"> I verified this campus centre using an official source or site survey</label>
+            <label>Campus boundary GeoJSON (Polygon or MultiPolygon)<textarea id="campus-map-profile-boundary" rows="4" placeholder='{"type":"Polygon","coordinates":[...]}'></textarea></label>
+            <label>Boundary evidence source (HTTPS)<input id="campus-map-profile-boundary-source" type="url" placeholder="University campus plan or licensed boundary dataset"></label>
+            <label class="campus-map-admin-check"><input id="campus-map-profile-boundary-verified" type="checkbox"> I verified this boundary against an approved campus plan or survey</label>
+            <div class="campus-map-model-upload">
+              <h5>Real 3D campus model</h5>
+              <p>Upload a university-supplied GLB building/campus model. It stays private and pending review; it is not shown on the public map until approved.</p>
+              <label>GLB model file (maximum 25 MB)<input id="campus-map-profile-model-file" type="file" accept=".glb,model/gltf-binary"></label>
+              <label>Model attribution / source<input id="campus-map-profile-model-attribution" type="text" minlength="8" maxlength="500" placeholder="University GIS team, survey firm, licence or source"></label>
+              <button type="button" class="campus-map-action" id="campus-map-profile-model-upload">Upload model for review</button>
+              <p class="campus-map-profile-coverage" id="campus-map-profile-model-status" role="status">No 3D model submitted.</p>
+            </div>
             <p class="campus-map-profile-coverage" id="campus-map-profile-coverage" role="status">Campus centre, boundary and 3D model status appear here.</p>
             <div class="campus-map-admin-actions"><button type="submit" class="campus-map-action primary">Save campus profile</button></div>
           </form>
