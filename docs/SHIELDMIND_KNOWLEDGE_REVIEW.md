@@ -36,3 +36,7 @@ The Knowledge Agent reads only `published` pages joined to an `approved` source 
 - The existing Staging knowledge-page/source migrations and some owner-access migration history are present in Staging but missing from the current GitHub migration directory. Restore the exact historical migration sources and reconcile migration parity before merging this work or deploying it to another environment. Do not recreate or edit those historical migrations from memory.
 - This PR restores the currently deployed crawler source to version control and proposes the safer review behaviour. It has not deployed a new Edge Function version, registered a source, crawled Babcock pages, or changed any database records.
 - An authenticated staging test must verify source registration, crawl, pending-page review, publish, and cross-university isolation before any production release.
+
+
+## Automated checks
+The stacked Knowledge Agent base branch now contains `.github/workflows/shieldmind-knowledge-review-check.yml`. It runs `deno check --no-lock` against the crawler and then the complete Node smoke suite when this review PR changes. A green workflow is required before the branch is considered test-ready; it does not deploy the Edge Function or modify database state.
