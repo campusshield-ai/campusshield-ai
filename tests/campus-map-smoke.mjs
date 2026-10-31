@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+const html = read('index.html');
+const js = read('campus-map.js');
+const css = read('campus-map.css');
+const sql = read('supabase/migrations/20261031120000_campus_map_features.sql');
+const docs = read('docs/CAMPUSMAP_ROLLOUT.md');
+
+assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
+assert.match(html, /id="page-campus-map"/, 'CampusMap page container is present');
+assert.match(html, /id="campus-map-canvas"/, 'Interactive map canvas is present');
+assert.match(html, /campus-map\.js/, 'CampusMap module is loaded');
+assert.match(html, /maplibre-gl@4\.7\.1/, 'MapLibre is pinned to a known version');
+assert.match(js, /getMyCampusContext\(\)/, 'Map resolves the signed-in university context');
+assert.match(js, /\.eq\('university_id', campus\.university_id\)/, 'Feature query is scoped to the current university');
+assert.match(js, /\.eq\('is_published', true\)/, 'Only published locations are rendered');
+assert.match(js, /getCurrentPosition/, 'Device location requires browser geolocation permission');
+assert.match(js, /CampusShieldCampusMap/, 'Map module exposes a refresh hook');
+assert.match(css, /@media\(max-width:600px\)/, 'Map layout includes mobile responsive rules');
+assert.match(sql, /ENABLE ROW LEVEL SECURITY/, 'Map feature table enables RLS');
+assert.match(sql, /FORCE ROW LEVEL SECURITY/, 'Map feature table forces RLS');
+assert.match(sql, /USING \(is_published = true\)/, 'Only published map features are selectable');
+assert.match(sql, /REVOKE ALL ON public\.campus_map_features FROM anon, authenticated/, 'Browser roles cannot mutate map features');
+assert.match(sql, /GRANT SELECT ON public\.campus_map_features TO anon, authenticated/, 'Browser roles receive read-only access');
+assert.match(docs, /Babcock University is the first pilot/, 'Rollout documentation identifies the pilot');
+console.log('CampusMap static smoke checks passed.');
