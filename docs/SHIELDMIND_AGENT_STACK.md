@@ -111,3 +111,17 @@ Memory retrieval must respect user identity, university membership and record vi
 ## Release boundary
 
 This workstream is separate from CampusMap PR #134. Do not merge this proposal into PR #134. Do not apply migrations, alter production secrets, deploy production functions, publish campus data or enable live emergency actions as part of this foundation document. All implementation begins in a dedicated branch and staging environment, with a separate reviewed pull request.
+
+
+## Initial Staging discovery — 2026-10-31
+
+Read-only inspection of CampusShield AI Staging (project ref `hywcpnoqqhxvujnimhxl`) found:
+
+- Existing tables are available for `campus_knowledge_sources`, `campus_knowledge_pages`, `campus_university_service_directory`, `campus_memberships`, `campus_notices`, `campus_helpdesk_tickets` and `incidents`.
+- RLS is enabled on the inspected knowledge, membership and profile tables. Knowledge-page reads are restricted to published pages for the caller's current university and an active, verified membership. Knowledge-source reads are likewise scoped to the caller's current university.
+- The current knowledge-pages table contains zero rows and zero published pages. The first Knowledge Agent therefore needs an empty-knowledge response and cannot yet be treated as a useful campus-answering service.
+- The inspected database does not currently have the `vector` extension installed. Do not add pgvector or create embedding columns until the existing content volume, retrieval quality, extension availability and staging migration plan are evaluated.
+- Existing ShieldMind-related database functions include caller eligibility and quota controls, plus personal planner operations. These are not a general-purpose agent tool gateway and must not be exposed wholesale to an LLM.
+- Existing service directory and crawler metadata can be reused as source records, but their freshness and source verification must be checked before answers are labelled authoritative.
+
+This was read-only inspection. No database rows, policies, functions, extensions, migrations or secrets were changed. Next implementation work should inspect the existing ShieldMind request path and its provider integration, then define a read-only knowledge retrieval adapter that reuses current RLS rather than bypassing it.
