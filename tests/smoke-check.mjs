@@ -784,3 +784,5 @@ console.log("PASS searchable national service directory, verified-source crawler
 
 // Keep the read-only ShieldMind Knowledge Agent access and retrieval tests in the full CI smoke suite.
 await import("./shieldmind-knowledge-agent-smoke.mjs");
+
+await import("./shieldmind-knowledge-crawler-review-smoke.mjs");
