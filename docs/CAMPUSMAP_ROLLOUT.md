@@ -110,3 +110,24 @@ These are community-mapped point features. The coordinates locate mapped POIs, n
 - MapLibre is capped at a 60-degree pitch to avoid experimental pitches beyond the normal supported range. Camera transitions are shorter, and the selected point camera respects the current 2D or 3D mode.
 - Reduced-motion preferences are respected by CSS controls and JavaScript camera transitions. Resource errors now report a relevant fallback message instead of leaving the map status silent.
 - All MapLibre text layers now share the OpenFreeMap Noto Sans glyph service, fixing missing location, POI and cluster labels in the custom raster-plus-vector style.
+## Multi-university coverage and source strategy (Staging)
+The Staging directory contains **328 active universities**. Its ownership counts match the National Universities Commission's current Nigerian University System directory: **77 Federal, 69 State and 182 Private**. The map profile migration creates one Main Campus profile for every active university and a second Iperu Campus profile for Babcock, giving **329 campus profiles across 328 universities**. The NUC directory is the source for university names, state, ownership and available official websites. Of the 328 active records, 192 have an official website recorded and 136 still need an authoritative website URL; no domain is guessed for those entries.
+
+### What is available now
+- Each university has its own campus profile, state, official website (where recorded), centre coordinates and source/status fields, boundary GeoJSON and evidence, OSM building coverage state, and 3D model review metadata.
+- Babcock Main Campus is the only profile with an official university map locator prefilled (6.8910932, 3.7191259; official locator only, not a surveyed campus boundary or building entrance). Babcock Iperu remains a separate campus with no invented centre.
+- The remaining 327 Main Campus profiles and Babcock Iperu do not yet have an official campus-centre coordinate. The interface uses an openly licensed state centroid only as a *regional overview fallback*, not as a university location and never as a navigation destination.
+- State fallback centroids are from [Open Admin Data Nigeria States](https://openadmindata.org/ng/states/) (CC BY 4.0). The UI labels them as regional views. If the state value is missing or unrecognised, it stays at the Nigeria overview instead of inventing a location.
+- MapLibre still loads OpenStreetMap/OpenMapTiles building footprints for any location where the global vector tiles contain mapped buildings. Actual footprint coverage, names and height quality vary by university and must be checked on the ground or against university GIS data.
+
+### Campus boundary workflow
+Verified campus administrators can paste a GeoJSON Polygon or MultiPolygon, attach the source URL, and save it as a candidate or mark it verified after an approved campus plan/survey check. GeoJSON is stored in JSONB because PostGIS is not installed in this Staging project. The campus boundary is distinct from the campus centre and from building-level entrances.
+
+### Real 3D building model workflow
+- The private campus-map-models Storage bucket accepts GLB files up to 25 MB. Its Storage policies require a signed-in, verified campus administrator belonging to that university and campus path.
+- Uploading a university-supplied GLB records the model path and attribution as **pending review**. It is private and is not automatically shown to students or public users.
+- Only approved models can be read by other verified members of that university. The current map still renders OSM-derived extrusions; a GLB must undergo source/licence review, geometry/scale/anchor validation and renderer integration before it can replace those extrusions.
+- The upload workflow is a secure intake path, not a claim that all 328 universities already have photorealistic models. No university model is approved in Staging yet.
+
+### Photorealistic imagery / 3D provider boundary
+Google Photorealistic 3D Tiles can provide textured 3D meshes in supported populated areas, but requires a Google Cloud project, billing, an API key, a compatible 3D Tiles renderer such as CesiumJS, and mandatory on-screen attribution. Coverage varies by campus. It is not enabled by default and no paid API key has been configured. A university-supplied, licensed GLB/3D Tiles package is preferred for a campus-specific authoritative model.
