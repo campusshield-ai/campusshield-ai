@@ -4,7 +4,7 @@
 
   function parseOsmLength(value) {
     if (value == null || value === '') return null;
-    const match = String(value).trim().match(/^([0-9]+(?:\\.[0-9]+)?)\\s*(m|meter|meters|metre|metres|ft|feet)?$/i);
+    const match = String(value).trim().match(/^([0-9]+(?:\.[0-9]+)?)\s*(m|meter|meters|metre|metres|ft|feet)?$/i);
     if (!match) return null;
     const amount = Number(match[1]);
     if (!Number.isFinite(amount) || amount <= 0) return null;
@@ -14,7 +14,7 @@
   function parseOsmLevels(value) {
     if (value == null || value === '') return null;
     const text = String(value).trim();
-    if (!/^\\d{1,3}$/.test(text)) return null;
+    if (!/^\d{1,3}$/.test(text)) return null;
     const parsed = Number(text);
     return Number.isInteger(parsed) && parsed > 0 && parsed <= 200 ? parsed : null;
   }
@@ -54,7 +54,7 @@
   }
 
   function osmWayToBuildingCandidate(way) {
-    if (!way || typeof way !== 'object' || !/^\\d{1,20}$/.test(String(way.id || ''))) return null;
+    if (!way || typeof way !== 'object' || !/^\d{1,20}$/.test(String(way.id || ''))) return null;
     const tags = way.tags && typeof way.tags === 'object' ? way.tags : {};
     const buildingTag = String(tags.building || '').trim().toLowerCase();
     if (!buildingTag || ['no', 'false', '0'].includes(buildingTag)) return null;
@@ -62,7 +62,9 @@
 
     const ring = [];
     for (const point of way.geometry) {
-      if (!point || typeof point !== 'object') return null;
+      if (!point || typeof point !== 'object'
+          || point.lat == null || point.lon == null
+          || String(point.lat).trim() === '' || String(point.lon).trim() === '') return null;
       const latitude = Number(point.lat);
       const longitude = Number(point.lon);
       if (!Number.isFinite(latitude) || !Number.isFinite(longitude)
