@@ -350,9 +350,9 @@
         filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary', 'motorway_link', 'trunk_link', 'primary_link']]],
         layout: roadLineLayout,
         paint: {
-          'line-color': '#ffffff',
-          'line-width': roadZoomWidth(3.2, 8.5),
-          'line-opacity': 0.96
+          'line-color': '#e8e5da',
+          'line-width': roadZoomWidth(2.8, 6.0),
+          'line-opacity': 0.72
         }
       }, 'campus-feature-points');
       map.addLayer({
@@ -365,8 +365,8 @@
         layout: roadLineLayout,
         paint: {
           'line-color': '#59645f',
-          'line-width': roadZoomWidth(2.1, 6.2),
-          'line-opacity': 0.98
+          'line-width': roadZoomWidth(1.8, 4.4),
+          'line-opacity': 0.88
         }
       }, 'campus-feature-points');
       map.addLayer({
@@ -378,9 +378,9 @@
         filter: ['in', ['get', 'class'], ['literal', ['secondary', 'tertiary', 'minor', 'secondary_link', 'tertiary_link']]],
         layout: roadLineLayout,
         paint: {
-          'line-color': '#ffffff',
-          'line-width': roadZoomWidth(2.2, 5.2),
-          'line-opacity': 0.94
+          'line-color': '#efede4',
+          'line-width': roadZoomWidth(1.8, 3.9),
+          'line-opacity': 0.68
         }
       }, 'campus-feature-points');
       map.addLayer({
@@ -393,8 +393,8 @@
         layout: roadLineLayout,
         paint: {
           'line-color': '#87918b',
-          'line-width': roadZoomWidth(1.35, 3.5),
-          'line-opacity': 0.98
+          'line-width': roadZoomWidth(1.1, 2.7),
+          'line-opacity': 0.86
         }
       }, 'campus-feature-points');
       map.addLayer({
@@ -406,9 +406,9 @@
         filter: ['in', ['get', 'class'], ['literal', ['service', 'living_street']]],
         layout: roadLineLayout,
         paint: {
-          'line-color': '#f8faf7',
-          'line-width': roadZoomWidth(1.1, 2.8),
-          'line-opacity': 0.98
+          'line-color': '#e7e4d9',
+          'line-width': roadZoomWidth(0.85, 1.9),
+          'line-opacity': 0.76
         }
       }, 'campus-feature-points');
       map.addLayer({
@@ -420,10 +420,10 @@
         filter: ['in', ['get', 'class'], ['literal', ['path', 'track']]],
         layout: roadLineLayout,
         paint: {
-          'line-color': '#d0a96b',
-          'line-width': roadZoomWidth(0.9, 2.1),
+          'line-color': '#c2a36e',
+          'line-width': roadZoomWidth(0.75, 1.45),
           'line-dasharray': [1.4, 1.5],
-          'line-opacity': 0.98
+          'line-opacity': 0.72
         }
       }, 'campus-feature-points');
       map.addLayer({
@@ -481,13 +481,13 @@
         type: 'symbol',
         source: 'campus-openfreemap-buildings',
         'source-layer': 'poi',
-        minzoom: 15,
-        filter: ['all', ['has', 'name'], ['<=', ['get', 'rank'], 18]],
+        minzoom: 16,
+        filter: ['all', ['has', 'name'], ['<=', ['get', 'rank'], 14]],
         layout: {
           visibility: 'none',
           'text-field': ['get', 'name'],
           'text-font': ['Noto Sans Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 15, 9, 18, 11],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 16, 8, 19, 10],
           'text-offset': [0, 0.8],
           'text-anchor': 'top',
           'symbol-sort-key': ['coalesce', ['get', 'rank'], 99],
@@ -810,7 +810,12 @@
     button.disabled = true;
     button.textContent = 'Discovering buildings…';
     progress.dataset.importing = 'true';
-    progress.textContent = 'Requesting mapped building outlines from OpenStreetMap. This request runs only when an administrator starts it.';
+    const centreNotice = profile.center_status === 'verified'
+      ? 'Using a verified campus centre.'
+      : profile.center_status === 'official_locator'
+        ? 'Warning: this is an official campus locator, not a surveyed centre; the discovery circle may not cover the whole campus.'
+        : 'Warning: this is an unverified candidate centre; the discovery circle may miss campus buildings.';
+    progress.textContent = centreNotice + ' Requesting candidate building outlines from OpenStreetMap. Results will remain private and unpublished.';
     try {
       let payload = null;
       let lastError = null;
@@ -910,7 +915,7 @@
     const zoom = map.getZoom();
     const modeName = mapMode === '3d' ? '3D' : mapMode === 'satellite' ? 'Satellite' : 'Street';
     summary.textContent = `${modeName} · ` + (zoom >= 16
-      ? `Building-level view · zoom ${zoom.toFixed(1)}`
+      ? `Close-up view · zoom ${zoom.toFixed(1)}`
       : zoom >= 13
         ? `Campus-area view · zoom ${zoom.toFixed(1)}`
         : `Regional view · zoom ${zoom.toFixed(1)}`);
@@ -924,19 +929,38 @@
     const target = $('campus-map-3d-coverage');
     if (!target) return;
     const declaredStatus = activeCampusProfile?.building_coverage_status || 'unassessed';
+    const centreStatus = activeCampusProfile?.center_status || 'missing';
+    const centreLabel = centreStatus === 'verified'
+      ? 'verified campus centre'
+      : centreStatus === 'official_locator'
+        ? 'official campus locator only (not a surveyed centre)'
+        : centreStatus === 'candidate'
+          ? 'candidate centre (unverified)'
+          : 'centre not set';
+    const boundaryStatus = activeCampusProfile?.boundary_status || 'missing';
+    const boundaryLabel = boundaryStatus === 'verified'
+      ? 'verified'
+      : boundaryStatus === 'candidate'
+        ? 'candidate, not verified'
+        : 'not mapped';
+    const verified = campusBuildings.filter(item => item.verification_status === 'verified').length;
+    const pending = campusBuildings.filter(item => item.verification_status === 'pending').length;
+    const campusFootprintSummary = campusBuildings.length
+      ? `${campusBuildings.length} campus-specific footprint records loaded (${verified} verified, ${pending} pending)`
+      : 'No campus-specific footprint records loaded';
     if (mapMode !== '3d') {
-      target.textContent = `3D building footprints: ${declaredStatus} · switch to 3D to inspect this area`;
+      target.textContent = `${campusFootprintSummary} · centre: ${centreLabel} · boundary: ${boundaryLabel} · coverage profile: ${declaredStatus}. Switch to 3D to inspect global OpenStreetMap building context; those shapes are not university-verified.`;
       return;
     }
     if (!map?.isStyleLoaded()) {
-      target.textContent = '3D building layers are loading.';
+      target.textContent = '3D map layers are loading. Global map data and university-verified campus data are shown separately.';
       return;
     }
     const hasCurated = campusBuildings.length > 0;
     const preferredLayer = hasCurated ? 'campus-curated-building-extrusions' : 'campus-osm-3d-buildings';
     const minZoom = hasCurated ? 14 : 15;
     if (map.getZoom() < minZoom) {
-      target.textContent = `Zoom in to level ${minZoom}+ to inspect mapped footprints · ${hasCurated ? campusBuildings.length + ' university building records' : 'global OSM layer'} · profile: ${declaredStatus}`;
+      target.textContent = `Zoom to ${minZoom}+ to inspect building shapes · ${campusFootprintSummary} · centre: ${centreLabel} · global OpenStreetMap context is not university-verified`;
       return;
     }
     try {
@@ -957,18 +981,15 @@
       const placeLabels = map.getLayer('campus-osm-3d-poi-labels')
         ? map.queryRenderedFeatures({ layers: ['campus-osm-3d-poi-labels'] }) : [];
       if (hasCurated) {
-        const verified = campusBuildings.filter(item => item.verification_status === 'verified').length;
-        const pending = campusBuildings.filter(item => item.verification_status === 'pending').length;
         const taggedHeights = campusBuildings.filter(item => item.height_m != null).length;
         const levelEstimates = campusBuildings.filter(item => item.height_m == null && item.levels != null).length;
-        target.textContent = `${keys.size.toLocaleString()} imported footprints in view · ${verified} verified · ${pending} pending · heights: ${taggedHeights} tagged, ${levelEstimates} estimated, ${campusBuildings.length - taggedHeights - levelEstimates} visual fallback`;
+        const visualFallbacks = campusBuildings.length - taggedHeights - levelEstimates;
+        target.textContent = `${keys.size.toLocaleString()} campus-specific outlines in view · ${verified} verified / ${pending} pending campus records loaded · centre: ${centreLabel} · boundary: ${boundaryLabel} · height data: ${taggedHeights} tagged, ${levelEstimates} floor-estimated, ${visualFallbacks} visual fallback`;
       } else {
-        target.textContent = keys.size
-          ? `${keys.size.toLocaleString()} global OSM footprints visible · ${placeLabels.length} named places · building heights approximate · profile: ${declaredStatus}`
-          : `No global OSM building footprints in the current view · profile status: ${declaredStatus}`;
+        target.textContent = `${keys.size.toLocaleString()} global OpenStreetMap building shapes in view (context only; not campus-verified) · ${placeLabels.length} visible OSM place labels (not university-approved) · ${campusFootprintSummary} · centre: ${centreLabel} · boundary: ${boundaryLabel} · OSM height values are mapped or estimated, not site-survey measurements · profile: ${declaredStatus}`;
       }
     } catch (error) {
-      target.textContent = `Could not inspect 3D building coverage · profile status: ${declaredStatus}`;
+      target.textContent = `Could not inspect rendered building shapes · ${campusFootprintSummary} · centre: ${centreLabel} · boundary: ${boundaryLabel}`;
     }
   }
 
