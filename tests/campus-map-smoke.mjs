@@ -118,7 +118,7 @@ assert.match(campusBuildingsSql, /campus_role='admin'[\s\S]*verification_status=
 assert.match(campusBuildingsSql, /ODbL-1\.0/, 'OpenStreetMap building candidates retain the ODbL licence attribution');
 assert.match(campusBuildingsSql, /'pending',false/, 'Imported building candidates remain pending and unpublished');
 assert.match(campusBuildingsSql, /private\.review_campus_map_building_impl/, 'Building review uses a checked university-scoped RPC');
-assert.match(campusBuildingsHardeningSql, /polygon ring is not closed/, 'Building import rejects unclosed polygon rings');
+assert.match(campusBuildingsHardeningSql, /polygon ring that is not closed/, 'Building import rejects unclosed polygon rings');
 assert.match(campusBuildingsHardeningSql, /numeric longitude\/latitude pair/, 'Building import validates each coordinate pair');
 assert.match(campusBuildingsHardeningSql, /building_coverage_status=CASE/, 'A verified building only advances campus coverage to partial');
 assert.match(html, /id="campus-map-building-discover"/, 'Verified campus administrators can discover building footprints');
