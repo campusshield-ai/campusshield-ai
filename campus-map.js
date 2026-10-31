@@ -118,20 +118,21 @@
         const key = encodeURIComponent(maptilerKey.trim());
         map.addSource('campus-satellite', {
           type: 'raster',
-          tiles: ['https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key=' + key],
-          tileSize: 256,
+          url: 'https://api.maptiler.com/tiles/satellite-v2/tiles.json?key=' + key,
+          tileSize: 512,
           attribution: '© MapTiler © OpenStreetMap contributors'
         });
         map.addLayer({ id: 'campus-satellite-layer', type: 'raster', source: 'campus-satellite', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0.96 } }, 'campus-feature-points');
         map.addSource('campus-terrain', {
           type: 'raster-dem',
-          tiles: ['https://api.maptiler.com/tiles/terrain-rgb-v2/{z}/{x}/{y}.webp?key=' + key],
-          tileSize: 256,
+          url: 'https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=' + key,
+          tileSize: 512,
+          maxzoom: 14,
           encoding: 'mapbox'
         });
         map.addSource('campus-buildings', {
           type: 'vector',
-          tiles: ['https://api.maptiler.com/tiles/v3/{z}/{x}/{y}.pbf?key=' + key],
+          url: 'https://api.maptiler.com/tiles/v3/tiles.json?key=' + key,
           minzoom: 12,
           maxzoom: 18
         });
@@ -141,6 +142,7 @@
           source: 'campus-buildings',
           'source-layer': 'building',
           minzoom: 14,
+          filter: ['!', ['has', 'hide_3d']],
           paint: {
             'fill-extrusion-color': '#9eb9ac',
             'fill-extrusion-height': ['coalesce', ['get', 'render_height'], ['get', 'height'], 8],
