@@ -331,6 +331,121 @@
         maxzoom: 14,
         attribution: '© OpenFreeMap © OpenMapTiles · Data © OpenStreetMap contributors'
       });
+
+      // Campus roads and paths use real OpenMapTiles transportation geometry derived
+      // from OpenStreetMap. Keep these layers enabled in 2D, satellite and 3D modes;
+      // never synthesize connecting lines where the source has no mapped geometry.
+      const roadLineLayout = { 'line-cap': 'round', 'line-join': 'round' };
+      const roadZoomWidth = (low, high) => ['interpolate', ['linear'], ['zoom'], 12, low, 16, high];
+      map.addLayer({
+        id: 'campus-roads-main-casing',
+        type: 'line',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'transportation',
+        minzoom: 11,
+        filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary']]],
+        layout: roadLineLayout,
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': roadZoomWidth(3.2, 8.5),
+          'line-opacity': 0.96
+        }
+      }, 'campus-feature-points');
+      map.addLayer({
+        id: 'campus-roads-main',
+        type: 'line',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'transportation',
+        minzoom: 11,
+        filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary']]],
+        layout: roadLineLayout,
+        paint: {
+          'line-color': '#59645f',
+          'line-width': roadZoomWidth(2.1, 6.2),
+          'line-opacity': 0.98
+        }
+      }, 'campus-feature-points');
+      map.addLayer({
+        id: 'campus-roads-secondary-casing',
+        type: 'line',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'transportation',
+        minzoom: 12,
+        filter: ['in', ['get', 'class'], ['literal', ['secondary', 'tertiary', 'minor']]],
+        layout: roadLineLayout,
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': roadZoomWidth(2.2, 5.2),
+          'line-opacity': 0.94
+        }
+      }, 'campus-feature-points');
+      map.addLayer({
+        id: 'campus-roads-secondary',
+        type: 'line',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'transportation',
+        minzoom: 12,
+        filter: ['in', ['get', 'class'], ['literal', ['secondary', 'tertiary', 'minor']]],
+        layout: roadLineLayout,
+        paint: {
+          'line-color': '#87918b',
+          'line-width': roadZoomWidth(1.35, 3.5),
+          'line-opacity': 0.98
+        }
+      }, 'campus-feature-points');
+      map.addLayer({
+        id: 'campus-roads-local',
+        type: 'line',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'transportation',
+        minzoom: 14,
+        filter: ['in', ['get', 'class'], ['literal', ['residential', 'service', 'living_street', 'unclassified']]],
+        layout: roadLineLayout,
+        paint: {
+          'line-color': '#f8faf7',
+          'line-width': roadZoomWidth(1.1, 2.8),
+          'line-opacity': 0.98
+        }
+      }, 'campus-feature-points');
+      map.addLayer({
+        id: 'campus-footpaths',
+        type: 'line',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'transportation',
+        minzoom: 14,
+        filter: ['in', ['get', 'class'], ['literal', ['path', 'track']]],
+        layout: roadLineLayout,
+        paint: {
+          'line-color': '#d0a96b',
+          'line-width': roadZoomWidth(0.9, 2.1),
+          'line-dasharray': [1.4, 1.5],
+          'line-opacity': 0.98
+        }
+      }, 'campus-feature-points');
+      map.addLayer({
+        id: 'campus-road-labels',
+        type: 'symbol',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'transportation_name',
+        minzoom: 14,
+        layout: {
+          'symbol-placement': 'line',
+          'text-field': ['coalesce', ['get', 'name'], ['get', 'ref']],
+          'text-font': ['Noto Sans Medium'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 14, 9, 18, 12],
+          'text-max-angle': 35,
+          'text-keep-upright': true,
+          'text-padding': 3,
+          'symbol-spacing': 260,
+          'text-allow-overlap': false
+        },
+        paint: {
+          'text-color': '#34443d',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 2,
+          'text-halo-blur': 0.3
+        }
+      }, 'campus-feature-points');
       map.addLayer({
         id: 'campus-osm-3d-buildings',
         type: 'fill-extrusion',
