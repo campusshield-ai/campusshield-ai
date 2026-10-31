@@ -14,9 +14,9 @@ const docs = read('docs/CAMPUSMAP_ROLLOUT.md');
 const campusProfilesSql = read('supabase/migrations/20261031143000_campus_map_university_profiles_and_centres.sql');
 const campusProfileGrantSql = read('supabase/migrations/20261031144500_grant_verified_campus_map_profile_rpc.sql');
 const campusModelSql = read('supabase/migrations/20261031150500_campus_map_private_glb_model_submissions.sql');
-const campusBuildingsSql = read('supabase/migrations/20261031162000_campus_map_building_footprint_import_pipeline.sql');
-const campusBuildingsHardeningSql = read('supabase/migrations/20261031163000_harden_campus_building_geometry_review.sql');
-const campusBuildingsNullGuardSql = read('supabase/migrations/20261031163500_guard_empty_building_import_payload.sql');
+const campusBuildingsSql = read('supabase/migrations/20261031142127_campus_map_building_footprint_import_pipeline.sql');
+const campusBuildingsHardeningSql = read('supabase/migrations/20261031142749_harden_campus_building_geometry_review.sql');
+const campusBuildingsNullGuardSql = read('supabase/migrations/20261031142958_guard_empty_building_import_payload.sql');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
 assert.match(html, /id="page-campus-map"/, 'CampusMap page container is present');
