@@ -2547,10 +2547,19 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
 <section class="page" id="page-campus-map" aria-labelledby="campus-map-title">
   <div class="heading"><div><p class="hero-eyebrow">Explore your university</p><h1 id="campus-map-title">CampusMap</h1><p>Find verified campus buildings, facilities and walking directions.</p></div></div>
-  <div class="panel"><div class="campus-map-shell">
+  <div class="panel">
+    <div class="campus-map-view-status">
+      <div><strong>Campus-level precision map</strong><small id="campus-map-scale-summary">Loading map scale…</small></div>
+      <button class="campus-map-action primary" type="button" id="campus-map-center">Centre campus</button>
+    </div>
+    <div class="campus-map-shell">
     <div class="campus-map-stage"><div id="campus-map-canvas" role="application" aria-label="Interactive university map"></div>
       <div class="campus-map-overlay"><label class="campus-map-search-wrap"><span aria-hidden="true">⌕</span><input id="campus-map-search" type="search" placeholder="Search buildings and facilities" autocomplete="off" aria-label="Search campus locations"></label>
         <div class="campus-map-controls" aria-label="Map view"><button type="button" id="campus-map-2d" class="active">2D</button><button type="button" id="campus-map-3d">3D</button><button type="button" id="campus-map-satellite" title="Satellite imagery requires a restricted MapTiler key">Satellite</button></div></div>
+      <div class="campus-map-legend" aria-label="Map marker legend">
+        <span><i class="campus-map-legend-verified"></i> Published location</span>
+        <span><i class="campus-map-legend-draft"></i> Admin-only draft pin</span>
+      </div>
       <span class="campus-map-attribution">Map data © OpenStreetMap contributors</span>
     </div>
     <aside class="campus-map-sidebar"><h2 id="campus-map-campus-name">Your university</h2><p>Campus locations and facilities</p>
@@ -2566,7 +2575,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
           <label>Location name<input id="campus-map-admin-name" required minlength="2" maxlength="180" placeholder="e.g. Laz Otti Memorial Library"></label>
           <label>Category<select id="campus-map-admin-type"><option value="building">Building</option><option value="lecture_hall">Lecture hall</option><option value="hostel">Hostel</option><option value="library">Library</option><option value="cafeteria">Cafeteria</option><option value="medical">Medical / hospital</option><option value="security">Security</option><option value="gate">Gate</option><option value="parking">Parking</option><option value="sports">Sports</option><option value="facility">Facility</option><option value="assembly_point">Assembly point</option><option value="accessible_entry">Accessible entry</option><option value="emergency_point">Emergency point</option></select></label>
           <label>Description<textarea id="campus-map-admin-description" rows="2" maxlength="1000"></textarea></label>
-          <div class="campus-map-admin-coords"><label>Latitude<input id="campus-map-admin-lat" type="number" step="any" min="-90" max="90"></label><label>Longitude<input id="campus-map-admin-lng" type="number" step="any" min="-180" max="180"></label></div>
+          <div class="campus-map-admin-coords"><label>Latitude<input id="campus-map-admin-lat" type="number" step="any" min="-90" max="90" inputmode="decimal"></label><label>Longitude<input id="campus-map-admin-lng" type="number" step="any" min="-180" max="180" inputmode="decimal"></label></div>
+          <div class="campus-map-pin-tools">
+            <button type="button" class="campus-map-action" id="campus-map-pick-pin">Pick on map</button>
+            <button type="button" class="campus-map-action" id="campus-map-use-gps">Use GPS</button>
+            <button type="button" class="campus-map-action" id="campus-map-preview-pin">Preview pin</button>
+          </div>
+          <p class="campus-map-pin-status" id="campus-map-pin-status" role="status" aria-live="polite">Choose Pick on map or Use GPS to add a draft coordinate. The marker remains unpublished.</p>
           <label>Evidence source (HTTPS)<input id="campus-map-admin-source" type="url" placeholder="Official campus source or survey record"></label>
           <label class="campus-map-admin-check"><input id="campus-map-admin-verified" type="checkbox"> I checked this exact location and its source</label>
           <label class="campus-map-admin-check"><input id="campus-map-admin-publish" type="checkbox"> Publish after verification</label>
