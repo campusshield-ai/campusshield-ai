@@ -81,3 +81,6 @@
  .campus-map-legend{left:8px;right:8px;bottom:8px;gap:7px;font-size:8px}
  .campus-map-pin-tools{grid-template-columns:1fr}
 }
+
+
+.campus-map-admin label>small{color:#84958d;font-size:8px;font-weight:500;line-height:1.45}
