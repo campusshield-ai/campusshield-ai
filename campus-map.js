@@ -234,7 +234,7 @@
         type: 'fill',
         source: 'campus-curated-buildings',
         layout: { visibility: 'visible' },
-        paint: { 'fill-color': ['case', ['==', ['get', 'verification_status'], 'verified'], '#9fbca9', '#d9a552'], 'fill-opacity': 0.18 }
+        paint: { 'fill-color': ['case', ['==', ['get', 'verification_status'], 'verified'], ['coalesce', ['get', 'roof_colour'], ['get', 'facade_colour'], '#9fbca9'], ['coalesce', ['get', 'roof_colour'], '#d9a552']], 'fill-opacity': 0.22 }
       });
       map.addLayer({
         id: 'campus-curated-building-verified-outline',
@@ -515,7 +515,10 @@
         const levels = Number(item.levels);
         const hasTaggedHeight = item.height_m != null && Number.isFinite(taggedHeight) && taggedHeight > 0;
         const hasLevels = item.levels != null && Number.isFinite(levels) && levels > 0;
-        const renderHeight = hasTaggedHeight ? taggedHeight : hasLevels ? levels * 3.2 : 6.5;
+        const minHeightValue = item.min_height_m == null ? 0 : Number(item.min_height_m);
+        const minHeight = Number.isFinite(minHeightValue) && minHeightValue >= 0 ? minHeightValue : 0;
+        const baseRenderHeight = hasTaggedHeight ? taggedHeight : hasLevels ? Math.min(300, levels * 3.2) : 6.5;
+        const renderHeight = Math.min(302, Math.max(baseRenderHeight, minHeight + 1.5));
         return {
           type: 'Feature',
           id: item.id,
@@ -526,7 +529,7 @@
             building_class: item.building_class || 'building',
             verification_status: item.verification_status || 'pending',
             height_m: hasTaggedHeight ? taggedHeight : null,
-            min_height_m: item.min_height_m == null ? 0 : Number(item.min_height_m),
+            min_height_m: minHeight,
             levels: hasLevels ? levels : null,
             render_height_m: renderHeight,
             height_method: hasTaggedHeight ? 'OpenStreetMap height tag' : hasLevels ? 'estimated from floor count' : 'visual fallback only',
@@ -761,7 +764,7 @@
       if (!payload) throw lastError || new Error('No OpenStreetMap query service responded.');
       const elements = Array.isArray(payload.elements) ? payload.elements : [];
       const candidates = elements
-        .filter(element => element.type === 'way' && element.tags?.building)
+        .filter(element => element.type === 'way' && element.tags?.building && !['no','false','0'].includes(String(element.tags.building).toLowerCase()))
         .map(osmWayToBuildingCandidate)
         .filter(Boolean);
       if (!candidates.length) {
