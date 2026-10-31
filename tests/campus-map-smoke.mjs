@@ -68,6 +68,14 @@ assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles pr
 assert.match(js, /tiles\.openfreemap\.org\/fonts\/\{fontstack\}\/\{range\}\.pbf/, 'OpenFreeMap glyphs are configured for readable map labels');
 assert.match(js, /Noto Sans Regular/, 'Map labels use OpenFreeMap supported Noto Sans glyphs');
 assert.match(js, /Noto Sans Bold/, 'Cluster count labels use OpenFreeMap supported bold glyphs');
+assert.match(js, /'source-layer': 'transportation'/, 'Road styling uses mapped OpenMapTiles transportation geometry');
+assert.match(js, /campus-roads-main-casing/, 'Primary campus roads have a high-contrast casing');
+assert.match(js, /campus-roads-secondary/, 'Secondary roads have a distinct thinner style');
+assert.match(js, /campus-roads-local/, 'Mapped local and access roads are visible at campus zoom');
+assert.match(js, /campus-footpaths/, 'Mapped paths are visually distinct and dashed');
+assert.match(js, /campus-road-labels/, 'Mapped road names follow road geometry');
+assert.match(js, /'source-layer': 'transportation_name'/, 'Road labels use the mapped transportation-name layer');
+assert.match(js, /never synthesize connecting lines/, 'The road renderer does not invent roads in unmapped areas');
 assert.match(js, /campus-osm-3d-buildings/, '3D mode renders building footprints as extrusions');
 assert.match(js, /render_height/, 'Building extrusion height uses OSM-derived height attributes');
 assert.match(js, /campus-osm-3d-poi-labels/, 'Satellite and 3D modes include OSM place labels');
