@@ -54,3 +54,30 @@
 .campus-map-campus-picker select{width:100%;padding:9px;border:1px solid #dce8e2;border-radius:9px;background:#fff;color:#24473e;font-size:11px}
 .report-location-pin{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
 .report-location-pin small{font-size:10px;line-height:1.45}
+
+
+/* CampusMap precision and verified-draft workflow */
+.campus-map-view-status{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:11px 13px;border:1px solid #dce9e2;border-radius:13px;background:linear-gradient(110deg,#f7fbf8,#fff)}
+.campus-map-view-status>div{display:grid;gap:3px;min-width:0}
+.campus-map-view-status strong{color:#1d4b43;font-size:12px}
+.campus-map-view-status small{color:#768b82;font-size:10px}
+.campus-map-view-status .campus-map-action{white-space:nowrap}
+.campus-map-legend{position:absolute;z-index:2;left:12px;bottom:13px;display:flex;gap:10px;flex-wrap:wrap;padding:8px 10px;border:1px solid #dce8e2;border-radius:10px;background:#ffffffed;color:#516860;font-size:9px;font-weight:750;box-shadow:0 4px 16px #173d3018}
+.campus-map-legend span{display:inline-flex;align-items:center;gap:6px}
+.campus-map-legend i{display:inline-block;width:8px;height:8px;border-radius:50%}
+.campus-map-legend-verified{background:#0f8973}
+.campus-map-legend-draft{background:#d29332}
+.campus-map-pin-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.campus-map-pin-tools button{min-width:0;padding:8px 6px;font-size:9px}
+.campus-map-pin-status{margin:0!important;padding:8px 9px;border:1px dashed #cbded2;border-radius:9px;background:#fff;color:#63796f!important;font-size:9px!important}
+.campus-map-admin-draft{min-width:0}
+.campus-map-admin-draft span{min-width:0;overflow-wrap:anywhere}
+#campus-map-canvas .maplibregl-canvas{outline:0}
+#campus-map-canvas .maplibregl-ctrl-group{overflow:hidden;border:1px solid #d9e5de;border-radius:11px;box-shadow:0 4px 14px #183b3018}
+#campus-map-canvas .maplibregl-ctrl button{min-width:30px;min-height:30px}
+@media(max-width:600px){
+ .campus-map-view-status{align-items:flex-start;flex-direction:column}
+ .campus-map-view-status .campus-map-action{width:100%}
+ .campus-map-legend{left:8px;right:8px;bottom:8px;gap:7px;font-size:8px}
+ .campus-map-pin-tools{grid-template-columns:1fr}
+}
