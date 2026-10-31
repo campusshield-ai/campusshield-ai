@@ -15,6 +15,24 @@
   "prefer_related_applications": false,
   "icons": [
     {
+      "src": "./icons/campusshield-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/campusshield-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/campusshield-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
       "src": "./icons/torio-ai.svg",
       "sizes": "any",
       "type": "image/svg+xml",
