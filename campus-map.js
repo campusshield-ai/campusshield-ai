@@ -703,17 +703,6 @@
     $('campus-map-incidents').classList.toggle('primary', incidentsVisible);
     setStatus(incidentsVisible ? 'Showing up to 100 geolocated incidents for your university. Reporter identities and descriptions are not displayed.' : 'Incident pins hidden.');
   });
-  $('campus-map-satellite')?.addEventListener('click', () => {
-    if (!map?.getLayer('campus-satellite-layer')) {
-      setStatus('Satellite imagery needs a domain-restricted MapTiler key in CampusShieldMapConfig.', 'warning');
-      return;
-    }
-    const visible = map.getLayoutProperty('campus-satellite-layer', 'visibility') === 'visible';
-    map.setLayoutProperty('campus-satellite-layer', 'visibility', visible ? 'none' : 'visible');
-    $('campus-map-satellite').classList.toggle('active', !visible);
-    setStatus(visible ? 'Satellite imagery hidden.' : 'Satellite imagery enabled.');
-  });
-
   $('report-use-location')?.addEventListener('click', () => {
     const status = $('report-location-status');
     if (!navigator.geolocation) {
