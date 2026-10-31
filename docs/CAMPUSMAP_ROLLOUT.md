@@ -44,3 +44,11 @@ The 2D and tilted MapLibre views work without a key. Satellite tiles, terrain an
 
 
 The Babcock Main Campus map now opens at the university-level Google Maps locator embedded on its official contact page (approximately 6.8910932, 3.7191259). It is explicitly labelled as a campus locator, not a building entrance. Individual building pins remain unpublished until verified.
+
+
+## MapTiler key setup
+1. Create a MapTiler account and generate a browser/public API key.
+2. Restrict the key by allowed HTTP referrers to the CampusShield staging preview hostname and the approved production domain(s). Do not use an unrestricted key.
+3. Put the restricted public key in campus-map-config.js as the value of window.CampusShieldMapConfig.maptilerKey.
+4. Keep secret/server keys out of the repository and browser code.
+5. Re-run the staging map tests and verify satellite imagery, terrain, and the building layer load before promoting the feature.
