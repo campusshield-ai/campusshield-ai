@@ -25,6 +25,8 @@
   let selectedFeature = null;
   let userMarker = null;
   let campusCenterMarker = null;
+  let placementMarker = null;
+  let placementMode = false;
   let routeLayerAdded = false;
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({
@@ -95,6 +97,20 @@
         },
         paint: { 'text-color': '#15343a', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 }
       });
+      map.addSource('campus-drafts', { type: 'geojson', data: featureCollection([]) });
+      map.addLayer({
+        id: 'campus-draft-points',
+        type: 'circle',
+        source: 'campus-drafts',
+        paint: { 'circle-radius': 9, 'circle-color': '#d29332', 'circle-stroke-width': 2, 'circle-stroke-color': '#fff' }
+      });
+      map.addLayer({
+        id: 'campus-draft-labels',
+        type: 'symbol',
+        source: 'campus-drafts',
+        layout: { 'text-field': ['concat', 'DRAFT · ', ['get', 'name']], 'text-size': 10, 'text-offset': [0, 1.5], 'text-anchor': 'top', 'text-allow-overlap': false },
+        paint: { 'text-color': '#815512', 'text-halo-color': '#fff', 'text-halo-width': 1.5 }
+      });
       map.addSource('campus-incidents', { type: 'geojson', data: featureCollection([]) });
       map.addLayer({
         id: 'campus-incident-points',
@@ -112,6 +128,25 @@
       });
       map.on('mouseenter', 'campus-incident-points', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'campus-incident-points', () => { map.getCanvas().style.cursor = ''; });
+      map.on('click', 'campus-draft-points', event => {
+        if (!isCampusAdmin) return;
+        const id = event.features?.[0]?.properties?.id;
+        const draft = adminDrafts.find(item => item.id === id);
+        if (draft) {
+          editAdminFeature(draft);
+          setStatus('Draft selected. Confirm the exact building entrance before marking it verified.', 'warning');
+        }
+      });
+      map.on('mouseenter', 'campus-draft-points', () => { map.getCanvas().style.cursor = isCampusAdmin ? 'pointer' : ''; });
+      map.on('mouseleave', 'campus-draft-points', () => { map.getCanvas().style.cursor = placementMode ? 'crosshair' : ''; });
+      map.on('click', event => {
+        if (!placementMode || !isCampusAdmin) return;
+        applyAdminCoordinates(event.lngLat.lat, event.lngLat.lng, 'manual map selection');
+        placementMode = false;
+        map.getCanvas().style.cursor = '';
+        $('campus-map-pick-pin')?.classList.remove('primary');
+      });
+      map.on('zoomend', updateMapScaleSummary);
 
       const maptilerKey = window.CampusShieldMapConfig?.maptilerKey;
       if (typeof maptilerKey === 'string' && maptilerKey.trim()) {
@@ -162,7 +197,12 @@
       map.on('mouseenter', 'campus-feature-points', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'campus-feature-points', () => { map.getCanvas().style.cursor = ''; });
       updateSource();
+      updateDraftSource();
       updateIncidentSource();
+      // The initial camera move may be requested before the MapLibre style is ready.
+      // Re-apply it after load so the first visible frame lands at campus scale.
+      fitCampus();
+      updateMapScaleSummary();
     });
     return map;
   }
@@ -183,30 +223,107 @@
     if (source) source.setData(featureCollection(features));
   }
 
+  function updateDraftSource() {
+    const source = map?.getSource('campus-drafts');
+    if (!source) return;
+    const coordinateDrafts = isCampusAdmin ? adminDrafts.filter(item =>
+      Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude))
+    ) : [];
+    source.setData(featureCollection(coordinateDrafts));
+  }
+
+  function updateMapScaleSummary() {
+    const summary = $('campus-map-scale-summary');
+    if (!summary || !map) return;
+    const zoom = map.getZoom();
+    summary.textContent = zoom >= 16
+      ? `Building-level view · zoom ${zoom.toFixed(1)}`
+      : zoom >= 13
+        ? `Campus-area view · zoom ${zoom.toFixed(1)}`
+        : `Regional view · zoom ${zoom.toFixed(1)}`;
+  }
+
+  function isBabcockUniversity() {
+    const identity = [campus?.university_slug, campus?.university_name, campus?.name]
+      .filter(Boolean).join(' ').toLowerCase();
+    return identity.includes('babcock');
+  }
+
+  function getCampusCentre() {
+    const selected = $('campus-map-campus-select')?.value || 'main-campus';
+    if (isBabcockUniversity() && selected === 'main-campus') {
+      // Official Babcock contact-page map locator. This is a campus centre, not a building pin.
+      return [3.7191259, 6.8910932];
+    }
+    const longitude = Number(campus?.map_longitude ?? campus?.longitude);
+    const latitude = Number(campus?.map_latitude ?? campus?.latitude);
+    if (Number.isFinite(latitude) && Number.isFinite(longitude) && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180) {
+      return [longitude, latitude];
+    }
+    return null;
+  }
+
   function fitCampus() {
     if (!map) return;
-    if (features.length && campusCenterMarker) { campusCenterMarker.remove(); campusCenterMarker = null; }
-    if (features.length === 1) {
-      map.flyTo({ center: [Number(features[0].longitude), Number(features[0].latitude)], zoom: 16 });
-    } else if (features.length > 1) {
+    if (!map.isStyleLoaded()) {
+      map.once('load', fitCampus);
+      return;
+    }
+    const draftPoints = isCampusAdmin ? adminDrafts.filter(item =>
+      Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude))
+    ) : [];
+    const viewPoints = [...features, ...draftPoints];
+    if (viewPoints.length && campusCenterMarker) {
+      campusCenterMarker.remove();
+      campusCenterMarker = null;
+    }
+    if (viewPoints.length === 1) {
+      map.flyTo({ center: [Number(viewPoints[0].longitude), Number(viewPoints[0].latitude)], zoom: 17, pitch: 0, bearing: 0, essential: true });
+      return;
+    }
+    if (viewPoints.length > 1) {
       const bounds = new maplibregl.LngLatBounds();
-      features.forEach(item => bounds.extend([Number(item.longitude), Number(item.latitude)]));
-      map.fitBounds(bounds, { padding: 70, maxZoom: 16, duration: 700 });
-    } else if (campus?.university_slug === 'babcock-university' && ($('campus-map-campus-select')?.value || 'main-campus') === 'main-campus') {
-      // Coordinates come from the official university contact page's Google Maps embed.
-      // This is a campus locator, not a verified building entrance or individual facility pin.
-      const center = [3.7191259, 6.8910932];
-      map.flyTo({ center, zoom: 15 });
+      viewPoints.forEach(item => bounds.extend([Number(item.longitude), Number(item.latitude)]));
+      map.fitBounds(bounds, { padding: { top: 85, right: 85, bottom: 85, left: 85 }, maxZoom: 16.6, duration: 750 });
+      return;
+    }
+    const center = getCampusCentre();
+    if (center) {
+      map.flyTo({ center, zoom: 16.1, pitch: 0, bearing: 0, essential: true });
       if (!campusCenterMarker) {
         campusCenterMarker = new maplibregl.Marker({ color: '#087f75' })
           .setLngLat(center)
           .setPopup(new maplibregl.Popup({ offset: 24 }).setText('Babcock University — official campus locator, not a building pin'))
           .addTo(map);
       } else campusCenterMarker.setLngLat(center);
-    } else if (campusCenterMarker) {
+      setStatus('Centred on the official campus locator. Building entrances still need individual verification.', 'info');
+      return;
+    }
+    if (campusCenterMarker) {
       campusCenterMarker.remove();
       campusCenterMarker = null;
     }
+    setStatus('No verified map centre is recorded for this campus yet. Use a verified campus administrator pin or location survey.', 'warning');
+  }
+
+  function applyAdminCoordinates(latitude, longitude, source, accuracy = null) {
+    const lat = Number(latitude);
+    const lng = Number(longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+      setStatus('The selected coordinates are invalid. Choose a point within the world map.', 'error');
+      return;
+    }
+    $('campus-map-admin-lat').value = lat.toFixed(7);
+    $('campus-map-admin-lng').value = lng.toFixed(7);
+    if (map && map.isStyleLoaded()) {
+      if (!placementMarker) placementMarker = new maplibregl.Marker({ color: '#d29332', draggable: true });
+      placementMarker.setLngLat([lng, lat]).addTo(map);
+      map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 17.5), duration: 500 });
+    }
+    const accuracyText = Number.isFinite(accuracy) ? ` GPS accuracy reported by the device: ±${Math.round(accuracy)} m.` : '';
+    setStatus(`Candidate pin set from ${source}: ${lat.toFixed(7)}, ${lng.toFixed(7)}.${accuracyText} Drag the amber pin to refine it. It is not published or verified.`, 'warning');
+    const pinStatus = $('campus-map-pin-status');
+    if (pinStatus) pinStatus.textContent = `Candidate coordinates: ${lat.toFixed(7)}, ${lng.toFixed(7)}${Number.isFinite(accuracy) ? ` · reported accuracy ±${Math.round(accuracy)} m` : ''}. Verify the exact building entrance before publishing.`;
   }
 
   function iconFor(type) {
@@ -240,6 +357,7 @@
     features = allFeatures.filter(item => item.is_published && item.campus_slug === selected && item.latitude != null && item.longitude != null);
     adminDrafts = isCampusAdmin ? allFeatures.filter(item => !item.is_published && item.campus_slug === selected) : [];
     updateSource();
+    updateDraftSource();
     renderFeatures();
     renderAdminDrafts();
     fitCampus();
@@ -248,14 +366,25 @@
   function renderAdminDrafts() {
     const host = $('campus-map-admin-drafts');
     if (!host) return;
-    host.innerHTML = adminDrafts.length ? adminDrafts.map(item => `
+    host.innerHTML = adminDrafts.length ? adminDrafts.map(item => {
+      const hasCoordinates = item.latitude != null && item.longitude != null;
+      const coordinateLabel = hasCoordinates
+        ? (item.metadata?.coordinate_source_label ? 'coordinate candidate · pending local check' : 'coordinates saved · not yet verified')
+        : 'coordinates missing';
+      return `
       <div class="campus-map-admin-draft">
-        <span><strong>${esc(item.name)}</strong><small>${esc(item.verification_status || 'pending')} · ${item.latitude == null ? 'coordinates missing' : 'coordinates saved'}</small></span>
+        <span><strong>${esc(item.name)}</strong><small>${esc(item.verification_status || 'pending')} · ${coordinateLabel}</small></span>
         <button type="button" data-edit-map-id="${esc(item.id)}">Edit</button>
-      </div>`).join('') : '<p class="campus-map-empty">No draft locations for this campus.</p>';
+      </div>`;
+    }).join('') : '<p class="campus-map-empty">No draft locations for this campus.</p>';
   }
 
   function resetAdminForm() {
+    placementMode = false;
+    if (map) map.getCanvas().style.cursor = '';
+    $('campus-map-pick-pin')?.classList.remove('primary');
+    if (placementMarker) { placementMarker.remove(); placementMarker = null; }
+    if ($('campus-map-pin-status')) $('campus-map-pin-status').textContent = 'Choose Pick on map or Use GPS to add a draft coordinate. The marker remains unpublished.';
     $('campus-map-feature-id').value = '';
     $('campus-map-admin-name').value = '';
     $('campus-map-admin-description').value = '';
@@ -278,6 +407,8 @@
     $('campus-map-admin-source').value = item.source_url || '';
     $('campus-map-admin-verified').checked = item.verification_status === 'verified';
     $('campus-map-admin-publish').checked = !!item.is_published;
+    if (item.latitude != null && item.longitude != null) applyAdminCoordinates(item.latitude, item.longitude, 'saved draft');
+    else if (placementMarker) { placementMarker.remove(); placementMarker = null; }
     $('campus-map-admin-name').focus();
   }
 
@@ -404,17 +535,51 @@
       p_mark_verified: $('campus-map-admin-verified').checked,
       p_publish: $('campus-map-admin-publish').checked
     };
+    const hasCoordinatePair = payload.p_latitude !== null && payload.p_longitude !== null;
+    if ((payload.p_mark_verified || payload.p_publish) && (!hasCoordinatePair || !payload.p_source_url)) {
+      return setStatus('Verification requires both coordinates and an evidence URL. Use Pick on map or Use GPS, then add a source that supports the exact location.', 'warning');
+    }
+    if (payload.p_publish && !payload.p_mark_verified) {
+      return setStatus('A location cannot be published until the administrator marks it verified.', 'warning');
+    }
     try {
       const { error } = await client().rpc('manage_campus_map_feature', payload);
       if (error) throw error;
       resetAdminForm();
-      setStatus('Campus location saved. Published locations are now available to this university only.', 'success');
+      setStatus('Campus location saved. Draft pins are visible only to verified campus administrators until verification and publication.', 'success');
       await loadCampus();
     } catch (error) {
       setStatus(error.message || 'Could not save this campus location.', 'error');
     }
   });
   $('campus-map-admin-reset')?.addEventListener('click', resetAdminForm);
+  $('campus-map-pick-pin')?.addEventListener('click', () => {
+    if (!isCampusAdmin) return setStatus('Only a verified campus administrator can place draft pins.', 'warning');
+    if (!ensureMap()) return setStatus('The map is still loading. Try again when it is ready.', 'warning');
+    placementMode = true;
+    $('campus-map-pick-pin').classList.add('primary');
+    map.getCanvas().style.cursor = 'crosshair';
+    setStatus('Pin placement active: click the centre of the correct building footprint or its main entrance. The amber marker can be dragged to refine it.', 'info');
+    $('campus-map-pin-status').textContent = 'Pin placement active. Click the map once at the exact entrance or building footprint.';
+  });
+  $('campus-map-use-gps')?.addEventListener('click', () => {
+    if (!isCampusAdmin) return setStatus('Only a verified campus administrator can place draft pins.', 'warning');
+    if (!navigator.geolocation) return setStatus('This browser does not support GPS location.', 'warning');
+    setStatus('Requesting precise device location. Stand at the building entrance and allow location access.', 'info');
+    navigator.geolocation.getCurrentPosition(position => {
+      applyAdminCoordinates(position.coords.latitude, position.coords.longitude, 'device GPS', position.coords.accuracy);
+    }, error => {
+      const reason = error.code === 1 ? 'Location permission was denied.' : error.code === 2 ? 'The device could not determine your location.' : 'The GPS request timed out.';
+      setStatus(reason + ' You can use Pick on map instead.', 'warning');
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  });
+  $('campus-map-preview-pin')?.addEventListener('click', () => {
+    const latitude = Number($('campus-map-admin-lat').value);
+    const longitude = Number($('campus-map-admin-lng').value);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return setStatus('Enter both latitude and longitude first.', 'warning');
+    applyAdminCoordinates(latitude, longitude, 'manual coordinate preview');
+  });
+  $('campus-map-center')?.addEventListener('click', () => fitCampus());
   $('campus-map-admin-drafts')?.addEventListener('click', event => {
     const button = event.target.closest('[data-edit-map-id]');
     if (!button) return;
