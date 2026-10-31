@@ -565,7 +565,7 @@
           setStatus('Satellite tiles are temporarily unavailable at this zoom. Try zooming out or switching to 2D.', 'warning');
         } else if (sourceId === 'campus-openfreemap-buildings') {
           setStatus('3D building data is temporarily unavailable. The satellite map remains available.', 'warning');
-        } else if (/openfreemap|tiles\\.openfreemap\\.org/i.test(message)) {
+        } else if (/openfreemap|tiles\.openfreemap\.org/i.test(message)) {
           setStatus('The vector street basemap is temporarily unavailable. Campus data and controls remain loaded; try again or refresh the map.', 'warning');
         } else if (/webgl|context lost/i.test(message)) {
           setStatus('Map graphics were interrupted by the browser. Refresh the map or switch to 2D.', 'warning');
