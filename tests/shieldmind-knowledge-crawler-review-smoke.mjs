@@ -16,6 +16,8 @@ assert.match(crawler, /const stagedContentHash = stageEvent\?\.metadata\?\.conte
 assert.match(crawler, /metadata: \{ page_id: pageId, reviewed_by: user\.id, reviewed_at: reviewedAt, content_hash: stagedContentHash \}/, 'review audit uses the recovered or staged page hash');
 
 assert.match(crawler, /checkedPageUrl\.protocol !== "https:"[\s\S]*checkedPageUrl\.hostname\.toLowerCase\(\) !== approvedDomain/, 'page review enforces standard HTTPS and exact approved host');
+assert.match(crawler, /const pageSource = Array\.isArray\(page\.source\) \? page\.source\[0\] \|\| null : page\.source \|\| null/, 'source join arrays are normalized before validating the page domain');
+assert.doesNotMatch(crawler, /page as any\)\.source\?\.domain/, 'page review does not treat a nested source array as a single object');
 
 assert.match(crawler, /body\.confirm_review !== true/, 'publishing requires explicit human confirmation');
 assert.match(crawler, /decision === "keep_hidden"/, 'review can explicitly leave a page hidden');
