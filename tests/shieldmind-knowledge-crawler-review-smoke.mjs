@@ -13,6 +13,12 @@ assert.match(crawler, /body\.action === "review_page"/, 'owner has an explicit p
 assert.match(crawler, /body\.confirm_review !== true/, 'publishing requires explicit human confirmation');
 assert.match(crawler, /decision === "keep_hidden"/, 'review can explicitly leave a page hidden');
 assert.match(crawler, /requestedUniversityId/, 'crawler scopes actions to the university selected by the owner');
+assert.match(crawler, /from\("campus_crawler_runs"\)\.insert/, 'each knowledge crawl creates an owner-only audit run');
+assert.match(crawler, /from\("campus_crawler_events"\)\.insert/, 'crawled pages and review decisions produce audit events');
+assert.match(crawler, /event_type: preservePublished \? "knowledge_page_unchanged" : "knowledge_page_staged"/, 'crawl events distinguish unchanged approved content from pages needing review');
+assert.match(crawler, /event_type: "knowledge_page_published"/, 'publishing is recorded as an audit event');
+assert.match(crawler, /if \(publishAuditError\)[\s\S]*update\(\{ status: "hidden"/, 'a failed publication audit attempts to return the page to hidden');
+
 assert.match(html, /campus-knowledge-admin\.js/, 'owner knowledge-library UI is loaded');
 assert.match(ui, /campus-knowledge-crawler/, 'knowledge review UI calls the dedicated crawler function');
 assert.match(ui, /Approve and publish/, 'knowledge review UI requires an explicit publish action');
