@@ -13,6 +13,14 @@ assert.match(crawler, /body\.action === "review_page"/, 'owner has an explicit p
 assert.match(crawler, /body\.confirm_review !== true/, 'publishing requires explicit human confirmation');
 assert.match(crawler, /decision === "keep_hidden"/, 'review can explicitly leave a page hidden');
 assert.match(crawler, /requestedUniversityId/, 'crawler scopes actions to the university selected by the owner');
+assert.match(crawler, /from\("campus_crawler_events"\)[\s\S]*event_type: preservePublished \? "knowledge_page_unchanged" : "knowledge_page_staged"/, 'page staging is linked to the owner-only crawler event log');
+assert.match(crawler, /from\("campus_crawler_runs"\)\.insert/, 'each knowledge crawl creates a private audit run');
+assert.match(crawler, /event_type: "knowledge_page_published"/, 'owner page publication is saved to the audit log');
+assert.match(crawler, /event_type: "knowledge_page_kept_hidden"/, 'owner decision to keep a page hidden is saved to the audit log');
+assert.match(crawler, /body\.action === "list_pending_pages"[\s\S]*event_type", "knowledge_page_staged"/, 'pending list contains only pages with saved staging audit events');
+assert.match(crawler, /if \(publishAuditError\)[\s\S]*update\(\{ status: "hidden"/, 'a failed publication audit attempts to return the page to hidden');
+assert.match(crawler, /crawlerOwnerEmail/, 'crawler management remains server-checked against the trusted owner');
+
 assert.match(crawler, /from\("campus_crawler_runs"\)\.insert/, 'each knowledge crawl creates an owner-only audit run');
 assert.match(crawler, /from\("campus_crawler_events"\)\.insert/, 'crawled pages and review decisions produce audit events');
 assert.match(crawler, /event_type: preservePublished \? "knowledge_page_unchanged" : "knowledge_page_staged"/, 'crawl events distinguish unchanged approved content from pages needing review');
