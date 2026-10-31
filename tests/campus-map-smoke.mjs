@@ -37,6 +37,8 @@ assert.match(js, /campus-draft-points/, 'Pending coordinate pins are rendered in
 assert.match(js, /applyAdminCoordinates\(/, 'Coordinate picking is shared by map and GPS inputs');
 assert.match(js, /position\.coords\.accuracy/, 'GPS candidate reports device accuracy');
 assert.match(js, /payload\.p_publish && !payload\.p_mark_verified/, 'Unverified locations cannot be published from the client');
+assert.match(js, /needsCoordinateEvidence/, 'Community-mapped candidate pins require fresh exact-coordinate evidence');
+assert.match(html, /Coordinate evidence source \(HTTPS\)/, 'Evidence field is explicitly for the exact pin');
 assert.match(js, /maptiler\.com/, 'Optional satellite and 3D vector tiles are supported');
 assert.match(css, /@media\(max-width:600px\)/, 'Map layout includes mobile responsive rules');
 assert.match(css, /campus-map-pin-tools/, 'Precision pin controls are styled');
