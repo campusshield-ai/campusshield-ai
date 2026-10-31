@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import {
   extractKnowledgeKeywords,
   retrieveApprovedCampusKnowledge,
-} from "../supabase/functions/_shared/shieldmind-knowledge-agent.js";
+} from "../supabase/functions/_shared/shieldmind-knowledge-agent.mjs";
 
 assert.deepEqual(
   extractKnowledgeKeywords("What are the admission requirements and application deadline?"),
