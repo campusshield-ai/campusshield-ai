@@ -229,7 +229,7 @@ Type <span class="good">help</span> to view available commands.
         signedIn=false;currentUserId="";$("saved-context").value="";showContextStatus("Sign in to load this account’s context");$("connection-label").textContent="Sign-in required";$("auth-state").textContent="Not signed in";$("user-chip").textContent="Guest session";
         throw new Error("Your CampusShield session has expired. Sign in again, then reopen TORIO.");
       }
-      signedIn=true;$("connection-label").textContent="Session authenticated";$("auth-state").textContent="Authenticated";$("user-chip").textContent=session.user?.email||"Signed-in account";
+      signedIn=true;currentUserId=session.user?.id||"";restoreSavedContext();$("connection-label").textContent="Session authenticated";$("auth-state").textContent="Authenticated";$("user-chip").textContent=session.user?.email||"Signed-in account";
       setStatus("TORIO is thinking…");
       let taskPrompt=question;
       if(guidedMode)taskPrompt += "\n\nTORIO GUIDED WORKFLOW: For multi-step requests, briefly understand the goal, state a small plan, complete the work, then check the result for errors, unsupported claims and assumptions. Finish with a useful summary and one next action. For simple requests, answer directly without unnecessary process. Ask at most one essential clarification.";
