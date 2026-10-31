@@ -202,6 +202,32 @@
         paint: { 'text-color': '#563b14', 'text-halo-color': '#fff', 'text-halo-width': 1.7 }
       });
 
+      map.addSource('campus-campus-boundary', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({
+        id: 'campus-campus-boundary-fill',
+        type: 'fill',
+        source: 'campus-campus-boundary',
+        paint: {
+          'fill-color': ['case', ['==', ['get', 'boundary_status'], 'verified'], '#4f9b78', '#d59a3a'],
+          'fill-opacity': ['case', ['==', ['get', 'boundary_status'], 'verified'], 0.10, 0.06]
+        }
+      });
+      map.addLayer({
+        id: 'campus-campus-boundary-verified-line',
+        type: 'line',
+        source: 'campus-campus-boundary',
+        filter: ['==', ['get', 'boundary_status'], 'verified'],
+        layout: { 'line-join': 'round' },
+        paint: { 'line-color': '#247552', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 17, 2.5], 'line-opacity': 0.9 }
+      });
+      map.addLayer({
+        id: 'campus-campus-boundary-candidate-line',
+        type: 'line',
+        source: 'campus-campus-boundary',
+        filter: ['==', ['get', 'boundary_status'], 'candidate'],
+        layout: { 'line-join': 'round' },
+        paint: { 'line-color': '#bd7e23', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 17, 2.5], 'line-dasharray': [2, 2], 'line-opacity': 0.95 }
+      });
       map.addSource('campus-curated-buildings', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
       map.addLayer({
         id: 'campus-curated-building-footprints',
@@ -511,9 +537,37 @@
     };
   }
 
+  function updateCampusBoundarySource() {
+    const source = map?.getSource('campus-campus-boundary');
+    if (!source) return;
+    const geometry = activeCampusProfile?.boundary_geojson;
+    const status = activeCampusProfile?.boundary_status || 'missing';
+    const valid = geometry && ['Polygon','MultiPolygon'].includes(geometry.type)
+      && Array.isArray(geometry.coordinates);
+    source.setData(valid && status !== 'missing' ? {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        geometry,
+        properties: {
+          campus_name: activeCampusProfile?.campus_name || '',
+          boundary_status: status
+        }
+      }]
+    } : { type: 'FeatureCollection', features: [] });
+  }
+
   function updateCampusBuildingSource() {
     const source = map?.getSource('campus-curated-buildings');
     if (source) source.setData(buildingFeatureCollection(campusBuildings));
+    if (map) {
+      const hasUniversityFootprints = campusBuildings.length > 0;
+      setLayerVisibility('campus-osm-3d-buildings', mapMode === '3d' && !hasUniversityFootprints);
+      setLayerVisibility('campus-osm-3d-building-edges', mapMode === '3d' && !hasUniversityFootprints);
+      setLayerVisibility('campus-curated-building-extrusions', mapMode === '3d' && hasUniversityFootprints);
+      setLayerVisibility('campus-curated-building-3d-outline', mapMode === '3d' && hasUniversityFootprints);
+      setLayerVisibility('campus-curated-building-labels', mapMode !== '2d' && hasUniversityFootprints);
+    }
     updateBuildingCoverageSummary();
   }
 
@@ -605,7 +659,7 @@
 
   function parseOsmLength(value) {
     if (value == null || value === '') return null;
-    const match = String(value).trim().match(/^([0-9]+(?:\\.[0-9]+)?)\\s*(m|meter|meters|metre|metres|ft|feet)?$/i);
+    const match = String(value).trim().match(/^([0-9]+(?:\.[0-9]+)?)\s*(m|meter|meters|metre|metres|ft|feet)?$/i);
     if (!match) return null;
     const amount = Number(match[1]);
     if (!Number.isFinite(amount) || amount <= 0) return null;
@@ -735,7 +789,7 @@
     if (!isCampusAdmin || !selectedBuildingForReview) return;
     const evidence = $('campus-map-building-review-evidence').value.trim();
     const confirmed = $('campus-map-building-review-confirm').checked;
-    if (decision === 'verified' && (!confirmed || !/^https:\\/\\/[^\\s]+$/i.test(evidence))) {
+    if (decision === 'verified' && (!confirmed || !/^https:\/\/[^\s]+$/i.test(evidence))) {
       return setStatus('Compare this exact footprint against an approved university plan or site survey, then add its HTTPS evidence link.', 'warning');
     }
     try {
@@ -800,7 +854,8 @@
       return;
     }
     try {
-      const rendered = map.queryRenderedFeatures({ layers: ['campus-osm-3d-buildings'] });
+      const preferredLayer = campusBuildings.length ? 'campus-curated-building-extrusions' : 'campus-osm-3d-buildings';
+      const rendered = map.getLayer(preferredLayer) ? map.queryRenderedFeatures({ layers: [preferredLayer] }) : [];
       const keys = new Set();
       for (const feature of rendered) {
         const properties = feature.properties || {};
@@ -837,7 +892,7 @@
     setLayerVisibility('campus-curated-building-footprints', !buildingsOn);
     setLayerVisibility('campus-curated-building-extrusions', buildingsOn);
     setLayerVisibility('campus-curated-building-3d-outline', buildingsOn);
-    setLayerVisibility('campus-curated-building-labels', labelsOn);
+    setLayerVisibility('campus-curated-building-labels', labelsOn && campusBuildings.length > 0);
     if (mode !== '3d' && map?.getTerrain()) map.setTerrain(null);
     if (mode === '3d' && map?.getSource('campus-terrain')) map.setTerrain({ source: 'campus-terrain', exaggeration: 1.1 });
     if (map) {
@@ -1128,6 +1183,7 @@
     renderFeatures();
     renderAdminDrafts();
     renderCampusProfileForm();
+    updateCampusBoundarySource();
     fitCampus();
   }
 
