@@ -239,7 +239,7 @@
       try {
         const start = [position.coords.longitude, position.coords.latitude];
         const end = [Number(selectedFeature.longitude), Number(selectedFeature.latitude)];
-        const url = 'https://router.project-osrm.org/route/v1/foot/' +
+        const url = 'https://routing.openstreetmap.de/routed-foot/route/v1/driving/' +
           start.join(',') + ';' + end.join(',') + '?overview=full&geometries=geojson';
         const response = await fetch(url);
         if (!response.ok) throw new Error('Route service unavailable');
