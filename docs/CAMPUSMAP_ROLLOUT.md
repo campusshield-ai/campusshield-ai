@@ -150,3 +150,6 @@ Google Photorealistic 3D Tiles can provide textured 3D meshes in supported popul
 
 ### Current scope boundary
 This change gives all 328 institutions a separate campus mapping profile and a repeatable secure building-import/review path. It does **not** claim that every university's centre, boundary, footprint, roof, entrance or photorealistic model has already been sourced. The first import will be initiated by the verified university administrator for each campus, using an authoritative campus centre. No building candidate is published by discovery.
+
+
+For the full provider and campus-geometry comparison, see [CampusMap Provider Evaluation](CAMPUSMAP_PROVIDER_EVALUATION.md).
