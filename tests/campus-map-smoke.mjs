@@ -18,6 +18,10 @@ assert.match(js, /\.eq\('university_id', campus\.university_id\)/, 'Feature quer
 assert.match(js, /\.eq\('is_published', true\)/, 'Only published locations are rendered');
 assert.match(js, /getCurrentPosition/, 'Device location requires browser geolocation permission');
 assert.match(js, /CampusShieldCampusMap/, 'Map module exposes a refresh hook');
+assert.match(js, /manage_campus_map_feature/, 'Campus map manager uses the checked admin RPC');
+assert.match(js, /from\('incidents'\)/, 'Staff incident overlay reads incident pins');
+assert.match(js, /report-use-location/, 'Incident form supports optional GPS pin capture');
+assert.match(js, /campus-map-satellite/, 'Map supports optional satellite imagery control');
 assert.match(css, /@media\(max-width:600px\)/, 'Map layout includes mobile responsive rules');
 assert.match(sql, /ENABLE ROW LEVEL SECURITY/, 'Map feature table enables RLS');
 assert.match(sql, /FORCE ROW LEVEL SECURITY/, 'Map feature table forces RLS');
