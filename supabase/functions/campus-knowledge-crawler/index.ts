@@ -288,7 +288,12 @@ Deno.serve(async (req: Request) => {
           page_url: page.url,
           status: "hidden",
           message: "Hidden page had no matching staging event; owner review audit was recovered before a decision.",
-          metadata: { page_id: pageId, source_id: page.source?.id || null, content_hash: page.content_hash || null, recovered_by: user.id },
+          metadata: {
+          page_id: pageId,
+          source_id: Array.isArray(page.source) ? page.source[0]?.id || null : null,
+          content_hash: page.content_hash || null,
+          recovered_by: user.id,
+        },
         });
         if (recoveryEventError) return reply({ error: "Could not save the recovery audit event. The page remains hidden." }, 503);
       }
