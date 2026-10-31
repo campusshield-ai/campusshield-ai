@@ -28,6 +28,9 @@
   let placementMarker = null;
   let placementMode = false;
   let mapMode = '2d';
+  let resizeObserver = null;
+  let resizeFrame = 0;
+  let lastMapErrorAt = 0;
   let routeLayerAdded = false;
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({
@@ -65,8 +68,12 @@
       zoom: 5.2,
       pitch: 0,
       bearing: 0,
-      maxPitch: 65,
-      attributionControl: true
+      maxPitch: 60,
+      minZoom: 5,
+      maxZoom: 20,
+      pitchWithRotate: true,
+      cooperativeGestures: true,
+      attributionControl: { compact: true }
     });
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), 'bottom-left');
@@ -98,19 +105,62 @@
         },
         paint: { 'text-color': '#15343a', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 }
       });
-      map.addSource('campus-drafts', { type: 'geojson', data: featureCollection([]) });
+      map.addSource('campus-drafts', {
+        type: 'geojson',
+        data: featureCollection([]),
+        cluster: true,
+        clusterMaxZoom: 16,
+        clusterRadius: 44
+      });
+      map.addLayer({
+        id: 'campus-draft-clusters',
+        type: 'circle',
+        source: 'campus-drafts',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-radius': ['step', ['get', 'point_count'], 14, 5, 17, 10, 20],
+          'circle-color': '#b97719',
+          'circle-opacity': 0.94,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#fff'
+        }
+      });
+      map.addLayer({
+        id: 'campus-draft-cluster-count',
+        type: 'symbol',
+        source: 'campus-drafts',
+        filter: ['has', 'point_count'],
+        layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 11, 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'] },
+        paint: { 'text-color': '#fff' }
+      });
       map.addLayer({
         id: 'campus-draft-points',
         type: 'circle',
         source: 'campus-drafts',
-        paint: { 'circle-radius': 9, 'circle-color': '#d29332', 'circle-stroke-width': 2, 'circle-stroke-color': '#fff' }
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 3.5, 15, 5, 18, 7],
+          'circle-color': '#d29332',
+          'circle-opacity': 0.92,
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#fff'
+        }
       });
       map.addLayer({
         id: 'campus-draft-labels',
         type: 'symbol',
         source: 'campus-drafts',
-        layout: { 'text-field': ['concat', 'DRAFT · ', ['get', 'name']], 'text-size': 10, 'text-offset': [0, 1.5], 'text-anchor': 'top', 'text-allow-overlap': false },
-        paint: { 'text-color': '#815512', 'text-halo-color': '#fff', 'text-halo-width': 1.5 }
+        minzoom: 17,
+        filter: ['!', ['has', 'point_count']],
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 17, 9, 19, 11],
+          'text-offset': [0, 1.25],
+          'text-anchor': 'top',
+          'text-allow-overlap': false,
+          'text-ignore-placement': false
+        },
+        paint: { 'text-color': '#563b14', 'text-halo-color': '#fff', 'text-halo-width': 1.7 }
       });
 
       // Esri World Imagery has much broader worldwide coverage at small/medium scales.
@@ -123,7 +173,7 @@
         tiles: ['https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
         tileSize: 256,
         minzoom: 0,
-        maxzoom: 12,
+        maxzoom: 16,
         attribution: 'Sources: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
       });
       map.addLayer({
@@ -150,12 +200,22 @@
         layout: { visibility: 'none' },
         filter: ['!=', ['get', 'hide_3d'], true],
         paint: {
-          'fill-extrusion-color': ['coalesce', ['get', 'colour'], '#cbbb9f'],
-          'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 15, 0, 16, ['coalesce', ['get', 'render_height'], 7]],
+          'fill-extrusion-color': ['coalesce', ['get', 'colour'], '#d8c6a7'],
+          'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 15, 0, 16.5, ['coalesce', ['get', 'render_height'], 7]],
           'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
-          'fill-extrusion-opacity': 0.92,
+          'fill-extrusion-opacity': 0.97,
           'fill-extrusion-vertical-gradient': true
         }
+      }, 'campus-feature-points');
+      map.addLayer({
+        id: 'campus-osm-3d-building-edges',
+        type: 'line',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'building',
+        minzoom: 16,
+        layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' },
+        filter: ['!=', ['get', 'hide_3d'], true],
+        paint: { 'line-color': '#71644f', 'line-width': ['interpolate', ['linear'], ['zoom'], 16, 0.35, 19, 0.8], 'line-opacity': 0.5 }
       }, 'campus-feature-points');
       map.addLayer({
         id: 'campus-osm-3d-building-labels',
@@ -210,6 +270,18 @@
       });
       map.on('mouseenter', 'campus-incident-points', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'campus-incident-points', () => { map.getCanvas().style.cursor = ''; });
+      map.on('click', 'campus-draft-clusters', event => {
+        const clusterFeature = event.features?.[0];
+        if (!clusterFeature) return;
+        const clusterId = clusterFeature.properties?.cluster_id;
+        const source = map.getSource('campus-drafts');
+        source?.getClusterExpansionZoom(clusterId, (error, zoom) => {
+          if (error) return setStatus('Could not expand this group of draft pins.', 'warning');
+          map.easeTo({ center: clusterFeature.geometry.coordinates, zoom, duration: 450 });
+        });
+      });
+      map.on('mouseenter', 'campus-draft-clusters', () => { map.getCanvas().style.cursor = 'zoom-in'; });
+      map.on('mouseleave', 'campus-draft-clusters', () => { map.getCanvas().style.cursor = placementMode ? 'crosshair' : ''; });
       map.on('click', 'campus-draft-points', event => {
         if (!isCampusAdmin) return;
         const id = event.features?.[0]?.properties?.id;
@@ -229,6 +301,21 @@
         $('campus-map-pick-pin')?.classList.remove('primary');
       });
       map.on('zoomend', updateMapScaleSummary);
+      map.on('pitchend', updateMapScaleSummary);
+      map.on('error', event => {
+        const now = Date.now();
+        if (now - lastMapErrorAt < 4000) return;
+        lastMapErrorAt = now;
+        const sourceId = event.sourceId || event.source?.id || '';
+        const message = String(event.error?.message || 'Map resource failed to load');
+        if (sourceId === 'campus-esri-imagery') {
+          setStatus('Satellite tiles are temporarily unavailable at this zoom. Try zooming out or switching to 2D.', 'warning');
+        } else if (sourceId === 'campus-openfreemap-buildings') {
+          setStatus('3D building data is temporarily unavailable. The satellite map remains available.', 'warning');
+        } else if (/webgl|context lost/i.test(message)) {
+          setStatus('Map graphics were interrupted by the browser. Refresh the map or switch to 2D.', 'warning');
+        }
+      });
 
       const maptilerKey = window.CampusShieldMapConfig?.maptilerKey;
       if (typeof maptilerKey === 'string' && maptilerKey.trim()) {
@@ -290,11 +377,12 @@
     const summary = $('campus-map-scale-summary');
     if (!summary || !map) return;
     const zoom = map.getZoom();
-    summary.textContent = zoom >= 16
+    const modeName = mapMode === '3d' ? '3D' : mapMode === 'satellite' ? 'Satellite' : 'Street';
+    summary.textContent = `${modeName} · ` + (zoom >= 16
       ? `Building-level view · zoom ${zoom.toFixed(1)}`
       : zoom >= 13
         ? `Campus-area view · zoom ${zoom.toFixed(1)}`
-        : `Regional view · zoom ${zoom.toFixed(1)}`;
+        : `Regional view · zoom ${zoom.toFixed(1)}`);
   }
 
   function setLayerVisibility(id, visible) {
@@ -310,6 +398,7 @@
     setLayerVisibility('osm-base', !satelliteOn);
     setLayerVisibility('campus-esri-imagery-layer', satelliteOn);
     setLayerVisibility('campus-osm-3d-buildings', buildingsOn);
+    setLayerVisibility('campus-osm-3d-building-edges', buildingsOn);
     setLayerVisibility('campus-osm-3d-building-labels', labelsOn);
     setLayerVisibility('campus-osm-3d-poi-labels', labelsOn);
     if (mode !== '3d' && map?.getTerrain()) map.setTerrain(null);
@@ -318,7 +407,7 @@
       const camera = mode === '3d'
         ? { pitch: 62, bearing: -18 }
         : { pitch: 0, bearing: 0 };
-      map.easeTo({ ...camera, duration: animate ? 700 : 0, essential: true });
+      map.easeTo({ ...camera, duration: animate ? 520 : 0, essential: true });
     }
     [['campus-map-2d', '2d'], ['campus-map-satellite', 'satellite'], ['campus-map-3d', '3d']].forEach(([id, key]) => {
       const button = $(id);
@@ -448,7 +537,7 @@
     });
     const emergencyLine = item.metadata?.emergency_phone ? ' Emergency line: ' + item.metadata.emergency_phone + '.' : '';
     setStatus(item.name + (item.description ? ' — ' + item.description : '') + emergencyLine);
-    if (fly && map) map.flyTo({ center: [Number(item.longitude), Number(item.latitude)], zoom: 17, pitch: 45, essential: true });
+    if (fly && map) map.flyTo({ center: [Number(item.longitude), Number(item.latitude)], zoom: 17, pitch: mapMode === '3d' ? 48 : 0, bearing: mapMode === '3d' ? -14 : 0, duration: 650, essential: true });
   }
 
   function currentCampusFeatures() {
@@ -786,10 +875,28 @@
     }, () => setStatus('Allow location access to calculate a walking route.', 'warning'));
   });
 
+  function scheduleMapResize() {
+    if (!map || resizeFrame) return;
+    resizeFrame = requestAnimationFrame(() => {
+      resizeFrame = 0;
+      if (!map) return;
+      map.resize();
+      updateMapScaleSummary();
+    });
+  }
+
+  if (typeof ResizeObserver !== 'undefined' && mapHost) {
+    resizeObserver = new ResizeObserver(scheduleMapResize);
+    resizeObserver.observe(mapHost);
+  }
+  window.addEventListener('resize', scheduleMapResize, { passive: true });
+  window.addEventListener('orientationchange', scheduleMapResize, { passive: true });
+  document.fonts?.ready?.then(scheduleMapResize).catch(() => {});
+
   const observer = new MutationObserver(() => {
     if (root.classList.contains('active')) {
       if (!map) ensureMap();
-      else map.resize();
+      else scheduleMapResize();
       if (!campus && client()) loadCampus();
     }
   });
@@ -799,7 +906,7 @@
   document.addEventListener('click', event => {
     if (event.target.closest('[data-page="campus-map"]')) {
       if (!map) ensureMap();
-      else map.resize();
+      else scheduleMapResize();
       if (!campus) loadCampus();
     }
   });
