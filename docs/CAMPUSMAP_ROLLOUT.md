@@ -100,3 +100,12 @@ The additional OSM candidates have their coordinate source URL and OSM node ID s
 - Science and Technology — https://mapcarta.com/N11750260584
 
 These are community-mapped point features. The coordinates locate mapped POIs, not necessarily doorways or building footprints. The edit form deliberately clears the coordinate evidence field for these candidates. A university-approved survey or on-site administrator check is still required.
+
+## Responsive layout and map performance update
+- Desktop widths use a two-column map and manager layout. Tablet widths stack the map above the location panel; phone widths use a shorter viewport-aware map with a compact side control rail. Landscape phones have their own height rule.
+- A ResizeObserver, window resize and orientation-change listener keep the WebGL canvas aligned after sidebars, panels and screen orientation change. Resize work is frame-coalesced to avoid repeated expensive redraws.
+- Native MapLibre attribution is shown in compact mode. The duplicate manually-authored attribution strip has been removed, so provider credits no longer overlap the marker legend.
+- Admin draft pins are clustered at campus scale, expand on click, shrink at high zoom and reveal names only when there is enough screen space. This prevents a dense orange marker field.
+- OpenMapTiles vector data uses maxzoom 14 and is overzoomed for closer inspection, which avoids unnecessary requests beyond its generated zoom range. The 3D layer has subtle building outlines and uses the named POI layer for mapped place labels; the building source is not incorrectly treated as if it carries names.
+- MapLibre is capped at a 60-degree pitch to avoid experimental pitches beyond the normal supported range. Camera transitions are shorter, and the selected point camera respects the current 2D or 3D mode.
+- Reduced-motion preferences are respected for CSS controls. Resource errors now report a relevant fallback message instead of leaving the map status silent.
