@@ -12,6 +12,8 @@
   const featureList = $('campus-map-feature-list');
   const mapKey = 'campus-map';
   let map = null;
+  let campusProfiles = [];
+  let activeCampusProfile = null;
   let features = [];
   let allFeatures = [];
   let adminDrafts = [];
@@ -25,8 +27,11 @@
   let selectedFeature = null;
   let userMarker = null;
   let campusCenterMarker = null;
+  let campusCenterMarkerKind = null;
   let placementMarker = null;
   let placementMode = false;
+  let profilePlacementMode = false;
+  let profileCenterMarker = null;
   let mapMode = '2d';
   let resizeObserver = null;
   let resizeFrame = 0;
@@ -46,6 +51,31 @@
 
   function motionDuration(milliseconds) {
     return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 0 : milliseconds;
+  }
+
+  // Administrative-area centres are regional fallbacks only; they are not campus pins.
+  // Source dataset: Open Admin Data Nigeria states, derived from OCHA COD-AB / INEC.
+  const STATE_OVERVIEWS = {
+    'abia':[7.488,5.432], 'adamawa':[12.292,9.163], 'akwa ibom':[7.796,4.990],
+    'anambra':[6.938,6.249], 'bauchi':[9.326,10.998], 'bayelsa':[5.951,4.827],
+    'benue':[8.812,7.301], 'borno':[13.428,11.870], 'cross river':[8.403,5.791],
+    'delta':[5.500,5.757], 'ebonyi':[8.067,6.240], 'edo':[5.874,6.665],
+    'ekiti':[5.298,7.695], 'enugu':[7.393,6.520], 'fct':[7.191,9.013],
+    'gombe':[11.225,10.431], 'imo':[7.033,5.566], 'jigawa':[9.625,11.981],
+    'kaduna':[7.859,10.257], 'kano':[8.543,11.573], 'katsina':[7.500,12.236],
+    'kebbi':[3.966,11.691], 'kogi':[6.849,7.636], 'kwara':[4.567,9.093],
+    'lagos':[3.712,6.535], 'nasarawa':[8.211,8.589], 'niger':[5.711,9.774],
+    'ogun':[3.263,7.127], 'ondo':[4.869,6.824], 'osun':[4.521,7.538],
+    'oyo':[3.613,8.135], 'plateau':[9.628,9.380], 'rivers':[6.836,5.023],
+    'sokoto':[5.237,12.739], 'taraba':[10.386,8.059], 'yobe':[11.524,11.974],
+    'zamfara':[6.051,12.013]
+  };
+
+  function stateOverviewCentre(value) {
+    const key = String(value || '').toLowerCase()
+      .replace(/federal capital territory|fct abuja|abuja fct/g, 'fct')
+      .replace(/\\s+state$/, '').trim();
+    return STATE_OVERVIEWS[key] || null;
   }
 
   function mapStyle() {
@@ -69,8 +99,8 @@
     map = new maplibregl.Map({
       container: mapHost,
       style: mapStyle(),
-      center: [3.7191259, 6.8910932],
-      zoom: 5.2,
+      center: [8.6753, 9.0820],
+      zoom: 5.3,
       pitch: 0,
       bearing: 0,
       maxPitch: 60,
@@ -287,6 +317,13 @@
       map.on('mouseenter', 'campus-draft-points', () => { map.getCanvas().style.cursor = isCampusAdmin ? 'pointer' : ''; });
       map.on('mouseleave', 'campus-draft-points', () => { map.getCanvas().style.cursor = placementMode ? 'crosshair' : ''; });
       map.on('click', event => {
+        if (profilePlacementMode && isCampusAdmin) {
+          setProfileCentreCoordinates(event.lngLat.lat, event.lngLat.lng, 'manual map selection');
+          profilePlacementMode = false;
+          map.getCanvas().style.cursor = '';
+          $('campus-map-profile-pick')?.classList.remove('primary');
+          return;
+        }
         if (!placementMode || !isCampusAdmin) return;
         applyAdminCoordinates(event.lngLat.lat, event.lngLat.lng, 'manual map selection');
         placementMode = false;
@@ -421,63 +458,133 @@
     return identity.includes('babcock');
   }
 
-  function getCampusCentre() {
-    const selected = $('campus-map-campus-select')?.value || 'main-campus';
-    if (isBabcockUniversity() && selected === 'main-campus') {
-      // Official Babcock contact-page map locator. This is a campus centre, not a building pin.
-      return [3.7191259, 6.8910932];
+  function getCampusCentreInfo() {
+    if (activeCampusProfile && activeCampusProfile.center_latitude != null && activeCampusProfile.center_longitude != null) {
+      return {
+        center: [Number(activeCampusProfile.center_longitude), Number(activeCampusProfile.center_latitude)],
+        zoom: activeCampusProfile.center_status === 'verified' ? 16.2 : 15.4,
+        status: activeCampusProfile.center_status || 'candidate',
+        label: activeCampusProfile.campus_name || 'Campus',
+        source: activeCampusProfile.center_source_url || ''
+      };
     }
-    const longitude = Number(campus?.map_longitude ?? campus?.longitude);
-    const latitude = Number(campus?.map_latitude ?? campus?.latitude);
-    if (Number.isFinite(latitude) && Number.isFinite(longitude) && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180) {
-      return [longitude, latitude];
-    }
-    return null;
+    const regional = stateOverviewCentre(activeCampusProfile?.state || campus?.state);
+    if (regional) return { center: regional, zoom: 8.1, status: 'regional', label: `${activeCampusProfile?.state || campus?.state || 'State'} regional overview` };
+    return { center: [8.6753, 9.0820], zoom: 5.3, status: 'national', label: 'Nigeria overview' };
   }
 
   function fitCampus() {
     if (!map) return;
-    if (!map.isStyleLoaded()) {
-      map.once('load', fitCampus);
-      return;
-    }
+    if (!map.isStyleLoaded()) { map.once('load', fitCampus); return; }
     const draftPoints = isCampusAdmin ? adminDrafts.filter(item =>
       item.latitude !== null && item.latitude !== undefined && item.longitude !== null && item.longitude !== undefined &&
       Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude))
     ) : [];
     const viewPoints = [...features, ...draftPoints];
     if (viewPoints.length && campusCenterMarker) {
-      campusCenterMarker.remove();
-      campusCenterMarker = null;
+      campusCenterMarker.remove(); campusCenterMarker = null; campusCenterMarkerKind = null;
     }
     if (viewPoints.length === 1) {
-      map.flyTo({ center: [Number(viewPoints[0].longitude), Number(viewPoints[0].latitude)], zoom: 17, pitch: 0, bearing: 0, duration: motionDuration(650), essential: true });
+      map.flyTo({ center: [Number(viewPoints[0].longitude), Number(viewPoints[0].latitude)], zoom: 17, pitch: mapMode === '3d' ? 46 : 0, bearing: mapMode === '3d' ? -12 : 0, duration: motionDuration(600), essential: true });
       return;
     }
     if (viewPoints.length > 1) {
       const bounds = new maplibregl.LngLatBounds();
       viewPoints.forEach(item => bounds.extend([Number(item.longitude), Number(item.latitude)]));
-      map.fitBounds(bounds, { padding: { top: 85, right: 85, bottom: 85, left: 85 }, maxZoom: 16.6, duration: motionDuration(700) });
+      map.fitBounds(bounds, { padding: { top: 85, right: 85, bottom: 85, left: 85 }, maxZoom: 16.6, duration: motionDuration(650) });
       return;
     }
-    const center = getCampusCentre();
-    if (center) {
-      map.flyTo({ center, zoom: 16.1, pitch: 0, bearing: 0, duration: motionDuration(700), essential: true });
-      if (!campusCenterMarker) {
-        campusCenterMarker = new maplibregl.Marker({ color: '#087f75' })
-          .setLngLat(center)
-          .setPopup(new maplibregl.Popup({ offset: 24 }).setText('Babcock University — official campus locator, not a building pin'))
+    const info = getCampusCentreInfo();
+    map.flyTo({ center: info.center, zoom: info.zoom, pitch: mapMode === '3d' ? 36 : 0, bearing: mapMode === '3d' ? -10 : 0, duration: motionDuration(600), essential: true });
+    if (['verified','official_locator','candidate'].includes(info.status)) {
+      const kind = info.status;
+      const color = kind === 'candidate' ? '#d29332' : '#087f75';
+      const popupText = kind === 'verified'
+        ? `${info.label} — administrator-verified campus centre; not a building pin`
+        : kind === 'official_locator'
+          ? `${info.label} — official university locator; not an individual building entrance`
+          : `${info.label} — candidate campus centre awaiting local verification`;
+      if (campusCenterMarkerKind !== kind || !campusCenterMarker) {
+        if (campusCenterMarker) campusCenterMarker.remove();
+        campusCenterMarker = new maplibregl.Marker({ color })
+          .setLngLat(info.center)
+          .setPopup(new maplibregl.Popup({ offset: 24 }).setText(popupText))
           .addTo(map);
-      } else campusCenterMarker.setLngLat(center);
-      setStatus('Centred on the official campus locator. Building entrances still need individual verification.', 'info');
-      return;
+        campusCenterMarkerKind = kind;
+      } else campusCenterMarker.setLngLat(info.center);
+      setStatus(kind === 'verified'
+        ? `${info.label} campus centre is verified. Individual buildings still require their own verification.`
+        : kind === 'official_locator'
+          ? `${info.label}: official university locator loaded, not an individual building pin.`
+          : `${info.label}: candidate centre. Verify the campus location before using it for directions.`, kind === 'candidate' ? 'warning' : 'info');
+    } else {
+      if (campusCenterMarker) campusCenterMarker.remove();
+      campusCenterMarker = null; campusCenterMarkerKind = null;
+      setStatus(info.status === 'regional'
+        ? `Showing an approximate ${campus?.state || activeCampusProfile?.state || ''} regional overview. The university campus centre has not been verified yet.`
+        : 'Showing a Nigeria overview because this university has no mapped state profile.', 'warning');
     }
-    if (campusCenterMarker) {
-      campusCenterMarker.remove();
-      campusCenterMarker = null;
+    const profileStatus = $('campus-map-profile-status');
+    if (profileStatus) {
+      const centreState = info.status === 'regional' ? 'Regional overview only' : info.status === 'national' ? 'National overview' : info.status === 'verified' ? 'Verified campus centre' : info.status === 'official_locator' ? 'Official campus locator' : 'Candidate campus centre';
+      profileStatus.textContent = `${activeCampusProfile?.campus_name || 'Main Campus'} · ${centreState} · Buildings: ${activeCampusProfile?.building_coverage_status || 'not assessed'} · 3D model: ${activeCampusProfile?.model_status || 'not submitted'}`;
     }
-    setStatus('No verified map centre is recorded for this campus yet. Use a verified campus administrator pin or location survey.', 'warning');
   }
+
+  function setProfileCentreCoordinates(latitude, longitude, source, accuracy = null) {
+    const lat = Number(latitude), lng = Number(longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return setStatus('Campus centre coordinates are invalid.', 'error');
+    $('campus-map-profile-lat').value = lat.toFixed(7);
+    $('campus-map-profile-lng').value = lng.toFixed(7);
+    if (map && map.isStyleLoaded()) {
+      if (profileCenterMarker) profileCenterMarker.remove();
+      profileCenterMarker = new maplibregl.Marker({ color: '#247a9b', draggable: true }).setLngLat([lng, lat]).addTo(map);
+      profileCenterMarker.on('dragend', () => {
+        const point = profileCenterMarker.getLngLat();
+        $('campus-map-profile-lat').value = point.lat.toFixed(7);
+        $('campus-map-profile-lng').value = point.lng.toFixed(7);
+      });
+      map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 15.4), duration: motionDuration(450) });
+    }
+    const accuracyText = Number.isFinite(accuracy) ? ` · GPS accuracy ±${Math.round(accuracy)} m` : '';
+    if ($('campus-map-profile-coverage')) $('campus-map-profile-coverage').textContent = `Candidate centre from ${source}: ${lat.toFixed(7)}, ${lng.toFixed(7)}${accuracyText}. Save as candidate or verify with an official source.`;
+  }
+
+  async function saveCampusProfile() {
+    if (!isCampusAdmin) return setStatus('Only a verified campus administrator can update campus setup.', 'warning');
+    const numberOrNull = value => value === '' ? null : Number(value);
+    const lat = numberOrNull($('campus-map-profile-lat').value);
+    const lng = numberOrNull($('campus-map-profile-lng').value);
+    const verified = $('campus-map-profile-verified').checked;
+    const statusValue = lat === null && lng === null ? 'missing' : verified ? 'verified' : 'candidate';
+    try {
+      const { data, error } = await client().rpc('manage_campus_map_campus', {
+        p_campus_id: $('campus-map-profile-id').value || null,
+        p_campus_name: $('campus-map-profile-name').value.trim(),
+        p_campus_slug: $('campus-map-profile-slug').value.trim(),
+        p_state: $('campus-map-profile-state').value.trim(),
+        p_location_hint: campus?.university_name || null,
+        p_center_latitude: lat,
+        p_center_longitude: lng,
+        p_center_source_url: $('campus-map-profile-source').value.trim() || null,
+        p_center_status: statusValue,
+        p_boundary_geojson: activeCampusProfile?.boundary_geojson || null,
+        p_boundary_source_url: activeCampusProfile?.boundary_source_url || null,
+        p_boundary_status: activeCampusProfile?.boundary_status || 'missing'
+      });
+      if (error) throw error;
+      setStatus(statusValue === 'verified' ? 'Campus centre saved as verified.' : statusValue === 'candidate' ? 'Campus centre saved as a candidate; it remains unverified.' : 'Campus profile saved without a centre.', statusValue === 'verified' ? 'success' : 'warning');
+      await loadCampus();
+      const updated = campusProfiles.find(item => item.id === data) || campusProfiles.find(item => item.campus_slug === $('campus-map-profile-slug').value.trim());
+      if (updated) {
+        $('campus-map-campus-select').value = updated.campus_slug;
+        currentCampusFeatures();
+      }
+    } catch (error) {
+      setStatus(error.message || 'Could not save the campus profile.', 'error');
+    }
+  }
+
 
   function applyAdminCoordinates(latitude, longitude, source, accuracy = null) {
     const lat = Number(latitude);
@@ -534,6 +641,7 @@
 
   function currentCampusFeatures() {
     const selected = $('campus-map-campus-select')?.value || 'main-campus';
+    activeCampusProfile = campusProfiles.find(item => item.campus_slug === selected) || null;
     selectedFeature = null;
     features = allFeatures.filter(item => item.is_published && item.campus_slug === selected && item.latitude != null && item.longitude != null);
     adminDrafts = isCampusAdmin ? allFeatures.filter(item => !item.is_published && item.campus_slug === selected) : [];
@@ -541,6 +649,7 @@
     updateDraftSource();
     renderFeatures();
     renderAdminDrafts();
+    renderCampusProfileForm();
     fitCampus();
   }
 
@@ -597,17 +706,41 @@
     $('campus-map-admin-name').focus();
   }
 
+  function renderCampusProfileForm() {
+    const panel = $('campus-map-profile-setup');
+    if (panel) panel.hidden = !isCampusAdmin;
+    const profile = activeCampusProfile;
+    if (!$('campus-map-profile-name')) return;
+    $('campus-map-profile-id').value = profile?.id || '';
+    $('campus-map-profile-name').value = profile?.campus_name || 'Main Campus';
+    $('campus-map-profile-slug').value = profile?.campus_slug || 'main-campus';
+    $('campus-map-profile-state').value = profile?.state || campus?.state || '';
+    $('campus-map-profile-lat').value = profile?.center_latitude ?? '';
+    $('campus-map-profile-lng').value = profile?.center_longitude ?? '';
+    $('campus-map-profile-source').value = profile?.center_source_url || '';
+    $('campus-map-profile-verified').checked = profile?.center_status === 'verified';
+    if ($('campus-map-profile-coverage')) {
+      $('campus-map-profile-coverage').textContent = profile
+        ? `Centre: ${profile.center_status || 'missing'} · Boundary: ${profile.boundary_status || 'missing'} · Building data: ${profile.building_coverage_status || 'unassessed'} · 3D model: ${profile.model_status || 'not submitted'}`
+        : 'No campus profile found. Create a profile to record this campus centre.';
+    }
+  }
+
   function renderCampusOptions() {
     const select = $('campus-map-campus-select');
     if (!select) return;
     const current = select.value || 'main-campus';
     const campuses = new Map();
-    allFeatures.forEach(item => campuses.set(item.campus_slug, item.campus_name));
+    campusProfiles.forEach(item => campuses.set(item.campus_slug, item.campus_name));
+    allFeatures.forEach(item => { if (!campuses.has(item.campus_slug)) campuses.set(item.campus_slug, item.campus_name); });
     if (!campuses.size) campuses.set('main-campus', 'Main Campus');
     select.innerHTML = [...campuses.entries()].map(([slug, name]) =>
       '<option value="' + esc(slug) + '">' + esc(name) + '</option>').join('');
     select.value = campuses.has(current) ? current : campuses.keys().next().value;
+    activeCampusProfile = campusProfiles.find(item => item.campus_slug === select.value) || null;
+    renderCampusProfileForm();
   }
+
 
   function updateIncidentSource() {
     const source = map?.getSource('campus-incidents');
@@ -667,6 +800,17 @@
         isCampusAdmin = verifiedProfile && verifiedMembership && profileResult.data?.role === 'admin' && campusRole === 'admin';
       }
       $('campus-map-admin').hidden = !isCampusAdmin;
+      const { data: profileRows, error: profileError } = await client().from('campus_map_campuses')
+        .select('id,university_id,campus_name,campus_slug,state,location_hint,center_latitude,center_longitude,center_source_url,center_status,center_verified_by,center_verified_at,boundary_geojson,boundary_source_url,boundary_status,building_data_provider,building_coverage_status,model_storage_path,model_format,model_status,metadata,is_active')
+        .eq('university_id', campus.university_id)
+        .eq('is_active', true)
+        .order('campus_name', { ascending: true });
+      if (profileError) {
+        console.warn('CampusMap profile directory is unavailable; using state-level fallback.', profileError);
+        campusProfiles = [];
+      } else {
+        campusProfiles = profileRows || [];
+      }
       const query = client().from('campus_map_features')
         .select('id, university_id, campus_name, campus_slug, feature_type, name, description, latitude, longitude, source_url, verification_status, verified_by, verified_at, is_published, metadata')
         .eq('university_id', campus.university_id)
@@ -729,6 +873,37 @@
     currentCampusFeatures();
     incidentPins = [];
     loadIncidentPins().catch(error => console.warn('Incident pins unavailable.', error));
+  });
+  $('campus-map-profile-form')?.addEventListener('submit', event => {
+    event.preventDefault();
+    saveCampusProfile();
+  });
+  $('campus-map-profile-new')?.addEventListener('click', () => {
+    if (!isCampusAdmin) return;
+    $('campus-map-profile-id').value = '';
+    $('campus-map-profile-name').value = '';
+    $('campus-map-profile-slug').value = '';
+    $('campus-map-profile-state').value = campus?.state || '';
+    $('campus-map-profile-lat').value = '';
+    $('campus-map-profile-lng').value = '';
+    $('campus-map-profile-source').value = '';
+    $('campus-map-profile-verified').checked = false;
+    $('campus-map-profile-name').focus();
+  });
+  $('campus-map-profile-pick')?.addEventListener('click', () => {
+    if (!isCampusAdmin || !ensureMap()) return setStatus('Only a verified campus administrator can set the campus centre.', 'warning');
+    profilePlacementMode = true;
+    $('campus-map-profile-pick').classList.add('primary');
+    map.getCanvas().style.cursor = 'crosshair';
+    setStatus('Click the campus main gate or official campus reference point. This is the campus centre, not a building entrance.', 'info');
+  });
+  $('campus-map-profile-gps')?.addEventListener('click', () => {
+    if (!isCampusAdmin) return setStatus('Only a verified campus administrator can set the campus centre.', 'warning');
+    if (!navigator.geolocation) return setStatus('Device location is unavailable in this browser.', 'warning');
+    setStatus('Stand at the campus main gate or campus reference point and allow GPS.', 'info');
+    navigator.geolocation.getCurrentPosition(position => {
+      setProfileCentreCoordinates(position.coords.latitude, position.coords.longitude, 'device GPS', position.coords.accuracy);
+    }, () => setStatus('GPS permission was denied or the device could not determine the location.', 'warning'), { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
   });
   $('campus-map-admin-form')?.addEventListener('submit', async event => {
     event.preventDefault();
