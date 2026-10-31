@@ -11,6 +11,9 @@ const policySql = read('supabase/migrations/20261031115831_campus_map_public_rea
 const finalPolicySql = read('supabase/migrations/20261031120234_campus_map_single_read_policy_and_audit_index.sql');
 const babcockSeedSql = read('supabase/migrations/20261031130909_seed_babcock_main_campus_osm_candidates.sql');
 const docs = read('docs/CAMPUSMAP_ROLLOUT.md');
+const campusProfilesSql = read('supabase/migrations/20261031143000_campus_map_university_profiles_and_centres.sql');
+const campusProfileGrantSql = read('supabase/migrations/20261031144500_grant_verified_campus_map_profile_rpc.sql');
+const campusModelSql = read('supabase/migrations/20261031150500_campus_map_private_glb_model_submissions.sql');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
 assert.match(html, /id="page-campus-map"/, 'CampusMap page container is present');
@@ -90,4 +93,20 @@ assert.match(babcockSeedSql, /'candidate_unverified'/, 'OSM candidate locations 
 assert.match(babcockSeedSql, /false,\s*jsonb_build_object/, 'OSM candidate locations are inserted unpublished');
 assert.match(docs, /22 Babcock location entries/, 'Documentation lists the expanded Babcock directory');
 assert.match(docs, /not necessarily doorways or building footprints/, 'Community-mapped point coordinates are not treated as exact building entrances');
+assert.match(campusProfilesSql, /CREATE TABLE IF NOT EXISTS public\.campus_map_campuses/, 'Multi-university campus profile table is created');
+assert.match(campusProfilesSql, /WHERE u\.is_active = true/, 'Campus profiles are provisioned for every active university');
+assert.match(campusProfilesSql, /center_status IN \('missing','candidate','official_locator','verified'\)/, 'Campus centre provenance states are constrained');
+assert.match(campusProfilesSql, /boundary_geojson->>'type' IN \('Polygon','MultiPolygon'\)/, 'Campus boundaries accept only polygon geometry');
+assert.match(campusProfilesSql, /ENABLE ROW LEVEL SECURITY[\s\S]*FORCE ROW LEVEL SECURITY/, 'Campus profile table forces row-level security');
+assert.match(campusProfileGrantSql, /GRANT EXECUTE ON FUNCTION private\.manage_campus_map_campus_impl/, 'Verified campus admin wrapper can execute its checked private implementation');
+assert.match(campusModelSql, /'campus-map-models',[\s\S]*false,[\s\S]*26214400/, '3D model files use a private 25 MB bucket');
+assert.match(campusModelSql, /campus_map_model_admin_upload/, 'Only a verified campus administrator can upload model files');
+assert.match(campusModelSql, /model_status = 'pending_review'/, 'Uploaded GLB files remain pending review');
+assert.match(html, /id="campus-map-profile-boundary"/, 'Campus administrators can add a GeoJSON campus boundary');
+assert.match(html, /id="campus-map-profile-model-file"/, 'Campus administrators can submit a real GLB building model');
+assert.match(js, /campus_map_campuses/, 'Map loads the university-scoped campus profile');
+assert.match(js, /stateOverviewCentre/, 'Universities without a campus centre use a labelled state-level fallback');
+assert.match(js, /submit_campus_3d_model/, '3D model uploads pass through the checked RPC');
+assert.match(js, /file\.size > 25 \* 1024 \* 1024/, 'GLB upload is capped at 25 MB in the browser');
+assert.match(js, /queryRenderedFeatures\(\{ layers: \['campus-osm-3d-buildings'\] \}\)/, 'Map reports visible OpenStreetMap building footprint coverage');
 console.log('CampusMap static smoke checks passed.');
