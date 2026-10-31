@@ -56,6 +56,7 @@ assert.doesNotMatch(js, /campus-osm-3d-building-labels/, 'The non-existent named
 assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles provide OSM building geometry');
 assert.match(js, /tiles\.openfreemap\.org\/fonts\/\{fontstack\}\/\{range\}\.pbf/, 'OpenFreeMap glyphs are configured for readable map labels');
 assert.match(js, /Noto Sans Regular/, 'Map labels use OpenFreeMap supported Noto Sans glyphs');
+assert.match(js, /Noto Sans Bold/, 'Cluster count labels use OpenFreeMap supported bold glyphs');
 assert.match(js, /campus-osm-3d-buildings/, '3D mode renders building footprints as extrusions');
 assert.match(js, /render_height/, 'Building extrusion height uses OSM-derived height attributes');
 assert.match(js, /campus-osm-3d-poi-labels/, 'Satellite and 3D modes include OSM place labels');
