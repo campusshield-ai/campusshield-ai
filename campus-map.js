@@ -414,7 +414,11 @@
     $('campus-map-admin-description').value = item.description || '';
     $('campus-map-admin-lat').value = item.latitude ?? '';
     $('campus-map-admin-lng').value = item.longitude ?? '';
-    $('campus-map-admin-source').value = item.source_url || '';
+    const needsCoordinateEvidence = item.metadata?.coordinate_status === 'candidate_unverified';
+    $('campus-map-admin-source').value = needsCoordinateEvidence ? '' : (item.source_url || '');
+    if (needsCoordinateEvidence && $('campus-map-pin-status')) {
+      $('campus-map-pin-status').textContent = 'This is an OpenStreetMap candidate. Add a university-approved survey or other source that confirms this exact point before verification.';
+    }
     $('campus-map-admin-verified').checked = item.verification_status === 'verified';
     $('campus-map-admin-publish').checked = !!item.is_published;
     if (item.latitude != null && item.longitude != null) applyAdminCoordinates(item.latitude, item.longitude, 'saved draft');
