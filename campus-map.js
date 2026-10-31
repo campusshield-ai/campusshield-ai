@@ -795,9 +795,11 @@
   async function discoverCampusBuildings() {
     if (!isCampusAdmin) return setStatus('Only a verified campus administrator can import building footprints.', 'warning');
     const profile = activeCampusProfile;
-    if (!profile?.id || profile.center_latitude == null || profile.center_longitude == null
-        || !['candidate','official_locator','verified'].includes(profile.center_status)) {
-      return setStatus('Set a campus centre from a real campus reference point before searching for building footprints. State overview centroids cannot be used for a campus import.', 'warning');
+    if (!profile?.id || profile.center_latitude == null || profile.center_longitude == null) {
+      return setStatus('Set and save a campus centre before searching for building footprints. Regional and national map views cannot be used as import centres.', 'warning');
+    }
+    if (profile.center_status !== 'verified') {
+      return setStatus('Building discovery is locked. Verify this exact campus-centre point against an approved campus plan or on-campus survey, then save the campus profile. An official map locator or unverified candidate is for orientation only.', 'warning');
     }
     const radius = Number($('campus-map-building-radius')?.value || 800);
     if (![500,800,1200].includes(radius)) return setStatus('Choose a supported building discovery radius.', 'warning');
@@ -810,12 +812,8 @@
     button.disabled = true;
     button.textContent = 'Discovering buildings…';
     progress.dataset.importing = 'true';
-    const centreNotice = profile.center_status === 'verified'
-      ? 'Using a verified campus centre.'
-      : profile.center_status === 'official_locator'
-        ? 'Warning: this is an official campus locator, not a surveyed centre; the discovery circle may not cover the whole campus.'
-        : 'Warning: this is an unverified candidate centre; the discovery circle may miss campus buildings.';
-    progress.textContent = centreNotice + ' Requesting candidate building outlines from OpenStreetMap. Results will remain private and unpublished.';
+    updateBuildingDiscoveryControl();
+    progress.textContent = 'Using the verified campus centre. Requesting candidate building outlines from OpenStreetMap. Results remain private and unpublished.';
     try {
       let payload = null;
       let lastError = null;
@@ -868,7 +866,7 @@
       setStatus('Building discovery failed. The existing map remains available.', 'warning');
     } finally {
       delete progress.dataset.importing;
-      button.disabled = false;
+      updateBuildingDiscoveryControl();
       button.textContent = 'Discover building footprints';
     }
   }
@@ -1382,6 +1380,21 @@
     $('campus-map-admin-name').focus();
   }
 
+  function updateBuildingDiscoveryControl() {
+    const button = $('campus-map-building-discover');
+    if (!button) return;
+    const profile = activeCampusProfile;
+    const ready = isCampusAdmin && !!profile?.id
+      && profile.center_status === 'verified'
+      && profile.center_latitude != null
+      && profile.center_longitude != null;
+    const importing = button.dataset.importing === 'true';
+    button.disabled = !ready || importing;
+    button.title = ready
+      ? 'Discover OpenStreetMap building candidates around the verified campus centre.'
+      : 'Locked until the exact campus centre is verified against an approved campus plan or on-campus survey.';
+  }
+
   function renderCampusProfileForm() {
     const panel = $('campus-map-profile-setup');
     if (panel) panel.hidden = !isCampusAdmin;
@@ -1420,6 +1433,7 @@
       const centreLabel = centreStatus === 'verified' ? 'verified campus centre' : centreStatus === 'official_locator' ? 'official campus locator' : centreStatus === 'candidate' ? 'candidate centre' : 'centre not mapped';
       $('campus-map-profile-status').textContent = `${profile?.campus_name || 'Main Campus'} · ${centreLabel} · boundary ${profile?.boundary_status || 'missing'} · buildings ${profile?.building_coverage_status || 'unassessed'}`;
     }
+    updateBuildingDiscoveryControl();
   }
 
   function renderCampusOptions() {
