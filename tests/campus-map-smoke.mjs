@@ -40,6 +40,8 @@ assert.match(html, /id="campus-map-preview-pin"/, 'Administrators can preview ma
 assert.match(html, /campus-map-geometry\.js/, 'OSM footprint geometry helpers load before CampusMap');
 assert.match(html, /campus-map\.js/, 'CampusMap module is loaded');
 assert.match(js, /window\.CampusMapGeometry\?\.osmWayToBuildingCandidate/, 'OSM building imports use the extracted geometry helper');
+assert.ok(html.indexOf('campus-map-geometry.js') < html.indexOf('campus-map.js'), 'geometry helper loads before CampusMap');
+
 assert.match(html, /maplibre-gl@4\.7\.1/, 'MapLibre is pinned to a known version');
 assert.match(html, /report-use-location/, 'Incident form offers optional GPS attachment');
 assert.match(js, /getMyCampusContext\(\)/, 'Map resolves the signed-in university context');
@@ -198,6 +200,7 @@ const finalPoint = unclosedCandidate.geometry_geojson.coordinates[0].at(-1);
 assert.equal(firstPoint[0], finalPoint[0], 'candidate polygon ring closes longitude');
 assert.equal(firstPoint[1], finalPoint[1], 'candidate polygon ring closes latitude');
 
+assert.ok(Math.abs(geometry.parseOsmLength('12 ft') - 3.6576) < 1e-9, 'OSM feet measurements convert correctly');
 assert.equal(geometry.parseOsmLevels('4.5'), null, 'fractional floor counts are not truncated');
 assert.equal(geometry.osmWayToBuildingCandidate({
   ...irregularWay, tags: { building: 'no' },
@@ -206,6 +209,10 @@ assert.equal(geometry.osmWayToBuildingCandidate({
   ...irregularWay,
   geometry: irregularWay.geometry.map((point, index) => index === 2 ? { ...point, lat: 95 } : point),
 }), null, 'an invalid coordinate rejects the whole outline instead of silently corrupting it');
+assert.equal(geometry.osmWayToBuildingCandidate({
+  ...irregularWay,
+  geometry: irregularWay.geometry.map((point, index) => index === 2 ? { lat: null, lon: point.lon } : point),
+}), null, 'missing coordinates are rejected instead of being coerced to zero');
 assert.equal(geometry.osmWayToBuildingCandidate({
   ...irregularWay,
   tags: { ...irregularWay.tags, height: '3 m', min_height: '5 m' },
