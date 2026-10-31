@@ -33,5 +33,5 @@ assert.match(policySql, /FOR SELECT TO anon, authenticated/, 'Anonymous users ha
 assert.match(policySql, /campus_map_features_read_admin_drafts/, 'Verified campus admins can read their drafts');
 assert.match(policySql, /current_user_has_verified_campus_access/, 'Draft reads require verified campus access');
 assert.match(docs, /Campus Map Manager/, 'Documentation covers the admin manager');
-assert.match(docs, /no guessed coordinates/i, 'Babcock place names are not assigned fabricated coordinates');
+assert.match(docs, /No building coordinates have been guessed/, 'Babcock place names are not assigned fabricated coordinates');
 console.log('CampusMap static smoke checks passed.');
