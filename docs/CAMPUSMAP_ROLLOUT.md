@@ -26,3 +26,7 @@ Babcock University is the first pilot. The current implementation uses an approx
 5. Verify geolocation denial, offline/error states, mobile breakpoints and walking route fallback.
 6. Add a separately reviewed campus-admin publishing RPC and management UI before asking universities to maintain their own maps.
 7. Do not merge to production until staging browser tests and security review pass.
+
+
+## Incident GPS pin capture
+The incident form now offers an explicit, optional browser geolocation action. The browser asks permission; the user can still submit a text-only location if permission is denied. Coordinates are stored on the existing incident row and are visible on the map only to authorized same-university staff under the existing incident RLS policies. The map overlay omits descriptions and reporter identifiers.
