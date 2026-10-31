@@ -16,26 +16,31 @@ The separate architectural aerial image supplied with the screenshots is approve
 
 ## Names visible in the supplied StudentHub screenshots
 
-Names below are transcribed from screenshot labels. Spelling should be reconciled with official university sources before becoming canonical published labels.
+Names below are transcribed from screenshot labels. Official Babcock residence pages have now been checked for several hall names. Use the official spelling as the canonical display name where the match is clear; preserve the StudentHub wording as an alias/source label. A name match still does not verify a building's footprint or coordinates.
 
 ### Residential halls and residence-related labels
-- Adeleke Hall
-- Ameeyo Hall (official university material may use Ameyo/Ameyo Adadevoh; reconcile spelling)
-- Crystal Hall
-- Diamond Hall
-- Emerald Hall
-- FAD Hall
-- Gideon Troopers Hall
-- Havilah Gold Hall
-- Nelson Mandela Hall
-- Nyberg Hall (official material may use Nybergr; reconcile spelling)
-- Ogden Hall
-- Platinum Hall
-- Queen Esther Hall
-- Sapphire Hall
-- White Hall
-- Welch Hall
-- Winslow Hall
+
+| StudentHub screenshot label | Canonical name supported by Babcock source | Confidence note |
+|---|---|---|
+| Ameeyo Hall | Ameyo Adadevoh Hall | Official Classic Halls page uses Ameyo Adadevoh; screenshot appears shortened/misspelled |
+| FAD Hall | Felicia Adebisi Dada Hall | Official Classic Halls page gives the full name |
+| Nyberg Hall | Nybergr Hall | Official Regular Halls page spells it Nybergr |
+| Gideon Troopers Hall | Gideon Troopers | Official Classic Halls page |
+| Winslow Hall | Winslow | Official Classic Halls page |
+| Queen Esther Hall | Queen Esther | Official Classic Halls page |
+| Platinum Hall | Platinum | Official Classic Halls page |
+| Nelson Mandela Hall | Nelson Mandela | Official Premium Halls page |
+| Welch Hall | Welch | Official Premium Halls page |
+| Havilah Gold Hall | Havilah Gold | Official Premium Halls page |
+| Crystal Hall | Crystal | Official Premium Halls page |
+| White Hall | White | Official Regular Halls page |
+| Ogden Hall | Ogden | Official Regular Halls page |
+| Adeleke Hall | Not confirmed in the checked residence pages | Keep as a StudentHub-only lead pending official confirmation |
+| Diamond Hall | Not confirmed in the checked residence pages | Keep as a StudentHub-only lead pending official confirmation |
+| Emerald Hall | Not confirmed in the checked residence pages | Keep as a StudentHub-only lead pending official confirmation |
+| Sapphire Hall | Not confirmed in the checked residence pages | Keep as a StudentHub-only lead pending official confirmation |
+
+The official pages also list Bethel Splendor, Samuel Akande, Justice Deborah, Neal Wilson and Gamaliel, which are not all clearly visible as labels in the 2D screenshot. They should be retained as official-name leads for later map reconciliation.
 
 ### Academic, administrative and student facilities
 - Alumni Building
@@ -64,7 +69,7 @@ Names below are transcribed from screenshot labels. Spelling should be reconcile
 - Water Plant
 - School Cafeteria
 
-Some labels are partially obscured or overlap in the screenshots. Names such as Road To Female Residence, Samuel Akande Hall, Topaz Hall, Dada Adebisi Hall, CIBN Building, Basketball Court 1 and Andrew Car Park appear in the 3D screenshot and should be treated as additional leads pending corroboration.
+Some labels are partially obscured or overlap in the screenshots. Names such as Road To Female Residence, Samuel Akande Hall, Topaz Hall, Dada Adebisi Hall, CIBN Building, Basketball Court 1 and Andrew Car Park appear in the 3D screenshot and should be treated as additional leads pending corroboration. The official university's current new-student arrival page also identifies the University Gate, Amphitheatre and University Stadium as Main Campus arrival/orientation locations. The official library page says Laz Otti Memorial Library is centrally located opposite BUCODEL and the Ellen G. White Resource Centre is behind the Amphitheater. These are useful relational clues, not coordinates or routing geometry.
 
 ## Layout observations (qualitative only)
 
