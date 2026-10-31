@@ -2,12 +2,26 @@ name: CampusMap vector basemap checks
 
 on:
   push:
-    branches: [feat/campusmap-vector-basemap]
+    branches: ['feat/campusmap-*']
     paths:
       - "campus-map.js"
+      - "campus-map-geometry.js"
+      - "index.html"
+      - "docs/BABCOCK_MAP_DATA_SOURCES.md"
       - "tests/campus-map-smoke.mjs"
       - "tests/smoke-check.mjs"
       - "docs/CAMPUSMAP_PROVIDER_DECISION.md"
+      - ".github/workflows/campus-map-vector-basemap-check.yml"
+  pull_request:
+    branches: ['feat/campusmap-*']
+    paths:
+      - "campus-map.js"
+      - "campus-map-geometry.js"
+      - "index.html"
+      - "tests/campus-map-smoke.mjs"
+      - "tests/smoke-check.mjs"
+      - "docs/CAMPUSMAP_PROVIDER_DECISION.md"
+      - "docs/BABCOCK_MAP_DATA_SOURCES.md"
       - ".github/workflows/campus-map-vector-basemap-check.yml"
   workflow_dispatch:
 
