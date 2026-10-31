@@ -2596,6 +2596,31 @@ button,input,select,textarea{max-width:100%;min-width:0}
               <button type="button" class="campus-map-action" id="campus-map-profile-model-upload">Upload model for review</button>
               <p class="campus-map-profile-coverage" id="campus-map-profile-model-status" role="status">No 3D model submitted.</p>
             </div>
+            <div class="campus-map-building-import">
+              <h5>Discover mapped buildings</h5>
+              <p>Search OpenStreetMap around this campus centre. Imported footprints are private candidates, not verified building plans.</p>
+              <label>Discovery radius
+                <select id="campus-map-building-radius">
+                  <option value="500">500 metres</option>
+                  <option value="800" selected>800 metres</option>
+                  <option value="1200">1.2 kilometres</option>
+                </select>
+              </label>
+              <button type="button" class="campus-map-action" id="campus-map-building-discover">Discover building footprints</button>
+              <p class="campus-map-profile-coverage" id="campus-map-building-import-status" role="status">Set a real campus centre to discover building footprints. No candidates are published automatically.</p>
+              <div class="campus-map-building-candidates" id="campus-map-building-candidates"></div>
+              <section class="campus-map-building-review" id="campus-map-building-review" hidden aria-label="Review building footprint">
+                <strong id="campus-map-building-review-name">Selected building</strong>
+                <small id="campus-map-building-review-details"></small>
+                <label>Exact-footprint evidence (HTTPS)<input id="campus-map-building-review-evidence" type="url" placeholder="Approved campus plan or survey record"></label>
+                <label class="campus-map-admin-check"><input id="campus-map-building-review-confirm" type="checkbox"> I checked the outline, footprint and building location</label>
+                <div class="campus-map-admin-actions">
+                  <button type="button" class="campus-map-action primary" id="campus-map-building-verify-save">Verify, keep private</button>
+                  <button type="button" class="campus-map-action" id="campus-map-building-verify-publish">Verify and publish</button>
+                  <button type="button" class="campus-map-action danger" id="campus-map-building-reject">Reject</button>
+                </div>
+              </section>
+            </div>
             <p class="campus-map-profile-coverage" id="campus-map-profile-coverage" role="status">Campus centre, boundary and 3D model status appear here.</p>
             <div class="campus-map-admin-actions"><button type="submit" class="campus-map-action primary">Save campus profile</button></div>
           </form>
