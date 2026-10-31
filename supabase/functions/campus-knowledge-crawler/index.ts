@@ -246,10 +246,18 @@ Deno.serve(async (req: Request) => {
         .eq("source.status", "approved")
         .maybeSingle();
       if (pageError || !page) return reply({ error: "The pending page was not found under an approved source for this university." }, 404);
-      let pageHost = "";
-      try { pageHost = new URL(String(page.url || "")).hostname.toLowerCase(); } catch { /* invalid stored URL */ }
-      if (!pageHost || pageHost !== String((page as any).source?.domain || "").toLowerCase()) {
-        return reply({ error: "The page URL no longer matches its approved source domain." }, 400);
+      let checkedPageUrl: URL | null = null;
+      try { checkedPageUrl = new URL(String(page.url || "")); } catch { /* invalid stored URL */ }
+      const approvedDomain = String((page as any).source?.domain || "").toLowerCase();
+      if (
+        !checkedPageUrl ||
+        checkedPageUrl.protocol !== "https:" ||
+        checkedPageUrl.username ||
+        checkedPageUrl.password ||
+        (checkedPageUrl.port && checkedPageUrl.port !== "443") ||
+        checkedPageUrl.hostname.toLowerCase() !== approvedDomain
+      ) {
+        return reply({ error: "The page URL must be standard-port HTTPS and match its approved source domain." }, 400);
       }
       const { data: stageEvent, error: stageEventError } = await client.from("campus_crawler_events")
         .select("run_id,metadata")
