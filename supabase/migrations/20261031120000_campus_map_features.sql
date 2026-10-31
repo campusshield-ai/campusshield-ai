@@ -44,7 +44,9 @@ ALTER TABLE public.campus_map_features
   DROP CONSTRAINT IF EXISTS campus_map_features_verification_status_check,
   ADD CONSTRAINT campus_map_features_verification_status_check CHECK (verification_status IN ('pending','verified','rejected')),
   DROP CONSTRAINT IF EXISTS campus_map_features_campus_slug_check,
-  ADD CONSTRAINT campus_map_features_campus_slug_check CHECK (campus_slug ~ '^[a-z0-9]+(-[a-z0-9]+)*
+  ADD CONSTRAINT campus_map_features_campus_slug_check CHECK (campus_slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
+  DROP CONSTRAINT IF EXISTS campus_map_features_campus_name_check,
+  ADD CONSTRAINT campus_map_features_campus_name_check CHECK (char_length(btrim(campus_name)) BETWEEN 2 AND 120),
   ADD CONSTRAINT campus_map_features_feature_type_check CHECK (feature_type IN ('building','lecture_hall','hostel','library','cafeteria','medical','security','gate','parking','sports','facility','assembly_point','accessible_entry','emergency_point'));
 
 CREATE INDEX IF NOT EXISTS campus_map_features_university_campus_published_idx ON public.campus_map_features(university_id,campus_slug,is_published,feature_type);
