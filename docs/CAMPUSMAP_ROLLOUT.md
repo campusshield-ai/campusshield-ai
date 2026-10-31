@@ -21,7 +21,9 @@ Medical, security, emergency-point, assembly-point and gate features can be filt
 The incident form now offers an optional GPS attachment. The browser asks for permission, and a text-only report can still be submitted if permission is denied. Coordinates are stored on the incident row and displayed to authorized same-university staff only. Existing incidents have null coordinates until users voluntarily attach a pin.
 
 ## Satellite and 3D building support
-The 2D and tilted MapLibre views work without a key. Satellite tiles, terrain and 3D building-footprint extrusions are optional MapTiler layers. Configure a domain-restricted public key at window.CampusShieldMapConfig.maptilerKey to enable them. Do not place a secret key in browser code. The 3D buildings are vector-footprint extrusions, not photogrammetric models; detailed textured building models require verified geometry and a suitable licensed provider.
+CampusMap now has three modes. **2D** uses OpenStreetMap raster tiles. **SAT** uses Esri World Imagery tiles and adds OpenStreetMap place labels. **3D** combines Esri imagery with OpenFreeMap/OpenMapTiles building-footprint extrusions and OSM place labels, with a tilted camera. The Esri image and OpenFreeMap vector sources do not require a MapTiler key. Esri imagery attribution is shown in the map. OpenFreeMap data is based on OpenStreetMap and the tile service attribution is retained by MapLibre.
+
+The OpenMapTiles building layer provides `render_height`, `render_min_height`, `colour` and `hide_3d` attributes. Height fields are approximate values derived from OSM height and level tags; when absent, the 3D style uses a fallback height. Coverage and building names depend on local OSM mapping. This produces extruded block models, not realistic roof geometry, facade textures or a certified campus model. The optional MapTiler key in `campus-map-config.js` is only used for terrain elevation; never put a secret key in browser code. Detailed textured models require university-approved building geometry or a suitable licensed 3D provider.
 
 ## Multi-university security
 - Map features are linked to campus_universities by university_id.
@@ -71,3 +73,14 @@ Two Main Campus names have candidate coordinates from OpenStreetMap features sur
 - University Stadium: 6.89472, 3.72770 — https://mapcarta.com/N11750284266
 
 These are community-mapped OSM point candidates, not university-certified entrance coordinates. They are stored as pending, unpublished draft coordinates with the OSM source and object ID recorded in metadata. They must be independently checked before verification or publication. Other named places, including BUTH, Registry, halls, Student Development and the Iperu Campus facilities, remain without coordinates until a reliable exact source is available.
+
+## Reference-style satellite and 3D map modes
+- The CampusMap style picker offers **2D**, **SAT** and **3D** modes, with a vertical mobile-friendly control similar to the supplied reference.
+- SAT uses the Esri World Imagery raster tile service with its published attribution. Image capture date, resolution and sharpness vary by location.
+- 3D displays satellite imagery underneath OpenFreeMap vector building footprints from the OpenMapTiles `building` source layer. `render_height` and `render_min_height` are approximated from mapped OSM height/level tags; unmapped or unheighted buildings may appear as simple fallback-height extrusions.
+- The OSM `poi` and named-building layers add building/place labels where those names exist in the tile data.
+- The 3D view is an OSM-derived block extrusion. It is not a photogrammetric mesh like a fully textured 3D city model. Exact roof shapes, facade textures, tree canopies and completeness require mapped geometry or verified university-supplied models.
+- Map providers and data attribution must remain visible: Esri imagery providers; OpenFreeMap/OpenMapTiles; OpenStreetMap contributors.
+- OpenFreeMap's public tile service is free and keyless but is provided as-is without an SLA. For a production-critical university platform, monitor availability and consider self-hosting or a contracted tile provider as traffic grows.
+
+Babcock has an OSM campus boundary and multiple named campus POIs in community mapping, including the Amphitheatre, BBS Babcock Business School, BuCodel, Bursary and nearby residences. This gives the 3D view useful place-label coverage, but named POIs do not guarantee complete building footprint or height data. Treat any displayed shape/height as community map data until a university site survey confirms it.
