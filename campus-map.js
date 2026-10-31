@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const root = document.getElementById('campus-map-page');
+  const root = document.getElementById('page-campus-map');
   if (!root) return;
 
   const $ = id => document.getElementById(id);
