@@ -330,8 +330,10 @@
         map.getCanvas().style.cursor = '';
         $('campus-map-pick-pin')?.classList.remove('primary');
       });
-      map.on('zoomend', updateMapScaleSummary);
-      map.on('pitchend', updateMapScaleSummary);
+      map.on('zoomend', () => { updateMapScaleSummary(); updateBuildingCoverageSummary(); });
+      map.on('pitchend', () => { updateMapScaleSummary(); updateBuildingCoverageSummary(); });
+      map.on('moveend', updateBuildingCoverageSummary);
+      map.on('idle', updateBuildingCoverageSummary);
       map.on('error', event => {
         const now = Date.now();
         if (now - lastMapErrorAt < 4000) return;
@@ -419,6 +421,46 @@
     if (map?.getLayer(id)) map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
   }
 
+  function updateBuildingCoverageSummary() {
+    const target = $('campus-map-3d-coverage');
+    if (!target) return;
+    const declaredStatus = activeCampusProfile?.building_coverage_status || 'unassessed';
+    if (mapMode !== '3d') {
+      target.textContent = `3D building footprints: ${declaredStatus} · switch to 3D to inspect this area`;
+      return;
+    }
+    if (!map?.isStyleLoaded() || !map.getLayer('campus-osm-3d-buildings')) {
+      target.textContent = '3D building layer is loading or unavailable.';
+      return;
+    }
+    if (map.getZoom() < 15) {
+      target.textContent = `Zoom in to level 15+ to inspect mapped footprints · profile status: ${declaredStatus}`;
+      return;
+    }
+    try {
+      const rendered = map.queryRenderedFeatures({ layers: ['campus-osm-3d-buildings'] });
+      const keys = new Set();
+      for (const feature of rendered) {
+        const properties = feature.properties || {};
+        const geometry = feature.geometry;
+        const first = geometry?.type === 'Polygon'
+          ? geometry.coordinates?.[0]?.[0]
+          : geometry?.type === 'MultiPolygon'
+            ? geometry.coordinates?.[0]?.[0]?.[0]
+            : null;
+        const key = feature.id ?? properties.osm_id ?? properties.id ??
+          (Array.isArray(first) ? first.map(value => Number(value).toFixed(5)).join(',') : null);
+        if (key !== null && key !== undefined) keys.add(String(key));
+      }
+      const placeLabels = map.queryRenderedFeatures({ layers: ['campus-osm-3d-poi-labels'] });
+      target.textContent = keys.size
+        ? `${keys.size.toLocaleString()} OSM building footprints visible · ${placeLabels.length} named places · heights approximate · profile: ${declaredStatus}`
+        : `No OSM building footprints in the current view · profile status: ${declaredStatus}`;
+    } catch (error) {
+      target.textContent = `Could not inspect 3D building coverage · profile status: ${declaredStatus}`;
+    }
+  }
+
   function applyMapMode(mode, animate = true) {
     if (!['2d', 'satellite', '3d'].includes(mode)) return;
     mapMode = mode;
@@ -443,6 +485,7 @@
       button?.classList.toggle('active', mode === key);
       button?.setAttribute('aria-pressed', mode === key ? 'true' : 'false');
     });
+    updateBuildingCoverageSummary();
     if (mode === '3d') {
       setStatus('3D campus view: satellite imagery with OpenStreetMap building footprints extruded to approximate heights. Building coverage and heights depend on local mapping; these are not surveyed architectural models.', 'info');
     } else if (mode === 'satellite') {
