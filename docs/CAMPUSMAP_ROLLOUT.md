@@ -1,39 +1,43 @@
 # CampusMap — multi-university rollout
 
-## Scope
-CampusMap is a reusable, university-scoped interactive map inside CampusShield AI. The first implementation adds a MapLibre map surface, campus feature search/list, 2D and tilted 3D-style views, device-only location, and walking directions to a selected published location.
+## Current staging implementation
+CampusMap is integrated as a university-scoped workspace page. It includes MapLibre rendering, OpenStreetMap basemap attribution, search, campus selector (Main Campus / Iperu Campus), verified-location pins, emergency category filtering, optional user geolocation, walking directions, and a campus administrator manager.
 
-## Data model
-- `campus_map_features` belongs to `campus_universities` through `university_id`.
-- Public map reads expose only published points.
-- Browser roles are read-only in this initial migration. Publishing/admin editing is intentionally withheld until the existing campus-admin authorization contract is reviewed and exercised in staging.
-- No incident coordinates or private student data are exposed by this feature.
+The Campus Map Manager is shown only to an authenticated, verified campus administrator. Browser table writes are revoked. The UI writes through a checked RPC that verifies the caller's own active, verified campus-admin membership and scopes all changes to that university. Locations remain drafts until coordinates and an HTTPS evidence source are supplied and the admin explicitly verifies them. Publishing requires verified coordinates and evidence.
 
-## First pilot
-Babcock University is the first pilot. The current implementation uses an approximate campus-centre fallback only when the selected campus slug is `babcock-university`; it does not fabricate building pins or claim verified 3D building coverage. Verified locations must be added to the map table before they appear.
+## Babcock pilot directory
+The staging migration seeds 12 official Babcock place names as pending/unpublished records without coordinates. It separates the Main Campus (8 places) from the Iperu Campus (4 places). No building coordinates have been guessed.
 
-## Providers and attribution
-- MapLibre GL JS for map rendering.
-- OpenStreetMap raster tiles for the base map, with visible attribution.
-- OSRM public demo routing endpoint for prototype walking routes. This is not a production SLA; replace with a contracted/operated routing service before broad rollout.
-- Detailed satellite imagery, terrain and 3D building meshes require an appropriately licensed imagery/vector provider and verified building geometry. The 3D control currently provides a pitched view, not a claim of photogrammetric 3D.
+Official sources:
+- Arrival guide: https://www.babcock.edu.ng/new-students-info
+- Laz Otti Memorial Library: https://www.babcock.edu.ng/library
+- Babcock University Teaching Hospital emergency services: https://buth.babcock.edu.ng/emergency-services/
+
+The arrival guide identifies the University Gate, halls of residence, Amphitheatre, University Stadium, Registry, Student Development, and Iperu arrival locations. The library page locates Laz Otti Memorial Library opposite BUCODEL. The BUTH emergency page lists the hospital emergency contact. These pages provide named places and services but not precise building-level map coordinates. A campus survey or university-approved coordinate source is still required before pins can be published.
+
+## Emergency and incident layers
+Medical, security, emergency-point, assembly-point and gate features can be filtered as emergency locations. The incident overlay is restricted to verified campus security/admin roles and uses the existing incidents RLS rules. It selects only incident ID, category, severity, status, textual location, creation time and optional coordinates; it does not select reporter identity or incident descriptions.
+
+The incident form now offers an optional GPS attachment. The browser asks for permission, and a text-only report can still be submitted if permission is denied. Coordinates are stored on the incident row and displayed to authorized same-university staff only. Existing incidents have null coordinates until users voluntarily attach a pin.
+
+## Satellite and 3D building support
+The 2D and tilted MapLibre views work without a key. Satellite tiles, terrain and 3D building-footprint extrusions are optional MapTiler layers. Configure a domain-restricted public key at window.CampusShieldMapConfig.maptilerKey to enable them. Do not place a secret key in browser code. The 3D buildings are vector-footprint extrusions, not photogrammetric models; detailed textured building models require verified geometry and a suitable licensed provider.
+
+## Multi-university security
+- Map features are linked to campus_universities by university_id.
+- Anonymous users can read published locations only.
+- Authenticated students and staff can read published locations.
+- Verified campus administrators can additionally read and manage drafts for their own university.
+- Direct browser INSERT/UPDATE/DELETE grants are revoked.
+- The admin RPC validates the signed-in profile and campus membership on every write.
+- Incident pins use the existing same-campus incident RLS rules.
 
 ## Staging acceptance gates
-1. Apply the additive migration to CampusShield AI Staging only.
-2. Seed a small set of verified Babcock test locations after checking coordinates against authoritative campus sources.
-3. Confirm one campus can read only its own university_id points; test cross-campus query attempts.
-4. Test student, staff, campus-admin, unverified and no-campus sessions.
-5. Verify geolocation denial, offline/error states, mobile breakpoints and walking route fallback.
-6. Add a separately reviewed campus-admin publishing RPC and management UI before asking universities to maintain their own maps.
-7. Do not merge to production until staging browser tests and security review pass.
-
-
-## Incident GPS pin capture
-The incident form now offers an explicit, optional browser geolocation action. The browser asks permission; the user can still submit a text-only location if permission is denied. Coordinates are stored on the existing incident row and are visible on the map only to authorized same-university staff under the existing incident RLS policies. The map overlay omits descriptions and reporter identifiers.
-
-
-## Official Babcock source references
-- Arrival guide: https://www.babcock.edu.ng/new-students-info
-- Laz Otti Memorial Library details: https://www.babcock.edu.ng/library
-- Babcock University Teaching Hospital emergency services: https://buth.babcock.edu.ng/emergency-services/
-The seed names and source references are traceable to these university pages. The pages do not supply building-level coordinates; no map point is published until an authorized administrator verifies the pin.
+1. Confirm the migration exists only in CampusShield AI Staging and run Supabase advisors.
+2. Test anonymous published-only reads and authenticated draft access with a verified campus-admin account.
+3. Test two universities and Babcock Main Campus / Iperu Campus for strict data separation.
+4. Capture exact Babcock coordinates through an authorized campus survey or approved source; do not publish approximate pins.
+5. Verify GPS permission denied/allowed paths, incident coordinate persistence, staff-only incident visibility, and reporter privacy.
+6. Configure a restricted MapTiler key before testing satellite, terrain and building extrusion layers.
+7. Run mobile browser tests and verify walking route behavior and provider failure states.
+8. Do not merge to production until authenticated staging tests and security review pass.
