@@ -27,6 +27,7 @@
   let campusCenterMarker = null;
   let placementMarker = null;
   let placementMode = false;
+  let mapMode = '2d';
   let routeLayerAdded = false;
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({
@@ -111,6 +112,65 @@
         layout: { 'text-field': ['concat', 'DRAFT · ', ['get', 'name']], 'text-size': 10, 'text-offset': [0, 1.5], 'text-anchor': 'top', 'text-allow-overlap': false },
         paint: { 'text-color': '#815512', 'text-halo-color': '#fff', 'text-halo-width': 1.5 }
       });
+
+      // Esri World Imagery supplies the satellite base. It is a raster backdrop;
+      // OpenStreetMap vector footprints above it create the optional 3D campus view.
+      map.addSource('campus-esri-imagery', {
+        type: 'raster',
+        tiles: ['https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+        tileSize: 256,
+        maxzoom: 19,
+        attribution: 'Sources: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
+      });
+      map.addLayer({
+        id: 'campus-esri-imagery-layer',
+        type: 'raster',
+        source: 'campus-esri-imagery',
+        layout: { visibility: 'none' },
+        paint: { 'raster-opacity': 1, 'raster-fade-duration': 250 }
+      }, 'campus-feature-points');
+
+      // OpenFreeMap vector tiles carry OpenMapTiles building features derived from OSM.
+      // Height fields are mapped/estimated values; they are not campus survey measurements.
+      map.addSource('campus-openfreemap-buildings', {
+        type: 'vector',
+        url: 'https://tiles.openfreemap.org/planet',
+        attribution: '© OpenFreeMap © OpenMapTiles · Data © OpenStreetMap contributors'
+      });
+      map.addLayer({
+        id: 'campus-osm-3d-buildings',
+        type: 'fill-extrusion',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'building',
+        minzoom: 15,
+        layout: { visibility: 'none' },
+        filter: ['!=', ['get', 'hide_3d'], true],
+        paint: {
+          'fill-extrusion-color': ['coalesce', ['get', 'colour'], '#cbbb9f'],
+          'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 15, 0, 16, ['coalesce', ['get', 'render_height'], 7]],
+          'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
+          'fill-extrusion-opacity': 0.92,
+          'fill-extrusion-vertical-gradient': true
+        }
+      }, 'campus-feature-points');
+      map.addLayer({
+        id: 'campus-osm-3d-building-labels',
+        type: 'symbol',
+        source: 'campus-openfreemap-buildings',
+        'source-layer': 'building',
+        minzoom: 16,
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'name'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 16, 9, 18, 12],
+          'text-anchor': 'center',
+          'text-allow-overlap': false,
+          'text-ignore-placement': false
+        },
+        paint: { 'text-color': '#173b35', 'text-halo-color': '#fff8e8', 'text-halo-width': 1.6 }
+      }, 'campus-feature-points');
+      $('campus-map-satellite')?.classList.add('available');
+
       map.addSource('campus-incidents', { type: 'geojson', data: featureCollection([]) });
       map.addLayer({
         id: 'campus-incident-points',
@@ -151,13 +211,6 @@
       const maptilerKey = window.CampusShieldMapConfig?.maptilerKey;
       if (typeof maptilerKey === 'string' && maptilerKey.trim()) {
         const key = encodeURIComponent(maptilerKey.trim());
-        map.addSource('campus-satellite', {
-          type: 'raster',
-          url: 'https://api.maptiler.com/tiles/satellite-v2/tiles.json?key=' + key,
-          tileSize: 512,
-          attribution: '© MapTiler © OpenStreetMap contributors'
-        });
-        map.addLayer({ id: 'campus-satellite-layer', type: 'raster', source: 'campus-satellite', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0.96 } }, 'campus-feature-points');
         map.addSource('campus-terrain', {
           type: 'raster-dem',
           url: 'https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=' + key,
@@ -165,29 +218,6 @@
           maxzoom: 14,
           encoding: 'mapbox'
         });
-        map.addSource('campus-buildings', {
-          type: 'vector',
-          url: 'https://api.maptiler.com/tiles/v3/tiles.json?key=' + key,
-          minzoom: 12,
-          maxzoom: 18
-        });
-        map.addLayer({
-          id: 'campus-3d-buildings',
-          type: 'fill-extrusion',
-          source: 'campus-buildings',
-          'source-layer': 'building',
-          minzoom: 14,
-          filter: ['!', ['has', 'hide_3d']],
-          paint: {
-            'fill-extrusion-color': '#9eb9ac',
-            'fill-extrusion-height': ['coalesce', ['get', 'render_height'], ['get', 'height'], 8],
-            'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], ['get', 'min_height'], 0],
-            'fill-extrusion-opacity': 0.86
-          }
-        }, 'campus-feature-points');
-        $('campus-map-satellite')?.classList.add('available');
-      } else {
-        setStatus('For satellite imagery and 3D building footprints, configure a domain-restricted MapTiler key in CampusShieldMapConfig.', 'info');
       }
       map.on('click', 'campus-feature-points', event => {
         const id = event.features?.[0]?.properties?.id;
@@ -199,6 +229,7 @@
       updateSource();
       updateDraftSource();
       updateIncidentSource();
+      applyMapMode(mapMode, false);
       // The initial camera move may be requested before the MapLibre style is ready.
       // Re-apply it after load so the first visible frame lands at campus scale.
       fitCampus();
@@ -242,6 +273,39 @@
       : zoom >= 13
         ? `Campus-area view · zoom ${zoom.toFixed(1)}`
         : `Regional view · zoom ${zoom.toFixed(1)}`;
+  }
+
+  function setLayerVisibility(id, visible) {
+    if (map?.getLayer(id)) map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
+  }
+
+  function applyMapMode(mode, animate = true) {
+    if (!['2d', 'satellite', '3d'].includes(mode)) return;
+    mapMode = mode;
+    const satelliteOn = mode !== '2d';
+    const buildingsOn = mode === '3d';
+    setLayerVisibility('osm-base', !satelliteOn);
+    setLayerVisibility('campus-esri-imagery-layer', satelliteOn);
+    setLayerVisibility('campus-osm-3d-buildings', buildingsOn);
+    setLayerVisibility('campus-osm-3d-building-labels', buildingsOn);
+    if (mode !== '3d' && map?.getTerrain()) map.setTerrain(null);
+    if (mode === '3d' && map?.getSource('campus-terrain')) map.setTerrain({ source: 'campus-terrain', exaggeration: 1.1 });
+    if (map) {
+      const camera = mode === '3d'
+        ? { pitch: 62, bearing: -18 }
+        : { pitch: 0, bearing: 0 };
+      map.easeTo({ ...camera, duration: animate ? 700 : 0, essential: true });
+    }
+    $('campus-map-2d')?.classList.toggle('active', mode === '2d');
+    $('campus-map-satellite')?.classList.toggle('active', mode === 'satellite');
+    $('campus-map-3d')?.classList.toggle('active', mode === '3d');
+    if (mode === '3d') {
+      setStatus('3D campus view: satellite imagery with OpenStreetMap building footprints extruded to approximate heights. Building coverage and heights depend on local mapping; these are not surveyed architectural models.', 'info');
+    } else if (mode === 'satellite') {
+      setStatus('Satellite imagery enabled. Image resolution and capture date vary by location.', 'info');
+    } else {
+      setStatus('2D campus street map enabled.', 'info');
+    }
   }
 
   function isBabcockUniversity() {
@@ -657,17 +721,9 @@
     if (item) selectFeature(item, true);
   });
 
-  $('campus-map-2d')?.addEventListener('click', () => {
-    if (map) { map.easeTo({ pitch: 0, bearing: 0, duration: 500 }); if (map.getTerrain()) map.setTerrain(null); }
-    $('campus-map-2d').classList.add('active');
-    $('campus-map-3d').classList.remove('active');
-  });
-  $('campus-map-3d')?.addEventListener('click', () => {
-    if (map) { map.easeTo({ pitch: 55, bearing: -18, duration: 650 }); if (map.getSource('campus-terrain')) map.setTerrain({ source: 'campus-terrain', exaggeration: 1.15 }); }
-    $('campus-map-3d').classList.add('active');
-    $('campus-map-2d').classList.remove('active');
-    setStatus('Tilted 3D-style view enabled. Detailed 3D building models require verified building geometry.');
-  });
+  $('campus-map-2d')?.addEventListener('click', () => applyMapMode('2d'));
+  $('campus-map-satellite')?.addEventListener('click', () => applyMapMode('satellite'));
+  $('campus-map-3d')?.addEventListener('click', () => applyMapMode('3d'));
 
   $('campus-map-locate')?.addEventListener('click', () => {
     if (!navigator.geolocation) return setStatus('Location services are not available in this browser.', 'warning');
