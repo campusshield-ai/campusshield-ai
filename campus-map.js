@@ -99,7 +99,7 @@
         source: 'campus-features',
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Noto Sans Regular'],
           'text-size': 11,
           'text-offset': [0, 1.35],
           'text-anchor': 'top',
@@ -156,7 +156,7 @@
         filter: ['!', ['has', 'point_count']],
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Noto Sans Regular'],
           'text-size': ['interpolate', ['linear'], ['zoom'], 16, 9, 19, 11],
           'text-offset': [0, 1.25],
           'text-anchor': 'top',
@@ -231,7 +231,7 @@
         layout: {
           visibility: 'none',
           'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Noto Sans Regular'],
           'text-size': ['interpolate', ['linear'], ['zoom'], 15, 9, 18, 11],
           'text-offset': [0, 0.8],
           'text-anchor': 'top',
