@@ -600,6 +600,21 @@
     const lng = numberOrNull($('campus-map-profile-lng').value);
     const verified = $('campus-map-profile-verified').checked;
     const statusValue = lat === null && lng === null ? 'missing' : verified ? 'verified' : 'candidate';
+    let boundaryGeoJson = activeCampusProfile?.boundary_geojson || null;
+    const boundaryRaw = $('campus-map-profile-boundary').value.trim();
+    if (boundaryRaw) {
+      try { boundaryGeoJson = JSON.parse(boundaryRaw); }
+      catch { return setStatus('The campus boundary is not valid JSON. Paste a GeoJSON Polygon or MultiPolygon.', 'error'); }
+    }
+    if (boundaryGeoJson && !['Polygon','MultiPolygon'].includes(boundaryGeoJson.type)) {
+      return setStatus('Campus boundary GeoJSON must be a Polygon or MultiPolygon geometry.', 'error');
+    }
+    const boundarySource = $('campus-map-profile-boundary-source').value.trim() || activeCampusProfile?.boundary_source_url || null;
+    const boundaryVerified = $('campus-map-profile-boundary-verified').checked;
+    const boundaryStatus = boundaryGeoJson ? (boundaryVerified ? 'verified' : 'candidate') : 'missing';
+    if (boundaryGeoJson && !boundarySource) {
+      return setStatus('Add an HTTPS source for this campus boundary before saving it.', 'warning');
+    }
     try {
       const { data, error } = await client().rpc('manage_campus_map_campus', {
         p_campus_id: $('campus-map-profile-id').value || null,
@@ -609,14 +624,18 @@
         p_location_hint: campus?.university_name || null,
         p_center_latitude: lat,
         p_center_longitude: lng,
-        p_center_source_url: $('campus-map-profile-source').value.trim() || null,
+        p_center_source_url: $('campus-map-profile-source').value.trim() || activeCampusProfile?.center_source_url || null,
         p_center_status: statusValue,
-        p_boundary_geojson: activeCampusProfile?.boundary_geojson || null,
-        p_boundary_source_url: activeCampusProfile?.boundary_source_url || null,
-        p_boundary_status: activeCampusProfile?.boundary_status || 'missing'
+        p_boundary_geojson: boundaryGeoJson,
+        p_boundary_source_url: boundarySource,
+        p_boundary_status: boundaryStatus
       });
       if (error) throw error;
-      setStatus(statusValue === 'verified' ? 'Campus centre saved as verified.' : statusValue === 'candidate' ? 'Campus centre saved as a candidate; it remains unverified.' : 'Campus profile saved without a centre.', statusValue === 'verified' ? 'success' : 'warning');
+      setStatus(statusValue === 'verified'
+        ? (boundaryStatus === 'verified' ? 'Campus centre and boundary saved as verified.' : 'Campus centre saved as verified; boundary remains ' + boundaryStatus + '.')
+        : statusValue === 'candidate'
+          ? 'Campus centre saved as a candidate; it remains unverified.'
+          : 'Campus profile saved without a centre.', statusValue === 'verified' ? 'success' : 'warning');
       await loadCampus();
       const updated = campusProfiles.find(item => item.id === data) || campusProfiles.find(item => item.campus_slug === $('campus-map-profile-slug').value.trim());
       if (updated) {
@@ -628,6 +647,56 @@
     }
   }
 
+  async function uploadCampusGlbModel() {
+    if (!isCampusAdmin) return setStatus('Only a verified campus administrator can upload a building model.', 'warning');
+    const profile = activeCampusProfile;
+    if (!profile?.id || !profile?.university_id) {
+      return setStatus('Save this campus profile before uploading its 3D model.', 'warning');
+    }
+    const file = $('campus-map-profile-model-file')?.files?.[0];
+    if (!file) return setStatus('Choose a campus GLB model first.', 'warning');
+    if (!/\.glb$/i.test(file.name)) return setStatus('Only binary glTF (.glb) files are accepted in this upload route.', 'warning');
+    if (file.size > 25 * 1024 * 1024) return setStatus('This GLB is larger than the 25 MB private model limit. Optimise or compress it first.', 'warning');
+    const attribution = $('campus-map-profile-model-attribution').value.trim();
+    if (attribution.length < 8 || attribution.length > 500) {
+      return setStatus('Add the university, surveyor or licence attribution for this 3D model (8–500 characters).', 'warning');
+    }
+    const uuid = typeof crypto?.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = Math.random() * 16 | 0;
+          return (c === 'x' ? r : (r & 3 | 8)).toString(16);
+        });
+    const path = `${profile.university_id}/${profile.id}/${uuid}.glb`;
+    const uploadButton = $('campus-map-profile-model-upload');
+    uploadButton.disabled = true;
+    uploadButton.textContent = 'Uploading privately…';
+    try {
+      const { error: uploadError } = await client().storage.from('campus-map-models').upload(path, file, {
+        cacheControl: '3600',
+        contentType: 'model/gltf-binary',
+        upsert: false
+      });
+      if (uploadError) throw uploadError;
+      const { error: submitError } = await client().rpc('submit_campus_3d_model', {
+        p_campus_id: profile.id,
+        p_model_storage_path: path,
+        p_model_attribution: attribution
+      });
+      if (submitError) {
+        await client().storage.from('campus-map-models').remove([path]).catch(() => {});
+        throw submitError;
+      }
+      $('campus-map-profile-model-file').value = '';
+      setStatus('3D model uploaded to private Staging storage and submitted for review. It will not appear on student maps until approved.', 'success');
+      await loadCampus();
+    } catch (error) {
+      setStatus(error.message || 'The campus 3D model upload failed.', 'error');
+    } finally {
+      uploadButton.disabled = false;
+      uploadButton.textContent = 'Upload model for review';
+    }
+  }
 
   function applyAdminCoordinates(latitude, longitude, source, accuracy = null) {
     const lat = Number(latitude);
@@ -762,6 +831,20 @@
     $('campus-map-profile-lng').value = profile?.center_longitude ?? '';
     $('campus-map-profile-source').value = profile?.center_source_url || '';
     $('campus-map-profile-verified').checked = profile?.center_status === 'verified';
+    $('campus-map-profile-boundary').value = profile?.boundary_geojson ? JSON.stringify(profile.boundary_geojson, null, 2) : '';
+    $('campus-map-profile-boundary-source').value = profile?.boundary_source_url || '';
+    $('campus-map-profile-boundary-verified').checked = profile?.boundary_status === 'verified';
+    $('campus-map-profile-model-attribution').value = profile?.model_attribution || '';
+    if ($('campus-map-profile-model-status')) {
+      const modelState = profile?.model_status || 'not_submitted';
+      $('campus-map-profile-model-status').textContent = modelState === 'approved'
+        ? 'Approved model recorded. Rendering remains gated on the 3D model review and renderer integration.'
+        : modelState === 'pending_review'
+          ? 'GLB model uploaded privately and awaiting review. It is not shown to students.'
+          : modelState === 'rejected'
+            ? 'Previous model was rejected. Submit a corrected university-supplied model.'
+            : 'No 3D model submitted. A university-supplied GLB is required for realistic roofs and facades.';
+    }
     if ($('campus-map-profile-coverage')) {
       $('campus-map-profile-coverage').textContent = profile
         ? `Centre: ${profile.center_status || 'missing'} · Boundary: ${profile.boundary_status || 'missing'} · Building data: ${profile.building_coverage_status || 'unassessed'} · 3D model: ${profile.model_status || 'not submitted'}`
@@ -848,8 +931,9 @@
         isCampusAdmin = verifiedProfile && verifiedMembership && profileResult.data?.role === 'admin' && campusRole === 'admin';
       }
       $('campus-map-admin').hidden = !isCampusAdmin;
+      const profileColumns = 'id,university_id,campus_name,campus_slug,state,location_hint,center_latitude,center_longitude,center_source_url,center_status,center_verified_by,center_verified_at,boundary_geojson,boundary_source_url,boundary_status,building_data_provider,building_coverage_status,model_format,model_status,metadata,is_active' + (isCampusAdmin ? ',model_storage_path,model_source_url,model_attribution' : '');
       const { data: profileRows, error: profileError } = await client().from('campus_map_campuses')
-        .select('id,university_id,campus_name,campus_slug,state,location_hint,center_latitude,center_longitude,center_source_url,center_status,center_verified_by,center_verified_at,boundary_geojson,boundary_source_url,boundary_status,building_data_provider,building_coverage_status,model_storage_path,model_format,model_status,metadata,is_active')
+        .select(profileColumns)
         .eq('university_id', campus.university_id)
         .eq('is_active', true)
         .order('campus_name', { ascending: true });
@@ -926,6 +1010,7 @@
     event.preventDefault();
     saveCampusProfile();
   });
+  $('campus-map-profile-model-upload')?.addEventListener('click', uploadCampusGlbModel);
   $('campus-map-profile-new')?.addEventListener('click', () => {
     if (!isCampusAdmin) return;
     $('campus-map-profile-id').value = '';
