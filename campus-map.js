@@ -70,7 +70,7 @@
       bearing: 0,
       maxPitch: 60,
       minZoom: 5,
-      maxZoom: 20,
+      maxZoom: 19,
       pitchWithRotate: true,
       cooperativeGestures: true,
       attributionControl: { compact: true }
@@ -150,11 +150,11 @@
         id: 'campus-draft-labels',
         type: 'symbol',
         source: 'campus-drafts',
-        minzoom: 17,
+        minzoom: 16,
         filter: ['!', ['has', 'point_count']],
         layout: {
           'text-field': ['get', 'name'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 17, 9, 19, 11],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 16, 9, 19, 11],
           'text-offset': [0, 1.25],
           'text-anchor': 'top',
           'text-allow-overlap': false,
@@ -189,6 +189,7 @@
       map.addSource('campus-openfreemap-buildings', {
         type: 'vector',
         url: 'https://tiles.openfreemap.org/planet',
+        maxzoom: 14,
         attribution: '© OpenFreeMap © OpenMapTiles · Data © OpenStreetMap contributors'
       });
       map.addLayer({
@@ -218,35 +219,19 @@
         paint: { 'line-color': '#71644f', 'line-width': ['interpolate', ['linear'], ['zoom'], 16, 0.35, 19, 0.8], 'line-opacity': 0.5 }
       }, 'campus-feature-points');
       map.addLayer({
-        id: 'campus-osm-3d-building-labels',
-        type: 'symbol',
-        source: 'campus-openfreemap-buildings',
-        'source-layer': 'building',
-        minzoom: 16,
-        filter: ['has', 'name'],
-        layout: {
-          visibility: 'none',
-          'text-field': ['get', 'name'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 16, 9, 18, 12],
-          'text-anchor': 'center',
-          'text-allow-overlap': false,
-          'text-ignore-placement': false
-        },
-        paint: { 'text-color': '#173b35', 'text-halo-color': '#fff8e8', 'text-halo-width': 1.6 }
-      }, 'campus-feature-points');
-      map.addLayer({
         id: 'campus-osm-3d-poi-labels',
         type: 'symbol',
         source: 'campus-openfreemap-buildings',
         'source-layer': 'poi',
         minzoom: 15,
-        filter: ['has', 'name'],
+        filter: ['all', ['has', 'name'], ['<=', ['get', 'rank'], 18]],
         layout: {
           visibility: 'none',
           'text-field': ['get', 'name'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 15, 9, 18, 12],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 15, 9, 18, 11],
           'text-offset': [0, 0.8],
           'text-anchor': 'top',
+          'symbol-sort-key': ['coalesce', ['get', 'rank'], 99],
           'text-allow-overlap': false
         },
         paint: { 'text-color': '#172f2b', 'text-halo-color': '#fff8e8', 'text-halo-width': 1.7 }
@@ -399,13 +384,12 @@
     setLayerVisibility('campus-esri-imagery-layer', satelliteOn);
     setLayerVisibility('campus-osm-3d-buildings', buildingsOn);
     setLayerVisibility('campus-osm-3d-building-edges', buildingsOn);
-    setLayerVisibility('campus-osm-3d-building-labels', labelsOn);
     setLayerVisibility('campus-osm-3d-poi-labels', labelsOn);
     if (mode !== '3d' && map?.getTerrain()) map.setTerrain(null);
     if (mode === '3d' && map?.getSource('campus-terrain')) map.setTerrain({ source: 'campus-terrain', exaggeration: 1.1 });
     if (map) {
       const camera = mode === '3d'
-        ? { pitch: 62, bearing: -18 }
+        ? { pitch: 54, bearing: -16 }
         : { pitch: 0, bearing: 0 };
       map.easeTo({ ...camera, duration: animate ? 520 : 0, essential: true });
     }
