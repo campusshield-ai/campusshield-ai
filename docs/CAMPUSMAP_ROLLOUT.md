@@ -52,3 +52,6 @@ The Babcock Main Campus map now opens at the university-level Google Maps locato
 3. Put the restricted public key in campus-map-config.js as the value of window.CampusShieldMapConfig.maptilerKey.
 4. Keep secret/server keys out of the repository and browser code.
 5. Re-run the staging map tests and verify satellite imagery, terrain, and the building layer load before promoting the feature.
+
+
+The Babcock University Teaching Hospital draft stores its official emergency line (+234 811 891 8368) as public location metadata. Once an authorized campus administrator verifies the hospital pin and publishes it, CampusMap can display the emergency line alongside that location.
