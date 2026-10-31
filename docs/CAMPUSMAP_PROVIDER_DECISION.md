@@ -2,7 +2,7 @@
 
 **Status:** staging-first provider decision and implementation notes  
 **Date:** 2026-10-31  
-**Scope:** this document applies to CampusMap only; it does not change the ShieldMind Agent Stack or production configuration.
+**Scope:** this document applies to CampusMap only; it does not change the ShieldMind Agent Stack or production configuration. A branch-scoped GitHub Actions workflow runs map syntax, CampusMap smoke and full Node smoke checks for this follow-up.
 
 ## Decision
 
