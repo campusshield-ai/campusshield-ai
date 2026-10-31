@@ -203,15 +203,27 @@ Type <span class="good">help</span> to view available commands.
     }catch(err){$("connection-label").textContent="Connection unavailable";$("auth-state").textContent="Unavailable";setStatus(err.message||"Could not verify your session.");}
   }
   async function ask(question){
-    if(!signedIn){addMessage("system","Please sign in to CampusShield AI before sending a request.");return;}
-    if(busy)return;busy=true;$("send-btn").disabled=true;addMessage("user",question);setStatus("TORIO is thinking…");
+    if(busy)return;
+    busy=true;$("send-btn").disabled=true;addMessage("user",question);setStatus("Checking your CampusShield session…");
     try{
+      if(!backend?.client?.auth?.getSession)throw new Error("Supabase authentication is unavailable. Reload CampusShield and sign in again.");
+      const {data,error}=await backend.client.auth.getSession();
+      if(error)throw error;
+      const session=data?.session;
+      if(!session?.access_token){
+        signedIn=false;$("connection-label").textContent="Sign-in required";$("auth-state").textContent="Not signed in";$("user-chip").textContent="Guest session";
+        throw new Error("Your CampusShield session has expired. Sign in again, then reopen TORIO.");
+      }
+      signedIn=true;$("connection-label").textContent="Session authenticated";$("auth-state").textContent="Authenticated";$("user-chip").textContent=session.user?.email||"Signed-in account";
+      setStatus("TORIO is thinking…");
       const result=await backend.askShieldMind(question,history,null);
       const answer=String(result?.answer||"I could not produce an answer.");
       lastAssistantAnswer=answer;$("speak-btn").disabled=false;addMessage("assistant",answer);history.push({role:"user",content:question},{role:"assistant",content:answer});history=history.slice(-8);
       setStatus(result?.mode==="provider"?"ShieldMind response received. Verify important facts against official sources.":"Response received. Verify campus policies and deadlines with official university sources.");
-    }catch(err){const msg=String(err?.message||"ShieldMind is temporarily unavailable.");addMessage("assistant",msg+" For urgent campus matters, use official university channels.");setStatus(msg);}
-    finally{busy=false;$("send-btn").disabled=false;}
+    }catch(err){
+      const msg=String(err?.message||"ShieldMind is temporarily unavailable.");
+      addMessage("assistant",msg+" For urgent campus matters, use official university channels.");setStatus(msg);
+    }finally{busy=false;$("send-btn").disabled=false;}
   }
   $("chat-form").addEventListener("submit",async e=>{e.preventDefault();const q=$("question").value.trim();if(!q)return;$("question").value="";await ask(q);});
   $("listen-btn").addEventListener("click",()=>startVoiceCapture($("question"),$("voice-status"),"Question"));
