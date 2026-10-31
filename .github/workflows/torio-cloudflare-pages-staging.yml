@@ -1,0 +1,45 @@
+name: TORIO Cloudflare Pages staging package
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - feat/jarvis-command-interface
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Build and audit public staging payload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build isolated static site payload
+        run: node scripts/build-cloudflare-pages.mjs
+      - name: Verify TORIO install and backend assets
+        run: |
+          test -f dist/torio-staging/torio-command-center.html
+          test -f dist/torio-staging/torio-manifest.webmanifest
+          test -f dist/torio-staging/service-worker.js
+          test -f dist/torio-staging/supabase-config.js
+          test -f dist/torio-staging/icons/torio-ai.svg
+          test ! -e dist/torio-staging/supabase
+          test ! -e dist/torio-staging/tests
+          test ! -e dist/torio-staging/docs
+          test ! -e dist/torio-staging/.github
+      - name: Store staging payload for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: torio-cloudflare-pages-staging
+          path: dist/torio-staging/
+          if-no-files-found: error
+          retention-days: 7
