@@ -185,6 +185,7 @@
 
   function fitCampus() {
     if (!map) return;
+    if (features.length && campusCenterMarker) { campusCenterMarker.remove(); campusCenterMarker = null; }
     if (features.length === 1) {
       map.flyTo({ center: [Number(features[0].longitude), Number(features[0].latitude)], zoom: 16 });
     } else if (features.length > 1) {
@@ -228,12 +229,14 @@
     featureList.querySelectorAll('[data-feature-id]').forEach(el => {
       el.classList.toggle('selected', el.dataset.featureId === item.id);
     });
-    setStatus(item.name + (item.description ? ' — ' + item.description : ''));
+    const emergencyLine = item.metadata?.emergency_phone ? ' Emergency line: ' + item.metadata.emergency_phone + '.' : '';
+    setStatus(item.name + (item.description ? ' — ' + item.description : '') + emergencyLine);
     if (fly && map) map.flyTo({ center: [Number(item.longitude), Number(item.latitude)], zoom: 17, pitch: 45, essential: true });
   }
 
   function currentCampusFeatures() {
     const selected = $('campus-map-campus-select')?.value || 'main-campus';
+    selectedFeature = null;
     features = allFeatures.filter(item => item.is_published && item.campus_slug === selected && item.latitude != null && item.longitude != null);
     adminDrafts = isCampusAdmin ? allFeatures.filter(item => !item.is_published && item.campus_slug === selected) : [];
     updateSource();
