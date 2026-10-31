@@ -2563,10 +2563,32 @@ button,input,select,textarea{max-width:100%;min-width:0}
           </div>
     <aside class="campus-map-sidebar"><h2 id="campus-map-campus-name">Your university</h2><p>Campus locations and facilities</p>
       <div class="campus-map-actions"><button class="campus-map-action" type="button" id="campus-map-locate">◎ My location</button><button class="campus-map-action primary" type="button" id="campus-map-route">↗ Walking route</button><button class="campus-map-action" type="button" id="campus-map-emergency">Emergency points</button><button class="campus-map-action" type="button" id="campus-map-incidents" hidden>Incident pins</button></div>
-      <label class="campus-map-campus-picker">Campus<select id="campus-map-campus-select"><option value="main-campus">Main Campus</option></select></label><div id="campus-map-results" class="campus-map-search-results" hidden></div><div class="campus-map-feature-list" id="campus-map-feature-list"><p class="campus-map-empty">Open CampusMap to load your university locations.</p></div>
+      <label class="campus-map-campus-picker">Campus<select id="campus-map-campus-select"><option value="main-campus">Main Campus</option></select></label><p class="campus-map-profile-summary" id="campus-map-profile-status" role="status">Loading campus map profile…</p><div id="campus-map-results" class="campus-map-search-results" hidden></div><div class="campus-map-feature-list" id="campus-map-feature-list"><p class="campus-map-empty">Open CampusMap to load your university locations.</p></div>
       <div class="campus-map-admin" id="campus-map-admin" hidden>
         <div class="campus-map-admin-heading"><h3>Campus Map Manager</h3><span class="campus-map-admin-tag">Verified campus admin</span></div>
         <p>Save draft locations first. Publish only after checking the exact pin against an official source or on-campus survey.</p>
+        <section class="campus-map-profile-setup" id="campus-map-profile-setup" hidden aria-labelledby="campus-map-profile-heading">
+          <div class="campus-map-profile-title"><h4 id="campus-map-profile-heading">University and campus coverage</h4><button class="campus-map-action" type="button" id="campus-map-profile-new">Add campus</button></div>
+          <p class="campus-map-profile-help">Set the campus centre and boundary separately from individual building pins. A state overview is only a regional fallback, not a campus location.</p>
+          <form id="campus-map-profile-form">
+            <input type="hidden" id="campus-map-profile-id">
+            <label>Campus name<input id="campus-map-profile-name" required maxlength="120" value="Main Campus"></label>
+            <label>Campus ID<input id="campus-map-profile-slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" value="main-campus"></label>
+            <label>State<input id="campus-map-profile-state" required maxlength="80" readonly></label>
+            <div class="campus-map-admin-coords">
+              <label>Campus centre latitude<input id="campus-map-profile-lat" type="number" min="-90" max="90" step="any" inputmode="decimal"></label>
+              <label>Campus centre longitude<input id="campus-map-profile-lng" type="number" min="-180" max="180" step="any" inputmode="decimal"></label>
+            </div>
+            <div class="campus-map-pin-tools">
+              <button class="campus-map-action" type="button" id="campus-map-profile-pick">Pick centre on map</button>
+              <button class="campus-map-action" type="button" id="campus-map-profile-gps">Use GPS</button>
+            </div>
+            <label>Centre source (HTTPS)<input id="campus-map-profile-source" type="url" placeholder="Official campus map, survey or university source"></label>
+            <label class="campus-map-admin-check"><input id="campus-map-profile-verified" type="checkbox"> I verified this campus centre using an official source or site survey</label>
+            <p class="campus-map-profile-coverage" id="campus-map-profile-coverage" role="status">Campus centre, boundary and 3D model status appear here.</p>
+            <div class="campus-map-admin-actions"><button type="submit" class="campus-map-action primary">Save campus profile</button></div>
+          </form>
+        </section>
         <form id="campus-map-admin-form">
           <input type="hidden" id="campus-map-feature-id">
           <label>Campus name<input id="campus-map-admin-campus" value="Main Campus" required maxlength="120"></label>
