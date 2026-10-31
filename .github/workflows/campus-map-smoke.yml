@@ -26,6 +26,7 @@ jobs:
           node-version: 22
       - name: Validate JavaScript syntax
         run: |
+          node --check campus-map-config.js
           node --check campus-map.js
           node --check campusshield-backend.js
           node --check campusshield-app.js
