@@ -472,6 +472,10 @@
       updateSource();
       updateDraftSource();
       updateIncidentSource();
+      // Campus/profile data may finish loading before or after MapLibre's first style load.
+      // Push the latest state into the freshly-created sources in either order.
+      updateCampusBoundarySource();
+      updateCampusBuildingSource();
       applyMapMode(mapMode, false);
       // The initial camera move may be requested before the MapLibre style is ready.
       // Re-apply it after load so the first visible frame lands at campus scale.
