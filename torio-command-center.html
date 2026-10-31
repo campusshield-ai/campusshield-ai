@@ -33,7 +33,16 @@
   
 /* TORIO visual polish */
 .orb{position:relative;width:112px;height:112px;border:1px solid #5de4bd;background:radial-gradient(circle,#76ffe0 0,#2aa987 9%,#124f49 34%,#092322 72%);box-shadow:0 0 24px #39d6a055,0 0 70px #39d6a02a,inset 0 0 24px #8affdc33;animation:torioFloat 5s ease-in-out infinite}.orb:before,.orb:after{content:"";position:absolute;inset:-12px;border:1px solid #53d9bd55;border-radius:50%;animation:torioOrbit 13s linear infinite}.orb:after{inset:-23px;border-color:#53d9bd26;animation-duration:21s;animation-direction:reverse}.hero{position:relative;overflow:hidden;background:linear-gradient(115deg,#103c32ed,#0c282def 72%,#102f37ed)}.hero:before{content:"";position:absolute;width:360px;height:360px;right:4%;top:-230px;border:1px solid #65eac033;border-radius:50%;box-shadow:0 0 0 28px #65eac00a,0 0 0 58px #65eac008;pointer-events:none}.panel{box-shadow:0 18px 55px #0004,inset 0 1px #ffffff08}.chatlog{background:radial-gradient(ellipse at 50% 0%,#10342e55,transparent 55%),#061416}.msg{box-shadow:0 8px 20px #0002;animation:torioIn .22s ease-out}.btn,.tool,.modebar button,.nav button{transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}.btn:hover,.tool:hover{transform:translateY(-1px);box-shadow:0 8px 22px #0003}.tool{min-height:66px}.tiny-btn{border:1px solid var(--line);background:#0d2727;color:#a9cfc0;border-radius:9px;padding:7px 10px;font-size:11px}.tiny-btn:hover{border-color:#3b9d80;color:#eafff5}.chat-tools{display:flex;gap:7px;align-items:center}.status-led{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e7bd72;margin-right:7px}.status-led.online{background:#39d6a0;box-shadow:0 0 12px #39d6a0}.welcome-note{color:#8fb7aa;font-size:11px;margin:0 0 12px}@keyframes torioFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes torioOrbit{to{transform:rotate(360deg)}}@keyframes torioIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}@media(max-width:650px){.orb{width:68px;height:68px}.orb:after{inset:-12px}.chat-tools{width:100%;justify-content:flex-end}}@media(prefers-reduced-motion:reduce){.orb,.orb:before,.orb:after,.msg{animation:none!important}}
-</style>
+
+    .workflow-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 16px}
+    .workflow-step{border:1px solid var(--line);border-radius:11px;padding:10px;background:linear-gradient(145deg,#102b2a,#0a1c1e);display:flex;align-items:center;gap:9px;min-width:0}
+    .workflow-step i{width:25px;height:25px;flex:none;border-radius:8px;display:grid;place-items:center;background:#164637;color:#8cf0c5;font-style:normal;font-size:11px;font-weight:800}
+    .workflow-step b{display:block;font-size:11px}.workflow-step small{display:block;color:var(--muted);font-size:9px}
+    .chat-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.tiny-btn{border:1px solid var(--line);background:#0d2727;color:#a9cfc0;border-radius:9px;padding:7px 10px;font-size:10px}.tiny-btn:hover{border-color:#3b9d80;color:#eafff5}.tiny-btn[aria-pressed=true]{background:#15503f;border-color:#39d6a0;color:#eafff5}
+    .context-card{border:1px solid var(--line);background:#0a2021;border-radius:12px;padding:12px;margin-bottom:15px}.context-card h3{font-size:12px;margin:0 0 4px}.context-card p{font-size:10px;color:var(--muted);margin:0 0 9px}.context-card textarea{width:100%;resize:vertical;min-height:62px;background:#071719;border:1px solid #28524c;border-radius:9px;padding:9px;color:var(--text);font:11px/1.5 inherit}.context-actions{display:flex;gap:7px;align-items:center;margin-top:8px;flex-wrap:wrap}.context-status{font-size:9px;color:var(--muted)}
+    @media(max-width:700px){.workflow-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.workflow-step{padding:8px}}
+    @media(max-width:420px){.workflow-strip{gap:6px}.workflow-step small{display:none}}
+  </style>
 </head>
 <body>
 <div class="shell">
@@ -50,10 +59,11 @@
   <main>
     <header class="topbar"><div><div class="eyebrow">CAMPUSSHIELD AI / TORIO</div><div style="font-size:12px;color:var(--muted)">Secure intelligent command interface</div></div><div class="top-actions"><span class="chip" id="user-chip">Checking account…</span><button class="btn" id="install-torio" type="button" hidden>Install TORIO</button><button class="btn secondary" id="back-btn" type="button">← CampusShield</button></div></header>
     <section class="hero"><div><div class="eyebrow">YOUR CAMPUS, CONNECTED INTELLIGENCE</div><h1>TORIO command centre</h1><p>One workspace with two ways to work: natural conversation with ShieldMind AI and a keyboard-driven command terminal for safe, built-in actions.</p></div><div class="orb" aria-hidden="true">✧</div></section>
+    <section class="workflow-strip" aria-label="TORIO workflow"><div class="workflow-step"><i>01</i><span><b>Understand</b><small>Clarify the goal</small></span></div><div class="workflow-step"><i>02</i><span><b>Plan</b><small>Choose the right path</small></span></div><div class="workflow-step"><i>03</i><span><b>Work</b><small>Build the answer</small></span></div><div class="workflow-step"><i>04</i><span><b>Verify</b><small>Check and summarize</small></span></div></section>
     <div class="modebar" aria-label="Choose workspace"><button class="active" data-mode="assistant">01 · Conversational AI</button><button data-mode="terminal">02 · Terminal interface</button><button data-mode="overview">03 · System overview</button></div>
     <div class="workspace">
       <section class="panel" id="assistant-view">
-        <div class="panel-head"><div><h2>ShieldMind conversation</h2><p>Responses are generated through the existing Supabase Edge Function.</p></div><span class="chip">AI CONNECTED VIA SUPABASE</span></div>
+        <div class="panel-head"><div><h2>ShieldMind conversation</h2><p>Responses are generated through the existing Supabase Edge Function.</p></div><div class="chat-tools"><button class="tiny-btn" id="guided-toggle" type="button" aria-pressed="false">Guided flow: Off</button><button class="tiny-btn" id="verify-answer" type="button" disabled>✓ Verify answer</button><span class="chip">SHIELDMIND VIA SUPABASE</span></div></div>
         <div class="panel-body"><div class="chatlog" id="chatlog" aria-live="polite"><div class="msg"><strong>TORIO · CAMPUSSHIELD</strong><p>Good day. I’m ready to help with academic questions, planning, explanations and campus knowledge. What would you like to work on?</p></div></div>
           <form class="composer" id="chat-form"><textarea id="question" maxlength="1200" required rows="2" placeholder="Ask TORIO anything academic…"></textarea><button class="btn secondary voice-btn" id="listen-btn" type="button" aria-label="Speak your question">🎙 Voice</button><button class="btn secondary voice-btn" id="speak-btn" type="button" aria-label="Read the last TORIO answer aloud" disabled>🔊 Read</button><button class="tiny-btn" id="clear-chat" type="button" title="Clear this conversation">Clear</button><button class="btn" id="send-btn" type="submit">Send ↗</button></form>
           <div class="voice-status" id="voice-status" role="status" aria-live="polite">Voice input is optional. Review spoken text before sending.</div>
@@ -76,7 +86,8 @@ Type <span class="good">help</span> to view available commands.
         <div class="panel-body"><div class="info-grid"><div class="info"><small>AUTHENTICATION</small><b id="auth-state">Checking…</b></div><div class="info"><small>BACKEND</small><b>Supabase</b></div><div class="info"><small>AI PROVIDER ROUTE</small><b>shieldmind-chat</b></div><div class="info"><small>COMMAND MODE</small><b>Allow-listed only</b></div></div><div class="notice">TORIO is an assistant interface, not an emergency dispatch system. It cannot contact campus security or emergency services. Use the official incident-reporting and emergency channels for urgent situations.</div></div>
       </section>
       <aside class="panel" style="padding:15px">
-        <div class="eyebrow" style="margin:2px 0 12px">QUICK OPERATIONS</div>
+        <section class="context-card"><h3>My TORIO context</h3><p>Save non-sensitive preferences or study context on this device only. It is included with your prompts when saved.</p><textarea id="saved-context" maxlength="1200" rows="3" placeholder="Example: I prefer simple explanations with examples. I am currently studying..."></textarea><div class="context-actions"><button class="tiny-btn" id="save-context" type="button">Save on this device</button><button class="tiny-btn" id="clear-context" type="button">Clear</button><span id="context-status" class="context-status">Not saved</span></div></section>
+        <div class="eyebrow" style="margin:2px 0 12px">SKILLS & QUICK OPERATIONS</div>
         <div class="tool-list">
           <button class="tool" data-prompt="Explain a difficult academic topic in simple language, give an example, then provide a concise recap. Ask me for the topic first."><span class="ico">◎</span><span><b>Explain a topic</b><small>Understand complex concepts</small></span></button>
           <button class="tool" data-prompt="Help me build a realistic exam revision plan. Ask for my course, topics, exam date and available study time first."><span class="ico">▤</span><span><b>Exam preparation</b><small>Plan revision and practice</small></span></button>
@@ -129,6 +140,7 @@ Type <span class="good">help</span> to view available commands.
     navigator.serviceWorker.register("./service-worker.js",{scope:"./"}).catch(()=>{});
   }
   let history=[];
+  let guidedMode=false;
   let signedIn=false;
   let busy=false;
   let lastAssistantAnswer="";
@@ -216,9 +228,14 @@ Type <span class="good">help</span> to view available commands.
       }
       signedIn=true;$("connection-label").textContent="Session authenticated";$("auth-state").textContent="Authenticated";$("user-chip").textContent=session.user?.email||"Signed-in account";
       setStatus("TORIO is thinking…");
-      const result=await backend.askShieldMind(question,history,null);
+      let taskPrompt=question;
+      if(guidedMode)taskPrompt += "\n\nTORIO GUIDED WORKFLOW: For multi-step requests, briefly understand the goal, state a small plan, complete the work, then check the result for errors, unsupported claims and assumptions. Finish with a useful summary and one next action. For simple requests, answer directly without unnecessary process. Ask at most one essential clarification.";
+      let savedContext="";
+      try{savedContext=localStorage.getItem("torio-user-context-v1")||"";}catch(storageError){}
+      if(savedContext.trim())taskPrompt += "\n\nUSER-SAVED TORIO CONTEXT (user-controlled, non-sensitive):\n"+savedContext.trim()+"\nUse only when relevant; do not treat it as verified facts.";
+      const result=await backend.askShieldMind(taskPrompt,history,null);
       const answer=String(result?.answer||"I could not produce an answer.");
-      lastAssistantAnswer=answer;$("speak-btn").disabled=false;addMessage("assistant",answer);history.push({role:"user",content:question},{role:"assistant",content:answer});history=history.slice(-8);
+      lastAssistantAnswer=answer;$("speak-btn").disabled=false;$("verify-answer").disabled=false;addMessage("assistant",answer);history.push({role:"user",content:taskPrompt},{role:"assistant",content:answer});history=history.slice(-8);
       setStatus(result?.mode==="provider"?"ShieldMind response received. Verify important facts against official sources.":"Response received. Verify campus policies and deadlines with official university sources.");
     }catch(err){
       const msg=String(err?.message||"ShieldMind is temporarily unavailable.");
@@ -227,7 +244,14 @@ Type <span class="good">help</span> to view available commands.
   }
   $("chat-form").addEventListener("submit",async e=>{e.preventDefault();const q=$("question").value.trim();if(!q)return;$("question").value="";await ask(q);});
   $("listen-btn").addEventListener("click",()=>startVoiceCapture($("question"),$("voice-status"),"Question"));
-  $("speak-btn").addEventListener("click",readLastAnswer);\n  $("clear-chat").addEventListener("click",()=>{history=[];lastAssistantAnswer="";$("speak-btn").disabled=true;$("chatlog").replaceChildren();addMessage("assistant","Conversation cleared. What would you like to work on next?");setStatus(signedIn?"Ready for a new conversation.":"Sign in to CampusShield AI to start.");$("question").focus();});
+  $("speak-btn").addEventListener("click",readLastAnswer);
+  $("guided-toggle").addEventListener("click",()=>{guidedMode=!guidedMode;$("guided-toggle").setAttribute("aria-pressed",String(guidedMode));$("guided-toggle").textContent=guidedMode?"Guided flow: On":"Guided flow: Off";setStatus(guidedMode?"Guided workflow enabled for multi-step requests.":"Direct response mode enabled.");});
+  $("verify-answer").addEventListener("click",()=>{if(!lastAssistantAnswer||busy)return;showView("assistant");ask("Independently review your previous answer for accuracy, unsupported claims, missing caveats and practical errors. Correct it where needed. Clearly separate what can be checked from the conversation from anything that would require an external or official source.");});
+  function showContextStatus(message){$("context-status").textContent=message;}
+  try{const stored=localStorage.getItem("torio-user-context-v1")||"";if(stored){$("saved-context").value=stored;showContextStatus("Saved on this device");}}catch(storageError){showContextStatus("Local storage unavailable");}
+  $("save-context").addEventListener("click",()=>{const value=$("saved-context").value.trim();try{if(value){localStorage.setItem("torio-user-context-v1",value);showContextStatus("Saved on this device");}else{localStorage.removeItem("torio-user-context-v1");showContextStatus("No context saved");}}catch(storageError){showContextStatus("Could not save in this browser");}});
+  $("clear-context").addEventListener("click",()=>{$("saved-context").value="";try{localStorage.removeItem("torio-user-context-v1");showContextStatus("Cleared from this device");}catch(storageError){showContextStatus("Could not clear browser storage");}});
+  $("clear-chat").addEventListener("click",()=>{history=[];lastAssistantAnswer="";$("speak-btn").disabled=true;$("verify-answer").disabled=true;$("chatlog").replaceChildren();addMessage("assistant","Conversation cleared. What would you like to work on next?");setStatus(signedIn?"Ready for a new conversation.":"Sign in to CampusShield AI to start.");$("question").focus();});
   $("term-listen-btn").addEventListener("click",()=>startVoiceCapture($("term-command"),$("term-voice-status"),"Command"));
   document.querySelectorAll("[data-view],[data-mode]").forEach(el=>el.addEventListener("click",()=>showView(el.dataset.view||el.dataset.mode)));
   document.querySelectorAll("[data-prompt]").forEach(el=>el.addEventListener("click",()=>{showView("assistant");$("question").value=el.dataset.prompt;$("question").focus();}));
