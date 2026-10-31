@@ -41,7 +41,8 @@ assert.match(js, /position\.coords\.accuracy/, 'GPS candidate reports device acc
 assert.match(js, /payload\.p_publish && !payload\.p_mark_verified/, 'Unverified locations cannot be published from the client');
 assert.match(js, /needsCoordinateEvidence/, 'Community-mapped candidate pins require fresh exact-coordinate evidence');
 assert.match(html, /Coordinate evidence source \(HTTPS\)/, 'Evidence field is explicitly for the exact pin');
-assert.match(js, /maptiler\.com/, 'Optional satellite and 3D vector tiles are supported');
+assert.match(js, /maptiler\.com/, 'Optional terrain elevation source is supported');
+assert.doesNotMatch(js, /Satellite imagery needs a domain-restricted MapTiler key/, 'Satellite imagery is not gated on a MapTiler key');
 assert.match(js, /services\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery/, 'Esri satellite imagery is available without a MapTiler key');
 assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles provide OSM building geometry');
 assert.match(js, /campus-osm-3d-buildings/, '3D mode renders building footprints as extrusions');
