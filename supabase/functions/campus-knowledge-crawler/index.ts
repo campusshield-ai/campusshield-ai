@@ -209,22 +209,14 @@ Deno.serve(async (req: Request) => {
       return reply({ sources: data || [], indexed_pages: count || 0, pending_review: pendingCount || 0 });
     }
     if (body.action === "list_pending_pages") {
-      const { data: stagedEvents, error: eventError } = await client.from("campus_crawler_events")
-        .select("metadata,created_at")
-        .eq("university_id", campus.university_id)
-        .eq("event_type", "knowledge_page_staged")
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (eventError) return reply({ error: "Pending-page audit history could not be loaded." }, 503);
-      const pageIds = [...new Set((stagedEvents || []).map((event: any) => String(event.metadata?.page_id || ""))
-        .filter((id: string) => /^[0-9a-f-]{36}$/i.test(id)))].slice(0, 50);
-      if (!pageIds.length) return reply({ pages: [] });
+      // Include every hidden page from an approved source. This also recovers a
+      // staged page if its crawl audit event could not be written after the page
+      // upsert; review_page creates a recovery audit run before any decision.
       const { data, error } = await client.from("campus_knowledge_pages")
         .select("id,title,url,body_text,fetched_at,updated_at,content_hash,source:campus_knowledge_sources!inner(status,domain)")
         .eq("university_id", campus.university_id)
         .eq("status", "hidden")
         .eq("source.status", "approved")
-        .in("id", pageIds)
         .order("fetched_at", { ascending: false })
         .limit(50);
       if (error) return reply({ error: "Pending pages could not be loaded. Confirm that this account has platform-owner review access." }, 503);
@@ -247,7 +239,7 @@ Deno.serve(async (req: Request) => {
       if (!/^[0-9a-f-]{36}$/i.test(pageId)) return reply({ error: "Choose a valid page." }, 400);
       if (!["publish", "keep_hidden"].includes(decision)) return reply({ error: "Choose publish or keep hidden." }, 400);
       const { data: page, error: pageError } = await client.from("campus_knowledge_pages")
-        .select("id,title,url,status,source:campus_knowledge_sources!inner(status,domain)")
+        .select("id,title,url,status,content_hash,source:campus_knowledge_sources!inner(id,status,domain)")
         .eq("id", pageId)
         .eq("university_id", campus.university_id)
         .eq("status", "hidden")
@@ -267,13 +259,35 @@ Deno.serve(async (req: Request) => {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (stageEventError || !stageEvent?.run_id) {
-        return reply({ error: "The page's original crawl audit record is missing; it cannot be reviewed safely." }, 503);
+      if (stageEventError) return reply({ error: "The page's audit history could not be checked safely." }, 503);
+      let reviewRunId = stageEvent?.run_id || null;
+      if (!reviewRunId) {
+        const { data: recoveryRun, error: recoveryRunError } = await client.from("campus_crawler_runs").insert({
+          started_by: user.id,
+          action: "crawl_university",
+          status: "completed",
+          universities_requested: 1,
+          completed_at: new Date().toISOString(),
+          pages_scanned: 1,
+          results: [{ crawler: "campus-knowledge-crawler", recovery_review: true, page_id: pageId, university_id: campus.university_id }],
+        }).select("id").single();
+        if (recoveryRunError || !recoveryRun?.id) return reply({ error: "Could not create the missing review audit run." }, 503);
+        reviewRunId = recoveryRun.id;
+        const { error: recoveryEventError } = await client.from("campus_crawler_events").insert({
+          run_id: reviewRunId,
+          event_type: "knowledge_page_recovered_for_review",
+          university_id: campus.university_id,
+          page_url: page.url,
+          status: "hidden",
+          message: "Hidden page had no matching staging event; owner review audit was recovered before a decision.",
+          metadata: { page_id: pageId, source_id: page.source?.id || null, content_hash: page.content_hash || null, recovered_by: user.id },
+        });
+        if (recoveryEventError) return reply({ error: "Could not save the recovery audit event. The page remains hidden." }, 503);
       }
       const reviewedAt = new Date().toISOString();
       if (decision === "keep_hidden") {
         const { error: keepAuditError } = await client.from("campus_crawler_events").insert({
-          run_id: stageEvent.run_id, event_type: "knowledge_page_kept_hidden",
+          run_id: reviewRunId, event_type: "knowledge_page_kept_hidden",
           university_id: campus.university_id, page_url: page.url, status: "hidden",
           message: "Owner reviewed the page and chose to keep it hidden.",
           metadata: { page_id: pageId, reviewed_by: user.id, reviewed_at: reviewedAt, content_hash: stageEvent.metadata?.content_hash || null },
@@ -287,7 +301,7 @@ Deno.serve(async (req: Request) => {
         .select("id,title,url,status,updated_at").maybeSingle();
       if (updateError || !updated) return reply({ error: "The page could not be published. It may have changed since review." }, 409);
       const { error: publishAuditError } = await client.from("campus_crawler_events").insert({
-        run_id: stageEvent.run_id, event_type: "knowledge_page_published",
+        run_id: reviewRunId, event_type: "knowledge_page_published",
         university_id: campus.university_id, page_url: page.url, status: "published",
         message: "Owner approved the page after manually reviewing its official source and content.",
         metadata: { page_id: pageId, reviewed_by: user.id, reviewed_at: reviewedAt, content_hash: stageEvent.metadata?.content_hash || null },
