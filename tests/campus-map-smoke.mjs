@@ -74,6 +74,9 @@ assert.match(js, /campus-roads-secondary/, 'Secondary roads have a distinct thin
 assert.match(js, /campus-roads-local/, 'Mapped local and access roads are visible at campus zoom');
 assert.match(js, /campus-footpaths/, 'Mapped paths are visually distinct and dashed');
 assert.match(js, /campus-road-labels/, 'Mapped road names follow road geometry');
+assert.match(js, /Noto Sans Regular/, 'Road labels use the configured supported glyph font');
+assert.match(js, /motorway_link/, 'Mapped primary access ramps are styled with primary roads');
+assert.match(js, /secondary_link/, 'Mapped secondary access ramps are styled with secondary roads');
 assert.match(js, /'source-layer': 'transportation_name'/, 'Road labels use the mapped transportation-name layer');
 assert.match(js, /never synthesize connecting lines/, 'The road renderer does not invent roads in unmapped areas');
 assert.match(js, /campus-osm-3d-buildings/, '3D mode renders building footprints as extrusions');
