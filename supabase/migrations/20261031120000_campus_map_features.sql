@@ -56,8 +56,9 @@ DROP POLICY IF EXISTS campus_map_features_read_published ON public.campus_map_fe
 CREATE POLICY campus_map_features_read_published ON public.campus_map_features FOR SELECT TO anon,authenticated
 USING (
   is_published = true OR (
-    university_id = (SELECT cm.university_id FROM public.campus_memberships cm WHERE cm.user_id=(SELECT auth.uid()) AND cm.campus_role='admin' AND cm.membership_status='active' AND cm.verification_status='verified')
-    AND EXISTS (SELECT 1 FROM public.profiles p WHERE p.id=(SELECT auth.uid()) AND p.role='admin' AND p.verification_status='verified')
+    university_id = (SELECT private.current_campus_university_id())
+    AND (SELECT private.current_campus_role()) = 'admin'
+    AND (SELECT private.current_user_has_verified_campus_access())
   )
 );
 REVOKE ALL ON public.campus_map_features FROM anon,authenticated;
@@ -149,7 +150,7 @@ CROSS JOIN (VALUES
  ('Main Campus','main-campus','facility','Amphitheatre','Official arrival and orientation location.','https://www.babcock.edu.ng/new-students-info','{}'::jsonb),
  ('Main Campus','main-campus','sports','University Stadium','Official student arrival and credential-verification location.','https://www.babcock.edu.ng/new-students-info','{}'::jsonb),
  ('Main Campus','main-campus','facility','Registry','Arrival verification office; exact map pin requires campus confirmation.','https://www.babcock.edu.ng/new-students-info','{}'::jsonb),
- ('Main Campus','main-campus','medical','Babcock University Teaching Hospital','Official hospital listing; administrator must confirm the exact campus entrance pin.','https://buth.babcock.edu.ng/emergency-services/','{}'::jsonb),
+ ('Main Campus','main-campus','medical','Babcock University Teaching Hospital','Official hospital listing; administrator must confirm the exact campus entrance pin.','https://buth.babcock.edu.ng/emergency-services/','{"emergency_phone":"+2348118918368"}'::jsonb),
  ('Main Campus','main-campus','facility','Student Development','Official student services location; exact pin requires campus confirmation.','https://www.babcock.edu.ng/new-students-info','{}'::jsonb),
  ('Main Campus','main-campus','library','Laz Otti Memorial Library','Official library page identifies the central library opposite BUCODEL.','https://www.babcock.edu.ng/library','{}'::jsonb),
  ('Iperu Campus','iperu-campus','gate','Law & Security Studies Gate','Iperu campus arrival gate; keep separate from the main-campus map.','https://www.babcock.edu.ng/new-students-info','{}'::jsonb),
