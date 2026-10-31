@@ -158,6 +158,7 @@ assert.match(js, /updateBuildingDiscoveryControl\(\)/, 'Building discovery butto
 assert.match(html, /id="campus-map-building-discover" disabled/, 'Building discovery starts disabled until the saved centre is verified');
 assert.match(campusBuildingsCentreGuardSql, /RENAME TO import_campus_map_building_candidates_impl_unverified_centre_legacy/, 'Existing import implementation is wrapped with a stricter centre-verification guard');
 assert.match(campusBuildingsCentreGuardSql, /center_status\s*=\s*'verified'/, 'Database refuses building imports without a verified campus centre');
+assert.match(campusBuildingsCentreGuardSql, /campus_role\s*=\s*'admin'[\s\S]*p\.verification_status\s*=\s*'verified'/, 'Centre readiness is checked only after verified campus-admin membership is confirmed');
 assert.match(campusBuildingsCentreGuardSql, /verified campus-centre point/, 'Database reports why an unverified centre cannot be used');
 assert.match(js, /review_campus_map_building/, 'Building review calls the checked Staging RPC');
 assert.match(js, /function buildingFeatureCollection/, 'Building outlines are converted to GeoJSON for the map');
