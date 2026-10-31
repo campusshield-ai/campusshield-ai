@@ -17,6 +17,8 @@ const campusMapRootId = html.match(/<section class="page" id="([^"]+)" aria-labe
 assert.ok(campusMapRootId, 'CampusMap page root can be identified');
 assert.ok(js.includes(`document.getElementById('${campusMapRootId}')`), 'CampusMap module binds to the actual HTML page root');
 assert.match(html, /id="campus-map-canvas"/, 'Interactive map canvas is present');
+assert.match(html, /id="campus-map-2d"[\s\S]*id="campus-map-satellite"[\s\S]*id="campus-map-3d"/, '2D, satellite and 3D map modes are all available');
+assert.match(html, /Imagery © Esri/, 'Satellite imagery attribution is visible');
 assert.match(html, /id="campus-map-center"/, 'Campus centre control is present');
 assert.match(html, /id="campus-map-scale-summary"/, 'Live map scale label is present');
 assert.match(html, /id="campus-map-pick-pin"/, 'Administrators can place a pin directly on the map');
@@ -40,9 +42,16 @@ assert.match(js, /payload\.p_publish && !payload\.p_mark_verified/, 'Unverified 
 assert.match(js, /needsCoordinateEvidence/, 'Community-mapped candidate pins require fresh exact-coordinate evidence');
 assert.match(html, /Coordinate evidence source \(HTTPS\)/, 'Evidence field is explicitly for the exact pin');
 assert.match(js, /maptiler\.com/, 'Optional satellite and 3D vector tiles are supported');
+assert.match(js, /services\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery/, 'Esri satellite imagery is available without a MapTiler key');
+assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles provide OSM building geometry');
+assert.match(js, /campus-osm-3d-buildings/, '3D mode renders building footprints as extrusions');
+assert.match(js, /render_height/, 'Building extrusion height uses OSM-derived height attributes');
+assert.match(js, /campus-osm-3d-poi-labels/, 'Satellite and 3D modes include OSM place labels');
+assert.match(js, /applyMapMode\('satellite'\)/, 'SAT mode has an independent switch');
 assert.match(css, /@media\(max-width:600px\)/, 'Map layout includes mobile responsive rules');
 assert.match(css, /campus-map-pin-tools/, 'Precision pin controls are styled');
 assert.match(css, /campus-map-legend/, 'Published and draft markers have a visible legend');
+assert.match(css, /campus-map-controls\{position:absolute[\s\S]*flex-direction:column/, 'Map style controls are vertically arranged like the reference');
 assert.match(sql, /ENABLE ROW LEVEL SECURITY/, 'Map feature table enables RLS');
 assert.match(sql, /FORCE ROW LEVEL SECURITY/, 'Map feature table forces RLS');
 assert.match(sql, /REVOKE ALL ON public\.campus_map_features FROM anon,authenticated/, 'Browser roles cannot mutate map features');
