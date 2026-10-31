@@ -6,7 +6,7 @@ CampusMap is integrated as a university-scoped workspace page. It includes MapLi
 The Campus Map Manager is shown only to an authenticated, verified campus administrator. Browser table writes are revoked. The UI writes through a checked RPC that verifies the caller's own active, verified campus-admin membership and scopes all changes to that university. Locations remain drafts until coordinates and an HTTPS evidence source are supplied and the admin explicitly verifies them. Publishing requires verified coordinates and evidence.
 
 ## Babcock pilot directory
-The staging migration seeds 12 official Babcock place names as pending/unpublished records without coordinates. It separates the Main Campus (8 places) from the Iperu Campus (4 places). No building coordinates have been guessed.
+The staging migrations seed 22 Babcock location entries: 18 Main Campus and 4 Iperu Campus. The original 12 named places were pending and unpublished. A further 10 Main Campus entries now have OSM-derived coordinate candidates (BBS Babcock Business School, BUSA House, Bursary, Nelson Mandela Hall, Winslow Hall, Ameyo Adadevoh Hall, Havilah Gold Hall, Queen Esther Hall, School Cafeteria, and Science and Technology). All community-mapped points remain pending and unpublished until an authorized campus administrator checks the exact entrance or building footprint.
 
 Official sources:
 - Arrival guide: https://www.babcock.edu.ng/new-students-info
@@ -84,3 +84,19 @@ These are community-mapped OSM point candidates, not university-certified entran
 - OpenFreeMap's public tile service is free and keyless but is provided as-is without an SLA. For a production-critical university platform, monitor availability and consider self-hosting or a contracted tile provider as traffic grows.
 
 Babcock has an OSM campus boundary and multiple named campus POIs in community mapping, including the Amphitheatre, BBS Babcock Business School, BuCodel, Bursary and nearby residences. This gives the 3D view useful place-label coverage, but named POIs do not guarantee complete building footprint or height data. Treat any displayed shape/height as community map data until a university site survey confirms it.
+
+
+### Additional Main Campus candidate references
+The additional OSM candidates have their coordinate source URL and OSM node ID stored separately from verification evidence:
+- BBS Babcock Business School — https://mapcarta.com/N11750260583
+- BUSA House — https://mapcarta.com/N11750260577
+- Bursary — https://mapcarta.com/N11750260570
+- Nelson Mandela Hall — https://mapcarta.com/N11750260574
+- Winslow Hall — https://mapcarta.com/N11750228864
+- Ameyo Adadevoh Hall — https://mapcarta.com/N11750293373
+- Havilah Gold Hall — https://mapcarta.com/N11750293374
+- Queen Esther Hall — https://mapcarta.com/N11750260575
+- School Cafeteria — https://mapcarta.com/N11750211718
+- Science and Technology — https://mapcarta.com/N11750260584
+
+These are community-mapped point features. The coordinates locate mapped POIs, not necessarily doorways or building footprints. The edit form deliberately clears the coordinate evidence field for these candidates. A university-approved survey or on-site administrator check is still required.
