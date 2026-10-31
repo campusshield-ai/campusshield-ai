@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const html = read('index.html');
 const js = read('campus-map.js');
+const mapConfig = read('campus-map-config.js');
 const css = read('campus-map.css');
 const sql = read('supabase/migrations/20261031115759_campus_map_verified_locations_and_emergency_layers.sql');
 const policySql = read('supabase/migrations/20261031115831_campus_map_public_read_policy_split.sql');
