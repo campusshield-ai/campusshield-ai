@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#092b2d">
+  <meta name="description" content="CampusShield AI JARVIS — a secure AI command workspace powered by ShieldMind and Supabase.">
+  <title>JARVIS | CampusShield AI</title>
+  <style>
+    :root{color-scheme:dark;--bg:#071719;--surface:#0c2224;--surface2:#102d2e;--line:#1c4845;--text:#e5f5ef;--muted:#91b3a8;--green:#39d6a0;--teal:#55d9d0;--amber:#e7bd72;--danger:#ef8b8b;--shadow:0 18px 50px #0005}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#123b35 0,transparent 40%),var(--bg);color:var(--text);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+    button,input,textarea{font:inherit}button{cursor:pointer}.shell{min-height:100vh;display:grid;grid-template-columns:248px minmax(0,1fr)}
+    aside{border-right:1px solid var(--line);background:#071719eF;padding:22px 15px;display:flex;flex-direction:column;gap:20px}
+    .brand{display:flex;align-items:center;gap:11px;padding:5px 8px 20px;border-bottom:1px solid var(--line)}.brand-mark{width:38px;height:38px;border:1px solid #2b8871;border-radius:12px;display:grid;place-items:center;color:var(--green);font-size:20px;background:#123a32}.brand b{display:block;font-size:15px;letter-spacing:.04em}.brand small{color:var(--muted);font-size:10px;letter-spacing:.15em}
+    .nav-label{font-size:10px;color:#6f978d;letter-spacing:.16em;padding:0 10px}.nav{display:grid;gap:6px}.nav button{border:1px solid transparent;text-align:left;background:transparent;color:#a8c7bd;border-radius:10px;padding:11px 12px;display:flex;gap:10px;align-items:center}.nav button.active,.nav button:hover{background:#10332e;border-color:#1d5b4d;color:#eafff5}.nav button span:first-child{width:20px;color:var(--green)}
+    .side-status{margin-top:auto;border:1px solid var(--line);background:#0b2424;border-radius:13px;padding:13px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);margin-right:7px}.side-status small{color:var(--muted);display:block;margin-top:6px;font-size:11px}
+    main{min-width:0;padding:24px clamp(16px,3vw,42px) 40px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:25px}.eyebrow{color:var(--teal);font-size:10px;font-weight:800;letter-spacing:.18em}.top-actions{display:flex;gap:8px;align-items:center}.chip{border:1px solid var(--line);border-radius:99px;padding:7px 11px;color:var(--muted);font-size:11px}.btn{border:1px solid #2a7765;background:linear-gradient(135deg,#1d7259,#15564f);color:#f0fff8;border-radius:10px;padding:10px 14px;font-weight:700}.btn.secondary{background:#102b2b;border-color:var(--line);color:#c3ddd3}.btn:disabled{opacity:.5;cursor:not-allowed}
+    .hero{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 24px;border:1px solid #286456;border-radius:18px;background:linear-gradient(115deg,#103c32,#0e292d 70%,#102f37);box-shadow:var(--shadow);margin-bottom:18px}.hero h1{font-size:clamp(25px,3vw,38px);letter-spacing:-.04em;margin:5px 0}.hero p{margin:0;color:#b2d3c7;max-width:650px}.orb{width:88px;height:88px;flex:none;border-radius:50%;border:1px solid #48bba0;display:grid;place-items:center;color:#9affdb;font-size:34px;background:radial-gradient(circle,#1b725b,#0b2929 70%);box-shadow:0 0 40px #36c99b2c}
+    .modebar{display:flex;gap:8px;margin:0 0 15px;flex-wrap:wrap}.modebar button{border:1px solid var(--line);background:#0c2224;color:#9abbb0;border-radius:9px;padding:9px 13px}.modebar button.active{background:#154c40;color:#eafff4;border-color:#2d8c6e}
+    .workspace{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(240px,.75fr);gap:16px;align-items:start}.panel{background:linear-gradient(180deg,#0d2425,#0a1d20);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}.panel-head h2{margin:0;font-size:14px}.panel-head p{margin:3px 0 0;color:var(--muted);font-size:11px}.panel-body{padding:16px 18px}
+    .chatlog{height:min(52vh,510px);min-height:270px;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:16px;background:#071719;border:1px solid #163b38;border-radius:12px}.msg{max-width:92%;padding:11px 13px;border:1px solid #214d45;background:#102b29;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere}.msg.user{align-self:flex-end;background:#12463b;border-color:#26755e}.msg.system{align-self:center;color:var(--amber);font-size:11px;background:#2b2619;border-color:#5a4b2b}.msg strong{display:block;color:var(--green);font-size:10px;margin-bottom:5px;letter-spacing:.08em}.msg p{margin:0}
+    .composer{display:flex;gap:8px;margin-top:12px;align-items:flex-end}.composer textarea{flex:1;min-width:0;resize:vertical;min-height:48px;max-height:150px;padding:12px;border:1px solid #28524c;border-radius:11px;background:#071719;color:var(--text);outline:none}.composer textarea:focus,input:focus{border-color:var(--teal);box-shadow:0 0 0 3px #55d9d01b}.hint{font-size:10px;color:var(--muted);margin:8px 2px 0}
+    .tool-list{display:grid;gap:8px}.tool{width:100%;text-align:left;display:flex;gap:11px;align-items:center;padding:12px;border:1px solid #1b4541;border-radius:11px;background:#0b2021;color:var(--text)}.tool:hover{border-color:#3b9d80;background:#10302c}.tool .ico{width:28px;height:28px;border-radius:8px;background:#174638;color:#7ef0c1;display:grid;place-items:center}.tool b{display:block;font-size:12px}.tool small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+    .terminal{background:#050f11;border:1px solid #22544d;border-radius:12px;overflow:hidden}.term-top{display:flex;justify-content:space-between;padding:10px 13px;background:#0d2626;border-bottom:1px solid #1b4841;color:#9bbcb1;font-size:10px}.term-out{height:390px;overflow:auto;padding:16px;font:12px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;color:#b5d8c8;white-space:pre-wrap}.term-out .good{color:#66e6ae}.term-out .warn{color:#e7bd72}.term-input{display:flex;gap:8px;border-top:1px solid #1b4841;padding:11px}.term-input span{color:var(--green);font-family:monospace}.term-input input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#e5f5ef;font:12px ui-monospace,monospace}
+    .info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.info{border:1px solid var(--line);border-radius:11px;padding:12px;background:#0a2021}.info small{color:var(--muted);font-size:10px}.info b{display:block;margin-top:4px;font-size:13px}
+    .notice{padding:11px 12px;border:1px solid #594a2b;background:#2b2619;color:#e8d5a5;border-radius:10px;font-size:11px;margin-top:13px}.hidden{display:none!important}.footer{color:#688b80;font-size:10px;text-align:center;margin:20px 0 0}
+    @media(max-width:920px){.shell{grid-template-columns:76px minmax(0,1fr)}aside{padding:16px 9px}.brand{justify-content:center;padding:4px 0 16px}.brand-copy,.nav-label,.nav button .nav-text,.side-status{display:none}.nav button{justify-content:center;padding:12px 5px}.nav button span:first-child{width:auto;font-size:17px}}
+    @media(max-width:650px){.shell{display:block}aside{position:sticky;top:0;z-index:4;display:block;padding:8px 10px;border-right:0;border-bottom:1px solid var(--line)}.brand{display:none}.nav{display:flex;overflow:auto}.nav button{flex:none;padding:9px 11px}.nav button .nav-text{display:inline;font-size:11px}main{padding:16px 12px 28px}.topbar{margin-bottom:15px}.hero{padding:17px}.orb{width:58px;height:58px;font-size:24px}.workspace{grid-template-columns:1fr}.chatlog{height:44vh}.panel-head{padding:13px}.panel-body{padding:12px}.top-actions .chip{display:none}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand"><div class="brand-mark">✧</div><div class="brand-copy"><b>CAMPUSSHIELD AI</b><small>INTELLIGENT CAMPUS</small></div></div>
+    <div class="nav-label">COMMAND WORKSPACE</div>
+    <nav class="nav" aria-label="JARVIS navigation">
+      <button class="active" data-view="assistant"><span>✦</span><span class="nav-text">AI Assistant</span></button>
+      <button data-view="terminal"><span>⌘</span><span class="nav-text">Command Terminal</span></button>
+      <button data-view="overview"><span>◈</span><span class="nav-text">System Overview</span></button>
+    </nav>
+    <div class="side-status"><span class="dot"></span><b id="connection-label">Checking session</b><small>Supabase authentication · ShieldMind AI</small></div>
+  </aside>
+  <main>
+    <header class="topbar"><div><div class="eyebrow">CAMPUSSHIELD AI / JARVIS</div><div style="font-size:12px;color:var(--muted)">Secure intelligent command interface</div></div><div class="top-actions"><span class="chip" id="user-chip">Checking account…</span><button class="btn secondary" id="back-btn" type="button">← CampusShield</button></div></header>
+    <section class="hero"><div><div class="eyebrow">YOUR CAMPUS, CONNECTED INTELLIGENCE</div><h1>JARVIS command centre</h1><p>One workspace with two ways to work: natural conversation with ShieldMind AI and a keyboard-driven command terminal for safe, built-in actions.</p></div><div class="orb" aria-hidden="true">✧</div></section>
+    <div class="modebar" aria-label="Choose workspace"><button class="active" data-mode="assistant">01 · Conversational AI</button><button data-mode="terminal">02 · Terminal interface</button><button data-mode="overview">03 · System overview</button></div>
+    <div class="workspace">
+      <section class="panel" id="assistant-view">
+        <div class="panel-head"><div><h2>ShieldMind conversation</h2><p>Responses are generated through the existing Supabase Edge Function.</p></div><span class="chip">AI CONNECTED VIA SUPABASE</span></div>
+        <div class="panel-body"><div class="chatlog" id="chatlog" aria-live="polite"><div class="msg"><strong>JARVIS · CAMPUSSHIELD</strong><p>Good day. I’m ready to help with academic questions, planning, explanations and campus knowledge. What would you like to work on?</p></div></div>
+          <form class="composer" id="chat-form"><textarea id="question" maxlength="1200" required rows="2" placeholder="Ask JARVIS anything academic…"></textarea><button class="btn" id="send-btn" type="submit">Send ↗</button></form>
+          <div class="hint" id="chat-status">Please sign in to CampusShield AI. Never share passwords, student IDs, private incident details or sensitive records here.</div>
+        </div>
+      </section>
+      <section class="panel hidden" id="terminal-view">
+        <div class="panel-head"><div><h2>JARVIS terminal</h2><p>Keyboard-first interface · allow-listed local commands only</p></div><span class="chip">SAFE MODE</span></div>
+        <div class="panel-body"><div class="terminal"><div class="term-top"><span>campusshield@jarvis</span><span>SESSION / INTERACTIVE</span></div><div class="term-out" id="term-out" aria-live="polite"><span class="good">JARVIS SYSTEM INTERFACE</span>
+Build: CampusShield AI
+Backend: Supabase
+AI service: ShieldMind Edge Function
+Security: authenticated session required
+
+Type <span class="good">help</span> to view available commands.
+<span class="warn">Notice: this terminal does not execute operating-system or arbitrary shell commands.</span></div><form class="term-input" id="term-form"><span>›</span><input id="term-command" autocomplete="off" spellcheck="false" placeholder="help, status, clear, assistant"><button class="btn" type="submit">Run</button></form></div><div class="hint">Commands: help · status · clear · assistant · overview · time</div></div>
+      </section>
+      <section class="panel hidden" id="overview-view">
+        <div class="panel-head"><div><h2>System overview</h2><p>Connection and capability summary for this browser session.</p></div><span class="chip">READ-ONLY</span></div>
+        <div class="panel-body"><div class="info-grid"><div class="info"><small>AUTHENTICATION</small><b id="auth-state">Checking…</b></div><div class="info"><small>BACKEND</small><b>Supabase</b></div><div class="info"><small>AI PROVIDER ROUTE</small><b>shieldmind-chat</b></div><div class="info"><small>COMMAND MODE</small><b>Allow-listed only</b></div></div><div class="notice">JARVIS is an assistant interface, not an emergency dispatch system. It cannot contact campus security or emergency services. Use the official incident-reporting and emergency channels for urgent situations.</div></div>
+      </section>
+      <aside class="panel" style="padding:15px">
+        <div class="eyebrow" style="margin:2px 0 12px">QUICK OPERATIONS</div>
+        <div class="tool-list">
+          <button class="tool" data-prompt="Explain a difficult academic topic in simple language, give an example, then provide a concise recap. Ask me for the topic first."><span class="ico">◎</span><span><b>Explain a topic</b><small>Understand complex concepts</small></span></button>
+          <button class="tool" data-prompt="Help me build a realistic exam revision plan. Ask for my course, topics, exam date and available study time first."><span class="ico">▤</span><span><b>Exam preparation</b><small>Plan revision and practice</small></span></button>
+          <button class="tool" data-prompt="Create a short practice quiz. Ask for the course, topic, level and number of questions. Give one question at a time and explain the answer."><span class="ico">✓</span><span><b>Practice quiz</b><small>Test your understanding</small></span></button>
+          <button class="tool" data-prompt="Help me summarize lecture notes that I paste here. Extract key ideas, important terms and a short revision recap. Ask me to paste the notes first."><span class="ico">≡</span><span><b>Summarize notes</b><small>Turn notes into key points</small></span></button>
+          <button class="tool" data-prompt="Help me find official campus information. Ask which university and topic. Do not invent policies, fees, contacts or deadlines; clearly say when a fact cannot be verified."><span class="ico">⌂</span><span><b>Campus information</b><small>Source-aware campus questions</small></span></button>
+        </div>
+        <div class="notice">Privacy boundary: prompts are sent to the existing ShieldMind AI service. Do not include confidential or sensitive student information.</div>
+      </aside>
+    </div>
+    <div class="footer">CAMPUSSHIELD AI · JARVIS · GREEN / TEAL EDITION · PROTOTYPE INTERFACE</div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script src="./campusshield-backend.js"></script>
+<script>
+(function(){
+  "use strict";
+  const $=id=>document.getElementById(id);
+  const backend=window.CampusShieldBackend;
+  let history=[];
+  let signedIn=false;
+  let busy=false;
+  const views=["assistant","terminal","overview"];
+  function showView(name){
+    if(!views.includes(name))return;
+    views.forEach(v=>$(v+"-view").classList.toggle("hidden",v!==name));
+    document.querySelectorAll("[data-view],[data-mode]").forEach(el=>el.classList.toggle("active",(el.dataset.view||el.dataset.mode)===name));
+  }
+  function addMessage(role,text){
+    const node=document.createElement("div");node.className="msg"+(role==="user"?" user":role==="system"?" system":"");
+    const label=document.createElement("strong");label.textContent=role==="user"?"YOU":role==="system"?"SYSTEM":"JARVIS · SHIELDMIND";
+    const body=document.createElement("p");body.textContent=text;node.append(label,body);$("chatlog").append(node);$("chatlog").scrollTop=$("chatlog").scrollHeight;
+  }
+  function term(text,kind){const out=$("term-out");const line=document.createElement("div");if(kind)line.className=kind;line.textContent=text;out.append(line);out.scrollTop=out.scrollHeight;}
+  function setStatus(text){$("chat-status").textContent=text;}
+  async function checkSession(){
+    try{
+      if(!backend?.isConfigured||!backend?.client)throw new Error("Supabase client is unavailable.");
+      const {data,error}=await backend.client.auth.getSession();if(error)throw error;
+      const session=data?.session;
+      if(!session?.access_token){$("connection-label").textContent="Sign-in required";$("auth-state").textContent="Not signed in";$("user-chip").textContent="Guest session";setStatus("Sign in to CampusShield AI first, then reopen JARVIS.");addMessage("system","You are not signed in. Open CampusShield AI, sign in, and return to this page.");return;}
+      signedIn=true;$("connection-label").textContent="Session authenticated";$("auth-state").textContent="Authenticated";$("user-chip").textContent=session.user?.email||"Signed-in account";setStatus("Authenticated through Supabase. ShieldMind requests use the existing shieldmind-chat Edge Function.");
+    }catch(err){$("connection-label").textContent="Connection unavailable";$("auth-state").textContent="Unavailable";setStatus(err.message||"Could not verify your session.");}
+  }
+  async function ask(question){
+    if(!signedIn){addMessage("system","Please sign in to CampusShield AI before sending a request.");return;}
+    if(busy)return;busy=true;$("send-btn").disabled=true;addMessage("user",question);setStatus("JARVIS is thinking…");
+    try{
+      const result=await backend.askShieldMind(question,history,null);
+      const answer=String(result?.answer||"I could not produce an answer.");
+      addMessage("assistant",answer);history.push({role:"user",content:question},{role:"assistant",content:answer});history=history.slice(-8);
+      setStatus(result?.mode==="provider"?"ShieldMind response received. Verify important facts against official sources.":"Response received. Verify campus policies and deadlines with official university sources.");
+    }catch(err){const msg=String(err?.message||"ShieldMind is temporarily unavailable.");addMessage("assistant",msg+" For urgent campus matters, use official university channels.");setStatus(msg);}
+    finally{busy=false;$("send-btn").disabled=false;}
+  }
+  $("chat-form").addEventListener("submit",async e=>{e.preventDefault();const q=$("question").value.trim();if(!q)return;$("question").value="";await ask(q);});
+  document.querySelectorAll("[data-view],[data-mode]").forEach(el=>el.addEventListener("click",()=>showView(el.dataset.view||el.dataset.mode)));
+  document.querySelectorAll("[data-prompt]").forEach(el=>el.addEventListener("click",()=>{showView("assistant");$("question").value=el.dataset.prompt;$("question").focus();}));
+  $("back-btn").addEventListener("click",()=>{window.location.href="./index.html";});
+  $("term-form").addEventListener("submit",e=>{
+    e.preventDefault();const raw=$("term-command").value.trim();if(!raw)return;$("term-command").value="";term("› "+raw);
+    const cmd=raw.toLowerCase();
+    if(cmd==="help"){term("Available commands: help, status, clear, assistant, overview, time","good");term("This is a safe in-app command interface. It cannot execute shell, file-system or deployment commands.");}
+    else if(cmd==="status"){term("Authentication: "+(signedIn?"authenticated":"not signed in"));term("Backend: Supabase");term("AI route: shieldmind-chat");term("Execution permissions: allow-listed UI actions only","good");}
+    else if(cmd==="clear"){$("term-out").replaceChildren();term("Terminal cleared. Type help for commands.","good");}
+    else if(cmd==="assistant"){showView("assistant");term("Switched to conversational AI.","good");}
+    else if(cmd==="overview"){showView("overview");term("Opened system overview.","good");}
+    else if(cmd==="time"){term(new Date().toLocaleString());}
+    else{term("Unknown command. Type help to see the supported commands.","warn");}
+  });
+  checkSession();
+})();
+</script>
+</body>
+</html>
