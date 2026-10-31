@@ -689,10 +689,37 @@
     const matches = !term ? features : features.filter(item =>
       [item.name, item.feature_type, item.description].some(value => String(value || '').toLocaleLowerCase().includes(term))
     );
+    const draftMatches = isCampusAdmin && term ? adminDrafts.filter(item =>
+      [item.name, item.feature_type, item.description, item.campus_name].some(value => String(value || '').toLocaleLowerCase().includes(term))
+    ) : [];
     renderFeatures(matches);
     results.hidden = !term;
-    if (matches.length === 1) selectFeature(matches[0], true);
+    if (term) {
+      const resultRows = [
+        ...matches.map(item => `<button type="button" class="campus-map-search-result" data-search-feature-id="${esc(item.id)}"><span><strong>${esc(item.name)}</strong><small>${esc(item.feature_type.replaceAll('_',' '))}</small></span><em>Published</em></button>`),
+        ...draftMatches.map(item => `<button type="button" class="campus-map-search-result is-draft" data-search-draft-id="${esc(item.id)}"><span><strong>${esc(item.name)}</strong><small>${esc(item.feature_type.replaceAll('_',' '))} · ${item.latitude == null ? 'coordinates missing' : 'candidate pin'}</small></span><em>Admin draft</em></button>`)
+      ];
+      results.innerHTML = resultRows.length ? resultRows.join('') : '<p class="campus-map-search-empty">No campus locations match this search.</p>';
+    } else {
+      results.innerHTML = '';
+    }
+    if (matches.length === 1 && draftMatches.length === 0) selectFeature(matches[0], true);
   }
+
+  results?.addEventListener('click', event => {
+    const publishedButton = event.target.closest('[data-search-feature-id]');
+    const draftButton = event.target.closest('[data-search-draft-id]');
+    if (publishedButton) {
+      const item = features.find(feature => feature.id === publishedButton.dataset.searchFeatureId);
+      if (item) selectFeature(item, true);
+    } else if (draftButton && isCampusAdmin) {
+      const item = adminDrafts.find(feature => feature.id === draftButton.dataset.searchDraftId);
+      if (item) {
+        editAdminFeature(item);
+        setStatus('Administrator draft opened from search. Verify the exact position before publishing.', 'warning');
+      }
+    }
+  });
 
   $('campus-map-campus-select')?.addEventListener('change', () => {
     currentCampusFeatures();
