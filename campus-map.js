@@ -227,6 +227,7 @@
     const source = map?.getSource('campus-drafts');
     if (!source) return;
     const coordinateDrafts = isCampusAdmin ? adminDrafts.filter(item =>
+      item.latitude !== null && item.latitude !== undefined && item.longitude !== null && item.longitude !== undefined &&
       Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude))
     ) : [];
     source.setData(featureCollection(coordinateDrafts));
@@ -270,6 +271,7 @@
       return;
     }
     const draftPoints = isCampusAdmin ? adminDrafts.filter(item =>
+      item.latitude !== null && item.latitude !== undefined && item.longitude !== null && item.longitude !== undefined &&
       Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude))
     ) : [];
     const viewPoints = [...features, ...draftPoints];
@@ -316,7 +318,15 @@
     $('campus-map-admin-lat').value = lat.toFixed(7);
     $('campus-map-admin-lng').value = lng.toFixed(7);
     if (map && map.isStyleLoaded()) {
-      if (!placementMarker) placementMarker = new maplibregl.Marker({ color: '#d29332', draggable: true });
+      if (!placementMarker) {
+        placementMarker = new maplibregl.Marker({ color: '#d29332', draggable: true });
+        placementMarker.on('dragend', () => {
+          const point = placementMarker.getLngLat();
+          $('campus-map-admin-lat').value = point.lat.toFixed(7);
+          $('campus-map-admin-lng').value = point.lng.toFixed(7);
+          setStatus(`Pin refined to ${point.lat.toFixed(7)}, ${point.lng.toFixed(7)}. Confirm the building entrance before verification.`, 'warning');
+        });
+      }
       placementMarker.setLngLat([lng, lat]).addTo(map);
       map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 17.5), duration: 500 });
     }
