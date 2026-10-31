@@ -21,6 +21,7 @@ assert.match(html, /id="campus-map-canvas"/, 'Interactive map canvas is present'
 assert.match(html, /id="campus-map-2d"[\s\S]*id="campus-map-satellite"[\s\S]*id="campus-map-3d"/, '2D, satellite and 3D map modes are all available');
 assert.doesNotMatch(html, /campus-map-attribution/, 'Map does not render a duplicate manual attribution strip');
 assert.match(html, /id="campus-map-center"/, 'Campus centre control is present');
+assert.match(html, /id="campus-map-results" class="campus-map-search-results"/, 'Responsive search result container is present');
 assert.match(html, /id="campus-map-scale-summary"/, 'Live map scale label is present');
 assert.match(html, /id="campus-map-pick-pin"/, 'Administrators can place a pin directly on the map');
 assert.match(html, /id="campus-map-use-gps"/, 'Administrators can capture a GPS candidate with device accuracy');
