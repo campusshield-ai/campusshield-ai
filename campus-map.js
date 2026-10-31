@@ -54,7 +54,7 @@
   }
 
   // Administrative-area centres are regional fallbacks only; they are not campus pins.
-  // Source dataset: Open Admin Data Nigeria states, derived from OCHA COD-AB / INEC.
+  // Source: Open Admin Data Nigeria state centroids (CC BY 4.0).
   const STATE_OVERVIEWS = {
     'abia':[7.488,5.432], 'adamawa':[12.292,9.163], 'akwa ibom':[7.796,4.990],
     'anambra':[6.938,6.249], 'bauchi':[9.326,10.998], 'bayelsa':[5.951,4.827],
