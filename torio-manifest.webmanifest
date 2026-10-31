@@ -1,0 +1,24 @@
+{
+  "id": "./torio-command-center.html",
+  "name": "TORIO AI — CampusShield Command Centre",
+  "short_name": "TORIO AI",
+  "description": "TORIO AI command centre powered by ShieldMind and Supabase.",
+  "start_url": "./torio-command-center.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#071719",
+  "theme_color": "#092b2d",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./icons/torio-ai.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
