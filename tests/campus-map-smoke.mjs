@@ -37,7 +37,9 @@ assert.match(html, /id="campus-map-scale-summary"/, 'Live map scale label is pre
 assert.match(html, /id="campus-map-pick-pin"/, 'Administrators can place a pin directly on the map');
 assert.match(html, /id="campus-map-use-gps"/, 'Administrators can capture a GPS candidate with device accuracy');
 assert.match(html, /id="campus-map-preview-pin"/, 'Administrators can preview manually entered coordinates');
+assert.match(html, /campus-map-geometry\.js/, 'OSM footprint geometry helpers load before CampusMap');
 assert.match(html, /campus-map\.js/, 'CampusMap module is loaded');
+assert.match(js, /window\.CampusMapGeometry\?\.osmWayToBuildingCandidate/, 'OSM building imports use the extracted geometry helper');
 assert.match(html, /maplibre-gl@4\.7\.1/, 'MapLibre is pinned to a known version');
 assert.match(html, /report-use-location/, 'Incident form offers optional GPS attachment');
 assert.match(js, /getMyCampusContext\(\)/, 'Map resolves the signed-in university context');
