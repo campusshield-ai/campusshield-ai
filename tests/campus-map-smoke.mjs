@@ -17,6 +17,11 @@ const campusMapRootId = html.match(/<section class="page" id="([^"]+)" aria-labe
 assert.ok(campusMapRootId, 'CampusMap page root can be identified');
 assert.ok(js.includes(`document.getElementById('${campusMapRootId}')`), 'CampusMap module binds to the actual HTML page root');
 assert.match(html, /id="campus-map-canvas"/, 'Interactive map canvas is present');
+assert.match(html, /id="campus-map-center"/, 'Campus centre control is present');
+assert.match(html, /id="campus-map-scale-summary"/, 'Live map scale label is present');
+assert.match(html, /id="campus-map-pick-pin"/, 'Administrators can place a pin directly on the map');
+assert.match(html, /id="campus-map-use-gps"/, 'Administrators can capture a GPS candidate with device accuracy');
+assert.match(html, /id="campus-map-preview-pin"/, 'Administrators can preview manually entered coordinates');
 assert.match(html, /campus-map\.js/, 'CampusMap module is loaded');
 assert.match(html, /maplibre-gl@4\.7\.1/, 'MapLibre is pinned to a known version');
 assert.match(html, /report-use-location/, 'Incident form offers optional GPS attachment');
@@ -26,8 +31,16 @@ assert.match(js, /manage_campus_map_feature/, 'Campus map manager uses the check
 assert.match(js, /campus_role/, 'Campus map manager checks the signed-in campus role');
 assert.match(js, /from\('incidents'\)/, 'Staff incident overlay reads incident pins');
 assert.match(js, /getCurrentPosition/, 'Device location requires browser geolocation permission');
+assert.match(js, /map\.once\('load', fitCampus\)/, 'Campus camera waits for the MapLibre style when needed');
+assert.match(js, /includes\('babcock'\)/, 'Babcock campus recognition tolerates variant university slugs');
+assert.match(js, /campus-draft-points/, 'Pending coordinate pins are rendered in the admin-only draft layer');
+assert.match(js, /applyAdminCoordinates\(/, 'Coordinate picking is shared by map and GPS inputs');
+assert.match(js, /position\.coords\.accuracy/, 'GPS candidate reports device accuracy');
+assert.match(js, /payload\.p_publish && !payload\.p_mark_verified/, 'Unverified locations cannot be published from the client');
 assert.match(js, /maptiler\.com/, 'Optional satellite and 3D vector tiles are supported');
 assert.match(css, /@media\(max-width:600px\)/, 'Map layout includes mobile responsive rules');
+assert.match(css, /campus-map-pin-tools/, 'Precision pin controls are styled');
+assert.match(css, /campus-map-legend/, 'Published and draft markers have a visible legend');
 assert.match(sql, /ENABLE ROW LEVEL SECURITY/, 'Map feature table enables RLS');
 assert.match(sql, /FORCE ROW LEVEL SECURITY/, 'Map feature table forces RLS');
 assert.match(sql, /REVOKE ALL ON public\.campus_map_features FROM anon,authenticated/, 'Browser roles cannot mutate map features');
