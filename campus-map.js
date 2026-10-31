@@ -24,6 +24,7 @@
   let incidentsVisible = false;
   let selectedFeature = null;
   let userMarker = null;
+  let campusCenterMarker = null;
   let routeLayerAdded = false;
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({
@@ -57,7 +58,7 @@
     map = new maplibregl.Map({
       container: mapHost,
       style: mapStyle(),
-      center: [3.72, 6.89],
+      center: [3.7191259, 6.8910932],
       zoom: 5.2,
       pitch: 0,
       bearing: 0,
@@ -188,9 +189,20 @@
       const bounds = new maplibregl.LngLatBounds();
       features.forEach(item => bounds.extend([Number(item.longitude), Number(item.latitude)]));
       map.fitBounds(bounds, { padding: 70, maxZoom: 16, duration: 700 });
-    } else if (campus?.slug === 'babcock-university') {
-      // Approximate campus centre only; exact boundaries/building coordinates require verified mapping.
-      map.flyTo({ center: [3.72, 6.89], zoom: 14 });
+    } else if (campus?.university_slug === 'babcock-university' && ($('campus-map-campus-select')?.value || 'main-campus') === 'main-campus') {
+      // Coordinates come from the official university contact page's Google Maps embed.
+      // This is a campus locator, not a verified building entrance or individual facility pin.
+      const center = [3.7191259, 6.8910932];
+      map.flyTo({ center, zoom: 15 });
+      if (!campusCenterMarker) {
+        campusCenterMarker = new maplibregl.Marker({ color: '#087f75' })
+          .setLngLat(center)
+          .setPopup(new maplibregl.Popup({ offset: 24 }).setText('Babcock University — official campus locator, not a building pin'))
+          .addTo(map);
+      } else campusCenterMarker.setLngLat(center);
+    } else if (campusCenterMarker) {
+      campusCenterMarker.remove();
+      campusCenterMarker = null;
     }
   }
 
