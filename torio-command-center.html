@@ -51,7 +51,13 @@
     .drop-active{outline:2px dashed var(--teal);outline-offset:-7px;background:#0d302b!important}
     .quick-answer{font-size:10px;color:var(--muted);margin-top:5px}
     @media(max-width:650px){.quick-ask{top:4px}.quick-ask .quick-spark{display:none}}
-  </style>
+  
+    /* Keep the chat composer inside narrow phone viewports. */
+    @media(max-width:650px){
+      .composer{flex-wrap:wrap}
+      .composer textarea{flex:1 1 100%;width:100%}
+    }
+</style>
 </head>
 <body>
 <div class="shell">
