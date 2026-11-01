@@ -33,6 +33,9 @@ assert.doesNotMatch(js, /\.from\(["']profiles["']\)\.select\(["'][^"']*(email|ph
 assert.doesNotMatch(js, /upload\(|storage\.from|campus-story-media-upload/,
   "Campus Memories must not bypass the unconfigured malware scanner");
 assert.match(js, /await loadEvents\(\);[\s\S]*Promise\.allSettled/, "Events must load before Event Buddy listing reads");
+assert.match(js, /state\.profile\.verification_status!==["']verified["']/);
+assert.match(js, /state\.campus\.membership_status!==["']active["']/);
+assert.match(js, /state\.campus\.verification_status!==["']verified["']/);
 
 for (const table of [
   "campus_collab_listings", "campus_event_buddy_listings", "campus_mentorship_profiles",
