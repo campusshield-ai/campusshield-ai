@@ -226,7 +226,7 @@ Type <span class="good">help</span> to view available commands.
       const session=data?.session;
       if(!session?.access_token){$("connection-label").textContent="Sign-in required";$("auth-state").textContent="Not signed in";$("user-chip").textContent="Guest session";setStatus("Sign in to CampusShield AI first, then reopen TORIO.");addMessage("system","You are not signed in. Open CampusShield AI, sign in, and return to this page.");return;}
       signedIn=true;currentUserId=session.user?.id||"";restoreSavedContext();$("connection-label").textContent="Session authenticated";$("auth-state").textContent="Authenticated";$("user-chip").textContent=session.user?.email||"Signed-in account";setStatus("Authenticated through Supabase. ShieldMind requests use the existing shieldmind-chat Edge Function.");
-    }catch(err){$("connection-label").textContent="Connection unavailable";$("auth-state").textContent="Unavailable";setStatus(err.message||"Could not verify your session.");}
+    }catch(err){$("connection-label").textContent="Connection unavailable";$("auth-state").textContent="Unavailable";$("user-chip").textContent="Connection unavailable";setStatus(err.message||"Could not verify your session.");}
   }
   function renderAttachments(){
     const box=$("attachment-list");box.replaceChildren();
