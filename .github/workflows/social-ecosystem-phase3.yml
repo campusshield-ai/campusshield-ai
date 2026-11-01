@@ -14,6 +14,7 @@ on:
   pull_request:
     branches:
       - main
+      - feat/social-ecosystem-foundation
     paths:
       - "campusshield-app.js"
       - "campusshield-backend.js"
@@ -40,5 +41,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check campusshield-app.js && node --check campusshield-backend.js
       - name: Run CampusShield regression suite
         run: node tests/smoke-check.mjs
