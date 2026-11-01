@@ -5117,6 +5117,168 @@ table { max-width: 100%; }
 }
 </style>
 
+<style id="base44-forest-green-parity">
+/* Match the current Base44 CampusShield workspace screenshot: forest green + fresh mint. */
+:root {
+  --navy:#07271e;
+  --navy2:#0b362a;
+  --blue:#2a7e46;
+  --teal:#7fd98a;
+  --ink:#173126;
+  --muted:#718079;
+  --bg:#f7faf8;
+  --card:#fff;
+  --line:#dce5df;
+  --cs-forest:#07271e;
+  --cs-forest-mid:#0b362a;
+  --cs-forest-card:#16342b;
+  --cs-active:#203d35;
+  --cs-green:#2a7e46;
+  --cs-mint:#7fd98a;
+}
+.sidebar {
+  background:linear-gradient(180deg,#07271e 0%,#082b21 55%,#07271e 100%) !important;
+  color:#e8f2ec;
+  scrollbar-color:#315b49 transparent;
+}
+.brand-mark {
+  background:#0d3b2e !important;
+  color:#7fd98a !important;
+  border:1px solid #2a7e464d;
+}
+.brand-copy strong { color:#7fd98a !important; }
+.brand-copy small { color:#b5c9bf !important; }
+.sidebar-toggle {
+  border-color:#ffffff20;
+  background:#ffffff08;
+  color:#dce9e1;
+}
+.sidebar-toggle:hover,.sidebar-toggle:focus-visible {
+  border-color:#7fd98a70;
+  background:#7fd98a12;
+}
+.nav-label,.nav-section-label { color:#8fb29d !important; }
+.nav button { color:#c3d4ca !important; }
+.nav button:hover {
+  background:#ffffff0d !important;
+  border-color:#ffffff12 !important;
+  color:#ffffff !important;
+}
+.nav button.active {
+  background:#203d35 !important;
+  border-color:#315e49 !important;
+  color:#ffffff !important;
+}
+.nav-icon,.nav button.active .nav-icon,.nav button:hover .nav-icon {
+  color:#7fd98a !important;
+}
+.sidebar-status {
+  background:#16342b !important;
+  border-color:#ffffff18 !important;
+  color:#e4eee7 !important;
+}
+.sidebar-status strong { color:#ffffff !important; }
+.sidebar-status p { color:#b7c9bd !important; }
+.status-dot { background:#7fd98a !important; box-shadow:0 0 0 4px #7fd98a22 !important; }
+.main,.content { background:#f7faf8; }
+.topbar { border-bottom-color:#dce5df; }
+.campus-dashboard-hero {
+  border-color:rgba(127,217,138,.22) !important;
+  background:
+    radial-gradient(ellipse at 88% 12%,rgba(42,126,70,.30),transparent 38%),
+    linear-gradient(125deg,#082b21 0%,#0b362a 54%,#1b5038 100%) !important;
+  color:#f5fbf6 !important;
+  box-shadow:0 20px 44px rgba(7,39,30,.14) !important;
+}
+.campus-dashboard-hero:before {
+  border-color:rgba(127,217,138,.18) !important;
+  box-shadow:0 0 0 28px rgba(127,217,138,.035),0 0 0 60px rgba(127,217,138,.025) !important;
+}
+.campus-dashboard-hero .hero-eyebrow,
+.campus-dashboard-emergency-kicker { color:#a9e7b0 !important; }
+.campus-dashboard-hero .hero-eyebrow:before { background:#7fd98a !important; }
+.campus-dashboard-hero h1 { color:#f7fcf8 !important; }
+.campus-dashboard-hero .hero-description { color:#d5e6da !important; }
+.campus-dashboard-hero .hero-actions .btn {
+  background:#2a7e46 !important;
+  color:#ffffff !important;
+  box-shadow:0 5px 14px rgba(5,30,19,.18) !important;
+}
+.campus-dashboard-hero .hero-actions .btn:hover { background:#318c50 !important; }
+.campus-dashboard-hero .hero-actions .btn.secondary {
+  border-color:rgba(220,242,225,.3) !important;
+  background:rgba(255,255,255,.06) !important;
+  color:#f2fbf4 !important;
+}
+.campus-dashboard-emergency {
+  border-color:rgba(220,242,225,.22) !important;
+  background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.045)) !important;
+}
+.campus-dashboard-emergency p { color:#e1eee5 !important; }
+.campus-dashboard-emergency a { color:#9be6a5 !important; }
+.btn:not(.secondary):not(.danger) {
+  background:linear-gradient(135deg,#2a7e46,#236b3b);
+}
+.btn:not(.secondary):not(.danger):hover:not(:disabled) {
+  background:linear-gradient(135deg,#318c50,#287744);
+}
+.login-screen { background:#f7faf8 !important; }
+.login-intro {
+  background:
+    radial-gradient(circle at 84% 20%,rgba(42,126,70,.48) 0,transparent 30%),
+    radial-gradient(circle at 18% 90%,rgba(127,217,138,.13) 0,transparent 32%),
+    linear-gradient(145deg,#07271e 0%,#0b362a 64%,#163f2f 100%) !important;
+}
+.login-brand .brand-mark { background:#0d3b2e !important; color:#7fd98a !important; }
+.login-brand-name strong { color:#7fd98a !important; }
+@media (prefers-reduced-motion:reduce) {
+  .sidebar *, .campus-dashboard-hero *, .login-intro * {
+    transition:none !important;
+    animation:none !important;
+  }
+}
+</style>
+
+<style id="campusmap-base44-forest-green-controls">
+/* Keep the CampusMap controls and review actions in sync with the Base44 workspace palette. */
+#page-campus-map .campus-map-controls {
+  border-color:#dce5df;
+  background:#fff;
+}
+#page-campus-map .campus-map-controls button.active,
+#page-campus-map .campus-map-controls button[aria-pressed="true"] {
+  background:#203d35 !important;
+  color:#fff !important;
+}
+#page-campus-map .campus-map-controls button:focus-visible,
+#page-campus-map .campus-map-action:focus-visible,
+#page-campus-map .campus-map-feature:focus-visible {
+  outline:2px solid #7fd98a !important;
+  outline-offset:2px;
+}
+#page-campus-map .campus-map-action.primary,
+#page-campus-map .campus-map-admin-actions .primary {
+  background:#2a7e46 !important;
+  border-color:#2a7e46 !important;
+  color:#fff !important;
+}
+#page-campus-map .campus-map-action.primary:hover,
+#page-campus-map .campus-map-admin-actions .primary:hover {
+  background:#318c50 !important;
+  border-color:#318c50 !important;
+}
+#page-campus-map .campus-map-feature.active,
+#page-campus-map .campus-map-feature[aria-pressed="true"] {
+  border-color:#7fd98a !important;
+  background:#f0faf2 !important;
+}
+#page-campus-map .campus-map-status[data-kind="success"] {
+  border-color:#a7dcb0;
+  background:#eff9f0;
+  color:#245b34;
+}
+</style>
+
 <script src="./campus-dashboard-upgrade.js" defer></script>
 </body>
 </html>
