@@ -1,0 +1,33 @@
+name: CampusPulse social feature checks
+
+on:
+  pull_request:
+    branches: [staging/preview]
+    paths:
+      - "campuspulse-social.js"
+      - "campuspulse-social.css"
+      - "index.html"
+      - "supabase/migrations/20261101173910_campuspulse_social_extensions_mvp.sql"
+      - "supabase/migrations/20261101174446_campuspulse_event_link_update_guard.sql"
+      - "supabase/migrations/20261101174607_campuspulse_peer_connections_respect_blocks.sql"
+      - "tests/campuspulse-social-smoke.mjs"
+      - ".github/workflows/campuspulse-social.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: CampusPulse syntax, security and full regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check campuspulse-social.js
+      - name: Check CampusPulse social feature contracts
+        run: node tests/campuspulse-social-smoke.mjs
+      - name: Run full CampusShield regression suite
+        run: node tests/smoke-check.mjs
