@@ -79,15 +79,20 @@ assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles pr
 assert.match(js, /return 'https:\/\/tiles\.openfreemap\.org\/styles\/liberty';/, 'OpenFreeMap Liberty provides the primary vector basemap');
 assert.match(js, /const SATELLITE_ROAD_LAYER_IDS/, 'Custom mapped road overlays are grouped for satellite and 3D modes');
 assert.match(js, /SATELLITE_ROAD_LAYER_IDS\.forEach\(id => setLayerVisibility\(id, satelliteOn\)\)/, 'Custom road overlays do not duplicate the vector street basemap in 2D');
-const mapModeBody = js.match(/function applyMapMode\\(mode, animate = true\\) \\{([\\s\\S]*?)\\n  \\}/)?.[1] || '';
+const mapModeStart = js.indexOf('function applyMapMode(');
+const mapModeEnd = js.indexOf('
+  }', mapModeStart);
+const mapModeBody = mapModeStart >= 0 && mapModeEnd > mapModeStart
+  ? js.slice(mapModeStart, mapModeEnd)
+  : '';
 assert.ok(mapModeBody, 'Map mode switch implementation is present');
-assert.match(mapModeBody, /const satelliteOn = mode !== '2d'/, 'Only satellite and 3D modes enable imagery layers');
-assert.match(mapModeBody, /setLayerVisibility\\('campus-esri-imagery-layer', satelliteOn\\)/, '2D hides imagery and SAT/3D show imagery');
-assert.match(mapModeBody, /const buildingsOn = mode === '3d'/, 'Building extrusions are exclusive to 3D mode');
-assert.match(mapModeBody, /setLayerVisibility\\('campus-osm-3d-buildings', buildingsOn && !hasCuratedFootprints\\)/, '3D falls back to global OSM building shapes when curated campus footprints are unavailable');
-assert.match(mapModeBody, /setLayerVisibility\\('campus-curated-building-extrusions', buildingsOn && hasCuratedFootprints\\)/, '3D uses reviewed campus-specific footprints when available');
-assert.match(mapModeBody, /mode === '3d'[\\s\\S]*pitch: 54, bearing: -16[\\s\\S]*pitch: 0, bearing: 0/, '3D pitches the camera and 2D/SAT restore a top-down camera');
-assert.match(mapModeBody, /setAttribute\\('aria-pressed', mode === key \? 'true' : 'false'\\)/, 'Map mode controls expose their active state accessibly');
+assert.ok(mapModeBody.includes("const satelliteOn = mode !== '2d'"), 'Only satellite and 3D modes enable imagery layers');
+assert.ok(mapModeBody.includes("setLayerVisibility('campus-esri-imagery-layer', satelliteOn)"), '2D hides imagery and SAT/3D show imagery');
+assert.ok(mapModeBody.includes("const buildingsOn = mode === '3d'"), 'Building extrusions are exclusive to 3D mode');
+assert.ok(mapModeBody.includes("setLayerVisibility('campus-osm-3d-buildings', buildingsOn && !hasCuratedFootprints)"), '3D falls back to global OSM building shapes when curated campus footprints are unavailable');
+assert.ok(mapModeBody.includes("setLayerVisibility('campus-curated-building-extrusions', buildingsOn && hasCuratedFootprints)"), '3D uses reviewed campus-specific footprints when available');
+assert.ok(mapModeBody.includes("? { pitch: 54, bearing: -16 }") && mapModeBody.includes(": { pitch: 0, bearing: 0 };"), '3D pitches the camera and 2D/SAT restore a top-down camera');
+assert.ok(mapModeBody.includes("button?.setAttribute('aria-pressed', mode === key ? 'true' : 'false')"), 'Map mode controls expose their active state accessibly');
 
 assert.match(js, /Noto Sans Regular/, 'Map labels use OpenFreeMap supported Noto Sans glyphs');
 assert.match(js, /Noto Sans Bold/, 'Cluster count labels use OpenFreeMap supported bold glyphs');
