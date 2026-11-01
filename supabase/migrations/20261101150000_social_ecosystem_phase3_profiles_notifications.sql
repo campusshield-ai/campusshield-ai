@@ -234,6 +234,44 @@ as $function$
   limit 1;
 $function$;
 
+create or replace function public.search_campus_community_profiles(p_query text)
+returns table(
+  username text,bio text,faculty text,department text,
+  course_of_study text,year_of_study text,interests text[]
+)
+language plpgsql stable security definer set search_path to ''
+as $function$
+declare
+  v_user uuid := (select auth.uid());
+  v_university uuid := (select private.current_campus_university_id());
+  v_query text := lower(btrim(coalesce(p_query,'')));
+begin
+  if v_user is null or v_university is null then raise exception 'Sign in and select your university first.'; end if;
+  if not coalesce((select private.current_user_has_verified_campus_access()),false) then
+    raise exception 'Verified campus membership is required to search student profiles.';
+  end if;
+  if char_length(v_query)<3 or char_length(v_query)>32 then
+    raise exception 'Enter at least 3 characters of a campus username.';
+  end if;
+  return query
+    select cp.username,cp.bio,cp.faculty,cp.department,cp.course_of_study,cp.year_of_study,cp.interests
+    from public.community_profiles cp
+    join public.campus_memberships cm
+      on cm.user_id=cp.user_id and cm.university_id=v_university
+    where cp.user_id<>v_user
+      and cm.membership_status='active' and cm.verification_status='verified'
+      and lower(cp.username) like v_query || '%'
+      and not exists (
+        select 1 from public.campus_direct_conversations dc
+        where dc.status='blocked'
+          and ((dc.user_one_id=v_user and dc.user_two_id=cp.user_id)
+            or (dc.user_two_id=v_user and dc.user_one_id=cp.user_id))
+      )
+    order by cp.username
+    limit 20;
+end;
+$function$;
+
 create or replace function public.list_my_campus_social_notifications(p_limit integer default 40)
 returns table(
   notification_id uuid,kind text,actor_username text,target_type text,
@@ -281,10 +319,12 @@ revoke all on function private.notify_campus_social_activity() from public,anon,
 revoke all on function public.update_my_community_profile_details(text,text,text,text,text,text[]) from public,anon;
 revoke all on function public.get_my_community_profile_details() from public,anon;
 revoke all on function public.list_my_campus_social_notifications(integer) from public,anon;
+revoke all on function public.search_campus_community_profiles(text) from public,anon;
 revoke all on function public.mark_campus_social_notification_read(uuid) from public,anon;
 grant execute on function public.update_my_community_profile_details(text,text,text,text,text,text[]) to authenticated;
 grant execute on function public.get_my_community_profile_details() to authenticated;
 grant execute on function public.list_my_campus_social_notifications(integer) to authenticated;
+grant execute on function public.search_campus_community_profiles(text) to authenticated;
 grant execute on function public.mark_campus_social_notification_read(uuid) to authenticated;
 
 commit;
