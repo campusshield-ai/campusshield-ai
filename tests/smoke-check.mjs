@@ -876,6 +876,12 @@ assert.match(socialPhase3Migration, /cm\.membership_status='active' and cm\.veri
 assert.match(socialPhase3Migration, /regexp_matches\(v_text,'@\(\[a-z0-9_\]\{3,20\}\)'/, "published posts and comments generate username mention notifications");
 assert.match(socialPhase3Migration, /after insert on public\.campus_follows/, "new campus follows generate activity notifications");
 assert.match(socialPhase3Migration, /mark_campus_social_notification_read/, "users can mark their own campus social notifications as read");
+assert.match(socialPhase3Migration, /search_campus_community_profiles\(p_query text\)/, "students can discover verified campus profiles by username");
+assert.match(socialPhase3Migration, /cm\.university_id=v_university[\s\S]*cm\.membership_status='active' and cm\.verification_status='verified'/, "profile discovery is limited to verified members of the selected university");
+assert.match(socialPhase3Migration, /dc\.status='blocked'/, "profile discovery respects existing private-message blocks");
+assert.match(backend, /async searchCampusCommunityProfiles\(query\)/, "backend exposes campus-scoped profile discovery");
+assert.match(appScript, /campus-profile-search-form/, "CampusPulse provides a verified member search form");
+assert.match(appScript, /Find in Private Messages/, "profile discovery can continue into the existing private-message request flow");
 assert.match(backend, /async getMyCommunityProfileDetails\(\)/, "backend exposes the current user's extended campus profile");
 assert.match(backend, /async updateMyCommunityProfileDetails\(input\)/, "backend saves validated campus profile details through RPC");
 assert.match(backend, /async listMyCampusSocialNotifications\(limit = 40\)/, "backend loads campus-scoped social notifications");
