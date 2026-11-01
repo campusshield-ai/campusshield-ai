@@ -22,6 +22,8 @@ const campusModelSql = read('supabase/migrations/20261031150500_campus_map_priva
 const campusBuildingsSql = read('supabase/migrations/20261031142127_campus_map_building_footprint_import_pipeline.sql');
 const campusBuildingsHardeningSql = read('supabase/migrations/20261031142749_harden_campus_building_geometry_review.sql');
 const campusBuildingsNullGuardSql = read('supabase/migrations/20261031142958_guard_empty_building_import_payload.sql');
+const campusBuildingsCentreGuardSql = read('supabase/migrations/20261031182424_campus_building_import_verified_centre_guard.sql');
+const campusMapForeignKeyIndexesSql = read('supabase/migrations/20261031182609_campus_map_admin_fk_indexes.sql');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
 assert.match(html, /id="page-campus-map"/, 'CampusMap page container is present');
@@ -77,10 +79,25 @@ assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles pr
 assert.match(js, /return 'https:\/\/tiles\.openfreemap\.org\/styles\/liberty';/, 'OpenFreeMap Liberty provides the primary vector basemap');
 assert.match(js, /const SATELLITE_ROAD_LAYER_IDS/, 'Custom mapped road overlays are grouped for satellite and 3D modes');
 assert.match(js, /SATELLITE_ROAD_LAYER_IDS\.forEach\(id => setLayerVisibility\(id, satelliteOn\)\)/, 'Custom road overlays do not duplicate the vector street basemap in 2D');
+const mapModeStart = js.indexOf('function applyMapMode(');
+const mapModeEnd = js.indexOf('function ', mapModeStart + 10);
+const mapModeBody = mapModeStart >= 0 && mapModeEnd > mapModeStart
+  ? js.slice(mapModeStart, mapModeEnd)
+  : '';
+assert.ok(mapModeBody, 'Map mode switch implementation is present');
+assert.ok(mapModeBody.includes("const satelliteOn = mode !== '2d'"), 'Only satellite and 3D modes enable imagery layers');
+assert.ok(mapModeBody.includes("setLayerVisibility('campus-esri-imagery-layer', satelliteOn)"), '2D hides imagery and SAT/3D show imagery');
+assert.ok(mapModeBody.includes("const buildingsOn = mode === '3d'"), 'Building extrusions are exclusive to 3D mode');
+assert.ok(mapModeBody.includes("setLayerVisibility('campus-osm-3d-buildings', buildingsOn && !hasCuratedFootprints)"), '3D falls back to global OSM building shapes when curated campus footprints are unavailable');
+assert.ok(mapModeBody.includes("setLayerVisibility('campus-curated-building-extrusions', buildingsOn && hasCuratedFootprints)"), '3D uses reviewed campus-specific footprints when available');
+assert.ok(mapModeBody.includes("? { pitch: 54, bearing: -16 }") && mapModeBody.includes(": { pitch: 0, bearing: 0 };"), '3D pitches the camera and 2D/SAT restore a top-down camera');
+assert.ok(mapModeBody.includes("button?.setAttribute('aria-pressed', mode === key ? 'true' : 'false')"), 'Map mode controls expose their active state accessibly');
+
 assert.match(js, /Noto Sans Regular/, 'Map labels use OpenFreeMap supported Noto Sans glyphs');
 assert.match(js, /Noto Sans Bold/, 'Cluster count labels use OpenFreeMap supported bold glyphs');
 assert.match(js, /'source-layer': 'transportation'/, 'Road styling uses mapped OpenMapTiles transportation geometry');
-assert.match(js, /campus-roads-main-casing/, 'Primary campus roads have a high-contrast casing');
+assert.match(js, /campus-roads-main-casing/, 'Primary campus roads have a defined casing');
+assert.match(js, /'line-opacity': 0\.72/, 'Satellite road casings are softened to avoid overwhelming imagery');
 assert.match(js, /campus-roads-secondary/, 'Secondary roads have a distinct thinner style');
 assert.match(js, /campus-roads-local/, 'Mapped local and access roads are visible at campus zoom');
 assert.match(js, /campus-footpaths/, 'Mapped paths are visually distinct and dashed');
@@ -89,14 +106,19 @@ assert.match(js, /Noto Sans Regular/, 'Road labels use the configured supported 
 assert.match(js, /motorway_link/, 'Mapped primary access ramps are styled with primary roads');
 assert.match(js, /secondary_link/, 'Mapped secondary access ramps are styled with secondary roads');
 assert.match(js, /'source-layer': 'transportation_name'/, 'Road labels use the mapped transportation-name layer');
-assert.match(js, /never synthesize connecting lines/, 'The road renderer does not invent roads in unmapped areas');
+assert.match(js, /Never synthesize unmapped connecting lines/, 'The road renderer does not invent roads in unmapped areas');
 assert.match(js, /campus-osm-3d-buildings/, '3D mode renders building footprints as extrusions');
 assert.match(js, /render_height/, 'Building extrusion height uses OSM-derived height attributes');
 assert.match(js, /campus-osm-3d-poi-labels/, 'Satellite and 3D modes include OSM place labels');
+assert.match(js, /not campus-verified/, 'Global OpenStreetMap building shapes are distinguished from university-verified campus data');
+assert.match(js, /official campus locator only \(not a surveyed centre\)/, 'An official campus locator is not presented as a surveyed campus centre');
+assert.match(js, /Close-up view/, 'Map zoom level is not described as proof of building-level data accuracy');
+assert.match(js, /university-approved/, 'Global OSM place labels are explicitly marked as unverified context');
 assert.match(js, /applyMapMode\('satellite'\)/, 'SAT mode has an independent switch');
 assert.match(css, /@media\(max-width:600px\)/, 'Map layout includes mobile responsive rules');
 assert.match(css, /campus-map-pin-tools/, 'Precision pin controls are styled');
 assert.match(css, /campus-map-legend/, 'Published and draft markers have a visible legend');
+assert.match(css, /campus-map-legend-context/, 'Global OSM context has its own legend style');
 assert.match(css, /campus-map-controls\{position:absolute[\s\S]*flex-direction:column/, 'Map style controls are vertically arranged like the reference');
 assert.match(sql, /ENABLE ROW LEVEL SECURITY/, 'Map feature table enables RLS');
 assert.match(sql, /FORCE ROW LEVEL SECURITY/, 'Map feature table forces RLS');
@@ -146,6 +168,18 @@ assert.match(campusBuildingsHardeningSql, /building_coverage_status=CASE/, 'A ve
 assert.match(html, /id="campus-map-building-discover"/, 'Verified campus administrators can discover building footprints');
 assert.match(html, /id="campus-map-building-review"/, 'Building candidate review panel is present');
 assert.match(js, /import_campus_map_building_candidates/, 'Building import calls the checked Staging RPC');
+assert.match(js, /profile\.center_status !== 'verified'/, 'Browser refuses building discovery from an unverified campus centre');
+assert.match(js, /updateBuildingDiscoveryControl\(\)/, 'Building discovery button follows verified-centre readiness');
+assert.match(html, /id="campus-map-building-discover" disabled/, 'Building discovery starts disabled until the saved centre is verified');
+assert.match(campusBuildingsCentreGuardSql, /RENAME TO import_campus_map_building_candidates_impl_unverified_centre_legacy/, 'Existing import implementation is wrapped with a stricter centre-verification guard');
+assert.match(campusBuildingsCentreGuardSql, /center_status\s*=\s*'verified'/, 'Database refuses building imports without a verified campus centre');
+assert.match(campusBuildingsCentreGuardSql, /campus_role\s*=\s*'admin'[\s\S]*p\.verification_status\s*=\s*'verified'/, 'Centre readiness is checked only after verified campus-admin membership is confirmed');
+assert.match(campusMapForeignKeyIndexesSql, /campus_map_buildings_campus_id_idx/, 'Building campus foreign key has a dedicated index');
+assert.match(campusMapForeignKeyIndexesSql, /campus_map_buildings_verified_by_idx/, 'Building verifier foreign key has a dedicated index');
+assert.match(campusMapForeignKeyIndexesSql, /campus_map_campuses_boundary_verified_by_idx/, 'Boundary verifier foreign key has a dedicated index');
+assert.match(campusMapForeignKeyIndexesSql, /campus_map_campuses_center_verified_by_idx/, 'Centre verifier foreign key has a dedicated index');
+assert.match(campusMapForeignKeyIndexesSql, /campus_map_campuses_model_verified_by_idx/, 'Model verifier foreign key has a dedicated index');
+assert.match(campusBuildingsCentreGuardSql, /verified campus-centre point/, 'Database reports why an unverified centre cannot be used');
 assert.match(js, /review_campus_map_building/, 'Building review calls the checked Staging RPC');
 assert.match(js, /function buildingFeatureCollection/, 'Building outlines are converted to GeoJSON for the map');
 assert.match(js, /height_method/, 'Building height provenance is retained for the 3D view');

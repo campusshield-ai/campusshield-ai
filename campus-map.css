@@ -581,3 +581,21 @@
   .campus-map-building-review .campus-map-admin-actions{grid-template-columns:1fr}
   .campus-map-building-candidate strong{white-space:normal}
 }
+
+
+/* Provenance key for global map context: visually distinct from campus-managed pins. */
+.campus-map-legend-context{
+  color:#687a73;
+  font-weight:650;
+  white-space:normal!important;
+}
+.campus-map-legend-context i{
+  width:14px!important;
+  height:2px!important;
+  border-radius:2px!important;
+  background:#7d8d83;
+  flex:0 0 14px;
+}
+@media(max-width:600px){
+  .campus-map-legend-context{max-width:100%;line-height:1.35}
+}
