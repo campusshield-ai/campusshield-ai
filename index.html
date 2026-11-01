@@ -2955,6 +2955,21 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <button class="btn secondary" type="submit" id="community-username-save">Save username</button>
       <p id="community-profile-message" class="message" role="status" aria-live="polite"></p>
     </form>
+    <form id="communityProfileDetailsForm" class="campus-social-compose">
+      <div class="field"><label for="community-profile-bio">About me</label><textarea id="community-profile-bio" rows="2" maxlength="280" placeholder="A short introduction (280 characters max)"></textarea></div>
+      <div class="field"><label for="community-profile-faculty">Faculty / school</label><input id="community-profile-faculty" maxlength="120" placeholder="e.g. Computing and Engineering"></div>
+      <div class="field"><label for="community-profile-department">Department</label><input id="community-profile-department" maxlength="120" placeholder="e.g. Computer Science"></div>
+      <div class="field"><label for="community-profile-course">Course of study</label><input id="community-profile-course" maxlength="120" placeholder="e.g. Software Engineering"></div>
+      <div class="field"><label for="community-profile-year">Level / year</label><input id="community-profile-year" maxlength="40" placeholder="e.g. 300 Level"></div>
+      <div class="field"><label for="community-profile-interests">Interests</label><input id="community-profile-interests" maxlength="400" placeholder="Technology, AI, design (up to 12)"><small class="muted">Separate interests with commas. Only verified members of your university can discover these details.</small></div>
+      <button class="btn" type="submit" id="community-profile-details-save">Save profile details</button>
+      <p id="community-profile-details-message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="panel" aria-labelledby="campus-social-notifications-title">
+    <div class="panel-heading"><div><h2 id="campus-social-notifications-title">Your social activity</h2><p>New followers, comments and @mentions from your university.</p></div><button class="btn secondary" type="button" id="refresh-campus-social-notifications">Refresh</button></div>
+    <p id="campus-social-notifications-status" class="message" role="status" aria-live="polite">Loading social activity…</p>
+    <div id="campus-social-notifications-feed" class="campus-social-notifications-feed"><div class="community-empty">Your social activity will appear here.</div></div>
   </section>
   <section class="panel" aria-labelledby="community-post-title">
     <div class="panel-heading"><div><h2 id="community-post-title">Share with campus</h2><p>Student posts are reviewed before publication.</p></div></div>
