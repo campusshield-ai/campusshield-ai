@@ -865,3 +865,22 @@ assert.match(campusStoryMediaScanPreflightMigration, /private\.can_upload_campus
 assert.match(campusStoryMediaScanPreflightMigration, /revoke all[\s\S]*from public, anon[\s\S]*grant execute[\s\S]*to authenticated/, "Story scan preflight is limited to authenticated callers");
 console.log("PASS Campus Stories private media scanning, Study Circles, Reputation and scoped push notifications");
 
+
+
+const socialPhase3Migration = await readFile(new URL("../supabase/migrations/20261101150000_social_ecosystem_phase3_profiles_notifications.sql", import.meta.url), "utf8");
+assert.match(socialPhase3Migration, /alter table public\.community_profiles[\s\S]*add column if not exists bio text/, "Phase 3 adds optional public campus profile details");
+assert.match(socialPhase3Migration, /cardinality\(interests\) <= 12/, "campus profiles limit interest tags");
+assert.match(socialPhase3Migration, /campus_social_notifications[\s\S]*enable row level security/, "social notifications are protected by RLS");
+assert.match(socialPhase3Migration, /revoke all on public\.campus_social_notifications from public, anon, authenticated/, "social notification rows are not directly readable from the client");
+assert.match(socialPhase3Migration, /cm\.membership_status='active' and cm\.verification_status='verified'/, "social notifications are restricted to verified members of the same campus");
+assert.match(socialPhase3Migration, /regexp_matches\(v_text,'@\(\[a-z0-9_\]\{3,20\}\)'/, "published posts and comments generate username mention notifications");
+assert.match(socialPhase3Migration, /after insert on public\.campus_follows/, "new campus follows generate activity notifications");
+assert.match(socialPhase3Migration, /mark_campus_social_notification_read/, "users can mark their own campus social notifications as read");
+assert.match(backend, /async getMyCommunityProfileDetails\(\)/, "backend exposes the current user's extended campus profile");
+assert.match(backend, /async updateMyCommunityProfileDetails\(input\)/, "backend saves validated campus profile details through RPC");
+assert.match(backend, /async listMyCampusSocialNotifications\(limit = 40\)/, "backend loads campus-scoped social notifications");
+assert.match(appScript, /communityProfileDetailsForm/, "students can edit their extended community profile");
+assert.match(appScript, /loadCampusSocialNotifications/, "CampusPulse loads the social activity inbox");
+assert.match(htmlMarkup, /id="campus-social-notifications-feed"/, "CampusPulse renders the social activity inbox");
+assert.match(htmlMarkup, /id="community-profile-interests"/, "campus profile supports interest tags");
+console.log("PASS Social Ecosystem Phase 3 profile details, campus-scoped mentions and activity inbox");
