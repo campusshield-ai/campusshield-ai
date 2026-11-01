@@ -80,8 +80,7 @@ assert.match(js, /return 'https:\/\/tiles\.openfreemap\.org\/styles\/liberty';/,
 assert.match(js, /const SATELLITE_ROAD_LAYER_IDS/, 'Custom mapped road overlays are grouped for satellite and 3D modes');
 assert.match(js, /SATELLITE_ROAD_LAYER_IDS\.forEach\(id => setLayerVisibility\(id, satelliteOn\)\)/, 'Custom road overlays do not duplicate the vector street basemap in 2D');
 const mapModeStart = js.indexOf('function applyMapMode(');
-const mapModeEnd = js.indexOf('
-  }', mapModeStart);
+const mapModeEnd = js.indexOf('function ', mapModeStart + 10);
 const mapModeBody = mapModeStart >= 0 && mapModeEnd > mapModeStart
   ? js.slice(mapModeStart, mapModeEnd)
   : '';
