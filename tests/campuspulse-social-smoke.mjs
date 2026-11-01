@@ -65,11 +65,11 @@ for (const token of ["campuspulse-social-tabs", "campuspulse-social-form", "camp
 }
 
 
-assert.match(privilegeHardening, /revoke all on table[\s\\S]*from anon, authenticated/,
+assert.match(privilegeHardening, /revoke all on table[\s\S]*from anon, authenticated/,
   "New social tables must not inherit broad authenticated/anonymous table privileges");
-assert.match(privilegeHardening, /grant select, insert, update, delete on table[\s\\S]*campus_memories[\s\\S]*to authenticated/,
+assert.match(privilegeHardening, /grant select, insert, update, delete on table[\s\S]*campus_memories[\s\S]*to authenticated/,
   "User-owned social listings must retain only the RLS-governed row operations");
-assert.match(privilegeHardening, /grant select, insert, update on table[\s\\S]*campus_social_feature_reports[\s\\S]*to authenticated/,
+assert.match(privilegeHardening, /grant select, insert, update on table[\s\S]*campus_social_feature_reports[\s\S]*to authenticated/,
   "Connection requests and reports must not expose direct DELETE");
 assert.doesNotMatch(privilegeHardening, /grant[^;]*\btruncate\b/i,
   "Authenticated users must never receive TRUNCATE on CampusPulse social tables");
