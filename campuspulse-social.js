@@ -89,7 +89,8 @@
     try {
       await prepare();
       status("cps-global-status","Connected to "+(state.campus.university_name||"your university")+".");
-      const results=await Promise.allSettled([loadMissions(),loadEvents(),loadCollabs(),loadBuddies(),loadClubs(),loadMentors(),loadMemories(),loadConnections()]);
+      await loadEvents();
+      const results=await Promise.allSettled([loadMissions(),loadCollabs(),loadBuddies(),loadClubs(),loadMentors(),loadMemories(),loadConnections()]);
       const staff=["admin","security","teacher"].includes(state.profile.role)&&state.campus.verification_status==="verified";
       $("cps-social-reports-panel").hidden=!staff;
       if(staff)await loadReports();
