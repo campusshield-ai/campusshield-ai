@@ -1,0 +1,52 @@
+.campuspulse-social-suite {
+  margin: 24px 0;
+  border: 1px solid #dce5df;
+  border-radius: 20px;
+  background: linear-gradient(180deg,#ffffff 0%,#f8fbf8 100%);
+  box-shadow: 0 14px 34px rgba(7,39,30,.06);
+}
+.campuspulse-social-heading,.campuspulse-social-panel-head {
+  display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;
+}
+.campuspulse-social-heading {padding:4px 4px 22px;}
+.campuspulse-social-heading h2 {margin:7px 0 8px;color:#173126;font-size:clamp(1.35rem,2.4vw,1.9rem);}
+.campuspulse-social-heading p,.campuspulse-social-panel-head p {margin:0;color:#6e7f75;max-width:760px;line-height:1.65;}
+.campuspulse-social-kicker {font-size:.72rem;letter-spacing:.13em;font-weight:800;color:#2a7e46;}
+.campuspulse-social-live {display:inline-flex;align-items:center;gap:8px;border:1px solid #cde7d1;background:#f0faf2;color:#245b34;padding:8px 12px;border-radius:999px;font-size:.78rem;font-weight:700;}
+.campuspulse-social-tabs {display:flex;gap:8px;overflow-x:auto;padding:10px 2px 14px;border-top:1px solid #e4ece6;border-bottom:1px solid #e4ece6;scrollbar-width:thin;}
+.campuspulse-social-tabs button {border:1px solid #dce5df;background:#fff;color:#355146;border-radius:999px;padding:9px 14px;font:inherit;font-size:.86rem;font-weight:700;white-space:nowrap;cursor:pointer;}
+.campuspulse-social-tabs button[aria-selected="true"] {background:#203d35;border-color:#203d35;color:#fff;box-shadow:0 4px 12px rgba(7,39,30,.13);}
+.campuspulse-social-tabs button:focus-visible,.campuspulse-social-suite button:focus-visible,.campuspulse-social-suite input:focus-visible,.campuspulse-social-suite textarea:focus-visible,.campuspulse-social-suite select:focus-visible {outline:3px solid #7fd98a;outline-offset:2px;}
+.campuspulse-social-panel {padding:20px 2px 4px;}
+.campuspulse-social-panel[hidden] {display:none!important;}
+.campuspulse-social-panel-head {margin-bottom:16px;}
+.campuspulse-social-panel-head h3,.campuspulse-social-feed-head h3 {margin:0 0 5px;color:#163b2b;font-size:1.1rem;}
+.campuspulse-social-panel-head p {font-size:.9rem;}
+.campuspulse-social-form {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;padding:16px;border:1px solid #e0e9e3;border-radius:16px;background:#f8fbf8;margin:14px 0 22px;}
+.campuspulse-social-form .field {margin:0;min-width:0;}
+.campuspulse-social-form .field:has(textarea),.campuspulse-social-form .field:has(input#cps-collab-title),.campuspulse-social-form .field:has(input#cps-club-name),.campuspulse-social-form .field:has(input#cps-mentor-headline),.campuspulse-social-form .field:has(input#cps-memory-title) {grid-column:1/-1;}
+.campuspulse-social-form textarea {min-height:84px;resize:vertical;}
+.campuspulse-social-form button[type="submit"] {justify-self:start;}
+.campuspulse-social-form .message {grid-column:1/-1;margin:0;}
+.campuspulse-social-feed-head {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:14px 0;}
+.campuspulse-social-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.campuspulse-social-card {min-width:0;border:1px solid #dce7df;border-radius:15px;padding:16px;background:#fff;box-shadow:0 5px 15px rgba(7,39,30,.04);}
+.campuspulse-social-card h3 {margin:0 0 8px;color:#173126;font-size:1rem;overflow-wrap:anywhere;}
+.campuspulse-social-card-copy {margin:0 0 10px;line-height:1.6;color:#52645a;white-space:pre-wrap;overflow-wrap:anywhere;}
+.campuspulse-social-meta {margin:8px 0;color:#2a7e46;font-size:.8rem;font-weight:700;overflow-wrap:anywhere;}
+.campuspulse-social-muted {margin:7px 0;color:#718079;font-size:.82rem;line-height:1.5;overflow-wrap:anywhere;}
+.campuspulse-social-actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.campuspulse-social-progress {display:block;width:100%;height:9px;accent-color:#2a7e46;margin:12px 0;}
+.campuspulse-social-empty {padding:18px;border:1px dashed #cbd9cf;border-radius:14px;background:#f8fbf8;color:#64756b;line-height:1.6;grid-column:1/-1;}
+.campuspulse-social-safety {margin:20px 2px 2px;padding:12px 14px;border-radius:12px;background:#f1f7f2;color:#52645a;font-size:.8rem;line-height:1.6;}
+@media(max-width:720px) {
+ .campuspulse-social-suite {padding:14px;border-radius:16px;}
+ .campuspulse-social-grid {grid-template-columns:minmax(0,1fr);}
+ .campuspulse-social-form {grid-template-columns:minmax(0,1fr);padding:13px;}
+ .campuspulse-social-form .field {grid-column:1/-1;}
+ .campuspulse-social-heading {gap:10px;}
+ .campuspulse-social-tabs {margin-left:-2px;margin-right:-2px;}
+}
+@media(prefers-reduced-motion:reduce) {
+ .campuspulse-social-suite * {scroll-behavior:auto!important;transition:none!important;animation:none!important;}
+}
