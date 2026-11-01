@@ -1,7 +1,6 @@
 -- CampusShield AI Social Ecosystem Phase 3
--- Adds campus-scoped public profile details and in-app social activity notifications.
--- Direct messages, follows, reactions, bookmarks, reposts, events and groups already exist;
--- this migration extends them without creating parallel systems.
+-- University-scoped profiles, member blocks, and social activity notifications.
+-- Reuses existing CampusPulse, campus messaging, follows, posts and comments.
 
 begin;
 
@@ -15,17 +14,38 @@ alter table public.community_profiles
 
 alter table public.community_profiles
   drop constraint if exists community_profiles_bio_length,
-  add constraint community_profiles_bio_length check (bio is null or char_length(btrim(bio)) <= 280),
+  add constraint community_profiles_bio_length
+    check (bio is null or char_length(btrim(bio)) <= 280),
   drop constraint if exists community_profiles_faculty_length,
-  add constraint community_profiles_faculty_length check (faculty is null or char_length(btrim(faculty)) <= 120),
+  add constraint community_profiles_faculty_length
+    check (faculty is null or char_length(btrim(faculty)) <= 120),
   drop constraint if exists community_profiles_department_length,
-  add constraint community_profiles_department_length check (department is null or char_length(btrim(department)) <= 120),
+  add constraint community_profiles_department_length
+    check (department is null or char_length(btrim(department)) <= 120),
   drop constraint if exists community_profiles_course_length,
-  add constraint community_profiles_course_length check (course_of_study is null or char_length(btrim(course_of_study)) <= 120),
+  add constraint community_profiles_course_length
+    check (course_of_study is null or char_length(btrim(course_of_study)) <= 120),
   drop constraint if exists community_profiles_year_length,
-  add constraint community_profiles_year_length check (year_of_study is null or char_length(btrim(year_of_study)) <= 40),
+  add constraint community_profiles_year_length
+    check (year_of_study is null or char_length(btrim(year_of_study)) <= 40),
   drop constraint if exists community_profiles_interests_count,
-  add constraint community_profiles_interests_count check (cardinality(interests) <= 12);
+  add constraint community_profiles_interests_count
+    check (cardinality(interests) <= 12);
+
+create table if not exists public.campus_member_blocks (
+  blocker_id uuid not null references public.profiles(id) on delete cascade,
+  blocked_id uuid not null references public.profiles(id) on delete cascade,
+  university_id uuid not null references public.campus_universities(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (blocker_id, blocked_id, university_id),
+  constraint campus_member_blocks_not_self check (blocker_id <> blocked_id)
+);
+
+create index if not exists campus_member_blocks_blocked_idx
+  on public.campus_member_blocks(blocked_id, university_id);
+
+alter table public.campus_member_blocks enable row level security;
+revoke all on public.campus_member_blocks from public, anon, authenticated;
 
 create table if not exists public.campus_social_notifications (
   id uuid primary key default gen_random_uuid(),
@@ -43,56 +63,179 @@ create table if not exists public.campus_social_notifications (
 );
 
 create index if not exists campus_social_notifications_inbox_idx
-  on public.campus_social_notifications(recipient_id, created_at desc);
-
-create table if not exists public.campus_member_blocks (
-  blocker_id uuid not null references public.profiles(id) on delete cascade,
-  blocked_id uuid not null references public.profiles(id) on delete cascade,
-  university_id uuid not null references public.campus_universities(id) on delete cascade,
-  created_at timestamptz not null default now(),
-  primary key (blocker_id,blocked_id),
-  constraint campus_member_blocks_not_self check (blocker_id <> blocked_id)
-);
-create index if not exists campus_member_blocks_blocked_idx
-  on public.campus_member_blocks(blocked_id,university_id);
-
-alter table public.campus_member_blocks enable row level security;
-revoke all on public.campus_member_blocks from public,anon,authenticated;
+  on public.campus_social_notifications(recipient_id, university_id, created_at desc);
 
 alter table public.campus_social_notifications enable row level security;
 revoke all on public.campus_social_notifications from public, anon, authenticated;
 
 create or replace function private.is_campus_member_blocked(
-  p_other_user_id uuid,p_university_id uuid
+  p_other_user_id uuid,
+  p_university_id uuid
 ) returns boolean
-language sql stable security definer set search_path to ''
+language sql
+stable
+security definer
+set search_path to ''
 as $function$
-  select case when (select auth.uid()) is null then true else exists (
-    select 1 from public.campus_member_blocks b
-    where b.university_id=p_university_id
-      and ((b.blocker_id=(select auth.uid()) and b.blocked_id=p_other_user_id)
-        or (b.blocker_id=p_other_user_id and b.blocked_id=(select auth.uid())))
-  ) end;
+  select case
+    when (select auth.uid()) is null then true
+    else exists (
+      select 1
+      from public.campus_member_blocks b
+      where b.university_id = p_university_id
+        and (
+          (b.blocker_id = (select auth.uid()) and b.blocked_id = p_other_user_id)
+          or (b.blocker_id = p_other_user_id and b.blocked_id = (select auth.uid()))
+        )
+    )
+  end;
 $function$;
-revoke all on function private.is_campus_member_blocked(uuid,uuid) from public,anon;
-grant execute on function private.is_campus_member_blocked(uuid,uuid) to authenticated;
+
+revoke all on function private.is_campus_member_blocked(uuid, uuid) from public, anon;
+grant execute on function private.is_campus_member_blocked(uuid, uuid) to authenticated;
 
 create or replace function public.set_campus_member_block_by_username(
-  p_username text,p_block boolean
+  p_username text,
+  p_block boolean
 ) returns boolean
-language plpgsql security definer set search_path to ''
+language plpgsql
+security definer
+set search_path to ''
 as $function$
 declare
   v_user uuid := (select auth.uid());
   v_university uuid := (select private.current_campus_university_id());
   v_target uuid;
-  v_username text := lower(btrim(coalesce(p_username,'')));
+  v_username text := lower(btrim(coalesce(p_username, '')));
 begin
-  if v_user is null or v_university is null then raise exception 'Sign in and select your university first.'; end if;
-  if not coalesce((select private.current_user_has_verified_campus_access()),false) then
+  if v_user is null or v_university is null then
+    raise exception 'Sign in and select your university first.';
+  end if;
+  if not coalesce((select private.current_user_has_verified_campus_access()), false) then
     raise exception 'Verified campus membership is required to manage member blocks.';
   end if;
-  if v_username !~ '^[a-z0-9_]{3,20}
+  if v_username !~ '^[a-z0-9_]{3,20}$' then
+    raise exception 'Enter a valid campus username.';
+  end if;
+
+  if p_block then
+    select cp.user_id into v_target
+    from public.community_profiles cp
+    join public.campus_memberships cm
+      on cm.user_id = cp.user_id
+     and cm.university_id = v_university
+    join public.profiles p on p.id = cp.user_id
+    where lower(cp.username) = v_username
+      and cp.user_id <> v_user
+      and cm.membership_status = 'active'
+      and cm.verification_status = 'verified'
+      and p.verification_status = 'verified'
+    limit 1;
+
+    if v_target is null then
+      raise exception 'That verified campus member was not found.';
+    end if;
+
+    insert into public.campus_member_blocks(blocker_id, blocked_id, university_id)
+    values (v_user, v_target, v_university)
+    on conflict (blocker_id, blocked_id, university_id) do nothing;
+
+    update public.campus_direct_conversations
+    set status = 'blocked',
+        blocked_by = v_user,
+        updated_at = now()
+    where university_id = v_university
+      and status <> 'blocked'
+      and (
+        (user_one_id = v_user and user_two_id = v_target)
+        or (user_two_id = v_user and user_one_id = v_target)
+      );
+
+    return true;
+  else
+    select cp.user_id into v_target
+    from public.campus_member_blocks b
+    join public.community_profiles cp on cp.user_id = b.blocked_id
+    where b.blocker_id = v_user
+      and b.university_id = v_university
+      and lower(cp.username) = v_username
+    limit 1;
+
+    if v_target is null then
+      return false;
+    end if;
+
+    delete from public.campus_member_blocks
+    where blocker_id = v_user
+      and blocked_id = v_target
+      and university_id = v_university;
+
+    return false;
+  end if;
+end;
+$function$;
+
+create or replace function public.list_my_campus_member_blocks()
+returns table(username text, blocked_at timestamptz)
+language plpgsql
+stable
+security definer
+set search_path to ''
+as $function$
+declare
+  v_user uuid := (select auth.uid());
+  v_university uuid := (select private.current_campus_university_id());
+begin
+  if v_user is null or v_university is null then
+    raise exception 'Sign in and select your university first.';
+  end if;
+  if not coalesce((select private.current_user_has_verified_campus_access()), false) then
+    raise exception 'Verified campus membership is required to manage member blocks.';
+  end if;
+
+  return query
+  select cp.username, b.created_at
+  from public.campus_member_blocks b
+  join public.community_profiles cp on cp.user_id = b.blocked_id
+  where b.blocker_id = v_user
+    and b.university_id = v_university
+  order by b.created_at desc;
+end;
+$function$;
+
+-- Prevent a blocked member from creating a fresh direct-message request,
+-- or reopening a conversation after a block.
+create or replace function private.enforce_campus_member_block_on_conversation()
+returns trigger
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+begin
+  if new.status in ('pending', 'accepted')
+     and exists (
+       select 1
+       from public.campus_member_blocks b
+       where b.university_id = new.university_id
+         and (
+           (b.blocker_id = new.user_one_id and b.blocked_id = new.user_two_id)
+           or (b.blocker_id = new.user_two_id and b.blocked_id = new.user_one_id)
+         )
+     ) then
+    raise exception 'This member has blocked you or is blocked by you. The conversation cannot be opened.';
+  end if;
+  return new;
+end;
+$function$;
+
+drop trigger if exists campus_member_block_conversation_guard on public.campus_direct_conversations;
+create trigger campus_member_block_conversation_guard
+  before insert or update of status, user_one_id, user_two_id, university_id
+  on public.campus_direct_conversations
+  for each row
+  execute function private.enforce_campus_member_block_on_conversation();
+
+create or replace function private.create_campus_social_notification(
   p_university_id uuid,
   p_recipient_id uuid,
   p_actor_id uuid,
@@ -101,81 +244,103 @@ begin
   p_target_id uuid,
   p_excerpt text default null
 ) returns void
-language plpgsql security definer set search_path to ''
+language plpgsql
+security definer
+set search_path to ''
 as $function$
 begin
-  if p_recipient_id is null or p_actor_id is null or p_recipient_id = p_actor_id then return; end if;
+  if p_recipient_id is null or p_actor_id is null or p_recipient_id = p_actor_id then
+    return;
+  end if;
+
   if not exists (
     select 1 from public.campus_memberships cm
-    where cm.user_id=p_recipient_id and cm.university_id=p_university_id
-      and cm.membership_status='active' and cm.verification_status='verified'
+    where cm.user_id = p_recipient_id
+      and cm.university_id = p_university_id
+      and cm.membership_status = 'active'
+      and cm.verification_status = 'verified'
   ) then return; end if;
+
   if not exists (
     select 1 from public.campus_memberships cm
-    where cm.user_id=p_actor_id and cm.university_id=p_university_id
-      and cm.membership_status='active' and cm.verification_status='verified'
+    where cm.user_id = p_actor_id
+      and cm.university_id = p_university_id
+      and cm.membership_status = 'active'
+      and cm.verification_status = 'verified'
   ) then return; end if;
+
   if exists (
     select 1 from public.campus_member_blocks b
-    where b.university_id=p_university_id
-      and ((b.blocker_id=p_recipient_id and b.blocked_id=p_actor_id)
-        or (b.blocker_id=p_actor_id and b.blocked_id=p_recipient_id))
+    where b.university_id = p_university_id
+      and (
+        (b.blocker_id = p_recipient_id and b.blocked_id = p_actor_id)
+        or (b.blocker_id = p_actor_id and b.blocked_id = p_recipient_id)
+      )
   ) then return; end if;
+
   insert into public.campus_social_notifications(
-    university_id,recipient_id,actor_id,kind,target_type,target_id,excerpt
+    university_id, recipient_id, actor_id, kind, target_type, target_id, excerpt
   ) values (
-    p_university_id,p_recipient_id,p_actor_id,p_kind,p_target_type,p_target_id,
-    left(coalesce(p_excerpt,''),180)
+    p_university_id, p_recipient_id, p_actor_id, p_kind, p_target_type, p_target_id,
+    left(coalesce(p_excerpt, ''), 180)
   )
-  on conflict (recipient_id,actor_id,kind,target_id) do nothing;
+  on conflict (recipient_id, actor_id, kind, target_id) do nothing;
 end;
 $function$;
 
 create or replace function private.notify_campus_social_activity()
 returns trigger
-language plpgsql security definer set search_path to ''
+language plpgsql
+security definer
+set search_path to ''
 as $function$
 declare
-  v_actor uuid;
   v_university uuid;
   v_target uuid;
   v_post_author uuid;
   v_post_id uuid;
+  v_actor uuid;
   v_text text;
   v_kind text;
   v_username text;
   v_recipient uuid;
 begin
-  if tg_table_name='campus_follows' then
+  if tg_table_name = 'campus_follows' then
     perform private.create_campus_social_notification(
-      new.university_id,new.followed_id,new.follower_id,'new_follower',
-      'profile',new.follower_id,null
+      new.university_id, new.followed_id, new.follower_id,
+      'new_follower', 'profile', new.follower_id, null
     );
     return new;
-  elsif tg_table_name='community_posts' then
-    if new.status <> 'published' or (tg_op='UPDATE' and old.status='published') then return new; end if;
+  elsif tg_table_name = 'community_posts' then
+    if new.status <> 'published'
+       or (tg_op = 'UPDATE' and old.status = 'published') then
+      return new;
+    end if;
     v_actor := new.author_id;
     v_university := new.university_id;
     v_target := new.id;
-    v_post_id := new.id;
-    v_text := coalesce(new.title,'') || ' ' || coalesce(new.body,'');
+    v_text := coalesce(new.title, '') || ' ' || coalesce(new.body, '');
     v_kind := 'post_mention';
-  elsif tg_table_name='community_comments' then
+  elsif tg_table_name = 'community_comments' then
     if new.status <> 'published' then return new; end if;
-    select p.author_id,p.university_id,p.id
-      into v_post_author,v_university,v_post_id
+
+    select p.author_id, p.university_id, p.id
+    into v_post_author, v_university, v_post_id
     from public.community_posts p
-    where p.id=new.post_id and p.status='published';
+    where p.id = new.post_id
+      and p.status = 'published';
+
     if not found then return new; end if;
+
     v_actor := new.author_id;
     v_target := new.id;
-    v_text := coalesce(new.body,'');
-    if v_post_author is not null then
-      perform private.create_campus_social_notification(
-        v_university,v_post_author,v_actor,'post_comment','post',v_post_id,
-        'A student commented on your campus post.'
-      );
-    end if;
+    v_text := coalesce(new.body, '');
+
+    perform private.create_campus_social_notification(
+      v_university, v_post_author, v_actor,
+      'post_comment', 'post', v_post_id,
+      'A student commented on your campus post.'
+    );
     v_kind := 'comment_mention';
   else
     return new;
@@ -183,25 +348,35 @@ begin
 
   for v_username in
     select distinct lower(captures[1])
-    from regexp_matches(v_text,'@([a-z0-9_]{3,20})','g') as matches(captures)
+    from regexp_matches(v_text, '@([a-z0-9_]{3,20})', 'g') as matches(captures)
   loop
     select cp.user_id into v_recipient
     from public.community_profiles cp
     join public.campus_memberships cm
-      on cm.user_id=cp.user_id and cm.university_id=v_university
-    where lower(cp.username)=v_username
-      and cm.membership_status='active' and cm.verification_status='verified'
+      on cm.user_id = cp.user_id
+     and cm.university_id = v_university
+    where lower(cp.username) = v_username
+      and cm.membership_status = 'active'
+      and cm.verification_status = 'verified'
     limit 1;
+
     if v_recipient is not null then
       perform private.create_campus_social_notification(
-        v_university,v_recipient,v_actor,v_kind,
-        case when tg_table_name='community_posts' then 'post' else 'comment' end,
-        v_target,'You were mentioned in a campus community ' ||
-          case when tg_table_name='community_posts' then 'post.' else 'comment.' end
+        v_university,
+        v_recipient,
+        v_actor,
+        v_kind,
+        case when tg_table_name = 'community_posts' then 'post' else 'comment' end,
+        v_target,
+        case when tg_table_name = 'community_posts'
+          then 'You were mentioned in a campus community post.'
+          else 'You were mentioned in a campus community comment.'
+        end
       );
     end if;
     v_recipient := null;
   end loop;
+
   return new;
 end;
 $function$;
@@ -211,7 +386,7 @@ create policy community_posts_respect_member_blocks
   on public.community_posts as restrictive for select to authenticated
   using (
     private.current_campus_role() = any (array['admin','security','teacher']::text[])
-    or not private.is_campus_member_blocked(author_id,university_id)
+    or not private.is_campus_member_blocked(author_id, university_id)
   );
 
 drop policy if exists community_comments_respect_member_blocks on public.community_comments;
@@ -220,10 +395,13 @@ create policy community_comments_respect_member_blocks
   using (
     private.current_campus_role() = any (array['admin','security','teacher']::text[])
     or not exists (
-      select 1 from public.community_posts p
-      where p.id=community_comments.post_id
-        and (private.is_campus_member_blocked(community_comments.author_id,p.university_id)
-          or private.is_campus_member_blocked(p.author_id,p.university_id))
+      select 1
+      from public.community_posts p
+      where p.id = community_comments.post_id
+        and (
+          private.is_campus_member_blocked(community_comments.author_id, p.university_id)
+          or private.is_campus_member_blocked(p.author_id, p.university_id)
+        )
     )
   );
 
@@ -250,7 +428,9 @@ create or replace function public.update_my_community_profile_details(
   p_year_of_study text,
   p_interests text[]
 ) returns jsonb
-language plpgsql security definer set search_path to ''
+language plpgsql
+security definer
+set search_path to ''
 as $function$
 declare
   v_user uuid := (select auth.uid());
@@ -260,474 +440,224 @@ begin
   if v_user is null or v_university is null then
     raise exception 'Sign in and select your university before updating your campus profile.';
   end if;
-  if not coalesce((select private.current_user_has_verified_campus_access()),false) then
+  if not coalesce((select private.current_user_has_verified_campus_access()), false) then
     raise exception 'Verified campus membership is required to publish profile details.';
   end if;
-  if char_length(btrim(coalesce(p_bio,''))) > 280
-    or char_length(btrim(coalesce(p_faculty,''))) > 120
-    or char_length(btrim(coalesce(p_department,''))) > 120
-    or char_length(btrim(coalesce(p_course_of_study,''))) > 120
-    or char_length(btrim(coalesce(p_year_of_study,''))) > 40 then
+  if char_length(btrim(coalesce(p_bio, ''))) > 280
+    or char_length(btrim(coalesce(p_faculty, ''))) > 120
+    or char_length(btrim(coalesce(p_department, ''))) > 120
+    or char_length(btrim(coalesce(p_course_of_study, ''))) > 120
+    or char_length(btrim(coalesce(p_year_of_study, ''))) > 40 then
     raise exception 'One or more profile fields exceed their permitted length.';
   end if;
-  select coalesce(array_agg(distinct btrim(x)),'{}'::text[])
-    into v_interests
-  from unnest(coalesce(p_interests,'{}'::text[])) x
+
+  select coalesce(array_agg(distinct btrim(x)), '{}'::text[])
+  into v_interests
+  from unnest(coalesce(p_interests, '{}'::text[])) x
   where btrim(x) <> '';
-  if cardinality(v_interests)>12 or exists(select 1 from unnest(v_interests) x where char_length(x)>32) then
+
+  if cardinality(v_interests) > 12
+    or exists (select 1 from unnest(v_interests) x where char_length(x) > 32) then
     raise exception 'Choose up to 12 interests, each no longer than 32 characters.';
   end if;
+
   update public.community_profiles
-  set bio=nullif(btrim(coalesce(p_bio,'')),''),
-      faculty=nullif(btrim(coalesce(p_faculty,'')),''),
-      department=nullif(btrim(coalesce(p_department,'')),''),
-      course_of_study=nullif(btrim(coalesce(p_course_of_study,'')),''),
-      year_of_study=nullif(btrim(coalesce(p_year_of_study,'')),''),
-      interests=v_interests,
-      updated_at=now()
-  where user_id=v_user;
-  if not found then raise exception 'Your campus community profile is not available.'; end if;
-  return jsonb_build_object('saved',true);
+  set bio = nullif(btrim(coalesce(p_bio, '')), ''),
+      faculty = nullif(btrim(coalesce(p_faculty, '')), ''),
+      department = nullif(btrim(coalesce(p_department, '')), ''),
+      course_of_study = nullif(btrim(coalesce(p_course_of_study, '')), ''),
+      year_of_study = nullif(btrim(coalesce(p_year_of_study, '')), ''),
+      interests = v_interests,
+      updated_at = now()
+  where user_id = v_user;
+
+  if not found then
+    raise exception 'Your campus community profile is not available.';
+  end if;
+
+  return jsonb_build_object('saved', true);
 end;
 $function$;
 
 create or replace function public.get_my_community_profile_details()
 returns jsonb
-language sql stable security definer set search_path to ''
+language sql
+stable
+security definer
+set search_path to ''
 as $function$
   select jsonb_build_object(
-    'username',cp.username,'bio',cp.bio,'faculty',cp.faculty,
-    'department',cp.department,'course_of_study',cp.course_of_study,
-    'year_of_study',cp.year_of_study,'interests',cp.interests
+    'username', cp.username,
+    'bio', cp.bio,
+    'faculty', cp.faculty,
+    'department', cp.department,
+    'course_of_study', cp.course_of_study,
+    'year_of_study', cp.year_of_study,
+    'interests', cp.interests
   )
   from public.community_profiles cp
-  where cp.user_id=(select auth.uid())
+  where cp.user_id = (select auth.uid())
   limit 1;
 $function$;
 
 create or replace function public.search_campus_community_profiles(p_query text)
 returns table(
-  username text,bio text,faculty text,department text,
-  course_of_study text,year_of_study text,interests text[]
+  username text,
+  bio text,
+  faculty text,
+  department text,
+  course_of_study text,
+  year_of_study text,
+  interests text[]
 )
-language plpgsql stable security definer set search_path to ''
+language plpgsql
+stable
+security definer
+set search_path to ''
 as $function$
 declare
   v_user uuid := (select auth.uid());
   v_university uuid := (select private.current_campus_university_id());
-  v_query text := lower(btrim(coalesce(p_query,'')));
+  v_query text := lower(btrim(coalesce(p_query, '')));
 begin
-  if v_user is null or v_university is null then raise exception 'Sign in and select your university first.'; end if;
-  if not coalesce((select private.current_user_has_verified_campus_access()),false) then
+  if v_user is null or v_university is null then
+    raise exception 'Sign in and select your university first.';
+  end if;
+  if not coalesce((select private.current_user_has_verified_campus_access()), false) then
     raise exception 'Verified campus membership is required to search student profiles.';
   end if;
-  if char_length(v_query)<3 or char_length(v_query)>32 then
+  if char_length(v_query) < 3 or char_length(v_query) > 32 then
     raise exception 'Enter at least 3 characters of a campus username.';
   end if;
+
   return query
-    select cp.username,cp.bio,cp.faculty,cp.department,cp.course_of_study,cp.year_of_study,cp.interests
-    from public.community_profiles cp
-    join public.campus_memberships cm
-      on cm.user_id=cp.user_id and cm.university_id=v_university
-    where cp.user_id<>v_user
-      and cm.membership_status='active' and cm.verification_status='verified'
-      and lower(cp.username) like v_query || '%'
-      and not private.is_campus_member_blocked(cp.user_id,v_university)
-      and not exists (
-        select 1 from public.campus_direct_conversations dc
-        where dc.status='blocked'
-          and ((dc.user_one_id=v_user and dc.user_two_id=cp.user_id)
-            or (dc.user_two_id=v_user and dc.user_one_id=cp.user_id))
+  select cp.username, cp.bio, cp.faculty, cp.department,
+         cp.course_of_study, cp.year_of_study, cp.interests
+  from public.community_profiles cp
+  join public.campus_memberships cm
+    on cm.user_id = cp.user_id
+   and cm.university_id = v_university
+  join public.profiles p on p.id = cp.user_id
+  where cp.user_id <> v_user
+    and cm.membership_status = 'active'
+    and cm.verification_status = 'verified'
+    and p.verification_status = 'verified'
+    and (
+      p.role <> 'student'
+      or exists (
+        select 1 from public.student_identity_verifications siv
+        where siv.user_id = p.id and siv.status = 'approved'
       )
-    order by cp.username
-    limit 20;
+    )
+    and not exists (
+      select 1 from public.student_identity_verifications siv
+      where siv.user_id = p.id
+        and siv.confirmed_fraud = true
+        and siv.fraud_lock_at is not null
+        and now() >= siv.fraud_lock_at
+    )
+    and lower(cp.username) like v_query || '%'
+    and not private.is_campus_member_blocked(cp.user_id, v_university)
+    and not exists (
+      select 1
+      from public.campus_direct_conversations dc
+      where dc.university_id = v_university
+        and dc.status = 'blocked'
+        and (
+          (dc.user_one_id = v_user and dc.user_two_id = cp.user_id)
+          or (dc.user_two_id = v_user and dc.user_one_id = cp.user_id)
+        )
+    )
+  order by cp.username
+  limit 20;
 end;
 $function$;
 
 create or replace function public.list_my_campus_social_notifications(p_limit integer default 40)
 returns table(
-  notification_id uuid,kind text,actor_username text,target_type text,
-  target_id uuid,excerpt text,created_at timestamptz,read_at timestamptz
+  notification_id uuid,
+  kind text,
+  actor_username text,
+  target_type text,
+  target_id uuid,
+  excerpt text,
+  created_at timestamptz,
+  read_at timestamptz
 )
-language plpgsql stable security definer set search_path to ''
+language plpgsql
+stable
+security definer
+set search_path to ''
 as $function$
 declare
   v_user uuid := (select auth.uid());
   v_university uuid := (select private.current_campus_university_id());
 begin
-  if v_user is null or v_university is null then raise exception 'Sign in and select your university first.'; end if;
-  if not coalesce((select private.current_user_has_verified_campus_access()),false) then
+  if v_user is null or v_university is null then
+    raise exception 'Sign in and select your university first.';
+  end if;
+  if not coalesce((select private.current_user_has_verified_campus_access()), false) then
     raise exception 'Verified campus membership is required to view social notifications.';
   end if;
+
   return query
-    select n.id,n.kind,coalesce(cp.username,'campus member'),n.target_type,n.target_id,
-      n.excerpt,n.created_at,n.read_at
-    from public.campus_social_notifications n
-    left join public.community_profiles cp on cp.user_id=n.actor_id
-    where n.recipient_id=v_user and n.university_id=v_university
-    order by n.created_at desc
-    limit greatest(1,least(coalesce(p_limit,40),100));
+  select n.id, n.kind, coalesce(cp.username, 'campus member'),
+         n.target_type, n.target_id, n.excerpt, n.created_at, n.read_at
+  from public.campus_social_notifications n
+  left join public.community_profiles cp on cp.user_id = n.actor_id
+  where n.recipient_id = v_user
+    and n.university_id = v_university
+    and not private.is_campus_member_blocked(n.actor_id, v_university)
+  order by n.created_at desc
+  limit greatest(1, least(coalesce(p_limit, 40), 100));
 end;
 $function$;
 
 create or replace function public.mark_campus_social_notification_read(p_notification_id uuid)
 returns boolean
-language plpgsql security definer set search_path to ''
+language plpgsql
+security definer
+set search_path to ''
 as $function$
 declare
   v_user uuid := (select auth.uid());
   v_university uuid := (select private.current_campus_university_id());
 begin
-  if v_user is null or v_university is null then raise exception 'Sign in and select your university first.'; end if;
+  if v_user is null or v_university is null then
+    raise exception 'Sign in and select your university first.';
+  end if;
+  if not coalesce((select private.current_user_has_verified_campus_access()), false) then
+    raise exception 'Verified campus membership is required to update social notifications.';
+  end if;
+
   update public.campus_social_notifications
-    set read_at=coalesce(read_at,now())
-    where id=p_notification_id and recipient_id=v_user and university_id=v_university;
+  set read_at = coalesce(read_at, now())
+  where id = p_notification_id
+    and recipient_id = v_user
+    and university_id = v_university;
+
   return found;
 end;
 $function$;
 
-revoke all on function private.create_campus_social_notification(uuid,uuid,uuid,text,text,uuid,text) from public,anon,authenticated;
-revoke all on function private.notify_campus_social_activity() from public,anon,authenticated;
-revoke all on function public.set_campus_member_block_by_username(text,boolean) from public,anon;
-revoke all on function public.list_my_campus_member_blocks() from public,anon;
-revoke all on function public.update_my_community_profile_details(text,text,text,text,text,text[]) from public,anon;
-revoke all on function public.get_my_community_profile_details() from public,anon;
-revoke all on function public.list_my_campus_social_notifications(integer) from public,anon;
-revoke all on function public.search_campus_community_profiles(text) from public,anon;
-revoke all on function public.mark_campus_social_notification_read(uuid) from public,anon;
-grant execute on function public.set_campus_member_block_by_username(text,boolean) to authenticated;
+revoke all on function private.create_campus_social_notification(uuid, uuid, uuid, text, text, uuid, text) from public, anon, authenticated;
+revoke all on function private.notify_campus_social_activity() from public, anon, authenticated;
+revoke all on function private.enforce_campus_member_block_on_conversation() from public, anon, authenticated;
+
+revoke all on function public.set_campus_member_block_by_username(text, boolean) from public, anon;
+revoke all on function public.list_my_campus_member_blocks() from public, anon;
+revoke all on function public.update_my_community_profile_details(text, text, text, text, text, text[]) from public, anon;
+revoke all on function public.get_my_community_profile_details() from public, anon;
+revoke all on function public.search_campus_community_profiles(text) from public, anon;
+revoke all on function public.list_my_campus_social_notifications(integer) from public, anon;
+revoke all on function public.mark_campus_social_notification_read(uuid) from public, anon;
+
+grant execute on function public.set_campus_member_block_by_username(text, boolean) to authenticated;
 grant execute on function public.list_my_campus_member_blocks() to authenticated;
-grant execute on function public.update_my_community_profile_details(text,text,text,text,text,text[]) to authenticated;
+grant execute on function public.update_my_community_profile_details(text, text, text, text, text, text[]) to authenticated;
 grant execute on function public.get_my_community_profile_details() to authenticated;
-grant execute on function public.list_my_campus_social_notifications(integer) to authenticated;
 grant execute on function public.search_campus_community_profiles(text) to authenticated;
-grant execute on function public.mark_campus_social_notification_read(uuid) to authenticated;
-
-commit;
- then raise exception 'Enter a valid campus username.'; end if;
-  select cp.user_id into v_target
-  from public.community_profiles cp
-  join public.campus_memberships cm on cm.user_id=cp.user_id and cm.university_id=v_university
-  where lower(cp.username)=v_username
-    and cm.membership_status='active' and cm.verification_status='verified';
-  if v_target is null then raise exception 'That verified campus member was not found.'; end if;
-  if v_target=v_user then raise exception 'You cannot block your own profile.'; end if;
-  if p_block then
-    insert into public.campus_member_blocks(blocker_id,blocked_id,university_id)
-    values(v_user,v_target,v_university)
-    on conflict(blocker_id,blocked_id) do nothing;
-    update public.campus_direct_conversations
-      set status='blocked',blocked_by=v_user,updated_at=now()
-      where university_id=v_university and status<>'blocked'
-        and ((user_one_id=v_user and user_two_id=v_target)
-          or (user_two_id=v_user and user_one_id=v_target));
-    return true;
-  else
-    delete from public.campus_member_blocks
-      where blocker_id=v_user and blocked_id=v_target and university_id=v_university;
-    return false;
-  end if;
-end;
-$function$;
-
-create or replace function public.list_my_campus_member_blocks()
-returns table(username text,blocked_at timestamptz)
-language plpgsql stable security definer set search_path to ''
-as $function$
-declare
-  v_user uuid := (select auth.uid());
-  v_university uuid := (select private.current_campus_university_id());
-begin
-  if v_user is null or v_university is null then raise exception 'Sign in and select your university first.'; end if;
-  if not coalesce((select private.current_user_has_verified_campus_access()),false) then
-    raise exception 'Verified campus membership is required to manage member blocks.';
-  end if;
-  return query
-    select cp.username,b.created_at
-    from public.campus_member_blocks b
-    join public.community_profiles cp on cp.user_id=b.blocked_id
-    where b.blocker_id=v_user and b.university_id=v_university
-    order by b.created_at desc;
-end;
-$function$;
-
-create or replace function private.create_campus_social_notification(
-  p_university_id uuid,
-  p_recipient_id uuid,
-  p_actor_id uuid,
-  p_kind text,
-  p_target_type text,
-  p_target_id uuid,
-  p_excerpt text default null
-) returns void
-language plpgsql security definer set search_path to ''
-as $function$
-begin
-  if p_recipient_id is null or p_actor_id is null or p_recipient_id = p_actor_id then return; end if;
-  if not exists (
-    select 1 from public.campus_memberships cm
-    where cm.user_id=p_recipient_id and cm.university_id=p_university_id
-      and cm.membership_status='active' and cm.verification_status='verified'
-  ) then return; end if;
-  if not exists (
-    select 1 from public.campus_memberships cm
-    where cm.user_id=p_actor_id and cm.university_id=p_university_id
-      and cm.membership_status='active' and cm.verification_status='verified'
-  ) then return; end if;
-  insert into public.campus_social_notifications(
-    university_id,recipient_id,actor_id,kind,target_type,target_id,excerpt
-  ) values (
-    p_university_id,p_recipient_id,p_actor_id,p_kind,p_target_type,p_target_id,
-    left(coalesce(p_excerpt,''),180)
-  )
-  on conflict (recipient_id,actor_id,kind,target_id) do nothing;
-end;
-$function$;
-
-create or replace function private.notify_campus_social_activity()
-returns trigger
-language plpgsql security definer set search_path to ''
-as $function$
-declare
-  v_actor uuid;
-  v_university uuid;
-  v_target uuid;
-  v_post_author uuid;
-  v_post_id uuid;
-  v_text text;
-  v_kind text;
-  v_username text;
-  v_recipient uuid;
-begin
-  if tg_table_name='campus_follows' then
-    perform private.create_campus_social_notification(
-      new.university_id,new.followed_id,new.follower_id,'new_follower',
-      'profile',new.follower_id,null
-    );
-    return new;
-  elsif tg_table_name='community_posts' then
-    if new.status <> 'published' or (tg_op='UPDATE' and old.status='published') then return new; end if;
-    v_actor := new.author_id;
-    v_university := new.university_id;
-    v_target := new.id;
-    v_post_id := new.id;
-    v_text := coalesce(new.title,'') || ' ' || coalesce(new.body,'');
-    v_kind := 'post_mention';
-  elsif tg_table_name='community_comments' then
-    if new.status <> 'published' then return new; end if;
-    select p.author_id,p.university_id,p.id
-      into v_post_author,v_university,v_post_id
-    from public.community_posts p
-    where p.id=new.post_id and p.status='published';
-    if not found then return new; end if;
-    v_actor := new.author_id;
-    v_target := new.id;
-    v_text := coalesce(new.body,'');
-    if v_post_author is not null then
-      perform private.create_campus_social_notification(
-        v_university,v_post_author,v_actor,'post_comment','post',v_post_id,
-        'A student commented on your campus post.'
-      );
-    end if;
-    v_kind := 'comment_mention';
-  else
-    return new;
-  end if;
-
-  for v_username in
-    select distinct lower(captures[1])
-    from regexp_matches(v_text,'@([a-z0-9_]{3,20})','g') as matches(captures)
-  loop
-    select cp.user_id into v_recipient
-    from public.community_profiles cp
-    join public.campus_memberships cm
-      on cm.user_id=cp.user_id and cm.university_id=v_university
-    where lower(cp.username)=v_username
-      and cm.membership_status='active' and cm.verification_status='verified'
-    limit 1;
-    if v_recipient is not null then
-      perform private.create_campus_social_notification(
-        v_university,v_recipient,v_actor,v_kind,
-        case when tg_table_name='community_posts' then 'post' else 'comment' end,
-        v_target,'You were mentioned in a campus community ' ||
-          case when tg_table_name='community_posts' then 'post.' else 'comment.' end
-      );
-    end if;
-    v_recipient := null;
-  end loop;
-  return new;
-end;
-$function$;
-
-drop trigger if exists campus_social_follow_notification on public.campus_follows;
-create trigger campus_social_follow_notification
-  after insert on public.campus_follows
-  for each row execute function private.notify_campus_social_activity();
-
-drop trigger if exists campus_social_post_mention_notification on public.community_posts;
-create trigger campus_social_post_mention_notification
-  after insert or update of status on public.community_posts
-  for each row execute function private.notify_campus_social_activity();
-
-drop trigger if exists campus_social_comment_notification on public.community_comments;
-create trigger campus_social_comment_notification
-  after insert on public.community_comments
-  for each row execute function private.notify_campus_social_activity();
-
-create or replace function public.update_my_community_profile_details(
-  p_bio text,
-  p_faculty text,
-  p_department text,
-  p_course_of_study text,
-  p_year_of_study text,
-  p_interests text[]
-) returns jsonb
-language plpgsql security definer set search_path to ''
-as $function$
-declare
-  v_user uuid := (select auth.uid());
-  v_university uuid := (select private.current_campus_university_id());
-  v_interests text[];
-begin
-  if v_user is null or v_university is null then
-    raise exception 'Sign in and select your university before updating your campus profile.';
-  end if;
-  if not coalesce((select private.current_user_has_verified_campus_access()),false) then
-    raise exception 'Verified campus membership is required to publish profile details.';
-  end if;
-  if char_length(btrim(coalesce(p_bio,''))) > 280
-    or char_length(btrim(coalesce(p_faculty,''))) > 120
-    or char_length(btrim(coalesce(p_department,''))) > 120
-    or char_length(btrim(coalesce(p_course_of_study,''))) > 120
-    or char_length(btrim(coalesce(p_year_of_study,''))) > 40 then
-    raise exception 'One or more profile fields exceed their permitted length.';
-  end if;
-  select coalesce(array_agg(distinct btrim(x)),'{}'::text[])
-    into v_interests
-  from unnest(coalesce(p_interests,'{}'::text[])) x
-  where btrim(x) <> '';
-  if cardinality(v_interests)>12 or exists(select 1 from unnest(v_interests) x where char_length(x)>32) then
-    raise exception 'Choose up to 12 interests, each no longer than 32 characters.';
-  end if;
-  update public.community_profiles
-  set bio=nullif(btrim(coalesce(p_bio,'')),''),
-      faculty=nullif(btrim(coalesce(p_faculty,'')),''),
-      department=nullif(btrim(coalesce(p_department,'')),''),
-      course_of_study=nullif(btrim(coalesce(p_course_of_study,'')),''),
-      year_of_study=nullif(btrim(coalesce(p_year_of_study,'')),''),
-      interests=v_interests,
-      updated_at=now()
-  where user_id=v_user;
-  if not found then raise exception 'Your campus community profile is not available.'; end if;
-  return jsonb_build_object('saved',true);
-end;
-$function$;
-
-create or replace function public.get_my_community_profile_details()
-returns jsonb
-language sql stable security definer set search_path to ''
-as $function$
-  select jsonb_build_object(
-    'username',cp.username,'bio',cp.bio,'faculty',cp.faculty,
-    'department',cp.department,'course_of_study',cp.course_of_study,
-    'year_of_study',cp.year_of_study,'interests',cp.interests
-  )
-  from public.community_profiles cp
-  where cp.user_id=(select auth.uid())
-  limit 1;
-$function$;
-
-create or replace function public.search_campus_community_profiles(p_query text)
-returns table(
-  username text,bio text,faculty text,department text,
-  course_of_study text,year_of_study text,interests text[]
-)
-language plpgsql stable security definer set search_path to ''
-as $function$
-declare
-  v_user uuid := (select auth.uid());
-  v_university uuid := (select private.current_campus_university_id());
-  v_query text := lower(btrim(coalesce(p_query,'')));
-begin
-  if v_user is null or v_university is null then raise exception 'Sign in and select your university first.'; end if;
-  if not coalesce((select private.current_user_has_verified_campus_access()),false) then
-    raise exception 'Verified campus membership is required to search student profiles.';
-  end if;
-  if char_length(v_query)<3 or char_length(v_query)>32 then
-    raise exception 'Enter at least 3 characters of a campus username.';
-  end if;
-  return query
-    select cp.username,cp.bio,cp.faculty,cp.department,cp.course_of_study,cp.year_of_study,cp.interests
-    from public.community_profiles cp
-    join public.campus_memberships cm
-      on cm.user_id=cp.user_id and cm.university_id=v_university
-    where cp.user_id<>v_user
-      and cm.membership_status='active' and cm.verification_status='verified'
-      and lower(cp.username) like v_query || '%'
-      and not exists (
-        select 1 from public.campus_direct_conversations dc
-        where dc.status='blocked'
-          and ((dc.user_one_id=v_user and dc.user_two_id=cp.user_id)
-            or (dc.user_two_id=v_user and dc.user_one_id=cp.user_id))
-      )
-    order by cp.username
-    limit 20;
-end;
-$function$;
-
-create or replace function public.list_my_campus_social_notifications(p_limit integer default 40)
-returns table(
-  notification_id uuid,kind text,actor_username text,target_type text,
-  target_id uuid,excerpt text,created_at timestamptz,read_at timestamptz
-)
-language plpgsql stable security definer set search_path to ''
-as $function$
-declare
-  v_user uuid := (select auth.uid());
-  v_university uuid := (select private.current_campus_university_id());
-begin
-  if v_user is null or v_university is null then raise exception 'Sign in and select your university first.'; end if;
-  if not coalesce((select private.current_user_has_verified_campus_access()),false) then
-    raise exception 'Verified campus membership is required to view social notifications.';
-  end if;
-  return query
-    select n.id,n.kind,coalesce(cp.username,'campus member'),n.target_type,n.target_id,
-      n.excerpt,n.created_at,n.read_at
-    from public.campus_social_notifications n
-    left join public.community_profiles cp on cp.user_id=n.actor_id
-    where n.recipient_id=v_user and n.university_id=v_university
-    order by n.created_at desc
-    limit greatest(1,least(coalesce(p_limit,40),100));
-end;
-$function$;
-
-create or replace function public.mark_campus_social_notification_read(p_notification_id uuid)
-returns boolean
-language plpgsql security definer set search_path to ''
-as $function$
-declare
-  v_user uuid := (select auth.uid());
-  v_university uuid := (select private.current_campus_university_id());
-begin
-  if v_user is null or v_university is null then raise exception 'Sign in and select your university first.'; end if;
-  update public.campus_social_notifications
-    set read_at=coalesce(read_at,now())
-    where id=p_notification_id and recipient_id=v_user and university_id=v_university;
-  return found;
-end;
-$function$;
-
-revoke all on function private.create_campus_social_notification(uuid,uuid,uuid,text,text,uuid,text) from public,anon,authenticated;
-revoke all on function private.notify_campus_social_activity() from public,anon,authenticated;
-revoke all on function public.update_my_community_profile_details(text,text,text,text,text,text[]) from public,anon;
-revoke all on function public.get_my_community_profile_details() from public,anon;
-revoke all on function public.list_my_campus_social_notifications(integer) from public,anon;
-revoke all on function public.search_campus_community_profiles(text) from public,anon;
-revoke all on function public.mark_campus_social_notification_read(uuid) from public,anon;
-grant execute on function public.update_my_community_profile_details(text,text,text,text,text,text[]) to authenticated;
-grant execute on function public.get_my_community_profile_details() to authenticated;
 grant execute on function public.list_my_campus_social_notifications(integer) to authenticated;
-grant execute on function public.search_campus_community_profiles(text) to authenticated;
 grant execute on function public.mark_campus_social_notification_read(uuid) to authenticated;
 
 commit;
