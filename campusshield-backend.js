@@ -525,6 +525,25 @@ async getCurrentUser() {
       return data || [];
     },
 
+    async setCampusMemberBlock(username, blocked) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const clean = String(username || "").trim().toLowerCase();
+      if (!/^[a-z0-9_]{3,20}$/.test(clean)) throw new Error("Enter a valid campus username.");
+      const { data, error } = await client.rpc("set_campus_member_block_by_username", {
+        p_username: clean,
+        p_block: Boolean(blocked)
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
+    async listMyCampusMemberBlocks() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_my_campus_member_blocks");
+      if (error) throw error;
+      return data || [];
+    },
+
     async listMyCampusSocialNotifications(limit = 40) {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("list_my_campus_social_notifications", {
