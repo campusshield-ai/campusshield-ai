@@ -1,0 +1,33 @@
+name: CampusMap vector basemap checks
+
+on:
+  push:
+    branches: [feat/campusmap-vector-basemap]
+    paths:
+      - "campus-map.js"
+      - "tests/campus-map-smoke.mjs"
+      - "tests/smoke-check.mjs"
+      - "docs/CAMPUSMAP_PROVIDER_DECISION.md"
+      - ".github/workflows/campus-map-vector-basemap-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vector-basemap-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate CampusMap JavaScript syntax
+        run: |
+          node --check campus-map.js
+          node --check campus-map-config.js
+      - name: Run CampusMap smoke tests
+        run: node tests/campus-map-smoke.mjs
+      - name: Run complete regression smoke suite
+        run: node tests/smoke-check.mjs

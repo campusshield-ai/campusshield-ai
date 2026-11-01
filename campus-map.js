@@ -40,6 +40,18 @@
   let lastMapErrorAt = 0;
   let routeLayerAdded = false;
 
+  // The vector Liberty basemap already renders streets and place labels in 2D.
+  // These custom OSM transportation layers are an overlay for imagery modes only.
+  const SATELLITE_ROAD_LAYER_IDS = [
+    'campus-roads-main-casing',
+    'campus-roads-main',
+    'campus-roads-secondary-casing',
+    'campus-roads-secondary',
+    'campus-roads-local',
+    'campus-footpaths',
+    'campus-road-labels'
+  ];
+
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[c]));
@@ -81,19 +93,11 @@
   }
 
   function mapStyle() {
-    return {
-      version: 8,
-      glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
-      sources: {
-        osm: {
-          type: 'raster',
-          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          attribution: '© OpenStreetMap contributors'
-        }
-      },
-      layers: [{ id: 'osm-base', type: 'raster', source: 'osm', minzoom: 0, maxzoom: 19 }]
-    };
+    // Use OpenFreeMap's vector Liberty style as the primary street basemap.
+    // It supplies crisp labels, mapped roads, landuse and building footprints
+    // at every zoom; the custom road overlay is reserved for satellite/3D modes.
+    // Source data is © OpenStreetMap contributors and OpenMapTiles.
+    return 'https://tiles.openfreemap.org/styles/liberty';
   }
 
   function ensureMap() {
@@ -561,6 +565,8 @@
           setStatus('Satellite tiles are temporarily unavailable at this zoom. Try zooming out or switching to 2D.', 'warning');
         } else if (sourceId === 'campus-openfreemap-buildings') {
           setStatus('3D building data is temporarily unavailable. The satellite map remains available.', 'warning');
+        } else if (/openfreemap|tiles\.openfreemap\.org/i.test(message)) {
+          setStatus('The vector street basemap is temporarily unavailable. Campus data and controls remain loaded; try again or refresh the map.', 'warning');
         } else if (/webgl|context lost/i.test(message)) {
           setStatus('Map graphics were interrupted by the browser. Refresh the map or switch to 2D.', 'warning');
         }
@@ -1020,8 +1026,8 @@
     const satelliteOn = mode !== '2d';
     const labelsOn = mode !== '2d';
     const buildingsOn = mode === '3d';
-    setLayerVisibility('osm-base', !satelliteOn);
     setLayerVisibility('campus-esri-imagery-layer', satelliteOn);
+    SATELLITE_ROAD_LAYER_IDS.forEach(id => setLayerVisibility(id, satelliteOn));
     const hasCuratedFootprints = campusBuildings.length > 0;
     setLayerVisibility('campus-osm-3d-buildings', buildingsOn && !hasCuratedFootprints);
     setLayerVisibility('campus-osm-3d-building-edges', buildingsOn && !hasCuratedFootprints);
