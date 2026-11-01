@@ -4528,7 +4528,7 @@
       }));
       pollResults.forEach(function(entry) { pollsByPost[entry[0]] = entry[1]; });
       renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost);
-      await Promise.allSettled([loadCampusSocialExtras(), loadCampusSocialNotifications()]);
+      await Promise.allSettled([loadCampusSocialExtras(), loadCampusSocialNotifications(), loadCampusMemberBlocks()]);
       $('community-feed-status').textContent = posts.length + (posts.length === 1 ? ' published post' : ' published posts') + ' · refreshed ' + new Date().toLocaleTimeString();
 
       $('community-moderation').hidden = !canModerateCommunity();
@@ -5628,6 +5628,23 @@
     }).join('');
   }
 
+  async function loadCampusMemberBlocks() {
+    const backend = window.CampusShieldBackend;
+    const host = $('campus-member-blocks-list');
+    const status = $('campus-member-blocks-status');
+    if (!host || !status || !backend?.isConfigured || !campusContext?.university_id) return;
+    try {
+      const rows = await backend.listMyCampusMemberBlocks();
+      host.innerHTML = rows.length ? rows.map(function(item) {
+        return '<article class="community-moderation-item"><div class="community-meta"><strong>@' + esc(item.username) + '</strong><span>·</span><time>Blocked ' + esc(dateText(item.blocked_at)) + '</time></div>' +
+          '<button type="button" class="btn secondary" data-campus-member-unblock="' + esc(item.username) + '">Unblock</button></article>';
+      }).join('') : '<div class="community-empty">You have not blocked any campus members.</div>';
+      status.textContent = rows.length + ' blocked member(s).';
+    } catch (error) {
+      status.textContent = error?.message || 'Blocked members could not be loaded.';
+    }
+  }
+
   async function loadCampusSocialNotifications() {
     const backend = window.CampusShieldBackend;
     const host = $('campus-social-notifications-feed');
@@ -5836,7 +5853,8 @@
           (profile.bio ? '<p>' + esc(profile.bio) + '</p>' : '') +
           (details ? '<p class="muted">' + esc(details) + '</p>' : '') +
           (interests.length ? '<p class="muted">Interests: ' + esc(interests.join(', ')) + '</p>' : '') +
-          '<button type="button" class="btn secondary" data-campus-profile-message="' + esc(profile.username) + '">Find in Private Messages</button>' +
+          '<div class="actions"><button type="button" class="btn secondary" data-campus-profile-message="' + esc(profile.username) + '">Find in Private Messages</button>' +
+          '<button type="button" class="btn danger" data-campus-profile-block="' + esc(profile.username) + '">Block member</button></div>' +
           '</article>';
       }).join('') : '<div class="community-empty">No verified campus members matched that username prefix.</div>';
       status.textContent = profiles.length + ' verified profile(s) found in your university.';
@@ -5847,7 +5865,22 @@
     }
   });
 
-  $('campus-profile-search-results')?.addEventListener('click', function(event) {
+  $('campus-profile-search-results')?.addEventListener('click', async function(event) {
+    const blockButton = event.target.closest('[data-campus-profile-block]');
+    if (blockButton) {
+      const username = blockButton.dataset.campusProfileBlock;
+      if (!window.confirm('Block @' + username + '? Their campus posts and comments will be hidden from your feed, and your existing private conversation will be closed.')) return;
+      blockButton.disabled = true;
+      try {
+        await window.CampusShieldBackend.setCampusMemberBlock(username, true);
+        toast('@' + username + ' has been blocked.');
+        await Promise.all([loadCampusMemberBlocks(), loadCommunityPage()]);
+      } catch (error) {
+        blockButton.disabled = false;
+        toast(error?.message || 'Could not block this campus member.');
+      }
+      return;
+    }
     const button = event.target.closest('[data-campus-profile-message]');
     if (!button) return;
     const username = button.dataset.campusProfileMessage;
@@ -5859,6 +5892,20 @@
       search.focus();
     }
     toast('Search for @' + username + ' in Private Messages to start a request.');
+  });
+
+  $('campus-member-blocks-list')?.addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-campus-member-unblock]');
+    if (!button) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.setCampusMemberBlock(button.dataset.campusMemberUnblock, false);
+      toast('Campus member unblocked.');
+      await Promise.all([loadCampusMemberBlocks(), loadCommunityPage()]);
+    } catch (error) {
+      button.disabled = false;
+      toast(error?.message || 'Could not unblock this campus member.');
+    }
   });
 
   $('communityProfileDetailsForm')?.addEventListener('submit', async function(event) {
