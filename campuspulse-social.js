@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
-  const state = { api:null, client:null, user:null, campus:null, profile:null, events:[], allEvents:[], groups:[] };
+  const state = { api:null, client:null, user:null, campus:null, profile:null, events:[], allEvents:[], groups:[], pendingTab:null };
   const rootId = "campuspulse-social-suite";
 
   const el = (tag, cls, text) => {
@@ -94,6 +94,7 @@
       status("cps-global-status","Connected to "+(state.campus.university_name||"your university")+".");
       await loadEvents();
       await Promise.allSettled([loadMissions(),loadCollabs(),loadBuddies(),loadClubs(),loadMentors(),loadMemories(),loadConnections()]);
+      if(state.pendingTab){const tab=state.pendingTab;state.pendingTab=null;setTab(tab);}
       const staff=["admin","security","teacher"].includes(state.profile.role)&&state.campus.verification_status==="verified";
       $("cps-social-reports-panel").hidden=!staff;
       if(staff)await loadReports();
@@ -296,6 +297,12 @@
 
   function wire() {
     document.querySelectorAll("[data-cps-tab]").forEach((t)=>t.addEventListener("click",()=>setTab(t.dataset.cpsTab)));
+    document.addEventListener("click",(event)=>{
+      const shortcut=event.target.closest("[data-page='community'][data-cps-open-tab]");
+      if(!shortcut)return;
+      const allowed=["missions","collab","buddies","clubs","mentorship","memories","connections"];
+      if(allowed.includes(shortcut.dataset.cpsOpenTab))state.pendingTab=shortcut.dataset.cpsOpenTab;
+    });
     $("cps-collab-form").addEventListener("submit",submitCollab);
     $("cps-buddy-form").addEventListener("submit",submitBuddy);
     $("cps-club-form").addEventListener("submit",submitClub);
