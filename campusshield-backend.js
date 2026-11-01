@@ -516,6 +516,15 @@ async getCurrentUser() {
       return data;
     },
 
+    async searchCampusCommunityProfiles(query) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const clean = String(query || "").trim().toLowerCase();
+      if (clean.length < 3 || clean.length > 32) throw new Error("Enter at least 3 characters of a campus username.");
+      const { data, error } = await client.rpc("search_campus_community_profiles", { p_query: clean });
+      if (error) throw error;
+      return data || [];
+    },
+
     async listMyCampusSocialNotifications(limit = 40) {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("list_my_campus_social_notifications", {
