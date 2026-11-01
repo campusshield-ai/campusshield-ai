@@ -1,0 +1,44 @@
+name: Social ecosystem Phase 3 regression
+
+on:
+  push:
+    branches:
+      - feat/social-ecosystem-phase-3
+    paths:
+      - "campusshield-app.js"
+      - "campusshield-backend.js"
+      - "index.html"
+      - "supabase/migrations/**"
+      - "tests/smoke-check.mjs"
+      - ".github/workflows/social-ecosystem-phase3.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "campusshield-app.js"
+      - "campusshield-backend.js"
+      - "index.html"
+      - "supabase/migrations/**"
+      - "tests/smoke-check.mjs"
+      - ".github/workflows/social-ecosystem-phase3.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-social-phase3-regression
+  cancel-in-progress: false
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run CampusShield regression suite
+        run: node tests/smoke-check.mjs
