@@ -132,8 +132,8 @@ begin
   end if;
 
   for v_username in
-    select distinct lower(match_parts[1])
-    from regexp_matches(v_text,'@([a-z0-9_]{3,20})','g') as match_parts
+    select distinct lower(captures[1])
+    from regexp_matches(v_text,'@([a-z0-9_]{3,20})','g') as matches(captures)
   loop
     select cp.user_id into v_recipient
     from public.community_profiles cp
@@ -199,7 +199,7 @@ begin
     or char_length(btrim(coalesce(p_year_of_study,''))) > 40 then
     raise exception 'One or more profile fields exceed their permitted length.';
   end if;
-  select coalesce(array_agg(distinct left(btrim(x),32)),'{}'::text[])
+  select coalesce(array_agg(distinct btrim(x)),'{}'::text[])
     into v_interests
   from unnest(coalesce(p_interests,'{}'::text[])) x
   where btrim(x) <> '';
@@ -250,7 +250,7 @@ begin
     raise exception 'Verified campus membership is required to view social notifications.';
   end if;
   return query
-    select n.id,coalesce(cp.username,'campus member'),n.kind,n.target_type,n.target_id,
+    select n.id,n.kind,coalesce(cp.username,'campus member'),n.target_type,n.target_id,
       n.excerpt,n.created_at,n.read_at
     from public.campus_social_notifications n
     left join public.community_profiles cp on cp.user_id=n.actor_id
