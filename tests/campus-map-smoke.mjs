@@ -106,7 +106,7 @@ assert.match(js, /Noto Sans Regular/, 'Road labels use the configured supported 
 assert.match(js, /motorway_link/, 'Mapped primary access ramps are styled with primary roads');
 assert.match(js, /secondary_link/, 'Mapped secondary access ramps are styled with secondary roads');
 assert.match(js, /'source-layer': 'transportation_name'/, 'Road labels use the mapped transportation-name layer');
-assert.match(js, /never synthesize connecting lines/, 'The road renderer does not invent roads in unmapped areas');
+assert.match(js, /Never synthesize unmapped connecting lines/, 'The road renderer does not invent roads in unmapped areas');
 assert.match(js, /campus-osm-3d-buildings/, '3D mode renders building footprints as extrusions');
 assert.match(js, /render_height/, 'Building extrusion height uses OSM-derived height attributes');
 assert.match(js, /campus-osm-3d-poi-labels/, 'Satellite and 3D modes include OSM place labels');
