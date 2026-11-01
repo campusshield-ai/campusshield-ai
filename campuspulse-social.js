@@ -69,6 +69,9 @@
     if(!state.campus?.university_id)throw new Error("Choose your university in CampusPulse first.");
     const {data,error}=await state.client.from("profiles").select("role,verification_status").eq("id",state.user.id).maybeSingle();
     if(error)throw error;state.profile=data||{};
+    if(state.profile.verification_status!=="verified" || state.campus.membership_status!=="active" || state.campus.verification_status!=="verified") {
+      throw new Error("CampusPulse social features require an active, verified campus membership.");
+    }
     const community=await api.getMyCommunityProfile();
     if(!community?.username)throw new Error("Create your CampusPulse username before using these features.");
   }
@@ -90,7 +93,7 @@
       await prepare();
       status("cps-global-status","Connected to "+(state.campus.university_name||"your university")+".");
       await loadEvents();
-      const results=await Promise.allSettled([loadMissions(),loadCollabs(),loadBuddies(),loadClubs(),loadMentors(),loadMemories(),loadConnections()]);
+      await Promise.allSettled([loadMissions(),loadCollabs(),loadBuddies(),loadClubs(),loadMentors(),loadMemories(),loadConnections()]);
       const staff=["admin","security","teacher"].includes(state.profile.role)&&state.campus.verification_status==="verified";
       $("cps-social-reports-panel").hidden=!staff;
       if(staff)await loadReports();
