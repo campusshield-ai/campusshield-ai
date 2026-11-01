@@ -879,6 +879,16 @@ assert.match(socialPhase3Migration, /mark_campus_social_notification_read/, "use
 assert.match(socialPhase3Migration, /search_campus_community_profiles\(p_query text\)/, "students can discover verified campus profiles by username");
 assert.match(socialPhase3Migration, /cm\.university_id=v_university[\s\S]*cm\.membership_status='active' and cm\.verification_status='verified'/, "profile discovery is limited to verified members of the selected university");
 assert.match(socialPhase3Migration, /dc\.status='blocked'/, "profile discovery respects existing private-message blocks");
+assert.match(socialPhase3Migration, /create table if not exists public\.campus_member_blocks/, "Phase 3 adds a dedicated campus-scoped member block list");
+assert.match(socialPhase3Migration, /community_posts_respect_member_blocks[\s\S]*as restrictive/, "member blocks are enforced by restrictive feed RLS");
+assert.match(socialPhase3Migration, /community_comments_respect_member_blocks[\s\S]*as restrictive/, "member blocks hide blocked users' comments as well as posts");
+assert.match(socialPhase3Migration, /set_campus_member_block_by_username/, "members can block and unblock another verified campus username");
+assert.match(socialPhase3Migration, /list_my_campus_member_blocks/, "members can review and manage their own block list");
+assert.match(socialPhase3Migration, /status='blocked',blocked_by=v_user/, "blocking a campus member closes an existing direct conversation");
+assert.match(backend, /async setCampusMemberBlock\(username, blocked\)/, "backend exposes campus member block controls");
+assert.match(appScript, /data-campus-profile-block/, "verified profile search exposes a block action");
+assert.match(appScript, /data-campus-member-unblock/, "members can unblock from their block list");
+assert.match(htmlMarkup, /id="campus-member-blocks-list"/, "CampusPulse renders block management controls");
 assert.match(backend, /async searchCampusCommunityProfiles\(query\)/, "backend exposes campus-scoped profile discovery");
 assert.match(appScript, /campus-profile-search-form/, "CampusPulse provides a verified member search form");
 assert.match(appScript, /Find in Private Messages/, "profile discovery can continue into the existing private-message request flow");
