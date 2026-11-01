@@ -4495,6 +4495,17 @@
       communityProfile = profile;
       $('community-username-current').textContent = profile?.username ? '@' + profile.username : 'Username unavailable';
       $('community-username').value = profile?.username || '';
+      try {
+        const details = await backend.getMyCommunityProfileDetails();
+        $('community-profile-bio').value = details?.bio || '';
+        $('community-profile-faculty').value = details?.faculty || '';
+        $('community-profile-department').value = details?.department || '';
+        $('community-profile-course').value = details?.course_of_study || '';
+        $('community-profile-year').value = details?.year_of_study || '';
+        $('community-profile-interests').value = Array.isArray(details?.interests) ? details.interests.join(', ') : '';
+      } catch (profileDetailsError) {
+        console.warn('Extended campus profile is not available yet:', profileDetailsError?.message || 'migration pending');
+      }
       $('community-announcement-option').disabled = !canModerateCommunity();
 
       const posts = await backend.listCommunityPosts();
@@ -4517,7 +4528,7 @@
       }));
       pollResults.forEach(function(entry) { pollsByPost[entry[0]] = entry[1]; });
       renderCommunityFeed(posts, comments, socialRows, pollsByPost, mediaByPost);
-      await loadCampusSocialExtras();
+      await Promise.allSettled([loadCampusSocialExtras(), loadCampusSocialNotifications()]);
       $('community-feed-status').textContent = posts.length + (posts.length === 1 ? ' published post' : ' published posts') + ' · refreshed ' + new Date().toLocaleTimeString();
 
       $('community-moderation').hidden = !canModerateCommunity();
@@ -5617,6 +5628,37 @@
     }).join('');
   }
 
+  async function loadCampusSocialNotifications() {
+    const backend = window.CampusShieldBackend;
+    const host = $('campus-social-notifications-feed');
+    const status = $('campus-social-notifications-status');
+    if (!host || !status || !backend?.isConfigured || !campusContext?.university_id) return;
+    status.textContent = 'Loading social activity…';
+    try {
+      const rows = await backend.listMyCampusSocialNotifications(40);
+      const labels = {
+        new_follower: 'started following you',
+        post_comment: 'commented on your campus post',
+        post_mention: 'mentioned you in a campus post',
+        comment_mention: 'mentioned you in a comment'
+      };
+      host.innerHTML = rows.length ? rows.map(function(item) {
+        const unread = !item.read_at;
+        return '<article class="community-moderation-item">' +
+          '<div class="community-meta"><strong>@' + esc(item.actor_username || 'campus member') + '</strong> ' +
+          esc(labels[item.kind] || 'interacted with you') + ' · ' + esc(dateText(item.created_at)) +
+          (unread ? ' <span class="tag open">New</span>' : '') + '</div>' +
+          (item.excerpt ? '<p>' + esc(item.excerpt) + '</p>' : '') +
+          (unread ? '<button type="button" class="btn secondary" data-social-notification-read="' + esc(item.notification_id) + '">Mark as read</button>' : '') +
+          '</article>';
+      }).join('') : '<div class="community-empty">No social activity yet. New followers, comments and @mentions will appear here.</div>';
+      status.textContent = rows.filter(function(item) { return !item.read_at; }).length + ' unread · ' + rows.length + ' recent notification(s).';
+    } catch (error) {
+      status.textContent = error?.message || 'Social activity is temporarily unavailable.';
+      host.innerHTML = '<div class="community-empty">Refresh to try loading your social activity again.</div>';
+    }
+  }
+
   async function loadCampusSocialExtras() {
     const backend = window.CampusShieldBackend;
     if (!backend?.isConfigured || !currentProfile || !campusContext?.university_id) return;
@@ -5757,6 +5799,51 @@
 
   $('refresh-campus-stories').addEventListener('click', loadCampusSocialExtras);
   $('refresh-campus-confessions').addEventListener('click', loadCampusSocialExtras);
+
+  $('refresh-campus-social-notifications')?.addEventListener('click', loadCampusSocialNotifications);
+  $('campus-social-notifications-feed')?.addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-social-notification-read]');
+    if (!button) return;
+    button.disabled = true;
+    try {
+      await window.CampusShieldBackend.markCampusSocialNotificationRead(button.dataset.socialNotificationRead);
+      await loadCampusSocialNotifications();
+    } catch (error) {
+      button.disabled = false;
+      toast(error?.message || 'Could not update this notification.');
+    }
+  });
+
+  $('communityProfileDetailsForm')?.addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const button = $('community-profile-details-save');
+    const message = $('community-profile-details-message');
+    if (!backend?.isConfigured) { message.textContent = 'Supabase is not configured.'; return; }
+    const interests = $('community-profile-interests').value.split(',').map(function(value) { return value.trim(); }).filter(Boolean);
+    if (interests.length > 12 || interests.some(function(value) { return value.length > 32; })) {
+      message.textContent = 'Enter up to 12 interests, each no longer than 32 characters.';
+      return;
+    }
+    button.disabled = true;
+    message.textContent = 'Saving your campus profile…';
+    try {
+      await backend.updateMyCommunityProfileDetails({
+        bio: $('community-profile-bio').value,
+        faculty: $('community-profile-faculty').value,
+        department: $('community-profile-department').value,
+        courseOfStudy: $('community-profile-course').value,
+        yearOfStudy: $('community-profile-year').value,
+        interests
+      });
+      message.textContent = 'Your campus profile details have been saved.';
+      toast('Campus profile updated.');
+    } catch (error) {
+      message.textContent = error?.message || 'Could not save your campus profile.';
+    } finally {
+      button.disabled = false;
+    }
+  });
 
   $('communityUsernameForm').addEventListener('submit', async function(event) {
     event.preventDefault();
