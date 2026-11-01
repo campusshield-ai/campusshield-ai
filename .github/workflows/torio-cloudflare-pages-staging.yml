@@ -25,6 +25,8 @@ jobs:
           node-version: 22
       - name: Build isolated static site payload
         run: node scripts/build-cloudflare-pages.mjs
+      - name: Validate TORIO inline JavaScript syntax
+        run: node tests/torio-command-center-syntax.mjs
       - name: Verify TORIO install and backend assets
         run: |
           test -f dist/torio-staging/torio-command-center.html
