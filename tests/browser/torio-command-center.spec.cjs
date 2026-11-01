@@ -93,10 +93,30 @@ for (const width of viewports) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/torio-command-center.html");
     await expect(page.getByRole("heading", { name: "TORIO command centre" })).toBeVisible();
-    const size = await page.evaluate(() => ({
-      viewport: document.documentElement.clientWidth,
-      document: document.documentElement.scrollWidth
-    }));
+    const size = await page.evaluate(() => {
+      const offenders = [...document.querySelectorAll("body *")].map(el => {
+        const rect = el.getBoundingClientRect();
+        const style = getComputedStyle(el);
+        return {
+          tag: el.tagName.toLowerCase(),
+          id: el.id || "",
+          className: typeof el.className === "string" ? el.className : "",
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          width: Math.round(rect.width),
+          scrollWidth: el.scrollWidth,
+          clientWidth: el.clientWidth,
+          overflowX: style.overflowX
+        };
+      }).filter(item => item.right > window.innerWidth + 1 || item.left < -1)
+        .sort((a, b) => b.right - a.right)
+        .slice(0, 15);
+      return {
+        viewport: document.documentElement.clientWidth,
+        document: document.documentElement.scrollWidth,
+        offenders
+      };
+    });
     expect(size.document, "Horizontal overflow at " + width + "px: " + JSON.stringify(size))
       .toBeLessThanOrEqual(size.viewport + 1);
   });
