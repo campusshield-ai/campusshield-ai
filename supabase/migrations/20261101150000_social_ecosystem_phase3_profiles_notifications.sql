@@ -115,6 +115,12 @@ begin
     where cm.user_id=p_actor_id and cm.university_id=p_university_id
       and cm.membership_status='active' and cm.verification_status='verified'
   ) then return; end if;
+  if exists (
+    select 1 from public.campus_member_blocks b
+    where b.university_id=p_university_id
+      and ((b.blocker_id=p_recipient_id and b.blocked_id=p_actor_id)
+        or (b.blocker_id=p_actor_id and b.blocked_id=p_recipient_id))
+  ) then return; end if;
   insert into public.campus_social_notifications(
     university_id,recipient_id,actor_id,kind,target_type,target_id,excerpt
   ) values (
