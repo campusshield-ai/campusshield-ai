@@ -381,6 +381,27 @@ begin
 end;
 $function$;
 
+create or replace function private.is_campus_post_author_blocked(p_post_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path to ''
+as $function$
+  select case
+    when (select auth.uid()) is null then true
+    else exists (
+      select 1
+      from public.community_posts p
+      where p.id = p_post_id
+        and private.is_campus_member_blocked(p.author_id, p.university_id)
+    )
+  end;
+$function$;
+
+revoke all on function private.is_campus_post_author_blocked(uuid) from public, anon;
+grant execute on function private.is_campus_post_author_blocked(uuid) to authenticated;
+
 drop policy if exists community_posts_respect_member_blocks on public.community_posts;
 create policy community_posts_respect_member_blocks
   on public.community_posts as restrictive for select to authenticated
@@ -396,12 +417,11 @@ create policy community_comments_respect_member_blocks
     private.current_campus_role() = any (array['admin','security','teacher']::text[])
     or not exists (
       select 1
-      from public.community_posts p
-      where p.id = community_comments.post_id
-        and (
-          private.is_campus_member_blocked(community_comments.author_id, p.university_id)
-          or private.is_campus_member_blocked(p.author_id, p.university_id)
-        )
+      where private.is_campus_member_blocked(
+        community_comments.author_id,
+        (select private.current_campus_university_id())
+      )
+      or private.is_campus_post_author_blocked(community_comments.post_id)
     )
   );
 
