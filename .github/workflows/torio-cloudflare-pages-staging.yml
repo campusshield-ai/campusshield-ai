@@ -27,6 +27,22 @@ jobs:
         run: node scripts/build-cloudflare-pages.mjs
       - name: Validate TORIO inline JavaScript syntax
         run: node tests/torio-command-center-syntax.mjs
+      - name: Install Playwright browser-test dependencies
+        run: npm install --no-save --no-package-lock @playwright/test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run TORIO interaction and responsive browser tests
+        run: npx playwright test tests/browser/torio-command-center.spec.cjs --config=playwright.config.cjs
+      - name: Upload TORIO browser test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: torio-browser-test-evidence
+          path: |
+            test-results/playwright/
+            playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Verify TORIO install and backend assets
         run: |
           test -f dist/torio-staging/torio-command-center.html
