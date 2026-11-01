@@ -492,6 +492,76 @@ async getCurrentUser() {
       return Array.isArray(data) ? (data[0] || null) : data;
     },
 
+    async getMyCommunityProfileDetails() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("get_my_community_profile_details");
+      if (error) throw error;
+      return data || null;
+    },
+
+    async updateMyCommunityProfileDetails(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const interests = Array.isArray(input?.interests)
+        ? input.interests.map(value => String(value || "").trim()).filter(Boolean).slice(0, 12)
+        : [];
+      const { data, error } = await client.rpc("update_my_community_profile_details", {
+        p_bio: String(input?.bio || "").trim(),
+        p_faculty: String(input?.faculty || "").trim(),
+        p_department: String(input?.department || "").trim(),
+        p_course_of_study: String(input?.courseOfStudy || "").trim(),
+        p_year_of_study: String(input?.yearOfStudy || "").trim(),
+        p_interests: interests
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async searchCampusCommunityProfiles(query) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const clean = String(query || "").trim().toLowerCase();
+      if (clean.length < 3 || clean.length > 32) throw new Error("Enter at least 3 characters of a campus username.");
+      const { data, error } = await client.rpc("search_campus_community_profiles", { p_query: clean });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async setCampusMemberBlock(username, blocked) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const clean = String(username || "").trim().toLowerCase();
+      if (!/^[a-z0-9_]{3,20}$/.test(clean)) throw new Error("Enter a valid campus username.");
+      const { data, error } = await client.rpc("set_campus_member_block_by_username", {
+        p_username: clean,
+        p_block: Boolean(blocked)
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
+    async listMyCampusMemberBlocks() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_my_campus_member_blocks");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async listMyCampusSocialNotifications(limit = 40) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_my_campus_social_notifications", {
+        p_limit: Math.max(1, Math.min(Number(limit) || 40, 100))
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async markCampusSocialNotificationRead(notificationId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("mark_campus_social_notification_read", {
+        p_notification_id: notificationId
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
     async setMyCommunityUsername(username) {
       if (!client) throw new Error("Supabase is not configured.");
 
