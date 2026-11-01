@@ -2965,6 +2965,15 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <button class="btn" type="submit" id="community-profile-details-save">Save profile details</button>
       <p id="community-profile-details-message" class="message" role="status" aria-live="polite"></p>
     </form>
+    <div class="campus-social-compose">
+      <h3>Discover verified campus members</h3>
+      <form id="campus-profile-search-form">
+        <div class="field"><label for="campus-profile-search">Search by campus username</label><input id="campus-profile-search" minlength="3" maxlength="32" autocomplete="off" placeholder="Enter at least 3 characters" required></div>
+        <button class="btn secondary" type="submit" id="campus-profile-search-button">Find students</button>
+      </form>
+      <p id="campus-profile-search-status" class="message" role="status" aria-live="polite"></p>
+      <div id="campus-profile-search-results" class="campus-profile-search-results"></div>
+    </div>
   </section>
   <section class="panel" aria-labelledby="campus-social-notifications-title">
     <div class="panel-heading"><div><h2 id="campus-social-notifications-title">Your social activity</h2><p>New followers, comments and @mentions from your university.</p></div><button class="btn secondary" type="button" id="refresh-campus-social-notifications">Refresh</button></div>
