@@ -788,56 +788,8 @@
     setStatus('Building candidate selected. Compare its outline and entrance with a university plan or on-site survey before verifying.', 'warning');
   }
 
-  function parseOsmLength(value) {
-    if (value == null || value === '') return null;
-    const match = String(value).trim().match(/^([0-9]+(?:\.[0-9]+)?)\s*(m|meter|meters|metre|metres|ft|feet)?$/i);
-    if (!match) return null;
-    const amount = Number(match[1]);
-    if (!Number.isFinite(amount) || amount <= 0) return null;
-    return /^(ft|feet)$/i.test(match[2] || '') ? amount * 0.3048 : amount;
-  }
-
-  function parseOsmLevels(value) {
-    if (value == null || value === '') return null;
-    const parsed = Number.parseInt(String(value).trim(), 10);
-    return Number.isInteger(parsed) && parsed > 0 && parsed <= 200 ? parsed : null;
-  }
-
   function osmWayToBuildingCandidate(way) {
-    const tags = way.tags || {};
-    if (!Array.isArray(way.geometry) || way.geometry.length < 4) return null;
-    const ring = way.geometry
-      .filter(point => Number.isFinite(Number(point.lat)) && Number.isFinite(Number(point.lon)))
-      .map(point => [Number(point.lon), Number(point.lat)]);
-    if (ring.length < 4) return null;
-    const first = ring[0], last = ring[ring.length - 1];
-    if (first[0] !== last[0] || first[1] !== last[1]) ring.push([...first]);
-    if (ring.length > 2000) return null;
-    const openRing = ring.slice(0, -1);
-    const centerLongitude = openRing.reduce((sum, point) => sum + point[0], 0) / openRing.length;
-    const centerLatitude = openRing.reduce((sum, point) => sum + point[1], 0) / openRing.length;
-    const height = parseOsmLength(tags.height);
-    const minHeight = parseOsmLength(tags.min_height);
-    const levels = parseOsmLevels(tags['building:levels'] ?? tags.levels);
-    return {
-      source_feature_id: String(way.id),
-      name: tags.name || tags['name:en'] || null,
-      building_class: tags.building || 'yes',
-      geometry_geojson: { type: 'Polygon', coordinates: [ring] },
-      center_latitude: centerLatitude,
-      center_longitude: centerLongitude,
-      height_m: height,
-      min_height_m: minHeight,
-      levels,
-      roof_shape: tags['roof:shape'] || null,
-      roof_material: tags['roof:material'] || null,
-      roof_colour: tags['roof:colour'] || null,
-      facade_material: tags['building:material'] || tags.material || null,
-      facade_colour: tags['building:colour'] || tags.colour || null,
-      source_url: 'https://www.openstreetmap.org/way/' + way.id,
-      height_method: height != null ? 'tagged' : levels != null ? 'estimated_from_levels' : 'visual_fallback_only',
-      source_tags: tags
-    };
+    return window.CampusMapGeometry?.osmWayToBuildingCandidate(way) || null;
   }
 
   async function discoverCampusBuildings() {
