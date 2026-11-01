@@ -9,6 +9,7 @@ const html = read("../index.html");
 const schema = read("../supabase/migrations/20261101173910_campuspulse_social_extensions_mvp.sql");
 const eventGuard = read("../supabase/migrations/20261101174446_campuspulse_event_link_update_guard.sql");
 const blockGuard = read("../supabase/migrations/20261101174607_campuspulse_peer_connections_respect_blocks.sql");
+const privilegeHardening = read("../supabase/migrations/20261101190831_campuspulse_social_privilege_hardening.sql");
 
 new vm.Script(js, { filename: "campuspulse-social.js" });
 assert.match(html, /campuspulse-social\.css/);
@@ -62,5 +63,17 @@ for (const token of ["campuspulse-social-tabs", "campuspulse-social-form", "camp
   "#203d35", "#2a7e46", "#7fd98a", "prefers-reduced-motion"]) {
   assert.ok(css.includes(token), "Missing CampusPulse responsive/brand style: " + token);
 }
+
+
+assert.match(privilegeHardening, /revoke all on table[\s\S]*from anon, authenticated/,
+  "New social tables must not inherit broad authenticated/anonymous table privileges");
+assert.match(privilegeHardening, /grant select, insert, update, delete on table[\s\S]*campus_memories[\s\S]*to authenticated/,
+  "User-owned social listings must retain only the RLS-governed row operations");
+assert.match(privilegeHardening, /grant select, insert, update on table[\s\S]*campus_social_feature_reports[\s\S]*to authenticated/,
+  "Connection requests and reports must not expose direct DELETE");
+assert.doesNotMatch(privilegeHardening, /grant[^;]*\btruncate\b/i,
+  "Authenticated users must never receive TRUNCATE on CampusPulse social tables");
+assert.doesNotMatch(privilegeHardening, /grant[^;]*\breferences\b|grant[^;]*\btrigger\b/i,
+  "Authenticated users must not receive REFERENCES or TRIGGER privileges on CampusPulse social tables");
 
 console.log("CampusPulse social feature smoke checks passed.");
