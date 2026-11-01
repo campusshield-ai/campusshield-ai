@@ -531,6 +531,9 @@
     }
 
     currentProfile = profile;
+    const workspace = $('workspace');
+    if (workspace) workspace.dataset.accountRole = String(profile.role || 'member').toLowerCase();
+    window.dispatchEvent(new CustomEvent('campusshield:profile-ready', { detail: { role: String(profile.role || 'member').toLowerCase() } }));
     currentStaffPosition = '';
     studentIdentitySubmission = null;
     renderRoleAccessSummary();
@@ -596,6 +599,9 @@
   }
 
   function showLogin(message) {
+    const workspace = $('workspace');
+    if (workspace) delete workspace.dataset.accountRole;
+    window.dispatchEvent(new CustomEvent('campusshield:profile-ready', { detail: { role: '' } }));
     $('workspace').hidden = true;
     $('login-screen').hidden = false;
     setAuthMode('signin');
