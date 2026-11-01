@@ -336,9 +336,9 @@
         attribution: '© OpenFreeMap © OpenMapTiles · Data © OpenStreetMap contributors'
       });
 
-      // Campus roads and paths use real OpenMapTiles transportation geometry derived
-      // from OpenStreetMap. Keep these layers enabled in 2D, satellite and 3D modes;
-      // never synthesize connecting lines where the source has no mapped geometry.
+      // In satellite and 3D modes, overlay mapped roads and paths on imagery.
+      // 2D already gets roads from the Liberty vector style, so these duplicate
+      // layers stay hidden there. Never synthesize unmapped connecting lines.
       const roadLineLayout = { 'line-cap': 'round', 'line-join': 'round' };
       const roadZoomWidth = (low, high) => ['interpolate', ['linear'], ['zoom'], 12, low, 16, high];
       map.addLayer({
