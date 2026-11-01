@@ -885,7 +885,10 @@ assert.match(socialPhase3Migration, /community_comments_respect_member_blocks[\s
 assert.match(socialPhase3Migration, /set_campus_member_block_by_username/, "members can block and unblock another verified campus username");
 assert.match(socialPhase3Migration, /list_my_campus_member_blocks/, "members can review and manage their own block list");
 assert.match(socialPhase3Migration, /status = 'blocked',[\s\S]*blocked_by = v_user/, "blocking a campus member closes an existing direct conversation");
-assert.match(socialPhase3Migration, /v_username !~ '\^\[a-z0-9_\]\{3,20\}\
+assert.ok(socialPhase3Migration.includes("v_username !~ '^[a-z0-9_]{3,20}$'"), "member block username validation is complete");
+assert.match(socialPhase3Migration, /campus_member_block_conversation_guard/, "database prevents blocked members from starting new direct-message conversations");
+assert.match(socialPhase3Migration, /is_campus_post_author_blocked/, "comment feed filtering checks the parent post author without depending on parent-row RLS");
+assert.ok(socialPhase3Migration.includes("primary key (blocker_id, blocked_id, university_id)"), "member blocks are independently scoped by university");
 assert.match(backend, /async setCampusMemberBlock\(username, blocked\)/, "backend exposes campus member block controls");
 assert.match(appScript, /data-campus-profile-block/, "verified profile search exposes a block action");
 assert.match(appScript, /data-campus-member-unblock/, "members can unblock from their block list");
