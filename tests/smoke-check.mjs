@@ -868,6 +868,10 @@ console.log("PASS Campus Stories private media scanning, Study Circles, Reputati
 
 
 const socialPhase3Migration = await readFile(new URL("../supabase/migrations/20261101150000_social_ecosystem_phase3_profiles_notifications.sql", import.meta.url), "utf8");
+const socialPhase3Indexes = await readFile(new URL("../supabase/migrations/20261101160000_social_ecosystem_phase3_fk_indexes.sql", import.meta.url), "utf8");
+assert.match(socialPhase3Indexes, /campus_member_blocks_university_idx/, "Phase 3 indexes member-block university lookups");
+assert.match(socialPhase3Indexes, /campus_social_notifications_actor_idx/, "Phase 3 indexes notification actor foreign keys");
+assert.match(socialPhase3Indexes, /campus_social_notifications_university_idx/, "Phase 3 indexes notification university foreign keys");
 assert.match(socialPhase3Migration, /alter table public\.community_profiles[\s\S]*add column if not exists bio text/, "Phase 3 adds optional public campus profile details");
 assert.match(socialPhase3Migration, /cardinality\(interests\) <= 12/, "campus profiles limit interest tags");
 assert.match(socialPhase3Migration, /campus_social_notifications[\s\S]*enable row level security/, "social notifications are protected by RLS");
