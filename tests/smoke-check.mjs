@@ -869,6 +869,9 @@ console.log("PASS Campus Stories private media scanning, Study Circles, Reputati
 
 const socialPhase3Migration = await readFile(new URL("../supabase/migrations/20261101150000_social_ecosystem_phase3_profiles_notifications.sql", import.meta.url), "utf8");
 const socialPhase3Indexes = await readFile(new URL("../supabase/migrations/20261101160000_social_ecosystem_phase3_fk_indexes.sql", import.meta.url), "utf8");
+const socialPhase3Rls = await readFile(new URL("../supabase/migrations/20261101170000_social_rpc_only_table_policies.sql", import.meta.url), "utf8");
+assert.match(socialPhase3Rls, /campus_member_blocks_deny_direct_access[\s\S]*as restrictive[\s\S]*using \(false\)[\s\S]*with check \(false\)/, "member block table remains inaccessible directly through the Data API");
+assert.match(socialPhase3Rls, /campus_social_notifications_deny_direct_access[\s\S]*as restrictive[\s\S]*using \(false\)[\s\S]*with check \(false\)/, "social notification table remains inaccessible directly through the Data API");
 assert.match(socialPhase3Indexes, /campus_member_blocks_university_idx/, "Phase 3 indexes member-block university lookups");
 assert.match(socialPhase3Indexes, /campus_social_notifications_actor_idx/, "Phase 3 indexes notification actor foreign keys");
 assert.match(socialPhase3Indexes, /campus_social_notifications_university_idx/, "Phase 3 indexes notification university foreign keys");
