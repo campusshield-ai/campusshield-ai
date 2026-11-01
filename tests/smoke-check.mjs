@@ -903,8 +903,6 @@ assert.match(appScript, /communityProfileDetailsForm/, "students can edit their 
 assert.match(appScript, /loadCampusSocialNotifications/, "CampusPulse loads the social activity inbox");
 assert.match(htmlMarkup, /id="campus-social-notifications-feed"/, "CampusPulse renders the social activity inbox");
 assert.match(htmlMarkup, /id="community-profile-interests"/, "campus profile supports interest tags");
-console.log("PASS Social Ecosystem Phase 3 profile details, campus-scoped mentions and activity inbox");
-/, "member block username validation is complete");
 assert.match(socialPhase3Migration, /campus_member_block_conversation_guard/, "database prevents blocked members from starting new direct-message conversations");
 assert.match(socialPhase3Migration, /is_campus_post_author_blocked/, "comment feed filtering checks the parent post author without depending on parent-row RLS");
 assert.match(socialPhase3Migration, /primary key \(blocker_id, blocked_id, university_id\)/, "member blocks are independently scoped by university");
@@ -923,3 +921,5 @@ assert.match(appScript, /loadCampusSocialNotifications/, "CampusPulse loads the 
 assert.match(htmlMarkup, /id="campus-social-notifications-feed"/, "CampusPulse renders the social activity inbox");
 assert.match(htmlMarkup, /id="community-profile-interests"/, "campus profile supports interest tags");
 console.log("PASS Social Ecosystem Phase 3 profile details, campus-scoped mentions and activity inbox");
+
+console.log("PASS Social Ecosystem Phase 3 profile details, campus-scoped mentions, block enforcement and activity inbox");
