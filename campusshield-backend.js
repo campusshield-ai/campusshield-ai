@@ -1584,7 +1584,9 @@ async getCurrentUser() {
           category: input.category,
           severity: input.severity,
           location: input.location,
-          description: input.description
+          description: input.description,
+          latitude: Number.isFinite(Number(input.latitude)) && input.latitude !== null && input.latitude !== undefined && input.latitude !== '' ? Number(input.latitude) : null,
+          longitude: Number.isFinite(Number(input.longitude)) && input.longitude !== null && input.longitude !== undefined && input.longitude !== '' ? Number(input.longitude) : null
         })
         .select()
         .single();

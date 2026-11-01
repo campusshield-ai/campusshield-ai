@@ -6881,7 +6881,9 @@
         category: $('category').value,
         severity: $('severity').value,
         location: $('location').value.trim(),
-        description: $('description').value.trim()
+        description: $('description').value.trim(),
+        latitude: $('report-latitude')?.value || null,
+        longitude: $('report-longitude')?.value || null
       });
 
       incidents.unshift({
