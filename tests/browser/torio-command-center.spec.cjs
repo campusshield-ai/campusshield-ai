@@ -6,20 +6,16 @@ test.beforeEach(async ({ page }) => {
   await page.route("**/campusshield-backend.js", route => route.fulfill({
     status: 200,
     contentType: "application/javascript",
-    body: \`(() => {
-      const session = {
-        access_token: "torio-browser-test-token",
-        user: { id: "torio-browser-test-user", email: "torio-browser-test@example.invalid" }
-      };
-      window.CampusShieldBackend = {
-        isConfigured: true,
-        client: { auth: { getSession: async () => ({ data: { session }, error: null }) } },
-        askShieldMind: async question => ({
-          answer: "Mock ShieldMind response: " + String(question).slice(0, 120),
-          mode: "mock"
-        })
-      };
-    })();\`
+    body: [
+      "(() => {",
+      "  const session = { access_token: 'torio-browser-test-token', user: { id: 'torio-browser-test-user', email: 'torio-browser-test@example.invalid' } };",
+      "  window.CampusShieldBackend = {",
+      "    isConfigured: true,",
+      "    client: { auth: { getSession: async () => ({ data: { session }, error: null }) } },",
+      "    askShieldMind: async question => ({ answer: 'Mock ShieldMind response: ' + String(question).slice(0, 120), mode: 'mock' })",
+      "  };",
+      "})();"
+    ].join("\n")
   }));
 
   await page.addInitScript(() => {
