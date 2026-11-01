@@ -21,6 +21,9 @@ assert.match(js, /getMyStudentRewards\(\)/, "Missions must reuse existing Reward
 assert.match(js, /createCampusGroup\([\s\S]*groupType:"society"/, "Club Hubs must reuse approved campus_groups");
 assert.match(js, /listCampusGroups\(\)/, "Club Hubs must list existing campus groups");
 assert.match(js, /listCampusEvents\(\)/, "Event Buddies must reuse published campus events");
+assert.match(js, /state\.allEvents=await state\.api\.listCampusEvents\(\)/, "Memories must load past as well as upcoming published events");
+assert.match(js, /\["cps-buddy-event",state\.events/);
+assert.match(js, /\["cps-memory-event",state\.allEvents/);
 assert.match(js, /campus_event_buddy_listings/, "Event Buddies must use their campus-scoped table");
 assert.match(js, /createCampusDirectMessageRequest/, "Accepted connections must reuse existing private messaging");
 assert.match(js, /campus_peer_connection_requests/, "Connection requests table is wired");
