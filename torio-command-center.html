@@ -232,7 +232,7 @@ Type <span class="good">help</span> to view available commands.
     const box=$("attachment-list");box.replaceChildren();
     attachedText.forEach((file,index)=>{const pill=document.createElement("span");pill.className="file-pill";pill.textContent=file.name;const remove=document.createElement("button");remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","Remove "+file.name);remove.addEventListener("click",()=>{attachedText.splice(index,1);renderAttachments();});pill.append(remove);box.append(pill);});
   }
-  async async function readAttachment(file){
+  async function readAttachment(file){
     const allowed=/\.(txt|md|csv|json|html?|log)$/i.test(file.name);
     if(!allowed)throw new Error(file.name+": unsupported file type.");
     if(file.size>2*1024*1024)throw new Error(file.name+": file is larger than 2 MB.");
@@ -286,7 +286,14 @@ Type <span class="good">help</span> to view available commands.
       addMessage("assistant",msg+" For urgent campus matters, use official university channels.");setStatus(msg);
     }finally{busy=false;$("send-btn").disabled=false;}
   }
-  $("chat-form").addEventListener("submit",async e=>{e.preventDefault();const q=$("question").value.trim();if(!q)return;$("question").value="";await sendQuestion(q);});\n  $("quick-send").addEventListener("click",()=>sendQuestion($("quick-question").value));\n  $("quick-question").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("quick-send").click();}});\n  $("attach-files").addEventListener("click",()=>$("attachment-input").click());\n  $("attachment-input").addEventListener("change",async e=>{await addAttachments(e.target.files);e.target.value="";});\n  const chatPanel=$("assistant-view");["dragenter","dragover"].forEach(name=>chatPanel.addEventListener(name,e=>{e.preventDefault();chatPanel.classList.add("drop-active");}));\n  ["dragleave","drop"].forEach(name=>chatPanel.addEventListener(name,e=>{e.preventDefault();chatPanel.classList.remove("drop-active");}));\n  chatPanel.addEventListener("drop",e=>addAttachments(e.dataTransfer?.files));
+  $("chat-form").addEventListener("submit",async e=>{e.preventDefault();const q=$("question").value.trim();if(!q)return;$("question").value="";await sendQuestion(q);});
+  $("quick-send").addEventListener("click",()=>sendQuestion($("quick-question").value));
+  $("quick-question").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("quick-send").click();}});
+  $("attach-files").addEventListener("click",()=>$("attachment-input").click());
+  $("attachment-input").addEventListener("change",async e=>{await addAttachments(e.target.files);e.target.value="";});
+  const chatPanel=$("assistant-view");["dragenter","dragover"].forEach(name=>chatPanel.addEventListener(name,e=>{e.preventDefault();chatPanel.classList.add("drop-active");}));
+  ["dragleave","drop"].forEach(name=>chatPanel.addEventListener(name,e=>{e.preventDefault();chatPanel.classList.remove("drop-active");}));
+  chatPanel.addEventListener("drop",e=>addAttachments(e.dataTransfer?.files));
   $("listen-btn").addEventListener("click",()=>startVoiceCapture($("question"),$("voice-status"),"Question"));
   $("speak-btn").addEventListener("click",readLastAnswer);
   $("guided-toggle").addEventListener("click",()=>{guidedMode=!guidedMode;$("guided-toggle").setAttribute("aria-pressed",String(guidedMode));$("guided-toggle").textContent=guidedMode?"Guided flow: On":"Guided flow: Off";setStatus(guidedMode?"Guided workflow enabled for multi-step requests.":"Direct response mode enabled.");});
