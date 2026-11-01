@@ -63,6 +63,17 @@ assert.match(dashboardUpgradeCss, /prefers-reduced-motion:reduce/, "dashboard re
 assert.match(dashboardUpgradeJs, /campusshield_theme/, "theme preference is persisted per device");
 assert.match(dashboardUpgradeJs, /campus-global-search/, "global campus search is wired");
 assert.match(dashboardUpgradeJs, /student-shortcuts/, "student dashboard shortcuts are wired");
+assert.match(dashboardUpgradeJs, /campus-discovery-layout/, "dashboard includes the visual Campus Discovery layout");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="missions"/, "dashboard Missions shortcut opens the Missions tab");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="collab"/, "dashboard Collab shortcut opens Collab Finder");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="buddies"/, "dashboard Event Buddies shortcut opens its tab");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="clubs"/, "dashboard Club Hubs shortcut opens its tab");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="mentorship"/, "dashboard Mentorship shortcut opens its tab");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="memories"/, "dashboard Memories shortcut opens its tab");
+assert.match(dashboardUpgradeJs, /campusshield:profile-ready/, "dashboard discovery cards adapt to the signed-in role");
+assert.match(dashboardUpgradeCss, /campus-discovery-featured/, "Campus Discovery has a branded featured card");
+assert.match(dashboardUpgradeCss, /@media\(max-width:760px\)/, "Campus Discovery reflows for mobile screens");
+assert.match(dashboardUpgradeCss, /prefers-reduced-motion:reduce/, "Campus Discovery respects reduced motion");
 assert.doesNotThrow(() => new Function(dashboardUpgradeJs), "dashboard upgrade script parses");
 assert.match(html, /id="login-features"/, "landing navigation has a Features destination");
 assert.match(html, /id="login-about"/, "landing navigation has an About destination");
