@@ -625,7 +625,7 @@
         academic_level: $("pq-submit-level").value,
         semester: $("pq-submit-semester").value,
         exam_year: Number($("pq-submit-year").value),
-        title: $("pq-submit-title").value,
+        title: $("pq-submit-paper-title").value,
         source_type: sourceType,
         source_url: sourceUrl || null,
         paper_path: filePath,
