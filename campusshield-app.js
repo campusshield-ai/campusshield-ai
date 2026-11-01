@@ -5814,6 +5814,53 @@
     }
   });
 
+  $('campus-profile-search-form')?.addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const backend = window.CampusShieldBackend;
+    const button = $('campus-profile-search-button');
+    const status = $('campus-profile-search-status');
+    const host = $('campus-profile-search-results');
+    const query = $('campus-profile-search').value.trim().toLowerCase();
+    if (!backend?.isConfigured) { status.textContent = 'Supabase is not configured.'; return; }
+    if (query.length < 3) { status.textContent = 'Enter at least 3 characters.'; return; }
+    button.disabled = true;
+    status.textContent = 'Searching verified members of your university…';
+    host.replaceChildren();
+    try {
+      const profiles = await backend.searchCampusCommunityProfiles(query);
+      host.innerHTML = profiles.length ? profiles.map(function(profile) {
+        const interests = Array.isArray(profile.interests) ? profile.interests : [];
+        const details = [profile.course_of_study, profile.department, profile.faculty, profile.year_of_study].filter(Boolean).join(' · ');
+        return '<article class="community-moderation-item">' +
+          '<div class="community-meta"><strong>@' + esc(profile.username) + '</strong><span class="tag low">Verified campus member</span></div>' +
+          (profile.bio ? '<p>' + esc(profile.bio) + '</p>' : '') +
+          (details ? '<p class="muted">' + esc(details) + '</p>' : '') +
+          (interests.length ? '<p class="muted">Interests: ' + esc(interests.join(', ')) + '</p>' : '') +
+          '<button type="button" class="btn secondary" data-campus-profile-message="' + esc(profile.username) + '">Find in Private Messages</button>' +
+          '</article>';
+      }).join('') : '<div class="community-empty">No verified campus members matched that username prefix.</div>';
+      status.textContent = profiles.length + ' verified profile(s) found in your university.';
+    } catch (error) {
+      status.textContent = error?.message || 'Campus profile search is temporarily unavailable.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('campus-profile-search-results')?.addEventListener('click', function(event) {
+    const button = event.target.closest('[data-campus-profile-message]');
+    if (!button) return;
+    const username = button.dataset.campusProfileMessage;
+    const nav = document.querySelector('.nav [data-page="campus-messages"]');
+    if (nav) nav.click();
+    const search = $('campus-dm-search');
+    if (search) {
+      search.value = username;
+      search.focus();
+    }
+    toast('Search for @' + username + ' in Private Messages to start a request.');
+  });
+
   $('communityProfileDetailsForm')?.addEventListener('submit', async function(event) {
     event.preventDefault();
     const backend = window.CampusShieldBackend;
