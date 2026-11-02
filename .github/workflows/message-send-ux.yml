@@ -1,0 +1,30 @@
+name: CampusShield message send reliability checks
+
+on:
+  pull_request:
+    branches: ["staging/preview"]
+    paths:
+      - "campusshield-app.js"
+      - "campusshield-backend.js"
+      - "index.html"
+      - "tests/smoke-check.mjs"
+      - ".github/workflows/message-send-ux.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  message-send-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate application JavaScript syntax
+        run: |
+          node --check campusshield-app.js
+          node --check campusshield-backend.js
+      - name: Run complete CampusShield regression suite
+        run: node tests/smoke-check.mjs

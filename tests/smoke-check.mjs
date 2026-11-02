@@ -321,6 +321,14 @@ assert.match(html, /function loadProfileSettingsAlerts\(user, backend\)/);
 assert.match(html, /currentProfile\?\.role === 'admin' && canModerateCommunity\(\)/);
 assert.match(html, /replace\(\/\[\^a-z0-9-\]\+\/g, '-'\)/);
 assert.match(html, /listCampusHelpdeskTicketUpdates\(mine\.map/);
+
+assert.ok(appScript.includes('form?.dataset.sending === "true"'), "Campus Chat prevents duplicate submits while sending");
+assert.match(appScript, /Message sent, but this room could not refresh/, "Campus Chat distinguishes successful sends from refresh failures");
+assert.match(appScript, /data-helpdesk-reply-status/, "Helpdesk requester replies expose an accessible status line");
+assert.match(appScript, /Your update was saved, but the request list could not refresh/, "Helpdesk requester replies distinguish save success from refresh failure");
+assert.match(appScript, /data-helpdesk-save-status/, "Helpdesk staff updates expose per-ticket progress feedback");
+assert.match(appScript, /The Helpdesk update was saved, but the staff queue could not refresh/, "Helpdesk staff updates distinguish save success from refresh failure");
+assert.ok(appScript.includes("form.dataset.sending === 'true'"), "Helpdesk request and reply handlers prevent duplicate submissions");
 assert.match(html, /campusshield\.profile-alerts\.v1\./);
 assert.match(html, /auth\.updateUser\(\{ data: metadata \}\)/);
 assert.doesNotMatch(html, /showToast\('Contact details saved\.'\)/);
