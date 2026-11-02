@@ -527,7 +527,7 @@ assert.match(backend, /async sendCampusDirectMessage\(conversationId, body\)[\s\
 assert.match(backend, /if \(isStaging && typeof data === "string"/, "production direct messages do not call staging push functions");
 assert.match(pushDispatchFunction, /const isPendingRequestSender = Boolean\(conversation &&[\s\S]*?conversation\.status === "pending" && conversation\.requested_by === user\.id/, "pending-request push requires the authenticated requester");
 assert.match(pushDispatchFunction, /conversation\.status !== "accepted" && !isPendingRequestSender/, "push delivery is limited to accepted conversations or requests sent by the caller");
-assert.match(backend, /async createCampusDirectMessageRequest\(username, body\)[\s\S]*?pendingMessages[\s\S]*?pendingMessage\.id[\s\S]*?callPushFunction\("delivery", \{ action: "message", message_id: pendingMessage\.id \}\)/, "a new staging message request attempts a generic recipient push");
+assert.match(backend, /async createCampusDirectMessageRequest\(username, body\)[\s\S]*?pendingMessages[\s\S]*?pendingMessage\?\.id[\s\S]*?callPushFunction\("delivery", \{ action: "message", message_id: pendingMessage\.id \}\)/, "a new staging message request attempts a generic recipient push");
 assert.match(appScript, /Your request was sent, but the inbox could not refresh/, "message request success is distinct from inbox refresh failure");
 assert.match(appScript, /Message sent, but this conversation could not refresh/, "message delivery success is distinct from thread refresh failure");
 assert.match(appScript, /form\.dataset\.sending === "true"/, "message send forms prevent duplicate submissions while sending");
