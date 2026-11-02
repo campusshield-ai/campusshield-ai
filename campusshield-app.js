@@ -2932,59 +2932,126 @@
 
   $("campus-dm-request-form")?.addEventListener("submit", async function(event) {
     event.preventDefault();
+    const form = $("campus-dm-request-form");
     const send = $("campus-dm-request-send");
+    const introduction = $("campus-dm-introduction");
     const status = $("campus-dm-search-status");
+    const body = String(introduction?.value || "").trim();
+    if (form?.dataset.sending === "true") return;
     if (!campusDirectSelectedRecipient) {
       if (status) status.textContent = "Choose a campus member first.";
       return;
     }
-    if (send) send.disabled = true;
-    if (status) status.textContent = "Sending your message request…";
+    if (!body) {
+      if (status) status.textContent = "Write a short introduction before sending your request.";
+      introduction?.focus();
+      return;
+    }
+    if (body.length > 1200) {
+      if (status) status.textContent = "Your introduction must be 1,200 characters or fewer.";
+      introduction?.focus();
+      return;
+    }
+    const recipientUsername = campusDirectSelectedRecipient;
+    const originalLabel = send?.textContent || "Send message request";
+    if (form) {
+      form.dataset.sending = "true";
+      form.setAttribute("aria-busy", "true");
+    }
+    if (send) {
+      send.disabled = true;
+      send.textContent = "Sending request…";
+    }
+    if (status) status.textContent = "Sending a private message request to @" + recipientUsername + "…";
     try {
-      const recipientUsername = campusDirectSelectedRecipient;
-      const id = await window.CampusShieldBackend.createCampusDirectMessageRequest(
-        recipientUsername,
-        $("campus-dm-introduction").value
-      );
-      $("campus-dm-introduction").value = "";
-      $("campus-dm-request-form").hidden = true;
+      const id = await window.CampusShieldBackend.createCampusDirectMessageRequest(recipientUsername, body);
+      introduction.value = "";
+      form.hidden = true;
       $("campus-dm-search-results").replaceChildren();
       $("campus-dm-search").value = "";
       campusDirectSelectedRecipient = null;
-      await refreshCampusDirectConversations();
-      const createdConversation = campusDirectConversations.find(function(item) { return item.conversation_id === id; });
-      if (status) status.textContent = createdConversation?.status === "accepted"
-        ? "Message sent to @" + recipientUsername + "."
-        : "Message request sent. You can continue after the member accepts your request.";
-      await openCampusDirectConversation(id);
+      if (status) status.textContent = "Request sent. Updating your inbox…";
+      try {
+        await refreshCampusDirectConversations();
+        const createdConversation = campusDirectConversations.find(function(item) { return item.conversation_id === id; });
+        if (status) status.textContent = createdConversation?.status === "accepted"
+          ? "Message sent to @" + recipientUsername + "."
+          : "Message request sent to @" + recipientUsername + ". They can accept it before you continue.";
+        try {
+          await openCampusDirectConversation(id);
+        } catch (_openError) {
+          if (status) status.textContent = "Your request was sent, but the conversation could not open. Use Refresh to check its status.";
+        }
+      } catch (_refreshError) {
+        if (status) status.textContent = "Your request was sent, but the inbox could not refresh. Use Refresh to check its status.";
+      }
     } catch (error) {
-      if (status) status.textContent = error?.message || "Could not send the message request.";
-      await refreshCampusDirectConversations({quiet:true});
+      if (status) status.textContent = error?.message || "Could not send the message request. Your introduction is still here so you can retry.";
     } finally {
-      if (send) send.disabled = false;
+      if (form) {
+        delete form.dataset.sending;
+        form.removeAttribute("aria-busy");
+      }
+      if (send) {
+        send.disabled = false;
+        send.textContent = originalLabel;
+      }
     }
   });
 
   $("campus-dm-compose-form")?.addEventListener("submit", async function(event) {
     event.preventDefault();
+    const form = $("campus-dm-compose-form");
     const send = $("campus-dm-compose-send");
     const input = $("campus-dm-compose-input");
     const status = $("campus-dm-thread-status");
     const body = String(input?.value || "").trim();
-    if (!body || !campusDirectActiveId || campusDirectActiveConversation?.status !== "accepted") return;
-    if (send) send.disabled = true;
+    if (form?.dataset.sending === "true") return;
+    if (!body) {
+      if (status) status.textContent = "Write a message before sending.";
+      input?.focus();
+      return;
+    }
+    if (body.length > 1200) {
+      if (status) status.textContent = "Your message must be 1,200 characters or fewer.";
+      input?.focus();
+      return;
+    }
+    if (!campusDirectActiveId || campusDirectActiveConversation?.status !== "accepted") return;
+    const conversationId = campusDirectActiveId;
+    if (form) {
+      form.dataset.sending = "true";
+      form.setAttribute("aria-busy", "true");
+    }
+    if (send) {
+      send.disabled = true;
+      send.setAttribute("aria-label", "Sending private message");
+    }
     if (status) status.textContent = "Sending private message…";
     try {
-      await window.CampusShieldBackend.sendCampusDirectMessage(campusDirectActiveId,body);
+      await window.CampusShieldBackend.sendCampusDirectMessage(conversationId, body);
       input.value = "";
-      await refreshCampusDirectMessages();
-      await refreshCampusDirectConversations({quiet:true});
-      if (status) status.textContent = "Message sent.";
+      if (status) status.textContent = "Message sent. Updating this conversation…";
+      try {
+        await refreshCampusDirectMessages();
+        await refreshCampusDirectConversations({quiet:true});
+        if (status) status.textContent = "Message sent.";
+      } catch (_refreshError) {
+        if (status) status.textContent = "Message sent, but this conversation could not refresh. Select it again or use Refresh.";
+      }
       input.focus();
     } catch (error) {
-      if (status) status.textContent = error?.message || "Could not send this private message.";
+      if (status) status.textContent = error?.message || "Could not send this private message. Your draft is still here so you can retry.";
+      input.focus();
     } finally {
-      if (send) send.disabled = !campusDirectActiveConversation || campusDirectActiveConversation.status !== "accepted";
+      if (form) {
+        delete form.dataset.sending;
+        form.removeAttribute("aria-busy");
+      }
+      if (send) {
+        send.setAttribute("aria-label", "Send private message");
+        send.disabled = !campusDirectActiveConversation || campusDirectActiveConversation.status !== "accepted";
+      }
     }
   });
 
