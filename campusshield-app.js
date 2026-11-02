@@ -2404,31 +2404,58 @@
 
   $("campus-chat-form")?.addEventListener("submit", async function(event) {
     event.preventDefault();
+    const form = $("campus-chat-form");
     const input = $("campus-chat-input");
     const send = $("campus-chat-send");
     const status = $("campus-chat-status");
     const text = String(input?.value || "").trim();
-    if (!text) { input?.focus(); return; }
+    if (form?.dataset.sending === "true") return;
+    if (!text) {
+      if (status) status.textContent = "Write a message before sending.";
+      input?.focus();
+      return;
+    }
     if (!campusChatUniversityId) {
       if (status) status.textContent = "Choose a verified university room before sending a message.";
       return;
     }
     if (text.length > 1200) {
       if (status) status.textContent = "Messages must be 1,200 characters or fewer.";
+      input?.focus();
       return;
     }
-    if (send) send.disabled = true;
+    if (form) {
+      form.dataset.sending = "true";
+      form.setAttribute("aria-busy", "true");
+    }
+    if (send) {
+      send.disabled = true;
+      send.setAttribute("aria-label", "Sending campus message");
+    }
     if (status) status.textContent = "Sending message…";
     try {
       await window.CampusShieldBackend.sendCampusChatMessage(campusChatChannel, text);
       input.value = "";
-      await refreshCampusChatMessages({quiet:true});
-      if (status) status.textContent = "Message sent.";
+      if (status) status.textContent = "Message sent. Refreshing this room…";
+      try {
+        await refreshCampusChatMessages({quiet:true});
+        if (status) status.textContent = "Message sent.";
+      } catch (_refreshError) {
+        if (status) status.textContent = "Message sent, but this room could not refresh. Use Refresh to check the latest messages.";
+      }
       input.focus();
     } catch (error) {
-      if (status) status.textContent = error?.message || "Could not send your message.";
+      if (status) status.textContent = error?.message || "Could not send your message. Your draft is still here so you can retry.";
+      input.focus();
     } finally {
-      if (send) send.disabled = !campusChatUniversityId;
+      if (form) {
+        delete form.dataset.sending;
+        form.removeAttribute("aria-busy");
+      }
+      if (send) {
+        send.setAttribute("aria-label", "Send campus message");
+        send.disabled = !campusChatUniversityId;
+      }
     }
   });
 
@@ -4766,11 +4793,13 @@
         }).join('') + '</select></div>' +
         '<div class="field"><label for="ticket-department-' + esc(ticket.id) + '">Responsible unit</label><input id="ticket-department-' + esc(ticket.id) + '" data-helpdesk-department="' + esc(ticket.id) + '" maxlength="100" value="' + esc(ticket.assigned_department || '') + '" placeholder="e.g. Works Department"></div>' +
         '<div class="field"><label for="ticket-staff-message-' + esc(ticket.id) + '">Progress note (visible to requester)</label><textarea id="ticket-staff-message-' + esc(ticket.id) + '" data-helpdesk-message="' + esc(ticket.id) + '" maxlength="1200" placeholder="Record an action, request more information, or explain the status change."></textarea></div>' +
-        '<button type="button" class="btn" data-helpdesk-save="' + esc(ticket.id) + '">Save update</button></div>'
+        '<button type="button" class="btn" data-helpdesk-save="' + esc(ticket.id) + '" aria-label="Save Helpdesk update">Save update</button>' +
+        '<p class="message" data-helpdesk-save-status="' + esc(ticket.id) + '" role="status" aria-live="polite"></p></div>'
       : '<form class="community-comment-form" data-helpdesk-reply data-ticket-id="' + esc(ticket.id) + '">' +
         '<label class="sr-only" for="ticket-reply-' + esc(ticket.id) + '">Reply to request ' + esc(ticket.reference_code) + '</label>' +
         '<textarea id="ticket-reply-' + esc(ticket.id) + '" name="message" maxlength="1200" minlength="2" placeholder="Add helpful information or reply to a staff update…" required ' + (['resolved','closed'].includes(ticket.status) ? 'disabled' : '') + '></textarea>' +
-        '<button type="submit" class="btn secondary" ' + (['resolved','closed'].includes(ticket.status) ? 'disabled' : '') + '>Add update</button></form>';
+        '<button type="submit" class="btn secondary" aria-label="Add Helpdesk update" ' + (['resolved','closed'].includes(ticket.status) ? 'disabled' : '') + '>Add update</button>' +
+        '<p class="message" data-helpdesk-reply-status role="status" aria-live="polite"></p></form>';
     const priorityClass = ticket.priority === 'high' ? 'high' : ticket.priority === 'low' ? 'low' : 'medium';
     return '<article class="community-post campus-ticket-card">' +
       '<div class="community-meta"><span class="tag open">' + esc(ticket.reference_code) + '</span><span class="tag ' + priorityClass + '">' + esc(ticket.priority) + ' priority</span><span class="tag ' + (['resolved','closed'].includes(ticket.status) ? 'low' : 'open') + '">' + esc(helpdeskStatusLabel(ticket.status)) + '</span></div>' +
@@ -4879,11 +4908,17 @@
 
   $('campusHelpdeskForm').addEventListener('submit', async function(event) {
     event.preventDefault();
+    const form = $('campusHelpdeskForm');
     const button = $('campus-helpdesk-submit');
     const message = $('campus-helpdesk-submit-message');
+    if (form?.dataset.sending === 'true') return;
     if (!window.CampusShieldBackend?.isConfigured) {
       message.textContent = 'Supabase is not configured.';
       return;
+    }
+    if (form) {
+      form.dataset.sending = 'true';
+      form.setAttribute('aria-busy', 'true');
     }
     button.disabled = true;
     message.textContent = 'Submitting request and creating reference number…';
@@ -4895,13 +4930,22 @@
         priority: $('campus-helpdesk-priority').value,
         description: $('campus-helpdesk-description').value.trim()
       });
-      $('campusHelpdeskForm').reset();
-      message.textContent = 'Request submitted. Your reference is ' + (ticket?.reference_code || 'created') + '.';
+      form.reset();
+      message.textContent = 'Request submitted. Your reference is ' + (ticket?.reference_code || 'created') + '. Refreshing your request list…';
       toast('Campus service request submitted.');
       await loadCampusHelpdeskPage();
+      if (!/temporarily unavailable|could not be loaded/i.test($('campus-helpdesk-my-status')?.textContent || '')) {
+        message.textContent = 'Request submitted. Your reference is ' + (ticket?.reference_code || 'created') + '.';
+      } else {
+        message.textContent = 'Your request was submitted, but the request list could not refresh. Use Refresh to check its reference.';
+      }
     } catch (err) {
-      message.textContent = err.message || 'Could not submit the campus request.';
+      message.textContent = err.message || 'Could not submit the campus request. Your details are still here so you can retry.';
     } finally {
+      if (form) {
+        delete form.dataset.sending;
+        form.removeAttribute('aria-busy');
+      }
       button.disabled = false;
     }
   });
@@ -4912,19 +4956,35 @@
     event.preventDefault();
     const textarea = form.querySelector('textarea[name="message"]');
     const button = form.querySelector('button[type="submit"]');
+    const status = form.querySelector('[data-helpdesk-reply-status]');
     const message = textarea.value.trim();
+    if (form.dataset.sending === 'true') return;
     if (message.length < 2 || message.length > 1200) {
-      toast('A reply must be 2–1200 characters.');
+      if (status) status.textContent = 'A reply must be 2–1200 characters.';
+      textarea.focus();
       return;
     }
+    form.dataset.sending = 'true';
+    form.setAttribute('aria-busy', 'true');
     button.disabled = true;
+    button.setAttribute('aria-label', 'Sending Helpdesk update');
+    if (status) status.textContent = 'Sending your update…';
     try {
       await window.CampusShieldBackend.updateCampusHelpdeskTicket(form.dataset.ticketId, null, null, message);
+      textarea.value = '';
+      if (status) status.textContent = 'Your update was saved. Refreshing the request…';
       toast('Request update added.');
       await loadCampusHelpdeskPage();
+      if (/temporarily unavailable|could not be loaded/i.test($('campus-helpdesk-my-status')?.textContent || '')) {
+        $('campus-helpdesk-my-status').textContent = 'Your update was saved, but the request list could not refresh. Use Refresh to verify it.';
+      }
     } catch (err) {
-      toast(err.message || 'Could not add your request update.');
-      button.disabled = false;
+      if (status) status.textContent = err.message || 'Could not add your request update. Your reply is still here so you can retry.';
+    } finally {
+      delete form.dataset.sending;
+      form.removeAttribute('aria-busy');
+      button.setAttribute('aria-label', 'Add Helpdesk update');
+      button.disabled = textarea.disabled;
     }
   });
 
@@ -4932,17 +4992,33 @@
     const button = event.target.closest('[data-helpdesk-save]');
     if (!button) return;
     const ticketId = button.dataset.helpdeskSave;
+    const controls = button.closest('.campus-ticket-staff-controls');
     const status = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-status="' + CSS.escape(ticketId) + '"]');
     const department = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-department="' + CSS.escape(ticketId) + '"]');
     const note = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-message="' + CSS.escape(ticketId) + '"]');
+    const statusMessage = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-save-status="' + CSS.escape(ticketId) + '"]');
+    if (button.dataset.saving === 'true') return;
+    button.dataset.saving = 'true';
     button.disabled = true;
+    button.setAttribute('aria-label', 'Saving Helpdesk update');
+    if (controls) controls.setAttribute('aria-busy', 'true');
+    if (statusMessage) statusMessage.textContent = 'Saving status, assignment and progress note…';
     try {
       await window.CampusShieldBackend.updateCampusHelpdeskTicket(ticketId, status?.value || null, department?.value ?? null, note?.value || null);
+      if (note) note.value = '';
+      if (statusMessage) statusMessage.textContent = 'Update saved. Refreshing the staff queue…';
       toast('Helpdesk request updated.');
       await loadCampusHelpdeskPage();
+      if (/temporarily unavailable|could not be loaded/i.test($('campus-helpdesk-staff-status')?.textContent || '')) {
+        $('campus-helpdesk-staff-status').textContent = 'The Helpdesk update was saved, but the staff queue could not refresh. Use Refresh to verify it.';
+      }
     } catch (err) {
-      toast(err.message || 'Could not update the Helpdesk request.');
+      if (statusMessage) statusMessage.textContent = err.message || 'Could not update the Helpdesk request. Your progress note is still here so you can retry.';
+    } finally {
+      delete button.dataset.saving;
       button.disabled = false;
+      button.setAttribute('aria-label', 'Save Helpdesk update');
+      if (controls) controls.removeAttribute('aria-busy');
     }
   });
 
