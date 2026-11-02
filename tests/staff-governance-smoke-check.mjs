@@ -16,6 +16,7 @@ const verifiedSocialRpc = await readFile(new URL('../supabase/migrations/2026101
 const marketplaceSellerGuard = await readFile(new URL('../supabase/migrations/20261016230000_marketplace_seller_update_guard.sql', import.meta.url), 'utf8');
 const profileSelfUpdateGuard = await readFile(new URL('../supabase/migrations/20261016231000_restrict_profile_self_update_columns.sql', import.meta.url), 'utf8');
 const profileTablePrivileges = await readFile(new URL('../supabase/migrations/20261016236000_lock_profile_table_privileges.sql', import.meta.url), 'utf8');
+const staffRoleRequestGuard = await readFile(new URL('../supabase/migrations/20261016237000_require_staff_role_request.sql', import.meta.url), 'utf8');
 const evidenceAudit = await readFile(new URL('../supabase/migrations/20261016232000_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 const evidenceAuditHistory = await readFile(new URL('../supabase/migrations/20261016233000_list_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 
@@ -62,6 +63,15 @@ assert.match(migration, /public\.review_campus_staff_verification/i);
 assert.match(migration, /public = false|values \('campus-staff-documents',[\s\S]{0,80}false/i);
 assert.match(migration, /private\.current_campus_role\(\)[\s\S]{0,80}'admin'/i);
 assert.ok(migration.includes('requested_campus_admin'), 'admin consideration is recorded as a request, not a granted role');
+assert.match(staffRoleRequestGuard, /v_requested_role is distinct from 'teacher'[\s\S]{0,180}v_current_role in \('teacher','security','admin'\)[\s\S]{0,120}v_profile_status is distinct from 'pending'/i, 'staff submission must require a pending teacher request and reject existing staff/admin roles to prevent self-lockout');
+assert.doesNotMatch(staffRoleRequestGuard, /v_role is distinct from 'teacher' and not exists/i, 'legacy security/admin roles must not bypass the explicit staff request gate');
+assert.match(staffRoleRequestGuard, /select p\.requested_role::text, p\.role::text, p\.verification_status::text/i, 'staff submission must inspect requested role, current role, and profile state together');
+assert.ok(html.includes("requested_role: 'teacher'"), 'teacher signup must persist the explicit requested_role used by the staff verification gate');
+assert.ok(html.includes("!['student', 'teacher'].includes(requestedRole)"), 'signup must limit self-selected roles to student or teacher');
+assert.ok(html.includes("const isTeacher = requestedRole === 'teacher'"), 'staff onboarding UI must use the same teacher role value as the database gate');
+assert.match(staffRoleRequestGuard, /v_profile_status is distinct from 'pending'/i, 'only pending profiles may enter the staff verification submission path');
+assert.match(staffRoleRequestGuard, /revoke all on function public\.submit_campus_staff_verification\(text,text,text,text,boolean\) from public, anon/i, 'staff submission RPC must deny anonymous execution');
+assert.match(staffRoleRequestGuard, /set search_path = ''/i, 'staff submission SECURITY DEFINER function must lock search_path');
 assert.ok(migration.includes('separate decisions'), 'staff review separates identity approval from campus administrator appointment');
 assert.doesNotMatch(migration, /grant execute on function public\.review_campus_staff_verification\([^;]+ to anon/i);
 assert.match(legacyGuard, /v_requested_role\s*=\s*'teacher'\s+or\s+v_role\s*=\s*'teacher'[\s\S]*campus_staff_verifications[\s\S]*v\.status\s*=\s*'approved'/i, 'legacy membership review must require approved staff verification for teacher applicants');
