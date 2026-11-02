@@ -81,7 +81,9 @@ assert.match(js, /maxzoom: 14/, 'OpenMapTiles vector source is overzoomed from i
 assert.match(js, /campus-osm-3d-building-edges/, '3D building blocks have subtle outline detail');
 assert.doesNotMatch(js, /campus-osm-3d-building-labels/, 'The non-existent named-building source layer is not requested');
 assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles provide OSM building geometry');
-assert.match(js, /return 'https:\/\/tiles\.openfreemap\.org\/styles\/liberty';/, 'OpenFreeMap Liberty provides the primary vector basemap');
+assert.match(js, /const DEFAULT_BASE_STYLE_URL = 'https:\/\/tiles\.openfreemap\.org\/styles\/liberty'/, 'OpenFreeMap Liberty remains the default vector basemap');
+assert.match(js, /url\.protocol === 'https:'/, 'Configured basemap styles must use HTTPS');
+assert.match(js, /return DEFAULT_BASE_STYLE_URL;/, 'Invalid or absent basemap configuration falls back safely');
 assert.match(js, /const SATELLITE_ROAD_LAYER_IDS/, 'Custom mapped road overlays are grouped for satellite and 3D modes');
 assert.match(js, /baseStyleLayerIds/, 'Provider base layers are captured before app overlays');
 assert.match(js, /setBaseStyleVisibility\(!satelliteOn\)/, 'Satellite and 3D modes hide base-style layers without hiding campus overlays');
