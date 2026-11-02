@@ -530,7 +530,7 @@ assert.match(pushDispatchFunction, /conversation\.status !== "accepted" && !isPe
 assert.match(backend, /async createCampusDirectMessageRequest\(username, body\)[\s\S]*?pendingMessages[\s\S]*?pendingMessage\?\.id[\s\S]*?callPushFunction\("delivery", \{ action: "message", message_id: pendingMessage\.id \}\)/, "a new staging message request attempts a generic recipient push");
 assert.match(appScript, /Your request was sent, but the inbox could not refresh/, "message request success is distinct from inbox refresh failure");
 assert.match(appScript, /Message sent, but this conversation could not refresh/, "message delivery success is distinct from thread refresh failure");
-assert.match(appScript, /form\.dataset\.sending === "true"/, "message send forms prevent duplicate submissions while sending");
+assert.match(appScript, /form\?\.dataset\.sending === "true"/, "message send forms prevent duplicate submissions while sending");
 assert.match(pushDispatchFunction, /genericMessages/, "push payloads use generic notification copy rather than private message content");
 assert.match(campusPushMigration, /enable row level security/i);
 assert.match(campusPushMigration, /using \(false\) with check \(false\)/i, "push tables deny direct client access");
