@@ -1465,6 +1465,27 @@ async getCurrentUser() {
         p_body: String(body || "").trim()
       });
       if (error) throw error;
+
+      // Notify the recipient of a first-message request only in Staging.
+      // The notification contains no message body; the recipient must sign in to read it.
+      let isStaging = false;
+      try {
+        isStaging = new URL(String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.url || "")).hostname === "hywcpnoqqhxvujnimhxl.supabase.co";
+      } catch (_error) {}
+      if (isStaging && typeof data === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data)) {
+        try {
+          const { data: pendingMessages, error: messageError } = await client.rpc("list_campus_direct_messages", {
+            p_conversation_id: data
+          });
+          const pendingMessage = !messageError && Array.isArray(pendingMessages) &&
+            pendingMessages.length === 1 && pendingMessages[0]?.is_mine ? pendingMessages[0] : null;
+          if (pendingMessage?.id) {
+            await this.callPushFunction("delivery", { action: "message", message_id: pendingMessage.id });
+          }
+        } catch (_pushError) {
+          // A disabled push channel must not block creation of the private message request.
+        }
+      }
       return data;
     },
 

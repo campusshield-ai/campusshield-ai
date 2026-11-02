@@ -90,14 +90,17 @@ Deno.serve(async (req: Request) => {
           .gte("created_at", since).maybeSingle();
         if (messageError || !sentMessage) return respond({ error: "Only a recently sent message can trigger a background notification." }, 403);
         const { data: conversation, error: conversationError } = await db.from("campus_direct_conversations")
-          .select("user_one_id,user_two_id,university_id,status")
+          .select("user_one_id,user_two_id,university_id,status,requested_by")
           .eq("id", sentMessage.conversation_id)
           .eq("university_id", sentMessage.university_id)
-          .eq("status", "accepted")
           .maybeSingle();
-        if (conversationError || !conversation ||
-            ![conversation.user_one_id, conversation.user_two_id].includes(user.id)) {
-          return respond({ error: "An accepted conversation between campus members is required." }, 403);
+        const isParticipant = Boolean(conversation &&
+          [conversation.user_one_id, conversation.user_two_id].includes(user.id));
+        const isPendingRequestSender = Boolean(conversation &&
+          conversation.status === "pending" && conversation.requested_by === user.id);
+        if (conversationError || !conversation || !isParticipant ||
+            (conversation.status !== "accepted" && !isPendingRequestSender)) {
+          return respond({ error: "Only a recent message in your accepted conversation or a message request you sent can trigger a background notification." }, 403);
         }
         userId = conversation.user_one_id === user.id ? conversation.user_two_id : conversation.user_one_id;
         kind = "new_message";
