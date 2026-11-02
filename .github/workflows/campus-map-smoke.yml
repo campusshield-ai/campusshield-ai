@@ -6,6 +6,7 @@ on:
     paths:
       - "index.html"
       - "campus-map.js"
+      - "campus-map-loader.js"
       - "campus-map-config.js"
       - "campus-map-geometry.js"
       - "campus-map.css"
@@ -30,6 +31,7 @@ jobs:
         run: |
           node --check campus-map-config.js
           node --check campus-map.js
+          node --input-type=module --check < campus-map-loader.js
           node --check campusshield-backend.js
           node --check campusshield-app.js
       - name: Check CampusMap integration and access boundaries

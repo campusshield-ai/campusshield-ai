@@ -4,3 +4,6 @@
  */
 window.CampusShieldMapConfig = window.CampusShieldMapConfig || {};
 window.CampusShieldMapConfig.maptilerKey = window.CampusShieldMapConfig.maptilerKey || '';
+
+/* Configurable HTTPS MapLibre style URL. Keep the no-key pilot style by default. */
+window.CampusShieldMapConfig.baseStyleUrl = window.CampusShieldMapConfig.baseStyleUrl || 'https://tiles.openfreemap.org/styles/liberty';

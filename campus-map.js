@@ -12,6 +12,7 @@
   const featureList = $('campus-map-feature-list');
   const mapKey = 'campus-map';
   let map = null;
+  let baseStyleLayerIds = [];
   let campusProfiles = [];
   let activeCampusProfile = null;
   let campusBuildings = [];
@@ -92,12 +93,22 @@
     return STATE_OVERVIEWS[key] || null;
   }
 
+  // OpenFreeMap Liberty is the no-key staging/pilot style. The URL can be
+  // swapped for a reviewed MapLibre-compatible HTTPS style without changing
+  // the university-scoped map overlays.
+  const DEFAULT_BASE_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
+
   function mapStyle() {
-    // Use OpenFreeMap's vector Liberty style as the primary street basemap.
-    // It supplies crisp labels, mapped roads, landuse and building footprints
-    // at every zoom; the custom road overlay is reserved for satellite/3D modes.
-    // Source data is © OpenStreetMap contributors and OpenMapTiles.
-    return 'https://tiles.openfreemap.org/styles/liberty';
+    const configured = window.CampusShieldMapConfig?.baseStyleUrl;
+    if (typeof configured === 'string' && configured.trim()) {
+      try {
+        const url = new URL(configured.trim());
+        if (url.protocol === 'https:' && !url.username && !url.password) return url.href;
+      } catch (_) {
+        // Fall back to the known-safe staging style when configuration is invalid.
+      }
+    }
+    return DEFAULT_BASE_STYLE_URL;
   }
 
   function ensureMap() {
@@ -119,6 +130,9 @@
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), 'bottom-left');
     map.on('load', () => {
+      // Save provider-owned layers before app overlays are added. SAT/3D can hide
+      // these layers cleanly while retaining campus pins, routes and road overlays.
+      baseStyleLayerIds = (map.getStyle()?.layers || []).map(layer => layer.id);
       map.addSource('campus-features', { type: 'geojson', data: featureCollection([]) });
       map.addLayer({
         id: 'campus-feature-points',
@@ -261,7 +275,7 @@
         type: 'fill-extrusion',
         source: 'campus-curated-buildings',
         minzoom: 14,
-        layout: { visibility: 'none' },
+        layout: { visibility: 'none', 'fill-extrusion-rounded-corner-distance': 0.8 },
         paint: {
           'fill-extrusion-color': ['case', ['==', ['get', 'verification_status'], 'verified'], ['coalesce', ['get', 'facade_colour'], '#d5c1a0'], '#dfb56f'],
           'fill-extrusion-height': ['get', 'render_height_m'],
@@ -456,7 +470,7 @@
         source: 'campus-openfreemap-buildings',
         'source-layer': 'building',
         minzoom: 15,
-        layout: { visibility: 'none' },
+        layout: { visibility: 'none', 'fill-extrusion-rounded-corner-distance': 0.8 },
         filter: ['!=', ['get', 'hide_3d'], true],
         paint: {
           'fill-extrusion-color': ['coalesce', ['get', 'colour'], '#d8c6a7'],
@@ -923,6 +937,10 @@
     if (map?.getLayer(id)) map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
   }
 
+  function setBaseStyleVisibility(visible) {
+    baseStyleLayerIds.forEach(id => setLayerVisibility(id, visible));
+  }
+
   function updateBuildingCoverageSummary() {
     const target = $('campus-map-3d-coverage');
     if (!target) return;
@@ -997,6 +1015,10 @@
     const satelliteOn = mode !== '2d';
     const labelsOn = mode !== '2d';
     const buildingsOn = mode === '3d';
+    // The vector style already draws mapped streets in 2D. Hide provider layers
+    // over satellite imagery so the custom, campus-scoped road overlays do not
+    // double-render roads or obscure the imagery.
+    setBaseStyleVisibility(!satelliteOn);
     setLayerVisibility('campus-esri-imagery-layer', satelliteOn);
     SATELLITE_ROAD_LAYER_IDS.forEach(id => setLayerVisibility(id, satelliteOn));
     const hasCuratedFootprints = campusBuildings.length > 0;
