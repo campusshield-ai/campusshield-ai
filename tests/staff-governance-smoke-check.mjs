@@ -16,6 +16,7 @@ const verifiedSocialRpc = await readFile(new URL('../supabase/migrations/2026101
 const marketplaceSellerGuard = await readFile(new URL('../supabase/migrations/20261016230000_marketplace_seller_update_guard.sql', import.meta.url), 'utf8');
 const profileSelfUpdateGuard = await readFile(new URL('../supabase/migrations/20261016231000_restrict_profile_self_update_columns.sql', import.meta.url), 'utf8');
 const profileTablePrivileges = await readFile(new URL('../supabase/migrations/20261016236000_lock_profile_table_privileges.sql', import.meta.url), 'utf8');
+const publicTableGrantGuard = await readFile(new URL('../supabase/migrations/20261016238000_harden_public_table_grants.sql', import.meta.url), 'utf8');
 const evidenceAudit = await readFile(new URL('../supabase/migrations/20261016232000_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 const evidenceAuditHistory = await readFile(new URL('../supabase/migrations/20261016233000_list_campus_identity_evidence_audit.sql', import.meta.url), 'utf8');
 
@@ -126,6 +127,10 @@ assert.ok(html.includes('listCampusIdentityEvidenceChecks()'), 'evidence history
 assert.ok(html.includes('recordCampusIdentityEvidenceCheck({ userId, evidenceType, outcome, sourceKind'), 'evidence review UI must save the audit record');
 assert.ok(html.includes("evidenceType: 'student_id'"), 'student identity review must record student ID evidence checks');
 assert.ok(html.includes('data-student-evidence-check'), 'student identity queue must expose the evidence audit action');
+assert.match(publicTableGrantGuard, /revoke truncate, references, trigger on table/i, 'public tables must not grant RLS-bypassing TRUNCATE or unnecessary REFERENCES/TRIGGER privileges');
+assert.match(publicTableGrantGuard, /public\\.campus_universities from anon/i, 'anonymous users must not mutate the university directory');
+assert.match(publicTableGrantGuard, /public\\.incidents from anon/i, 'anonymous users must not mutate incidents');
+assert.match(publicTableGrantGuard, /public\\.campus_universities from authenticated/i, 'signed-in users must not directly mutate the university directory');
 assert.doesNotMatch(backend, /service_role|sb_secret_/i, 'browser code must not contain privileged keys');
 assert.ok(backend.includes('file.type === "application/pdf" ? "pdf" : file.type === "image/jpeg" ? "jpg" : "png"'), 'staff upload extension must be derived from validated MIME type');
 assert.ok(backend.includes('cleanedBase + "." + extension'), 'staff upload object name must end with the MIME-matched extension');
