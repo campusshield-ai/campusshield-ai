@@ -781,3 +781,6 @@ assert.match(html, /This crawler is restricted to its designated owner\./, "craw
 console.log("PASS self-service profile editing, private avatar storage, and owner-only crawler authorization");
 
 console.log("PASS searchable national service directory, verified-source crawler restrictions, admin gate, and crawl status migration");
+
+// Keep the read-only ShieldMind Knowledge Agent access and retrieval tests in the full CI smoke suite.
+await import("./shieldmind-knowledge-agent-smoke.mjs");
