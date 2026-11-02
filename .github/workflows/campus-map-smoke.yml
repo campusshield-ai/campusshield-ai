@@ -2,10 +2,12 @@ name: CampusMap feature checks
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, "staging/preview"]
     paths:
       - "index.html"
       - "campus-map.js"
+      - "campus-map-config.js"
+      - "campus-map-geometry.js"
       - "campus-map.css"
       - "supabase/migrations/*campus_map*"
       - "docs/CAMPUSMAP_ROLLOUT.md"
