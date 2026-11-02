@@ -6,6 +6,7 @@ const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8'
 const html = read('index.html');
 const js = read('campus-map.js');
 const mapConfig = read('campus-map-config.js');
+const mapLoader = read('campus-map-loader.js');
 const geometrySource = read('campus-map-geometry.js');
 const geometryContext = {};
 runInNewContext(geometrySource, geometryContext);
@@ -40,11 +41,15 @@ assert.match(html, /id="campus-map-pick-pin"/, 'Administrators can place a pin d
 assert.match(html, /id="campus-map-use-gps"/, 'Administrators can capture a GPS candidate with device accuracy');
 assert.match(html, /id="campus-map-preview-pin"/, 'Administrators can preview manually entered coordinates');
 assert.match(html, /campus-map-geometry\.js/, 'OSM footprint geometry helpers load before CampusMap');
-assert.match(html, /campus-map\.js/, 'CampusMap module is loaded');
+assert.match(mapLoader, /import\('\.\/campus-map\.js'\)/, 'CampusMap module is loaded after the MapLibre ESM bootstrap');
 assert.match(js, /window\.CampusMapGeometry\?\.osmWayToBuildingCandidate/, 'OSM building imports use the extracted geometry helper');
-assert.ok(html.indexOf('campus-map-geometry.js') < html.indexOf('campus-map.js'), 'geometry helper loads before CampusMap');
+assert.ok(html.indexOf('campus-map-geometry.js') < html.indexOf('campus-map-loader.js'), 'geometry helper loads before the MapLibre module loader');
 
-assert.match(html, /maplibre-gl@4\.7\.1/, 'MapLibre is pinned to a known version');
+assert.match(html, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.css/, 'MapLibre CSS is pinned to v6.16.0');
+assert.match(html, /type="module" src="\.\/campus-map-loader\.js"/, 'MapLibre v6 is loaded through an ordered ES-module bootstrap');
+assert.match(mapLoader, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.mjs/, 'MapLibre v6 imports the ES-module bundle');
+assert.match(mapLoader, /window\.maplibregl = maplibregl;[\s\S]*await import\('\.\/campus-map\.js'\)/, 'CampusMap imports only after the MapLibre namespace is ready');
+assert.match(mapConfig, /baseStyleUrl/, 'The vector style URL is configurable');
 assert.match(html, /report-use-location/, 'Incident form offers optional GPS attachment');
 assert.match(js, /getMyCampusContext\(\)/, 'Map resolves the signed-in university context');
 assert.match(js, /\.eq\('university_id', campus\.university_id\)/, 'Feature query is scoped to the current university');
@@ -78,6 +83,9 @@ assert.doesNotMatch(js, /campus-osm-3d-building-labels/, 'The non-existent named
 assert.match(js, /tiles\.openfreemap\.org\/planet/, 'OpenFreeMap vector tiles provide OSM building geometry');
 assert.match(js, /return 'https:\/\/tiles\.openfreemap\.org\/styles\/liberty';/, 'OpenFreeMap Liberty provides the primary vector basemap');
 assert.match(js, /const SATELLITE_ROAD_LAYER_IDS/, 'Custom mapped road overlays are grouped for satellite and 3D modes');
+assert.match(js, /baseStyleLayerIds/, 'Provider base layers are captured before app overlays');
+assert.match(js, /setBaseStyleVisibility\(!satelliteOn\)/, 'Satellite and 3D modes hide base-style layers without hiding campus overlays');
+assert.match(js, /fill-extrusion-rounded-corner-distance/, 'Rounded 3D building edges use the supported MapLibre extrusion property');
 assert.match(js, /SATELLITE_ROAD_LAYER_IDS\.forEach\(id => setLayerVisibility\(id, satelliteOn\)\)/, 'Custom road overlays do not duplicate the vector street basemap in 2D');
 const mapModeStart = js.indexOf('function applyMapMode(');
 const mapModeEnd = js.indexOf('function ', mapModeStart + 10);
