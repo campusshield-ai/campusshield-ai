@@ -13,6 +13,10 @@ runInNewContext(geometrySource, geometryContext);
 const geometry = geometryContext.CampusMapGeometry;
 const css = read('campus-map.css');
 const coverageCss = read('campus-dashboard-insights.css');
+const passportCss = read('campus-map-passport.css');
+const passportSql = read('supabase/migrations/20261104004500_campus_map_passports_and_verified_entrance_details.sql');
+const passportMergeSql = read('supabase/migrations/20261104004700_campus_map_passport_system_metadata_merge.sql');
+const passportCompatSql = read('supabase/migrations/20261104005000_campus_map_passport_metadata_null_compatibility.sql');
 const sql = read('supabase/migrations/20261031115759_campus_map_verified_locations_and_emergency_layers.sql');
 const policySql = read('supabase/migrations/20261031115831_campus_map_public_read_policy_split.sql');
 const finalPolicySql = read('supabase/migrations/20261031120234_campus_map_single_read_policy_and_audit_index.sql');
@@ -283,5 +287,52 @@ assert.match(js, /reviewCard\.hidden = !isCampusAdmin/, 'Pending map-review coun
 assert.match(js, /boundaryStatus === 'verified'/, 'Boundary coverage status is read from the saved campus profile');
 assert.match(coverageCss, /campus-map-coverage-overview/, 'CampusMap coverage cards are styled responsively');
 assert.match(css, /prefers-reduced-motion/, 'CampusMap visual controls retain reduced-motion support');
+
+
+assert.match(html, /href="\.\/campus-map-passport\.css"/, 'Website and installable PWA load the Campus Passport styling layer');
+assert.match(html, /id="campus-map-discovery-filters"/, 'CampusMap has task-oriented discovery filters');
+for (const filter of ['all','academic','residential','services','access','emergency']) {
+  assert.match(html, new RegExp('data-campus-filter="' + filter + '"'), 'CampusMap includes the ' + filter + ' discovery filter');
+}
+assert.match(html, /id="campus-map-passport"/, 'A location selection opens its Campus Passport card');
+for (const id of [
+  'campus-map-passport-title','campus-map-passport-facts','campus-map-passport-facilities',
+  'campus-map-passport-accessibility','campus-map-passport-entrances',
+  'campus-map-passport-route','campus-map-passport-accessible-route',
+  'campus-map-passport-source','campus-map-passport-contact','campus-map-passport-emergency'
+]) assert.ok(html.includes('id="' + id + '"'), 'Campus Passport exposes ' + id);
+assert.match(html, /<option value="entrance">Entrance<\/option>/, 'Campus admins can classify dedicated entrance pins');
+for (const id of [
+  'campus-map-admin-building-code','campus-map-admin-opening-hours','campus-map-admin-floor-count',
+  'campus-map-admin-facilities','campus-map-admin-accessibility-notes',
+  'campus-map-admin-parent-building','campus-map-admin-entry-type','campus-map-admin-contact-url',
+  'campus-map-admin-emergency-phone'
+]) assert.ok(html.includes('id="' + id + '"'), 'Verified campus admin editor includes ' + id);
+assert.match(html, /data-campus-accessibility/, 'Accessibility details use a constrained feature checklist');
+assert.match(js, /function renderCampusPassport\(item\)/, 'Selected published campus locations render a real Passport panel');
+assert.match(js, /function matchesCampusFilter\(item\)/, 'CampusMap filters are derived from the saved location category');
+assert.match(js, /function resolveCampusRouteTarget\(accessibleOnly = false\)/, 'Walking routes resolve linked entrance records');
+assert.match(js, /feature\.metadata\?\.building_feature_id === selectedFeature\.id/, 'Entrance routes only link to the selected building through the stored building reference');
+assert.match(js, /feature\.metadata\?\.entry_type === 'accessible'/, 'Accessible routing requires a published, linked accessible entrance marker');
+assert.match(js, /No verified accessible entrance is recorded/, 'The app explains when no accessible entrance has been verified instead of guessing');
+assert.match(js, /map\.on\('click', 'campus-feature-points'/, 'Map markers open the matching Campus Passport');
+assert.match(js, /p_metadata: passportMetadata/, 'Structured Passport details are sent through the checked CampusMap write RPC');
+assert.match(js, /function buildPassportMetadata\(\)/, 'Admin Passport fields are validated and converted into metadata');
+assert.match(js, /passportSafeHttps\(/, 'Campus Passport contact and evidence links are restricted to HTTPS');
+assert.match(passportCss, /campus-map-passport/, 'Campus Passport panels have a dedicated visual system');
+assert.match(passportCss, /@media\(max-width:420px\)/, 'Campus Passport cards adapt to narrow phones');
+assert.match(passportCss, /prefers-reduced-motion:reduce/, 'Campus Passport controls respect reduced-motion');
+assert.match(passportSql, /'entrance'/, 'Staging migration supports dedicated entrance feature records');
+assert.match(passportSql, /p_metadata jsonb/, 'Staging RPC accepts structured Passport metadata');
+assert.match(passportSql, /SECURITY INVOKER/, 'Exposed Passport RPC wrapper is SECURITY INVOKER');
+assert.match(passportSql, /A verified campus administrator is required/, 'Passport writes preserve the verified campus admin requirement');
+assert.match(passportSql, /p_parent_is_published|v_parent_is_published/, 'Published entrance records are gated by the related published campus building');
+assert.match(passportSql, /step_free_entry[\s\S]*accessible_restroom/, 'Accessibility attributes use an explicit allowlist');
+assert.match(passportSql, /p_source_url IS NULL|p_source_url is null/, 'Verification still requires location evidence');
+assert.doesNotMatch(passportSql, /create table/i, 'Campus Passport reuses existing metadata and does not add a public table');
+assert.match(passportMergeSql, /existing_metadata[\s\S]*p_metadata/, 'Metadata merge retains pre-existing OSM and verification provenance');
+assert.match(passportCompatSql, /if p_metadata is null then[\s\S]*jsonb_each/, 'Legacy clients that omit Passport metadata retain existing detail fields');
+assert.match(passportCompatSql, /revoke all on function public\.manage_campus_map_feature/i, 'Legacy/public function execution remains narrowly granted');
+assert.match(js, /Route path itself is not certified step-free/, 'The UI does not claim that routing data proves the whole path is accessible');
 
 console.log('CampusMap static smoke checks passed.');
