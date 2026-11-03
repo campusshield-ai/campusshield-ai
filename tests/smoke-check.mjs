@@ -7,6 +7,7 @@ const html = htmlMarkup + "\n" + appScript;
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
 const experienceRefreshCss = await readFile(new URL("../campusshield-experience-refresh.css", import.meta.url), "utf8");
 const interactionLayerCss = await readFile(new URL("../campusshield-interaction-layer.css", import.meta.url), "utf8");
+const dashboardInsightsCss = await readFile(new URL("../campus-dashboard-insights.css", import.meta.url), "utf8");
 const featuresPage = await readFile(new URL("../features.html", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
 const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
@@ -838,3 +839,29 @@ assert.match(interactionLayerCss, /\.mobile-bottom-nav/, "mobile PWA navigation 
 assert.match(interactionLayerCss, /prefers-reduced-motion:\s*reduce/, "all new motion respects reduced-motion preferences");
 assert.doesNotMatch(interactionLayerCss, /createClient\(|supabase\.from\(|rpc\(/, "visual layer contains no backend or data access");
 console.log("PASS glass interaction layer, task-first feature guide, PWA navigation, and backend isolation");
+
+assert.ok(htmlMarkup.includes('href="./campus-dashboard-insights.css"'), "PWA dashboard loads the live analytics and CampusMap coverage layer");
+assert.match(htmlMarkup, /id="dashboard-safety-insights"/, "Overview contains the account-scoped safety activity panel");
+for (const days of ["7", "30", "90"]) {
+  assert.match(htmlMarkup, new RegExp('data-dashboard-range="' + days + '"'), "dashboard includes the " + days + "-day activity selector");
+}
+for (const id of ["dashboard-report-trend", "dashboard-status-resolved-count", "dashboard-status-open-count", "dashboard-top-categories"]) {
+  assert.ok(htmlMarkup.includes('id="' + id + '"'), "dashboard analytics output exists: " + id);
+}
+assert.match(appScript, /function renderDashboardAnalytics\(\)/, "incident trends render from the signed-in account's loaded records");
+assert.match(appScript, /incidentsLastUpdated instanceof Date/, "dashboard analytics distinguishes unloaded data from an empty period");
+assert.match(appScript, /new Date\(item\.createdAt\)/, "trend grouping uses each report's actual created timestamp");
+assert.match(appScript, /button\.dataset\.dashboardRange/, "date-range buttons rerender the existing dataset without a new data source");
+assert.match(appScript, /backend\.listOpportunityBookmarks\(\)\.catch\(\(\) => null\)/, "Saved for later reads the existing owner-scoped opportunity bookmarks");
+assert.match(appScript, /backend\.listCampusOpportunities\(\)\.catch\(\(\) => null\)/, "Saved for later resolves bookmarks against the existing campus opportunity feed");
+assert.match(appScript, /item\.university_id === campusId/, "saved dashboard content is filtered to the verified university");
+assert.match(appScript, /item\.status === 'published'/, "saved dashboard content excludes unpublished opportunities");
+assert.match(appScript, /savedIds\.has\(item\.id\)/, "only currently saved opportunities appear in the dashboard");
+assert.match(dashboardInsightsCss, /@media \(max-width: 650px\)/, "analytics and CampusMap coverage cards reflow on mobile");
+assert.match(dashboardInsightsCss, /prefers-reduced-motion: reduce/, "new dashboard chart transitions respect reduced-motion");
+assert.match(htmlMarkup, /id="campus-map-coverage-overview"/, "CampusMap includes a compact coverage summary");
+for (const id of ["campus-map-verified-count", "campus-map-record-count", "campus-map-pending-count", "campus-map-centre-state", "campus-map-boundary-state"]) {
+  assert.ok(htmlMarkup.includes('id="' + id + '"'), "CampusMap coverage output exists: " + id);
+}
+assert.doesNotMatch(dashboardInsightsCss, /createClient\(|supabase\.from\(|rpc\(/, "dashboard and map coverage stylesheet remains presentation-only");
+console.log("PASS live safety analytics, account-scoped saved opportunities, CampusMap confidence cards, and responsive styling");
