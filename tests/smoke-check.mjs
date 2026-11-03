@@ -50,6 +50,7 @@ const pastQuestionMigration = await readFile(new URL("../supabase/migrations/202
 const pastQuestionFunction = await readFile(new URL("../supabase/functions/past-question-practice/index.ts", import.meta.url), "utf8");
 const pastQuestionScript = await readFile(new URL("../past-question-practice.js", import.meta.url), "utf8");
 const pastQuestionCoverageMigration = await readFile(new URL("../supabase/migrations/20261028023527_past_question_nationwide_coverage.sql", import.meta.url), "utf8");
+const pastQuestionCoveragePermissionMigration = await readFile(new URL("../supabase/migrations/20261101143036_restrict_public_past_question_coverage_rpc_to_authenticated.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const privacyPage = await readFile(new URL("../privacy.html", import.meta.url), "utf8");
 const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf8");
@@ -371,6 +372,9 @@ assert.match(pastQuestionCoverageMigration, /rights_confirmed is true/i, "covera
 assert.match(pastQuestionCoverageMigration, /p\.status = 'approved'/i, "coverage only counts approved papers");
 assert.match(pastQuestionCoverageMigration, /p\.source_type <> 'ai_generated'/i, "coverage excludes AI-generated questions");
 assert.match(pastQuestionCoverageMigration, /grant execute on function public\.get_past_question_coverage\(\) to anon, authenticated/i, "only aggregate coverage is public to app clients");
+assert.match(pastQuestionCoveragePermissionMigration, /revoke execute on function public\.get_past_question_coverage\(\) from public, anon/i, "follow-up migration removes anonymous access to nationwide coverage");
+assert.match(pastQuestionCoveragePermissionMigration, /grant execute on function public\.get_past_question_coverage\(\) to authenticated, service_role/i, "nationwide coverage remains available only to authenticated and server roles after hardening");
+assert.match(pastQuestionCoveragePermissionMigration, /comment on function public\.get_past_question_coverage\(\)/i, "hardened coverage RPC documents its restricted access contract");
 assert.match(html, /https:\/\/legacy\.babcock\.edu\.ng\/library/, "past-question page links to Babcock's official library");
 assert.match(html, /https:\/\/elibrary\.babcock\.edu\.ng\//, "past-question page links to Babcock's official e-library");
 assert.match(html, /authorized campus reviewer approves them/, "past-question submissions remain private until review");
