@@ -237,3 +237,36 @@ test("student and staff get separate identity-verification instructions and resp
   }
 });
 
+
+
+test("shared glass interaction layer remains responsive and motion-aware", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('link[href="./campusshield-interaction-layer.css"]')).toHaveCount(1);
+  const widths = [360, 390, 430, 768, 1024, 1366, 1920];
+
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await page.evaluate(() => ({
+      viewport: window.innerWidth,
+      document: document.documentElement.scrollWidth,
+      body: document.body.scrollWidth,
+    }));
+    expect(metrics.document, `document should not overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    expect(metrics.body, `body should not overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    await expect(page.locator(".auth-panel")).toBeVisible();
+    await expect(page.locator(".login-feature-grid")).toBeVisible();
+  }
+
+  await page.locator('[data-auth-mode="signup"]').click();
+  await expect(page.locator("#signup-fields")).toBeVisible();
+  const authModeBackground = await page.locator('[data-auth-mode="signup"]').evaluate((element) =>
+    getComputedStyle(element).backgroundImage
+  );
+  expect(authModeBackground).not.toBe("none");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const reducedMotionDuration = await page.locator("#signup-fields").evaluate((element) =>
+    parseFloat(getComputedStyle(element).animationDuration)
+  );
+  expect(reducedMotionDuration).toBeLessThan(0.001);
+});
