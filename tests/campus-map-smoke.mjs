@@ -268,4 +268,19 @@ assert.equal(geometry.osmWayToBuildingCandidate({
   ],
 }), null, 'zero-area geometry is rejected');
 
+
+assert.match(html, /id="campus-map-coverage-overview"/, 'CampusMap presents a structured data-coverage summary');
+assert.match(html, /id="campus-map-verified-count"/, 'Coverage summary exposes the verified campus-footprint count');
+assert.match(html, /id="campus-map-record-count"/, 'Coverage summary exposes the actual loaded campus-footprint count');
+assert.match(html, /id="campus-map-review-coverage-card" hidden/, 'Pending building review starts hidden');
+assert.match(html, /id="campus-map-centre-state"/, 'Coverage summary exposes campus-centre confidence');
+assert.match(html, /id="campus-map-boundary-state"/, 'Coverage summary exposes campus-boundary confidence');
+assert.match(js, /function updateBuildingCoverageSummary\(\)/, 'Coverage summary reuses the current map data loader');
+assert.match(js, /campusBuildings\.filter\(item => item\.verification_status === 'verified'\)\.length/, 'Verified footprint count includes only university-reviewed campus shapes');
+assert.match(js, /setCoverageValue\('campus-map-verified-count', verified\)/, 'Verified footprint summary is populated from loaded campus records');
+assert.match(js, /reviewCard\.hidden = !isCampusAdmin/, 'Pending map-review count remains visible only to verified campus administrators');
+assert.match(js, /boundaryStatus === 'verified'/, 'Boundary coverage status is read from the saved campus profile');
+assert.match(css, /campus-map-coverage-overview/, 'CampusMap coverage cards are styled responsively');
+assert.match(css, /prefers-reduced-motion/, 'CampusMap visual controls retain reduced-motion support');
+
 console.log('CampusMap static smoke checks passed.');
