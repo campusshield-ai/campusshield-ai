@@ -2201,6 +2201,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 </style>
 <link rel="stylesheet" href="./campusshield-experience-refresh.css">
 <link rel="stylesheet" href="./campusshield-interaction-layer.css">
+<link rel="stylesheet" href="./campus-dashboard-insights.css">
 </head>
 <body>
 
@@ -2556,6 +2557,14 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <div><strong>Campus map · data coverage and confidence</strong><small id="campus-map-scale-summary">Loading map scale…</small><small id="campus-map-3d-coverage">Building coverage has not been assessed.</small></div>
       <button class="campus-map-action primary" type="button" id="campus-map-center">Centre campus</button>
     </div>
+    <div id="campus-map-coverage-overview" class="campus-map-coverage-overview" aria-label="CampusMap coverage summary" aria-live="polite">
+      <div class="campus-map-coverage-card" data-state="neutral"><span>Verified campus footprints</span><strong id="campus-map-verified-count">—</strong><small>Reviewed campus building shapes</small></div>
+      <div class="campus-map-coverage-card"><span>Map footprint records</span><strong id="campus-map-record-count">—</strong><small>Campus-specific records loaded</small></div>
+      <div class="campus-map-coverage-card" id="campus-map-review-coverage-card" hidden data-state="pending"><span>Pending admin review</span><strong id="campus-map-pending-count">—</strong><small>Unpublished candidate footprints</small></div>
+      <div class="campus-map-coverage-card" id="campus-map-centre-coverage-card"><span>Campus centre</span><strong id="campus-map-centre-state">Not set</strong><small id="campus-map-centre-note">Centre provenance</small></div>
+      <div class="campus-map-coverage-card" id="campus-map-boundary-coverage-card"><span>Campus boundary</span><strong id="campus-map-boundary-state">Not mapped</strong><small id="campus-map-boundary-note">Boundary provenance</small></div>
+    </div>
+    <p class="campus-map-coverage-context">Global OpenStreetMap building shapes can help with orientation, but they are context only—not university-verified buildings, entrances, or surveyed campus geometry.</p>
     <div class="campus-map-shell">
     <div class="campus-map-stage"><div id="campus-map-canvas" role="application" aria-label="Interactive university map"></div>
       <div class="campus-map-overlay"><label class="campus-map-search-wrap"><span aria-hidden="true">⌕</span><input id="campus-map-search" type="search" placeholder="Search buildings and facilities" autocomplete="off" aria-label="Search campus locations"></label>
@@ -2698,6 +2707,39 @@ button,input,select,textarea{max-width:100%;min-width:0}
   <div class="stat"><div class="stat-label">Resolved reports</div><div class="stat-num" id="resolvedStat">—</div><p class="stat-note">Marked resolved in the records</p></div>
   <div class="stat"><div class="stat-label">Resolution rate</div><div class="stat-num" id="rateStat">—</div><p class="stat-note">Resolved reports ÷ reports in view</p></div>
 </div>
+<section class="panel dashboard-safety-insights" id="dashboard-safety-insights" aria-labelledby="dashboard-safety-insights-title">
+  <div class="dashboard-insights-header">
+    <div><h2 id="dashboard-safety-insights-title">Safety activity</h2><p>Incident trends from records your signed-in account can access. These summaries are not live emergency monitoring.</p></div>
+    <div class="dashboard-period-switch" role="group" aria-label="Choose incident reporting period">
+      <button type="button" data-dashboard-range="7" aria-pressed="false">7 days</button>
+      <button type="button" data-dashboard-range="30" aria-pressed="true">30 days</button>
+      <button type="button" data-dashboard-range="90" aria-pressed="false">90 days</button>
+    </div>
+  </div>
+  <div class="dashboard-insights-grid">
+    <section class="dashboard-insight-card" aria-labelledby="dashboard-trend-title">
+      <div class="dashboard-insight-card-head">
+        <div><div class="dashboard-insight-kicker">REPORT VOLUME</div><div class="dashboard-insight-total"><strong id="dashboard-trend-total">—</strong><span id="dashboard-trend-period">reports in 30 days</span></div></div>
+        <span class="muted">By date</span>
+      </div>
+      <div id="dashboard-report-trend" class="dashboard-trend-chart" role="img" aria-label="Incident report counts by date for the selected period"></div>
+      <div id="dashboard-trend-empty" class="dashboard-trend-empty" hidden>Incident report activity will appear here after records load.</div>
+    </section>
+    <section class="dashboard-insight-card" aria-labelledby="dashboard-status-title">
+      <div class="dashboard-insight-card-head"><div><div class="dashboard-insight-kicker">CURRENT REPORT STATUS</div><h3 id="dashboard-status-title" class="dashboard-insight-total">Status mix</h3></div></div>
+      <div class="dashboard-status-split" role="img" aria-label="Resolved and unresolved incident report proportions">
+        <span id="dashboard-status-resolved-bar" class="dashboard-status-resolved" style="width:0%"></span>
+        <span id="dashboard-status-open-bar" class="dashboard-status-open" style="width:0%"></span>
+      </div>
+      <div class="dashboard-status-legend">
+        <div class="dashboard-status-legend-row"><span><i class="dashboard-status-dot resolved"></i>Resolved</span><strong id="dashboard-status-resolved-count">—</strong></div>
+        <div class="dashboard-status-legend-row"><span><i class="dashboard-status-dot open"></i>Open / in review</span><strong id="dashboard-status-open-count">—</strong></div>
+      </div>
+      <div class="dashboard-category-block"><div class="dashboard-category-title">Common report categories · selected period</div><div id="dashboard-top-categories" class="dashboard-category-list"></div></div>
+    </section>
+  </div>
+  <p id="dashboard-insights-footnote" class="dashboard-insights-footnote">Only records visible to your account are included. A missing report is not proof that an area is safe.</p>
+</section>
 <section class="panel campus-dashboard-panel" id="campus-dashboard-panel" aria-labelledby="campus-dashboard-heading">
   <div class="panel-heading"><div><h2 id="campus-dashboard-heading">Your campus at a glance</h2><p id="campus-dashboard-description">Your private classes, verified announcements and upcoming campus activity.</p></div><span id="campus-dashboard-role" class="campus-dashboard-role">Campus member</span></div>
   <div class="campus-dashboard-metrics" aria-label="Campus learning and activity summary">
@@ -2718,6 +2760,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <section class="campus-dashboard-card" aria-labelledby="campus-dashboard-updates-title">
       <div class="campus-dashboard-card-head"><h3 id="campus-dashboard-updates-title">Campus Updates</h3><button class="btn secondary" type="button" data-page="noticeboard">View all</button></div>
       <div id="campus-dashboard-updates" class="campus-dashboard-list"><div class="campus-dashboard-empty">Verified notices and upcoming events will appear here.</div></div>
+    </section>
+    <section class="campus-dashboard-card" id="campus-dashboard-saved-panel" aria-labelledby="campus-dashboard-saved-title">
+      <div class="campus-dashboard-card-head"><h3 id="campus-dashboard-saved-title">Saved for later</h3><span id="campus-dashboard-saved-count" class="campus-dashboard-saved-count">— saved</span></div>
+      <div id="campus-dashboard-saved-opportunities" class="campus-dashboard-list"><div class="campus-dashboard-empty">Your saved campus opportunities will appear here.</div></div>
+      <div class="actions"><button class="btn secondary" type="button" data-page="opportunities">Open Opportunity Hub</button></div>
     </section>
   </div>
   <section class="campus-dashboard-card campus-dashboard-helpdesk" aria-labelledby="campus-dashboard-helpdesk-title">
