@@ -324,7 +324,7 @@ assert.match(passportCss, /@media\(max-width:420px\)/, 'Campus Passport cards ad
 assert.match(passportCss, /prefers-reduced-motion:reduce/, 'Campus Passport controls respect reduced-motion');
 assert.match(passportSql, /'entrance'/, 'Staging migration supports dedicated entrance feature records');
 assert.match(passportSql, /p_metadata jsonb/, 'Staging RPC accepts structured Passport metadata');
-assert.match(passportSql, /SECURITY INVOKER/, 'Exposed Passport RPC wrapper is SECURITY INVOKER');
+assert.match(passportSql, /security invoker/i, 'Exposed Passport RPC wrapper is SECURITY INVOKER');
 assert.match(passportSql, /A verified campus administrator is required/, 'Passport writes preserve the verified campus admin requirement');
 assert.match(passportSql, /p_parent_is_published|v_parent_is_published/, 'Published entrance records are gated by the related published campus building');
 assert.match(passportSql, /step_free_entry[\s\S]*accessible_restroom/, 'Accessibility attributes use an explicit allowlist');
