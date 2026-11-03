@@ -6,6 +6,8 @@ const appScript = await readFile(new URL("../campusshield-app.js", import.meta.u
 const html = htmlMarkup + "\n" + appScript;
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
 const experienceRefreshCss = await readFile(new URL("../campusshield-experience-refresh.css", import.meta.url), "utf8");
+const interactionLayerCss = await readFile(new URL("../campusshield-interaction-layer.css", import.meta.url), "utf8");
+const featuresPage = await readFile(new URL("../features.html", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
 const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
 const responsiveCssEnd = htmlMarkup.indexOf("</style>", responsiveCssStart);
@@ -822,3 +824,17 @@ assert.ok(experienceRefreshCss.includes("@media (max-width: 650px)"), "visual re
 assert.ok(experienceRefreshCss.includes('html[data-theme="dark"]'), "visual refresh preserves dark-theme support");
 assert.ok(!experienceRefreshCss.includes("createClient(") && !experienceRefreshCss.includes("supabase.from(") && !experienceRefreshCss.includes("rpc("), "visual layer does not add direct backend or data access");
 console.log("PASS CampusShield visual refresh, responsive layout, reduced-motion support, and backend isolation");
+
+assert.ok(htmlMarkup.includes('href="./campusshield-interaction-layer.css"'), "PWA home and dashboard load the shared glass interaction layer");
+assert.ok(featuresPage.includes('href="./campusshield-interaction-layer.css"'), "public feature guide loads the shared design layer");
+assert.match(featuresPage, /<body class="cs-features-page">/, "feature guide is scoped to the editorial design layer");
+assert.match(featuresPage, /Right support\. Right next step\./, "feature guide uses task-first discovery language");
+assert.match(interactionLayerCss, /backdrop-filter:\s*blur/, "visual layer uses restrained glass surfaces");
+assert.match(interactionLayerCss, /#login-screen \.auth-tabs button\[aria-pressed="true"\]/, "auth mode selector has a clear selected state");
+assert.match(interactionLayerCss, /#login-screen #signup-fields:not\(\[hidden\]\)/, "create-account fields animate only when visible");
+assert.match(interactionLayerCss, /#workspace \.quick-action-bar/, "dashboard quick actions receive the task-first treatment");
+assert.match(interactionLayerCss, /#workspace #page-campus-map \.campus-map-controls/, "CampusMap controls receive the glass treatment");
+assert.match(interactionLayerCss, /\.mobile-bottom-nav/, "mobile PWA navigation receives the floating dock treatment");
+assert.match(interactionLayerCss, /prefers-reduced-motion:\s*reduce/, "all new motion respects reduced-motion preferences");
+assert.doesNotMatch(interactionLayerCss, /createClient\(|supabase\.from\(|rpc\(/, "visual layer contains no backend or data access");
+console.log("PASS glass interaction layer, task-first feature guide, PWA navigation, and backend isolation");
