@@ -315,7 +315,7 @@ test("interactive dashboard and CampusMap coverage panels fit the app shell", as
 test("Campus Passport and entrance discovery fit the CampusMap experience at seven widths", async ({ page }) => {
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   await expect(page.locator('link[href="./campus-map-passport.css"]')).toHaveCount(1);
-  await expect(page.locator("#campus-map-discovery-filters")).toBeVisible();
+  await expect(page.locator("#campus-map-discovery-filters")).toHaveCount(1);
 
   // Reveal the app shell and the empty-state Passport card. This test does not
   // authenticate or insert campus records into Supabase.
@@ -329,6 +329,7 @@ test("Campus Passport and entrance discovery fit the CampusMap experience at sev
     document.querySelector("#campus-map-passport-description").textContent =
       "Verified campus details appear here after an authorised review.";
   });
+  await expect(page.locator("#campus-map-discovery-filters")).toBeVisible();
 
   for (const width of [360, 390, 430, 768, 1024, 1366, 1920]) {
     await page.setViewportSize({ width, height: 900 });
