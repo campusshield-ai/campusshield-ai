@@ -12,6 +12,7 @@ const geometryContext = {};
 runInNewContext(geometrySource, geometryContext);
 const geometry = geometryContext.CampusMapGeometry;
 const css = read('campus-map.css');
+const coverageCss = read('campus-dashboard-insights.css');
 const sql = read('supabase/migrations/20261031115759_campus_map_verified_locations_and_emergency_layers.sql');
 const policySql = read('supabase/migrations/20261031115831_campus_map_public_read_policy_split.sql');
 const finalPolicySql = read('supabase/migrations/20261031120234_campus_map_single_read_policy_and_audit_index.sql');
@@ -280,7 +281,7 @@ assert.match(js, /campusBuildings\.filter\(item => item\.verification_status ===
 assert.match(js, /setCoverageValue\('campus-map-verified-count', verified\)/, 'Verified footprint summary is populated from loaded campus records');
 assert.match(js, /reviewCard\.hidden = !isCampusAdmin/, 'Pending map-review count remains visible only to verified campus administrators');
 assert.match(js, /boundaryStatus === 'verified'/, 'Boundary coverage status is read from the saved campus profile');
-assert.match(css, /campus-map-coverage-overview/, 'CampusMap coverage cards are styled responsively');
+assert.match(coverageCss, /campus-map-coverage-overview/, 'CampusMap coverage cards are styled responsively');
 assert.match(css, /prefers-reduced-motion/, 'CampusMap visual controls retain reduced-motion support');
 
 console.log('CampusMap static smoke checks passed.');
