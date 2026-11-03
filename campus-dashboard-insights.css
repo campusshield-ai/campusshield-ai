@@ -104,6 +104,7 @@
   margin-top: 12px;
   padding: 8px 4px 0;
 }
+.dashboard-trend-chart--six { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .dashboard-trend-column {
   display: grid;
   grid-template-rows: 17px 1fr 23px;
