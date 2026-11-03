@@ -4037,6 +4037,7 @@
     dashboardAnalyticsRangeDays = nextRange;
     renderDashboardAnalytics();
   });
+  renderDashboardAnalytics();
 
   function render() {
     const total = incidents.length;
