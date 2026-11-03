@@ -164,7 +164,7 @@
     left: 9px;
     right: 9px;
     bottom: calc(7px + env(safe-area-inset-bottom));
-    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    padding: 6px;
     border: 1px solid rgba(210, 229, 220, .96);
     border-radius: 19px;
     background: rgba(250, 253, 251, .9);
@@ -220,6 +220,8 @@ body.cs-features-page {
   box-shadow: 0 0 0 26px rgba(164, 239, 220, .04), 0 0 0 62px rgba(164, 239, 220, .025);
 }
 .cs-features-page main { width: min(1040px, calc(100% - 32px)); }
+.cs-features-page .eyebrow { margin: 20px 0 4px; color: #277e65; font-size: 10px; font-weight: 900; letter-spacing: .18em; }
+.cs-features-page article > h1 { margin-top: 8px; }
 .cs-features-page article {
   border-color: rgba(215, 232, 223, .95);
   border-radius: 24px;
