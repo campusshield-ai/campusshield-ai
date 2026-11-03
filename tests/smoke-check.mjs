@@ -812,13 +812,13 @@ console.log("PASS self-service profile editing, private avatar storage, and owne
 
 console.log("PASS searchable national service directory, verified-source crawler restrictions, admin gate, and crawl status migration");
 
-
-assert.match(htmlMarkup, /campusshield-experience-refresh\\.css/, "Staging website loads the shared visual experience layer");
-assert.match(experienceRefreshCss, /#login-screen \.login-hero-copy h1/, "public landing hero uses the refreshed brand hierarchy");
-assert.match(experienceRefreshCss, /#workspace \.campus-dashboard-hero/, "signed-in dashboard uses the refreshed visual hierarchy");
-assert.match(experienceRefreshCss, /campus-dashboard-emergency/, "emergency guidance remains visually distinct in the dashboard");
-assert.match(experienceRefreshCss, /prefers-reduced-motion: reduce/, "visual effects respect reduced-motion preferences");
-assert.match(experienceRefreshCss, /@media \\(max-width: 650px\\)/, "visual refresh includes phone-width layout rules");
-assert.match(experienceRefreshCss, /html\\[data-theme="dark"\\]/, "visual refresh preserves dark-theme support");
-assert.doesNotMatch(experienceRefreshCss, /createClient\\(|supabase\\.from\\(|rpc\\(/i, "visual layer does not add direct backend or data access");
+ 
+assert.ok(htmlMarkup.includes("campusshield-experience-refresh.css"), "Staging website loads the shared visual experience layer");
+assert.ok(experienceRefreshCss.includes("#login-screen .login-hero-copy h1"), "public landing hero uses the refreshed brand hierarchy");
+assert.ok(experienceRefreshCss.includes("#workspace .campus-dashboard-hero"), "signed-in dashboard uses the refreshed visual hierarchy");
+assert.ok(experienceRefreshCss.includes("campus-dashboard-emergency"), "emergency guidance remains visually distinct in the dashboard");
+assert.ok(experienceRefreshCss.includes("prefers-reduced-motion: reduce"), "visual effects respect reduced-motion preferences");
+assert.ok(experienceRefreshCss.includes("@media (max-width: 650px)"), "visual refresh includes phone-width layout rules");
+assert.ok(experienceRefreshCss.includes('html[data-theme="dark"]'), "visual refresh preserves dark-theme support");
+assert.ok(!experienceRefreshCss.includes("createClient(") && !experienceRefreshCss.includes("supabase.from(") && !experienceRefreshCss.includes("rpc("), "visual layer does not add direct backend or data access");
 console.log("PASS CampusShield visual refresh, responsive layout, reduced-motion support, and backend isolation");
