@@ -5,6 +5,7 @@ const htmlMarkup = await readFile(new URL("../index.html", import.meta.url), "ut
 const appScript = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
 const html = htmlMarkup + "\n" + appScript;
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
+const experienceRefreshCss = await readFile(new URL("../campusshield-experience-refresh.css", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
 const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
 const responsiveCssEnd = htmlMarkup.indexOf("</style>", responsiveCssStart);
@@ -810,3 +811,14 @@ assert.match(html, /This crawler is restricted to its designated owner\./, "craw
 console.log("PASS self-service profile editing, private avatar storage, and owner-only crawler authorization");
 
 console.log("PASS searchable national service directory, verified-source crawler restrictions, admin gate, and crawl status migration");
+
+ 
+assert.ok(htmlMarkup.includes("campusshield-experience-refresh.css"), "Staging website loads the shared visual experience layer");
+assert.ok(experienceRefreshCss.includes("#login-screen .login-hero-copy h1"), "public landing hero uses the refreshed brand hierarchy");
+assert.ok(experienceRefreshCss.includes("#workspace .campus-dashboard-hero"), "signed-in dashboard uses the refreshed visual hierarchy");
+assert.ok(experienceRefreshCss.includes("campus-dashboard-emergency"), "emergency guidance remains visually distinct in the dashboard");
+assert.ok(experienceRefreshCss.includes("prefers-reduced-motion: reduce"), "visual effects respect reduced-motion preferences");
+assert.ok(experienceRefreshCss.includes("@media (max-width: 650px)"), "visual refresh includes phone-width layout rules");
+assert.ok(experienceRefreshCss.includes('html[data-theme="dark"]'), "visual refresh preserves dark-theme support");
+assert.ok(!experienceRefreshCss.includes("createClient(") && !experienceRefreshCss.includes("supabase.from(") && !experienceRefreshCss.includes("rpc("), "visual layer does not add direct backend or data access");
+console.log("PASS CampusShield visual refresh, responsive layout, reduced-motion support, and backend isolation");
