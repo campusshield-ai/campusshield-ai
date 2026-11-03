@@ -961,6 +961,45 @@
         : 'not mapped';
     const verified = campusBuildings.filter(item => item.verification_status === 'verified').length;
     const pending = campusBuildings.filter(item => item.verification_status === 'pending').length;
+    const setCoverageValue = (id, value) => {
+      const node = $(id);
+      if (node) node.textContent = String(value);
+    };
+    setCoverageValue('campus-map-verified-count', verified);
+    setCoverageValue('campus-map-record-count', campusBuildings.length);
+    setCoverageValue('campus-map-pending-count', pending);
+    const reviewCard = $('campus-map-review-coverage-card');
+    if (reviewCard) reviewCard.hidden = !isCampusAdmin;
+
+    const centreCard = $('campus-map-centre-coverage-card');
+    const centreState = centreStatus === 'verified'
+      ? 'Verified'
+      : centreStatus === 'official_locator'
+        ? 'Official locator'
+        : centreStatus === 'candidate'
+          ? 'Candidate'
+          : 'Not set';
+    setCoverageValue('campus-map-centre-state', centreState);
+    setCoverageValue('campus-map-centre-note',
+      centreStatus === 'verified' ? 'Verified campus reference point'
+        : centreStatus === 'official_locator' ? 'Official locator, not a surveyed centre'
+          : centreStatus === 'candidate' ? 'Needs verification before building discovery'
+            : 'No campus centre has been verified');
+    if (centreCard) centreCard.dataset.state = centreStatus === 'verified' ? 'verified' : centreStatus === 'candidate' ? 'candidate' : 'neutral';
+
+    const boundaryCard = $('campus-map-boundary-coverage-card');
+    const boundaryState = boundaryStatus === 'verified'
+      ? 'Verified'
+      : boundaryStatus === 'candidate'
+        ? 'Candidate'
+        : 'Not mapped';
+    setCoverageValue('campus-map-boundary-state', boundaryState);
+    setCoverageValue('campus-map-boundary-note',
+      boundaryStatus === 'verified' ? 'University-verified campus boundary'
+        : boundaryStatus === 'candidate' ? 'Candidate boundary; not published as verified'
+          : 'No verified boundary is available');
+    if (boundaryCard) boundaryCard.dataset.state = boundaryStatus === 'verified' ? 'verified' : boundaryStatus === 'candidate' ? 'candidate' : 'neutral';
+
     const campusFootprintSummary = campusBuildings.length
       ? `${campusBuildings.length} campus-specific footprint records loaded (${verified} verified, ${pending} pending)`
       : 'No campus-specific footprint records loaded';
