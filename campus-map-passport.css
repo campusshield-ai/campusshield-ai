@@ -95,3 +95,11 @@ html[data-theme="dark"] .campus-map-passport-links a{color:#8ee1bb}
 @media(prefers-reduced-motion:reduce){
   .campus-map-discovery-filters button,.campus-map-passport-entrance{transition:none!important}
 }
+
+.campus-map-passport-safety-note{
+  margin:10px 0 0;padding:8px 9px;border:1px solid #eadfca;border-radius:9px;
+  background:#fffaf0;color:#80683a;font-size:8px;line-height:1.5
+}
+html[data-theme="dark"] .campus-map-passport-safety-note{
+  border-color:#5a4930;background:#352d20;color:#ead5a8
+}
