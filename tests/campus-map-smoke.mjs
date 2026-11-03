@@ -334,6 +334,6 @@ assert.match(passportMergeSql, /existing_metadata[\s\S]*p_metadata/, 'Metadata m
 assert.match(passportCompatSql, /if p_metadata is null then[\s\S]*jsonb_each/, 'Legacy clients that omit Passport metadata retain existing detail fields');
 assert.match(passportMergeSql, /revoke all on function public\.manage_campus_map_feature/i, 'Exposed Passport RPC execution remains narrowly granted');
 assert.match(passportCompatSql, /revoke all on function private\.manage_campus_map_feature_with_metadata_impl/i, 'Legacy metadata compatibility implementation is not directly public');
-assert.match(js, /Route path itself is not certified step-free/, 'The UI does not claim that routing data proves the whole path is accessible');
+assert.match(js, /route path itself is not certified step-free/i, 'The UI does not claim that routing data proves the whole path is accessible');
 
 console.log('CampusMap static smoke checks passed.');
