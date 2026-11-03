@@ -71,6 +71,7 @@
   let incidentRefreshQueued = false;
   let authSessionVersion = 0;
   let incidentsLastUpdated = null;
+  let dashboardAnalyticsRangeDays = 30;
   let authMode = 'signin';
   let identityCompletionMode = false;
   let authBusy = false;
@@ -1150,6 +1151,8 @@
       clearFeed('campus-dashboard-announcements', 'Class announcements appear after campus verification.');
       clearFeed('campus-dashboard-updates', 'Verified notices and events appear after campus verification.');
       clearFeed('campus-dashboard-helpdesk', 'Your service request status appears after campus verification.');
+      clearFeed('campus-dashboard-saved-opportunities', 'Saved campus opportunities appear after your account and university membership are verified.');
+      $('campus-dashboard-saved-count').textContent = '— saved';
       $('campus-dashboard-helpdesk-count').textContent = '—';
       $('campus-metric-classes').textContent = '—';
       $('campus-metric-secondary').textContent = '—';
@@ -1167,6 +1170,8 @@
         clearFeed('campus-dashboard-announcements', 'A verified campus membership is required.');
         clearFeed('campus-dashboard-updates', 'A verified campus membership is required.');
         clearFeed('campus-dashboard-helpdesk', 'Choose and verify your university to load your service requests.');
+        clearFeed('campus-dashboard-saved-opportunities', 'Verify your campus membership to load saved opportunities for this university.');
+        $('campus-dashboard-saved-count').textContent = '— saved';
         $('campus-dashboard-helpdesk-count').textContent = '—';
         $('campus-metric-classes').textContent = '—';
         $('campus-metric-secondary').textContent = '—';
@@ -1182,7 +1187,9 @@
         backend.listCampusNotices().catch(() => []),
         backend.listCampusEvents().catch(() => []),
         backend.listCampusHelpdeskTickets().catch(() => null),
-        backend.getCurrentUser().catch(() => null)
+        backend.getCurrentUser().catch(() => null),
+        backend.listOpportunityBookmarks().catch(() => null),
+        backend.listCampusOpportunities().catch(() => null)
       ]);
       const classes = (results[0] || []).filter(row => row.university_id === campusId);
       const notices = (results[1] || []).filter(row => row.university_id === campusId &&
@@ -1225,6 +1232,37 @@
       rosterCounts.forEach(item => totalStudents.set(item.classroom_id, item.count));
       if (requestId !== loadCampusDashboardInsights.requestId || requestSessionVersion !== authSessionVersion || currentProfile !== requestProfile) return;
       const studentCount = Array.from(totalStudents.values()).reduce((sum,value) => sum + value, 0);
+
+      const savedOpportunityFeed = $('campus-dashboard-saved-opportunities');
+      const savedOpportunityCount = $('campus-dashboard-saved-count');
+      if (!Array.isArray(results[5]) || !Array.isArray(results[6])) {
+        savedOpportunityCount.textContent = '— saved';
+        clearFeed('campus-dashboard-saved-opportunities', 'Saved opportunities are temporarily unavailable. Open Opportunity Hub to try again.');
+      } else {
+        const savedIds = new Set(results[5]
+          .filter(item => item.university_id === campusId && item.opportunity_id)
+          .map(item => item.opportunity_id));
+        const savedOpportunities = results[6].filter(item =>
+          item.university_id === campusId &&
+          item.status === 'published' &&
+          savedIds.has(item.id) &&
+          (!item.deadline || new Date(item.deadline).getTime() > now)
+        ).sort((a,b) => new Date(a.deadline || '9999-12-31').getTime() - new Date(b.deadline || '9999-12-31').getTime());
+        savedOpportunityCount.textContent = savedOpportunities.length + ' saved';
+        savedOpportunityFeed.replaceChildren();
+        if (!savedOpportunities.length) {
+          clearFeed('campus-dashboard-saved-opportunities', 'Nothing saved yet. Save a published scholarship, internship, job or campus opportunity and it will appear here.');
+        } else {
+          savedOpportunities.slice(0, 3).forEach(item => appendItem(
+            savedOpportunityFeed,
+            item.title,
+            [item.category, item.provider_name].filter(Boolean).join(' · '),
+            (item.description || 'Published campus opportunity') + (item.deadline ? ' · Deadline ' + dateText(item.deadline) : ''),
+            'Open Opportunity Hub',
+            () => { navigate('opportunities'); loadCampusOpportunitiesPage(); }
+          ));
+        }
+      }
 
       $('campus-metric-classes').textContent = String(classes.length);
       $('campus-metric-secondary').textContent = String(isTeacher ? studentCount : classroomAnnouncements.length);
@@ -3852,6 +3890,153 @@
     }
   });
 
+  function renderDashboardAnalytics() {
+    const period = [7, 30, 90].includes(dashboardAnalyticsRangeDays) ? dashboardAnalyticsRangeDays : 30;
+    const trend = $('dashboard-report-trend');
+    const empty = $('dashboard-trend-empty');
+    const totalLabel = $('dashboard-trend-total');
+    const periodLabel = $('dashboard-trend-period');
+    const footnote = $('dashboard-insights-footnote');
+    if (!trend || !empty || !totalLabel || !periodLabel) return;
+
+    const loaded = incidentsLastUpdated instanceof Date && Number.isFinite(incidentsLastUpdated.getTime());
+    const now = new Date();
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - (period - 1));
+    const bucketCount = period === 7 ? 7 : 6;
+    const bucketSpanDays = period / bucketCount;
+    const buckets = Array.from({ length: bucketCount }, (_, index) => {
+      const firstDay = new Date(start);
+      firstDay.setDate(firstDay.getDate() + Math.floor(index * bucketSpanDays));
+      const lastDay = new Date(start);
+      lastDay.setDate(lastDay.getDate() + Math.ceil((index + 1) * bucketSpanDays) - 1);
+      return {
+        count: 0,
+        label: period === 7
+          ? firstDay.toLocaleDateString(undefined, { weekday: 'short' })
+          : firstDay.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) + '–' + lastDay.getDate()
+      };
+    });
+    const periodRecords = [];
+    const millisecondsPerDay = 24 * 60 * 60 * 1000;
+    incidents.forEach(item => {
+      const createdAt = new Date(item.createdAt);
+      if (!Number.isFinite(createdAt.getTime()) || createdAt < start || createdAt > todayEnd) return;
+      const elapsedDays = Math.floor((createdAt.getTime() - start.getTime()) / millisecondsPerDay);
+      if (elapsedDays < 0 || elapsedDays >= period) return;
+      const bucketIndex = Math.min(bucketCount - 1, Math.floor(elapsedDays / bucketSpanDays));
+      buckets[bucketIndex].count += 1;
+      periodRecords.push(item);
+    });
+
+    totalLabel.textContent = loaded ? String(periodRecords.length) : '—';
+    periodLabel.textContent = 'reports in ' + period + ' days';
+    document.querySelectorAll('[data-dashboard-range]').forEach(button => {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.dashboardRange) === period));
+    });
+
+    trend.replaceChildren();
+    const hasPeriodRecords = periodRecords.length > 0;
+    trend.hidden = !loaded || !hasPeriodRecords;
+    empty.hidden = loaded && hasPeriodRecords;
+    if (!loaded) {
+      empty.textContent = $('incidentSyncStatus')?.dataset.state === 'error'
+        ? 'Incident data could not be loaded. Use Refresh data to try again.'
+        : 'Incident report activity will appear after your account records load.';
+    } else if (!hasPeriodRecords) {
+      empty.textContent = 'No reports were recorded in the last ' + period + ' days.';
+    } else {
+      const maxCount = Math.max(1, ...buckets.map(bucket => bucket.count));
+      buckets.forEach(bucket => {
+        const column = document.createElement('div');
+        column.className = 'dashboard-trend-column';
+        column.setAttribute('aria-label', bucket.label + ': ' + bucket.count + ' reports');
+
+        const count = document.createElement('span');
+        count.className = 'dashboard-trend-count';
+        count.textContent = String(bucket.count);
+
+        const track = document.createElement('div');
+        track.className = 'dashboard-trend-track';
+        track.setAttribute('aria-hidden', 'true');
+
+        const bar = document.createElement('div');
+        bar.className = 'dashboard-trend-bar';
+        bar.style.setProperty('--bar-height', bucket.count ? Math.max(8, Math.round(bucket.count / maxCount * 100)) + '%' : '0%');
+        track.appendChild(bar);
+
+        const label = document.createElement('span');
+        label.className = 'dashboard-trend-label';
+        label.textContent = bucket.label;
+        column.append(count, track, label);
+        trend.appendChild(column);
+      });
+      trend.setAttribute('aria-label', periodRecords.length + ' reports across the selected ' + period + ' day period');
+    }
+
+    const total = incidents.length;
+    const resolved = incidents.filter(item => isResolvedStatus(item.status)).length;
+    const open = Math.max(0, total - resolved);
+    const resolvedBar = $('dashboard-status-resolved-bar');
+    const openBar = $('dashboard-status-open-bar');
+    if (resolvedBar && openBar) {
+      resolvedBar.style.width = total ? (resolved / total * 100) + '%' : '0%';
+      openBar.style.width = total ? (open / total * 100) + '%' : '0%';
+    }
+    $('dashboard-status-resolved-count').textContent = loaded ? String(resolved) : '—';
+    $('dashboard-status-open-count').textContent = loaded ? String(open) : '—';
+
+    const categoryList = $('dashboard-top-categories');
+    categoryList.replaceChildren();
+    const categoryCounts = new Map();
+    periodRecords.forEach(item => {
+      const category = String(item.category || 'Unspecified').trim() || 'Unspecified';
+      categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
+    });
+    const topCategories = Array.from(categoryCounts.entries()).sort((a,b) => b[1] - a[1]).slice(0, 3);
+    if (!loaded || !topCategories.length) {
+      const message = document.createElement('p');
+      message.className = 'muted';
+      message.textContent = loaded ? 'No categories in this period.' : 'Category summaries will appear after report data loads.';
+      categoryList.appendChild(message);
+    } else {
+      const maxCategoryCount = Math.max(...topCategories.map(item => item[1]));
+      topCategories.forEach(([name, count]) => {
+        const row = document.createElement('div');
+        row.className = 'dashboard-category-row';
+        const label = document.createElement('span');
+        label.textContent = name;
+        const value = document.createElement('strong');
+        value.textContent = String(count);
+        const track = document.createElement('div');
+        track.className = 'dashboard-category-track';
+        const fill = document.createElement('span');
+        fill.style.setProperty('--category-width', (count / maxCategoryCount * 100) + '%');
+        track.appendChild(fill);
+        row.append(label, value, track);
+        categoryList.appendChild(row);
+      });
+    }
+
+    if (footnote) {
+      footnote.textContent = loaded
+        ? 'Showing ' + total + ' reports visible to your account. The chart groups records by created date; current status is shown separately. CampusShield does not detect incidents or dispatch emergency services.'
+        : 'Only records visible to your account are included. A missing report is not proof that an area is safe.';
+    }
+  }
+
+  document.addEventListener('click', event => {
+    const button = event.target.closest('[data-dashboard-range]');
+    if (!button) return;
+    const nextRange = Number(button.dataset.dashboardRange);
+    if (![7, 30, 90].includes(nextRange)) return;
+    dashboardAnalyticsRangeDays = nextRange;
+    renderDashboardAnalytics();
+  });
+
   function render() {
     const total = incidents.length;
     const resolved = incidents.filter(i => isResolvedStatus(i.status)).length;
@@ -3863,6 +4048,7 @@
     $('highStat').textContent = high;
     $('resolvedStat').textContent = resolved;
     $('rateStat').textContent = total ? Math.round(resolved / total * 100) + '%' : '—';
+    renderDashboardAnalytics();
 
     $('recentList').innerHTML = incidents.slice(0, 5).map(i =>
       `<article class="recent-item">
