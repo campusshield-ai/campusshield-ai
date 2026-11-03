@@ -1443,10 +1443,11 @@
     appendPassportTags($('campus-map-passport-facility-tags'), facilities);
 
     const accessibilitySection = $('campus-map-passport-accessibility');
-    const access = Array.isArray(metadata.accessibility_features) ? metadata.accessibility_features : [];
+    const access = Array.isArray(metadata.accessibility_features) ? metadata.accessibility_features.slice() : [];
+    if (item.feature_type === 'accessible_entry' && !access.includes('verified accessible entrance')) access.unshift('verified accessible entrance');
     accessibilitySection.hidden = access.length === 0 && !metadata.accessibility_notes;
     appendPassportTags($('campus-map-passport-access-tags'), access);
-    $('campus-map-passport-access-notes').textContent = metadata.accessibility_notes || '';
+    $('campus-map-passport-access-notes').textContent = metadata.accessibility_notes || (item.feature_type === 'accessible_entry' ? 'This marker identifies a campus-approved accessible entrance. Route path conditions still depend on mapped pedestrian data.' : '');
 
     const linkedEntrances = item.feature_type === 'entrance' || item.feature_type === 'accessible_entry'
       ? []
@@ -1633,14 +1634,17 @@
     const contactLabel = value('campus-map-admin-contact-label');
     const contactUrl = value('campus-map-admin-contact-url');
     const phone = value('campus-map-admin-emergency-phone');
+    const featureType = $('campus-map-admin-type').value;
     if (buildingCode) metadata.building_code = buildingCode;
     if (hours) metadata.opening_hours = hours;
     if (floorText !== '') metadata.floor_count = Number(floorText);
     if (facilities.length) metadata.facilities = facilities;
     if (accessibility.length) metadata.accessibility_features = accessibility;
     if (accessibilityNotes) metadata.accessibility_notes = accessibilityNotes;
-    if (parentId) metadata.building_feature_id = parentId;
-    if (entryType) metadata.entry_type = entryType;
+    if (['entrance','accessible_entry'].includes(featureType)) {
+      if (parentId) metadata.building_feature_id = parentId;
+      if (entryType) metadata.entry_type = entryType;
+    }
     if (contactLabel) metadata.contact_label = contactLabel;
     if (contactUrl) metadata.contact_url = contactUrl;
     if (phone) metadata.emergency_phone = phone;
@@ -2144,7 +2148,7 @@
     if (!navigator.geolocation) return setStatus('Your browser does not support location services.', 'warning');
     const usingEntrance = target.id !== selectedFeature.id;
     const routeNote = accessibleOnly
-      ? 'Route target: verified accessible entrance.'
+      ? 'Route target: verified accessible entrance. The route path itself is not certified step-free by this map.'
       : usingEntrance ? 'Route target: verified building entrance.' : 'No separate verified entrance is recorded; route ends at the published building marker.';
     setStatus('Finding your location for campus walking directions…');
     navigator.geolocation.getCurrentPosition(async position => {
