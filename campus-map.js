@@ -28,6 +28,7 @@
   let emergencyOnly = false;
   let incidentsVisible = false;
   let selectedFeature = null;
+  let activeDiscoveryFilter = 'all';
   let userMarker = null;
   let campusCenterMarker = null;
   let campusCenterMarkerKind = null;
@@ -139,10 +140,11 @@
         type: 'circle',
         source: 'campus-features',
         paint: {
-          'circle-radius': ['case', ['==', ['get', 'feature_type'], 'security'], 9, 7],
+          'circle-radius': ['case', ['in', ['get', 'feature_type'], ['literal', ['entrance','accessible_entry']]], 9, ['==', ['get', 'feature_type'], 'security'], 9, 7],
           'circle-color': ['match', ['get', 'feature_type'],
             'security', '#d9485f', 'medical', '#dc8a28', 'library', '#256f9a',
-            'hostel', '#8560bd', 'cafeteria', '#bd7b32', '#168a73'],
+            'hostel', '#8560bd', 'cafeteria', '#bd7b32', 'entrance', '#117a86',
+            'accessible_entry', '#16845a', '#168a73'],
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff'
         }
@@ -161,6 +163,13 @@
         },
         paint: { 'text-color': '#15343a', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 }
       });
+      map.on('click', 'campus-feature-points', event => {
+        const point = event.features?.[0]?.properties || {};
+        const item = features.find(feature => feature.id === point.id);
+        if (item) selectFeature(item, false);
+      });
+      map.on('mouseenter', 'campus-feature-points', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'campus-feature-points', () => { map.getCanvas().style.cursor = placementMode || profilePlacementMode ? 'crosshair' : ''; });
       map.addSource('campus-drafts', {
         type: 'geojson',
         data: featureCollection([]),
@@ -629,7 +638,7 @@
       features: items.map(item => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [Number(item.longitude), Number(item.latitude)] },
-        properties: { id: item.id, name: item.name, feature_type: item.feature_type, category: item.category, severity: item.severity, status: item.status, location: item.location }
+        properties: { id: item.id, name: item.name, feature_type: item.feature_type, category: item.category, severity: item.severity, status: item.status, location: item.location, description: item.description, metadata: item.metadata || {} }
       }))
     };
   }
@@ -1350,17 +1359,158 @@
 
   function iconFor(type) {
     return ({ security:'🛡️', medical:'✚', library:'📚', hostel:'🏠', cafeteria:'☕',
-      lecture_hall:'🎓', building:'🏢', gate:'🚪', parking:'🅿️', sports:'⚽',
-      assembly_point:'📍', accessible_entry:'♿' })[type] || '📍';
+      lecture_hall:'🎓', building:'🏢', gate:'🚪', entrance:'↗', parking:'🅿️', sports:'⚽',
+      assembly_point:'📍', accessible_entry:'♿', emergency_point:'✚' })[type] || '📍';
+  }
+
+  function passportSafeHttps(value) {
+    const url = String(value || '').trim();
+    return /^https:\/\/[^\s]+$/i.test(url) ? url : '';
+  }
+
+  function passportLabel(value) {
+    return String(value || '').replaceAll('_', ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function appendPassportFact(host, label, value) {
+    const text = String(value ?? '').trim();
+    if (!text) return;
+    const fact = document.createElement('div');
+    fact.className = 'campus-map-passport-fact';
+    const title = document.createElement('span');
+    title.textContent = label;
+    const detail = document.createElement('strong');
+    detail.textContent = text;
+    fact.append(title, detail);
+    host.appendChild(fact);
+  }
+
+  function appendPassportTags(host, values) {
+    host.replaceChildren();
+    (Array.isArray(values) ? values : []).forEach(value => {
+      const tag = document.createElement('span');
+      tag.className = 'campus-map-passport-tag';
+      tag.textContent = passportLabel(value);
+      host.appendChild(tag);
+    });
+  }
+
+  function setPassportLink(id, label, url) {
+    const link = $(id);
+    if (!link) return;
+    const safeUrl = passportSafeHttps(url);
+    link.hidden = !safeUrl;
+    if (safeUrl) {
+      link.href = safeUrl;
+      link.textContent = label;
+    } else {
+      link.removeAttribute('href');
+    }
+  }
+
+  function renderCampusPassport(item) {
+    const panel = $('campus-map-passport');
+    if (!panel) return;
+    if (!item) {
+      panel.hidden = true;
+      return;
+    }
+    const metadata = item.metadata && typeof item.metadata === 'object' ? item.metadata : {};
+    panel.hidden = false;
+    $('campus-map-passport-title').textContent = item.name || 'Campus location';
+    $('campus-map-passport-description').textContent = item.description || 'No additional description has been published for this location.';
+    $('campus-map-passport-status').textContent = item.verification_status === 'verified' && item.is_published
+      ? 'Verified campus location' : 'Campus review status';
+    const facts = $('campus-map-passport-facts');
+    facts.replaceChildren();
+    const parent = metadata.building_feature_id
+      ? features.find(feature => feature.id === metadata.building_feature_id)
+      : null;
+    if (item.feature_type === 'entrance' || item.feature_type === 'accessible_entry') {
+      appendPassportFact(facts, 'Entry type', passportLabel(metadata.entry_type));
+      appendPassportFact(facts, 'Building', parent?.name || 'Related building');
+    } else {
+      appendPassportFact(facts, 'Location type', passportLabel(item.feature_type));
+      appendPassportFact(facts, 'Building code', metadata.building_code);
+      appendPassportFact(facts, 'Opening hours', metadata.opening_hours);
+      appendPassportFact(facts, 'Floors', metadata.floor_count == null ? '' : String(metadata.floor_count));
+    }
+    appendPassportFact(facts, 'Campus', item.campus_name || campus?.university_name);
+
+    const facilitiesSection = $('campus-map-passport-facilities');
+    const facilities = Array.isArray(metadata.facilities) ? metadata.facilities : [];
+    facilitiesSection.hidden = facilities.length === 0;
+    appendPassportTags($('campus-map-passport-facility-tags'), facilities);
+
+    const accessibilitySection = $('campus-map-passport-accessibility');
+    const access = Array.isArray(metadata.accessibility_features) ? metadata.accessibility_features.slice() : [];
+    if (item.feature_type === 'accessible_entry' && !access.includes('verified accessible entrance')) access.unshift('verified accessible entrance');
+    accessibilitySection.hidden = access.length === 0 && !metadata.accessibility_notes;
+    appendPassportTags($('campus-map-passport-access-tags'), access);
+    $('campus-map-passport-access-notes').textContent = metadata.accessibility_notes || (item.feature_type === 'accessible_entry' ? 'This marker identifies a campus-approved accessible entrance. Route path conditions still depend on mapped pedestrian data.' : '');
+
+    const linkedEntrances = item.feature_type === 'entrance' || item.feature_type === 'accessible_entry'
+      ? []
+      : features.filter(feature => ['entrance','accessible_entry'].includes(feature.feature_type)
+        && feature.metadata?.building_feature_id === item.id);
+    const entrancesSection = $('campus-map-passport-entrances');
+    const entranceList = $('campus-map-passport-entrance-list');
+    entrancesSection.hidden = linkedEntrances.length === 0;
+    entranceList.replaceChildren();
+    linkedEntrances.forEach(entrance => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'campus-map-passport-entrance';
+      button.dataset.passportEntranceId = entrance.id;
+      const copy = document.createElement('span');
+      const strong = document.createElement('strong');
+      strong.textContent = entrance.name;
+      const small = document.createElement('small');
+      small.textContent = passportLabel(entrance.metadata?.entry_type || entrance.feature_type);
+      copy.append(strong, small);
+      const icon = document.createElement('span');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = '↗';
+      button.append(copy, icon);
+      entranceList.appendChild(button);
+    });
+
+    const accessibleEntrance = item.feature_type === 'accessible_entry'
+      ? item
+      : linkedEntrances.find(entrance => entrance.feature_type === 'accessible_entry'
+        && entrance.metadata?.entry_type === 'accessible');
+    const accessibleButton = $('campus-map-passport-accessible-route');
+    accessibleButton.disabled = !accessibleEntrance;
+    accessibleButton.title = accessibleEntrance
+      ? 'Route to this verified accessible entrance.'
+      : 'No verified accessible entrance has been recorded for this building.';
+
+    setPassportLink('campus-map-passport-source', 'View verification source ↗', item.source_url);
+    setPassportLink('campus-map-passport-contact', metadata.contact_label || 'Contact / service link ↗', metadata.contact_url);
+    const emergencyLink = $('campus-map-passport-emergency');
+    const phone = String(metadata.emergency_phone || '').trim();
+    const validPhone = /^[+0-9() .-]{5,30}$/.test(phone);
+    emergencyLink.hidden = !validPhone;
+    if (validPhone) {
+      emergencyLink.href = 'tel:' + phone.replace(/[^+0-9]/g, '');
+      emergencyLink.textContent = metadata.contact_label ? 'Call ' + metadata.contact_label : 'Call listed campus contact';
+    } else {
+      emergencyLink.removeAttribute('href');
+    }
   }
 
   function renderFeatures(items = features) {
-    featureList.innerHTML = items.length ? items.map(item => `
-      <button type="button" class="campus-map-feature" data-feature-id="${esc(item.id)}">
-        <span class="campus-map-feature-icon" aria-hidden="true">${iconFor(item.feature_type)}</span>
-        <span class="campus-map-feature-copy"><strong>${esc(item.name)}</strong><small>${esc(item.feature_type.replaceAll('_',' '))}</small></span>
-        <span aria-hidden="true">›</span>
-      </button>`).join('') : '<p class="campus-map-empty">No verified campus locations have been published yet. Campus administrators can add locations after map-management tools are enabled.</p>';
+    featureList.innerHTML = items.length ? items.map(item => {
+      const meta = item.metadata || {};
+      const subline = meta.building_code || (meta.opening_hours ? meta.opening_hours : passportLabel(item.feature_type));
+      return '<button type="button" class="campus-map-feature" data-feature-id="' + esc(item.id) + '" data-feature-type="' + esc(item.feature_type) + '">' +
+        '<span class="campus-map-feature-icon" aria-hidden="true">' + iconFor(item.feature_type) + '</span>' +
+        '<span class="campus-map-feature-copy"><strong>' + esc(item.name) + '</strong><small>' + esc(subline) + '</small></span>' +
+        '<span aria-hidden="true">›</span></button>';
+    }).join('') : '<p class="campus-map-empty">No verified campus locations match this filter. Published building details appear after an authorised campus review.</p>';
+    featureList.querySelectorAll('[data-feature-id]').forEach(el => {
+      el.classList.toggle('selected', el.dataset.featureId === selectedFeature?.id);
+    });
   }
 
   function selectFeature(item, fly = false) {
@@ -1368,7 +1518,8 @@
     featureList.querySelectorAll('[data-feature-id]').forEach(el => {
       el.classList.toggle('selected', el.dataset.featureId === item.id);
     });
-    const emergencyLine = item.metadata?.emergency_phone ? ' Emergency line: ' + item.metadata.emergency_phone + '.' : '';
+    renderCampusPassport(item);
+    const emergencyLine = item.metadata?.emergency_phone ? ' Official campus contact: ' + item.metadata.emergency_phone + '.' : '';
     setStatus(item.name + (item.description ? ' — ' + item.description : '') + emergencyLine);
     if (fly && map) map.flyTo({ center: [Number(item.longitude), Number(item.latitude)], zoom: 17, pitch: mapMode === '3d' ? 48 : 0, bearing: mapMode === '3d' ? -14 : 0, duration: motionDuration(600), essential: true });
   }
@@ -1377,12 +1528,14 @@
     const selected = $('campus-map-campus-select')?.value || 'main-campus';
     activeCampusProfile = campusProfiles.find(item => item.campus_slug === selected) || null;
     selectedFeature = null;
+    renderCampusPassport(null);
     features = allFeatures.filter(item => item.is_published && item.campus_slug === selected && item.latitude != null && item.longitude != null);
     adminDrafts = isCampusAdmin ? allFeatures.filter(item => !item.is_published && item.campus_slug === selected) : [];
     updateSource();
     updateDraftSource();
     renderFeatures();
     renderAdminDrafts();
+    populatePassportParentBuildingOptions();
     renderCampusProfileForm();
     updateCampusBoundarySource();
     fitCampus();
@@ -1404,6 +1557,100 @@
     }).join('') : '<p class="campus-map-empty">No draft locations for this campus.</p>';
   }
 
+  function populatePassportParentBuildingOptions(selectedId = '') {
+    const select = $('campus-map-admin-parent-building');
+    if (!select) return;
+    const campusSlug = $('campus-map-admin-campus-slug')?.value || $('campus-map-campus-select')?.value || 'main-campus';
+    const existingId = selectedId || select.value;
+    const parentBuildings = allFeatures.filter(item => item.campus_slug === campusSlug
+      && ['building','lecture_hall','hostel','library','facility'].includes(item.feature_type)
+      && item.verification_status === 'verified');
+    select.replaceChildren();
+    const blank = document.createElement('option');
+    blank.value = '';
+    blank.textContent = 'Select a verified building';
+    select.appendChild(blank);
+    parentBuildings.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.name + (item.is_published ? '' : ' · verified, not yet published');
+      select.appendChild(option);
+    });
+    select.value = existingId;
+  }
+
+  function updatePassportEntryFields() {
+    const featureType = $('campus-map-admin-type')?.value || '';
+    const isEntrance = ['entrance','accessible_entry'].includes(featureType);
+    const fields = $('campus-map-admin-parent-building')?.closest('.campus-map-passport-entry-fields');
+    if (fields) fields.hidden = !isEntrance;
+    const entryType = $('campus-map-admin-entry-type');
+    if (entryType) {
+      if (featureType === 'accessible_entry') entryType.value = 'accessible';
+      else if (!isEntrance && entryType.value === 'accessible') entryType.value = '';
+      entryType.disabled = featureType === 'accessible_entry';
+    }
+  }
+
+  function resetPassportEditor() {
+    ['campus-map-admin-building-code','campus-map-admin-opening-hours','campus-map-admin-floor-count',
+      'campus-map-admin-facilities','campus-map-admin-accessibility-notes','campus-map-admin-contact-label',
+      'campus-map-admin-contact-url','campus-map-admin-emergency-phone'].forEach(id => { if ($(id)) $(id).value = ''; });
+    root.querySelectorAll('[data-campus-accessibility]').forEach(box => { box.checked = false; });
+    if ($('campus-map-admin-parent-building')) $('campus-map-admin-parent-building').value = '';
+    if ($('campus-map-admin-entry-type')) $('campus-map-admin-entry-type').value = '';
+    updatePassportEntryFields();
+  }
+
+  function editPassportEditor(item) {
+    const meta = item.metadata || {};
+    $('campus-map-admin-building-code').value = meta.building_code || '';
+    $('campus-map-admin-opening-hours').value = meta.opening_hours || '';
+    $('campus-map-admin-floor-count').value = meta.floor_count == null ? '' : String(meta.floor_count);
+    $('campus-map-admin-facilities').value = Array.isArray(meta.facilities) ? meta.facilities.join(', ') : '';
+    $('campus-map-admin-accessibility-notes').value = meta.accessibility_notes || '';
+    $('campus-map-admin-contact-label').value = meta.contact_label || '';
+    $('campus-map-admin-contact-url').value = meta.contact_url || '';
+    $('campus-map-admin-emergency-phone').value = meta.emergency_phone || '';
+    root.querySelectorAll('[data-campus-accessibility]').forEach(box => {
+      box.checked = Array.isArray(meta.accessibility_features) && meta.accessibility_features.includes(box.value);
+    });
+    populatePassportParentBuildingOptions(meta.building_feature_id || '');
+    $('campus-map-admin-entry-type').value = meta.entry_type || '';
+    updatePassportEntryFields();
+  }
+
+  function buildPassportMetadata() {
+    const metadata = {};
+    const value = id => $(id)?.value.trim() || '';
+    const buildingCode = value('campus-map-admin-building-code');
+    const hours = value('campus-map-admin-opening-hours');
+    const floorText = value('campus-map-admin-floor-count');
+    const facilities = value('campus-map-admin-facilities').split(',').map(x => x.trim()).filter(Boolean).slice(0,15);
+    const accessibility = Array.from(root.querySelectorAll('[data-campus-accessibility]:checked')).map(box => box.value).slice(0,8);
+    const accessibilityNotes = value('campus-map-admin-accessibility-notes');
+    const parentId = value('campus-map-admin-parent-building');
+    const entryType = value('campus-map-admin-entry-type');
+    const contactLabel = value('campus-map-admin-contact-label');
+    const contactUrl = value('campus-map-admin-contact-url');
+    const phone = value('campus-map-admin-emergency-phone');
+    const featureType = $('campus-map-admin-type').value;
+    if (buildingCode) metadata.building_code = buildingCode;
+    if (hours) metadata.opening_hours = hours;
+    if (floorText !== '') metadata.floor_count = Number(floorText);
+    if (facilities.length) metadata.facilities = facilities;
+    if (accessibility.length) metadata.accessibility_features = accessibility;
+    if (accessibilityNotes) metadata.accessibility_notes = accessibilityNotes;
+    if (['entrance','accessible_entry'].includes(featureType)) {
+      if (parentId) metadata.building_feature_id = parentId;
+      if (entryType) metadata.entry_type = entryType;
+    }
+    if (contactLabel) metadata.contact_label = contactLabel;
+    if (contactUrl) metadata.contact_url = contactUrl;
+    if (phone) metadata.emergency_phone = phone;
+    return metadata;
+  }
+
   function resetAdminForm() {
     placementMode = false;
     if (map) map.getCanvas().style.cursor = '';
@@ -1418,6 +1665,7 @@
     $('campus-map-admin-source').value = '';
     $('campus-map-admin-verified').checked = false;
     $('campus-map-admin-publish').checked = false;
+    resetPassportEditor();
   }
 
   function editAdminFeature(item) {
@@ -1436,6 +1684,7 @@
     }
     $('campus-map-admin-verified').checked = item.verification_status === 'verified';
     $('campus-map-admin-publish').checked = !!item.is_published;
+    editPassportEditor(item);
     if (item.latitude != null && item.longitude != null) applyAdminCoordinates(item.latitude, item.longitude, 'saved draft');
     else if (placementMarker) { placementMarker.remove(); placementMarker = null; }
     $('campus-map-admin-name').focus();
@@ -1605,13 +1854,24 @@
     }
   }
 
+  function matchesCampusFilter(item) {
+    const type = item.feature_type;
+    if (activeDiscoveryFilter === 'academic') return ['building','lecture_hall','library'].includes(type);
+    if (activeDiscoveryFilter === 'residential') return ['hostel'].includes(type);
+    if (activeDiscoveryFilter === 'services') return ['cafeteria','facility','parking','sports'].includes(type);
+    if (activeDiscoveryFilter === 'access') return ['entrance','accessible_entry'].includes(type)
+      || (Array.isArray(item.metadata?.accessibility_features) && item.metadata.accessibility_features.length > 0);
+    if (activeDiscoveryFilter === 'emergency') return ['security','medical','assembly_point','emergency_point','gate'].includes(type);
+    return true;
+  }
+
   function filterFeatures(query) {
     const term = query.trim().toLocaleLowerCase();
-    const matches = !term ? features : features.filter(item =>
-      [item.name, item.feature_type, item.description].some(value => String(value || '').toLocaleLowerCase().includes(term))
-    );
+    const matches = features.filter(item => matchesCampusFilter(item) && (!term ||
+      [item.name, item.feature_type, item.description, item.metadata?.building_code].some(value => String(value || '').toLocaleLowerCase().includes(term))
+    ));
     const draftMatches = isCampusAdmin && term ? adminDrafts.filter(item =>
-      [item.name, item.feature_type, item.description, item.campus_name].some(value => String(value || '').toLocaleLowerCase().includes(term))
+      matchesCampusFilter(item) && [item.name, item.feature_type, item.description, item.campus_name].some(value => String(value || '').toLocaleLowerCase().includes(term))
     ) : [];
     renderFeatures(matches);
     results.hidden = !term;
@@ -1694,6 +1954,7 @@
     event.preventDefault();
     if (!isCampusAdmin) return setStatus('Only a verified campus administrator can save map locations.', 'warning');
     const numberOrNull = value => value === '' ? null : Number(value);
+    const passportMetadata = buildPassportMetadata();
     const payload = {
       p_feature_id: $('campus-map-feature-id').value || null,
       p_campus_name: $('campus-map-admin-campus').value.trim(),
@@ -1705,7 +1966,8 @@
       p_longitude: numberOrNull($('campus-map-admin-lng').value),
       p_source_url: $('campus-map-admin-source').value.trim() || null,
       p_mark_verified: $('campus-map-admin-verified').checked,
-      p_publish: $('campus-map-admin-publish').checked
+      p_publish: $('campus-map-admin-publish').checked,
+      p_metadata: passportMetadata
     };
     const hasCoordinatePair = payload.p_latitude !== null && payload.p_longitude !== null;
     if ((payload.p_mark_verified || payload.p_publish) && (!hasCoordinatePair || !payload.p_source_url)) {
@@ -1713,6 +1975,20 @@
     }
     if (payload.p_publish && !payload.p_mark_verified) {
       return setStatus('A location cannot be published until the administrator marks it verified.', 'warning');
+    }
+    if (['entrance','accessible_entry'].includes(payload.p_feature_type)) {
+      if (!passportMetadata.building_feature_id || !passportMetadata.entry_type) {
+        return setStatus('Link this entrance to a verified building and choose its entrance type before saving.', 'warning');
+      }
+    }
+    if (passportMetadata.floor_count != null && (!Number.isInteger(passportMetadata.floor_count) || passportMetadata.floor_count < 0 || passportMetadata.floor_count > 100)) {
+      return setStatus('Floor count must be a whole number from 0 to 100.', 'warning');
+    }
+    if (passportMetadata.contact_url && !passportSafeHttps(passportMetadata.contact_url)) {
+      return setStatus('Public contact links must use HTTPS.', 'warning');
+    }
+    if (passportMetadata.emergency_phone && !/^[+0-9() .-]{5,30}$/.test(passportMetadata.emergency_phone)) {
+      return setStatus('Enter an official campus phone number in a valid format.', 'warning');
     }
     try {
       const { error } = await client().rpc('manage_campus_map_feature', payload);
@@ -1725,6 +2001,11 @@
     }
   });
   $('campus-map-admin-reset')?.addEventListener('click', resetAdminForm);
+  $('campus-map-admin-type')?.addEventListener('change', () => {
+    populatePassportParentBuildingOptions();
+    updatePassportEntryFields();
+  });
+  $('campus-map-admin-campus-slug')?.addEventListener('change', () => populatePassportParentBuildingOptions());
   $('campus-map-pick-pin')?.addEventListener('click', () => {
     if (!isCampusAdmin) return setStatus('Only a verified campus administrator can place draft pins.', 'warning');
     if (!ensureMap()) return setStatus('The map is still loading. Try again when it is ready.', 'warning');
@@ -1797,6 +2078,25 @@
   });
 
   search?.addEventListener('input', () => filterFeatures(search.value));
+  $('campus-map-discovery-filters')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-campus-filter]');
+    if (!button) return;
+    activeDiscoveryFilter = button.dataset.campusFilter || 'all';
+    $('campus-map-discovery-filters').querySelectorAll('[data-campus-filter]').forEach(item => {
+      const active = item === button;
+      item.classList.toggle('active', active);
+      item.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    filterFeatures(search?.value || '');
+  });
+  $('campus-map-passport-entrance-list')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-passport-entrance-id]');
+    if (!button) return;
+    const item = features.find(feature => feature.id === button.dataset.passportEntranceId);
+    if (item) selectFeature(item, true);
+  });
+  $('campus-map-passport-route')?.addEventListener('click', () => startWalkingRoute(false));
+  $('campus-map-passport-accessible-route')?.addEventListener('click', () => startWalkingRoute(true));
   featureList?.addEventListener('click', event => {
     const button = event.target.closest('[data-feature-id]');
     if (!button) return;
@@ -1822,13 +2122,39 @@
     });
   });
 
-  $('campus-map-route')?.addEventListener('click', async () => {
-    if (!selectedFeature) return setStatus('Choose a campus location first to prepare directions.', 'warning');
+  function resolveCampusRouteTarget(accessibleOnly = false) {
+    if (!selectedFeature) return null;
+    if (selectedFeature.feature_type === 'accessible_entry') return selectedFeature;
+    if (selectedFeature.feature_type === 'entrance') {
+      return accessibleOnly && selectedFeature.metadata?.entry_type !== 'accessible' ? null : selectedFeature;
+    }
+    const linked = features.filter(feature =>
+      ['entrance','accessible_entry'].includes(feature.feature_type) &&
+      feature.metadata?.building_feature_id === selectedFeature.id
+    );
+    const accessible = linked.find(feature => feature.feature_type === 'accessible_entry'
+      && feature.metadata?.entry_type === 'accessible');
+    if (accessibleOnly) return accessible || null;
+    return linked.find(feature => feature.feature_type === 'entrance' && feature.metadata?.entry_type === 'main')
+      || linked.find(feature => feature.feature_type === 'entrance')
+      || accessible
+      || selectedFeature;
+  }
+
+  async function startWalkingRoute(accessibleOnly = false) {
+    if (!selectedFeature) return setStatus('Choose a published campus location first to prepare directions.', 'warning');
+    const target = resolveCampusRouteTarget(accessibleOnly);
+    if (!target) return setStatus('No verified accessible entrance is recorded for this building. Contact your campus facilities team for assistance.', 'warning');
     if (!navigator.geolocation) return setStatus('Your browser does not support location services.', 'warning');
+    const usingEntrance = target.id !== selectedFeature.id;
+    const routeNote = accessibleOnly
+      ? 'Route target: verified accessible entrance. The route path itself is not certified step-free by this map.'
+      : usingEntrance ? 'Route target: verified building entrance.' : 'No separate verified entrance is recorded; route ends at the published building marker.';
+    setStatus('Finding your location for campus walking directions…');
     navigator.geolocation.getCurrentPosition(async position => {
       try {
         const start = [position.coords.longitude, position.coords.latitude];
-        const end = [Number(selectedFeature.longitude), Number(selectedFeature.latitude)];
+        const end = [Number(target.longitude), Number(target.latitude)];
         const url = 'https://routing.openstreetmap.de/routed-foot/route/v1/driving/' +
           start.join(',') + ';' + end.join(',') + '?overview=full&geometries=geojson';
         const response = await fetch(url);
@@ -1843,16 +2169,18 @@
           map.addSource('campus-walking-route', { type: 'geojson', data: geojson });
           map.addLayer({ id: 'campus-walking-route-line', type: 'line', source: 'campus-walking-route',
             layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': '#087f75', 'line-width': 5, 'line-opacity': .9 } });
+            paint: { 'line-color': accessibleOnly ? '#17845b' : '#087f75', 'line-width': 5, 'line-opacity': .9 } });
         }
         map.fitBounds(new maplibregl.LngLatBounds(start, end), { padding: 70, maxZoom: 17 });
-        setStatus('Walking route: approximately ' + (route.distance / 1000).toFixed(2) +
-          ' km. Route estimates depend on available OpenStreetMap paths.');
+        setStatus((accessibleOnly ? 'Accessible-entrance route' : 'Walking route') + ': approximately ' +
+          (route.distance / 1000).toFixed(2) + ' km. ' + routeNote + ' Route estimates depend on available mapped paths.');
       } catch (error) {
-        setStatus('Walking directions are unavailable for this route right now.', 'warning');
+        setStatus('Walking directions are unavailable for this route right now. The route service may not have mapped paths here.', 'warning');
       }
     }, () => setStatus('Allow location access to calculate a walking route.', 'warning'));
-  });
+  }
+
+  $('campus-map-route')?.addEventListener('click', () => startWalkingRoute(false));
 
   function scheduleMapResize() {
     if (!map || resizeFrame) return;

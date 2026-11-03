@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="./campus-dashboard-upgrade.css">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
 <link rel="stylesheet" href="./campus-map.css">
+<link rel="stylesheet" href="./campus-map-passport.css">
 <link rel="stylesheet" href="./campuspulse-social.css">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
@@ -2577,7 +2578,33 @@ button,input,select,textarea{max-width:100%;min-width:0}
           </div>
     <aside class="campus-map-sidebar"><h2 id="campus-map-campus-name">Your university</h2><p>Campus locations and facilities</p>
       <div class="campus-map-actions"><button class="campus-map-action" type="button" id="campus-map-locate">◎ My location</button><button class="campus-map-action primary" type="button" id="campus-map-route">↗ Walking route</button><button class="campus-map-action" type="button" id="campus-map-emergency">Emergency points</button><button class="campus-map-action" type="button" id="campus-map-incidents" hidden>Incident pins</button></div>
-      <label class="campus-map-campus-picker">Campus<select id="campus-map-campus-select"><option value="main-campus">Main Campus</option></select></label><p class="campus-map-profile-summary" id="campus-map-profile-status" role="status">Loading campus map profile…</p><div id="campus-map-results" class="campus-map-search-results" hidden></div><div class="campus-map-feature-list" id="campus-map-feature-list"><p class="campus-map-empty">Open CampusMap to load your university locations.</p></div>
+      <label class="campus-map-campus-picker">Campus<select id="campus-map-campus-select"><option value="main-campus">Main Campus</option></select></label>
+      <p class="campus-map-profile-summary" id="campus-map-profile-status" role="status">Loading campus map profile…</p>
+      <div id="campus-map-results" class="campus-map-search-results" hidden></div>
+      <nav id="campus-map-discovery-filters" class="campus-map-discovery-filters" aria-label="Filter campus locations">
+        <button type="button" class="active" data-campus-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-campus-filter="academic" aria-pressed="false">Academic</button>
+        <button type="button" data-campus-filter="residential" aria-pressed="false">Residential</button>
+        <button type="button" data-campus-filter="services" aria-pressed="false">Services</button>
+        <button type="button" data-campus-filter="access" aria-pressed="false">Access</button>
+        <button type="button" data-campus-filter="emergency" aria-pressed="false">Emergency</button>
+      </nav>
+      <section id="campus-map-passport" class="campus-map-passport" aria-labelledby="campus-map-passport-title" hidden>
+        <div class="campus-map-passport-topline"><span class="campus-map-passport-kicker">CAMPUS PASSPORT</span><span id="campus-map-passport-status" class="campus-map-passport-status">Verified location</span></div>
+        <h3 id="campus-map-passport-title">Select a campus location</h3>
+        <p id="campus-map-passport-description" class="campus-map-passport-description"></p>
+        <div id="campus-map-passport-facts" class="campus-map-passport-facts"></div>
+        <div id="campus-map-passport-facilities" class="campus-map-passport-section" hidden><strong>Facilities</strong><div id="campus-map-passport-facility-tags" class="campus-map-passport-tags"></div></div>
+        <div id="campus-map-passport-accessibility" class="campus-map-passport-section" hidden><strong>Accessibility</strong><div id="campus-map-passport-access-tags" class="campus-map-passport-tags"></div><p id="campus-map-passport-access-notes"></p></div>
+        <p class="campus-map-passport-safety-note">CampusShield records location information but does not contact or dispatch emergency services. In an emergency, contact campus security or local emergency services directly.</p>
+        <div id="campus-map-passport-entrances" class="campus-map-passport-section" hidden><strong>Verified entrances</strong><div id="campus-map-passport-entrance-list" class="campus-map-passport-entrance-list"></div></div>
+        <div class="campus-map-passport-actions">
+          <button type="button" class="campus-map-action primary" id="campus-map-passport-route">Walk to location</button>
+          <button type="button" class="campus-map-action" id="campus-map-passport-accessible-route" disabled>Accessible entrance</button>
+        </div>
+        <div class="campus-map-passport-links"><a id="campus-map-passport-source" href="#" target="_blank" rel="noopener noreferrer" hidden>View verification source ↗</a><a id="campus-map-passport-contact" href="#" target="_blank" rel="noopener noreferrer" hidden>Contact / service link ↗</a><a id="campus-map-passport-emergency" href="#" hidden>Call listed campus contact</a></div>
+      </section>
+      <div class="campus-map-feature-list" id="campus-map-feature-list"><p class="campus-map-empty">Open CampusMap to load your university locations.</p></div>
       <div class="campus-map-admin" id="campus-map-admin" hidden>
         <div class="campus-map-admin-heading"><h3>Campus Map Manager</h3><span class="campus-map-admin-tag">Verified campus admin</span></div>
         <p>Save draft locations first. Publish only after checking the exact pin against an official source or on-campus survey.</p>
@@ -2644,8 +2671,36 @@ button,input,select,textarea{max-width:100%;min-width:0}
           <label>Campus name<input id="campus-map-admin-campus" value="Main Campus" required maxlength="120"></label>
           <label>Campus ID<input id="campus-map-admin-campus-slug" value="main-campus" pattern="[a-z0-9]+(-[a-z0-9]+)*" required></label>
           <label>Location name<input id="campus-map-admin-name" required minlength="2" maxlength="180" placeholder="e.g. Laz Otti Memorial Library"></label>
-          <label>Category<select id="campus-map-admin-type"><option value="building">Building</option><option value="lecture_hall">Lecture hall</option><option value="hostel">Hostel</option><option value="library">Library</option><option value="cafeteria">Cafeteria</option><option value="medical">Medical / hospital</option><option value="security">Security</option><option value="gate">Gate</option><option value="parking">Parking</option><option value="sports">Sports</option><option value="facility">Facility</option><option value="assembly_point">Assembly point</option><option value="accessible_entry">Accessible entry</option><option value="emergency_point">Emergency point</option></select></label>
+          <label>Category<select id="campus-map-admin-type"><option value="building">Building</option><option value="lecture_hall">Lecture hall</option><option value="hostel">Hostel</option><option value="library">Library</option><option value="cafeteria">Cafeteria</option><option value="medical">Medical / hospital</option><option value="security">Security</option><option value="gate">Gate</option><option value="parking">Parking</option><option value="sports">Sports</option><option value="facility">Facility</option><option value="assembly_point">Assembly point</option><option value="entrance">Entrance</option><option value="accessible_entry">Accessible entry</option><option value="emergency_point">Emergency point</option></select></label>
           <label>Description<textarea id="campus-map-admin-description" rows="2" maxlength="1000"></textarea></label>
+          <details class="campus-map-passport-editor" open>
+            <summary>Campus Passport details</summary>
+            <p>Only publish details that are confirmed by the same approved campus source or a separate official record.</p>
+            <label>Building code / room block<input id="campus-map-admin-building-code" maxlength="40" placeholder="e.g. LIB-01"></label>
+            <div class="campus-map-admin-coords">
+              <label>Opening hours<input id="campus-map-admin-opening-hours" maxlength="200" placeholder="e.g. Mon–Fri · 8:00–18:00"></label>
+              <label>Number of floors<input id="campus-map-admin-floor-count" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="Not recorded"></label>
+            </div>
+            <label>Available facilities (comma separated)<input id="campus-map-admin-facilities" maxlength="600" placeholder="Library, Wi-Fi, study rooms"></label>
+            <fieldset class="campus-map-admin-access-options">
+              <legend>Verified accessibility features</legend>
+              <label><input type="checkbox" value="step_free_entry" data-campus-accessibility> Step-free entrance</label>
+              <label><input type="checkbox" value="ramp" data-campus-accessibility> Ramp</label>
+              <label><input type="checkbox" value="lift" data-campus-accessibility> Lift</label>
+              <label><input type="checkbox" value="accessible_restroom" data-campus-accessibility> Accessible restroom</label>
+              <label><input type="checkbox" value="tactile_path" data-campus-accessibility> Tactile path</label>
+              <label><input type="checkbox" value="accessible_parking" data-campus-accessibility> Accessible parking</label>
+              <label><input type="checkbox" value="hearing_support" data-campus-accessibility> Hearing support</label>
+            </fieldset>
+            <label>Accessibility notes<textarea id="campus-map-admin-accessibility-notes" rows="2" maxlength="500" placeholder="Describe verified step-free access or limitations"></textarea></label>
+            <div class="campus-map-passport-entry-fields">
+              <label>Related verified building<select id="campus-map-admin-parent-building"><option value="">Select the building for an entrance</option></select></label>
+              <label>Entrance type<select id="campus-map-admin-entry-type"><option value="">Not an entrance</option><option value="main">Main entrance</option><option value="accessible">Accessible entrance</option><option value="service">Service entrance</option><option value="emergency">Emergency exit / entrance</option></select></label>
+            </div>
+            <label>Public contact label<input id="campus-map-admin-contact-label" maxlength="60" placeholder="e.g. Library help desk"></label>
+            <label>Public contact / service link (HTTPS)<input id="campus-map-admin-contact-url" type="url" placeholder="https://university.edu.ng/..."></label>
+            <label>Public emergency contact number<input id="campus-map-admin-emergency-phone" type="tel" maxlength="30" placeholder="Only an official campus contact"></label>
+          </details>
           <div class="campus-map-admin-coords"><label>Latitude<input id="campus-map-admin-lat" type="number" step="any" min="-90" max="90" inputmode="decimal"></label><label>Longitude<input id="campus-map-admin-lng" type="number" step="any" min="-180" max="180" inputmode="decimal"></label></div>
           <div class="campus-map-pin-tools">
             <button type="button" class="campus-map-action" id="campus-map-pick-pin">Pick on map</button>
@@ -2653,8 +2708,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
             <button type="button" class="campus-map-action" id="campus-map-preview-pin">Preview pin</button>
           </div>
           <p class="campus-map-pin-status" id="campus-map-pin-status" role="status" aria-live="polite">Choose Pick on map or Use GPS to add a draft coordinate. The marker remains unpublished.</p>
-          <label>Coordinate evidence source (HTTPS)<input id="campus-map-admin-source" type="url" placeholder="University-approved survey or source for this exact point"><small>Use evidence for the precise pin, not only a page that mentions the building name.</small></label>
-          <label class="campus-map-admin-check"><input id="campus-map-admin-verified" type="checkbox"> I checked this exact location and its source</label>
+          <label>Coordinate evidence source (HTTPS)<input id="campus-map-admin-source" type="url" placeholder="University-approved survey or source for this exact point"><small>Use an official source that confirms this exact point and any Campus Passport details you publish.</small></label>
+          <label class="campus-map-admin-check"><input id="campus-map-admin-verified" type="checkbox"> I checked this exact location and Passport details against the source</label>
           <label class="campus-map-admin-check"><input id="campus-map-admin-publish" type="checkbox"> Publish after verification</label>
           <div class="campus-map-admin-actions"><button type="submit" class="campus-map-action primary">Save location</button><button type="button" class="campus-map-action" id="campus-map-admin-reset">Clear</button></div>
         </form>
