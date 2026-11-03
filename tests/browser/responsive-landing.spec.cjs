@@ -292,7 +292,7 @@ test("interactive dashboard and CampusMap coverage panels fit the app shell", as
     const metrics = await page.evaluate(() => {
       const columns = selector => {
         const element = document.querySelector(selector);
-        return element ? getComputedStyle(element).gridTemplateColumns.split(/\\s+/).filter(Boolean).length : 0;
+        return element ? getComputedStyle(element).gridTemplateColumns.split(/\s+/).filter(Boolean).length : 0;
       };
       return {
         viewport: innerWidth,
