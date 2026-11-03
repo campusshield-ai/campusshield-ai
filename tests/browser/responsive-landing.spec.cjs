@@ -270,3 +270,43 @@ test("shared glass interaction layer remains responsive and motion-aware", async
   );
   expect(reducedMotionDuration).toBeLessThan(0.001);
 });
+
+
+test("interactive dashboard and CampusMap coverage panels fit the app shell", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('link[href="./campus-dashboard-insights.css"]')).toHaveCount(1);
+  await expect(page.locator("#dashboard-safety-insights")).toHaveCount(1);
+  await expect(page.locator("#campus-dashboard-saved-panel")).toHaveCount(1);
+  await expect(page.locator("#campus-map-coverage-overview")).toHaveCount(1);
+
+  // Reveal the signed-in layout without authenticating or creating any records.
+  await page.evaluate(() => {
+    document.querySelector("#login-screen").hidden = true;
+    document.querySelector("#workspace").hidden = false;
+    document.querySelector("#page-dashboard").classList.add("active");
+    document.querySelector("#page-campus-map").classList.add("active");
+  });
+
+  for (const width of [360, 390, 430, 768, 1024, 1366, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await page.evaluate(() => {
+      const columns = selector => {
+        const element = document.querySelector(selector);
+        return element ? getComputedStyle(element).gridTemplateColumns.split(/\\s+/).filter(Boolean).length : 0;
+      };
+      return {
+        viewport: innerWidth,
+        document: document.documentElement.scrollWidth,
+        body: document.body.scrollWidth,
+        analyticsColumns: columns(".dashboard-insights-grid"),
+        mapCoverageColumns: columns(".campus-map-coverage-overview"),
+      };
+    });
+    expect(metrics.document, `dashboard/map document overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    expect(metrics.body, `dashboard/map body overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    expect(metrics.analyticsColumns, `analytics cards should stack on narrow screens at ${width}px`).toBe(width <= 850 ? 1 : 2);
+    expect(metrics.mapCoverageColumns, `map coverage cards should adapt at ${width}px`).toBe(width <= 850 ? 2 : width <= 1100 ? 3 : 5);
+    await expect(page.locator("#dashboard-safety-insights")).toBeVisible();
+    await expect(page.locator("#campus-map-coverage-overview")).toBeVisible();
+  }
+});
