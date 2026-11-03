@@ -3939,6 +3939,7 @@
     });
 
     trend.replaceChildren();
+    trend.classList.toggle("dashboard-trend-chart--six", period !== 7);
     const hasPeriodRecords = periodRecords.length > 0;
     trend.hidden = !loaded || !hasPeriodRecords;
     empty.hidden = loaded && hasPeriodRecords;
