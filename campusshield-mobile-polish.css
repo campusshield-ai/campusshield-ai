@@ -682,3 +682,18 @@ html[data-theme="dark"] #page-billing .shieldmind-price small{color:#b2c7b8}
 #page-past-questions .pq-access-gate .btn{min-height:36px;white-space:nowrap}
 html[data-theme="dark"] #page-past-questions .pq-access-gate{border-color:#315b41;background:linear-gradient(135deg,#172f22,#12291d);color:#c2ddc8}
 @media(max-width:600px){#page-past-questions .pq-access-gate{grid-template-columns:minmax(0,1fr)}#page-past-questions .pq-access-gate .btn{width:100%}}
+
+/* Keep the ShieldMind entitlement badge compact at narrow phone widths. */
+#page-shieldmind .shieldmind-workspace-badge { min-width:0; max-width:100%; }
+#page-shieldmind .shieldmind-workspace-badge #shieldmind-plan-status {
+  display:block;
+  min-width:0;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+@media(max-width:400px) {
+  #page-shieldmind .shieldmind-workspace-header { align-items:flex-start; gap:8px; }
+  #page-shieldmind .shieldmind-workspace-badge { flex:0 1 104px; min-width:0; padding:6px 8px; }
+  #page-shieldmind .shieldmind-workspace-badge #shieldmind-plan-status { font-size:8px; line-height:1.2; }
+}
