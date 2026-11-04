@@ -2493,11 +2493,21 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
 <div class="app" id="workspace" hidden>
 <nav class="mobile-bottom-nav" aria-label="Primary mobile navigation">
-  <button type="button" data-page="dashboard" aria-label="Overview"><span aria-hidden="true">⌂</span><small>Home</small></button>
-  <button type="button" data-page="community" aria-label="CampusPulse"><span aria-hidden="true">◎</span><small>Campus</small></button>
-  <button type="button" data-page="timetable" aria-label="My timetable"><span aria-hidden="true">▦</span><small>Timetable</small></button>
-  <button type="button" data-page="courses" aria-label="Courses"><span aria-hidden="true">▤</span><small>Courses</small></button>
-  <button type="button" data-page="student-rewards" aria-label="Challenges and rewards" hidden><span aria-hidden="true">✧</span><small>Rewards</small></button>
+  <button type="button" data-page="dashboard" aria-label="Home">
+    <span class="mobile-bottom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></span><small>Home</small>
+  </button>
+  <button type="button" data-page="community" aria-label="CampusPulse">
+    <span class="mobile-bottom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span><small>Campus</small>
+  </button>
+  <button type="button" class="mobile-nav-report" data-page="report" aria-label="Report an incident">
+    <span class="mobile-bottom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><small>Report</small>
+  </button>
+  <button type="button" data-page="timetable" aria-label="My timetable">
+    <span class="mobile-bottom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span><small>Timetable</small>
+  </button>
+  <button type="button" data-page="courses" aria-label="Courses">
+    <span class="mobile-bottom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg></span><small>Courses</small>
+  </button>
 </nav>
 <aside class="sidebar" id="app-sidebar" aria-label="Main navigation">
 <div class="brand"><img class="brand-logo" src="./assets/campusshield-logo.svg" alt="CampusShield AI shield" width="42" height="42"><span class="brand-copy"><span class="brand-wordmark" aria-label="Campus Shield AI"><span>Campus</span><strong>Shield</strong><span>AI</span></span><small>SAFETY WORKSPACE</small></span></div>
