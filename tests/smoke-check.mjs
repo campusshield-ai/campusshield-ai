@@ -72,12 +72,12 @@ assert.match(dashboardUpgradeJs, /student-shortcuts/, "student dashboard shortcu
 assert.doesNotThrow(() => new Function(dashboardUpgradeJs), "dashboard upgrade script parses");
 assert.match(html, /id="login-features"/, "landing navigation has a Features destination");
 assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./campusshield-brand-lockup.css">'), "reference-matched brand lockup styles are loaded");
-assert.match(htmlMarkup, /class="brand-wordmark"[\\s\\S]*?<span>Campus<\\/span><strong>Shield<\\/strong><span>AI<\\/span>/, "workspace brand uses the stacked Campus Shield AI wordmark");
-assert.match(htmlMarkup, /class="login-brand-logo" src="\\.\\/assets\\/campusshield-logo\\.svg"/, "public sign-in brand uses the same shield mark");
+assert.ok(htmlMarkup.includes('<span class="brand-wordmark" aria-label="Campus Shield AI"><span>Campus</span><strong>Shield</strong><span>AI</span></span>'), "workspace brand uses the stacked Campus Shield AI wordmark");
+assert.ok(htmlMarkup.includes('<img class="login-brand-logo" src="./assets/campusshield-logo.svg"'), "public sign-in brand uses the same shield mark");
 assert.ok((htmlMarkup.match(/SAFETY WORKSPACE/g) || []).length >= 2, "workspace and sign-in brand use the Safety Workspace tagline");
-assert.match(brandLockupCss, /#app-sidebar \\.brand-wordmark strong[\\s\\S]*?#7fd98a/i, "workspace Shield wordmark uses the CampusShield mint accent");
-assert.match(brandLockupCss, /sidebar-collapsed #app-sidebar \\.brand-copy\\s*\\{\\s*display:\\s*none !important/, "collapsed desktop sidebar keeps the icon-only state");
-assert.match(campusShieldLogo, /viewBox="0 0 128 128"/, "the brand uses the square shield logo asset");
+assert.ok(brandLockupCss.includes("#app-sidebar .brand-wordmark strong") && brandLockupCss.includes("#7fd98a"), "workspace Shield wordmark uses the CampusShield mint accent");
+assert.ok(brandLockupCss.includes(".app.sidebar-collapsed #app-sidebar .brand-copy") && brandLockupCss.includes("display: none !important"), "collapsed desktop sidebar keeps the icon-only state");
+assert.ok(campusShieldLogo.includes('viewBox="0 0 128 128"'), "the brand uses the square shield logo asset");
 assert.match(htmlMarkup, /<meta property="og:title" content="CampusShield AI \\| Intelligent Campus Safety">/, "landing page defines a social-share title");
 assert.ok(htmlMarkup.includes('<meta property="og:image" content="https://campusshield-ai-staging-preview.vercel.app/icons/campusshield-512.png">'), "landing page uses the verified CampusShield share image");
 assert.match(htmlMarkup, /<meta name="twitter:card" content="summary">/, "landing page defines a Twitter summary card");
