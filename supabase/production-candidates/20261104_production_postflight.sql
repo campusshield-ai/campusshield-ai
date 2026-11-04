@@ -81,6 +81,48 @@ begin
      or to_regprocedure('private.current_user_has_verified_campus_access()') is null then
     raise exception 'Production identity-aware access helpers are missing.';
   end if;
+
+  -- New public tables require explicit Data API grants after Supabase's
+  -- 2026-10-30 default-exposure cutover. Verify intended client read access.
+  if not has_table_privilege('anon','public.campus_map_features','SELECT')
+     or not has_table_privilege('authenticated','public.campus_map_features','SELECT')
+     or not has_table_privilege('anon','public.campus_map_buildings','SELECT')
+     or not has_table_privilege('authenticated','public.campus_map_buildings','SELECT')
+     or not has_table_privilege('authenticated','public.campus_map_campuses','SELECT') then
+    raise exception 'CampusMap Data API read grants are missing.';
+  end if;
+
+  if has_table_privilege('anon','public.campus_map_campuses','SELECT')
+     or has_table_privilege('anon','public.campus_collab_listings','SELECT')
+     or has_table_privilege('anon','public.campus_event_buddy_listings','SELECT')
+     or has_table_privilege('anon','public.campus_mentorship_profiles','SELECT')
+     or has_table_privilege('anon','public.campus_memories','SELECT')
+     or has_table_privilege('anon','public.campus_peer_connection_requests','SELECT')
+     or has_table_privilege('anon','public.campus_social_feature_reports','SELECT')
+     or has_table_privilege('anon','public.past_question_papers','SELECT')
+     or has_table_privilege('anon','public.past_question_items','SELECT')
+     or has_table_privilege('anon','public.past_question_answer_keys','SELECT')
+     or has_table_privilege('anon','public.practice_attempts','SELECT')
+     or has_table_privilege('anon','public.practice_answers','SELECT') then
+    raise exception 'A campus-scoped or private table is exposed to anon.';
+  end if;
+
+  -- The deployed Past Questions Edge Function uses its server-only service
+  -- client to create practice papers/items/keys, mark attempts and write answers.
+  -- Default privileges no longer grant these automatically on new public tables.
+  if not has_table_privilege('service_role','public.past_question_papers','SELECT')
+     or not has_table_privilege('service_role','public.past_question_papers','INSERT')
+     or not has_table_privilege('service_role','public.past_question_papers','DELETE')
+     or not has_table_privilege('service_role','public.past_question_items','SELECT')
+     or not has_table_privilege('service_role','public.past_question_items','INSERT')
+     or not has_table_privilege('service_role','public.past_question_answer_keys','SELECT')
+     or not has_table_privilege('service_role','public.past_question_answer_keys','INSERT')
+     or not has_table_privilege('service_role','public.practice_attempts','SELECT')
+     or not has_table_privilege('service_role','public.practice_attempts','UPDATE')
+     or not has_table_privilege('service_role','public.practice_answers','INSERT') then
+    raise exception 'Past Questions service_role table grants do not cover the deployed Edge Function.';
+  end if;
+
 end
 $postflight$;
 
