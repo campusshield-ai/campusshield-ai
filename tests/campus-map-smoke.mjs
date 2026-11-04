@@ -33,6 +33,7 @@ const campusBuildingsCentreGuardSql = read('supabase/migrations/20261031182424_c
 const campusMapForeignKeyIndexesSql = read('supabase/migrations/20261031182609_campus_map_admin_fk_indexes.sql');
 const babcockDirectorySql = read('supabase/migrations/20261104010500_babcock_main_campus_official_name_candidates.sql');
 const babcockEvidenceCleanupSql = read('supabase/migrations/20261104011000_babcock_candidate_point_evidence_cleanup.sql');
+const babcockCoordinateStatusSql = read('supabase/migrations/20261104011500_babcock_coordinate_candidate_status_normalization.sql');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
 assert.match(html, /id="page-campus-map"/, 'CampusMap page container is present');
@@ -369,5 +370,18 @@ assert.match(js, /Official name source/, 'CampusMap admin draft cards show offic
 assert.match(js, /Community coordinate candidate/, 'CampusMap admin cards separately label community-mapped coordinate sources');
 assert.match(js, /coordinate_note/, 'CampusMap admin draft cards explain the remaining coordinate verification requirement');
 assert.match(passportCss, /campus-map-admin-draft-links/, 'Admin source links are styled within the CampusMap draft cards');
+
+
+assert.match(babcockDirectorySql, /Laz Otti Memorial Library/, 'Babcock Main Campus candidate directory retains the central Library');
+assert.match(babcockDirectorySql, /BUCare Student Support/, 'Babcock Main Campus directory includes the official BUCare service point');
+assert.match(babcockDirectorySql, /Babcock University Teaching Hospital/, 'Babcock Main Campus directory includes the teaching hospital');
+assert.match(babcockDirectorySql, /Official Library page: Laz Otti Memorial Library is directly opposite BUCODeL/, 'The Library-to-BUCODeL relationship is stored as official context rather than fabricated geometry');
+assert.match(babcockEvidenceCleanupSql, /source_url = null/, 'Name-only official URLs are removed from exact-point evidence');
+assert.match(babcockCoordinateStatusSql, /coordinate_status/, 'Every pending Main Campus record receives an explicit coordinate-confidence state');
+assert.match(babcockCoordinateStatusSql, /source_url = null/, 'Pending Babcock candidates cannot retain an unqualified point-evidence URL');
+assert.match(babcockCoordinateStatusSql, /community-mapped candidate only/i, 'Community coordinates remain distinguishable from verified campus coordinates');
+assert.match(js, /official_info_source_url/, 'CampusMap admin drafts surface official information sources separately');
+assert.match(js, /coordinate_source_url/, 'CampusMap admin drafts surface community coordinate candidates separately');
+assert.match(js, /no coordinates · exact on-campus pin required/, 'CampusMap admin drafts explain when an exact pin is still missing');
 
 console.log('CampusMap static smoke checks passed.');
