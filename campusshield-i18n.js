@@ -52,7 +52,6 @@
     document.documentElement.lang = locale === "zh" ? "zh-CN" : locale;
     document.documentElement.dir = ["ar","fa","ur"].includes(locale) ? "rtl" : "ltr";
     const map = [
-      [".login-brand-copy small","brandTagline"],
       [".login-public-nav a:nth-child(1)","home"],[".login-public-nav a:nth-child(2)","features"],
       [".login-public-nav a:nth-child(3)","about"],[".login-public-nav a:nth-child(4)","help"],
       [".login-hero-copy .eyebrow","eyebrow"],[".login-hero-copy h1 [data-i18n='heroOne']","heroOne"],

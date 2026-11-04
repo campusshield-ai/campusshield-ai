@@ -8,6 +8,8 @@ const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.
 const visualRefreshCss = await readFile(new URL("../campusshield-visual-refresh.css", import.meta.url), "utf8");
 const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", import.meta.url), "utf8");
 const creatorToolsJs = await readFile(new URL("../student-creator-tools.js", import.meta.url), "utf8");
+const brandLockupCss = await readFile(new URL("../campusshield-brand-lockup.css", import.meta.url), "utf8");
+const campusShieldLogo = await readFile(new URL("../assets/campusshield-logo.svg", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
 const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
 const responsiveCssEnd = htmlMarkup.indexOf("</style>", responsiveCssStart);
@@ -69,6 +71,13 @@ assert.match(dashboardUpgradeJs, /campus-global-search/, "global campus search i
 assert.match(dashboardUpgradeJs, /student-shortcuts/, "student dashboard shortcuts are wired");
 assert.doesNotThrow(() => new Function(dashboardUpgradeJs), "dashboard upgrade script parses");
 assert.match(html, /id="login-features"/, "landing navigation has a Features destination");
+assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./campusshield-brand-lockup.css">'), "reference-matched brand lockup styles are loaded");
+assert.ok(htmlMarkup.includes('<span class="brand-wordmark" aria-label="Campus Shield AI"><span>Campus</span><strong>Shield</strong><span>AI</span></span>'), "workspace brand uses the stacked Campus Shield AI wordmark");
+assert.ok(htmlMarkup.includes('<img class="login-brand-logo" src="./assets/campusshield-logo.svg"'), "public sign-in brand uses the same shield mark");
+assert.ok((htmlMarkup.match(/SAFETY WORKSPACE/g) || []).length >= 2, "workspace and sign-in brand use the Safety Workspace tagline");
+assert.ok(brandLockupCss.includes("#app-sidebar .brand-wordmark strong") && brandLockupCss.includes("#7fd98a"), "workspace Shield wordmark uses the CampusShield mint accent");
+assert.ok(brandLockupCss.includes(".app.sidebar-collapsed #app-sidebar .brand-copy") && brandLockupCss.includes("display: none !important"), "collapsed desktop sidebar keeps the icon-only state");
+assert.ok(campusShieldLogo.includes('viewBox="0 0 128 128"'), "the brand uses the square shield logo asset");
 assert.match(htmlMarkup, /<meta property="og:title" content="CampusShield AI \\| Intelligent Campus Safety">/, "landing page defines a social-share title");
 assert.ok(htmlMarkup.includes('<meta property="og:image" content="https://campusshield-ai-staging-preview.vercel.app/icons/campusshield-512.png">'), "landing page uses the verified CampusShield share image");
 assert.match(htmlMarkup, /<meta name="twitter:card" content="summary">/, "landing page defines a Twitter summary card");
@@ -96,6 +105,7 @@ assert.ok(html.includes('<option value="ha" lang="ha">Hausa</option>'), "languag
 assert.ok(html.includes('<option value="ig" lang="ig">Igbo</option>'), "language picker includes Igbo");
 assert.ok(htmlMarkup.includes('<script src="./campusshield-i18n.js" defer></script>'), "language bundle is deferred in dependency order");
 assert.doesNotThrow(() => new Function(i18nScript), "multilingual UI bundle parses");
+assert.ok(!i18nScript.includes('[".login-brand-copy small","brandTagline"]'), "brand tagline remains fixed when the language changes");
 assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(1)","features"]'), "landing footer first link remains Features");
 assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(2)","about"]'), "landing footer second link remains About");
 assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(3)","help"]'), "landing footer third link remains Help");
