@@ -16,7 +16,7 @@ Repository: `campusshield-ai/campusshield-ai`
 - Production's `private.current_user_can_use_restricted_features()` requires approved student identity for students.
 - Production's `private.current_user_has_verified_campus_access()` delegates to that restricted-feature helper and also requires an active, verified campus membership.
 - Staging's verified-campus helper is not equivalent and must not be copied into Production.
-- Production's `private.current_campus_role()` returns the profile role; Staging's returns the campus-membership role. This package leaves Production's current helper unchanged.
+- Production's `private.current_campus_role()` returns the profile role; Staging's returns the campus-membership role. This package leaves Production's current helper unchanged. A read-only function-collision preflight also aborts if any of the new CampusMap, CampusPulse or Past Questions RPC signatures already exist in Production.
 - `campus_memberships.user_id` is the primary key, so the present schema supports at most one membership per user.
 - Read-only account aggregates showed one verified admin with matching roles; one verified teacher profile whose membership remains unverified; three verified student profiles without memberships; and no student identity-verification rows in either database. This is not a full authenticated role test.
 

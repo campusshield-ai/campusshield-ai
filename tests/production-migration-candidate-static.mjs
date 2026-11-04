@@ -56,6 +56,9 @@ assert.match(pqSql, /on conflict \(id\) do nothing/i);
 assert.doesNotMatch(pqSql, /on conflict \(id\) do update/i);
 
 assert.match(preflightSql, /^-- READ-ONLY/m);
+assert.match(preflightSql, /function_collision_preflight/i);
+assert.match(preflightSql, /public\\.manage_campus_map_feature/i);
+assert.match(preflightSql, /public\\.get_past_question_coverage/i);
 assert.doesNotMatch(preflightSql, /\b(insert into|update\s+|delete\s+from|alter table|drop table|truncate|create table)\b/i);
 assert.match(postflightSql, /campus_member_blocks must not be directly selectable/i);
 assert.match(postflightSql, /Production-only billing\/payment table is missing/i);

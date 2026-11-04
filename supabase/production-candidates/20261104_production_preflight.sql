@@ -49,6 +49,38 @@ from (
     ('private.is_campusshield_owner_admin()',to_regprocedure('private.is_campusshield_owner_admin()') is not null)
 ) as f(helper_name,present);
 
+-- Stop if a candidate RPC already exists before these first-time table additions.
+-- Some source migrations replace earlier definitions within this same candidate phase;
+-- this guard ensures those DROP/CREATE transitions cannot touch pre-existing Production RPCs.
+do $function_collision_preflight$
+declare
+  v_signature text;
+  v_collisions text[] := array[]::text[];
+begin
+  foreach v_signature in array array[
+    'public.can_read_campus_map_drafts(uuid)',
+    'public.manage_campus_map_feature(uuid,text,text,text,text,text,double precision,double precision,text,boolean,boolean)',
+    'public.manage_campus_map_feature(uuid,text,text,text,text,text,double precision,double precision,text,boolean,boolean,jsonb)',
+    'private.manage_campus_map_feature_impl(uuid,text,text,text,text,text,double precision,double precision,text,boolean,boolean)',
+    'private.manage_campus_map_feature_impl(uuid,text,text,text,text,text,double precision,double precision,text,boolean,boolean,jsonb)',
+    'public.manage_campus_map_campus(uuid,text,text,text,text,double precision,double precision,text,text,jsonb,text,text)',
+    'private.manage_campus_map_campus_impl(uuid,text,text,text,text,double precision,double precision,text,text,jsonb,text,text)',
+    'private.is_campus_member_blocked(uuid,uuid)',
+    'public.get_past_question_coverage()',
+    'public.past_question_exam_prep_access()'
+  ] loop
+    if to_regprocedure(v_signature) is not null then
+      v_collisions := array_append(v_collisions,v_signature);
+    end if;
+  end loop;
+  if cardinality(v_collisions)>0 then
+    raise exception 'A candidate RPC already exists in Production; compare it manually before proceeding: %',
+      array_to_string(v_collisions,', ');
+  end if;
+end
+$function_collision_preflight$;
+
+
 select p.role,p.requested_role,p.verification_status as profile_status,
        cm.campus_role,cm.membership_status,cm.verification_status as membership_verification,
        count(*)::bigint as account_count
