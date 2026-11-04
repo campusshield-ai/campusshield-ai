@@ -62,4 +62,11 @@ assert.ok(preflightSql.includes("public.get_past_question_coverage()"), "Preflig
 assert.doesNotMatch(preflightSql, /\b(insert into|update\s+|delete\s+from|alter table|drop table|truncate|create table)\b/i);
 assert.match(postflightSql, /campus_member_blocks must not be directly selectable/i);
 assert.match(postflightSql, /Production-only billing\/payment table is missing/i);
+assert.match(pqSql, /grant select, insert, delete on public\\.past_question_papers to service_role/i);
+assert.match(pqSql, /grant select, insert on public\\.past_question_items to service_role/i);
+assert.match(pqSql, /grant select, insert on public\\.past_question_answer_keys to service_role/i);
+assert.match(pqSql, /grant select, update on public\\.practice_attempts to service_role/i);
+assert.match(pqSql, /grant insert on public\\.practice_answers to service_role/i);
+assert.match(postflightSql, /CampusMap Data API read grants are missing/i);
+assert.match(postflightSql, /Past Questions service_role table grants do not cover/i);
 console.log("Production migration candidate static checks passed.");
