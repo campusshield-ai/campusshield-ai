@@ -611,7 +611,7 @@ AS $fn$ SELECT string_to_array(p_name,'/'); $fn$;
 GRANT EXECUTE ON FUNCTION storage.foldername(text) TO PUBLIC;
 
 
--- Exact Production-only billing/payment schema sentinels; no records or payment values are included.
+-- Production-only billing/payment structure and its required FK parent; schema only.
 
 CREATE TABLE public."campus_opportunities" (
   "id" uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -632,8 +632,8 @@ CREATE TABLE public."campus_opportunities" (
   "reviewed_at" timestamp with time zone,
   "created_at" timestamp with time zone DEFAULT now() NOT NULL,
   "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-  CONSTRAINT "campus_opportunities_category_check" CHECK (category = ANY (ARRAY['scholarship'::text, 'internship'::text, 'grant'::text, 'competition'::text, 'hackathon'::text, 'mentorship'::text, 'gift'::text, 'free_item'::text, 'student_support'::text, 'other'::text])),
-  CONSTRAINT "campus_opportunities_contact_url_check" CHECK (contact_url IS NULL OR char_length(contact_url) <= 2048 AND contact_url ~* '^https?://[^[:space:]]+
+  CONSTRAINT "campus_opportunities_category_check" CHECK ((category = ANY (ARRAY['scholarship'::text, 'internship'::text, 'grant'::text, 'competition'::text, 'hackathon'::text, 'mentorship'::text, 'gift'::text, 'free_item'::text, 'student_support'::text, 'other'::text]))),
+  CONSTRAINT "campus_opportunities_contact_url_check" CHECK (((contact_url IS NULL) OR ((char_length(contact_url) <= 2048) AND (contact_url ~* '^https?://[^[:space:]]+
 INSERT INTO public.campus_universities (id,name,slug,ownership,state,official_website)
 VALUES
  ('11111111-1111-4111-8111-111111111111','Babcock University','babcock-university','Private','Ogun','https://www.babcock.edu.ng'),
@@ -678,14 +678,14 @@ VALUES
  ('33333333-3333-4333-8333-000000000001','11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-000000000001','Synthetic Babcock Event','Synthetic event','academic',now()+interval '14 days','published'),
  ('33333333-3333-4333-8333-000000000002','11111111-1111-4111-8111-222222222222','22222222-2222-4222-8222-000000000005','Synthetic Second Campus Event','Synthetic event','academic',now()+interval '14 days','published');
 
-::text),
+::text)))),
   CONSTRAINT "campus_opportunities_created_by_fkey" FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE CASCADE,
-  CONSTRAINT "campus_opportunities_description_check" CHECK (char_length(btrim(description)) >= 10 AND char_length(btrim(description)) <= 5000),
-  CONSTRAINT "campus_opportunities_eligibility_check" CHECK (char_length(eligibility) <= 2000),
+  CONSTRAINT "campus_opportunities_description_check" CHECK (((char_length(btrim(description)) >= 10) AND (char_length(btrim(description)) <= 5000))),
+  CONSTRAINT "campus_opportunities_eligibility_check" CHECK ((char_length(eligibility) <= 2000)),
   CONSTRAINT "campus_opportunities_pkey" PRIMARY KEY (id),
-  CONSTRAINT "campus_opportunities_provider_name_check" CHECK (char_length(btrim(provider_name)) >= 2 AND char_length(btrim(provider_name)) <= 160),
+  CONSTRAINT "campus_opportunities_provider_name_check" CHECK (((char_length(btrim(provider_name)) >= 2) AND (char_length(btrim(provider_name)) <= 160))),
   CONSTRAINT "campus_opportunities_reviewed_by_fkey" FOREIGN KEY (reviewed_by) REFERENCES profiles(id) ON DELETE SET NULL,
-  CONSTRAINT "campus_opportunities_source_url_check" CHECK (char_length(source_url) <= 2048 AND source_url ~* '^https?://[^[:space:]]+
+  CONSTRAINT "campus_opportunities_source_url_check" CHECK (((char_length(source_url) <= 2048) AND (source_url ~* '^https?://[^[:space:]]+
 INSERT INTO public.campus_universities (id,name,slug,ownership,state,official_website)
 VALUES
  ('11111111-1111-4111-8111-111111111111','Babcock University','babcock-university','Private','Ogun','https://www.babcock.edu.ng'),
@@ -730,12 +730,51 @@ VALUES
  ('33333333-3333-4333-8333-000000000001','11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-000000000001','Synthetic Babcock Event','Synthetic event','academic',now()+interval '14 days','published'),
  ('33333333-3333-4333-8333-000000000002','11111111-1111-4111-8111-222222222222','22222222-2222-4222-8222-000000000005','Synthetic Second Campus Event','Synthetic event','academic',now()+interval '14 days','published');
 
-::text),
-  CONSTRAINT "campus_opportunities_status_check" CHECK (status = ANY (ARRAY['draft'::text, 'pending'::text, 'published'::text, 'rejected'::text, 'expired'::text, 'archived'::text])),
-  CONSTRAINT "campus_opportunities_title_check" CHECK (char_length(btrim(title)) >= 3 AND char_length(btrim(title)) <= 160),
+::text))),
+  CONSTRAINT "campus_opportunities_status_check" CHECK ((status = ANY (ARRAY['draft'::text, 'pending'::text, 'published'::text, 'rejected'::text, 'expired'::text, 'archived'::text]))),
+  CONSTRAINT "campus_opportunities_title_check" CHECK (((char_length(btrim(title)) >= 3) AND (char_length(btrim(title)) <= 160))),
   CONSTRAINT "campus_opportunities_university_id_fkey" FOREIGN KEY (university_id) REFERENCES campus_universities(id) ON DELETE CASCADE
 );
 
+CREATE INDEX campus_opportunities_campus_status_deadline_idx ON public.campus_opportunities USING btree (university_id, status, deadline);
+
+CREATE INDEX campus_opportunities_owner_created_idx ON public.campus_opportunities USING btree (created_by, created_at DESC);
+
+CREATE INDEX idxfk_campus_opportunities_reviewed_by_7141d8 ON public.campus_opportunities USING btree (reviewed_by);
+
+ALTER TABLE public."campus_opportunities" ENABLE ROW LEVEL SECURITY;
+
+GRANT INSERT ON TABLE public."campus_opportunities" TO "anon";
+GRANT SELECT ON TABLE public."campus_opportunities" TO "anon";
+GRANT UPDATE ON TABLE public."campus_opportunities" TO "anon";
+GRANT DELETE ON TABLE public."campus_opportunities" TO "anon";
+GRANT TRUNCATE ON TABLE public."campus_opportunities" TO "anon";
+GRANT REFERENCES ON TABLE public."campus_opportunities" TO "anon";
+GRANT TRIGGER ON TABLE public."campus_opportunities" TO "anon";
+GRANT MAINTAIN ON TABLE public."campus_opportunities" TO "anon";
+GRANT INSERT ON TABLE public."campus_opportunities" TO "authenticated";
+GRANT SELECT ON TABLE public."campus_opportunities" TO "authenticated";
+GRANT UPDATE ON TABLE public."campus_opportunities" TO "authenticated";
+GRANT DELETE ON TABLE public."campus_opportunities" TO "authenticated";
+GRANT TRUNCATE ON TABLE public."campus_opportunities" TO "authenticated";
+GRANT REFERENCES ON TABLE public."campus_opportunities" TO "authenticated";
+GRANT TRIGGER ON TABLE public."campus_opportunities" TO "authenticated";
+GRANT MAINTAIN ON TABLE public."campus_opportunities" TO "authenticated";
+GRANT INSERT ON TABLE public."campus_opportunities" TO "service_role";
+GRANT SELECT ON TABLE public."campus_opportunities" TO "service_role";
+GRANT UPDATE ON TABLE public."campus_opportunities" TO "service_role";
+GRANT DELETE ON TABLE public."campus_opportunities" TO "service_role";
+GRANT TRUNCATE ON TABLE public."campus_opportunities" TO "service_role";
+GRANT REFERENCES ON TABLE public."campus_opportunities" TO "service_role";
+GRANT TRIGGER ON TABLE public."campus_opportunities" TO "service_role";
+GRANT MAINTAIN ON TABLE public."campus_opportunities" TO "service_role";
+
+CREATE POLICY "campus_opportunities_read_same_campus" ON public."campus_opportunities" AS PERMISSIVE FOR SELECT TO "authenticated"
+ USING ((( SELECT private.current_user_has_verified_campus_access() AS current_user_has_verified_campus_access) AND (university_id = ( SELECT private.current_campus_university_id() AS current_campus_university_id)) AND (((status = 'published'::text) AND ((deadline IS NULL) OR (deadline > now()))) OR (created_by = ( SELECT auth.uid() AS uid)) OR ((status = 'pending'::text) AND (( SELECT private.current_campus_role() AS current_campus_role) = ANY (ARRAY['admin'::text, 'security'::text, 'teacher'::text]))))));
+
+CREATE POLICY "platform_owner_full_access" ON public."campus_opportunities" AS PERMISSIVE FOR ALL TO "authenticated"
+ USING (private.is_campusshield_owner_admin())
+ WITH CHECK (private.is_campusshield_owner_admin());
 CREATE TABLE public."campus_institutional_billing_requests" (
   "id" uuid DEFAULT gen_random_uuid() NOT NULL,
   "requester_id" uuid NOT NULL,
@@ -747,16 +786,48 @@ CREATE TABLE public."campus_institutional_billing_requests" (
   "status" text DEFAULT 'pending'::text NOT NULL,
   "created_at" timestamp with time zone DEFAULT now() NOT NULL,
   "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-  CONSTRAINT "campus_institutional_billing_requests_billing_period_check" CHECK (billing_period = ANY (ARRAY['monthly'::text, 'yearly'::text])),
-  CONSTRAINT "campus_institutional_billing_requests_contact_email_check" CHECK (char_length(btrim(contact_email)) >= 3 AND char_length(btrim(contact_email)) <= 254),
-  CONSTRAINT "campus_institutional_billing_requests_institution_name_check" CHECK (char_length(btrim(institution_name)) >= 2 AND char_length(btrim(institution_name)) <= 180),
-  CONSTRAINT "campus_institutional_billing_requests_message_check" CHECK (message IS NULL OR char_length(message) <= 2000),
+  CONSTRAINT "campus_institutional_billing_requests_billing_period_check" CHECK ((billing_period = ANY (ARRAY['monthly'::text, 'yearly'::text]))),
+  CONSTRAINT "campus_institutional_billing_requests_contact_email_check" CHECK (((char_length(btrim(contact_email)) >= 3) AND (char_length(btrim(contact_email)) <= 254))),
+  CONSTRAINT "campus_institutional_billing_requests_institution_name_check" CHECK (((char_length(btrim(institution_name)) >= 2) AND (char_length(btrim(institution_name)) <= 180))),
+  CONSTRAINT "campus_institutional_billing_requests_message_check" CHECK (((message IS NULL) OR (char_length(message) <= 2000))),
   CONSTRAINT "campus_institutional_billing_requests_pkey" PRIMARY KEY (id),
-  CONSTRAINT "campus_institutional_billing_requests_requested_plan_check" CHECK (requested_plan = ANY (ARRAY['university-starter'::text, 'university-professional'::text, 'university-enterprise'::text])),
+  CONSTRAINT "campus_institutional_billing_requests_requested_plan_check" CHECK ((requested_plan = ANY (ARRAY['university-starter'::text, 'university-professional'::text, 'university-enterprise'::text]))),
   CONSTRAINT "campus_institutional_billing_requests_requester_id_fkey" FOREIGN KEY (requester_id) REFERENCES auth.users(id) ON DELETE CASCADE,
-  CONSTRAINT "campus_institutional_billing_requests_status_check" CHECK (status = ANY (ARRAY['pending'::text, 'contacted'::text, 'approved'::text, 'rejected'::text]))
+  CONSTRAINT "campus_institutional_billing_requests_status_check" CHECK ((status = ANY (ARRAY['pending'::text, 'contacted'::text, 'approved'::text, 'rejected'::text])))
 );
 
+CREATE INDEX campus_institutional_billing_requests_created_idx ON public.campus_institutional_billing_requests USING btree (created_at DESC);
+
+CREATE INDEX campus_institutional_billing_requests_requester_created_idx ON public.campus_institutional_billing_requests USING btree (requester_id, created_at DESC);
+
+ALTER TABLE public."campus_institutional_billing_requests" ENABLE ROW LEVEL SECURITY;
+
+GRANT INSERT ON TABLE public."campus_institutional_billing_requests" TO "service_role";
+GRANT SELECT ON TABLE public."campus_institutional_billing_requests" TO "service_role";
+GRANT UPDATE ON TABLE public."campus_institutional_billing_requests" TO "service_role";
+GRANT DELETE ON TABLE public."campus_institutional_billing_requests" TO "service_role";
+GRANT TRUNCATE ON TABLE public."campus_institutional_billing_requests" TO "service_role";
+GRANT REFERENCES ON TABLE public."campus_institutional_billing_requests" TO "service_role";
+GRANT TRIGGER ON TABLE public."campus_institutional_billing_requests" TO "service_role";
+GRANT MAINTAIN ON TABLE public."campus_institutional_billing_requests" TO "service_role";
+GRANT INSERT ON TABLE public."campus_institutional_billing_requests" TO "authenticated";
+GRANT SELECT ON TABLE public."campus_institutional_billing_requests" TO "authenticated";
+GRANT UPDATE ON TABLE public."campus_institutional_billing_requests" TO "authenticated";
+GRANT DELETE ON TABLE public."campus_institutional_billing_requests" TO "authenticated";
+
+CREATE POLICY "campus_institutional_billing_requests_insert_own" ON public."campus_institutional_billing_requests" AS PERMISSIVE FOR INSERT TO "authenticated"
+ WITH CHECK (((requester_id = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (platform_is_admin() OR (EXISTS ( SELECT 1
+   FROM profiles profile
+  WHERE ((profile.id = ( SELECT auth.uid() AS uid)) AND (profile.role = 'admin'::text) AND (profile.verification_status = 'verified'::text)))))));
+
+CREATE POLICY "campus_institutional_billing_requests_select_own" ON public."campus_institutional_billing_requests" AS PERMISSIVE FOR SELECT TO "authenticated"
+ USING ((platform_is_admin() OR ((requester_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1
+   FROM profiles profile
+  WHERE ((profile.id = ( SELECT auth.uid() AS uid)) AND (profile.role = 'admin'::text) AND (profile.verification_status = 'verified'::text)))))));
+
+CREATE POLICY "platform_owner_full_access" ON public."campus_institutional_billing_requests" AS PERMISSIVE FOR ALL TO "authenticated"
+ USING (private.is_campusshield_owner_admin())
+ WITH CHECK (private.is_campusshield_owner_admin());
 CREATE TABLE public."campus_opportunity_bookmarks" (
   "opportunity_id" uuid NOT NULL,
   "user_id" uuid NOT NULL,
@@ -768,6 +839,55 @@ CREATE TABLE public."campus_opportunity_bookmarks" (
   CONSTRAINT "campus_opportunity_bookmarks_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
+CREATE INDEX campus_opportunity_bookmarks_user_created_idx ON public.campus_opportunity_bookmarks USING btree (user_id, created_at DESC);
+
+CREATE INDEX idxfk_campus_opportunity_bookmarks_university_id_26b977 ON public.campus_opportunity_bookmarks USING btree (university_id);
+
+ALTER TABLE public."campus_opportunity_bookmarks" ENABLE ROW LEVEL SECURITY;
+
+GRANT INSERT ON TABLE public."campus_opportunity_bookmarks" TO "anon";
+GRANT SELECT ON TABLE public."campus_opportunity_bookmarks" TO "anon";
+GRANT UPDATE ON TABLE public."campus_opportunity_bookmarks" TO "anon";
+GRANT DELETE ON TABLE public."campus_opportunity_bookmarks" TO "anon";
+GRANT TRUNCATE ON TABLE public."campus_opportunity_bookmarks" TO "anon";
+GRANT REFERENCES ON TABLE public."campus_opportunity_bookmarks" TO "anon";
+GRANT TRIGGER ON TABLE public."campus_opportunity_bookmarks" TO "anon";
+GRANT MAINTAIN ON TABLE public."campus_opportunity_bookmarks" TO "anon";
+GRANT INSERT ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
+GRANT SELECT ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
+GRANT UPDATE ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
+GRANT DELETE ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
+GRANT TRUNCATE ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
+GRANT REFERENCES ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
+GRANT TRIGGER ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
+GRANT MAINTAIN ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
+GRANT INSERT ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
+GRANT SELECT ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
+GRANT UPDATE ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
+GRANT DELETE ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
+GRANT TRUNCATE ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
+GRANT REFERENCES ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
+GRANT TRIGGER ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
+GRANT MAINTAIN ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
+
+CREATE POLICY "campus_opportunity_bookmarks_delete_own" ON public."campus_opportunity_bookmarks" AS PERMISSIVE FOR DELETE TO "authenticated"
+ USING (((user_id = ( SELECT auth.uid() AS uid)) AND (university_id = ( SELECT private.current_campus_university_id() AS current_campus_university_id))));
+
+CREATE POLICY "campus_opportunity_bookmarks_insert_own" ON public."campus_opportunity_bookmarks" AS PERMISSIVE FOR INSERT TO "authenticated"
+ WITH CHECK (((user_id = ( SELECT auth.uid() AS uid)) AND (university_id = ( SELECT private.current_campus_university_id() AS current_campus_university_id)) AND ( SELECT private.current_user_has_verified_campus_access() AS current_user_has_verified_campus_access) AND (EXISTS ( SELECT 1
+   FROM campus_opportunities o
+  WHERE ((o.id = campus_opportunity_bookmarks.opportunity_id) AND (o.university_id = campus_opportunity_bookmarks.university_id) AND (o.status = 'published'::text) AND ((o.deadline IS NULL) OR (o.deadline > now())))))));
+
+CREATE POLICY "campus_opportunity_bookmarks_read_own" ON public."campus_opportunity_bookmarks" AS PERMISSIVE FOR SELECT TO "authenticated"
+ USING (((user_id = ( SELECT auth.uid() AS uid)) AND (university_id = ( SELECT private.current_campus_university_id() AS current_campus_university_id))));
+
+CREATE POLICY "platform_owner_full_access" ON public."campus_opportunity_bookmarks" AS PERMISSIVE FOR ALL TO "authenticated"
+ USING (private.is_campusshield_owner_admin())
+ WITH CHECK (private.is_campusshield_owner_admin());
+
+CREATE POLICY "verified_account_required_for_interactions" ON public."campus_opportunity_bookmarks" AS RESTRICTIVE FOR ALL TO "authenticated"
+ USING (( SELECT private.current_user_has_verified_campus_access() AS current_user_has_verified_campus_access))
+ WITH CHECK (( SELECT private.current_user_has_verified_campus_access() AS current_user_has_verified_campus_access));
 CREATE TABLE public."shieldmind_payment_orders" (
   "id" uuid DEFAULT gen_random_uuid() NOT NULL,
   "user_id" uuid NOT NULL,
@@ -782,163 +902,43 @@ CREATE TABLE public."shieldmind_payment_orders" (
   "paid_at" timestamp with time zone,
   "created_at" timestamp with time zone DEFAULT now() NOT NULL,
   "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-  CONSTRAINT "shieldmind_payment_orders_amount_kobo_check" CHECK (amount_kobo > 0),
-  CONSTRAINT "shieldmind_payment_orders_billing_period_check" CHECK (billing_period = 'monthly'::text),
-  CONSTRAINT "shieldmind_payment_orders_currency_check" CHECK (currency = 'NGN'::text),
+  CONSTRAINT "shieldmind_payment_orders_amount_kobo_check" CHECK ((amount_kobo > 0)),
+  CONSTRAINT "shieldmind_payment_orders_billing_period_check" CHECK ((billing_period = 'monthly'::text)),
+  CONSTRAINT "shieldmind_payment_orders_currency_check" CHECK ((currency = 'NGN'::text)),
   CONSTRAINT "shieldmind_payment_orders_pkey" PRIMARY KEY (id),
-  CONSTRAINT "shieldmind_payment_orders_plan_check" CHECK (plan = ANY (ARRAY['starter'::text, 'plus'::text, 'pro'::text, 'ultra'::text, 'max'::text])),
-  CONSTRAINT "shieldmind_payment_orders_provider_check" CHECK (provider = 'paystack'::text),
+  CONSTRAINT "shieldmind_payment_orders_plan_check" CHECK ((plan = ANY (ARRAY['starter'::text, 'plus'::text, 'pro'::text, 'ultra'::text, 'max'::text]))),
+  CONSTRAINT "shieldmind_payment_orders_provider_check" CHECK ((provider = 'paystack'::text)),
   CONSTRAINT "shieldmind_payment_orders_provider_reference_key" UNIQUE (provider_reference),
-  CONSTRAINT "shieldmind_payment_orders_status_check" CHECK (status = ANY (ARRAY['pending'::text, 'paid'::text, 'failed'::text, 'abandoned'::text])),
+  CONSTRAINT "shieldmind_payment_orders_status_check" CHECK ((status = ANY (ARRAY['pending'::text, 'paid'::text, 'failed'::text, 'abandoned'::text]))),
   CONSTRAINT "shieldmind_payment_orders_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
-CREATE INDEX campus_institutional_billing_requests_created_idx ON public.campus_institutional_billing_requests USING btree (created_at DESC);
-
-CREATE INDEX campus_institutional_billing_requests_requester_created_idx ON public.campus_institutional_billing_requests USING btree (requester_id, created_at DESC);
-
-CREATE INDEX campus_opportunities_campus_status_deadline_idx ON public.campus_opportunities USING btree (university_id, status, deadline);
-
-CREATE INDEX campus_opportunities_owner_created_idx ON public.campus_opportunities USING btree (created_by, created_at DESC);
-
-CREATE INDEX idxfk_campus_opportunities_reviewed_by_7141d8 ON public.campus_opportunities USING btree (reviewed_by);
-
-CREATE INDEX campus_opportunity_bookmarks_user_created_idx ON public.campus_opportunity_bookmarks USING btree (user_id, created_at DESC);
-
-CREATE INDEX idxfk_campus_opportunity_bookmarks_university_id_26b977 ON public.campus_opportunity_bookmarks USING btree (university_id);
-
 CREATE INDEX shieldmind_payment_orders_user_created_idx ON public.shieldmind_payment_orders USING btree (user_id, created_at DESC);
-
-ALTER TABLE public."campus_institutional_billing_requests" ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public."campus_opportunities" ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public."campus_opportunity_bookmarks" ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public."shieldmind_payment_orders" ENABLE ROW LEVEL SECURITY;
 
-GRANT DELETE ON TABLE public."campus_institutional_billing_requests" TO "authenticated";
-GRANT INSERT ON TABLE public."campus_institutional_billing_requests" TO "authenticated";
-GRANT SELECT ON TABLE public."campus_institutional_billing_requests" TO "authenticated";
-GRANT UPDATE ON TABLE public."campus_institutional_billing_requests" TO "authenticated";
-GRANT DELETE ON TABLE public."campus_institutional_billing_requests" TO "service_role";
-GRANT INSERT ON TABLE public."campus_institutional_billing_requests" TO "service_role";
-GRANT MAINTAIN ON TABLE public."campus_institutional_billing_requests" TO "service_role";
-GRANT REFERENCES ON TABLE public."campus_institutional_billing_requests" TO "service_role";
-GRANT SELECT ON TABLE public."campus_institutional_billing_requests" TO "service_role";
-GRANT TRIGGER ON TABLE public."campus_institutional_billing_requests" TO "service_role";
-GRANT TRUNCATE ON TABLE public."campus_institutional_billing_requests" TO "service_role";
-GRANT UPDATE ON TABLE public."campus_institutional_billing_requests" TO "service_role";
-GRANT DELETE ON TABLE public."campus_opportunities" TO "anon";
-GRANT INSERT ON TABLE public."campus_opportunities" TO "anon";
-GRANT MAINTAIN ON TABLE public."campus_opportunities" TO "anon";
-GRANT REFERENCES ON TABLE public."campus_opportunities" TO "anon";
-GRANT SELECT ON TABLE public."campus_opportunities" TO "anon";
-GRANT TRIGGER ON TABLE public."campus_opportunities" TO "anon";
-GRANT TRUNCATE ON TABLE public."campus_opportunities" TO "anon";
-GRANT UPDATE ON TABLE public."campus_opportunities" TO "anon";
-GRANT DELETE ON TABLE public."campus_opportunities" TO "authenticated";
-GRANT INSERT ON TABLE public."campus_opportunities" TO "authenticated";
-GRANT MAINTAIN ON TABLE public."campus_opportunities" TO "authenticated";
-GRANT REFERENCES ON TABLE public."campus_opportunities" TO "authenticated";
-GRANT SELECT ON TABLE public."campus_opportunities" TO "authenticated";
-GRANT TRIGGER ON TABLE public."campus_opportunities" TO "authenticated";
-GRANT TRUNCATE ON TABLE public."campus_opportunities" TO "authenticated";
-GRANT UPDATE ON TABLE public."campus_opportunities" TO "authenticated";
-GRANT DELETE ON TABLE public."campus_opportunities" TO "service_role";
-GRANT INSERT ON TABLE public."campus_opportunities" TO "service_role";
-GRANT MAINTAIN ON TABLE public."campus_opportunities" TO "service_role";
-GRANT REFERENCES ON TABLE public."campus_opportunities" TO "service_role";
-GRANT SELECT ON TABLE public."campus_opportunities" TO "service_role";
-GRANT TRIGGER ON TABLE public."campus_opportunities" TO "service_role";
-GRANT TRUNCATE ON TABLE public."campus_opportunities" TO "service_role";
-GRANT UPDATE ON TABLE public."campus_opportunities" TO "service_role";
-GRANT DELETE ON TABLE public."campus_opportunity_bookmarks" TO "anon";
-GRANT INSERT ON TABLE public."campus_opportunity_bookmarks" TO "anon";
-GRANT MAINTAIN ON TABLE public."campus_opportunity_bookmarks" TO "anon";
-GRANT REFERENCES ON TABLE public."campus_opportunity_bookmarks" TO "anon";
-GRANT SELECT ON TABLE public."campus_opportunity_bookmarks" TO "anon";
-GRANT TRIGGER ON TABLE public."campus_opportunity_bookmarks" TO "anon";
-GRANT TRUNCATE ON TABLE public."campus_opportunity_bookmarks" TO "anon";
-GRANT UPDATE ON TABLE public."campus_opportunity_bookmarks" TO "anon";
-GRANT DELETE ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
-GRANT INSERT ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
-GRANT MAINTAIN ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
-GRANT REFERENCES ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
-GRANT SELECT ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
-GRANT TRIGGER ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
-GRANT TRUNCATE ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
-GRANT UPDATE ON TABLE public."campus_opportunity_bookmarks" TO "authenticated";
-GRANT DELETE ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
-GRANT INSERT ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
-GRANT MAINTAIN ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
-GRANT REFERENCES ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
-GRANT SELECT ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
-GRANT TRIGGER ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
-GRANT TRUNCATE ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
-GRANT UPDATE ON TABLE public."campus_opportunity_bookmarks" TO "service_role";
-GRANT DELETE ON TABLE public."shieldmind_payment_orders" TO "authenticated";
+GRANT INSERT ON TABLE public."shieldmind_payment_orders" TO "service_role";
+GRANT SELECT ON TABLE public."shieldmind_payment_orders" TO "service_role";
+GRANT UPDATE ON TABLE public."shieldmind_payment_orders" TO "service_role";
+GRANT DELETE ON TABLE public."shieldmind_payment_orders" TO "service_role";
+GRANT TRUNCATE ON TABLE public."shieldmind_payment_orders" TO "service_role";
+GRANT REFERENCES ON TABLE public."shieldmind_payment_orders" TO "service_role";
+GRANT TRIGGER ON TABLE public."shieldmind_payment_orders" TO "service_role";
+GRANT MAINTAIN ON TABLE public."shieldmind_payment_orders" TO "service_role";
 GRANT INSERT ON TABLE public."shieldmind_payment_orders" TO "authenticated";
 GRANT SELECT ON TABLE public."shieldmind_payment_orders" TO "authenticated";
 GRANT UPDATE ON TABLE public."shieldmind_payment_orders" TO "authenticated";
-GRANT DELETE ON TABLE public."shieldmind_payment_orders" TO "service_role";
-GRANT INSERT ON TABLE public."shieldmind_payment_orders" TO "service_role";
-GRANT MAINTAIN ON TABLE public."shieldmind_payment_orders" TO "service_role";
-GRANT REFERENCES ON TABLE public."shieldmind_payment_orders" TO "service_role";
-GRANT SELECT ON TABLE public."shieldmind_payment_orders" TO "service_role";
-GRANT TRIGGER ON TABLE public."shieldmind_payment_orders" TO "service_role";
-GRANT TRUNCATE ON TABLE public."shieldmind_payment_orders" TO "service_role";
-GRANT UPDATE ON TABLE public."shieldmind_payment_orders" TO "service_role";
-
-CREATE POLICY "campus_institutional_billing_requests_insert_own" ON public."campus_institutional_billing_requests" AS PERMISSIVE FOR INSERT TO "authenticated"
-  WITH CHECK (((requester_id = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND (platform_is_admin() OR (EXISTS ( SELECT 1
-   FROM profiles profile
-  WHERE ((profile.id = ( SELECT auth.uid() AS uid)) AND (profile.role = 'admin'::text) AND (profile.verification_status = 'verified'::text)))))));
-
-CREATE POLICY "campus_institutional_billing_requests_select_own" ON public."campus_institutional_billing_requests" AS PERMISSIVE FOR SELECT TO "authenticated"
-  USING ((platform_is_admin() OR ((requester_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1
-   FROM profiles profile
-  WHERE ((profile.id = ( SELECT auth.uid() AS uid)) AND (profile.role = 'admin'::text) AND (profile.verification_status = 'verified'::text)))))));
-
-CREATE POLICY "platform_owner_full_access" ON public."campus_institutional_billing_requests" AS PERMISSIVE FOR ALL TO "authenticated"
-  USING (private.is_campusshield_owner_admin())
-  WITH CHECK (private.is_campusshield_owner_admin());
-
-CREATE POLICY "campus_opportunities_read_same_campus" ON public."campus_opportunities" AS PERMISSIVE FOR SELECT TO "authenticated"
-  USING ((( SELECT private.current_user_has_verified_campus_access() AS current_user_has_verified_campus_access) AND (university_id = ( SELECT private.current_campus_university_id() AS current_campus_university_id)) AND (((status = 'published'::text) AND ((deadline IS NULL) OR (deadline > now()))) OR (created_by = ( SELECT auth.uid() AS uid)) OR ((status = 'pending'::text) AND (( SELECT private.current_campus_role() AS current_campus_role) = ANY (ARRAY['admin'::text, 'security'::text, 'teacher'::text]))))));
-
-CREATE POLICY "platform_owner_full_access" ON public."campus_opportunities" AS PERMISSIVE FOR ALL TO "authenticated"
-  USING (private.is_campusshield_owner_admin())
-  WITH CHECK (private.is_campusshield_owner_admin());
-
-CREATE POLICY "campus_opportunity_bookmarks_delete_own" ON public."campus_opportunity_bookmarks" AS PERMISSIVE FOR DELETE TO "authenticated"
-  USING (((user_id = ( SELECT auth.uid() AS uid)) AND (university_id = ( SELECT private.current_campus_university_id() AS current_campus_university_id))));
-
-CREATE POLICY "campus_opportunity_bookmarks_insert_own" ON public."campus_opportunity_bookmarks" AS PERMISSIVE FOR INSERT TO "authenticated"
-  WITH CHECK (((user_id = ( SELECT auth.uid() AS uid)) AND (university_id = ( SELECT private.current_campus_university_id() AS current_campus_university_id)) AND ( SELECT private.current_user_has_verified_campus_access() AS current_user_has_verified_campus_access) AND (EXISTS ( SELECT 1
-   FROM campus_opportunities o
-  WHERE ((o.id = campus_opportunity_bookmarks.opportunity_id) AND (o.university_id = campus_opportunity_bookmarks.university_id) AND (o.status = 'published'::text) AND ((o.deadline IS NULL) OR (o.deadline > now())))))));
-
-CREATE POLICY "campus_opportunity_bookmarks_read_own" ON public."campus_opportunity_bookmarks" AS PERMISSIVE FOR SELECT TO "authenticated"
-  USING (((user_id = ( SELECT auth.uid() AS uid)) AND (university_id = ( SELECT private.current_campus_university_id() AS current_campus_university_id))));
-
-CREATE POLICY "platform_owner_full_access" ON public."campus_opportunity_bookmarks" AS PERMISSIVE FOR ALL TO "authenticated"
-  USING (private.is_campusshield_owner_admin())
-  WITH CHECK (private.is_campusshield_owner_admin());
-
-CREATE POLICY "verified_account_required_for_interactions" ON public."campus_opportunity_bookmarks" AS RESTRICTIVE FOR ALL TO "authenticated"
-  USING (( SELECT private.current_user_has_verified_campus_access() AS current_user_has_verified_campus_access))
-  WITH CHECK (( SELECT private.current_user_has_verified_campus_access() AS current_user_has_verified_campus_access));
+GRANT DELETE ON TABLE public."shieldmind_payment_orders" TO "authenticated";
 
 CREATE POLICY "platform_owner_full_access" ON public."shieldmind_payment_orders" AS PERMISSIVE FOR ALL TO "authenticated"
-  USING (private.is_campusshield_owner_admin())
-  WITH CHECK (private.is_campusshield_owner_admin());
+ USING (private.is_campusshield_owner_admin())
+ WITH CHECK (private.is_campusshield_owner_admin());
 
 CREATE POLICY "shieldmind_payment_orders_insert_verified_own" ON public."shieldmind_payment_orders" AS PERMISSIVE FOR INSERT TO "authenticated"
-  WITH CHECK (((user_id = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND can_start_shieldmind_checkout()));
+ WITH CHECK (((user_id = ( SELECT auth.uid() AS uid)) AND (status = 'pending'::text) AND can_start_shieldmind_checkout()));
 
 CREATE POLICY "shieldmind_payment_orders_read_own" ON public."shieldmind_payment_orders" AS PERMISSIVE FOR SELECT TO "authenticated"
-  USING ((user_id = ( SELECT auth.uid() AS uid)));
+ USING ((user_id = ( SELECT auth.uid() AS uid)));
 -- Synthetic test data only; IDs and emails are reserved fixture values.
 INSERT INTO public.campus_universities (id,name,slug,ownership,state,official_website)
 VALUES
