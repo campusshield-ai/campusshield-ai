@@ -66,6 +66,16 @@ begin
     'public.manage_campus_map_campus(uuid,text,text,text,text,double precision,double precision,text,text,jsonb,text,text)',
     'private.manage_campus_map_campus_impl(uuid,text,text,text,text,double precision,double precision,text,text,jsonb,text,text)',
     'private.is_campus_member_blocked(uuid,uuid)',
+    'private.prepare_campuspulse_social_item()',
+    'private.prepare_campus_peer_connection()',
+    'private.prepare_campus_social_report()',
+    'private.import_campus_map_building_candidates_impl(uuid,jsonb)',
+    'private.import_campus_map_building_candidates_impl_unverified_centre_legacy(uuid,jsonb)',
+    'public.import_campus_map_building_candidates(uuid,jsonb)',
+    'private.review_campus_map_building_impl(uuid,text,text,boolean)',
+    'public.review_campus_map_building(uuid,text,text,boolean)',
+    'private.manage_campus_map_feature_with_metadata_impl(uuid,text,text,text,text,text,double precision,double precision,text,boolean,boolean,jsonb)',
+    'public.add_past_question_item_with_answer_key(uuid,integer,text,text,jsonb,text,numeric,text,text,text)',
     'public.get_past_question_coverage()',
     'public.past_question_exam_prep_access()'
   ] loop
