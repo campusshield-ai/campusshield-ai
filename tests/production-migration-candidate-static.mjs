@@ -57,6 +57,9 @@ assert.doesNotMatch(pqSql, /on conflict \(id\) do update/i);
 
 assert.match(preflightSql, /^-- READ-ONLY/m);
 assert.match(preflightSql, /function_collision_preflight/i);
+assert.match(preflightSql, /storage_policy_preflight/i);
+assert.match(preflightSql, /explicit bucket_id scope/i);
+assert.match(postflightSql, /Every storage\.objects RLS policy must include an explicit bucket_id scope/i);
 assert.ok(preflightSql.includes("public.manage_campus_map_feature("), "Preflight guards CampusMap RPC collisions");
 assert.ok(preflightSql.includes("public.get_past_question_coverage()"), "Preflight guards Past Questions RPC collisions");
 assert.ok(preflightSql.includes("private.import_campus_map_building_candidates_impl(uuid,jsonb)"), "Preflight guards CampusMap import implementation collisions");
