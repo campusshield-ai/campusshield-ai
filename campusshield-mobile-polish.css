@@ -1,0 +1,206 @@
+/* CampusShield AI — mobile header polish.
+   Presentation-only: keep existing navigation, search, permissions and backend logic intact. */
+
+@media (max-width: 650px) {
+  #workspace .topbar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 46px;
+    grid-template-areas:
+      "brand menu"
+      "search search";
+    align-items: center;
+    justify-content: stretch;
+    gap: 11px 12px;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    padding: max(10px, env(safe-area-inset-top)) 14px 13px;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 20 !important;
+    overflow: visible;
+    background:
+      radial-gradient(ellipse at 84% 0%, rgba(139, 227, 160, .13), transparent 42%),
+      linear-gradient(135deg, rgba(5, 29, 22, .98), rgba(13, 54, 40, .97));
+    border-bottom: 1px solid rgba(139, 227, 160, .2);
+    box-shadow: 0 9px 25px rgba(4, 22, 17, .18);
+    -webkit-backdrop-filter: blur(20px) saturate(1.2);
+    backdrop-filter: blur(20px) saturate(1.2);
+  }
+
+  #workspace .mobile-topbar-brand {
+    grid-area: brand;
+    display: flex !important;
+    align-items: center;
+    justify-self: stretch;
+    gap: 10px;
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 auto;
+    color: #f0fbf4;
+    font-size: 15px;
+    font-weight: 820;
+    line-height: 1.15;
+    letter-spacing: -.035em;
+    white-space: nowrap;
+  }
+
+  #workspace .mobile-topbar-brand > span:last-child {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #workspace .mobile-topbar-mark {
+    display: grid;
+    place-items: center;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(139, 227, 160, .24);
+    border-radius: 14px;
+    background: linear-gradient(145deg, rgba(139, 227, 160, .2), rgba(255, 255, 255, .055));
+    color: #aaf0bc !important;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .12), 0 5px 14px rgba(0, 0, 0, .12);
+  }
+
+  #workspace .mobile-topbar-mark svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  #workspace .mobile-topbar-help {
+    display: none !important;
+  }
+
+  #workspace .mobile-nav-toggle {
+    grid-area: menu;
+    display: inline-grid !important;
+    place-items: center;
+    justify-self: end;
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+    min-height: 46px;
+    padding: 0;
+    border: 1px solid rgba(169, 226, 190, .28);
+    border-radius: 14px;
+    background: rgba(237, 255, 244, .1);
+    color: #eaffef;
+    font-size: 20px;
+    line-height: 1;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .09), 0 5px 14px rgba(0, 0, 0, .1);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #workspace .mobile-nav-toggle:active {
+    background: rgba(139, 227, 160, .2);
+    transform: scale(.97);
+  }
+
+  #workspace .mobile-nav-toggle:focus-visible {
+    outline: 3px solid #8be3a0;
+    outline-offset: 2px;
+  }
+
+  #workspace .global-search {
+    grid-area: search;
+    display: block;
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    flex: none;
+    margin: 0 !important;
+  }
+
+  #workspace .global-search-input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    padding: 0 44px 0 43px;
+    border: 1px solid rgba(175, 222, 193, .27);
+    border-radius: 15px;
+    background: rgba(244, 255, 248, .095);
+    color: #f1fbf4;
+    font-size: 16px;
+    line-height: 1.2;
+    box-shadow: inset 0 1px rgba(255, 255, 255, .055);
+  }
+
+  #workspace .global-search-input::placeholder {
+    color: #b9d0c2;
+    opacity: 1;
+  }
+
+  #workspace .global-search-input:focus {
+    border-color: rgba(139, 227, 160, .72);
+    background: rgba(244, 255, 248, .13);
+    box-shadow: 0 0 0 3px rgba(139, 227, 160, .16);
+    outline: none;
+  }
+
+  #workspace .global-search-icon {
+    left: 15px;
+    color: #acd7bb;
+  }
+
+  #workspace .global-search-kbd {
+    display: none;
+  }
+
+  #workspace .global-search-results {
+    top: calc(100% + 8px);
+    z-index: 60;
+    border: 1px solid rgba(203, 226, 210, .95);
+    border-radius: 15px;
+    box-shadow: 0 18px 40px rgba(3, 22, 15, .24);
+  }
+
+  #workspace .topbar-title,
+  #workspace .topbar-actions {
+    display: none !important;
+  }
+}
+
+@media (max-width: 360px) {
+  #workspace .topbar {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 9px 9px;
+    padding-right: 11px;
+    padding-left: 11px;
+  }
+
+  #workspace .mobile-nav-toggle {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  #workspace .mobile-topbar-brand {
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  #workspace .mobile-topbar-mark {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #workspace .mobile-nav-toggle {
+    transition: none !important;
+  }
+}
+
+html[data-theme="dark"] #workspace .global-search-results {
+  border-color: #315342;
+  background: #102b22;
+  color: #e5f1e9;
+}
