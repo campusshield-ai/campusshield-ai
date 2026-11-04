@@ -66,6 +66,7 @@
       [".login-trust-strip > div:nth-child(3) strong","trustOpportunities"],[".login-trust-strip > div:nth-child(3) small","trustOpportunitiesDescription"],
       [".login-series-details summary","exploreSeries"],
       [".login-footer-links a:nth-child(1)","features"],[".login-footer-links a:nth-child(2)","about"],[".login-footer-links a:nth-child(3)","help"],
+      [".login-footer-links a:nth-child(4)","privacy"],[".login-footer-links a:nth-child(5)","terms"],[".login-footer-links a:nth-child(6)","contact"],
       [".login-official-link span[data-i18n='officialText']","visitOfficial"],
       [".auth-kicker","access"],["#signin-institution-field label","institution"],["#signin-institution-help","institutionHelp"],
       ["#signin-role-note","roleNote"],["#auth-tabs [data-auth-mode='signin']","signIn"],["#auth-tabs [data-auth-mode='signup']","createAccount"],
