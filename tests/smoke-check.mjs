@@ -105,6 +105,7 @@ assert.ok(html.includes('<option value="ha" lang="ha">Hausa</option>'), "languag
 assert.ok(html.includes('<option value="ig" lang="ig">Igbo</option>'), "language picker includes Igbo");
 assert.ok(htmlMarkup.includes('<script src="./campusshield-i18n.js" defer></script>'), "language bundle is deferred in dependency order");
 assert.doesNotThrow(() => new Function(i18nScript), "multilingual UI bundle parses");
+assert.ok(!i18nScript.includes('[".login-brand-copy small","brandTagline"]'), "brand tagline remains fixed when the language changes");
 assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(1)","features"]'), "landing footer first link remains Features");
 assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(2)","about"]'), "landing footer second link remains About");
 assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(3)","help"]'), "landing footer third link remains Help");
