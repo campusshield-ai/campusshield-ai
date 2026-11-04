@@ -1562,7 +1562,9 @@
     if (!select) return;
     const campusSlug = $('campus-map-admin-campus-slug')?.value || $('campus-map-campus-select')?.value || 'main-campus';
     const existingId = selectedId || select.value;
-    const parentBuildings = allFeatures.filter(item => item.campus_slug === campusSlug
+    const editingId = $('campus-map-feature-id')?.value || '';
+    const parentBuildings = allFeatures.filter(item => item.id !== editingId
+      && item.campus_slug === campusSlug
       && ['building','lecture_hall','hostel','library','facility'].includes(item.feature_type)
       && item.verification_status === 'verified');
     select.replaceChildren();
@@ -1586,8 +1588,10 @@
     if (fields) fields.hidden = !isEntrance;
     const entryType = $('campus-map-admin-entry-type');
     if (entryType) {
+      const accessibleOption = entryType.querySelector('option[value="accessible"]');
+      if (accessibleOption) accessibleOption.hidden = featureType === 'entrance';
       if (featureType === 'accessible_entry') entryType.value = 'accessible';
-      else if (!isEntrance && entryType.value === 'accessible') entryType.value = '';
+      else if (entryType.value === 'accessible') entryType.value = '';
       entryType.disabled = featureType === 'accessible_entry';
     }
   }

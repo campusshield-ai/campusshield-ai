@@ -17,6 +17,7 @@ const passportCss = read('campus-map-passport.css');
 const passportSql = read('supabase/migrations/20261104004500_campus_map_passports_and_verified_entrance_details.sql');
 const passportMergeSql = read('supabase/migrations/20261104004700_campus_map_passport_system_metadata_merge.sql');
 const passportCompatSql = read('supabase/migrations/20261104005000_campus_map_passport_metadata_null_compatibility.sql');
+const passportParentGuardSql = read('supabase/migrations/20261104005500_campus_map_building_parent_no_self_reference.sql');
 const sql = read('supabase/migrations/20261031115759_campus_map_verified_locations_and_emergency_layers.sql');
 const policySql = read('supabase/migrations/20261031115831_campus_map_public_read_policy_split.sql');
 const finalPolicySql = read('supabase/migrations/20261031120234_campus_map_single_read_policy_and_audit_index.sql');
@@ -335,5 +336,12 @@ assert.match(passportCompatSql, /if p_metadata is null then[\s\S]*jsonb_each/, '
 assert.match(passportMergeSql, /revoke all on function public\.manage_campus_map_feature/i, 'Exposed Passport RPC execution remains narrowly granted');
 assert.match(passportCompatSql, /revoke all on function private\.manage_campus_map_feature_with_metadata_impl/i, 'Legacy metadata compatibility implementation is not directly public');
 assert.match(js, /route path itself is not certified step-free/i, 'The UI does not claim that routing data proves the whole path is accessible');
+
+
+assert.match(passportParentGuardSql, /campus_map_feature_parent_not_self/, 'Database prevents a map location from referencing itself as its parent building');
+assert.match(passportParentGuardSql, /metadata->>'building_feature_id' <> id::text/, 'Parent self-reference validation is enforced by a database check constraint');
+assert.match(js, /item\.id !== editingId/, 'Admin parent selector excludes the map record currently being edited');
+assert.match(html, /campus-map-passport-entry-fields" hidden/, 'Entrance-only parent/type controls are hidden for ordinary buildings');
+assert.match(js, /accessibleOption\.hidden = featureType === 'entrance'/, 'Accessible entrance type is only selectable on the accessible-entry location type');
 
 console.log('CampusMap static smoke checks passed.');
