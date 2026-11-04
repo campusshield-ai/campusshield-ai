@@ -20,7 +20,7 @@ for (const phase of allPhases) {
 }
 
 for (const name of ["campus_map_features", "campus_map_campuses", "campus_map_buildings"]) {
-  assert.match(mapSql, new RegExp("alter table public\\." + name + " enable row level security", "i"));
+  assert.match(mapSql, new RegExp("alter table public\." + name + " enable row level security", "i"));
 }
 assert.match(mapSql, /add column if not exists university_id uuid/i);
 assert.match(mapSql, /add column if not exists latitude double precision/i);
@@ -36,7 +36,7 @@ for (const name of [
   "campus_mentorship_profiles", "campus_memories", "campus_peer_connection_requests",
   "campus_social_feature_reports"
 ]) {
-  assert.match(pulseSql, new RegExp("alter table public\\." + name + " enable row level security", "i"));
+  assert.match(pulseSql, new RegExp("alter table public\." + name + " enable row level security", "i"));
 }
 assert.match(pulseSql, /revoke all on public\.campus_member_blocks from public,anon,authenticated/i);
 assert.match(pulseSql, /as restrictive\s+for all to anon,authenticated using \(false\)/i);
@@ -46,7 +46,7 @@ for (const name of [
   "past_question_papers", "past_question_items", "past_question_answer_keys",
   "practice_attempts", "practice_answers"
 ]) {
-  assert.match(pqSql, new RegExp("alter table public\\." + name + " enable row level security", "i"));
+  assert.match(pqSql, new RegExp("alter table public\." + name + " enable row level security", "i"));
 }
 assert.match(pqSql, /past_question_answer_keys_reviewer_only/i);
 assert.match(pqSql, /past_question_exam_prep_access/i);
@@ -69,11 +69,11 @@ assert.ok(preflightSql.includes("private.manage_campus_map_feature_with_metadata
 assert.doesNotMatch(preflightSql, /\b(insert into|update\s+|delete\s+from|alter table|drop table|truncate|create table)\b/i);
 assert.match(postflightSql, /campus_member_blocks must not be directly selectable/i);
 assert.match(postflightSql, /Production-only billing\/payment table is missing/i);
-assert.match(pqSql, /grant select, insert, delete on public\\.past_question_papers to service_role/i);
-assert.match(pqSql, /grant select, insert on public\\.past_question_items to service_role/i);
-assert.match(pqSql, /grant select, insert on public\\.past_question_answer_keys to service_role/i);
-assert.match(pqSql, /grant select, update on public\\.practice_attempts to service_role/i);
-assert.match(pqSql, /grant insert on public\\.practice_answers to service_role/i);
+assert.match(pqSql, /grant select, insert, delete on public\.past_question_papers to service_role/i);
+assert.match(pqSql, /grant select, insert on public\.past_question_items to service_role/i);
+assert.match(pqSql, /grant select, insert on public\.past_question_answer_keys to service_role/i);
+assert.match(pqSql, /grant select, update on public\.practice_attempts to service_role/i);
+assert.match(pqSql, /grant insert on public\.practice_answers to service_role/i);
 assert.match(postflightSql, /CampusMap Data API read grants are missing/i);
 assert.match(postflightSql, /Past Questions service_role table grants do not cover/i);
 assert.match(pqSql, /grant select, insert, delete on public\.past_question_papers to service_role/i);
