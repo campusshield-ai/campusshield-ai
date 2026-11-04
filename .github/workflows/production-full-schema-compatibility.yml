@@ -25,8 +25,7 @@ jobs:
         name: Check secret without displaying it
         shell: bash
         env:
-          # Re-run after the repository owner updated the database credential.
-      PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
+          PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
         run: |
           if [[ -z "${PRODUCTION_DB_URL:-}" ]]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
