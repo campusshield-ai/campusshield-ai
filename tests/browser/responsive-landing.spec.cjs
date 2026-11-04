@@ -323,7 +323,7 @@ test("live GitHub Pages serves and initializes the Production Supabase client", 
 
   const authSettings = await page.evaluate(async () => {
     const config = window.CAMPUSSHIELD_SUPABASE_CONFIG;
-    const result = await fetch(config.url.replace(/\\/$/, "") + "/auth/v1/settings", {
+    const result = await fetch(config.url + "/auth/v1/settings", {
       headers: { apikey: config.publishableKey, Accept: "application/json" },
     });
     return { status: result.status };
