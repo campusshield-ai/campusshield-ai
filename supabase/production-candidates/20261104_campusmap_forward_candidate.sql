@@ -589,15 +589,7 @@ GRANT EXECUTE ON FUNCTION private.manage_campus_map_campus_impl(uuid,text,text,t
 -- OSM footprints are imported as candidates and stay admin-only until local verification.
 -- No imported geometry is published automatically.
 
-UPDATE public.campus_universities
-SET state = 'FCT Abuja',
-    updated_at = now()
-WHERE lower(btrim(state)) = 'fct';
-
-UPDATE public.campus_map_campuses
-SET state = 'FCT Abuja',
-    updated_at = now()
-WHERE lower(btrim(state)) = 'fct';
+-- Intentionally omitted Staging-only FCT state normalization; no existing directory rows are changed.
 
 CREATE TABLE IF NOT EXISTS public.campus_map_buildings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
