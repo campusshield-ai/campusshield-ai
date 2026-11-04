@@ -251,3 +251,28 @@ test("student and staff get separate identity-verification instructions and resp
   }
 });
 
+test("Supabase browser SDK initializes before the CampusShield app", async ({ page }) => {
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => Boolean(
+    window.CAMPUSSHIELD_SUPABASE_CONFIG?.url &&
+    typeof window.supabase?.createClient === "function" &&
+    window.CampusShieldBackend?.isConfigured === true &&
+    window.CampusShieldBackend?.client?.auth
+  ), { timeout: 20_000 });
+
+  const state = await page.evaluate(() => ({
+    configured: window.CampusShieldBackend.isConfigured,
+    projectHost: new URL(window.CAMPUSSHIELD_SUPABASE_CONFIG.url).hostname,
+    sdkAvailable: typeof window.supabase?.createClient === "function",
+    authClientAvailable: typeof window.CampusShieldBackend.client.auth.getSession === "function",
+  }));
+
+  expect(state.configured).toBe(true);
+  expect(state.projectHost).toBe("hywcpnoqqhxvujnimhxl.supabase.co");
+  expect(state.sdkAvailable).toBe(true);
+  expect(state.authClientAvailable).toBe(true);
+  expect(pageErrors).toEqual([]);
+});
