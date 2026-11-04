@@ -911,7 +911,7 @@ for (const href of [
 }
 assert.match(creatorToolsPage, /AGPL-3\.0/, "VoiceStudio shows its AGPL-3.0 application license");
 assert.match(creatorToolsPage, /MIT OR Apache-2\.0/, "ArtCraft-family tools show their project source license");
-assert.match(creatorToolsPage, /student ID cards, passwords, grades, private campus records, incident reports/, "Creator & Tools Hub warns against uploading sensitive student data");
+assert.match(creatorToolsPage, /student ID cards, passwords, grades, private campus or class records, incident reports/, "Creator & Tools Hub warns against uploading sensitive student data");
 assert.match(creatorToolsPage, /without permission/, "Creator & Tools Hub includes consent guidance for recordings");
 assert.doesNotMatch(creatorToolsPage, /type=["']file["']|<iframe/i, "Creator & Tools Hub does not upload or embed third-party content");
 assert.match(creatorToolsJs, /function applyFilters\(\)/, "Creator & Tools Hub implements client-side search and filtering");
