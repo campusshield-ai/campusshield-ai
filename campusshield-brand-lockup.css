@@ -1,0 +1,213 @@
+/* Reference-matched CampusShield brand lockup.
+   Forest-green workspace, mint shield, stacked Campus / Shield / AI wordmark. */
+
+#app-sidebar .brand {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 2px 6px 24px;
+  color: #f8fbf8;
+}
+
+#app-sidebar .brand-logo {
+  display: block;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+  object-fit: contain;
+  filter: none;
+}
+
+#app-sidebar .brand-copy {
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  color: #f8fbf8;
+  font-size: inherit;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+#app-sidebar .brand-wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  color: #f7fbf8;
+  font-size: 20px;
+  font-weight: 850;
+  line-height: .99;
+  letter-spacing: -.045em;
+}
+
+#app-sidebar .brand-wordmark strong {
+  display: block;
+  color: #7fd98a;
+  font-weight: 900;
+}
+
+#app-sidebar .brand-copy small {
+  display: block !important;
+  margin: 1px 0 0;
+  color: #b5c9bf !important;
+  font-size: 8px;
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: .15em;
+  white-space: nowrap;
+}
+
+/* Keep the compact icon-only state when the desktop sidebar is collapsed. */
+.app.sidebar-collapsed #app-sidebar .brand {
+  justify-content: center;
+  gap: 0;
+  padding: 4px 0 15px;
+}
+
+.app.sidebar-collapsed #app-sidebar .brand-copy {
+  display: none !important;
+}
+
+.app.sidebar-collapsed #app-sidebar .brand-logo {
+  width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+}
+
+/* Use the same identity on the public sign-in header. */
+#login-screen .login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: #f5fbff;
+}
+
+#login-screen .login-brand-logo {
+  display: block;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  object-fit: contain;
+  filter: none;
+}
+
+#login-screen .login-brand-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+#login-screen .login-brand-wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: #f5fbff;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: .98;
+  letter-spacing: -.045em;
+  white-space: normal;
+}
+
+#login-screen .login-brand-wordmark strong {
+  display: block;
+  color: #9ceab0;
+}
+
+#login-screen .login-brand-copy small {
+  margin: 0;
+  color: #b6cbdc;
+  font-size: 8px;
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: .13em;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  #app-sidebar .brand {
+    gap: 9px;
+    padding: 0 4px 8px;
+  }
+
+  #app-sidebar .brand-logo {
+    width: 43px;
+    height: 43px;
+    flex-basis: 43px;
+  }
+
+  #app-sidebar .brand-wordmark {
+    font-size: 16px;
+  }
+
+  #app-sidebar .brand-copy {
+    gap: 4px;
+  }
+
+  #app-sidebar .brand-copy small {
+    display: block !important;
+    font-size: 7px;
+    letter-spacing: .11em;
+  }
+
+  .app.sidebar-collapsed #app-sidebar .brand-copy {
+    display: flex !important;
+  }
+
+  #login-screen .login-brand-logo {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+
+  #login-screen .login-brand-wordmark {
+    font-size: 15px;
+  }
+
+  #login-screen .login-brand-copy small {
+    font-size: 7px;
+    letter-spacing: .1em;
+  }
+}
+
+@media (max-width: 390px) {
+  #app-sidebar .brand-wordmark {
+    font-size: 15px;
+  }
+
+  #app-sidebar .brand-copy small {
+    font-size: 6.5px;
+    letter-spacing: .09em;
+  }
+
+  #login-screen .login-brand-logo {
+    width: 39px;
+    height: 39px;
+    flex-basis: 39px;
+  }
+
+  #login-screen .login-brand-wordmark {
+    font-size: 14px;
+  }
+
+  #login-screen .login-brand-copy small {
+    font-size: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app-sidebar .brand *,
+  #login-screen .login-brand * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
