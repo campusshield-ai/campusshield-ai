@@ -45,19 +45,21 @@ jobs:
       postgres:
         image: supabase/postgres:17.11.0.018
         env:
-          POSTGRES_USER: postgres
+          # The Supabase image bootstraps its migrations as supabase_admin.
+          # Its init script creates the postgres role after the first init stage.
+          POSTGRES_USER: supabase_admin
           POSTGRES_PASSWORD: local-only-schema-test
-          POSTGRES_DB: campusshield_full_schema_test
+          POSTGRES_DB: postgres
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres -d campusshield_full_schema_test"
+          --health-cmd "pg_isready -U supabase_admin -d postgres"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
     env:
       PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
-      TARGET_DB_URL: postgresql://postgres:local-only-schema-test@127.0.0.1:5432/campusshield_full_schema_test
+      TARGET_DB_URL: postgresql://supabase_admin:local-only-schema-test@127.0.0.1:5432/postgres
     steps:
       - name: Check out review branch
         uses: actions/checkout@v4
