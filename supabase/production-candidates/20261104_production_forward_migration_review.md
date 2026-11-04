@@ -11,6 +11,17 @@ Repository: `campusshield-ai/campusshield-ai`
 - Migration histories differ substantially: 50 Production entries versus 166 Staging entries. Do not replay the Staging migration directory as-is.
 - Production's `incidents` table lacks `university_id`, `latitude` and `longitude`; Staging has them. The CampusMap candidate adds these as nullable fields, with a nullable university foreign key and no historical backfill.
 
+
+## Fresh read-only Production compatibility check — 4 November 2026
+
+A second read-only query was run against Production after expanding the collision list:
+
+- All 20 candidate-created/replaced/renamed function signatures checked by the current preflight returned collision = false.
+- All 15 candidate table targets are still absent from Production.
+- The three Production-only billing/payment tables remain present.
+- The authenticated role has USAGE on the private schema and EXECUTE on both Production helpers used by the new eligibility wrapper: private.current_user_has_verified_campus_access() and private.current_user_can_use_restricted_features(). The anon role has none of these permissions.
+- These checks confirm current name/permission compatibility only. They do not prove migration execution, transaction behaviour, RLS isolation or end-to-end Edge Function operation.
+
 ## Role and identity compatibility
 
 - Production's `private.current_user_can_use_restricted_features()` requires approved student identity for students.
