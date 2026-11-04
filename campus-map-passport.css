@@ -103,3 +103,17 @@ html[data-theme="dark"] .campus-map-passport-links a{color:#8ee1bb}
 html[data-theme="dark"] .campus-map-passport-safety-note{
   border-color:#5a4930;background:#352d20;color:#ead5a8
 }
+
+.campus-map-admin-draft .campus-map-admin-draft-details{
+  display:flex;flex:1 1 auto;min-width:0;flex-direction:column;gap:4px
+}
+.campus-map-admin-draft-links{display:flex;flex-wrap:wrap;gap:5px 10px}
+.campus-map-admin-draft-links a{
+  color:#23765f;font-size:8px;font-weight:850;text-decoration:underline;
+  text-underline-offset:2px;overflow-wrap:anywhere
+}
+.campus-map-admin-coordinate-note{
+  color:#8b7651;font-size:8px;line-height:1.45;overflow-wrap:anywhere
+}
+html[data-theme="dark"] .campus-map-admin-draft-links a{color:#91dfb8}
+html[data-theme="dark"] .campus-map-admin-coordinate-note{color:#d9c18f}
