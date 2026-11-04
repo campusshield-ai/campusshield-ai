@@ -8,6 +8,8 @@ const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.
 const experienceRefreshCss = await readFile(new URL("../campusshield-experience-refresh.css", import.meta.url), "utf8");
 const interactionLayerCss = await readFile(new URL("../campusshield-interaction-layer.css", import.meta.url), "utf8");
 const dashboardInsightsCss = await readFile(new URL("../campus-dashboard-insights.css", import.meta.url), "utf8");
+const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", import.meta.url), "utf8");
+const creatorToolsJs = await readFile(new URL("../student-creator-tools.js", import.meta.url), "utf8");
 const featuresPage = await readFile(new URL("../features.html", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
 const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
@@ -871,3 +873,54 @@ for (const id of ["campus-map-verified-count", "campus-map-record-count", "campu
 }
 assert.doesNotMatch(dashboardInsightsCss, /createClient\(|supabase\.from\(|rpc\(/, "dashboard and map coverage stylesheet remains presentation-only");
 console.log("PASS live safety analytics, account-scoped saved opportunities, CampusMap confidence cards, and responsive styling");
+
+const creatorToolsStart = htmlMarkup.indexOf('<section class="page" id="page-creator-tools">');
+const creatorToolsEnd = htmlMarkup.indexOf('<section class="page"', creatorToolsStart + 1);
+assert.ok(creatorToolsStart >= 0 && creatorToolsEnd > creatorToolsStart, "Creator & Tools Hub is a distinct workspace page");
+const creatorToolsPage = htmlMarkup.slice(creatorToolsStart, creatorToolsEnd);
+assert.match(htmlMarkup, /data-page="creator-tools" id="creator-tools-nav"/, "Creator & Tools Hub is discoverable in workspace navigation");
+assert.match(appScript, /'creator-tools':'Creator & Tools Hub'/, "Creator & Tools Hub has a page title in app navigation");
+assert.match(htmlMarkup, /href="\.\/student-creator-tools\.css"/, "Creator & Tools Hub stylesheet is included");
+assert.match(htmlMarkup, /src="\.\/student-creator-tools\.js" defer/, "Creator & Tools Hub filter behavior is included");
+assert.ok(htmlMarkup.indexOf('href="./student-creator-tools.css"') > htmlMarkup.indexOf('href="./campusshield-visual-refresh.css"'), "Creator & Tools Hub styles load after the base visual refresh");
+assert.ok(htmlMarkup.indexOf('src="./student-creator-tools.js" defer') > htmlMarkup.indexOf('src="./campusshield-app.js" defer'), "Creator & Tools Hub behaviour loads after app navigation");
+for (const target of ["shieldmind", "courses", "past-questions", "timetable"]) {
+  assert.ok(creatorToolsPage.includes('data-page="' + target + '"'), "Creator & Tools Hub links to existing CampusShield feature: " + target);
+}
+for (const category of ["all", "documents", "design", "audio", "creative", "developer"]) {
+  assert.ok(creatorToolsPage.includes('data-creator-filter="' + category + '"'), "Creator & Tools Hub has the " + category + " filter");
+}
+const creatorToolCards = [...creatorToolsPage.matchAll(/class="creator-tool-card/g)];
+assert.equal(creatorToolCards.length, 5, "Creator & Tools Hub contains five curated external tools");
+for (const product of ["PdfCraft", "PhotoCraft", "VoiceStudio", "ArtCraft", "REA"]) {
+  assert.ok(creatorToolsPage.includes(">" + product + "</h3>"), "Creator & Tools Hub includes " + product);
+}
+for (const href of [
+  "https://getartcraft.com/apps/pdfcraft",
+  "https://github.com/storytold/pdfcraft",
+  "https://getartcraft.com/apps/photocraft",
+  "https://github.com/storytold/photocraft",
+  "https://voicestudio.sh/",
+  "https://github.com/niaodian/voicestudio",
+  "https://getartcraft.com/",
+  "https://github.com/storytold/artcraft",
+  "https://rea.tools/",
+  "https://github.com/morluto/rea"
+]) {
+  assert.ok(creatorToolsPage.includes(href), "Creator & Tools Hub links to a verified official project destination: " + href);
+}
+assert.match(creatorToolsPage, /AGPL-3\.0/, "VoiceStudio shows its AGPL-3.0 application license");
+assert.match(creatorToolsPage, /MIT OR Apache-2\.0/, "ArtCraft-family tools show their project source license");
+assert.match(creatorToolsPage, /student ID cards, passwords, grades, private campus records, incident reports/, "Creator & Tools Hub warns against uploading sensitive student data");
+assert.match(creatorToolsPage, /without permission/, "Creator & Tools Hub includes consent guidance for recordings");
+assert.doesNotMatch(creatorToolsPage, /type=["']file["']|<iframe/i, "Creator & Tools Hub does not upload or embed third-party content");
+assert.match(creatorToolsJs, /function applyFilters\(\)/, "Creator & Tools Hub implements client-side search and filtering");
+assert.match(creatorToolsJs, /card\.hidden = !show/, "Creator & Tools Hub hides cards outside the active filter");
+assert.match(creatorToolsJs, /aria-pressed/, "Creator & Tools Hub announces the active category filter");
+assert.doesNotThrow(() => new Function(creatorToolsJs), "Creator & Tools Hub filter script parses");
+assert.match(creatorToolsCss, /@media\(max-width:760px\)/, "Creator & Tools Hub reflows for small screens");
+assert.match(creatorToolsCss, /html\[data-theme="dark"\]/, "Creator & Tools Hub supports dark mode");
+assert.match(creatorToolsCss, /prefers-reduced-motion:reduce/, "Creator & Tools Hub respects reduced-motion");
+assert.doesNotMatch(creatorToolsJs, /createClient\(|supabase\.from\(|rpc\(|fetch\(/i, "Creator & Tools Hub has no backend calls or external data fetching");
+assert.doesNotMatch(creatorToolsCss, /createClient\(|supabase\.from\(|rpc\(/i, "Creator & Tools Hub stylesheet remains presentation-only");
+console.log("PASS searchable Creator & Tools Hub, official project links, licensing/privacy labels, campus learning shortcuts, and backend isolation");
