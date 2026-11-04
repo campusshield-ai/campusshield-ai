@@ -18,7 +18,7 @@
     padding: max(10px, env(safe-area-inset-top)) 14px 13px;
     position: sticky !important;
     top: 0 !important;
-    z-index: 40 !important;
+    z-index: 20 !important;
     overflow: visible;
     background:
       radial-gradient(ellipse at 84% 0%, rgba(139, 227, 160, .13), transparent 42%),
