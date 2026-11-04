@@ -145,10 +145,66 @@
   const hero = dashboard?.querySelector(".campus-dashboard-hero");
   if (dashboard && hero && !document.getElementById("student-shortcuts")) {
     const section = document.createElement("section");
-    section.className = "student-shortcuts";
+    section.className = "student-shortcuts campus-home-bento";
     section.id = "student-shortcuts";
     section.setAttribute("aria-labelledby", "student-shortcuts-title");
-    section.innerHTML = '<div class="student-shortcuts-heading"><div><h2 id="student-shortcuts-title">Your campus, one place</h2><p>Pick up where you left off with your most-used student tools.</p></div></div><div class="student-shortcuts-grid"><button class="student-shortcut-card" type="button" data-page="shieldmind"><span class="student-shortcut-icon" aria-hidden="true">✧</span><strong>Study with ShieldMind</strong><p>Explain topics, summarize notes and plan revision.</p></button><button class="student-shortcut-card" type="button" data-page="past-questions"><span class="student-shortcut-icon" aria-hidden="true">▤</span><strong>Past Questions</strong><p>Practice questions and prepare for exams.</p></button><button class="student-shortcut-card" type="button" data-page="community"><span class="student-shortcut-icon" aria-hidden="true">◎</span><strong>CampusPulse & Lost & Found</strong><p>Connect with campus updates and lost items.</p></button><button class="student-shortcut-card" type="button" data-page="opportunities"><span class="student-shortcut-icon" aria-hidden="true">↗</span><strong>Opportunities</strong><p>Discover campus services and opportunities.</p></button></div>';
+    section.innerHTML = `
+      <div class="student-shortcuts-heading">
+        <div>
+          <span class="campus-home-eyebrow">YOUR CAMPUS, CONNECTED</span>
+          <h2 id="student-shortcuts-title">Everything you need, in one place</h2>
+          <p>Open the tools you use most, without hunting through menus.</p>
+        </div>
+      </div>
+      <div class="student-shortcuts-grid campus-home-bento-grid">
+        <article class="student-shortcut-card campus-home-card campus-home-map" aria-labelledby="campus-home-map-title">
+          <span class="campus-home-card-top">
+            <span class="student-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg></span>
+            <span class="campus-home-status">In preparation</span>
+          </span>
+          <strong id="campus-home-map-title">CampusMap</strong>
+          <p>Verified campus buildings, entrances and pedestrian routes are being prepared. We will not show unverified pins or invented paths.</p>
+          <span class="campus-home-card-footer">Verified mapping is next <span aria-hidden="true">→</span></span>
+          <span class="campus-home-map-art" aria-hidden="true"><span></span><span></span><span></span></span>
+        </article>
+        <button class="student-shortcut-card campus-home-card campus-home-ai" type="button" data-page="shieldmind" aria-label="Open ShieldMind AI">
+          <span class="campus-home-card-top">
+            <span class="student-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="5"/></svg></span>
+            <span class="campus-home-card-kicker">AI STUDY PARTNER</span>
+          </span>
+          <strong>ShieldMind AI</strong>
+          <p>Ask questions, understand difficult topics and plan your revision.</p>
+          <span class="campus-home-card-footer">Ask ShieldMind <span aria-hidden="true">→</span></span>
+        </button>
+        <button class="student-shortcut-card campus-home-card campus-home-pulse" type="button" data-page="community" aria-label="Open CampusPulse">
+          <span class="campus-home-card-top">
+            <span class="student-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span>
+            <span class="campus-home-card-kicker">STUDENT COMMUNITY</span>
+          </span>
+          <strong>CampusPulse</strong>
+          <p>Campus updates, groups, conversations and Lost &amp; Found.</p>
+          <span class="campus-home-card-footer">Open community <span aria-hidden="true">→</span></span>
+        </button>
+        <button class="student-shortcut-card campus-home-card campus-home-academics" type="button" data-page="academics" aria-label="Open Academic Life">
+          <span class="campus-home-card-top">
+            <span class="student-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H21v17H5.5A2.5 2.5 0 0 1 3 17.5z"/><path d="M3 17.5A2.5 2.5 0 0 1 5.5 15H21M8 7h8M8 10h8M8 13h5"/></svg></span>
+            <span class="campus-home-card-kicker">STUDY &amp; PLAN</span>
+          </span>
+          <strong>My Academics</strong>
+          <p>Timetable, course resources and exam preparation.</p>
+          <span class="campus-home-card-footer">Open academics <span aria-hidden="true">→</span></span>
+        </button>
+        <button class="student-shortcut-card campus-home-card campus-home-safety" type="button" data-page="noticeboard" aria-label="Open verified campus notices">
+          <span class="campus-home-card-top">
+            <span class="student-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>
+            <span class="campus-home-card-kicker">VERIFIED UPDATES</span>
+          </span>
+          <strong>Campus Safety</strong>
+          <p>Read verified campus notices and find trusted support contacts.</p>
+          <span class="campus-home-card-footer">View notices <span aria-hidden="true">→</span></span>
+        </button>
+      </div>`;
+
     hero.insertAdjacentElement("afterend", section);
   }
 })();
