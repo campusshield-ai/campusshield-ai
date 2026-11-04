@@ -56,15 +56,30 @@ test("premium gate fits phones, tablets and desktop without horizontal overflow"
     const metrics = await page.locator("#shieldmind-paid-gate").evaluate(element => {
       const rect = element.getBoundingClientRect();
       const cta = element.querySelector(".shieldmind-paid-cta").getBoundingClientRect();
+      const overflowing = [...document.querySelectorAll("#workspace *")].map(element => {
+        const box = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return {
+          tag: element.tagName,
+          id: element.id || "",
+          className: typeof element.className === "string" ? element.className.slice(0,100) : "",
+          left: Math.round(box.left), right: Math.round(box.right),
+          width: Math.round(box.width), display: style.display,
+          position: style.position, overflow: style.overflow,
+          scrollWidth: element.scrollWidth, clientWidth: element.clientWidth
+        };
+      }).filter(item => item.width > 0 && (item.right > window.innerWidth + 1 || item.scrollWidth > item.clientWidth + 2))
+        .sort((a,b) => b.right - a.right).slice(0,12);
       return {
         documentWidth: document.documentElement.scrollWidth,
         bodyWidth: document.body.scrollWidth,
+        overflowing,
         left: rect.left, right: rect.right, height: rect.height,
         ctaLeft: cta.left, ctaRight: cta.right, ctaHeight: cta.height
       };
     });
     expect(metrics.documentWidth).toBeLessThanOrEqual(width + 1);
-    expect(metrics.bodyWidth).toBeLessThanOrEqual(width + 1);
+    expect(metrics.bodyWidth, `${width}px body overflow candidates: ${JSON.stringify(metrics.overflowing)}`).toBeLessThanOrEqual(width + 1);
     expect(metrics.left).toBeGreaterThanOrEqual(-1);
     expect(metrics.right).toBeLessThanOrEqual(width + 1);
     expect(metrics.ctaLeft).toBeGreaterThanOrEqual(-1);
