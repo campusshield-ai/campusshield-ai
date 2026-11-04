@@ -1,0 +1,359 @@
+/* CampusShield AI visual refresh — inspired by bento layouts, progressive blur,
+   controlled light rays, modern minimalism and restrained neo-brutalist accents.
+   Presentation only: no data, permission, navigation or emergency-flow changes. */
+
+:root {
+  --cs-visual-forest: #103b2d;
+  --cs-visual-forest-deep: #08291f;
+  --cs-visual-mint: #8be3a0;
+  --cs-visual-mint-soft: #eaf8ee;
+  --cs-visual-canvas: #f4f8f4;
+  --cs-visual-line: #dce9df;
+  --cs-visual-ink: #163528;
+  --cs-visual-muted: #718278;
+}
+
+html { background: var(--cs-visual-canvas); }
+body {
+  background-color: var(--cs-visual-canvas);
+  background-image:
+    linear-gradient(rgba(31, 112, 70, .025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 112, 70, .025) 1px, transparent 1px),
+    radial-gradient(ellipse at 90% 0%, rgba(139, 227, 160, .10), transparent 38%);
+  background-size: 44px 44px, 44px 44px, auto;
+}
+
+/* Frosted navigation: the content remains legible over the glass surface. */
+.topbar {
+  background: rgba(250, 253, 250, .78);
+  border-bottom-color: rgba(207, 224, 212, .82);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  backdrop-filter: blur(22px) saturate(1.25);
+}
+.sidebar {
+  background: linear-gradient(178deg, #103b2d 0%, #0d3428 58%, #092a21 100%);
+  box-shadow: 12px 0 36px rgba(8, 41, 31, .12);
+}
+.sidebar .nav button.active {
+  background: linear-gradient(100deg, rgba(139, 227, 160, .18), rgba(255,255,255,.045));
+  border-color: rgba(139, 227, 160, .16);
+}
+.sidebar .nav button.active::before { background: var(--cs-visual-mint); }
+.sidebar .nav button:hover { background: rgba(255,255,255,.095); }
+
+/* Stronger type hierarchy and more generous spacing. */
+.heading h1,
+.heading h2,
+.dashboard-section-heading,
+.panel-heading h2,
+.campus-dashboard-card-head h3 {
+  letter-spacing: -.045em;
+}
+.dashboard-section-heading {
+  color: var(--cs-visual-ink);
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 850;
+  line-height: 1.08;
+}
+.heading p,
+.panel-heading p { line-height: 1.65; }
+.content { padding: clamp(16px, 2.4vw, 32px); }
+
+/* Light-ray hero: a soft green beam, not a flashing animation. */
+#page-dashboard .campus-dashboard-hero {
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgba(139, 227, 160, .25);
+  background:
+    radial-gradient(ellipse at 78% 12%, rgba(91, 198, 118, .25), transparent 35%),
+    radial-gradient(ellipse at 58% 112%, rgba(139, 227, 160, .16), transparent 38%),
+    linear-gradient(125deg, #08291f 0%, #103b2d 54%, #18533a 100%);
+  box-shadow: 0 24px 54px rgba(8, 41, 31, .18), inset 0 1px rgba(255,255,255,.08);
+}
+#page-dashboard .campus-dashboard-hero::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -34%;
+  left: 50%;
+  width: 19%;
+  height: 174%;
+  pointer-events: none;
+  opacity: .58;
+  transform: rotate(12deg);
+  transform-origin: center;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(139, 227, 160, .025) 24%,
+    rgba(139, 227, 160, .16) 42%,
+    rgba(231, 255, 233, .42) 49%,
+    rgba(139, 227, 160, .18) 56%,
+    transparent 100%);
+  filter: blur(13px);
+  mix-blend-mode: screen;
+}
+#page-dashboard .campus-dashboard-hero-main,
+#page-dashboard .campus-dashboard-emergency {
+  position: relative;
+  z-index: 1;
+}
+#page-dashboard .campus-dashboard-hero h1 {
+  max-width: 16ch;
+  font-size: clamp(31px, 4vw, 52px);
+  letter-spacing: -.065em;
+  line-height: 1.02;
+}
+#page-dashboard .campus-dashboard-hero .hero-eyebrow { color: #a9efb7; }
+#page-dashboard .campus-dashboard-hero .hero-eyebrow::before {
+  width: 30px;
+  height: 3px;
+  background: var(--cs-visual-mint);
+  box-shadow: 0 0 18px rgba(139, 227, 160, .5);
+}
+#page-dashboard .campus-dashboard-hero .hero-actions .btn:not(.secondary) {
+  background: linear-gradient(115deg, #8be3a0, #53c982);
+  color: #08291f;
+  box-shadow: 0 10px 24px rgba(71, 193, 119, .2);
+}
+#page-dashboard .campus-dashboard-emergency {
+  border-color: rgba(213, 247, 221, .26);
+  background: linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.055));
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+/* Bento dashboard: information density is balanced by larger, clear cards. */
+#campus-dashboard-panel {
+  border-color: rgba(216, 232, 220, .9);
+  border-radius: 24px;
+  background: rgba(255,255,255,.83);
+  box-shadow: 0 18px 44px rgba(16, 59, 45, .055);
+}
+.campus-dashboard-metrics { gap: 12px; }
+.campus-dashboard-metric {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  border-color: rgba(211, 229, 216, .95);
+  border-radius: 17px;
+  background: linear-gradient(150deg, rgba(255,255,255,.96), rgba(242,249,243,.88));
+  box-shadow: inset 0 1px rgba(255,255,255,.9), 0 8px 20px rgba(16,59,45,.035);
+}
+.campus-dashboard-metric::after {
+  content: "";
+  position: absolute;
+  right: -25px;
+  bottom: -38px;
+  width: 92px;
+  height: 92px;
+  border: 1px solid rgba(42, 126, 70, .10);
+  border-radius: 50%;
+  box-shadow: 0 0 0 13px rgba(42, 126, 70, .025);
+  pointer-events: none;
+}
+.campus-dashboard-metric strong {
+  color: #174a35;
+  font-size: clamp(23px, 2.2vw, 30px);
+  letter-spacing: -.06em;
+}
+.campus-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 13px;
+}
+.campus-dashboard-grid > .campus-dashboard-card:nth-child(1) { grid-column: span 6; }
+.campus-dashboard-grid > .campus-dashboard-card:nth-child(2) { grid-column: span 6; }
+.campus-dashboard-grid > .campus-dashboard-card:nth-child(3) { grid-column: span 5; }
+.campus-dashboard-grid > .campus-dashboard-card:nth-child(4) { grid-column: span 7; }
+.campus-dashboard-card {
+  min-height: 170px;
+  padding: 17px;
+  border-color: rgba(214, 230, 218, .96);
+  border-radius: 19px;
+  background: rgba(255,255,255,.82);
+  box-shadow: 0 10px 26px rgba(16,59,45,.045), inset 0 1px rgba(255,255,255,.9);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.campus-dashboard-card:hover {
+  border-color: #a8d8b4;
+  box-shadow: 0 16px 32px rgba(16,59,45,.075);
+  transform: translateY(-2px);
+}
+.campus-dashboard-card-head h3 { color: #173e2d; font-size: 15px; }
+.campus-dashboard-list-item { border-bottom-color: rgba(220, 233, 223, .9); }
+.campus-dashboard-empty {
+  border-color: #cfe2d3;
+  background: linear-gradient(140deg, rgba(246,251,247,.9), rgba(255,255,255,.78));
+}
+.campus-dashboard-helpdesk {
+  border-radius: 19px;
+  background: linear-gradient(120deg, rgba(239,249,241,.95), rgba(255,255,255,.93));
+}
+.campus-dashboard-helpdesk-summary strong { color: #176241; }
+.campus-dashboard-actions .btn { border-radius: 12px; }
+
+/* Deeper surfaces, soft light and touch-friendly edges across insight/map panels. */
+.dashboard-insight-card,
+.campus-map-coverage-card {
+  border-radius: 17px;
+  background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(242,249,243,.88));
+  box-shadow: inset 0 1px rgba(255,255,255,.9), 0 8px 22px rgba(16,59,45,.035);
+}
+.campus-map-coverage-card strong { color: #185b3b; }
+.campus-map-coverage-context {
+  border-radius: 14px;
+  background: rgba(246,251,247,.9);
+}
+.campus-map-search-wrap,
+.campus-map-controls,
+.campus-map-legend {
+  background: rgba(250,253,250,.84);
+  border-color: rgba(205,224,211,.9);
+  box-shadow: 0 12px 28px rgba(12,48,34,.09);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+
+/* CampusPulse missions use expressive, neo-brutalist cards; other social panels stay calm. */
+#campuspulse-social-suite .campuspulse-social-heading h2 {
+  font-size: clamp(24px, 2.8vw, 34px);
+  font-weight: 900;
+  letter-spacing: -.06em;
+}
+#campuspulse-social-suite .campuspulse-social-tabs button[aria-selected="true"] {
+  border-color: #103b2d;
+  background: #103b2d;
+  color: #f5fff7;
+  box-shadow: 3px 3px 0 rgba(139, 227, 160, .75);
+}
+#campuspulse-social-suite [data-cps-panel="missions"] .campuspulse-social-card {
+  border: 2px solid #173e2d;
+  border-radius: 13px;
+  background: #f4fbeF;
+  box-shadow: 5px 5px 0 rgba(16,59,45,.14);
+}
+#campuspulse-social-suite [data-cps-panel="missions"] .campuspulse-social-card h3 {
+  color: #123b2b;
+  font-weight: 900;
+  letter-spacing: -.035em;
+}
+#campuspulse-social-suite .campuspulse-social-card {
+  border-radius: 17px;
+  box-shadow: 0 10px 24px rgba(12,48,34,.045);
+}
+#campuspulse-social-suite .campuspulse-social-form {
+  border-color: #d7e8db;
+  border-radius: 17px;
+  background: rgba(244,250,245,.84);
+}
+#campuspulse-social-suite .campuspulse-social-safety {
+  border: 1px solid #d9e9dc;
+  border-radius: 14px;
+}
+
+/* Bottom navigation behaves like a softly blurred floating surface on mobile. */
+.mobile-bottom-nav {
+  background: rgba(249,253,249,.86);
+  border-color: rgba(205,224,211,.9);
+  box-shadow: 0 14px 32px rgba(8,41,31,.15);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  backdrop-filter: blur(22px) saturate(1.25);
+}
+.mobile-bottom-nav button.active {
+  background: #e5f6e9;
+  color: #145735;
+}
+
+/* Dark mode keeps the same hierarchy without translucent low-contrast text. */
+html[data-theme="dark"] body {
+  background-color: #0b1712;
+  background-image:
+    linear-gradient(rgba(139, 227, 160, .025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 227, 160, .025) 1px, transparent 1px),
+    radial-gradient(ellipse at 90% 0%, rgba(42,126,70,.12), transparent 38%);
+}
+html[data-theme="dark"] .topbar {
+  background: rgba(13,31,24,.82);
+  border-color: #29483a;
+}
+html[data-theme="dark"] #campus-dashboard-panel,
+html[data-theme="dark"] .campus-dashboard-card,
+html[data-theme="dark"] .campus-dashboard-metric,
+html[data-theme="dark"] .dashboard-insight-card,
+html[data-theme="dark"] .campus-map-coverage-card {
+  border-color: #315342;
+  background: rgba(18,43,31,.88);
+  color: #e5f1e9;
+}
+html[data-theme="dark"] .campus-dashboard-card-head h3,
+html[data-theme="dark"] .campus-dashboard-metric strong,
+html[data-theme="dark"] .campus-dashboard-saved-count {
+  color: #e4f5e9;
+}
+html[data-theme="dark"] .campus-dashboard-metric span,
+html[data-theme="dark"] .campus-dashboard-metric small,
+html[data-theme="dark"] .campus-dashboard-list-item p {
+  color: #b4cabe;
+}
+html[data-theme="dark"] .campus-dashboard-empty,
+html[data-theme="dark"] .campus-dashboard-helpdesk {
+  border-color: #315342;
+  background: #173b2a;
+  color: #dbece1;
+}
+html[data-theme="dark"] #campuspulse-social-suite [data-cps-panel="missions"] .campuspulse-social-card {
+  border-color: #8bd49a;
+  background: #173a29;
+  box-shadow: 5px 5px 0 rgba(139,227,160,.14);
+}
+html[data-theme="dark"] #campuspulse-social-suite [data-cps-panel="missions"] .campuspulse-social-card h3 {
+  color: #effaf1;
+}
+html[data-theme="dark"] #campuspulse-social-suite .campuspulse-social-form {
+  border-color: #315342;
+  background: #122d20;
+}
+html[data-theme="dark"] .campus-map-search-wrap,
+html[data-theme="dark"] .campus-map-controls,
+html[data-theme="dark"] .campus-map-legend,
+html[data-theme="dark"] .mobile-bottom-nav {
+  border-color: #315342;
+  background: rgba(13,34,24,.9);
+  color: #e5f1e9;
+}
+
+/* Keep touch targets and layout stable at every breakpoint. */
+@media (max-width: 1050px) {
+  .campus-dashboard-grid > .campus-dashboard-card:nth-child(1),
+  .campus-dashboard-grid > .campus-dashboard-card:nth-child(2),
+  .campus-dashboard-grid > .campus-dashboard-card:nth-child(3),
+  .campus-dashboard-grid > .campus-dashboard-card:nth-child(4) { grid-column: span 6; }
+}
+@media (max-width: 700px) {
+  .content { padding: 14px; }
+  .campus-dashboard-grid { grid-template-columns: minmax(0,1fr); }
+  .campus-dashboard-grid > .campus-dashboard-card:nth-child(n) { grid-column: 1 / -1; }
+  .campus-dashboard-card { min-height: 0; padding: 15px; border-radius: 16px; }
+  .campus-dashboard-metric { padding: 12px; border-radius: 14px; }
+  #page-dashboard .campus-dashboard-hero { border-radius: 21px; }
+  #page-dashboard .campus-dashboard-hero::after { left: 67%; width: 24%; opacity: .32; }
+  .topbar { -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  .campus-dashboard-card:hover { transform: none; }
+}
+@media (max-width: 390px) {
+  .campus-dashboard-metrics { gap: 7px; }
+  .campus-dashboard-metric { padding: 10px; }
+  #page-dashboard .campus-dashboard-hero h1 { font-size: clamp(28px, 8vw, 35px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .campus-dashboard-card,
+  #campuspulse-social-suite *,
+  .campus-dashboard-hero::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+  .campus-dashboard-card:hover { transform: none !important; }
+}
