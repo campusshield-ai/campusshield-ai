@@ -177,6 +177,8 @@ CREATE TABLE "private"."platform_admins" (
   CONSTRAINT "platform_admins_user_id_fkey" FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE
 );
 
+CREATE TYPE storage.buckettype AS ENUM ('STANDARD','ANALYTICS','VECTOR');
+
 CREATE TABLE "storage"."buckets" (
   "id" text NOT NULL,
   "name" text NOT NULL,
