@@ -5,6 +5,9 @@ const htmlMarkup = await readFile(new URL("../index.html", import.meta.url), "ut
 const appScript = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
 const html = htmlMarkup + "\n" + appScript;
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
+const visualRefreshCss = await readFile(new URL("../campusshield-visual-refresh.css", import.meta.url), "utf8");
+const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", import.meta.url), "utf8");
+const creatorToolsJs = await readFile(new URL("../student-creator-tools.js", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
 const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
 const responsiveCssEnd = htmlMarkup.indexOf("</style>", responsiveCssStart);
@@ -787,3 +790,40 @@ assert.match(html, /This crawler is restricted to its designated owner\./, "craw
 console.log("PASS self-service profile editing, private avatar storage, and owner-only crawler authorization");
 
 console.log("PASS searchable national service directory, verified-source crawler restrictions, admin gate, and crawl status migration");
+
+
+const creatorToolsStart = htmlMarkup.indexOf('<section class="page" id="page-creator-tools">');
+const creatorToolsEnd = htmlMarkup.indexOf('<section class="page"', creatorToolsStart + 1);
+assert.ok(creatorToolsStart >= 0 && creatorToolsEnd > creatorToolsStart, "Creator & Tools Hub is a distinct workspace page");
+const creatorToolsPage = htmlMarkup.slice(creatorToolsStart, creatorToolsEnd);
+assert.match(htmlMarkup, /data-page="creator-tools" id="creator-tools-nav"/, "Creator & Tools Hub is available in primary navigation");
+assert.match(appScript, /'creator-tools':'Creator & Tools Hub'/, "Creator & Tools Hub has a workspace page title");
+assert.match(htmlMarkup, /href="\.\/campusshield-visual-refresh\.css"/, "Presentation-only visual refresh stylesheet is included");
+assert.match(htmlMarkup, /href="\.\/student-creator-tools\.css"/, "Creator & Tools Hub stylesheet is included");
+assert.match(htmlMarkup, /src="\.\/student-creator-tools\.js" defer/, "Creator & Tools Hub behaviour is included");
+assert.equal((creatorToolsPage.match(/class="creator-tool-card/g) || []).length, 5, "Creator & Tools Hub contains five curated external tools");
+for (const name of ["PdfCraft", "PhotoCraft", "VoiceStudio", "ArtCraft", "REA"]) {
+  assert.ok(creatorToolsPage.includes(">" + name + "</h3>"), "Creator & Tools Hub includes " + name);
+}
+for (const target of ["shieldmind", "courses", "past-questions", "timetable"]) {
+  assert.ok(creatorToolsPage.includes('data-page="' + target + '"'), "Creator & Tools Hub links to existing CampusShield page: " + target);
+}
+for (const href of [
+  "https://getartcraft.com/apps/pdfcraft","https://github.com/storytold/pdfcraft",
+  "https://getartcraft.com/apps/photocraft","https://github.com/storytold/photocraft",
+  "https://voicestudio.sh/","https://github.com/niaodian/voicestudio",
+  "https://getartcraft.com/","https://github.com/storytold/artcraft",
+  "https://rea.tools/","https://github.com/morluto/rea"
+]) assert.ok(creatorToolsPage.includes(href), "Creator & Tools Hub has expected project link " + href);
+assert.match(creatorToolsPage, /student ID cards, passwords, grades, private campus or class records, incident reports/);
+assert.match(creatorToolsPage, /without permission/);
+assert.doesNotMatch(creatorToolsPage, /type=["']file["']|<iframe/i);
+assert.match(creatorToolsJs, /function applyFilters\(\)/);
+assert.match(creatorToolsJs, /card\.hidden = !show/);
+assert.doesNotMatch(creatorToolsJs, /createClient\(|supabase\.from\(|rpc\(|fetch\(/i);
+assert.match(creatorToolsCss, /@media\(max-width:760px\)/);
+assert.match(creatorToolsCss, /html\[data-theme="dark"\]/);
+assert.match(creatorToolsCss, /prefers-reduced-motion:reduce/);
+assert.match(visualRefreshCss, /prefers-reduced-motion/);
+assert.match(visualRefreshCss, /\.campus-dashboard-hero/);
+console.log("PASS independent visual refresh and static Creator & Tools Hub isolation, content, privacy, navigation and responsive styling");
