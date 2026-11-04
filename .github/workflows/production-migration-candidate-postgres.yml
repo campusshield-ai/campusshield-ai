@@ -1,0 +1,92 @@
+name: Production candidate PostgreSQL contract test
+
+on:
+  pull_request:
+    branches: [staging/preview]
+    paths:
+      - "supabase/production-candidates/**"
+      - "tests/production-migration-candidate-postgres.sql"
+      - "tests/fixtures/production-migration-contract-base.sql"
+      - ".github/workflows/production-migration-candidate-postgres.yml"
+  push:
+    branches: [review/production-forward-migration-package]
+    paths:
+      - "supabase/production-candidates/**"
+      - "tests/production-migration-candidate-postgres.sql"
+      - "tests/fixtures/production-migration-contract-base.sql"
+      - ".github/workflows/production-migration-candidate-postgres.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-contract:
+    name: PostgreSQL 17 schema-contract execution
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: campusshield_candidate_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d campusshield_candidate_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: campusshield_candidate_test
+    steps:
+      - name: Check out review branch
+        uses: actions/checkout@v4
+
+      - name: Verify PostgreSQL client
+        run: |
+          psql --version
+          pg_isready -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE"
+
+      - name: Create isolated synthetic Production-contract fixture
+        run: psql -v ON_ERROR_STOP=1 -f tests/fixtures/production-migration-contract-base.sql
+
+      - name: Execute preflight, all forward phases and postflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          helper_hash() {
+            psql -X -qAt -c "
+              SELECT string_agg(md5(pg_get_functiondef(p.oid)), ':' ORDER BY p.proname)
+              FROM pg_proc p
+              JOIN pg_namespace n ON n.oid = p.pronamespace
+              WHERE n.nspname = 'private'
+                AND p.proname IN (
+                  'current_campus_university_id',
+                  'current_campus_role',
+                  'current_user_can_use_restricted_features',
+                  'current_user_has_verified_campus_access',
+                  'is_campusshield_owner_admin'
+                );
+            "
+          }
+          before="$(helper_hash)"
+          psql -v ON_ERROR_STOP=1 -f supabase/production-candidates/20261104_production_preflight.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/production-candidates/20261104_campusmap_forward_candidate.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/production-candidates/20261104_campuspulse_phase2_forward_candidate.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/production-candidates/20261104_past_questions_forward_candidate.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/production-candidates/20261104_production_postflight.sql
+          after="$(helper_hash)"
+          if [[ "$before" != "$after" ]]; then
+            echo "Production identity/access helper definitions changed during candidate execution."
+            exit 1
+          fi
+          echo "Production identity/access helper definitions remained unchanged."
+
+      - name: Verify synthetic identity, campus isolation and answer-key access
+        run: psql -v ON_ERROR_STOP=1 -f tests/production-migration-candidate-postgres.sql
