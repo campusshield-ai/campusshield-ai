@@ -415,6 +415,17 @@ grant select on public.practice_attempts to authenticated;
 grant insert (user_id,university_id,paper_id,mode,time_limit_seconds,question_count,total_marks)
   on public.practice_attempts to authenticated;
 grant select on public.practice_answers to authenticated;
+
+-- Minimal server-only privileges required by past-question-practice (service-role key
+-- stays in the Edge Function; it is never exposed to browser clients). The function
+-- validates the caller's JWT, identity gate, campus membership, paper ownership and
+-- attempt status before using these grants.
+grant select, insert, delete on public.past_question_papers to service_role;
+grant select, insert on public.past_question_items to service_role;
+grant select, insert on public.past_question_answer_keys to service_role;
+grant select, update on public.practice_attempts to service_role;
+grant insert on public.practice_answers to service_role;
+
 -- No client INSERT/UPDATE/DELETE is granted on answer records. The Edge Function writes them
 -- with the service role only after validating the authenticated attempt and paper.
 
