@@ -52,6 +52,16 @@ The Staging `past-question-practice` Edge Function v2 uses a server-only service
 
 Supabase enforced explicit `GRANT` requirements for new `public` tables on all existing projects from 30 October 2026. The package grants only the intended client roles for each new table, grants the Past Questions server-only operations separately to `service_role`, and postflight-checks the effective privileges. The preflight now checks every function signature created, replaced, or renamed by the three phases and aborts on any collision.
 
+## Additional Production private-schema security review — 4 November 2026
+
+Supabase's Production advisor reports RLS disabled on four private tables: `private.platform_admins`, `private.shieldmind_usage_windows`, `private.shieldmind_session_windows` and `private.shieldmind_image_usage_windows`. A follow-up read-only ACL/policy check found:
+
+- All four are owned by `postgres`; RLS is disabled and no policies exist.
+- `anon` has no `USAGE` on schema `private`; neither `anon` nor `authenticated` has direct SELECT/INSERT/UPDATE/DELETE privileges on these tables. Their current ACL grants table privileges only to `postgres`.
+- Trusted `SECURITY DEFINER` functions do use these tables for platform-admin checks and ShieldMind quota/session counters.
+
+No direct client table access was demonstrated by the inspected ACLs. The disabled-RLS advisor finding remains a defense-in-depth concern because privileged functions use the tables. Do not blanket-enable RLS until each function call path and the required server-side policies/ownership semantics have been reviewed; a blanket change could break platform-admin bootstrap or ShieldMind quota workflows.
+
 ## Production-only and existing data protection
 
 The candidate does not modify the three Production-only billing/payment tables, Paystack functions, existing identity records or existing incident records. New incident fields are nullable and intentionally left unpopulated.
@@ -70,3 +80,7 @@ No temporary Supabase branch was created. The quoted temporary branch compute wa
 6. Only after every gate passes should PR #171 be considered for Production promotion.
 
 No Production or Staging database writes were performed during this review.
+
+## Isolated execution environment status
+
+The current working runtime does not have Docker/Podman, the Supabase CLI, or a local PostgreSQL server/client installed. Consequently, the three candidate SQL phases have not been executed locally. The 74 direct source assertions and successful static GitHub Actions run are not substitutes for a disposable PostgreSQL database derived from the Production schema and role/campus-isolation E2E tests. No paid Supabase branch has been created.
