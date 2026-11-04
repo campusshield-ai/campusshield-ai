@@ -1,11 +1,14 @@
 /*
  * CampusShield AI — browser-safe Supabase environment selection.
- * GitHub Pages production stays on production. Localhost, file previews and other
- * development hosts use staging. These are publishable browser keys, not secrets.
- * Authorization must always be enforced by Supabase RLS and guarded RPCs.
+ * Explicit production hostnames use the Production project. All unrecognized
+ * hosts, including unique Vercel previews and local development, use Staging.
+ * These are publishable browser keys, not secrets; authorization stays in RLS.
  */
 (() => {
-  const productionHosts = new Set(["campusshield-ai.github.io"]);
+  const productionHosts = new Set([
+    "campusshield-ai.github.io",
+    "campusshield-ai-staging-preview.vercel.app"
+  ]);
   const isProductionHost = productionHosts.has(String(window.location.hostname || "").toLowerCase());
 
   const production = {
