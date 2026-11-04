@@ -1547,11 +1547,25 @@
     host.innerHTML = adminDrafts.length ? adminDrafts.map(item => {
       const hasCoordinates = item.latitude != null && item.longitude != null;
       const coordinateLabel = hasCoordinates
-        ? (item.metadata?.coordinate_source_label ? 'coordinate candidate · pending local check' : 'coordinates saved · not yet verified')
-        : 'coordinates missing';
+        ? (item.metadata?.coordinate_status === 'candidate_unverified' ? 'community-mapped coordinate · needs university confirmation' : 'coordinates saved · not yet verified')
+        : 'no coordinates · exact on-campus pin required';
+      const nameSourceUrl = passportSafeHttps(item.metadata?.name_source_url);
+      const officialInfoUrl = passportSafeHttps(item.metadata?.official_info_source_url);
+      const coordinateSourceUrl = passportSafeHttps(item.metadata?.coordinate_source_url);
+      const sourceLinks = [];
+      if (nameSourceUrl) sourceLinks.push('<a href="' + esc(nameSourceUrl) + '" target="_blank" rel="noopener noreferrer">' +
+        (item.metadata?.candidate_origin === 'official_university_directory' ? 'Official name source ↗' : 'Name source ↗') + '</a>');
+      if (officialInfoUrl && officialInfoUrl !== nameSourceUrl) sourceLinks.push('<a href="' + esc(officialInfoUrl) + '" target="_blank" rel="noopener noreferrer">Official details ↗</a>');
+      if (coordinateSourceUrl) sourceLinks.push('<a href="' + esc(coordinateSourceUrl) + '" target="_blank" rel="noopener noreferrer">Community coordinate candidate ↗</a>');
+      const coordinateNote = String(item.metadata?.coordinate_note || '').trim();
       return `
       <div class="campus-map-admin-draft">
-        <span><strong>${esc(item.name)}</strong><small>${esc(item.verification_status || 'pending')} · ${coordinateLabel}</small></span>
+        <span class="campus-map-admin-draft-details">
+          <strong>${esc(item.name)}</strong>
+          <small>${esc(item.verification_status || 'pending')} · ${coordinateLabel}</small>
+          ${sourceLinks.length ? '<span class="campus-map-admin-draft-links">' + sourceLinks.join('') + '</span>' : ''}
+          ${coordinateNote ? '<small class="campus-map-admin-coordinate-note">' + esc(coordinateNote) + '</small>' : ''}
+        </span>
         <button type="button" data-edit-map-id="${esc(item.id)}">Edit</button>
       </div>`;
     }).join('') : '<p class="campus-map-empty">No draft locations for this campus.</p>';

@@ -31,6 +31,9 @@ const campusBuildingsHardeningSql = read('supabase/migrations/20261031142749_har
 const campusBuildingsNullGuardSql = read('supabase/migrations/20261031142958_guard_empty_building_import_payload.sql');
 const campusBuildingsCentreGuardSql = read('supabase/migrations/20261031182424_campus_building_import_verified_centre_guard.sql');
 const campusMapForeignKeyIndexesSql = read('supabase/migrations/20261031182609_campus_map_admin_fk_indexes.sql');
+const babcockDirectorySql = read('supabase/migrations/20261104010500_babcock_main_campus_official_name_candidates.sql');
+const babcockEvidenceCleanupSql = read('supabase/migrations/20261104011000_babcock_candidate_point_evidence_cleanup.sql');
+const babcockCoordinateStatusSql = read('supabase/migrations/20261104011500_babcock_coordinate_candidate_status_normalization.sql');
 
 assert.match(html, /data-page="campus-map"/, 'CampusMap navigation entry is present');
 assert.match(html, /id="page-campus-map"/, 'CampusMap page container is present');
@@ -343,5 +346,42 @@ assert.match(passportParentGuardSql, /metadata->>'building_feature_id' <> id::te
 assert.match(js, /item\.id !== editingId/, 'Admin parent selector excludes the map record currently being edited');
 assert.match(html, /campus-map-passport-entry-fields" hidden/, 'Entrance-only parent/type controls are hidden for ordinary buildings');
 assert.match(js, /accessibleOption\.hidden = featureType === 'entrance'/, 'Accessible entrance type is only selectable on the accessible-entry location type');
+
+
+assert.match(babcockDirectorySql, /Babcock Main Campus official-name candidate directory/, 'Babcock directory seed is scoped to the official-name candidate workflow');
+assert.match(babcockDirectorySql, /cp\.campus_slug='main-campus'/, 'Official Babcock candidates target Main Campus rather than mixing Iperu records');
+assert.match(babcockDirectorySql, /null,null,null,'pending',null,null,false/, 'New official names are seeded without coordinates or exact-point evidence and remain unpublished');
+assert.match(babcockDirectorySql, /name_source_url/, 'Official building-name evidence is stored separately from point evidence');
+for (const candidate of [
+  'Gideon Troopers Hall','Bethel Splendor Hall','Samuel Akande Hall',
+  'Felicia Adebisi Dada Hall','Platinum Hall','Justice Deborah Hall',
+  'Neal Wilson Hall','Welch Hall','Crystal Hall','Gamaliel Hall',
+  'White Hall','Nybergr Hall','Ogden Hall',
+  'BUCODeL (Centre for Open Distance and e-Learning)',
+  'Ellen G. White-SDA Research Centre','Pioneer SDA Church (University Church)',
+  'Swimming Pool','Table Tennis Court','Volleyball Court','Basketball Court',
+  'Catering and Food Services','BUCare Student Support'
+]) assert.ok(babcockDirectorySql.includes(candidate), 'Official Babcock candidate directory includes ' + candidate);
+assert.match(babcockDirectorySql, /emergency_phone','\+234 811 891 8368'/, 'BUTH official emergency contact is recorded as a campus service detail');
+assert.match(babcockDirectorySql, /opening_hours','Emergency Department · 24\/7'/, 'BUTH emergency availability is recorded from the official source');
+assert.match(babcockEvidenceCleanupSql, /source_url = null/, 'Name-only and service-only source URLs are never treated as exact point evidence');
+assert.match(js, /function renderAdminDrafts\(\)/, 'CampusMap admin draft list is available for verified campus admins');
+assert.match(js, /Official name source/, 'CampusMap admin draft cards show official name sources');
+assert.match(js, /Community coordinate candidate/, 'CampusMap admin cards separately label community-mapped coordinate sources');
+assert.match(js, /coordinate_note/, 'CampusMap admin draft cards explain the remaining coordinate verification requirement');
+assert.match(passportCss, /campus-map-admin-draft-links/, 'Admin source links are styled within the CampusMap draft cards');
+
+
+assert.match(babcockDirectorySql, /Laz Otti Memorial Library/, 'Babcock Main Campus candidate directory retains the central Library');
+assert.match(babcockDirectorySql, /BUCare Student Support/, 'Babcock Main Campus directory includes the official BUCare service point');
+assert.match(babcockDirectorySql, /Babcock University Teaching Hospital/, 'Babcock Main Campus directory includes the teaching hospital');
+assert.match(babcockDirectorySql, /Official Library page: Laz Otti Memorial Library is directly opposite BUCODeL/, 'The Library-to-BUCODeL relationship is stored as official context rather than fabricated geometry');
+assert.match(babcockEvidenceCleanupSql, /source_url = null/, 'Name-only official URLs are removed from exact-point evidence');
+assert.match(babcockCoordinateStatusSql, /coordinate_status/, 'Every pending Main Campus record receives an explicit coordinate-confidence state');
+assert.match(babcockCoordinateStatusSql, /source_url = null/, 'Pending Babcock candidates cannot retain an unqualified point-evidence URL');
+assert.match(babcockCoordinateStatusSql, /community-mapped candidate only/i, 'Community coordinates remain distinguishable from verified campus coordinates');
+assert.match(js, /official_info_source_url/, 'CampusMap admin drafts surface official information sources separately');
+assert.match(js, /coordinate_source_url/, 'CampusMap admin drafts surface community coordinate candidates separately');
+assert.match(js, /no coordinates · exact on-campus pin required/, 'CampusMap admin drafts explain when an exact pin is still missing');
 
 console.log('CampusMap static smoke checks passed.');
