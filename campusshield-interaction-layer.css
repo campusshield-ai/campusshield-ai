@@ -1,0 +1,357 @@
+/* CampusShield AI — glass UI and purposeful interaction layer.
+   Shared by the public website and installable PWA.
+   CSS-only: existing Supabase calls, permissions, routes, and campus data remain untouched. */
+
+:root {
+  --cs-glass-surface: rgba(255, 255, 255, .82);
+  --cs-glass-line: rgba(210, 229, 220, .88);
+  --cs-glass-shadow: 0 18px 44px rgba(16, 43, 53, .075);
+  --cs-glass-shadow-hover: 0 24px 52px rgba(16, 43, 53, .12);
+}
+
+/* Landing/auth: glass depth and a clear, animated mode switch. */
+#login-screen .login-intro {
+  perspective: 1100px;
+}
+#login-screen .login-feature-grid {
+  perspective: 900px;
+}
+#login-screen .login-feature-card {
+  transform-style: preserve-3d;
+  border-color: rgba(169, 233, 215, .24);
+  background: linear-gradient(145deg, rgba(19, 66, 73, .78), rgba(7, 31, 42, .88));
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  transition: transform .24s cubic-bezier(.2,.75,.25,1), border-color .24s ease, box-shadow .24s ease;
+}
+#login-screen .login-feature-card:hover {
+  transform: translateY(-4px) rotateX(1deg);
+  border-color: rgba(121, 224, 196, .56);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .2);
+}
+#login-screen .auth-panel {
+  border-color: rgba(216, 232, 224, .96);
+  background: rgba(255, 255, 255, .9);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 26px 76px rgba(16, 43, 53, .13);
+}
+#login-screen .auth-tabs {
+  padding: 5px;
+  border-color: rgba(213, 229, 220, .95);
+  background: rgba(239, 247, 242, .9);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+#login-screen .auth-tabs button {
+  position: relative;
+  min-height: 40px;
+  border: 1px solid transparent;
+  transition: color .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+#login-screen .auth-tabs button[aria-pressed="true"] {
+  border-color: #d4e9df;
+  background: linear-gradient(135deg, #fff 0%, #eaf8f1 100%);
+  box-shadow: 0 5px 14px rgba(25, 93, 73, .1);
+  color: #175b4b;
+}
+#login-screen .auth-tabs button[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 2px;
+  height: 2px;
+  border-radius: 99px;
+  background: #2b9b7a;
+}
+#login-screen #signup-fields:not([hidden]) {
+  animation: cs-signup-fields-enter .28s cubic-bezier(.2,.75,.25,1) both;
+}
+#login-screen #signup-fields .field {
+  animation: cs-signup-field-enter .32s ease both;
+}
+#login-screen #signup-fields .field:nth-child(2) { animation-delay: 25ms; }
+#login-screen #signup-fields .field:nth-child(3) { animation-delay: 50ms; }
+#login-screen #signup-fields .field:nth-child(4) { animation-delay: 75ms; }
+
+/* Dashboard: translucent but high-contrast surfaces, with a strong information hierarchy. */
+#workspace .panel,
+#workspace .stat,
+#workspace .settings-card,
+#workspace .campus-dashboard-card {
+  border-color: var(--cs-glass-line);
+  background: var(--cs-glass-surface);
+  box-shadow: var(--cs-glass-shadow);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+#workspace .stat {
+  isolation: isolate;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+#workspace .stat:hover {
+  transform: translateY(-3px);
+  border-color: #c5e4d6;
+  box-shadow: var(--cs-glass-shadow-hover);
+}
+#workspace .campus-dashboard-card {
+  border-radius: 17px;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+#workspace .campus-dashboard-card:hover {
+  transform: translateY(-2px);
+  border-color: #c5e4d6;
+  box-shadow: var(--cs-glass-shadow-hover);
+}
+#workspace .campus-dashboard-hero {
+  box-shadow: 0 24px 58px rgba(13, 51, 58, .17);
+}
+#workspace .quick-action-bar {
+  border-color: rgba(206, 228, 216, .95);
+  background: rgba(255, 255, 255, .84);
+  box-shadow: 0 14px 34px rgba(16, 43, 53, .075);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+#workspace .quick-action-button {
+  border-color: #d8e9e0;
+  border-radius: 13px;
+  background: rgba(248, 252, 249, .94);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+#workspace .quick-action-button:hover {
+  transform: translateY(-2px);
+  border-color: #a9d7c2;
+  box-shadow: 0 8px 18px rgba(20, 91, 68, .09);
+}
+#workspace .quick-action-button.quick-action-primary {
+  background: linear-gradient(135deg, #1b8066, #17634f);
+  box-shadow: 0 8px 18px rgba(23, 113, 85, .18);
+}
+
+/* CampusMap: make real map controls feel integrated, not decorative map data. */
+#workspace #page-campus-map .campus-map-stage {
+  overflow: hidden;
+  border: 1px solid #d9e8e0;
+  border-radius: 22px;
+  box-shadow: 0 18px 42px rgba(16, 43, 53, .1);
+}
+#workspace #page-campus-map .campus-map-search-wrap,
+#workspace #page-campus-map .campus-map-controls,
+#workspace #page-campus-map .campus-map-legend {
+  border: 1px solid rgba(219, 234, 225, .94);
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 8px 22px rgba(16, 43, 53, .1);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+#workspace #page-campus-map .campus-map-controls {
+  overflow: hidden;
+  border-radius: 13px;
+}
+#workspace #page-campus-map .campus-map-controls button {
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+#workspace #page-campus-map .campus-map-controls button[aria-pressed="true"] {
+  background: #173f45;
+  color: #fff;
+}
+
+/* PWA mobile dock: floating frosted navigation with safe-area spacing. */
+@media (max-width: 650px) {
+  .mobile-bottom-nav {
+    left: 9px;
+    right: 9px;
+    bottom: calc(7px + env(safe-area-inset-bottom));
+    padding: 6px;
+    border: 1px solid rgba(210, 229, 220, .96);
+    border-radius: 19px;
+    background: rgba(250, 253, 251, .9);
+    box-shadow: 0 12px 34px rgba(12, 44, 38, .17);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+  .mobile-bottom-nav button {
+    min-height: 49px;
+    border-radius: 13px;
+    transition: color .18s ease, background .18s ease, transform .18s ease;
+  }
+  .mobile-bottom-nav button.active {
+    background: linear-gradient(145deg, #e6f7ef, #f3faf6);
+    color: #176b54;
+    box-shadow: inset 0 0 0 1px rgba(49, 142, 105, .1);
+  }
+  #workspace .main {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 360px) {
+  .mobile-bottom-nav {
+    left: 5px;
+    right: 5px;
+  }
+}
+
+/* Feature directory: editorial cards inspired by the reference, using CampusShield's palette. */
+body.cs-features-page {
+  background:
+    radial-gradient(ellipse at 92% 12%, rgba(121, 224, 196, .17), transparent 28%),
+    #f2f7f4;
+}
+.cs-features-page .top {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 85% 12%, rgba(121, 224, 196, .23), transparent 30%),
+    linear-gradient(135deg, #0b2029, #123c43 76%, #164b4c);
+}
+.cs-features-page .top::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -90px;
+  bottom: -240px;
+  width: 460px;
+  aspect-ratio: 1;
+  border: 1px solid rgba(164, 239, 220, .2);
+  border-radius: 50%;
+  box-shadow: 0 0 0 26px rgba(164, 239, 220, .04), 0 0 0 62px rgba(164, 239, 220, .025);
+}
+.cs-features-page main { width: min(1040px, calc(100% - 32px)); }
+.cs-features-page .eyebrow { margin: 20px 0 4px; color: #277e65; font-size: 10px; font-weight: 900; letter-spacing: .18em; }
+.cs-features-page article > h1 { margin-top: 8px; }
+.cs-features-page article {
+  border-color: rgba(215, 232, 223, .95);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .86);
+  box-shadow: 0 22px 52px rgba(16, 43, 53, .08);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+.cs-features-page article > .grid {
+  counter-reset: cs-feature;
+  gap: 16px;
+  margin-top: 24px;
+}
+.cs-features-page .card {
+  position: relative;
+  min-height: 152px;
+  overflow: hidden;
+  counter-increment: cs-feature;
+  border-color: #dfece5;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(243,250,246,.92));
+  box-shadow: 0 10px 26px rgba(16, 43, 53, .055);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.cs-features-page .card::before {
+  content: counter(cs-feature, decimal-leading-zero);
+  position: absolute;
+  top: 13px;
+  right: 15px;
+  color: rgba(37, 121, 92, .28);
+  font-size: 25px;
+  font-weight: 900;
+  letter-spacing: -.06em;
+}
+.cs-features-page .card:hover {
+  transform: translateY(-3px);
+  border-color: #b8ddca;
+  box-shadow: 0 17px 34px rgba(16, 43, 53, .1);
+}
+.cs-features-page .card h2 {
+  padding-right: 44px;
+  color: #173e43;
+  font-size: 18px;
+  letter-spacing: -.035em;
+}
+.cs-features-page .card p { color: #60777a; font-size: 13px; line-height: 1.65; }
+.cs-features-page .lead { max-width: 65ch; }
+.cs-features-page .button {
+  border-color: #cfe3d9;
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 6px 16px rgba(16,43,53,.05);
+  transition: transform .18s ease, border-color .18s ease;
+}
+.cs-features-page .button:hover { transform: translateY(-2px); border-color: #9acdb7; }
+
+@keyframes cs-signup-fields-enter {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cs-signup-field-enter {
+  from { opacity: .4; transform: translateX(7px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+html[data-theme="dark"] #workspace .panel,
+html[data-theme="dark"] #workspace .stat,
+html[data-theme="dark"] #workspace .settings-card,
+html[data-theme="dark"] #workspace .campus-dashboard-card {
+  border-color: #294047;
+  background: rgba(18, 39, 43, .82);
+  box-shadow: 0 18px 42px rgba(0,0,0,.18);
+}
+html[data-theme="dark"] #workspace .quick-action-bar {
+  border-color: #315047;
+  background: rgba(17, 43, 39, .88);
+}
+html[data-theme="dark"] #workspace .quick-action-button {
+  border-color: #315047;
+  background: rgba(22, 52, 45, .94);
+  color: #dcefe6;
+}
+html[data-theme="dark"] #workspace .quick-action-button.quick-action-primary {
+  background: linear-gradient(135deg, #237d64, #185b4a);
+  color: #fff;
+}
+html[data-theme="dark"] .mobile-bottom-nav {
+  border-color: #315047;
+  background: rgba(12, 31, 34, .93);
+}
+html[data-theme="dark"] .mobile-bottom-nav button { color: #a9c6bc; }
+html[data-theme="dark"] .mobile-bottom-nav button.active {
+  background: #1c493c;
+  color: #d6f4e8;
+}
+html[data-theme="dark"] #workspace #page-campus-map .campus-map-search-wrap,
+html[data-theme="dark"] #workspace #page-campus-map .campus-map-controls,
+html[data-theme="dark"] #workspace #page-campus-map .campus-map-legend {
+  border-color: #315047;
+  background: rgba(12, 31, 34, .9);
+  color: #e3f0eb;
+}
+
+@media (max-width: 850px) {
+  #workspace .quick-action-bar { grid-template-columns: minmax(0, 1fr); }
+  #workspace .quick-action-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 650px) {
+  #workspace .campus-dashboard-card:hover,
+  #workspace .stat:hover,
+  #workspace .quick-action-button:hover,
+  .cs-features-page .card:hover,
+  #login-screen .login-feature-card:hover { transform: none; }
+  .cs-features-page article { border-radius: 18px; }
+  .cs-features-page article > .grid { grid-template-columns: minmax(0, 1fr); gap: 11px; }
+  .cs-features-page .card { min-height: 0; padding: 17px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #login-screen #signup-fields:not([hidden]),
+  #login-screen #signup-fields .field { animation: none !important; }
+  #workspace .campus-dashboard-card,
+  #workspace .stat,
+  #workspace .quick-action-button,
+  .cs-features-page .card,
+  .cs-features-page .button,
+  #login-screen .login-feature-card,
+  .mobile-bottom-nav button { transition: none !important; }
+  #workspace .campus-dashboard-card:hover,
+  #workspace .stat:hover,
+  #workspace .quick-action-button:hover,
+  .cs-features-page .card:hover,
+  .cs-features-page .button:hover,
+  #login-screen .login-feature-card:hover { transform: none !important; }
+}

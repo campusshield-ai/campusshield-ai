@@ -11,6 +11,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./campus-dashboard-upgrade.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
+<link rel="stylesheet" href="./campus-map.css">
+<link rel="stylesheet" href="./campus-map-passport.css">
+<link rel="stylesheet" href="./campuspulse-social.css">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <title>CampusShield AI | Intelligent Campus Safety</title>
@@ -2196,6 +2200,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
     #login-screen .login-public-nav a,#login-screen .login-footer-links a,.app-legal-footer a{transition:none!important}
   }
 </style>
+<link rel="stylesheet" href="./campusshield-experience-refresh.css">
+<link rel="stylesheet" href="./campusshield-interaction-layer.css">
+<link rel="stylesheet" href="./campus-dashboard-insights.css">
+
 </head>
 <body>
 
@@ -2497,10 +2505,12 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span data-original-label="Overview">Dashboard</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span data-original-label="Safety &amp; Report Incident">Report incident</button><button data-page="manage" id="manage-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button><button data-page="risk" id="risk-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <div class="nav-section-label">CAMPUS LIFE</div>
+<button data-page="campus-map" id="campus-map-nav"><span class="nav-icon" aria-hidden="true">⌖</span>CampusMap</button>
 <button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span data-original-label="CampusPulse &amp; Groups">CampusPulse</button><button data-page="community" id="lost-found-nav" data-lost-found-shortcut="true"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg></span>Lost &amp; Found</button><button data-page="campus-chat" id="campus-chat-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus Chat</button><button data-page="campus-messages" id="campus-messages-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="3"/><path d="m8 18-3 3v-3M7 9h10M7 13h6"/></svg></span>Private Messages</button>
 <button data-page="events" id="events-services-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span data-original-label="Events &amp; Campus Services">Events &amp; Campus services</button><button data-page="student-rewards" id="student-rewards-nav"><span class="nav-icon" aria-hidden="true">✧</span>Challenges &amp; Rewards</button>
 <div class="nav-section-label">ACADEMICS & CAREERS</div>
 <button data-page="academics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5-9 5.5-9-5.5Z"/><path d="M6.5 12.5v5c3.5 2.5 7.5 2.5 11 0v-5M21 10v6"/></svg></span data-original-label="Academic Life">Academics</button><button data-page="timetable" id="timetable-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span>My Timetable</button><button data-page="courses" id="courses-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg></span>Courses &amp; Study Resources</button><button data-page="past-questions" id="past-questions-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h5M8 13h7"/></svg></span>Past Questions &amp; Exam Prep</button>
+<button data-page="creator-tools" id="creator-tools-nav"><span class="nav-icon" aria-hidden="true">✦</span>Creator &amp; Tools Hub</button>
 <button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span data-original-label="Opportunities &amp; Scholarships">Opportunities</button><button data-page="classroom" id="classroom-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18v14H3zM8 21h8M12 18v3M7 8h10M7 11h7"/></svg></span>Teacher Classroom</button>
 <div class="nav-section-label">INSIGHTS & SUPPORT</div>
 <button data-page="analytics" id="analytics-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button><button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button><button data-page="staff-verification" id="staff-verification-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Staff verification</button><button data-page="staff-review" id="staff-review-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8l4 4v13H4V3z"/><path d="M8 11h8M8 15h8M16 3v5h4"/></svg></span>Staff applications</button>
@@ -2541,6 +2551,176 @@ button,input,select,textarea{max-width:100%;min-width:0}
   </div>
   <p class="quick-action-safety-note"><strong>Immediate danger?</strong> CampusShield saves reports for review but does not contact or dispatch emergency services. Contact your campus security control room or local emergency services directly.</p>
 </div>
+
+
+<section class="page" id="page-campus-map" aria-labelledby="campus-map-title">
+  <div class="heading"><div><p class="hero-eyebrow">Explore your university</p><h1 id="campus-map-title">CampusMap</h1><p>Find verified campus buildings, facilities and walking directions.</p></div></div>
+  <div class="panel">
+    <div class="campus-map-view-status">
+      <div><strong>Campus map · data coverage and confidence</strong><small id="campus-map-scale-summary">Loading map scale…</small><small id="campus-map-3d-coverage">Building coverage has not been assessed.</small></div>
+      <button class="campus-map-action primary" type="button" id="campus-map-center">Centre campus</button>
+    </div>
+    <div id="campus-map-coverage-overview" class="campus-map-coverage-overview" aria-label="CampusMap coverage summary" aria-live="polite">
+      <div class="campus-map-coverage-card" data-state="neutral"><span>Verified campus footprints</span><strong id="campus-map-verified-count">—</strong><small>Reviewed campus building shapes</small></div>
+      <div class="campus-map-coverage-card"><span>Map footprint records</span><strong id="campus-map-record-count">—</strong><small>Campus-specific records loaded</small></div>
+      <div class="campus-map-coverage-card" id="campus-map-review-coverage-card" hidden data-state="pending"><span>Pending admin review</span><strong id="campus-map-pending-count">—</strong><small>Unpublished candidate footprints</small></div>
+      <div class="campus-map-coverage-card" id="campus-map-centre-coverage-card"><span>Campus centre</span><strong id="campus-map-centre-state">Not set</strong><small id="campus-map-centre-note">Centre provenance</small></div>
+      <div class="campus-map-coverage-card" id="campus-map-boundary-coverage-card"><span>Campus boundary</span><strong id="campus-map-boundary-state">Not mapped</strong><small id="campus-map-boundary-note">Boundary provenance</small></div>
+    </div>
+    <p class="campus-map-coverage-context">Global OpenStreetMap building shapes can help with orientation, but they are context only—not university-verified buildings, entrances, or surveyed campus geometry.</p>
+    <div class="campus-map-shell">
+    <div class="campus-map-stage"><div id="campus-map-canvas" role="application" aria-label="Interactive university map"></div>
+      <div class="campus-map-overlay"><label class="campus-map-search-wrap"><span aria-hidden="true">⌕</span><input id="campus-map-search" type="search" placeholder="Search buildings and facilities" autocomplete="off" aria-label="Search campus locations"></label>
+        <div class="campus-map-controls" role="group" aria-label="Campus map style"><button type="button" id="campus-map-2d" class="active" aria-pressed="true" title="Street map">2D</button><button type="button" id="campus-map-satellite" aria-pressed="false" title="Satellite imagery">SAT</button><button type="button" id="campus-map-3d" aria-pressed="false" title="Satellite imagery with 3D building footprints">3D</button></div></div>
+      <div class="campus-map-legend" aria-label="Map marker legend">
+        <span><i class="campus-map-legend-verified"></i> Published location</span>
+        <span><i class="campus-map-legend-draft"></i> Admin-only draft pin</span>
+        <span class="campus-map-legend-context"><i></i> OSM roads and place labels · context only, not university-verified</span>
+      </div>
+          </div>
+    <aside class="campus-map-sidebar"><h2 id="campus-map-campus-name">Your university</h2><p>Campus locations and facilities</p>
+      <div class="campus-map-actions"><button class="campus-map-action" type="button" id="campus-map-locate">◎ My location</button><button class="campus-map-action primary" type="button" id="campus-map-route">↗ Walking route</button><button class="campus-map-action" type="button" id="campus-map-emergency">Emergency points</button><button class="campus-map-action" type="button" id="campus-map-incidents" hidden>Incident pins</button></div>
+      <label class="campus-map-campus-picker">Campus<select id="campus-map-campus-select"><option value="main-campus">Main Campus</option></select></label>
+      <p class="campus-map-profile-summary" id="campus-map-profile-status" role="status">Loading campus map profile…</p>
+      <div id="campus-map-results" class="campus-map-search-results" hidden></div>
+      <nav id="campus-map-discovery-filters" class="campus-map-discovery-filters" aria-label="Filter campus locations">
+        <button type="button" class="active" data-campus-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-campus-filter="academic" aria-pressed="false">Academic</button>
+        <button type="button" data-campus-filter="residential" aria-pressed="false">Residential</button>
+        <button type="button" data-campus-filter="services" aria-pressed="false">Services</button>
+        <button type="button" data-campus-filter="access" aria-pressed="false">Access</button>
+        <button type="button" data-campus-filter="emergency" aria-pressed="false">Emergency</button>
+      </nav>
+      <section id="campus-map-passport" class="campus-map-passport" aria-labelledby="campus-map-passport-title" hidden>
+        <div class="campus-map-passport-topline"><span class="campus-map-passport-kicker">CAMPUS PASSPORT</span><span id="campus-map-passport-status" class="campus-map-passport-status">Verified location</span></div>
+        <h3 id="campus-map-passport-title">Select a campus location</h3>
+        <p id="campus-map-passport-description" class="campus-map-passport-description"></p>
+        <div id="campus-map-passport-facts" class="campus-map-passport-facts"></div>
+        <div id="campus-map-passport-facilities" class="campus-map-passport-section" hidden><strong>Facilities</strong><div id="campus-map-passport-facility-tags" class="campus-map-passport-tags"></div></div>
+        <div id="campus-map-passport-accessibility" class="campus-map-passport-section" hidden><strong>Accessibility</strong><div id="campus-map-passport-access-tags" class="campus-map-passport-tags"></div><p id="campus-map-passport-access-notes"></p></div>
+        <p class="campus-map-passport-safety-note">CampusShield records location information but does not contact or dispatch emergency services. In an emergency, contact campus security or local emergency services directly.</p>
+        <div id="campus-map-passport-entrances" class="campus-map-passport-section" hidden><strong>Verified entrances</strong><div id="campus-map-passport-entrance-list" class="campus-map-passport-entrance-list"></div></div>
+        <div class="campus-map-passport-actions">
+          <button type="button" class="campus-map-action primary" id="campus-map-passport-route">Walk to location</button>
+          <button type="button" class="campus-map-action" id="campus-map-passport-accessible-route" disabled>Accessible entrance</button>
+        </div>
+        <div class="campus-map-passport-links"><a id="campus-map-passport-source" href="#" target="_blank" rel="noopener noreferrer" hidden>View verification source ↗</a><a id="campus-map-passport-contact" href="#" target="_blank" rel="noopener noreferrer" hidden>Contact / service link ↗</a><a id="campus-map-passport-emergency" href="#" hidden>Call listed campus contact</a></div>
+      </section>
+      <div class="campus-map-feature-list" id="campus-map-feature-list"><p class="campus-map-empty">Open CampusMap to load your university locations.</p></div>
+      <div class="campus-map-admin" id="campus-map-admin" hidden>
+        <div class="campus-map-admin-heading"><h3>Campus Map Manager</h3><span class="campus-map-admin-tag">Verified campus admin</span></div>
+        <p>Save draft locations first. Publish only after checking the exact pin against an official source or on-campus survey.</p>
+        <section class="campus-map-profile-setup" id="campus-map-profile-setup" hidden aria-labelledby="campus-map-profile-heading">
+          <div class="campus-map-profile-title"><h4 id="campus-map-profile-heading">University and campus coverage</h4><button class="campus-map-action" type="button" id="campus-map-profile-new">Add campus</button></div>
+          <p class="campus-map-profile-help">Set the campus centre and boundary separately from individual building pins. A state overview is only a regional fallback, not a campus location.</p>
+          <form id="campus-map-profile-form">
+            <input type="hidden" id="campus-map-profile-id">
+            <label>Campus name<input id="campus-map-profile-name" required maxlength="120" value="Main Campus"></label>
+            <label>Campus ID<input id="campus-map-profile-slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" value="main-campus"></label>
+            <label>State<input id="campus-map-profile-state" required maxlength="80" readonly></label>
+            <div class="campus-map-admin-coords">
+              <label>Campus centre latitude<input id="campus-map-profile-lat" type="number" min="-90" max="90" step="any" inputmode="decimal"></label>
+              <label>Campus centre longitude<input id="campus-map-profile-lng" type="number" min="-180" max="180" step="any" inputmode="decimal"></label>
+            </div>
+            <div class="campus-map-pin-tools">
+              <button class="campus-map-action" type="button" id="campus-map-profile-pick">Pick centre on map</button>
+              <button class="campus-map-action" type="button" id="campus-map-profile-gps">Use GPS</button>
+            </div>
+            <label>Centre source (HTTPS)<input id="campus-map-profile-source" type="url" placeholder="Official campus map, survey or university source"></label>
+            <label class="campus-map-admin-check"><input id="campus-map-profile-verified" type="checkbox"> I verified this exact campus-centre point against an approved campus plan or on-campus survey</label>
+            <label>Campus boundary GeoJSON (Polygon or MultiPolygon)<textarea id="campus-map-profile-boundary" rows="4" placeholder='{"type":"Polygon","coordinates":[...]}'></textarea></label>
+            <label>Boundary evidence source (HTTPS)<input id="campus-map-profile-boundary-source" type="url" placeholder="University campus plan or licensed boundary dataset"></label>
+            <label class="campus-map-admin-check"><input id="campus-map-profile-boundary-verified" type="checkbox"> I verified this boundary against an approved campus plan or survey</label>
+            <div class="campus-map-model-upload">
+              <h5>Real 3D campus model</h5>
+              <p>Upload a university-supplied GLB building/campus model. It stays private and pending review; it is not shown on the public map until approved.</p>
+              <label>GLB model file (maximum 25 MB)<input id="campus-map-profile-model-file" type="file" accept=".glb,model/gltf-binary"></label>
+              <label>Model attribution / source<input id="campus-map-profile-model-attribution" type="text" minlength="8" maxlength="500" placeholder="University GIS team, survey firm, licence or source"></label>
+              <button type="button" class="campus-map-action" id="campus-map-profile-model-upload">Upload model for review</button>
+              <p class="campus-map-profile-coverage" id="campus-map-profile-model-status" role="status">No 3D model submitted.</p>
+            </div>
+            <div class="campus-map-building-import">
+              <h5>Discover mapped buildings</h5>
+              <p>Search OpenStreetMap near this campus centre. Discovery is locked until the exact centre is verified against an approved campus plan or an on-campus survey. Official locators and candidate points are for orientation only and are not precise enough to anchor a building import.</p>
+              <label>Discovery radius
+                <select id="campus-map-building-radius">
+                  <option value="500">500 metres</option>
+                  <option value="800" selected>800 metres</option>
+                  <option value="1200">1.2 kilometres</option>
+                </select>
+              </label>
+              <button type="button" class="campus-map-action" id="campus-map-building-discover" disabled title="Locked until the exact campus centre is verified against an approved campus plan or on-campus survey.">Discover building footprints</button>
+              <p class="campus-map-profile-coverage" id="campus-map-building-import-status" role="status">Discovery locked. Verify and save the exact campus centre against an approved university plan or on-campus survey first. Imported candidates will remain private and unpublished.</p>
+              <div class="campus-map-building-candidates" id="campus-map-building-candidates"></div>
+              <section class="campus-map-building-review" id="campus-map-building-review" hidden aria-label="Review building footprint">
+                <strong id="campus-map-building-review-name">Selected building</strong>
+                <small id="campus-map-building-review-details"></small>
+                <label>Exact-footprint evidence (HTTPS)<input id="campus-map-building-review-evidence" type="url" placeholder="Approved campus plan or survey record"></label>
+                <label class="campus-map-admin-check"><input id="campus-map-building-review-confirm" type="checkbox"> I checked the outline, footprint and building location</label>
+                <div class="campus-map-admin-actions">
+                  <button type="button" class="campus-map-action primary" id="campus-map-building-verify-save">Verify, keep private</button>
+                  <button type="button" class="campus-map-action" id="campus-map-building-verify-publish">Verify and publish</button>
+                  <button type="button" class="campus-map-action danger" id="campus-map-building-reject">Reject</button>
+                </div>
+              </section>
+            </div>
+            <p class="campus-map-profile-coverage" id="campus-map-profile-coverage" role="status">Campus centre, boundary and 3D model status appear here.</p>
+            <div class="campus-map-admin-actions"><button type="submit" class="campus-map-action primary">Save campus profile</button></div>
+          </form>
+        </section>
+        <form id="campus-map-admin-form">
+          <input type="hidden" id="campus-map-feature-id">
+          <label>Campus name<input id="campus-map-admin-campus" value="Main Campus" required maxlength="120"></label>
+          <label>Campus ID<input id="campus-map-admin-campus-slug" value="main-campus" pattern="[a-z0-9]+(-[a-z0-9]+)*" required></label>
+          <label>Location name<input id="campus-map-admin-name" required minlength="2" maxlength="180" placeholder="e.g. Laz Otti Memorial Library"></label>
+          <label>Category<select id="campus-map-admin-type"><option value="building">Building</option><option value="lecture_hall">Lecture hall</option><option value="hostel">Hostel</option><option value="library">Library</option><option value="cafeteria">Cafeteria</option><option value="medical">Medical / hospital</option><option value="security">Security</option><option value="gate">Gate</option><option value="parking">Parking</option><option value="sports">Sports</option><option value="facility">Facility</option><option value="assembly_point">Assembly point</option><option value="entrance">Entrance</option><option value="accessible_entry">Accessible entry</option><option value="emergency_point">Emergency point</option></select></label>
+          <label>Description<textarea id="campus-map-admin-description" rows="2" maxlength="1000"></textarea></label>
+          <details class="campus-map-passport-editor" open>
+            <summary>Campus Passport details</summary>
+            <p>Only publish details that are confirmed by the same approved campus source or a separate official record.</p>
+            <label>Building code / room block<input id="campus-map-admin-building-code" maxlength="40" placeholder="e.g. LIB-01"></label>
+            <div class="campus-map-admin-coords">
+              <label>Opening hours<input id="campus-map-admin-opening-hours" maxlength="200" placeholder="e.g. Mon–Fri · 8:00–18:00"></label>
+              <label>Number of floors<input id="campus-map-admin-floor-count" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="Not recorded"></label>
+            </div>
+            <label>Available facilities (comma separated)<input id="campus-map-admin-facilities" maxlength="600" placeholder="Library, Wi-Fi, study rooms"></label>
+            <fieldset class="campus-map-admin-access-options">
+              <legend>Verified accessibility features</legend>
+              <label><input type="checkbox" value="step_free_entry" data-campus-accessibility> Step-free entrance</label>
+              <label><input type="checkbox" value="ramp" data-campus-accessibility> Ramp</label>
+              <label><input type="checkbox" value="lift" data-campus-accessibility> Lift</label>
+              <label><input type="checkbox" value="accessible_restroom" data-campus-accessibility> Accessible restroom</label>
+              <label><input type="checkbox" value="tactile_path" data-campus-accessibility> Tactile path</label>
+              <label><input type="checkbox" value="accessible_parking" data-campus-accessibility> Accessible parking</label>
+              <label><input type="checkbox" value="hearing_support" data-campus-accessibility> Hearing support</label>
+            </fieldset>
+            <label>Accessibility notes<textarea id="campus-map-admin-accessibility-notes" rows="2" maxlength="500" placeholder="Describe verified step-free access or limitations"></textarea></label>
+            <div class="campus-map-passport-entry-fields" hidden>
+              <label>Related verified building<select id="campus-map-admin-parent-building"><option value="">Select the building for an entrance</option></select></label>
+              <label>Entrance type<select id="campus-map-admin-entry-type"><option value="">Not an entrance</option><option value="main">Main entrance</option><option value="accessible">Accessible entrance</option><option value="service">Service entrance</option><option value="emergency">Emergency exit / entrance</option></select></label>
+            </div>
+            <label>Public contact label<input id="campus-map-admin-contact-label" maxlength="60" placeholder="e.g. Library help desk"></label>
+            <label>Public contact / service link (HTTPS)<input id="campus-map-admin-contact-url" type="url" placeholder="https://university.edu.ng/..."></label>
+            <label>Public emergency contact number<input id="campus-map-admin-emergency-phone" type="tel" maxlength="30" placeholder="Only an official campus contact"></label>
+          </details>
+          <div class="campus-map-admin-coords"><label>Latitude<input id="campus-map-admin-lat" type="number" step="any" min="-90" max="90" inputmode="decimal"></label><label>Longitude<input id="campus-map-admin-lng" type="number" step="any" min="-180" max="180" inputmode="decimal"></label></div>
+          <div class="campus-map-pin-tools">
+            <button type="button" class="campus-map-action" id="campus-map-pick-pin">Pick on map</button>
+            <button type="button" class="campus-map-action" id="campus-map-use-gps">Use GPS</button>
+            <button type="button" class="campus-map-action" id="campus-map-preview-pin">Preview pin</button>
+          </div>
+          <p class="campus-map-pin-status" id="campus-map-pin-status" role="status" aria-live="polite">Choose Pick on map or Use GPS to add a draft coordinate. The marker remains unpublished.</p>
+          <label>Coordinate evidence source (HTTPS)<input id="campus-map-admin-source" type="url" placeholder="University-approved survey or source for this exact point"><small>Use an official source that confirms this exact point and any Campus Passport details you publish.</small></label>
+          <label class="campus-map-admin-check"><input id="campus-map-admin-verified" type="checkbox"> I checked this exact location and Passport details against the source</label>
+          <label class="campus-map-admin-check"><input id="campus-map-admin-publish" type="checkbox"> Publish after verification</label>
+          <div class="campus-map-admin-actions"><button type="submit" class="campus-map-action primary">Save location</button><button type="button" class="campus-map-action" id="campus-map-admin-reset">Clear</button></div>
+        </form>
+        <h4>Locations awaiting verification</h4><div id="campus-map-admin-drafts" class="campus-map-admin-drafts"></div>
+      </div>
+      <p class="campus-map-status" id="campus-map-status" role="status" aria-live="polite">Map is ready.</p></aside>
+  </div></div>
+  <p class="muted">Map coverage depends on verified campus data. The tilted view is not a substitute for verified 3D building models. Location is used only after you grant permission.</p>
+</section>
 
 <section class="page active" id="page-dashboard">
 <section class="campus-dashboard-hero" aria-labelledby="campus-dashboard-hero-title">
@@ -2584,6 +2764,39 @@ button,input,select,textarea{max-width:100%;min-width:0}
   <div class="stat"><div class="stat-label">Resolved reports</div><div class="stat-num" id="resolvedStat">—</div><p class="stat-note">Marked resolved in the records</p></div>
   <div class="stat"><div class="stat-label">Resolution rate</div><div class="stat-num" id="rateStat">—</div><p class="stat-note">Resolved reports ÷ reports in view</p></div>
 </div>
+<section class="panel dashboard-safety-insights" id="dashboard-safety-insights" aria-labelledby="dashboard-safety-insights-title">
+  <div class="dashboard-insights-header">
+    <div><h2 id="dashboard-safety-insights-title">Safety activity</h2><p>Incident trends from records your signed-in account can access. These summaries are not live emergency monitoring.</p></div>
+    <div class="dashboard-period-switch" role="group" aria-label="Choose incident reporting period">
+      <button type="button" data-dashboard-range="7" aria-pressed="false">7 days</button>
+      <button type="button" data-dashboard-range="30" aria-pressed="true">30 days</button>
+      <button type="button" data-dashboard-range="90" aria-pressed="false">90 days</button>
+    </div>
+  </div>
+  <div class="dashboard-insights-grid">
+    <section class="dashboard-insight-card" aria-labelledby="dashboard-trend-title">
+      <div class="dashboard-insight-card-head">
+        <div><div class="dashboard-insight-kicker">REPORT VOLUME</div><div class="dashboard-insight-total"><strong id="dashboard-trend-total">—</strong><span id="dashboard-trend-period">reports in 30 days</span></div></div>
+        <span class="muted">By date</span>
+      </div>
+      <div id="dashboard-report-trend" class="dashboard-trend-chart" role="img" aria-label="Incident report counts by date for the selected period"></div>
+      <div id="dashboard-trend-empty" class="dashboard-trend-empty" hidden>Incident report activity will appear here after records load.</div>
+    </section>
+    <section class="dashboard-insight-card" aria-labelledby="dashboard-status-title">
+      <div class="dashboard-insight-card-head"><div><div class="dashboard-insight-kicker">CURRENT REPORT STATUS</div><h3 id="dashboard-status-title" class="dashboard-insight-total">Status mix</h3></div></div>
+      <div class="dashboard-status-split" role="img" aria-label="Resolved and unresolved incident report proportions">
+        <span id="dashboard-status-resolved-bar" class="dashboard-status-resolved" style="width:0%"></span>
+        <span id="dashboard-status-open-bar" class="dashboard-status-open" style="width:0%"></span>
+      </div>
+      <div class="dashboard-status-legend">
+        <div class="dashboard-status-legend-row"><span><i class="dashboard-status-dot resolved"></i>Resolved</span><strong id="dashboard-status-resolved-count">—</strong></div>
+        <div class="dashboard-status-legend-row"><span><i class="dashboard-status-dot open"></i>Open / in review</span><strong id="dashboard-status-open-count">—</strong></div>
+      </div>
+      <div class="dashboard-category-block"><div class="dashboard-category-title">Common report categories · selected period</div><div id="dashboard-top-categories" class="dashboard-category-list"></div></div>
+    </section>
+  </div>
+  <p id="dashboard-insights-footnote" class="dashboard-insights-footnote">Only records visible to your account are included. A missing report is not proof that an area is safe.</p>
+</section>
 <section class="panel campus-dashboard-panel" id="campus-dashboard-panel" aria-labelledby="campus-dashboard-heading">
   <div class="panel-heading"><div><h2 id="campus-dashboard-heading">Your campus at a glance</h2><p id="campus-dashboard-description">Your private classes, verified announcements and upcoming campus activity.</p></div><span id="campus-dashboard-role" class="campus-dashboard-role">Campus member</span></div>
   <div class="campus-dashboard-metrics" aria-label="Campus learning and activity summary">
@@ -2605,6 +2818,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <div class="campus-dashboard-card-head"><h3 id="campus-dashboard-updates-title">Campus Updates</h3><button class="btn secondary" type="button" data-page="noticeboard">View all</button></div>
       <div id="campus-dashboard-updates" class="campus-dashboard-list"><div class="campus-dashboard-empty">Verified notices and upcoming events will appear here.</div></div>
     </section>
+    <section class="campus-dashboard-card" id="campus-dashboard-saved-panel" aria-labelledby="campus-dashboard-saved-title">
+      <div class="campus-dashboard-card-head"><h3 id="campus-dashboard-saved-title">Saved for later</h3><span id="campus-dashboard-saved-count" class="campus-dashboard-saved-count">— saved</span></div>
+      <div id="campus-dashboard-saved-opportunities" class="campus-dashboard-list"><div class="campus-dashboard-empty">Your saved campus opportunities will appear here.</div></div>
+      <div class="actions"><button class="btn secondary" type="button" data-page="opportunities">Open Opportunity Hub</button></div>
+    </section>
   </div>
   <section class="campus-dashboard-card campus-dashboard-helpdesk" aria-labelledby="campus-dashboard-helpdesk-title">
     <div class="campus-dashboard-helpdesk-main">
@@ -2621,6 +2839,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <button class="btn secondary" type="button" data-page="classroom">Open classrooms</button>
     <button class="btn secondary" type="button" data-page="events">Browse events</button>
     <button class="btn secondary" type="button" data-page="shieldmind">Ask ShieldMind AI</button>
+    <button class="btn secondary" type="button" data-page="creator-tools">Explore Creator Tools</button>
   </div>
   <section class="campus-dashboard-card" id="campus-dashboard-teacher-actions" hidden style="margin-top:14px" aria-labelledby="campus-dashboard-teacher-actions-title">
     <div class="campus-dashboard-card-head"><h3 id="campus-dashboard-teacher-actions-title">Teacher Quick Actions</h3></div>
@@ -2730,7 +2949,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <div class="grid two">
 <div class="field"><label for="category">Incident category *</label><select id="category" required><option value="">Select category</option><option>Medical emergency</option><option>Fire or smoke</option><option>Security concern</option><option>Accident or injury</option><option>Harassment or misconduct</option><option>Facility hazard</option><option>Theft or property</option><option>Other</option></select></div>
 <div class="field"><label for="severity">Severity *</label><select id="severity" required><option value="">Select severity</option><option>High</option><option>Medium</option><option>Low</option></select></div>
-<div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" required placeholder="e.g. Main library entrance"></div>
+<div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" required placeholder="e.g. Main library entrance"></div><div class="field report-location-pin"><label>Optional map pin</label><button class="btn secondary" type="button" id="report-use-location">◎ Attach my GPS location</button><input id="report-latitude" type="hidden"><input id="report-longitude" type="hidden"><small id="report-location-status" class="muted">Optional: attach your GPS location to help authorized campus responders find the place.</small></div>
 <div class="field" style="align-self:end"><span class="muted">Your signed-in account is linked to this report automatically.</span></div>
 </div>
 <div class="field"><label for="description">Description *</label><textarea id="description" maxlength="800" required placeholder="Describe what happened and any immediate concerns..."></textarea></div>
@@ -3078,7 +3297,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <form id="campus-dm-compose-form" class="campus-dm-compose">
           <label for="campus-dm-compose-input" class="visually-hidden">Write a private message</label>
           <textarea id="campus-dm-compose-input" rows="2" maxlength="1200" placeholder="Write a private message…" required disabled></textarea>
-          <div class="campus-dm-compose-footer"><span id="campus-dm-compose-hint">Only visible to this conversation</span><button type="submit" class="btn" id="campus-dm-compose-send" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-7 18-3-7-8-3Z"/><path d="M11 14 21 3"/></svg>Send</button></div>
+          <div class="campus-dm-compose-footer"><span id="campus-dm-compose-hint">Only visible to this conversation</span><button type="submit" class="btn" id="campus-dm-compose-send" aria-label="Send private message" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-7 18-3-7-8-3Z"/><path d="M11 14 21 3"/></svg>Send</button></div>
         </form>
       </div>
     </section>
@@ -3213,6 +3432,144 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <div id="campus-marketplace-feed"><div class="community-empty">Loading listings…</div></div>
     </section>
   </div>
+</section>
+
+<section class="page" id="page-creator-tools">
+  <header class="creator-tools-hero">
+    <div class="creator-tools-hero-copy">
+      <span class="creator-tools-eyebrow">CAMPUSSHIELD AI · STUDENT CREATOR TOOLKIT</span>
+      <h1>Study smarter.<br><span>Create better.</span><br>Build more.</h1>
+      <p>One starting point for trusted campus learning features and carefully described independent tools for documents, design, audio and software projects.</p>
+      <div class="creator-tools-hero-meta">
+        <span>5 external tools reviewed</span>
+        <span>Campus learning shortcuts</span>
+        <span>Reviewed 4 Nov 2026</span>
+      </div>
+    </div>
+    <div class="creator-tools-hero-art" aria-hidden="true">
+      <div class="creator-tools-art-orbit orbit-one"></div>
+      <div class="creator-tools-art-orbit orbit-two"></div>
+      <div class="creator-tools-art-tile tile-pdf">PDF</div>
+      <div class="creator-tools-art-tile tile-design">✳</div>
+      <div class="creator-tools-art-tile tile-audio">♫</div>
+      <div class="creator-tools-art-tile tile-code">{ }</div>
+    </div>
+  </header>
+
+  <section class="creator-tools-campus" aria-labelledby="creator-tools-campus-title">
+    <div class="creator-tools-section-heading">
+      <div><span class="creator-tools-kicker">START HERE</span><h2 id="creator-tools-campus-title">Your CampusShield learning tools</h2><p>Open the tools already available inside your CampusShield workspace.</p></div>
+      <span class="creator-tools-heading-note">Built into CampusShield</span>
+    </div>
+    <div class="creator-tools-campus-grid">
+      <button class="creator-tools-campus-card" type="button" data-page="shieldmind">
+        <span class="creator-tools-campus-icon">✦</span><strong>ShieldMind AI</strong><p>Ask learning questions and get help with campus-aware study tasks.</p><span class="creator-tools-card-link">Open assistant <b>↗</b></span>
+      </button>
+      <button class="creator-tools-campus-card" type="button" data-page="courses">
+        <span class="creator-tools-campus-icon">▤</span><strong>Courses &amp; Study Resources</strong><p>Find your courses and use the learning resources available to your account.</p><span class="creator-tools-card-link">Open courses <b>↗</b></span>
+      </button>
+      <button class="creator-tools-campus-card" type="button" data-page="past-questions">
+        <span class="creator-tools-campus-icon">▧</span><strong>Past Questions &amp; Exam Prep</strong><p>Browse reviewed papers and practise with clearly labelled learning material.</p><span class="creator-tools-card-link">Open exam prep <b>↗</b></span>
+      </button>
+      <button class="creator-tools-campus-card" type="button" data-page="timetable">
+        <span class="creator-tools-campus-icon">▦</span><strong>My Timetable</strong><p>Organize classes, revision time and your weekly study routine.</p><span class="creator-tools-card-link">Open timetable <b>↗</b></span>
+      </button>
+    </div>
+  </section>
+
+  <section class="panel creator-tools-directory" aria-labelledby="creator-tools-directory-title">
+    <div class="creator-tools-section-heading creator-tools-directory-heading">
+      <div><span class="creator-tools-kicker">INDEPENDENT SOFTWARE · EXTERNAL LINKS</span><h2 id="creator-tools-directory-title">Explore creator tools</h2><p>Find a tool by task. CampusShield does not host, operate or endorse these independent projects.</p></div>
+      <span id="creator-tools-count" class="creator-tools-count" aria-live="polite">5 tools</span>
+    </div>
+    <div class="creator-tools-search-row">
+      <label class="creator-tools-search" for="creator-tools-search">
+        <span aria-hidden="true">⌕</span>
+        <input id="creator-tools-search" type="search" maxlength="100" autocomplete="off" placeholder="Search PDF, design, voice, developer tools…">
+        <kbd>Search</kbd>
+      </label>
+    </div>
+    <div class="creator-tools-filters" role="group" aria-label="Filter creator tools">
+      <button type="button" data-creator-filter="all" aria-pressed="true">All tools</button>
+      <button type="button" data-creator-filter="documents" aria-pressed="false">Documents</button>
+      <button type="button" data-creator-filter="design" aria-pressed="false">Design</button>
+      <button type="button" data-creator-filter="audio" aria-pressed="false">Audio &amp; voice</button>
+      <button type="button" data-creator-filter="creative" aria-pressed="false">Creative media</button>
+      <button type="button" data-creator-filter="developer" aria-pressed="false">Developer</button>
+    </div>
+
+    <div class="creator-tools-grid" id="creator-tools-grid">
+      <article class="creator-tool-card" data-category="documents" data-search="pdfcraft pdf reader editor combine split secure organize forms offline student reports handouts">
+        <div class="creator-tool-top"><span class="creator-tool-mark mark-pdf">PDF</span><span class="creator-tool-category">Documents</span></div>
+        <h3>PdfCraft</h3>
+        <p>Read, organize, combine, split and protect PDF documents. Useful for research papers, lecture notes and project hand-ins.</p>
+        <div class="creator-tool-tags"><span>MIT OR Apache-2.0</span><span>Desktop · local-first</span></div>
+        <p class="creator-tool-note">The project describes its native app as offline, with no account, telemetry or cloud. Use the official native app page; independently hosted browser builds may have different operators and privacy terms.</p>
+        <div class="creator-tool-actions">
+          <a href="https://getartcraft.com/apps/pdfcraft" target="_blank" rel="noopener noreferrer">Official app page ↗</a>
+          <a class="creator-tool-secondary-link" href="https://github.com/storytold/pdfcraft" target="_blank" rel="noopener noreferrer">Source &amp; releases ↗</a>
+        </div>
+      </article>
+
+      <article class="creator-tool-card" data-category="design" data-search="photocraft image photo editor layers masks type psd poster banner graphics society design">
+        <div class="creator-tool-top"><span class="creator-tool-mark mark-photo">✳</span><span class="creator-tool-category">Design</span></div>
+        <h3>PhotoCraft</h3>
+        <p>An image editor for layered work, masks, typography and PSD files. A possible fit for society posters, event graphics and student portfolios.</p>
+        <div class="creator-tool-tags"><span>MIT OR Apache-2.0</span><span>Desktop editor</span></div>
+        <p class="creator-tool-note">The source license does not automatically cover every bundled asset or project trademark. Keep the original attribution and license notices when redistributing.</p>
+        <div class="creator-tool-actions">
+          <a href="https://getartcraft.com/apps/photocraft" target="_blank" rel="noopener noreferrer">Official app page ↗</a>
+          <a class="creator-tool-secondary-link" href="https://github.com/storytold/photocraft" target="_blank" rel="noopener noreferrer">Source &amp; releases ↗</a>
+        </div>
+      </article>
+
+      <article class="creator-tool-card" data-category="audio" data-search="voicestudio audio voice lecture transcription dictation audiobook dubbing notes">
+        <div class="creator-tool-top"><span class="creator-tool-mark mark-audio">♫</span><span class="creator-tool-category">Audio &amp; voice</span></div>
+        <h3>VoiceStudio</h3>
+        <p>Local-first dictation, transcription and audio workflows that can help turn permitted lecture recordings into searchable study notes.</p>
+        <div class="creator-tool-tags"><span>AGPL-3.0</span><span>Local by default</span></div>
+        <p class="creator-tool-note">Optional engines and downloaded models can have separate license terms. Obtain consent before recording or synthesizing anyone’s voice; remote workers or external services may change where data goes.</p>
+        <div class="creator-tool-actions">
+          <a href="https://voicestudio.sh/" target="_blank" rel="noopener noreferrer">Official project ↗</a>
+          <a class="creator-tool-secondary-link" href="https://github.com/niaodian/voicestudio" target="_blank" rel="noopener noreferrer">Source &amp; license ↗</a>
+        </div>
+      </article>
+
+      <article class="creator-tool-card creator-tool-card-featured" data-category="creative" data-search="artcraft ai image video 3d filmmaking storyboards creative media visuals composition">
+        <div class="creator-tool-top"><span class="creator-tool-mark mark-art">A✦</span><span class="creator-tool-category">Creative media</span></div>
+        <h3>ArtCraft</h3>
+        <p>A creative workspace for AI-assisted image and video creation, 2D composition and 3D scene planning. Useful for presentations, storyboards and media projects.</p>
+        <div class="creator-tool-tags"><span>MIT OR Apache-2.0 core</span><span>Provider terms vary</span></div>
+        <p class="creator-tool-note">The project lists multiple model and provider integrations. Check model terms, account requirements, pricing and data handling before uploading work or using generated content commercially.</p>
+        <div class="creator-tool-actions">
+          <a href="https://getartcraft.com/" target="_blank" rel="noopener noreferrer">Official project ↗</a>
+          <a class="creator-tool-secondary-link" href="https://github.com/storytold/artcraft" target="_blank" rel="noopener noreferrer">Source &amp; license ↗</a>
+        </div>
+      </article>
+
+      <article class="creator-tool-card" data-category="developer" data-search="rea reverse engineering anything coding agent inspect software app game website developer authorized code research">
+        <div class="creator-tool-top"><span class="creator-tool-mark mark-rea">R</span><span class="creator-tool-category">Developer tools</span></div>
+        <h3>REA</h3>
+        <p>A coding-agent companion that helps inspect and understand software behaviour. It may be useful for computing projects, debugging and software learning.</p>
+        <div class="creator-tool-tags"><span>MIT</span><span>Developer workflow</span></div>
+        <p class="creator-tool-note">Use it only on software, accounts and systems you own or are authorized to examine. Follow its responsible-use guidance and the licenses of any third-party analysis tools.</p>
+        <div class="creator-tool-actions">
+          <a href="https://rea.tools/" target="_blank" rel="noopener noreferrer">Official project ↗</a>
+          <a class="creator-tool-secondary-link" href="https://github.com/morluto/rea" target="_blank" rel="noopener noreferrer">Source &amp; license ↗</a>
+        </div>
+      </article>
+    </div>
+    <div class="creator-tools-empty" id="creator-tools-empty" hidden>
+      <strong>No matching tools</strong>
+      <p>Try another keyword or select a different category.</p>
+      <button type="button" class="btn secondary" id="creator-tools-reset">Clear filters</button>
+    </div>
+  </section>
+
+  <aside class="creator-tools-safety" aria-label="External tools and privacy guidance">
+    <span class="creator-tools-safety-icon" aria-hidden="true">!</span>
+    <div><strong>Protect your student information</strong><p>These are independent third-party tools, not CampusShield services. Before uploading anything, review the provider’s privacy policy and license. Do not upload student ID cards, passwords, grades, private campus or class records, incident reports or another person's recording without permission. CampusShield does not transmit your workspace data to these tools.</p></div>
+  </aside>
 </section>
 
 <section class="page" id="page-shieldmind">
@@ -4086,7 +4443,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <script src="./campus-course-community.js" defer></script>
 <script src="./student-rewards.js" defer></script>
 <script src="./student-rewards-admin.js" defer></script>
+<script src="./campus-map-geometry.js" defer></script>
+<script type="module" src="./campus-map-loader.js"></script>
 <script src="./campusshield-app.js" defer></script>
+<script src="./campuspulse-social.js" defer></script>
 <script>
 if ('serviceWorker' in navigator && window.isSecureContext) {
   window.addEventListener('load', () => {
@@ -5132,8 +5492,6 @@ table { max-width: 100%; }
 #page-shieldmind .shieldmind-hero-art span:nth-child(2){background:#0d3b2e!important;color:#7fd98a!important}
 #page-shieldmind .shieldmind-hero-art span:last-child{color:#2a7e46!important}
 #page-shieldmind .shieldmind-quick-action.is-active{border-color:#a9d6b7!important;background:#edf8ef!important;color:#236b3b!important}
-@media(prefers-reduced-motion:reduce){.social-link,.campus-chat-channel-tabs button,#studentIdentityForm .btn{transition:none!important;animation:none!important}}
-
 @media (prefers-reduced-motion:reduce) {
   .sidebar *, .campus-dashboard-hero *, .login-intro * {
     transition:none !important;
@@ -5142,6 +5500,49 @@ table { max-width: 100%; }
 }
 </style>
 
+<style id="campusmap-base44-forest-green-controls">
+/* Keep the CampusMap controls and review actions in sync with the Base44 workspace palette. */
+#page-campus-map .campus-map-controls {
+  border-color:#dce5df;
+  background:#fff;
+}
+#page-campus-map .campus-map-controls button.active,
+#page-campus-map .campus-map-controls button[aria-pressed="true"] {
+  background:#203d35 !important;
+  color:#fff !important;
+}
+#page-campus-map .campus-map-controls button:focus-visible,
+#page-campus-map .campus-map-action:focus-visible,
+#page-campus-map .campus-map-feature:focus-visible {
+  outline:2px solid #7fd98a !important;
+  outline-offset:2px;
+}
+#page-campus-map .campus-map-action.primary,
+#page-campus-map .campus-map-admin-actions .primary {
+  background:#2a7e46 !important;
+  border-color:#2a7e46 !important;
+  color:#fff !important;
+}
+#page-campus-map .campus-map-action.primary:hover,
+#page-campus-map .campus-map-admin-actions .primary:hover {
+  background:#318c50 !important;
+  border-color:#318c50 !important;
+}
+#page-campus-map .campus-map-feature.active,
+#page-campus-map .campus-map-feature[aria-pressed="true"] {
+  border-color:#7fd98a !important;
+  background:#f0faf2 !important;
+}
+#page-campus-map .campus-map-status[data-kind="success"] {
+  border-color:#a7dcb0;
+  background:#eff9f0;
+  color:#245b34;
+}
+</style>
+
+<link rel="stylesheet" href="./campusshield-visual-refresh.css">
+<link rel="stylesheet" href="./student-creator-tools.css">
 <script src="./campus-dashboard-upgrade.js" defer></script>
+<script src="./student-creator-tools.js" defer></script>
 </body>
 </html>

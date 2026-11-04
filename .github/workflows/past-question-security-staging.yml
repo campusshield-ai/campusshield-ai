@@ -1,0 +1,26 @@
+name: Past Questions coverage RPC security checks
+
+on:
+  pull_request:
+    branches: ["staging/preview"]
+    paths:
+      - "supabase/migrations/*past_question*"
+      - "tests/smoke-check.mjs"
+      - ".github/workflows/past-question-security-staging.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  past-question-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate Past Questions UI syntax
+        run: node --check past-question-practice.js
+      - name: Run full CampusShield regression suite
+        run: node tests/smoke-check.mjs

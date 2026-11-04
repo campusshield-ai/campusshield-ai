@@ -187,13 +187,13 @@ test("language selector translates the access experience and remembers the choic
   await language.selectOption("yo");
   await expect(page.locator(".login-public-nav a").nth(0)).toHaveText("Ilé");
   await expect(page.locator("#auth-title")).toHaveText("Ẹ kú àbọ̀");
-  await expect(page.locator("#auth-tabs [data-auth-mode='signup']")).toHaveText("Ṣẹ̀dá àkọọ́lẹ̀");
   await expect(page.locator(".login-footer-links a").nth(0)).toHaveText("Àwọn Ẹ̀ya");
   await expect(page.locator(".login-footer-links a").nth(1)).toHaveText("Nípa wa");
   await expect(page.locator(".login-footer-links a").nth(2)).toHaveText("Ìrànlọ́wọ́");
   await expect(page.locator(".login-footer-links a").nth(3)).toHaveText("Ìpamọ́");
   await expect(page.locator(".login-footer-links a").nth(4)).toHaveText("Àwọn Òfin Lílò");
   await expect(page.locator(".login-footer-links a").nth(5)).toHaveText("Kàn sí wa");
+  await expect(page.locator("#auth-tabs [data-auth-mode='signup']")).toHaveText("Ṣẹ̀dá àkọọ́lẹ̀");
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator("#campusshield-language")).toHaveValue("yo");
@@ -251,3 +251,124 @@ test("student and staff get separate identity-verification instructions and resp
   }
 });
 
+
+
+test("shared glass interaction layer remains responsive and motion-aware", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('link[href="./campusshield-interaction-layer.css"]')).toHaveCount(1);
+  const widths = [360, 390, 430, 768, 1024, 1366, 1920];
+
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await page.evaluate(() => ({
+      viewport: window.innerWidth,
+      document: document.documentElement.scrollWidth,
+      body: document.body.scrollWidth,
+    }));
+    expect(metrics.document, `document should not overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    expect(metrics.body, `body should not overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    await expect(page.locator(".auth-panel")).toBeVisible();
+    await expect(page.locator(".login-feature-grid")).toBeVisible();
+  }
+
+  await page.locator('[data-auth-mode="signup"]').click();
+  await expect(page.locator("#signup-fields")).toBeVisible();
+  const authModeBackground = await page.locator('[data-auth-mode="signup"]').evaluate((element) =>
+    getComputedStyle(element).backgroundImage
+  );
+  expect(authModeBackground).not.toBe("none");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const reducedMotionDuration = await page.locator("#signup-fields").evaluate((element) =>
+    parseFloat(getComputedStyle(element).animationDuration)
+  );
+  expect(reducedMotionDuration).toBeLessThan(0.001);
+});
+
+
+test("interactive dashboard and CampusMap coverage panels fit the app shell", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('link[href="./campus-dashboard-insights.css"]')).toHaveCount(1);
+  await expect(page.locator("#dashboard-safety-insights")).toHaveCount(1);
+  await expect(page.locator("#campus-dashboard-saved-panel")).toHaveCount(1);
+  await expect(page.locator("#campus-map-coverage-overview")).toHaveCount(1);
+
+  // Reveal the signed-in layout without authenticating or creating any records.
+  await page.evaluate(() => {
+    document.querySelector("#login-screen").hidden = true;
+    document.querySelector("#workspace").hidden = false;
+    document.querySelector("#page-dashboard").classList.add("active");
+    document.querySelector("#page-campus-map").classList.add("active");
+  });
+
+  for (const width of [360, 390, 430, 768, 1024, 1366, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await page.evaluate(() => {
+      const columns = selector => {
+        const element = document.querySelector(selector);
+        return element ? getComputedStyle(element).gridTemplateColumns.split(/\s+/).filter(Boolean).length : 0;
+      };
+      return {
+        viewport: innerWidth,
+        document: document.documentElement.scrollWidth,
+        body: document.body.scrollWidth,
+        analyticsColumns: columns(".dashboard-insights-grid"),
+        mapCoverageColumns: columns(".campus-map-coverage-overview"),
+      };
+    });
+    expect(metrics.document, `dashboard/map document overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    expect(metrics.body, `dashboard/map body overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    expect(metrics.analyticsColumns, `analytics cards should stack on narrow screens at ${width}px`).toBe(width <= 850 ? 1 : 2);
+    expect(metrics.mapCoverageColumns, `map coverage cards should adapt at ${width}px`).toBe(width <= 850 ? 2 : width <= 1100 ? 3 : 5);
+    await expect(page.locator("#dashboard-safety-insights")).toBeVisible();
+    await expect(page.locator("#campus-map-coverage-overview")).toBeVisible();
+  }
+});
+
+
+test("Campus Passport and entrance discovery fit the CampusMap experience at seven widths", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('link[href="./campus-map-passport.css"]')).toHaveCount(1);
+  await expect(page.locator("#campus-map-discovery-filters")).toHaveCount(1);
+
+  // Reveal the app shell and the empty-state Passport card. This test does not
+  // authenticate or insert campus records into Supabase.
+  await page.evaluate(() => {
+    document.querySelector("#login-screen").hidden = true;
+    document.querySelector("#workspace").hidden = false;
+    document.querySelector("#page-campus-map").classList.add("active");
+    const passport = document.querySelector("#campus-map-passport");
+    passport.hidden = false;
+    document.querySelector("#campus-map-passport-title").textContent = "Campus Passport preview";
+    document.querySelector("#campus-map-passport-description").textContent =
+      "Verified campus details appear here after an authorised review.";
+  });
+  await expect(page.locator("#campus-map-discovery-filters")).toBeVisible();
+
+  for (const width of [360, 390, 430, 768, 1024, 1366, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await page.evaluate(() => ({
+      viewport: innerWidth,
+      document: document.documentElement.scrollWidth,
+      body: document.body.scrollWidth,
+      passport: document.querySelector("#campus-map-passport").getBoundingClientRect().width,
+      factsColumns: getComputedStyle(document.querySelector("#campus-map-passport-facts")).gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+      filterScroll: document.querySelector("#campus-map-discovery-filters").scrollWidth,
+      filterClient: document.querySelector("#campus-map-discovery-filters").clientWidth,
+    }));
+    expect(metrics.document, `Campus Passport document overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    expect(metrics.body, `Campus Passport body overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    expect(metrics.passport, `Campus Passport card must have a usable width at ${width}px`).toBeGreaterThan(220);
+    expect(metrics.factsColumns, `Passport facts should retain a compact two-column layout at ${width}px`).toBeGreaterThanOrEqual(2);
+    expect(metrics.filterScroll, `filter row must not overflow its panel at ${width}px`).toBeLessThanOrEqual(metrics.filterClient + 1);
+    await expect(page.locator("#campus-map-passport")).toBeVisible();
+    await expect(page.locator("#campus-map-passport-route")).toBeVisible();
+    await expect(page.locator("#campus-map-passport-accessible-route")).toBeDisabled();
+  }
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const duration = await page.locator('[data-campus-filter="all"]').evaluate(element =>
+    parseFloat(getComputedStyle(element).transitionDuration)
+  );
+  expect(duration).toBeLessThanOrEqual(0.001);
+});

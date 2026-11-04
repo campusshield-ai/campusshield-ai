@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - codex/fix-registration-confirmation-role
+      - "feat/**"
+      - "staging/preview"
     paths:
       - "index.html"
       - "campusshield-i18n.js"
@@ -14,7 +16,7 @@ on:
       - "tests/browser/**"
       - ".github/workflows/responsive-ui-browser.yml"
   pull_request:
-    branches: [main]
+    branches: [main, "staging/preview"]
     paths:
       - "index.html"
       - "campusshield-i18n.js"

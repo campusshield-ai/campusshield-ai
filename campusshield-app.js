@@ -71,6 +71,7 @@
   let incidentRefreshQueued = false;
   let authSessionVersion = 0;
   let incidentsLastUpdated = null;
+  let dashboardAnalyticsRangeDays = 30;
   let authMode = 'signin';
   let identityCompletionMode = false;
   let authBusy = false;
@@ -531,6 +532,9 @@
     }
 
     currentProfile = profile;
+    const workspace = $('workspace');
+    if (workspace) workspace.dataset.accountRole = String(profile.role || 'member').toLowerCase();
+    window.dispatchEvent(new CustomEvent('campusshield:profile-ready', { detail: { role: String(profile.role || 'member').toLowerCase() } }));
     currentStaffPosition = '';
     studentIdentitySubmission = null;
     renderRoleAccessSummary();
@@ -596,6 +600,9 @@
   }
 
   function showLogin(message) {
+    const workspace = $('workspace');
+    if (workspace) delete workspace.dataset.accountRole;
+    window.dispatchEvent(new CustomEvent('campusshield:profile-ready', { detail: { role: '' } }));
     $('workspace').hidden = true;
     $('login-screen').hidden = false;
     setAuthMode('signin');
@@ -1028,6 +1035,7 @@
       classroom:'Teacher Classroom',
       courses:'Courses & Study Resources',
       'past-questions':'Past Questions & Exam Prep',
+      'creator-tools':'Creator & Tools Hub',
       'student-rewards':'Challenges & Rewards',
       opportunities:'Opportunities & Scholarships',
       shieldmind:'ShieldMind AI',
@@ -1144,6 +1152,8 @@
       clearFeed('campus-dashboard-announcements', 'Class announcements appear after campus verification.');
       clearFeed('campus-dashboard-updates', 'Verified notices and events appear after campus verification.');
       clearFeed('campus-dashboard-helpdesk', 'Your service request status appears after campus verification.');
+      clearFeed('campus-dashboard-saved-opportunities', 'Saved campus opportunities appear after your account and university membership are verified.');
+      $('campus-dashboard-saved-count').textContent = '— saved';
       $('campus-dashboard-helpdesk-count').textContent = '—';
       $('campus-metric-classes').textContent = '—';
       $('campus-metric-secondary').textContent = '—';
@@ -1161,6 +1171,8 @@
         clearFeed('campus-dashboard-announcements', 'A verified campus membership is required.');
         clearFeed('campus-dashboard-updates', 'A verified campus membership is required.');
         clearFeed('campus-dashboard-helpdesk', 'Choose and verify your university to load your service requests.');
+        clearFeed('campus-dashboard-saved-opportunities', 'Verify your campus membership to load saved opportunities for this university.');
+        $('campus-dashboard-saved-count').textContent = '— saved';
         $('campus-dashboard-helpdesk-count').textContent = '—';
         $('campus-metric-classes').textContent = '—';
         $('campus-metric-secondary').textContent = '—';
@@ -1176,7 +1188,9 @@
         backend.listCampusNotices().catch(() => []),
         backend.listCampusEvents().catch(() => []),
         backend.listCampusHelpdeskTickets().catch(() => null),
-        backend.getCurrentUser().catch(() => null)
+        backend.getCurrentUser().catch(() => null),
+        backend.listOpportunityBookmarks().catch(() => null),
+        backend.listCampusOpportunities().catch(() => null)
       ]);
       const classes = (results[0] || []).filter(row => row.university_id === campusId);
       const notices = (results[1] || []).filter(row => row.university_id === campusId &&
@@ -1219,6 +1233,37 @@
       rosterCounts.forEach(item => totalStudents.set(item.classroom_id, item.count));
       if (requestId !== loadCampusDashboardInsights.requestId || requestSessionVersion !== authSessionVersion || currentProfile !== requestProfile) return;
       const studentCount = Array.from(totalStudents.values()).reduce((sum,value) => sum + value, 0);
+
+      const savedOpportunityFeed = $('campus-dashboard-saved-opportunities');
+      const savedOpportunityCount = $('campus-dashboard-saved-count');
+      if (!Array.isArray(results[5]) || !Array.isArray(results[6])) {
+        savedOpportunityCount.textContent = '— saved';
+        clearFeed('campus-dashboard-saved-opportunities', 'Saved opportunities are temporarily unavailable. Open Opportunity Hub to try again.');
+      } else {
+        const savedIds = new Set(results[5]
+          .filter(item => item.university_id === campusId && item.opportunity_id)
+          .map(item => item.opportunity_id));
+        const savedOpportunities = results[6].filter(item =>
+          item.university_id === campusId &&
+          item.status === 'published' &&
+          savedIds.has(item.id) &&
+          (!item.deadline || new Date(item.deadline).getTime() > now)
+        ).sort((a,b) => new Date(a.deadline || '9999-12-31').getTime() - new Date(b.deadline || '9999-12-31').getTime());
+        savedOpportunityCount.textContent = savedOpportunities.length + ' saved';
+        savedOpportunityFeed.replaceChildren();
+        if (!savedOpportunities.length) {
+          clearFeed('campus-dashboard-saved-opportunities', 'Nothing saved yet. Save a published scholarship, internship, job or campus opportunity and it will appear here.');
+        } else {
+          savedOpportunities.slice(0, 3).forEach(item => appendItem(
+            savedOpportunityFeed,
+            item.title,
+            [item.category, item.provider_name].filter(Boolean).join(' · '),
+            (item.description || 'Published campus opportunity') + (item.deadline ? ' · Deadline ' + dateText(item.deadline) : ''),
+            'Open Opportunity Hub',
+            () => { navigate('opportunities'); loadCampusOpportunitiesPage(); }
+          ));
+        }
+      }
 
       $('campus-metric-classes').textContent = String(classes.length);
       $('campus-metric-secondary').textContent = String(isTeacher ? studentCount : classroomAnnouncements.length);
@@ -2398,31 +2443,58 @@
 
   $("campus-chat-form")?.addEventListener("submit", async function(event) {
     event.preventDefault();
+    const form = $("campus-chat-form");
     const input = $("campus-chat-input");
     const send = $("campus-chat-send");
     const status = $("campus-chat-status");
     const text = String(input?.value || "").trim();
-    if (!text) { input?.focus(); return; }
+    if (form?.dataset.sending === "true") return;
+    if (!text) {
+      if (status) status.textContent = "Write a message before sending.";
+      input?.focus();
+      return;
+    }
     if (!campusChatUniversityId) {
       if (status) status.textContent = "Choose a verified university room before sending a message.";
       return;
     }
     if (text.length > 1200) {
       if (status) status.textContent = "Messages must be 1,200 characters or fewer.";
+      input?.focus();
       return;
     }
-    if (send) send.disabled = true;
+    if (form) {
+      form.dataset.sending = "true";
+      form.setAttribute("aria-busy", "true");
+    }
+    if (send) {
+      send.disabled = true;
+      send.setAttribute("aria-label", "Sending campus message");
+    }
     if (status) status.textContent = "Sending message…";
     try {
       await window.CampusShieldBackend.sendCampusChatMessage(campusChatChannel, text);
       input.value = "";
-      await refreshCampusChatMessages({quiet:true});
-      if (status) status.textContent = "Message sent.";
+      if (status) status.textContent = "Message sent. Refreshing this room…";
+      try {
+        await refreshCampusChatMessages({quiet:true});
+        if (status) status.textContent = "Message sent.";
+      } catch (_refreshError) {
+        if (status) status.textContent = "Message sent, but this room could not refresh. Use Refresh to check the latest messages.";
+      }
       input.focus();
     } catch (error) {
-      if (status) status.textContent = error?.message || "Could not send your message.";
+      if (status) status.textContent = error?.message || "Could not send your message. Your draft is still here so you can retry.";
+      input.focus();
     } finally {
-      if (send) send.disabled = !campusChatUniversityId;
+      if (form) {
+        delete form.dataset.sending;
+        form.removeAttribute("aria-busy");
+      }
+      if (send) {
+        send.setAttribute("aria-label", "Send campus message");
+        send.disabled = !campusChatUniversityId;
+      }
     }
   });
 
@@ -2926,59 +2998,126 @@
 
   $("campus-dm-request-form")?.addEventListener("submit", async function(event) {
     event.preventDefault();
+    const form = $("campus-dm-request-form");
     const send = $("campus-dm-request-send");
+    const introduction = $("campus-dm-introduction");
     const status = $("campus-dm-search-status");
+    const body = String(introduction?.value || "").trim();
+    if (form?.dataset.sending === "true") return;
     if (!campusDirectSelectedRecipient) {
       if (status) status.textContent = "Choose a campus member first.";
       return;
     }
-    if (send) send.disabled = true;
-    if (status) status.textContent = "Sending your message request…";
+    if (!body) {
+      if (status) status.textContent = "Write a short introduction before sending your request.";
+      introduction?.focus();
+      return;
+    }
+    if (body.length > 1200) {
+      if (status) status.textContent = "Your introduction must be 1,200 characters or fewer.";
+      introduction?.focus();
+      return;
+    }
+    const recipientUsername = campusDirectSelectedRecipient;
+    const originalLabel = send?.textContent || "Send message request";
+    if (form) {
+      form.dataset.sending = "true";
+      form.setAttribute("aria-busy", "true");
+    }
+    if (send) {
+      send.disabled = true;
+      send.textContent = "Sending request…";
+    }
+    if (status) status.textContent = "Sending a private message request to @" + recipientUsername + "…";
     try {
-      const recipientUsername = campusDirectSelectedRecipient;
-      const id = await window.CampusShieldBackend.createCampusDirectMessageRequest(
-        recipientUsername,
-        $("campus-dm-introduction").value
-      );
-      $("campus-dm-introduction").value = "";
-      $("campus-dm-request-form").hidden = true;
+      const id = await window.CampusShieldBackend.createCampusDirectMessageRequest(recipientUsername, body);
+      introduction.value = "";
+      form.hidden = true;
       $("campus-dm-search-results").replaceChildren();
       $("campus-dm-search").value = "";
       campusDirectSelectedRecipient = null;
-      await refreshCampusDirectConversations();
-      const createdConversation = campusDirectConversations.find(function(item) { return item.conversation_id === id; });
-      if (status) status.textContent = createdConversation?.status === "accepted"
-        ? "Message sent to @" + recipientUsername + "."
-        : "Message request sent. You can continue after the member accepts your request.";
-      await openCampusDirectConversation(id);
+      if (status) status.textContent = "Request sent. Updating your inbox…";
+      try {
+        await refreshCampusDirectConversations();
+        const createdConversation = campusDirectConversations.find(function(item) { return item.conversation_id === id; });
+        if (status) status.textContent = createdConversation?.status === "accepted"
+          ? "Message sent to @" + recipientUsername + "."
+          : "Message request sent to @" + recipientUsername + ". They can accept it before you continue.";
+        try {
+          await openCampusDirectConversation(id);
+        } catch (_openError) {
+          if (status) status.textContent = "Your request was sent, but the conversation could not open. Use Refresh to check its status.";
+        }
+      } catch (_refreshError) {
+        if (status) status.textContent = "Your request was sent, but the inbox could not refresh. Use Refresh to check its status.";
+      }
     } catch (error) {
-      if (status) status.textContent = error?.message || "Could not send the message request.";
-      await refreshCampusDirectConversations({quiet:true});
+      if (status) status.textContent = error?.message || "Could not send the message request. Your introduction is still here so you can retry.";
     } finally {
-      if (send) send.disabled = false;
+      if (form) {
+        delete form.dataset.sending;
+        form.removeAttribute("aria-busy");
+      }
+      if (send) {
+        send.disabled = false;
+        send.textContent = originalLabel;
+      }
     }
   });
 
   $("campus-dm-compose-form")?.addEventListener("submit", async function(event) {
     event.preventDefault();
+    const form = $("campus-dm-compose-form");
     const send = $("campus-dm-compose-send");
     const input = $("campus-dm-compose-input");
     const status = $("campus-dm-thread-status");
     const body = String(input?.value || "").trim();
-    if (!body || !campusDirectActiveId || campusDirectActiveConversation?.status !== "accepted") return;
-    if (send) send.disabled = true;
+    if (form?.dataset.sending === "true") return;
+    if (!body) {
+      if (status) status.textContent = "Write a message before sending.";
+      input?.focus();
+      return;
+    }
+    if (body.length > 1200) {
+      if (status) status.textContent = "Your message must be 1,200 characters or fewer.";
+      input?.focus();
+      return;
+    }
+    if (!campusDirectActiveId || campusDirectActiveConversation?.status !== "accepted") return;
+    const conversationId = campusDirectActiveId;
+    if (form) {
+      form.dataset.sending = "true";
+      form.setAttribute("aria-busy", "true");
+    }
+    if (send) {
+      send.disabled = true;
+      send.setAttribute("aria-label", "Sending private message");
+    }
     if (status) status.textContent = "Sending private message…";
     try {
-      await window.CampusShieldBackend.sendCampusDirectMessage(campusDirectActiveId,body);
+      await window.CampusShieldBackend.sendCampusDirectMessage(conversationId, body);
       input.value = "";
-      await refreshCampusDirectMessages();
-      await refreshCampusDirectConversations({quiet:true});
-      if (status) status.textContent = "Message sent.";
+      if (status) status.textContent = "Message sent. Updating this conversation…";
+      try {
+        await refreshCampusDirectMessages();
+        await refreshCampusDirectConversations({quiet:true});
+        if (status) status.textContent = "Message sent.";
+      } catch (_refreshError) {
+        if (status) status.textContent = "Message sent, but this conversation could not refresh. Select it again or use Refresh.";
+      }
       input.focus();
     } catch (error) {
-      if (status) status.textContent = error?.message || "Could not send this private message.";
+      if (status) status.textContent = error?.message || "Could not send this private message. Your draft is still here so you can retry.";
+      input.focus();
     } finally {
-      if (send) send.disabled = !campusDirectActiveConversation || campusDirectActiveConversation.status !== "accepted";
+      if (form) {
+        delete form.dataset.sending;
+        form.removeAttribute("aria-busy");
+      }
+      if (send) {
+        send.setAttribute("aria-label", "Send private message");
+        send.disabled = !campusDirectActiveConversation || campusDirectActiveConversation.status !== "accepted";
+      }
     }
   });
 
@@ -3752,6 +3891,155 @@
     }
   });
 
+  function renderDashboardAnalytics() {
+    const period = [7, 30, 90].includes(dashboardAnalyticsRangeDays) ? dashboardAnalyticsRangeDays : 30;
+    const trend = $('dashboard-report-trend');
+    const empty = $('dashboard-trend-empty');
+    const totalLabel = $('dashboard-trend-total');
+    const periodLabel = $('dashboard-trend-period');
+    const footnote = $('dashboard-insights-footnote');
+    if (!trend || !empty || !totalLabel || !periodLabel) return;
+
+    const loaded = incidentsLastUpdated instanceof Date && Number.isFinite(incidentsLastUpdated.getTime());
+    const now = new Date();
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - (period - 1));
+    const bucketCount = period === 7 ? 7 : 6;
+    const bucketSpanDays = period / bucketCount;
+    const buckets = Array.from({ length: bucketCount }, (_, index) => {
+      const firstDay = new Date(start);
+      firstDay.setDate(firstDay.getDate() + Math.floor(index * bucketSpanDays));
+      const lastDay = new Date(start);
+      lastDay.setDate(lastDay.getDate() + Math.ceil((index + 1) * bucketSpanDays) - 1);
+      return {
+        count: 0,
+        label: period === 7
+          ? firstDay.toLocaleDateString(undefined, { weekday: 'short' })
+          : firstDay.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) + '–' + lastDay.getDate()
+      };
+    });
+    const periodRecords = [];
+    const millisecondsPerDay = 24 * 60 * 60 * 1000;
+    incidents.forEach(item => {
+      const createdAt = new Date(item.createdAt);
+      if (!Number.isFinite(createdAt.getTime()) || createdAt < start || createdAt > todayEnd) return;
+      const elapsedDays = Math.floor((createdAt.getTime() - start.getTime()) / millisecondsPerDay);
+      if (elapsedDays < 0 || elapsedDays >= period) return;
+      const bucketIndex = Math.min(bucketCount - 1, Math.floor(elapsedDays / bucketSpanDays));
+      buckets[bucketIndex].count += 1;
+      periodRecords.push(item);
+    });
+
+    totalLabel.textContent = loaded ? String(periodRecords.length) : '—';
+    periodLabel.textContent = 'reports in ' + period + ' days';
+    document.querySelectorAll('[data-dashboard-range]').forEach(button => {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.dashboardRange) === period));
+    });
+
+    trend.replaceChildren();
+    trend.classList.toggle("dashboard-trend-chart--six", period !== 7);
+    const hasPeriodRecords = periodRecords.length > 0;
+    trend.hidden = !loaded || !hasPeriodRecords;
+    empty.hidden = loaded && hasPeriodRecords;
+    if (!loaded) {
+      empty.textContent = $('incidentSyncStatus')?.dataset.state === 'error'
+        ? 'Incident data could not be loaded. Use Refresh data to try again.'
+        : 'Incident report activity will appear after your account records load.';
+    } else if (!hasPeriodRecords) {
+      empty.textContent = 'No reports were recorded in the last ' + period + ' days.';
+    } else {
+      const maxCount = Math.max(1, ...buckets.map(bucket => bucket.count));
+      buckets.forEach(bucket => {
+        const column = document.createElement('div');
+        column.className = 'dashboard-trend-column';
+        column.setAttribute('aria-label', bucket.label + ': ' + bucket.count + ' reports');
+
+        const count = document.createElement('span');
+        count.className = 'dashboard-trend-count';
+        count.textContent = String(bucket.count);
+
+        const track = document.createElement('div');
+        track.className = 'dashboard-trend-track';
+        track.setAttribute('aria-hidden', 'true');
+
+        const bar = document.createElement('div');
+        bar.className = 'dashboard-trend-bar';
+        bar.style.setProperty('--bar-height', bucket.count ? Math.max(8, Math.round(bucket.count / maxCount * 100)) + '%' : '0%');
+        track.appendChild(bar);
+
+        const label = document.createElement('span');
+        label.className = 'dashboard-trend-label';
+        label.textContent = bucket.label;
+        column.append(count, track, label);
+        trend.appendChild(column);
+      });
+      trend.setAttribute('aria-label', periodRecords.length + ' reports across the selected ' + period + ' day period');
+    }
+
+    const total = incidents.length;
+    const resolved = incidents.filter(item => isResolvedStatus(item.status)).length;
+    const open = Math.max(0, total - resolved);
+    const resolvedBar = $('dashboard-status-resolved-bar');
+    const openBar = $('dashboard-status-open-bar');
+    if (resolvedBar && openBar) {
+      resolvedBar.style.width = total ? (resolved / total * 100) + '%' : '0%';
+      openBar.style.width = total ? (open / total * 100) + '%' : '0%';
+    }
+    $('dashboard-status-resolved-count').textContent = loaded ? String(resolved) : '—';
+    $('dashboard-status-open-count').textContent = loaded ? String(open) : '—';
+
+    const categoryList = $('dashboard-top-categories');
+    categoryList.replaceChildren();
+    const categoryCounts = new Map();
+    periodRecords.forEach(item => {
+      const category = String(item.category || 'Unspecified').trim() || 'Unspecified';
+      categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
+    });
+    const topCategories = Array.from(categoryCounts.entries()).sort((a,b) => b[1] - a[1]).slice(0, 3);
+    if (!loaded || !topCategories.length) {
+      const message = document.createElement('p');
+      message.className = 'muted';
+      message.textContent = loaded ? 'No categories in this period.' : 'Category summaries will appear after report data loads.';
+      categoryList.appendChild(message);
+    } else {
+      const maxCategoryCount = Math.max(...topCategories.map(item => item[1]));
+      topCategories.forEach(([name, count]) => {
+        const row = document.createElement('div');
+        row.className = 'dashboard-category-row';
+        const label = document.createElement('span');
+        label.textContent = name;
+        const value = document.createElement('strong');
+        value.textContent = String(count);
+        const track = document.createElement('div');
+        track.className = 'dashboard-category-track';
+        const fill = document.createElement('span');
+        fill.style.setProperty('--category-width', (count / maxCategoryCount * 100) + '%');
+        track.appendChild(fill);
+        row.append(label, value, track);
+        categoryList.appendChild(row);
+      });
+    }
+
+    if (footnote) {
+      footnote.textContent = loaded
+        ? 'Showing ' + total + ' reports visible to your account. The chart groups records by created date; current status is shown separately. CampusShield does not detect incidents or dispatch emergency services.'
+        : 'Only records visible to your account are included. A missing report is not proof that an area is safe.';
+    }
+  }
+
+  document.addEventListener('click', event => {
+    const button = event.target.closest('[data-dashboard-range]');
+    if (!button) return;
+    const nextRange = Number(button.dataset.dashboardRange);
+    if (![7, 30, 90].includes(nextRange)) return;
+    dashboardAnalyticsRangeDays = nextRange;
+    renderDashboardAnalytics();
+  });
+  renderDashboardAnalytics();
+
   function render() {
     const total = incidents.length;
     const resolved = incidents.filter(i => isResolvedStatus(i.status)).length;
@@ -3763,6 +4051,7 @@
     $('highStat').textContent = high;
     $('resolvedStat').textContent = resolved;
     $('rateStat').textContent = total ? Math.round(resolved / total * 100) + '%' : '—';
+    renderDashboardAnalytics();
 
     $('recentList').innerHTML = incidents.slice(0, 5).map(i =>
       `<article class="recent-item">
@@ -4693,11 +4982,13 @@
         }).join('') + '</select></div>' +
         '<div class="field"><label for="ticket-department-' + esc(ticket.id) + '">Responsible unit</label><input id="ticket-department-' + esc(ticket.id) + '" data-helpdesk-department="' + esc(ticket.id) + '" maxlength="100" value="' + esc(ticket.assigned_department || '') + '" placeholder="e.g. Works Department"></div>' +
         '<div class="field"><label for="ticket-staff-message-' + esc(ticket.id) + '">Progress note (visible to requester)</label><textarea id="ticket-staff-message-' + esc(ticket.id) + '" data-helpdesk-message="' + esc(ticket.id) + '" maxlength="1200" placeholder="Record an action, request more information, or explain the status change."></textarea></div>' +
-        '<button type="button" class="btn" data-helpdesk-save="' + esc(ticket.id) + '">Save update</button></div>'
+        '<button type="button" class="btn" data-helpdesk-save="' + esc(ticket.id) + '" aria-label="Save Helpdesk update">Save update</button>' +
+        '<p class="message" data-helpdesk-save-status="' + esc(ticket.id) + '" role="status" aria-live="polite"></p></div>'
       : '<form class="community-comment-form" data-helpdesk-reply data-ticket-id="' + esc(ticket.id) + '">' +
         '<label class="sr-only" for="ticket-reply-' + esc(ticket.id) + '">Reply to request ' + esc(ticket.reference_code) + '</label>' +
         '<textarea id="ticket-reply-' + esc(ticket.id) + '" name="message" maxlength="1200" minlength="2" placeholder="Add helpful information or reply to a staff update…" required ' + (['resolved','closed'].includes(ticket.status) ? 'disabled' : '') + '></textarea>' +
-        '<button type="submit" class="btn secondary" ' + (['resolved','closed'].includes(ticket.status) ? 'disabled' : '') + '>Add update</button></form>';
+        '<button type="submit" class="btn secondary" aria-label="Add Helpdesk update" ' + (['resolved','closed'].includes(ticket.status) ? 'disabled' : '') + '>Add update</button>' +
+        '<p class="message" data-helpdesk-reply-status role="status" aria-live="polite"></p></form>';
     const priorityClass = ticket.priority === 'high' ? 'high' : ticket.priority === 'low' ? 'low' : 'medium';
     return '<article class="community-post campus-ticket-card">' +
       '<div class="community-meta"><span class="tag open">' + esc(ticket.reference_code) + '</span><span class="tag ' + priorityClass + '">' + esc(ticket.priority) + ' priority</span><span class="tag ' + (['resolved','closed'].includes(ticket.status) ? 'low' : 'open') + '">' + esc(helpdeskStatusLabel(ticket.status)) + '</span></div>' +
@@ -4806,11 +5097,17 @@
 
   $('campusHelpdeskForm').addEventListener('submit', async function(event) {
     event.preventDefault();
+    const form = $('campusHelpdeskForm');
     const button = $('campus-helpdesk-submit');
     const message = $('campus-helpdesk-submit-message');
+    if (form?.dataset.sending === 'true') return;
     if (!window.CampusShieldBackend?.isConfigured) {
       message.textContent = 'Supabase is not configured.';
       return;
+    }
+    if (form) {
+      form.dataset.sending = 'true';
+      form.setAttribute('aria-busy', 'true');
     }
     button.disabled = true;
     message.textContent = 'Submitting request and creating reference number…';
@@ -4822,13 +5119,22 @@
         priority: $('campus-helpdesk-priority').value,
         description: $('campus-helpdesk-description').value.trim()
       });
-      $('campusHelpdeskForm').reset();
-      message.textContent = 'Request submitted. Your reference is ' + (ticket?.reference_code || 'created') + '.';
+      form.reset();
+      message.textContent = 'Request submitted. Your reference is ' + (ticket?.reference_code || 'created') + '. Refreshing your request list…';
       toast('Campus service request submitted.');
       await loadCampusHelpdeskPage();
+      if (!/temporarily unavailable|could not be loaded/i.test($('campus-helpdesk-my-status')?.textContent || '')) {
+        message.textContent = 'Request submitted. Your reference is ' + (ticket?.reference_code || 'created') + '.';
+      } else {
+        message.textContent = 'Your request was submitted, but the request list could not refresh. Use Refresh to check its reference.';
+      }
     } catch (err) {
-      message.textContent = err.message || 'Could not submit the campus request.';
+      message.textContent = err.message || 'Could not submit the campus request. Your details are still here so you can retry.';
     } finally {
+      if (form) {
+        delete form.dataset.sending;
+        form.removeAttribute('aria-busy');
+      }
       button.disabled = false;
     }
   });
@@ -4839,19 +5145,35 @@
     event.preventDefault();
     const textarea = form.querySelector('textarea[name="message"]');
     const button = form.querySelector('button[type="submit"]');
+    const status = form.querySelector('[data-helpdesk-reply-status]');
     const message = textarea.value.trim();
+    if (form.dataset.sending === 'true') return;
     if (message.length < 2 || message.length > 1200) {
-      toast('A reply must be 2–1200 characters.');
+      if (status) status.textContent = 'A reply must be 2–1200 characters.';
+      textarea.focus();
       return;
     }
+    form.dataset.sending = 'true';
+    form.setAttribute('aria-busy', 'true');
     button.disabled = true;
+    button.setAttribute('aria-label', 'Sending Helpdesk update');
+    if (status) status.textContent = 'Sending your update…';
     try {
       await window.CampusShieldBackend.updateCampusHelpdeskTicket(form.dataset.ticketId, null, null, message);
+      textarea.value = '';
+      if (status) status.textContent = 'Your update was saved. Refreshing the request…';
       toast('Request update added.');
       await loadCampusHelpdeskPage();
+      if (/temporarily unavailable|could not be loaded/i.test($('campus-helpdesk-my-status')?.textContent || '')) {
+        $('campus-helpdesk-my-status').textContent = 'Your update was saved, but the request list could not refresh. Use Refresh to verify it.';
+      }
     } catch (err) {
-      toast(err.message || 'Could not add your request update.');
-      button.disabled = false;
+      if (status) status.textContent = err.message || 'Could not add your request update. Your reply is still here so you can retry.';
+    } finally {
+      delete form.dataset.sending;
+      form.removeAttribute('aria-busy');
+      button.setAttribute('aria-label', 'Add Helpdesk update');
+      button.disabled = textarea.disabled;
     }
   });
 
@@ -4859,17 +5181,33 @@
     const button = event.target.closest('[data-helpdesk-save]');
     if (!button) return;
     const ticketId = button.dataset.helpdeskSave;
+    const controls = button.closest('.campus-ticket-staff-controls');
     const status = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-status="' + CSS.escape(ticketId) + '"]');
     const department = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-department="' + CSS.escape(ticketId) + '"]');
     const note = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-message="' + CSS.escape(ticketId) + '"]');
+    const statusMessage = $('campus-helpdesk-staff-queue').querySelector('[data-helpdesk-save-status="' + CSS.escape(ticketId) + '"]');
+    if (button.dataset.saving === 'true') return;
+    button.dataset.saving = 'true';
     button.disabled = true;
+    button.setAttribute('aria-label', 'Saving Helpdesk update');
+    if (controls) controls.setAttribute('aria-busy', 'true');
+    if (statusMessage) statusMessage.textContent = 'Saving status, assignment and progress note…';
     try {
       await window.CampusShieldBackend.updateCampusHelpdeskTicket(ticketId, status?.value || null, department?.value ?? null, note?.value || null);
+      if (note) note.value = '';
+      if (statusMessage) statusMessage.textContent = 'Update saved. Refreshing the staff queue…';
       toast('Helpdesk request updated.');
       await loadCampusHelpdeskPage();
+      if (/temporarily unavailable|could not be loaded/i.test($('campus-helpdesk-staff-status')?.textContent || '')) {
+        $('campus-helpdesk-staff-status').textContent = 'The Helpdesk update was saved, but the staff queue could not refresh. Use Refresh to verify it.';
+      }
     } catch (err) {
-      toast(err.message || 'Could not update the Helpdesk request.');
+      if (statusMessage) statusMessage.textContent = err.message || 'Could not update the Helpdesk request. Your progress note is still here so you can retry.';
+    } finally {
+      delete button.dataset.saving;
       button.disabled = false;
+      button.setAttribute('aria-label', 'Save Helpdesk update');
+      if (controls) controls.removeAttribute('aria-busy');
     }
   });
 
@@ -6881,7 +7219,9 @@
         category: $('category').value,
         severity: $('severity').value,
         location: $('location').value.trim(),
-        description: $('description').value.trim()
+        description: $('description').value.trim(),
+        latitude: $('report-latitude')?.value || null,
+        longitude: $('report-longitude')?.value || null
       });
 
       incidents.unshift({

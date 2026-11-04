@@ -5,6 +5,12 @@ const htmlMarkup = await readFile(new URL("../index.html", import.meta.url), "ut
 const appScript = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
 const html = htmlMarkup + "\n" + appScript;
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
+const experienceRefreshCss = await readFile(new URL("../campusshield-experience-refresh.css", import.meta.url), "utf8");
+const interactionLayerCss = await readFile(new URL("../campusshield-interaction-layer.css", import.meta.url), "utf8");
+const dashboardInsightsCss = await readFile(new URL("../campus-dashboard-insights.css", import.meta.url), "utf8");
+const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", import.meta.url), "utf8");
+const creatorToolsJs = await readFile(new URL("../student-creator-tools.js", import.meta.url), "utf8");
+const featuresPage = await readFile(new URL("../features.html", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
 const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
 const responsiveCssEnd = htmlMarkup.indexOf("</style>", responsiveCssStart);
@@ -50,6 +56,7 @@ const pastQuestionMigration = await readFile(new URL("../supabase/migrations/202
 const pastQuestionFunction = await readFile(new URL("../supabase/functions/past-question-practice/index.ts", import.meta.url), "utf8");
 const pastQuestionScript = await readFile(new URL("../past-question-practice.js", import.meta.url), "utf8");
 const pastQuestionCoverageMigration = await readFile(new URL("../supabase/migrations/20261028023527_past_question_nationwide_coverage.sql", import.meta.url), "utf8");
+const pastQuestionCoveragePermissionMigration = await readFile(new URL("../supabase/migrations/20261101143036_restrict_public_past_question_coverage_rpc_to_authenticated.sql", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const privacyPage = await readFile(new URL("../privacy.html", import.meta.url), "utf8");
 const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf8");
@@ -63,6 +70,17 @@ assert.match(dashboardUpgradeCss, /prefers-reduced-motion:reduce/, "dashboard re
 assert.match(dashboardUpgradeJs, /campusshield_theme/, "theme preference is persisted per device");
 assert.match(dashboardUpgradeJs, /campus-global-search/, "global campus search is wired");
 assert.match(dashboardUpgradeJs, /student-shortcuts/, "student dashboard shortcuts are wired");
+assert.match(dashboardUpgradeJs, /campus-discovery-layout/, "dashboard includes the visual Campus Discovery layout");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="missions"/, "dashboard Missions shortcut opens the Missions tab");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="collab"/, "dashboard Collab shortcut opens Collab Finder");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="buddies"/, "dashboard Event Buddies shortcut opens its tab");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="clubs"/, "dashboard Club Hubs shortcut opens its tab");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="mentorship"/, "dashboard Mentorship shortcut opens its tab");
+assert.match(dashboardUpgradeJs, /data-cps-open-tab="memories"/, "dashboard Memories shortcut opens its tab");
+assert.match(dashboardUpgradeJs, /campusshield:profile-ready/, "dashboard discovery cards adapt to the signed-in role");
+assert.match(dashboardUpgradeCss, /campus-discovery-featured/, "Campus Discovery has a branded featured card");
+assert.match(dashboardUpgradeCss, /@media\(max-width:760px\)/, "Campus Discovery reflows for mobile screens");
+assert.match(dashboardUpgradeCss, /prefers-reduced-motion:reduce/, "Campus Discovery respects reduced motion");
 assert.doesNotThrow(() => new Function(dashboardUpgradeJs), "dashboard upgrade script parses");
 assert.match(html, /id="login-features"/, "landing navigation has a Features destination");
 assert.match(html, /id="login-about"/, "landing navigation has an About destination");
@@ -316,6 +334,14 @@ assert.match(html, /function loadProfileSettingsAlerts\(user, backend\)/);
 assert.match(html, /currentProfile\?\.role === 'admin' && canModerateCommunity\(\)/);
 assert.match(html, /replace\(\/\[\^a-z0-9-\]\+\/g, '-'\)/);
 assert.match(html, /listCampusHelpdeskTicketUpdates\(mine\.map/);
+
+assert.ok(appScript.includes('form?.dataset.sending === "true"'), "Campus Chat prevents duplicate submits while sending");
+assert.match(appScript, /Message sent, but this room could not refresh/, "Campus Chat distinguishes successful sends from refresh failures");
+assert.match(appScript, /data-helpdesk-reply-status/, "Helpdesk requester replies expose an accessible status line");
+assert.match(appScript, /Your update was saved, but the request list could not refresh/, "Helpdesk requester replies distinguish save success from refresh failure");
+assert.match(appScript, /data-helpdesk-save-status/, "Helpdesk staff updates expose per-ticket progress feedback");
+assert.match(appScript, /The Helpdesk update was saved, but the staff queue could not refresh/, "Helpdesk staff updates distinguish save success from refresh failure");
+assert.ok(appScript.includes("form.dataset.sending === 'true'"), "Helpdesk request and reply handlers prevent duplicate submissions");
 assert.match(html, /campusshield\.profile-alerts\.v1\./);
 assert.match(html, /auth\.updateUser\(\{ data: metadata \}\)/);
 assert.doesNotMatch(html, /showToast\('Contact details saved\.'\)/);
@@ -377,6 +403,9 @@ assert.match(pastQuestionCoverageMigration, /rights_confirmed is true/i, "covera
 assert.match(pastQuestionCoverageMigration, /p\.status = 'approved'/i, "coverage only counts approved papers");
 assert.match(pastQuestionCoverageMigration, /p\.source_type <> 'ai_generated'/i, "coverage excludes AI-generated questions");
 assert.match(pastQuestionCoverageMigration, /grant execute on function public\.get_past_question_coverage\(\) to anon, authenticated/i, "only aggregate coverage is public to app clients");
+assert.match(pastQuestionCoveragePermissionMigration, /revoke execute on function public\.get_past_question_coverage\(\) from public, anon/i, "follow-up migration removes anonymous access to nationwide coverage");
+assert.match(pastQuestionCoveragePermissionMigration, /grant execute on function public\.get_past_question_coverage\(\) to authenticated, service_role/i, "nationwide coverage remains available only to authenticated and server roles after hardening");
+assert.match(pastQuestionCoveragePermissionMigration, /comment on function public\.get_past_question_coverage\(\)/i, "hardened coverage RPC documents its restricted access contract");
 assert.match(html, /https:\/\/legacy\.babcock\.edu\.ng\/library/, "past-question page links to Babcock's official library");
 assert.match(html, /https:\/\/elibrary\.babcock\.edu\.ng\//, "past-question page links to Babcock's official e-library");
 assert.match(html, /authorized campus reviewer approves them/, "past-question submissions remain private until review");
@@ -520,6 +549,12 @@ assert.doesNotMatch(pushSecretSetup, /Write-Host[^\n]*(?:VAPID_PRIVATE_KEY|PUSH_
 assert.match(pushDispatchFunction, /Only a recently sent message can trigger a background notification/, "direct-message push checks a message the caller recently sent");
 assert.match(backend, /async sendCampusDirectMessage\(conversationId, body\)[\s\S]*?this\.callPushFunction\("delivery", \{ action: "message", message_id: data \}\)/, "direct-message push is attempted only after a successful staging message write");
 assert.match(backend, /if \(isStaging && typeof data === "string"/, "production direct messages do not call staging push functions");
+assert.match(pushDispatchFunction, /const isPendingRequestSender = Boolean\(conversation &&[\s\S]*?conversation\.status === "pending" && conversation\.requested_by === user\.id/, "pending-request push requires the authenticated requester");
+assert.match(pushDispatchFunction, /conversation\.status !== "accepted" && !isPendingRequestSender/, "push delivery is limited to accepted conversations or requests sent by the caller");
+assert.match(backend, /async createCampusDirectMessageRequest\(username, body\)[\s\S]*?pendingMessages[\s\S]*?pendingMessage\?\.id[\s\S]*?callPushFunction\("delivery", \{ action: "message", message_id: pendingMessage\.id \}\)/, "a new staging message request attempts a generic recipient push");
+assert.match(appScript, /Your request was sent, but the inbox could not refresh/, "message request success is distinct from inbox refresh failure");
+assert.match(appScript, /Message sent, but this conversation could not refresh/, "message delivery success is distinct from thread refresh failure");
+assert.match(appScript, /form\?\.dataset\.sending === "true"/, "message send forms prevent duplicate submissions while sending");
 assert.match(pushDispatchFunction, /genericMessages/, "push payloads use generic notification copy rather than private message content");
 assert.match(campusPushMigration, /enable row level security/i);
 assert.match(campusPushMigration, /using \(false\) with check \(false\)/i, "push tables deny direct client access");
@@ -787,3 +822,105 @@ assert.match(html, /This crawler is restricted to its designated owner\./, "craw
 console.log("PASS self-service profile editing, private avatar storage, and owner-only crawler authorization");
 
 console.log("PASS searchable national service directory, verified-source crawler restrictions, admin gate, and crawl status migration");
+
+ 
+assert.ok(htmlMarkup.includes("campusshield-experience-refresh.css"), "Staging website loads the shared visual experience layer");
+assert.ok(experienceRefreshCss.includes("#login-screen .login-hero-copy h1"), "public landing hero uses the refreshed brand hierarchy");
+assert.ok(experienceRefreshCss.includes("#workspace .campus-dashboard-hero"), "signed-in dashboard uses the refreshed visual hierarchy");
+assert.ok(experienceRefreshCss.includes("campus-dashboard-emergency"), "emergency guidance remains visually distinct in the dashboard");
+assert.ok(experienceRefreshCss.includes("prefers-reduced-motion: reduce"), "visual effects respect reduced-motion preferences");
+assert.ok(experienceRefreshCss.includes("@media (max-width: 650px)"), "visual refresh includes phone-width layout rules");
+assert.ok(experienceRefreshCss.includes('html[data-theme="dark"]'), "visual refresh preserves dark-theme support");
+assert.ok(!experienceRefreshCss.includes("createClient(") && !experienceRefreshCss.includes("supabase.from(") && !experienceRefreshCss.includes("rpc("), "visual layer does not add direct backend or data access");
+console.log("PASS CampusShield visual refresh, responsive layout, reduced-motion support, and backend isolation");
+
+assert.ok(htmlMarkup.includes('href="./campusshield-interaction-layer.css"'), "PWA home and dashboard load the shared glass interaction layer");
+assert.ok(featuresPage.includes('href="./campusshield-interaction-layer.css"'), "public feature guide loads the shared design layer");
+assert.match(featuresPage, /<body class="cs-features-page">/, "feature guide is scoped to the editorial design layer");
+assert.match(featuresPage, /Right support\. Right next step\./, "feature guide uses task-first discovery language");
+assert.match(interactionLayerCss, /backdrop-filter:\s*blur/, "visual layer uses restrained glass surfaces");
+assert.match(interactionLayerCss, /#login-screen \.auth-tabs button\[aria-pressed="true"\]/, "auth mode selector has a clear selected state");
+assert.match(interactionLayerCss, /#login-screen #signup-fields:not\(\[hidden\]\)/, "create-account fields animate only when visible");
+assert.match(interactionLayerCss, /#workspace \.quick-action-bar/, "dashboard quick actions receive the task-first treatment");
+assert.match(interactionLayerCss, /#workspace #page-campus-map \.campus-map-controls/, "CampusMap controls receive the glass treatment");
+assert.match(interactionLayerCss, /\.mobile-bottom-nav/, "mobile PWA navigation receives the floating dock treatment");
+assert.match(interactionLayerCss, /prefers-reduced-motion:\s*reduce/, "all new motion respects reduced-motion preferences");
+assert.doesNotMatch(interactionLayerCss, /createClient\(|supabase\.from\(|rpc\(/, "visual layer contains no backend or data access");
+console.log("PASS glass interaction layer, task-first feature guide, PWA navigation, and backend isolation");
+
+assert.ok(htmlMarkup.includes('href="./campus-dashboard-insights.css"'), "PWA dashboard loads the live analytics and CampusMap coverage layer");
+assert.match(htmlMarkup, /id="dashboard-safety-insights"/, "Overview contains the account-scoped safety activity panel");
+for (const days of ["7", "30", "90"]) {
+  assert.match(htmlMarkup, new RegExp('data-dashboard-range="' + days + '"'), "dashboard includes the " + days + "-day activity selector");
+}
+for (const id of ["dashboard-report-trend", "dashboard-status-resolved-count", "dashboard-status-open-count", "dashboard-top-categories"]) {
+  assert.ok(htmlMarkup.includes('id="' + id + '"'), "dashboard analytics output exists: " + id);
+}
+assert.match(appScript, /function renderDashboardAnalytics\(\)/, "incident trends render from the signed-in account's loaded records");
+assert.match(appScript, /incidentsLastUpdated instanceof Date/, "dashboard analytics distinguishes unloaded data from an empty period");
+assert.match(appScript, /new Date\(item\.createdAt\)/, "trend grouping uses each report's actual created timestamp");
+assert.match(appScript, /button\.dataset\.dashboardRange/, "date-range buttons rerender the existing dataset without a new data source");
+assert.match(appScript, /backend\.listOpportunityBookmarks\(\)\.catch\(\(\) => null\)/, "Saved for later reads the existing owner-scoped opportunity bookmarks");
+assert.match(appScript, /backend\.listCampusOpportunities\(\)\.catch\(\(\) => null\)/, "Saved for later resolves bookmarks against the existing campus opportunity feed");
+assert.match(appScript, /item\.university_id === campusId/, "saved dashboard content is filtered to the verified university");
+assert.match(appScript, /item\.status === 'published'/, "saved dashboard content excludes unpublished opportunities");
+assert.match(appScript, /savedIds\.has\(item\.id\)/, "only currently saved opportunities appear in the dashboard");
+assert.match(dashboardInsightsCss, /@media \(max-width: 650px\)/, "analytics and CampusMap coverage cards reflow on mobile");
+assert.match(dashboardInsightsCss, /prefers-reduced-motion: reduce/, "new dashboard chart transitions respect reduced-motion");
+assert.match(htmlMarkup, /id="campus-map-coverage-overview"/, "CampusMap includes a compact coverage summary");
+for (const id of ["campus-map-verified-count", "campus-map-record-count", "campus-map-pending-count", "campus-map-centre-state", "campus-map-boundary-state"]) {
+  assert.ok(htmlMarkup.includes('id="' + id + '"'), "CampusMap coverage output exists: " + id);
+}
+assert.doesNotMatch(dashboardInsightsCss, /createClient\(|supabase\.from\(|rpc\(/, "dashboard and map coverage stylesheet remains presentation-only");
+console.log("PASS live safety analytics, account-scoped saved opportunities, CampusMap confidence cards, and responsive styling");
+
+const creatorToolsStart = htmlMarkup.indexOf('<section class="page" id="page-creator-tools">');
+const creatorToolsEnd = htmlMarkup.indexOf('<section class="page"', creatorToolsStart + 1);
+assert.ok(creatorToolsStart >= 0 && creatorToolsEnd > creatorToolsStart, "Creator & Tools Hub is a distinct workspace page");
+const creatorToolsPage = htmlMarkup.slice(creatorToolsStart, creatorToolsEnd);
+assert.match(htmlMarkup, /data-page="creator-tools" id="creator-tools-nav"/, "Creator & Tools Hub is discoverable in workspace navigation");
+assert.match(appScript, /'creator-tools':'Creator & Tools Hub'/, "Creator & Tools Hub has a page title in app navigation");
+assert.match(htmlMarkup, /href="\.\/student-creator-tools\.css"/, "Creator & Tools Hub stylesheet is included");
+assert.match(htmlMarkup, /src="\.\/student-creator-tools\.js" defer/, "Creator & Tools Hub filter behavior is included");
+assert.ok(htmlMarkup.indexOf('href="./student-creator-tools.css"') > htmlMarkup.indexOf('href="./campusshield-visual-refresh.css"'), "Creator & Tools Hub styles load after the base visual refresh");
+assert.ok(htmlMarkup.indexOf('src="./student-creator-tools.js" defer') > htmlMarkup.indexOf('src="./campusshield-app.js" defer'), "Creator & Tools Hub behaviour loads after app navigation");
+for (const target of ["shieldmind", "courses", "past-questions", "timetable"]) {
+  assert.ok(creatorToolsPage.includes('data-page="' + target + '"'), "Creator & Tools Hub links to existing CampusShield feature: " + target);
+}
+for (const category of ["all", "documents", "design", "audio", "creative", "developer"]) {
+  assert.ok(creatorToolsPage.includes('data-creator-filter="' + category + '"'), "Creator & Tools Hub has the " + category + " filter");
+}
+const creatorToolCards = [...creatorToolsPage.matchAll(/class="creator-tool-card/g)];
+assert.equal(creatorToolCards.length, 5, "Creator & Tools Hub contains five curated external tools");
+for (const product of ["PdfCraft", "PhotoCraft", "VoiceStudio", "ArtCraft", "REA"]) {
+  assert.ok(creatorToolsPage.includes(">" + product + "</h3>"), "Creator & Tools Hub includes " + product);
+}
+for (const href of [
+  "https://getartcraft.com/apps/pdfcraft",
+  "https://github.com/storytold/pdfcraft",
+  "https://getartcraft.com/apps/photocraft",
+  "https://github.com/storytold/photocraft",
+  "https://voicestudio.sh/",
+  "https://github.com/niaodian/voicestudio",
+  "https://getartcraft.com/",
+  "https://github.com/storytold/artcraft",
+  "https://rea.tools/",
+  "https://github.com/morluto/rea"
+]) {
+  assert.ok(creatorToolsPage.includes(href), "Creator & Tools Hub links to a verified official project destination: " + href);
+}
+assert.match(creatorToolsPage, /AGPL-3\.0/, "VoiceStudio shows its AGPL-3.0 application license");
+assert.match(creatorToolsPage, /MIT OR Apache-2\.0/, "ArtCraft-family tools show their project source license");
+assert.match(creatorToolsPage, /student ID cards, passwords, grades, private campus or class records, incident reports/, "Creator & Tools Hub warns against uploading sensitive student data");
+assert.match(creatorToolsPage, /without permission/, "Creator & Tools Hub includes consent guidance for recordings");
+assert.doesNotMatch(creatorToolsPage, /type=["']file["']|<iframe/i, "Creator & Tools Hub does not upload or embed third-party content");
+assert.match(creatorToolsJs, /function applyFilters\(\)/, "Creator & Tools Hub implements client-side search and filtering");
+assert.match(creatorToolsJs, /card\.hidden = !show/, "Creator & Tools Hub hides cards outside the active filter");
+assert.match(creatorToolsJs, /aria-pressed/, "Creator & Tools Hub announces the active category filter");
+assert.doesNotThrow(() => new Function(creatorToolsJs), "Creator & Tools Hub filter script parses");
+assert.match(creatorToolsCss, /@media\(max-width:760px\)/, "Creator & Tools Hub reflows for small screens");
+assert.match(creatorToolsCss, /html\[data-theme="dark"\]/, "Creator & Tools Hub supports dark mode");
+assert.match(creatorToolsCss, /prefers-reduced-motion:reduce/, "Creator & Tools Hub respects reduced-motion");
+assert.doesNotMatch(creatorToolsJs, /createClient\(|supabase\.from\(|rpc\(|fetch\(/i, "Creator & Tools Hub has no backend calls or external data fetching");
+assert.doesNotMatch(creatorToolsCss, /createClient\(|supabase\.from\(|rpc\(/i, "Creator & Tools Hub stylesheet remains presentation-only");
+console.log("PASS searchable Creator & Tools Hub, official project links, licensing/privacy labels, campus learning shortcuts, and backend isolation");
