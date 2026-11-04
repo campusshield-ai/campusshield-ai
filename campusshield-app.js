@@ -1041,6 +1041,7 @@
     $('sectionTitle').textContent = names[page] || 'Overview';
 
     if (page === 'student-rewards') window.CampusShieldStudentRewards?.load({ force: true });
+    if (['shieldmind', 'past-questions'].includes(page)) refreshShieldMindPlan();
     if (page === 'past-questions') window.PastQuestionPractice?.load(currentProfile);
     if (page === 'analytics') renderAnalytics();
   }
