@@ -7213,7 +7213,8 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if (gate) gate.hidden = state.active;
       if (workspace) workspace.hidden = !state.active;
       if (quickActions) quickActions.hidden = !state.active;
-      if (status) status.textContent = state.active ? state.plan.toUpperCase() + ' active' : 'Paid plan required';
+      // Keep the header badge compact on narrow phones; full detail remains in the gate and billing page.
+      if (status) status.textContent = state.active ? state.plan.toUpperCase() + ' active' : 'No plan';
       if (gateStatus) gateStatus.textContent = state.active
         ? state.plan.toUpperCase() + ' is active until ' + new Date(state.expiresAt).toLocaleDateString() + '. Your ShieldMind workspace is unlocked.'
         : (message || 'Choose a paid 30-day plan to unlock ShieldMind AI responses.');
