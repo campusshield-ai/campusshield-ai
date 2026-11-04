@@ -675,3 +675,10 @@ html[data-theme="dark"] #page-billing .shieldmind-price small{color:#b2c7b8}
  #page-shieldmind .shieldmind-workspace-badge{white-space:normal;text-align:center;max-width:112px}
 }
 @media(prefers-reduced-motion:reduce){#page-shieldmind .shieldmind-workspace-grid:not([hidden]){animation:none}}
+
+/* Premium AI exam-practice paywall notice. */
+#page-past-questions .pq-access-gate{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px 14px;margin:12px 0 14px;padding:12px 13px;border:1px solid #b8d9c1;border-radius:13px;background:linear-gradient(135deg,#f1faf3,#e9f6ec);color:#345b41;font-size:11px;line-height:1.55}
+#page-past-questions .pq-access-gate[hidden]{display:none!important}
+#page-past-questions .pq-access-gate .btn{min-height:36px;white-space:nowrap}
+html[data-theme="dark"] #page-past-questions .pq-access-gate{border-color:#315b41;background:linear-gradient(135deg,#172f22,#12291d);color:#c2ddc8}
+@media(max-width:600px){#page-past-questions .pq-access-gate{grid-template-columns:minmax(0,1fr)}#page-past-questions .pq-access-gate .btn{width:100%}}
