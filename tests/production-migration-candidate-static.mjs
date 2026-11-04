@@ -20,7 +20,7 @@ for (const phase of allPhases) {
 }
 
 for (const name of ["campus_map_features", "campus_map_campuses", "campus_map_buildings"]) {
-  assert.match(mapSql, new RegExp("alter table public\." + name + " enable row level security", "i"));
+  assert.match(mapSql, new RegExp("alter table public\\." + name + " enable row level security", "i"));
 }
 assert.match(mapSql, /add column if not exists university_id uuid/i);
 assert.match(mapSql, /add column if not exists latitude double precision/i);
@@ -36,7 +36,7 @@ for (const name of [
   "campus_mentorship_profiles", "campus_memories", "campus_peer_connection_requests",
   "campus_social_feature_reports"
 ]) {
-  assert.match(pulseSql, new RegExp("alter table public\." + name + " enable row level security", "i"));
+  assert.match(pulseSql, new RegExp("alter table public\\." + name + " enable row level security", "i"));
 }
 assert.match(pulseSql, /revoke all on public\.campus_member_blocks from public,anon,authenticated/i);
 assert.match(pulseSql, /as restrictive\s+for all to anon,authenticated using \(false\)/i);
@@ -46,7 +46,7 @@ for (const name of [
   "past_question_papers", "past_question_items", "past_question_answer_keys",
   "practice_attempts", "practice_answers"
 ]) {
-  assert.match(pqSql, new RegExp("alter table public\." + name + " enable row level security", "i"));
+  assert.match(pqSql, new RegExp("alter table public\\." + name + " enable row level security", "i"));
 }
 assert.match(pqSql, /past_question_answer_keys_reviewer_only/i);
 assert.match(pqSql, /past_question_exam_prep_access/i);
