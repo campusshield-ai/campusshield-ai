@@ -25,7 +25,7 @@ jobs:
         name: Check secret without displaying it
         shell: bash
         env:
-          # Re-run using the saved IPv4-compatible Supabase Session pooler secret.
+          # Re-run after the repository owner updated the database credential.
       PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
         run: |
           if [[ -z "${PRODUCTION_DB_URL:-}" ]]; then
