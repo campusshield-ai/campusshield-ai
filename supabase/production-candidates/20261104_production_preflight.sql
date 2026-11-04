@@ -107,3 +107,26 @@ order by 1,2;
 select id,name,public,file_size_limit,allowed_mime_types
 from storage.buckets
 where id='past-question-files';
+
+-- Fail closed if any existing Storage policy on objects can match without
+-- an explicit bucket_id predicate. Existing policies must not broaden the
+-- new Past Questions bucket's private access boundary.
+do $storage_policy_preflight$
+declare
+  v_unscoped_count integer;
+begin
+  if to_regclass('storage.objects') is null then
+    raise exception 'Supabase Storage objects table is missing.';
+  end if;
+
+  select count(*)::integer into v_unscoped_count
+  from pg_policy p
+  where p.polrelid='storage.objects'::regclass
+    and coalesce(pg_get_expr(p.polqual,p.polrelid),'') not ilike '%bucket_id%'
+    and coalesce(pg_get_expr(p.polwithcheck,p.polrelid),'') not ilike '%bucket_id%';
+
+  if v_unscoped_count > 0 then
+    raise exception 'Storage objects has % policy/policies without an explicit bucket_id scope; review before adding Past Questions files.',v_unscoped_count;
+  end if;
+end
+$storage_policy_preflight$;
