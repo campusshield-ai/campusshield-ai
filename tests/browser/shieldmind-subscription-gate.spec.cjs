@@ -8,7 +8,13 @@ async function openWorkspace(page, target) {
   await page.locator("#shieldmind-paid-gate").waitFor({ state: "attached" });
   await page.evaluate(targetPage => {
     document.querySelector("#login-screen").style.display = "none";
-    document.querySelector("#workspace").hidden = false;
+    const workspace = document.querySelector("#workspace");
+    workspace.hidden = false;
+    // Tests start from a clean closed-navigation state; do not carry any drawer
+    // state left by browser storage or prior navigation into layout measurements.
+    workspace.classList.remove("mobile-nav-open", "sidebar-collapsed");
+    const backdrop = document.querySelector("#sidebar-backdrop");
+    if (backdrop) backdrop.hidden = true;
     document.querySelectorAll("#workspace .page").forEach(section => section.classList.remove("active"));
     document.querySelector("#page-" + targetPage).classList.add("active");
   }, target);
