@@ -88,7 +88,7 @@ test("phone quick actions render as a two-column bento grid with readable safety
         viewport: window.innerWidth,
         documentWidth: document.documentElement.scrollWidth,
         bodyWidth: document.body.scrollWidth,
-        columns: getComputedStyle(grid).gridTemplateColumns.split(/\\s+/).filter(Boolean).length,
+        columns: getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length,
         buttons: visibleButtons.map(rect),
         note: rect(note),
       };
