@@ -1299,9 +1299,9 @@ TO authenticated;
 -- it is not a surveyed centre and must not be used to anchor an import circle.
 
 ALTER FUNCTION private.import_campus_map_building_candidates_impl(uuid,jsonb)
-  RENAME TO import_campus_map_building_candidates_impl_unverified_centre_legacy;
+  RENAME TO import_campus_map_building_candidates_legacy;
 
-REVOKE ALL ON FUNCTION private.import_campus_map_building_candidates_impl_unverified_centre_legacy(uuid,jsonb)
+REVOKE ALL ON FUNCTION private.import_campus_map_building_candidates_legacy(uuid,jsonb)
   FROM PUBLIC, anon, authenticated;
 
 CREATE OR REPLACE FUNCTION private.import_campus_map_building_candidates_impl(
@@ -1352,7 +1352,7 @@ BEGIN
     RAISE EXCEPTION 'A verified campus-centre point is required. Confirm the exact centre against an approved campus plan or on-campus survey, then save the campus profile before importing building candidates.';
   END IF;
 
-  RETURN private.import_campus_map_building_candidates_impl_unverified_centre_legacy(
+  RETURN private.import_campus_map_building_candidates_legacy(
     p_campus_id,
     p_buildings
   );
