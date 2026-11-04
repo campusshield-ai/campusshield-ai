@@ -4,7 +4,7 @@ const phoneWidths = [320, 360, 375, 390, 430, 540, 650];
 
 test("mobile workspace header separates brand, menu and full-width search", async ({ page }) => {
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("#workspace .global-search-input");
+  await page.locator("#workspace .global-search-input").waitFor({ state: "attached" });
 
   // Reveal the signed-in shell without requiring a real account or touching Supabase.
   await page.evaluate(() => {
