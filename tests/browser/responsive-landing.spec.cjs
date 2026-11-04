@@ -276,3 +276,57 @@ test("Supabase browser SDK initializes before the CampusShield app", async ({ pa
   expect(state.authClientAvailable).toBe(true);
   expect(pageErrors).toEqual([]);
 });
+
+test("live GitHub Pages serves and initializes the Production Supabase client", async ({ page }) => {
+  const failedRequests = [];
+  const consoleErrors = [];
+  page.on("requestfailed", (request) => {
+    failedRequests.push({
+      url: request.url(),
+      error: request.failure()?.errorText || "unknown"
+    });
+  });
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => consoleErrors.push(error.message));
+
+  const response = await page.goto("https://campusshield-ai.github.io/campusshield-ai/", {
+    waitUntil: "domcontentloaded",
+    timeout: 60_000,
+  });
+  expect(response?.status(), "GitHub Pages homepage must return HTTP 200").toBe(200);
+  await page.waitForTimeout(2500);
+
+  const state = await page.evaluate(() => ({
+    hostname: window.location.hostname,
+    pathname: window.location.pathname,
+    projectHost: window.CAMPUSSHIELD_SUPABASE_CONFIG?.url
+      ? new URL(window.CAMPUSSHIELD_SUPABASE_CONFIG.url).hostname
+      : null,
+    keyPrefix: String(window.CAMPUSSHIELD_SUPABASE_CONFIG?.publishableKey || "").slice(0, 15),
+    sdkAvailable: typeof window.supabase?.createClient === "function",
+    backendConfigured: window.CampusShieldBackend?.isConfigured === true,
+    authClientAvailable: typeof window.CampusShieldBackend?.client?.auth?.getSession === "function",
+    scripts: Array.from(document.scripts)
+      .filter((script) => /supabase|campusshield-backend/i.test(script.src))
+      .map((script) => script.src),
+  }));
+
+  const diagnostics = JSON.stringify({ state, failedRequests, consoleErrors }, null, 2);
+  expect(state.hostname, diagnostics).toBe("campusshield-ai.github.io");
+  expect(state.pathname, diagnostics).toBe("/campusshield-ai/");
+  expect(state.projectHost, diagnostics).toBe("fvgtnujjnvdkhzqqcaqe.supabase.co");
+  expect(state.sdkAvailable, diagnostics).toBe(true);
+  expect(state.backendConfigured, diagnostics).toBe(true);
+  expect(state.authClientAvailable, diagnostics).toBe(true);
+
+  const authSettings = await page.evaluate(async () => {
+    const config = window.CAMPUSSHIELD_SUPABASE_CONFIG;
+    const result = await fetch(config.url.replace(/\\/$/, "") + "/auth/v1/settings", {
+      headers: { apikey: config.publishableKey, Accept: "application/json" },
+    });
+    return { status: result.status };
+  });
+  expect(authSettings.status, diagnostics).toBe(200);
+});
