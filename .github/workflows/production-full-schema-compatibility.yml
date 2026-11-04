@@ -1,15 +1,11 @@
 name: Full Production schema compatibility test
 
 on:
+  # Explicit manual reruns are useful after the protected repository secret is saved.
+  workflow_dispatch:
   pull_request:
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened]
     branches: [staging/preview]
-    paths:
-      - ".github/workflows/production-full-schema-compatibility.yml"
-      - "supabase/production-candidates/**"
-      - "tests/production-migration-candidate-postgres.sql"
-  push:
-    branches: [review/production-forward-migration-package]
     paths:
       - ".github/workflows/production-full-schema-compatibility.yml"
       - "supabase/production-candidates/**"
