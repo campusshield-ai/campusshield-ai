@@ -204,3 +204,189 @@ html[data-theme="dark"] #workspace .global-search-results {
   background: #102b22;
   color: #e5f1e9;
 }
+
+
+/* Mobile dashboard bento refinement inspired by the supplied reference.
+   Keeps the existing action destinations and emergency guidance unchanged. */
+@media (max-width: 650px) {
+  #workspace .quick-action-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 14px;
+    border: 1px solid #d5e7dc;
+    border-radius: 19px;
+    background: linear-gradient(150deg, #ffffff 0%, #f4faf6 100%);
+    box-shadow: 0 12px 28px rgba(8, 41, 31, .075), inset 0 1px rgba(255,255,255,.95);
+  }
+
+  #workspace .quick-action-bar-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    color: #667b72;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  #workspace .quick-action-eyebrow {
+    color: #176746;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .18em;
+  }
+
+  #workspace .quick-action-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #workspace .quick-action-button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    min-width: 0;
+    min-height: 66px;
+    padding: 10px;
+    border: 1px solid #dcebe2;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #ffffff, #f0f7f2);
+    color: #23483a;
+    font-size: 10.5px;
+    font-weight: 850;
+    line-height: 1.3;
+    text-align: left;
+    box-shadow: 0 5px 13px rgba(12, 55, 35, .045), inset 0 1px rgba(255,255,255,.95);
+    transition: border-color .16s ease, background .16s ease, transform .16s ease, box-shadow .16s ease;
+  }
+
+  #workspace .quick-action-button > span:last-child {
+    display: block;
+    min-width: 0;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  #workspace .quick-action-button:active {
+    transform: scale(.985);
+  }
+
+  #workspace .quick-action-button.quick-action-primary {
+    border-color: #14583b;
+    background: linear-gradient(145deg, #0a3024, #17603f);
+    color: #f5fff7;
+    box-shadow: 0 8px 17px rgba(7, 49, 30, .16), inset 0 1px rgba(255,255,255,.12);
+  }
+
+  #workspace .quick-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 11px;
+    background: #e0f2e6;
+    color: #216b48;
+  }
+
+  #workspace .quick-action-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  #workspace .quick-action-primary .quick-action-icon {
+    background: rgba(255,255,255,.12);
+    color: #a9edb8;
+  }
+
+  #workspace .quick-action-safety-note {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 11px 12px;
+    border: 1px solid #e1ebe4;
+    border-radius: 12px;
+    background: #f7faf8;
+    color: #62756c;
+    font-size: 10px;
+    line-height: 1.55;
+  }
+
+  #workspace .quick-action-safety-note strong {
+    color: #285744;
+  }
+}
+
+@media (max-width: 380px) {
+  #workspace .quick-action-bar {
+    gap: 10px;
+    padding: 11px;
+    border-radius: 17px;
+  }
+
+  #workspace .quick-action-buttons {
+    gap: 7px;
+  }
+
+  #workspace .quick-action-button {
+    gap: 7px;
+    min-height: 64px;
+    padding: 9px;
+    font-size: 10px;
+  }
+
+  #workspace .quick-action-icon {
+    flex-basis: 29px;
+    width: 29px;
+    height: 29px;
+    border-radius: 10px;
+  }
+
+  #workspace .quick-action-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+html[data-theme="dark"] #workspace .quick-action-bar {
+  border-color: #315342;
+  background: linear-gradient(150deg, #122d22, #0e261d);
+  box-shadow: 0 12px 28px rgba(0,0,0,.18), inset 0 1px rgba(255,255,255,.035);
+}
+
+html[data-theme="dark"] #workspace .quick-action-bar-heading {
+  color: #b4cabe;
+}
+
+html[data-theme="dark"] #workspace .quick-action-eyebrow {
+  color: #9fe5ad;
+}
+
+html[data-theme="dark"] #workspace .quick-action-button:not(.quick-action-primary) {
+  border-color: #315342;
+  background: linear-gradient(145deg, #1a3a2d, #142f24);
+  color: #e5f1e9;
+  box-shadow: inset 0 1px rgba(255,255,255,.035);
+}
+
+html[data-theme="dark"] #workspace .quick-action-icon {
+  background: #254b36;
+  color: #a8e8b1;
+}
+
+html[data-theme="dark"] #workspace .quick-action-safety-note {
+  border-color: #315342;
+  background: #152b21;
+  color: #b6c9bd;
+}
+
+html[data-theme="dark"] #workspace .quick-action-safety-note strong {
+  color: #b2e8bb;
+}
