@@ -1,0 +1,62 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const readCandidate = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
+const mapSql = readCandidate("../supabase/production-candidates/20261104_campusmap_forward_candidate.sql");
+const pulseSql = readCandidate("../supabase/production-candidates/20261104_campuspulse_phase2_forward_candidate.sql");
+const pqSql = readCandidate("../supabase/production-candidates/20261104_past_questions_forward_candidate.sql");
+const preflightSql = readCandidate("../supabase/production-candidates/20261104_production_preflight.sql");
+const postflightSql = readCandidate("../supabase/production-candidates/20261104_production_postflight.sql");
+const allPhases = [mapSql, pulseSql, pqSql];
+
+for (const phase of allPhases) {
+  assert.match(phase, /^-- PRODUCTION CANDIDATE ONLY/m);
+  assert.match(phase, /\bbegin;/i);
+  assert.match(phase, /\bcommit;/i);
+  assert.doesNotMatch(phase, /\bdrop\s+table\b/i);
+  assert.doesNotMatch(phase, /\bdrop\s+column\b/i);
+  assert.doesNotMatch(phase, /\btruncate\b/i);
+  assert.doesNotMatch(phase, /\bdelete\s+from\b/i);
+}
+
+for (const name of ["campus_map_features", "campus_map_campuses", "campus_map_buildings"]) {
+  assert.match(mapSql, new RegExp("alter table public\\." + name + " enable row level security", "i"));
+}
+assert.match(mapSql, /add column if not exists university_id uuid/i);
+assert.match(mapSql, /add column if not exists latitude double precision/i);
+assert.match(mapSql, /add column if not exists longitude double precision/i);
+assert.doesNotMatch(mapSql, /update\s+public\.incidents/i);
+assert.doesNotMatch(mapSql, /update\s+public\.campus_universities\s+set\s+state/i);
+assert.match(mapSql, /public\.can_read_campus_map_drafts\(p_university_id uuid\)/i);
+assert.match(mapSql, /center_status = 'verified'/i);
+assert.match(mapSql, /can_read_campus_map_drafts\(university_id\)/i);
+
+for (const name of [
+  "campus_member_blocks", "campus_collab_listings", "campus_event_buddy_listings",
+  "campus_mentorship_profiles", "campus_memories", "campus_peer_connection_requests",
+  "campus_social_feature_reports"
+]) {
+  assert.match(pulseSql, new RegExp("alter table public\\." + name + " enable row level security", "i"));
+}
+assert.match(pulseSql, /revoke all on public\.campus_member_blocks from public,anon,authenticated/i);
+assert.match(pulseSql, /as restrictive\s+for all to anon,authenticated using \(false\)/i);
+assert.match(pulseSql, /grant execute on function private\.is_campus_member_blocked\(uuid,uuid\) to authenticated/i);
+
+for (const name of [
+  "past_question_papers", "past_question_items", "past_question_answer_keys",
+  "practice_attempts", "practice_answers"
+]) {
+  assert.match(pqSql, new RegExp("alter table public\\." + name + " enable row level security", "i"));
+}
+assert.match(pqSql, /past_question_answer_keys_reviewer_only/i);
+assert.match(pqSql, /past_question_exam_prep_access/i);
+assert.match(pqSql, /revoke execute on function public\.get_past_question_coverage\(\) from public, anon/i);
+assert.match(pqSql, /grant execute on function public\.get_past_question_coverage\(\) to authenticated, service_role/i);
+assert.match(pqSql, /on conflict \(id\) do nothing/i);
+assert.doesNotMatch(pqSql, /on conflict \(id\) do update/i);
+
+assert.match(preflightSql, /^-- READ-ONLY/m);
+assert.doesNotMatch(preflightSql, /\b(insert into|update\s+|delete\s+from|alter table|drop table|truncate|create table)\b/i);
+assert.match(postflightSql, /campus_member_blocks must not be directly selectable/i);
+assert.match(postflightSql, /Production-only billing\/payment table is missing/i);
+console.log("Production migration candidate static checks passed.");
