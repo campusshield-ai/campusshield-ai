@@ -191,6 +191,8 @@ test("language selector translates the access experience and remembers the choic
   await expect(page.locator(".login-footer-links a").nth(1)).toHaveText("Nípa wa");
   await expect(page.locator(".login-footer-links a").nth(2)).toHaveText("Ìrànlọ́wọ́");
   await expect(page.locator(".login-footer-links a").nth(3)).toHaveText("Ìpamọ́");
+  await expect(page.locator(".login-footer-links a").nth(4)).toHaveText("Àwọn Òfin Lílò");
+  await expect(page.locator(".login-footer-links a").nth(5)).toHaveText("Kàn sí wa");
   await expect(page.locator("#auth-tabs [data-auth-mode='signup']")).toHaveText("Ṣẹ̀dá àkọọ́lẹ̀");
 
   await page.reload({ waitUntil: "domcontentloaded" });
