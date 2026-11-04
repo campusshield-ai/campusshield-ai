@@ -1036,7 +1036,6 @@
       courses:'Courses & Study Resources',
       'past-questions':'Past Questions & Exam Prep',
       'creator-tools':'Creator & Tools Hub',
-      'creator-tools':'Creator & Tools Hub',
       'student-rewards':'Challenges & Rewards',
       opportunities:'Opportunities & Scholarships',
       shieldmind:'ShieldMind AI',
