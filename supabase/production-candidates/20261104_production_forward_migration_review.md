@@ -35,7 +35,11 @@ Stories, Anonymous Confessions, story media, Study Circles and Phase 3 profile/n
 ### Past Questions & Exam Prep
 The package includes papers, items, separate reviewer-only answer keys, practice attempts and practice answers. The PDF bucket remains private; an existing bucket with different configuration causes the candidate to stop rather than overwrite it. The coverage RPC is authenticated-only. The existing Production identity-aware eligibility helper is retained.
 
-The `past-question-practice` Edge Function is a separate deployment task.
+The Staging `past-question-practice` Edge Function v2 uses a server-only service client for paper, item, answer-key and attempt operations. The candidate now includes the minimum explicit `service_role` grants required by that function; direct client privileges remain separately constrained by column grants and RLS. The postflight verifies these server grants. The Edge Function remains a separate deployment task.
+
+## Data API grants and function collision preflight
+
+Supabase enforced explicit `GRANT` requirements for new `public` tables on all existing projects from 30 October 2026. The package grants only the intended client roles for each new table, grants the Past Questions server-only operations separately to `service_role`, and postflight-checks the effective privileges. The preflight now checks every function signature created, replaced, or renamed by the three phases and aborts on any collision.
 
 ## Production-only and existing data protection
 
@@ -49,7 +53,7 @@ No temporary Supabase branch was created. The quoted temporary branch compute wa
 
 1. Run the read-only preflight against current Production immediately before any isolated test.
 2. Test the phases in order on an isolated DB derived from the Production schema.
-3. Run postflight assertions and inspect RLS, grants, function ACLs and storage policies.
+3. Run postflight assertions and inspect RLS, explicit Data API grants, service-role grants, function ACLs and storage policies.
 4. Complete authenticated role and cross-campus isolation tests with synthetic data.
 5. Test the Past Questions Edge Function separately.
 6. Only after every gate passes should PR #171 be considered for Production promotion.
