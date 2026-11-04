@@ -55,6 +55,17 @@ begin
     raise exception 'Past Questions PDF bucket must remain private.';
   end if;
 
+  -- Storage policies are permissive by default and combine with OR semantics.
+  -- Require every existing/new objects policy to identify a bucket explicitly.
+  if exists (
+    select 1 from pg_policy p
+    where p.polrelid='storage.objects'::regclass
+      and coalesce(pg_get_expr(p.polqual,p.polrelid),'') not ilike '%bucket_id%'
+      and coalesce(pg_get_expr(p.polwithcheck,p.polrelid),'') not ilike '%bucket_id%'
+  ) then
+    raise exception 'Every storage.objects RLS policy must include an explicit bucket_id scope.';
+  end if;
+
   if to_regclass('public.campus_institutional_billing_requests') is null
      or to_regclass('public.campus_opportunity_bookmarks') is null
      or to_regclass('public.shieldmind_payment_orders') is null then
