@@ -69,4 +69,11 @@ assert.match(pqSql, /grant select, update on public\\.practice_attempts to servi
 assert.match(pqSql, /grant insert on public\\.practice_answers to service_role/i);
 assert.match(postflightSql, /CampusMap Data API read grants are missing/i);
 assert.match(postflightSql, /Past Questions service_role table grants do not cover/i);
+assert.match(pqSql, /grant select, insert, delete on public\.past_question_papers to service_role/i);
+assert.match(pqSql, /grant select, insert on public\.past_question_items to service_role/i);
+assert.match(pqSql, /grant select, insert on public\.past_question_answer_keys to service_role/i);
+assert.match(pqSql, /grant select, update on public\.practice_attempts to service_role/i);
+assert.match(pqSql, /grant insert on public\.practice_answers to service_role/i);
+assert.match(postflightSql, /CampusMap Data API read grants are missing/i);
+assert.match(postflightSql, /Past Questions service_role table grants do not cover/i);
 console.log("Production migration candidate static checks passed.");
