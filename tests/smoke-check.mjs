@@ -272,6 +272,26 @@ assert.doesNotThrow(() => new Function(config), "Supabase config parses");
 
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
 assert.match(config, /https:\/\/fvgtnujjnvdkhzqqcaqe\.supabase\.co/);
+assert.match(config, /campusshield-ai-staging-preview\.vercel\.app/, "stable Vercel production hostname is explicitly recognized");
+assert.match(config, /campusshield-ai\.github\.io/, "GitHub Pages production hostname remains recognized");
+
+function configuredSupabaseProject(hostname) {
+  const fakeWindow = { location: { hostname } };
+  new Function("window", "console", config)(fakeWindow, { info() {} });
+  return new URL(fakeWindow.CAMPUSSHIELD_SUPABASE_CONFIG.url).hostname;
+}
+assert.equal(configuredSupabaseProject("campusshield-ai.github.io"), "fvgtnujjnvdkhzqqcaqe.supabase.co");
+assert.equal(configuredSupabaseProject("campusshield-ai-staging-preview.vercel.app"), "fvgtnujjnvdkhzqqcaqe.supabase.co");
+assert.equal(configuredSupabaseProject("campusshield-ai-staging-preview-7cvp4w3qe.vercel.app"), "hywcpnoqqhxvujnimhxl.supabase.co", "unique Vercel previews remain isolated on Staging");
+assert.equal(configuredSupabaseProject("localhost"), "hywcpnoqqhxvujnimhxl.supabase.co", "local development remains isolated on Staging");
+
+const supabasePrimarySdkTag = htmlMarkup.indexOf('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>');
+const supabaseFallbackSdkTag = htmlMarkup.indexOf('<script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>');
+const supabaseConfigTag = htmlMarkup.indexOf('<script src="./supabase-config.js" defer></script>');
+const supabaseBackendTag = htmlMarkup.indexOf('<script src="./campusshield-backend.js" defer></script>');
+assert.ok(supabasePrimarySdkTag >= 0 && supabaseFallbackSdkTag > supabasePrimarySdkTag, "Supabase browser SDK primary and backup CDNs load in order");
+assert.ok(supabaseConfigTag > supabaseFallbackSdkTag && supabaseBackendTag > supabaseConfigTag, "Supabase config and backend execute after SDK scripts");
+
 const publicKey = config.match(/publishableKey:\s*"([^"]+)"/)?.[1];
 assert.ok(publicKey?.startsWith("sb_publishable_"), "uses a publishable browser key");
 assert.doesNotMatch(publicKey, /secret|service_role/i);
