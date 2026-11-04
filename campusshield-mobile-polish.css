@@ -593,3 +593,85 @@ html[data-theme="dark"] .campus-home-map-art { border-color: rgba(127,217,138,.1
 #app-sidebar .nav button.active .nav-icon { background: #7fd98a; color: #0a3020; }
 .app.sidebar-collapsed #app-sidebar .nav button { justify-content: center; padding-inline: 5px; }
 .app.sidebar-collapsed #app-sidebar .nav button.active { box-shadow: inset 0 -3px #7fd98a, inset 0 1px rgba(255,255,255,.05); }
+
+/* ShieldMind Premium workspace — quiet luxury in CampusShield forest, mint and navy. */
+#page-shieldmind .shieldmind-workspace-header{align-items:center;padding:4px 0 9px}
+#page-shieldmind .shieldmind-brand-lockup .shieldmind-mark{background:linear-gradient(145deg,#0d3c2b,#174d39)!important;color:#a8efb8!important;box-shadow:0 8px 22px rgba(12,65,40,.18),inset 0 1px rgba(255,255,255,.15)}
+#page-shieldmind .shieldmind-brand-lockup h1{font-size:clamp(25px,3vw,34px);letter-spacing:-.055em}
+#page-shieldmind .shieldmind-workspace-badge{padding:8px 12px;border-color:#cfe7d6;background:linear-gradient(145deg,#f3fbf4,#e8f6ec);color:#206944;font-size:9px;font-weight:900;letter-spacing:.045em;text-transform:uppercase}
+#page-shieldmind .shieldmind-workspace-badge>span:first-child{color:#287e4b;font-size:12px}
+#page-shieldmind .shieldmind-hero-compact{min-height:150px;padding:clamp(18px,2.6vw,28px);border-color:#b9dfc6;border-radius:21px;background:radial-gradient(ellipse at 92% 10%,rgba(135,225,153,.26),transparent 31%),radial-gradient(ellipse at 78% 100%,rgba(87,173,123,.16),transparent 40%),linear-gradient(118deg,#effaf2 0%,#f2fbf7 52%,#e7f7ec 100%);box-shadow:0 13px 32px rgba(16,74,42,.06),inset 0 1px rgba(255,255,255,.9)}
+#page-shieldmind .shieldmind-hero h2{color:#123c2a;font-size:clamp(20px,2.2vw,27px);letter-spacing:-.05em}
+#page-shieldmind .shieldmind-hero p{max-width:72ch;color:#557366;font-size:12px}
+#page-shieldmind .shieldmind-capability-list span{color:#246b43;font-size:10px;font-weight:800}
+#page-shieldmind .shieldmind-hero-art{width:106px;height:96px;flex-basis:106px;background:radial-gradient(circle,#d7f3df,#c6e9d0);color:#206b42}
+#page-shieldmind .shieldmind-hero-art span:nth-child(2){width:51px;height:51px;border-radius:17px;background:linear-gradient(145deg,#0d3c2b,#1d6944);color:#b4f3be;box-shadow:0 10px 22px rgba(8,65,35,.24)}
+#page-shieldmind .shieldmind-access-notice{border:1px solid #d7e8d9;background:#f8fbf6;color:#56715d}
+#page-shieldmind .shieldmind-paid-gate{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) minmax(175px,.32fr);align-items:center;gap:clamp(18px,3vw,38px);min-width:0;overflow:hidden;margin:0 0 18px;padding:clamp(20px,3vw,34px);border:1px solid #1b583b;border-radius:22px;background:radial-gradient(ellipse at 95% 7%,rgba(137,231,151,.2),transparent 36%),radial-gradient(ellipse at 75% 100%,rgba(67,161,98,.22),transparent 42%),linear-gradient(122deg,#082d20 0%,#10442f 58%,#164f36 100%);color:#f4fff6;box-shadow:0 19px 45px rgba(8,55,31,.17),inset 0 1px rgba(255,255,255,.12)}
+#page-shieldmind .shieldmind-paid-gate[hidden]{display:none!important}
+#page-shieldmind .shieldmind-paid-gate-copy{position:relative;z-index:2;min-width:0}
+#page-shieldmind .shieldmind-paid-eyebrow{display:inline-flex;align-items:center;gap:8px;margin:0 0 11px;color:#b1ecc0;font-size:9px;font-weight:950;letter-spacing:.17em}
+#page-shieldmind .shieldmind-paid-eyebrow span{color:#8de5a2;font-size:16px}
+#page-shieldmind .shieldmind-paid-gate h2{max-width:24ch;margin:0;color:#f4fff6;font-size:clamp(23px,3vw,34px);line-height:1.08;letter-spacing:-.055em}
+#page-shieldmind .shieldmind-paid-gate-copy>p:not(.shieldmind-paid-gate-status){max-width:68ch;margin:11px 0 18px;color:#d1e7d7;font-size:12px;line-height:1.65}
+#page-shieldmind .shieldmind-paid-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#page-shieldmind .shieldmind-paid-benefits>div{display:grid;grid-template-columns:29px minmax(0,1fr);align-items:center;gap:2px 9px;min-width:0;padding:10px 11px;border:1px solid rgba(193,235,203,.15);border-radius:12px;background:rgba(245,255,247,.065);box-shadow:inset 0 1px rgba(255,255,255,.045)}
+#page-shieldmind .shieldmind-paid-benefits>div>span{grid-row:span 2;display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:rgba(141,229,162,.15);color:#b1efbd;font-size:9px;font-weight:900}
+#page-shieldmind .shieldmind-paid-benefits strong{color:#f1fff4;font-size:10.5px;font-weight:850}
+#page-shieldmind .shieldmind-paid-benefits small{color:#c0dac8;font-size:9px;line-height:1.4}
+#page-shieldmind .shieldmind-paid-gate-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;margin-top:19px}
+#page-shieldmind .shieldmind-paid-gate-footer>div{display:grid;gap:3px}
+#page-shieldmind .shieldmind-paid-gate-footer>div strong{color:#f4fff6;font-size:14px;font-weight:900}
+#page-shieldmind .shieldmind-paid-gate-footer>div small{color:#c3ddca;font-size:9px}
+#page-shieldmind .shieldmind-paid-cta{min-height:45px;padding:11px 17px;border-color:#b4edbf;background:linear-gradient(135deg,#a8edb4,#68c987);color:#0a3923;box-shadow:0 10px 23px rgba(0,0,0,.13),inset 0 1px rgba(255,255,255,.4);font-size:11px}
+#page-shieldmind .shieldmind-paid-cta:hover:not(:disabled){background:linear-gradient(135deg,#baf5c3,#7bd697)}
+#page-shieldmind .shieldmind-paid-gate-status{min-height:16px;margin:13px 0 0!important;color:#bee2c8!important;font-size:9.5px!important}
+#page-shieldmind .shieldmind-paid-gate-art{position:relative;display:grid;place-items:center;width:min(100%,210px);aspect-ratio:1;justify-self:center;border-radius:50%;background:radial-gradient(circle,rgba(156,239,172,.16),rgba(130,219,150,.055) 48%,transparent 70%)}
+#page-shieldmind .shieldmind-orbit{position:absolute;border:1px solid rgba(172,235,185,.27);border-radius:50%}
+#page-shieldmind .shieldmind-orbit-one{inset:8%}
+#page-shieldmind .shieldmind-orbit-two{inset:19%;border-style:dashed;opacity:.75}
+#page-shieldmind .shieldmind-core{display:grid;place-items:center;width:86px;height:86px;border:1px solid rgba(211,255,218,.38);border-radius:27px;background:linear-gradient(145deg,#0e3a2a,#1a6240);color:#b1f0bd;box-shadow:0 19px 36px rgba(0,0,0,.25),0 0 0 12px rgba(135,226,154,.08),inset 0 1px rgba(255,255,255,.18);font-size:20px;font-weight:950}
+#page-shieldmind .shieldmind-spark{position:absolute;color:#b0edba}
+#page-shieldmind .shieldmind-spark-one{top:18%;left:15%;font-size:21px}
+#page-shieldmind .shieldmind-spark-two{right:14%;bottom:20%;font-size:27px}
+#page-shieldmind .shieldmind-verified-mark{position:absolute;right:15%;bottom:22%;display:grid;place-items:center;width:27px;height:27px;border:2px solid #123e2a;border-radius:9px;background:#9be4aa;color:#0d3924;font-size:13px;font-weight:950}
+#page-shieldmind .shieldmind-quick-actions[hidden],#page-shieldmind .shieldmind-workspace-grid[hidden]{display:none!important}
+#page-shieldmind .shieldmind-plan-mini{display:none!important}
+#page-shieldmind .shieldmind-workspace-grid:not([hidden]){animation:shieldmind-workspace-in .25s ease both}
+@keyframes shieldmind-workspace-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+#page-billing .shieldmind-prices{align-items:stretch}
+#page-billing .shieldmind-price{display:flex;flex-direction:column;min-height:220px;padding:17px;border-color:#dbe8df;border-radius:16px;background:linear-gradient(150deg,#fff,#f7fbf7);box-shadow:0 7px 22px rgba(13,58,34,.045)}
+#page-billing .shieldmind-price strong{color:#204936;font-size:12px}
+#page-billing .shieldmind-price b{margin:9px 0 5px;color:#123d2a;font-size:27px;letter-spacing:-.06em}
+#page-billing .shieldmind-price span{color:#32734a;font-size:10px;font-weight:800}
+#page-billing .shieldmind-price small{min-height:42px;margin:8px 0 15px;color:#718278;font-size:10px;line-height:1.5}
+#page-billing .shieldmind-price .btn{width:100%;margin-top:auto}
+#page-billing .shieldmind-price.premium{border-color:#9bcba8;background:radial-gradient(ellipse at 100% 0%,rgba(142,222,155,.17),transparent 44%),linear-gradient(150deg,#f6fcf6,#edf7ef)}
+html[data-theme="dark"] #page-shieldmind .shieldmind-paid-gate{border-color:#3b7650;background:radial-gradient(ellipse at 95% 7%,rgba(137,231,151,.13),transparent 36%),linear-gradient(122deg,#071f16,#0d3926 58%,#11442d)}
+html[data-theme="dark"] #page-shieldmind .shieldmind-hero-compact{border-color:#315b41;background:radial-gradient(ellipse at 92% 10%,rgba(135,225,153,.12),transparent 31%),linear-gradient(118deg,#132c20,#183a29)}
+html[data-theme="dark"] #page-shieldmind .shieldmind-hero h2{color:#eff9f0}
+html[data-theme="dark"] #page-shieldmind .shieldmind-hero p{color:#b7cebc}
+html[data-theme="dark"] #page-shieldmind .shieldmind-capability-list span{color:#a9e5b3}
+html[data-theme="dark"] #page-shieldmind .shieldmind-workspace-badge{border-color:#315b41;background:#1c3d2a;color:#b3edbd}
+html[data-theme="dark"] #page-billing .shieldmind-price{border-color:#315342;background:linear-gradient(150deg,#142f24,#10271e)}
+html[data-theme="dark"] #page-billing .shieldmind-price strong,html[data-theme="dark"] #page-billing .shieldmind-price b{color:#ecf8ee}
+html[data-theme="dark"] #page-billing .shieldmind-price span{color:#a9e4b1}
+html[data-theme="dark"] #page-billing .shieldmind-price small{color:#b2c7b8}
+@media(max-width:900px){#page-shieldmind .shieldmind-paid-gate{grid-template-columns:minmax(0,1fr) 155px;gap:12px}#page-shieldmind .shieldmind-paid-gate-art{width:155px}#page-shieldmind .shieldmind-paid-benefits{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){
+ #page-shieldmind .shieldmind-paid-gate{grid-template-columns:minmax(0,1fr);gap:4px;padding:17px;border-radius:18px}
+ #page-shieldmind .shieldmind-paid-gate-art{display:none}
+ #page-shieldmind .shieldmind-paid-gate h2{font-size:25px}
+ #page-shieldmind .shieldmind-paid-gate-copy>p:not(.shieldmind-paid-gate-status){font-size:11px;margin:9px 0 14px}
+ #page-shieldmind .shieldmind-paid-benefits{gap:7px}
+ #page-shieldmind .shieldmind-paid-benefits>div{padding:9px}
+ #page-shieldmind .shieldmind-paid-gate-footer{align-items:stretch;flex-direction:column;gap:10px}
+ #page-shieldmind .shieldmind-paid-cta{width:100%}
+ #page-shieldmind .shieldmind-workspace-badge{font-size:8px;padding:6px 8px}
+}
+@media(max-width:370px){
+ #page-shieldmind .shieldmind-brand-lockup .campus-hub-eyebrow{font-size:7px;letter-spacing:.1em}
+ #page-shieldmind .shieldmind-brand-lockup h1{font-size:21px}
+ #page-shieldmind .shieldmind-workspace-badge{white-space:normal;text-align:center;max-width:112px}
+}
+@media(prefers-reduced-motion:reduce){#page-shieldmind .shieldmind-workspace-grid:not([hidden]){animation:none}}
