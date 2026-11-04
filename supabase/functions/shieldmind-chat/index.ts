@@ -54,9 +54,38 @@ Deno.serve(async (req: Request) => {
     const user = userResult?.user;
     if (userError || !user) return json({ error: "Your session could not be verified." }, 401);
 
-    // General academic assistance is available to every signed-in account, including
-    // pending/unverified accounts. Campus-specific public sources are optional and
-    // only queried when this caller has an active, verified membership.
+    // ShieldMind is a paid AI service. Verify the caller's own active, unexpired
+    // subscription before reading campus sources, consuming quotas, or calling OpenAI.
+    // This query uses the caller-scoped client, so subscription RLS remains in force.
+    const { data: subscription, error: subscriptionError } = await client
+      .from("shieldmind_subscriptions")
+      .select("plan,status,expires_at")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (subscriptionError) {
+      console.error("ShieldMind subscription verification failed", {
+        stage: "subscription_check",
+        errorCode: subscriptionError.code || null,
+      });
+      return json({ error: "ShieldMind could not verify your paid plan. AI access remains locked; please try again." }, 503);
+    }
+    const paidPlanActive = Boolean(
+      subscription &&
+      ["starter", "plus", "pro", "ultra", "max", "premium"].includes(String(subscription.plan)) &&
+      subscription.status === "active" &&
+      subscription.expires_at &&
+      Date.parse(subscription.expires_at) > Date.now()
+    );
+    if (!paidPlanActive) {
+      return json({
+        code: "SUBSCRIPTION_REQUIRED",
+        subscription_required: true,
+        error: "ShieldMind AI requires an active paid subscription. Open Subscriptions & billing to choose a 30-day plan.",
+      }, 402);
+    }
+
+    // Campus-specific public sources are only queried when this caller has an active,
+    // verified campus membership. General academic tutoring is available to paid users.
     const { data: campusContexts, error: campusContextError } = await client.rpc("get_my_campus_context");
     const campusContext = !campusContextError && Array.isArray(campusContexts) ? campusContexts[0] : null;
     const canUseCampusSources = Boolean(
