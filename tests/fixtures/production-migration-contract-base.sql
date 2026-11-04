@@ -99,6 +99,7 @@ CREATE TABLE public.student_identity_verifications (
   student_number text NOT NULL DEFAULT 'TEST-001',
   object_path text NOT NULL DEFAULT 'synthetic/test.pdf',
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+  confirmed_fraud boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
