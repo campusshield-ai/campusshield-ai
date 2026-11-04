@@ -72,6 +72,65 @@ jobs:
           docker run --rm supabase/postgres:17.11.0.018 pg_dump --version
           docker run --rm supabase/postgres:17.11.0.018 psql --version
 
+      - name: Validate Production connection URI metadata without exposing credentials
+        shell: bash
+        env:
+          PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import re
+          from urllib.parse import parse_qs, unquote, urlsplit
+
+          raw = os.environ["PRODUCTION_DB_URL"]
+          parsed = urlsplit(raw)
+          username = unquote(parsed.username or "")
+          password = parsed.password or ""
+          host = parsed.hostname or ""
+          port = parsed.port
+          database = (parsed.path or "").lstrip("/")
+          sslmode = parse_qs(parsed.query).get("sslmode", [""])[0]
+
+          # Only non-secret URI fields are printed. Never print password, its
+          # length, a hash, or a redacted copy of the URI.
+          print(f"Connection host: {host}")
+          print(f"Connection username: {username}")
+          print(f"Connection port: {port}")
+          print(f"Database: {database}")
+          print(f"SSL mode: {sslmode}")
+          print(f"Password field present: {'yes' if password else 'no'}")
+
+          expected = {
+              "username": "postgres.fvgtnujjnvdkhzqqcaqe",
+              "host": "aws-0-eu-west-1.pooler.supabase.com",
+              "port": 5432,
+              "database": "postgres",
+              "sslmode": "require",
+          }
+          actual = {
+              "username": username,
+              "host": host,
+              "port": port,
+              "database": database,
+              "sslmode": sslmode,
+          }
+          bad = [key for key, value in expected.items() if actual[key] != value]
+          if not password or any(token in unquote(password) for token in (
+              "ENCODED_PASSWORD", "YOUR_NEW_PASSWORD", "[YOUR-PASSWORD]"
+          )):
+              bad.append("password-placeholder-or-empty")
+
+          if re.search(r"%(?![0-9A-Fa-f]{2})", password):
+              bad.append("malformed-percent-encoding")
+
+          if bad:
+              print("Connection URI metadata validation failed for: " + ", ".join(bad))
+              raise SystemExit(1)
+
+          print("Connection URI metadata validation passed; password was not displayed.")
+          PY
+
       - name: Create private schema-only dump from Production
         shell: bash
         run: |
