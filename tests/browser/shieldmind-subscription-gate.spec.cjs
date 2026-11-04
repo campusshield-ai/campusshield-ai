@@ -1,0 +1,91 @@
+const { test, expect } = require("@playwright/test");
+
+const widths = [320, 360, 390, 430, 768, 1024, 1366];
+
+async function openWorkspace(page, target) {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.locator("#workspace .global-search-input").waitFor({ state: "attached" });
+  await page.locator("#shieldmind-paid-gate").waitFor({ state: "attached" });
+  await page.evaluate(targetPage => {
+    document.querySelector("#login-screen").style.display = "none";
+    document.querySelector("#workspace").hidden = false;
+    document.querySelectorAll("#workspace .page").forEach(section => section.classList.remove("active"));
+    document.querySelector("#page-" + targetPage).classList.add("active");
+  }, target);
+}
+
+test("ShieldMind locks AI chat until the account has an active paid plan", async ({ page }) => {
+  await openWorkspace(page, "shieldmind");
+  await expect(page.locator("#shieldmind-paid-gate")).toBeVisible();
+  await expect(page.locator("#shieldmind-paid-gate")).toContainText("SUBSCRIPTION REQUIRED");
+  await expect(page.locator("#shieldmind-paid-gate")).toContainText("Step-by-step tutor");
+  await expect(page.locator("#shieldmind-paid-gate")).toContainText("Notes to revision");
+  await expect(page.locator("#shieldmind-paid-gate")).toContainText("Quizzes");
+  await expect(page.locator("#shieldmind-paid-gate")).toContainText("Study image explanations");
+  await expect(page.locator("#shieldmind-paid-gate")).toContainText("Source-aware campus help");
+  await expect(page.locator("#shieldmind-workspace-grid")).toBeHidden();
+  await expect(page.locator("#shieldmind-form")).toBeHidden();
+  await expect(page.locator(".shieldmind-quick-actions")).toBeHidden();
+  await expect(page.locator("#shieldmind-paid-gate button[data-page=billing]")).toBeVisible();
+});
+
+test("billing lists only the five prepaid paid AI plans and keeps safety free", async ({ page }) => {
+  await openWorkspace(page, "billing");
+  const plans = page.locator("#page-billing .shieldmind-prices").first();
+  await expect(plans.locator(".shieldmind-price")).toHaveCount(5);
+  for (const name of ["Starter", "Plus", "Pro", "Ultra", "Max"]) await expect(plans).toContainText(name);
+  await expect(plans).not.toContainText("Free");
+  await expect(plans).not.toContainText("₦0");
+  for (const name of ["starter", "plus", "pro", "ultra", "max"]) {
+    await expect(plans.locator('[data-billing-plan="' + name + '"]')).toBeVisible();
+  }
+  await expect(page.locator("#page-billing")).toContainText("Essential campus safety stays free");
+  await expect(page.locator("#page-billing")).toContainText("prepaid for 30 days");
+});
+
+test("premium gate fits phones, tablets and desktop without horizontal overflow", async ({ page }) => {
+  await openWorkspace(page, "shieldmind");
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await page.locator("#shieldmind-paid-gate").evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      const cta = element.querySelector(".shieldmind-paid-cta").getBoundingClientRect();
+      return {
+        documentWidth: document.documentElement.scrollWidth,
+        bodyWidth: document.body.scrollWidth,
+        left: rect.left, right: rect.right, height: rect.height,
+        ctaLeft: cta.left, ctaRight: cta.right, ctaHeight: cta.height
+      };
+    });
+    expect(metrics.documentWidth).toBeLessThanOrEqual(width + 1);
+    expect(metrics.bodyWidth).toBeLessThanOrEqual(width + 1);
+    expect(metrics.left).toBeGreaterThanOrEqual(-1);
+    expect(metrics.right).toBeLessThanOrEqual(width + 1);
+    expect(metrics.ctaLeft).toBeGreaterThanOrEqual(-1);
+    expect(metrics.ctaRight).toBeLessThanOrEqual(width + 1);
+    expect(metrics.ctaHeight).toBeGreaterThanOrEqual(42);
+    expect(metrics.height).toBeGreaterThan(240);
+  }
+});
+
+test("AI-generated exam practice and AI marking stay locked without the paid entitlement", async ({ page }) => {
+  await openWorkspace(page, "past-questions");
+  await page.evaluate(() => {
+    window.CampusShieldShieldMindAccess = { active: false, plan: null, expiresAt: null };
+    document.dispatchEvent(new CustomEvent("campusshield:shieldmind-access", { detail: window.CampusShieldShieldMindAccess }));
+  });
+  const gate = page.locator("#pq-ai-paid-gate");
+  const form = page.locator("#pq-ai-form");
+  await expect(gate).toBeVisible();
+  await expect(gate).toContainText("require an active ShieldMind subscription");
+  await expect(gate.locator("button[data-page=billing]")).toBeVisible();
+  await expect(form.locator("input,select,textarea,button").first()).toBeDisabled();
+
+  await page.evaluate(() => {
+    window.CampusShieldShieldMindAccess = { active: true, plan: "starter", expiresAt: "2099-12-31T23:59:59.000Z" };
+    document.dispatchEvent(new CustomEvent("campusshield:shieldmind-access", { detail: window.CampusShieldShieldMindAccess }));
+  });
+  await expect(gate).toBeHidden();
+  await expect(form.locator("input,select,textarea").first()).toBeEnabled();
+  await expect(page.locator("#pq-ai-generate")).toBeEnabled();
+});
