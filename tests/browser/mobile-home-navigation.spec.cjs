@@ -43,7 +43,7 @@ test("student home bento cards use existing destinations and an honest CampusMap
       return {
         docWidth: document.documentElement.scrollWidth,
         bodyWidth: document.body.scrollWidth,
-        columns: getComputedStyle(grid).gridTemplateColumns.split(/\\s+/).filter(Boolean).length,
+        columns: getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length,
         map:rect(map),
         ai:rect(ai),
         cards:[...el.querySelectorAll(".campus-home-card")].map(rect),
