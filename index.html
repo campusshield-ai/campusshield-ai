@@ -3243,23 +3243,44 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <span class="shieldmind-mark" aria-hidden="true">✦</span>
       <div><span class="campus-hub-eyebrow">CAMPUSSHIELD AI · LEARNING ASSISTANT</span><h1>ShieldMind AI</h1><p>Your campus learning companion</p></div>
     </div>
-    <span class="shieldmind-workspace-badge"><span aria-hidden="true">●</span> AI assistant</span>
+    <span class="shieldmind-workspace-badge" role="status" aria-live="polite"><span aria-hidden="true">◈</span><span id="shieldmind-plan-status">Checking your plan…</span></span>
   </div>
 
   <div class="shieldmind-hero shieldmind-hero-compact">
     <div class="shieldmind-hero-copy">
-      <h2>Your campus learning &amp; support AI</h2>
-      <p>Get study help, explore topics and find campus information supported by trusted sources.</p>
+      <h2>Your premium AI study workspace</h2>
+      <p>A focused learning desk for step-by-step tutoring, revision, exam practice and campus answers backed by approved sources when available.</p>
       <div class="shieldmind-capability-list" aria-label="ShieldMind capabilities">
-        <span>✓ Study help</span><span>✓ Summaries &amp; quizzes</span><span>✓ Campus information</span><span>✓ Source-aware answers</span>
+        <span>✓ AI topic tutor</span><span>✓ Notes &amp; quizzes</span><span>✓ Exam coach</span><span>✓ Study-image explanations</span><span>✓ Verified campus sources</span>
       </div>
     </div>
     <div class="shieldmind-hero-art" aria-hidden="true"><span>✦</span><span>AI</span><span>＋</span></div>
   </div>
 
-  <div class="notice-inline shieldmind-access-notice" id="shieldmind-access-notice" role="status" aria-live="polite">AI requests require a verified account and university membership. Student accounts also need approved identity verification.</div>
+  <div class="notice-inline shieldmind-access-notice" id="shieldmind-access-notice" role="status" aria-live="polite">ShieldMind AI answers and generated practice require an active paid plan. Verified university membership is only needed for official campus-source answers.</div>
 
-  <div class="shieldmind-quick-actions" aria-label="ShieldMind quick actions">
+  <section class="shieldmind-paid-gate" id="shieldmind-paid-gate" aria-labelledby="shieldmind-paid-gate-title">
+    <div class="shieldmind-paid-gate-copy">
+      <span class="shieldmind-paid-eyebrow"><span aria-hidden="true">✦</span> SHIELDMIND PREMIUM · SUBSCRIPTION REQUIRED</span>
+      <h2 id="shieldmind-paid-gate-title">Make every study session count.</h2>
+      <p>Unlock a private AI learning workspace built for university study. Choose a prepaid 30-day plan to start receiving AI answers and generating study material.</p>
+      <div class="shieldmind-paid-benefits" aria-label="Included AI study benefits">
+        <div><span aria-hidden="true">01</span><strong>Step-by-step tutor</strong><small>Understand difficult topics with clear examples.</small></div>
+        <div><span aria-hidden="true">02</span><strong>Notes to revision</strong><small>Turn lecture notes into structured summaries.</small></div>
+        <div><span aria-hidden="true">03</span><strong>Quizzes &amp; exam coach</strong><small>Practise concepts and build focused revision plans.</small></div>
+        <div><span aria-hidden="true">04</span><strong>Study image explanations</strong><small>Ask about academic diagrams and handwritten notes.</small></div>
+        <div><span aria-hidden="true">05</span><strong>Source-aware campus help</strong><small>Official answers only when approved university sources support them.</small></div>
+      </div>
+      <div class="shieldmind-paid-gate-footer">
+        <div><strong>Plans start at ₦2,000</strong><small>30 days · prepaid · renew manually · no automatic renewal</small></div>
+        <button class="btn shieldmind-paid-cta" type="button" data-page="billing">Compare plans &amp; subscribe <span aria-hidden="true">→</span></button>
+      </div>
+      <p class="shieldmind-paid-gate-status" id="shieldmind-paid-gate-status" role="status" aria-live="polite">Checking your active ShieldMind subscription…</p>
+    </div>
+    <div class="shieldmind-paid-gate-art" aria-hidden="true"><span class="shieldmind-orbit shieldmind-orbit-one"></span><span class="shieldmind-orbit shieldmind-orbit-two"></span><span class="shieldmind-core">AI</span><span class="shieldmind-spark shieldmind-spark-one">✦</span><span class="shieldmind-spark shieldmind-spark-two">✧</span><span class="shieldmind-verified-mark">✓</span></div>
+  </section>
+
+  <div class="shieldmind-quick-actions" aria-label="ShieldMind quick actions" hidden>
     <button type="button" class="shieldmind-quick-action is-active" data-shieldmind-focus-chat><span aria-hidden="true">⌕</span>Ask anything</button>
     <button type="button" class="shieldmind-quick-action" data-shieldmind-scroll-tools><span aria-hidden="true">▤</span>Study tools</button>
     <button type="button" class="shieldmind-quick-action" data-shieldmind-prompt="Help me find official campus information. Ask me which university and topic, and clearly distinguish approved source material from information that is not verified."><span aria-hidden="true">⌂</span>Campus info</button>
@@ -3268,7 +3289,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <button type="button" class="shieldmind-quick-action" data-page="student-rewards"><span aria-hidden="true">◷</span>My progress</button>
   </div>
 
-  <div class="shieldmind-grid shieldmind-workspace-grid">
+  <div class="shieldmind-grid shieldmind-workspace-grid" id="shieldmind-workspace-grid" hidden>
     <section class="panel shieldmind-chat-panel" aria-labelledby="shieldmind-chat-title">
       <div class="panel-heading shieldmind-chat-heading">
         <div><h2 id="shieldmind-chat-title">Ask ShieldMind</h2><p>Ask a question, explore a topic or work through your notes.</p></div>
@@ -3324,14 +3345,10 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <div class="shieldmind-guardrail"><strong>✓ Privacy boundary</strong><p>ShieldMind does not receive CampusShield incident reports, identity documents, attendance or private Helpdesk records.</p></div>
       </section>
 
-      <section class="panel shieldmind-side-panel shieldmind-plan-mini" aria-labelledby="shieldmind-plan-heading">
-        <div class="shieldmind-side-heading"><div><h2 id="shieldmind-plan-heading">Your plan</h2><p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p></div><span aria-hidden="true">◈</span></div>
-        <button class="btn secondary" type="button" data-page="billing">View plans &amp; subscriptions</button>
-      </section>
     </aside>
   </div>
   <section class="panel shieldmind-planner-panel" aria-labelledby="shieldmind-planner-title">
-    <div class="panel-heading"><div><h2 id="shieldmind-planner-title">My timetable & reminders</h2><p>Private, cloud-synced study sessions, classes, assignments, exams and reminders.</p></div><button class="btn secondary" type="button" id="shieldmind-planner-refresh">Refresh</button></div>
+    <div class="panel-heading"><div><h2 id="shieldmind-planner-title">My student planner</h2><p>Private, cloud-synced classes, assignments, exams and personal reminders. This organizer is separate from paid AI responses.</p></div><button class="btn secondary" type="button" id="shieldmind-planner-refresh">Refresh</button></div>
     <div class="notice-inline">Your items are restricted to your signed-in account. Reminders can notify you while this app is open; background push notifications are not enabled yet.</div>
     <form id="shieldmind-planner-form">
       <div class="shieldmind-planner-fields">
@@ -3701,12 +3718,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
 <section class="page" id="page-billing">
   <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · PLANS</span><h1>Subscriptions &amp; billing</h1><p>Manage ShieldMind AI study plans and explore institutional subscriptions for your university.</p></div></div>
-  <div class="notice-inline"><strong>Essential safety stays free.</strong> Student safety reporting and core access are not paywalled. Payments must be verified by CampusShield's server before a paid plan is activated. Do not send card details or payment credentials in chat.</div>
+  <div class="notice-inline"><strong>Essential campus safety stays free.</strong> Incident reporting, emergency guidance and core safety access are not paywalled. ShieldMind AI is a paid service: every AI answer and AI-generated study response requires an active subscription. Paystack payment must be verified by CampusShield's server before access is activated. Plans are prepaid for 30 days and renew manually.</div>
   <section class="panel">
-    <div class="panel-heading"><div><h2>ShieldMind AI · Individual plans</h2><p>Prepaid 30-day access for additional academic AI usage.</p></div><span class="shieldmind-pill">NGN</span></div>
-    <p id="billing-ai-status" class="message" role="status" aria-live="polite">Your current plan and payment status will be shown here when billing is connected.</p>
+    <div class="panel-heading"><div><h2>ShieldMind AI · Individual plans</h2><p>Prepaid 30-day access to AI answers, study generation and image-assisted explanations. Plans do not auto-renew.</p></div><span class="shieldmind-pill">NGN</span></div>
+    <p id="billing-ai-status" class="message" role="status" aria-live="polite">Checking your paid ShieldMind access and payment status…</p>
     <div class="shieldmind-prices">
-      <article class="shieldmind-price"><strong>Free</strong><b>₦0</b><span>5 requests/min · 80/day</span><small>Core academic Q&amp;A and study prompts</small><button class="btn secondary" type="button" disabled>Included</button></article>
       <article class="shieldmind-price premium"><strong>Starter</strong><b>₦2,000</b><span>10 requests/min · 250/day</span><small>20 image uploads/month</small><button class="btn" type="button" data-billing-plan="starter" data-billing-kind="individual">Continue to payment</button></article>
       <article class="shieldmind-price premium"><strong>Plus</strong><b>₦5,000</b><span>15 requests/min · 700/day</span><small>60 image uploads/month</small><button class="btn" type="button" data-billing-plan="plus" data-billing-kind="individual">Continue to payment</button></article>
       <article class="shieldmind-price premium"><strong>Pro</strong><b>₦10,000</b><span>25 requests/min · 1,500/day</span><small>150 image uploads/month</small><button class="btn" type="button" data-billing-plan="pro" data-billing-kind="individual">Continue to payment</button></article>
