@@ -70,7 +70,7 @@ assert.match(dashboardUpgradeJs, /student-shortcuts/, "student dashboard shortcu
 assert.doesNotThrow(() => new Function(dashboardUpgradeJs), "dashboard upgrade script parses");
 assert.match(html, /id="login-features"/, "landing navigation has a Features destination");
 assert.match(htmlMarkup, /<meta property="og:title" content="CampusShield AI \\| Intelligent Campus Safety">/, "landing page defines a social-share title");
-assert.match(htmlMarkup, /<meta property="og:image" content="https:\\/\\/campusshield-ai-staging-preview\\.vercel\\.app\\/icons\\/campusshield-512\\.png">/, "landing page uses the verified CampusShield share image");
+assert.ok(htmlMarkup.includes('<meta property="og:image" content="https://campusshield-ai-staging-preview.vercel.app/icons/campusshield-512.png">'), "landing page uses the verified CampusShield share image");
 assert.match(htmlMarkup, /<meta name="twitter:card" content="summary">/, "landing page defines a Twitter summary card");
 assert.doesNotMatch(htmlMarkup, /No open incidents right now/i, "dashboard never claims there are no incidents before account-scoped data is loaded");
 assert.match(htmlMarkup, /Incident totals and updates reflect records your signed-in account is permitted to view/, "dashboard explains that incident summaries are account-scoped");
