@@ -25,7 +25,8 @@ jobs:
         name: Check secret without displaying it
         shell: bash
         env:
-          PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
+          # Re-run using the saved IPv4-compatible Supabase Session pooler secret.
+      PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
         run: |
           if [[ -z "${PRODUCTION_DB_URL:-}" ]]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
