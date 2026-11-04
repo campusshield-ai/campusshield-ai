@@ -372,23 +372,50 @@ assert.match(html, /data-page="groups">Explore groups<\/button>/);
 assert.match(html, /data-page="noticeboard">Noticeboard<\/button>/);
 assert.match(html, /data-page="helpdesk">Helpdesk<\/button>/);
 assert.match(html, /data-page="marketplace">Marketplace<\/button>/);
-// Individual plan prices and payment actions live only on Subscriptions & billing.
-// The ShieldMind AI page keeps plan status and a navigation link, without a duplicate price grid.
+// ShieldMind is a paid AI service; subscription enforcement is server-side and prices live in billing.
 const shieldmindPageStart = html.indexOf('<section class="page" id="page-shieldmind">');
 const billingPageStart = html.indexOf('<section class="page" id="page-billing">');
 assert.ok(shieldmindPageStart >= 0 && billingPageStart > shieldmindPageStart, "ShieldMind and billing pages exist in order");
 const shieldmindPageMarkup = html.slice(shieldmindPageStart, billingPageStart);
 assert.match(shieldmindPageMarkup, /id="shieldmind-plan-status"/);
-assert.match(shieldmindPageMarkup, /data-page="billing">View plans &amp; subscriptions<\/button>/);
-assert.doesNotMatch(shieldmindPageMarkup, /data-shieldmind-buy=/, "AI page has no separate purchase actions");
+assert.match(shieldmindPageMarkup, /id="shieldmind-paid-gate"/);
+assert.match(shieldmindPageMarkup, /data-page="billing">Compare plans &amp; subscribe/);
+assert.match(shieldmindPageMarkup, /class="shieldmind-quick-actions" aria-label="ShieldMind quick actions" hidden/);
+assert.match(shieldmindPageMarkup, /id="shieldmind-workspace-grid" hidden/);
+assert.doesNotMatch(shieldmindPageMarkup, /data-billing-plan=/, "AI page has no separate plan purchase actions");
 assert.doesNotMatch(shieldmindPageMarkup, /<div class="shieldmind-prices">/, "AI page has no duplicate price grid");
-assert.match(html.slice(billingPageStart), /ShieldMind AI · Individual plans/);
-assert.match(html.slice(billingPageStart), /data-billing-plan="starter"/);
-assert.match(html.slice(billingPageStart), /id="institutional-billing-panel" hidden/);
+const billingMarkup = html.slice(billingPageStart);
+assert.match(billingMarkup, /ShieldMind AI · Individual plans/);
+for (const plan of ["starter", "plus", "pro", "ultra", "max"]) assert.match(billingMarkup, new RegExp('data-billing-plan="' + plan + '"'));
+assert.doesNotMatch(billingMarkup, /<strong>Free<\/strong>|₦0/, "ShieldMind no longer offers a free AI tier");
+assert.match(billingMarkup, /Essential campus safety stays free/);
+assert.match(billingMarkup, /prepaid for 30 days and renew manually/);
 assert.match(html, /id="institutional-billing-panel" hidden/);
 assert.match(html, /function canManageInstitutionalBilling\(\)/);
 assert.match(html, /if \(kind === 'institution' && !canManageInstitutionalBilling\(\)\)/);
-assert.match(html, /if \(!canManageInstitutionalBilling\(\)\)/);
+
+// Both model-backed Edge Functions require an active, unexpired paid subscription.
+const chatSubscriptionGate = shieldmindFunction.indexOf('from("shieldmind_subscriptions")');
+const chatQuotaGate = shieldmindFunction.indexOf('rpc("consume_shieldmind_quota")');
+const chatProviderCall = shieldmindFunction.indexOf('https://api.openai.com/v1/chat/completions');
+assert.ok(chatSubscriptionGate >= 0 && chatSubscriptionGate < chatQuotaGate && chatSubscriptionGate < chatProviderCall, "ShieldMind verifies paid access before quotas and OpenAI calls");
+assert.match(shieldmindFunction, /code: "SUBSCRIPTION_REQUIRED"/);
+assert.match(shieldmindFunction, /subscription.status === "active"/);
+assert.match(shieldmindFunction, /Date\.parse\(subscription\.expires_at\) > Date\.now\(\)/);
+const practiceSubscriptionGate = pastQuestionFunction.indexOf('from("shieldmind_subscriptions")');
+const practiceModelCall = pastQuestionFunction.indexOf('const apiKey = Deno.env.get("OPENAI_API_KEY")');
+assert.ok(practiceSubscriptionGate >= 0 && practiceSubscriptionGate < practiceModelCall, "AI practice and marking verify paid access before model use");
+assert.match(pastQuestionFunction, /code: "SUBSCRIPTION_REQUIRED"/);
+assert.match(pastQuestionFunction, /subscription.status === "active"/);
+assert.match(pastQuestionFunction, /Date\.parse\(subscription\.expires_at\) > Date\.now\(\)/);
+assert.match(appScript, /async function refreshShieldMindPlan\(\)/);
+assert.match(appScript, /window\.CampusShieldShieldMindAccess = state/);
+assert.match(appScript, /await refreshShieldMindPlan\(\)/);
+assert.match(pastQuestionScript, /function syncShieldMindAiAccess\(\)/);
+assert.match(pastQuestionScript, /campusshield:shieldmind-access/);
+assert.match(html, /id="pq-ai-paid-gate"/);
+console.log("PASS ShieldMind paid subscriptions, fail-closed AI endpoints, paid exam generation, and free safety access");
+
 assert.match(institutionalBillingMigration, /DROP POLICY IF EXISTS campus_institutional_billing_requests_select_own/i);
 assert.match(institutionalBillingMigration, /profile\.role = 'admin'/i);
 assert.match(institutionalBillingMigration, /profile\.verification_status = 'verified'/i);
