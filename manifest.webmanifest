@@ -7,8 +7,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f4f7f5",
-  "theme_color": "#102b35",
+  "background_color": "#f7faf8",
+  "theme_color": "#0d3b2e",
   "prefer_related_applications": false,
   "icons": [
     {
@@ -24,7 +24,7 @@
       "purpose": "any"
     },
     {
-      "src": "./icons/campusshield-maskable-512.png",
+      "src": "./icons/campusshield-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

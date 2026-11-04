@@ -5,10 +5,11 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const output = join(root, "icons");
-const background = [16, 43, 53, 255];
-const shieldColor = [121, 224, 196, 255];
-const checkColor = background;
-const shield = [[256,70],[390,122],[378,276],[348,352],[256,422],[164,352],[134,276],[122,122]];
+const background = [13, 59, 46, 255];
+const shieldColor = [127, 217, 138, 255];
+const checkColor = shieldColor;
+const shieldOuter = [[256,92],[374,134],[374,232],[366,282],[344,338],[256,420],[168,338],[146,282],[138,232],[138,134]];
+const shieldInner = [[256,124],[344,155],[344,231],[337,273],[318,319],[256,378],[194,319],[175,273],[168,231],[168,155]];
 const check = [[197,247],[232,282],[316,198],[345,227],[232,340],[168,273]];
 const sampleGrid = 4;
 
@@ -44,7 +45,8 @@ function chunk(type, data) {
 
 function makePng(size, scale) {
   const points = (polygon) => polygon.map(([x, y]) => [256 + (x - 256) * scale, 256 + (y - 256) * scale]);
-  const scaledShield = points(shield);
+  const scaledShieldOuter = points(shieldOuter);
+  const scaledShieldInner = points(shieldInner);
   const scaledCheck = points(check);
   const rows = Buffer.alloc((size * 4 + 1) * size);
   const samples = sampleGrid * sampleGrid;
@@ -58,7 +60,7 @@ function makePng(size, scale) {
         for (let sx = 0; sx < sampleGrid; sx++) {
           const point = [(x + (sx + .5) / sampleGrid) * 512 / size, (y + (sy + .5) / sampleGrid) * 512 / size];
           if (contains(point, scaledCheck)) counts[2]++;
-          else if (contains(point, scaledShield)) counts[1]++;
+          else if (contains(point, scaledShieldOuter) && !contains(point, scaledShieldInner)) counts[1]++;
           else counts[0]++;
         }
       }
