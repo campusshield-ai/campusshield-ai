@@ -70,7 +70,7 @@ begin
     'private.prepare_campus_peer_connection()',
     'private.prepare_campus_social_report()',
     'private.import_campus_map_building_candidates_impl(uuid,jsonb)',
-    'private.import_campus_map_building_candidates_impl_unverified_centre_legacy(uuid,jsonb)',
+    'private.import_campus_map_building_candidates_legacy(uuid,jsonb)',
     'public.import_campus_map_building_candidates(uuid,jsonb)',
     'private.review_campus_map_building_impl(uuid,text,text,boolean)',
     'public.review_campus_map_building(uuid,text,text,boolean)',
