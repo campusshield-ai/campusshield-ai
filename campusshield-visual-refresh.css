@@ -58,17 +58,18 @@ body {
 .heading p,
 .panel-heading p { line-height: 1.65; }
 .content { padding: clamp(16px, 2.4vw, 32px); }
+.main, .content { background: transparent; }
 
 /* Light-ray hero: a soft green beam, not a flashing animation. */
 #page-dashboard .campus-dashboard-hero {
   isolation: isolate;
   overflow: hidden;
-  border-color: rgba(139, 227, 160, .25);
+  border-color: rgba(139, 227, 160, .25) !important;
   background:
     radial-gradient(ellipse at 78% 12%, rgba(91, 198, 118, .25), transparent 35%),
     radial-gradient(ellipse at 58% 112%, rgba(139, 227, 160, .16), transparent 38%),
-    linear-gradient(125deg, #08291f 0%, #103b2d 54%, #18533a 100%);
-  box-shadow: 0 24px 54px rgba(8, 41, 31, .18), inset 0 1px rgba(255,255,255,.08);
+    linear-gradient(125deg, #08291f 0%, #103b2d 54%, #18533a 100%) !important;
+  box-shadow: 0 24px 54px rgba(8, 41, 31, .18), inset 0 1px rgba(255,255,255,.08) !important;
 }
 #page-dashboard .campus-dashboard-hero::after {
   content: "";
@@ -111,7 +112,7 @@ body {
   box-shadow: 0 0 18px rgba(139, 227, 160, .5);
 }
 #page-dashboard .campus-dashboard-hero .hero-actions .btn:not(.secondary) {
-  background: linear-gradient(115deg, #8be3a0, #53c982);
+  background: linear-gradient(115deg, #8be3a0, #53c982) !important;
   color: #08291f;
   box-shadow: 0 10px 24px rgba(71, 193, 119, .2);
 }
