@@ -122,6 +122,14 @@ test("sign-in and create-account mode remain reachable", async ({ page }) => {
 
 test("site-wide legal links and contact fallback remain explicit", async ({ page }) => {
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  const landingFooter = page.locator(".login-footer-links");
+  await expect(landingFooter.locator("a")).toHaveCount(6);
+  await expect(landingFooter.locator("a").nth(0)).toHaveText("Features");
+  await expect(landingFooter.locator("a").nth(1)).toHaveText("About");
+  await expect(landingFooter.locator("a").nth(2)).toHaveText("Help");
+  await expect(landingFooter.locator("a").nth(3)).toHaveText("Privacy");
+  await expect(landingFooter.locator("a").nth(4)).toHaveText("Terms");
+  await expect(landingFooter.locator("a").nth(5)).toHaveText("Contact");
   const appFooter = page.locator(".app-legal-footer");
   await expect(appFooter.locator('a[href="./privacy.html"]')).toHaveCount(1);
   await expect(appFooter.locator('a[href="./terms.html"]')).toHaveCount(1);
@@ -180,6 +188,12 @@ test("language selector translates the access experience and remembers the choic
   await expect(page.locator(".login-public-nav a").nth(0)).toHaveText("Ilé");
   await expect(page.locator("#auth-title")).toHaveText("Ẹ kú àbọ̀");
   await expect(page.locator("#auth-tabs [data-auth-mode='signup']")).toHaveText("Ṣẹ̀dá àkọọ́lẹ̀");
+  await expect(page.locator(".login-footer-links a").nth(0)).toHaveText("Àwọn Ẹ̀ya");
+  await expect(page.locator(".login-footer-links a").nth(1)).toHaveText("Nípa wa");
+  await expect(page.locator(".login-footer-links a").nth(2)).toHaveText("Ìrànlọ́wọ́");
+  await expect(page.locator(".login-footer-links a").nth(3)).toHaveText("Ìpamọ́");
+  await expect(page.locator(".login-footer-links a").nth(4)).toHaveText("Àwọn Òfin Lílò");
+  await expect(page.locator(".login-footer-links a").nth(5)).toHaveText("Kàn sí wa");
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator("#campusshield-language")).toHaveValue("yo");
