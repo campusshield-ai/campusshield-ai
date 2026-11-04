@@ -106,6 +106,9 @@ assert.doesNotThrow(() => new Function(i18nScript), "multilingual UI bundle pars
 assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(1)","features"]'), "landing footer first link remains Features");
 assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(2)","about"]'), "landing footer second link remains About");
 assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(3)","help"]'), "landing footer third link remains Help");
+assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(4)","privacy"]'), "landing footer fourth link remains Privacy");
+assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(5)","terms"]'), "landing footer fifth link remains Terms");
+assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(6)","contact"]'), "landing footer sixth link remains Contact");
 assert.ok(i18nScript.includes('localStorage.setItem("campusshield_language", locale)'), "language choice is saved on this device");
 assert.match(i18nScript, /"fr"/, "French is available");
 assert.match(i18nScript, /"es"/, "Spanish is available");
