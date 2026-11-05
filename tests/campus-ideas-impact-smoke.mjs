@@ -54,11 +54,11 @@ assert.match(css, /prefers-reduced-motion:reduce/);
 assert.match(css, /data-theme=\"dark\"/);
 console.log("Campus Ideas & Impact smoke checks passed.");
 
-assert.match(statusContextSql, /create or replace function private\.prepare_campus_idea_status_update\(\)/i);
-assert.match(statusContextSql, /new\.reviewer_id := \(select auth\.uid\(\)\)/i);
-assert.match(statusContextSql, /new\.university_id := private\.current_campus_university_id\(\)/i);
-assert.match(statusContextSql, /before insert on public\.campus_idea_status_updates/i);
-assert.match(statusContextSql, /revoke all on function private\.prepare_campus_idea_status_update\(\) from public, anon, authenticated/i);
+assert.ok(statusContextSql.toLowerCase().includes("create or replace function private.prepare_campus_idea_status_update()"));
+assert.ok(statusContextSql.includes("new.reviewer_id := (select auth.uid())"));
+assert.ok(statusContextSql.includes("new.university_id := private.current_campus_university_id()"));
+assert.ok(statusContextSql.toLowerCase().includes("before insert on public.campus_idea_status_updates"));
+assert.ok(statusContextSql.toLowerCase().includes("revoke all on function private.prepare_campus_idea_status_update() from public, anon, authenticated"));
 
 
 assert.ok(statusGuard.includes("create or replace function private.prepare_campus_idea_status_update()"));
