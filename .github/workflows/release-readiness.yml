@@ -13,6 +13,12 @@ on:
       - "tests/browser/**"
       - "playwright.config.cjs"
       - ".github/workflows/release-readiness.yml"
+      - "campus-ideas-impact.js"
+      - "campus-ideas-impact.css"
+      - "supabase/migrations/20261105130000_campus_ideas_impact_mvp.sql"
+      - "supabase/migrations/20261105131500_campus_idea_status_context_guard.sql"
+      - "supabase/migrations/20261105131500_campus_idea_status_context_guard.sql"
+      - "tests/campus-ideas-impact-smoke.mjs"
   workflow_dispatch:
 
 permissions:
@@ -36,6 +42,10 @@ jobs:
           node-version: 22
       - name: Run complete smoke suite
         run: node tests/smoke-check.mjs
+      - name: Check Ideas & Impact JavaScript syntax
+        run: node --check campus-ideas-impact.js
+      - name: Verify Ideas & Impact security and RLS contracts
+        run: node tests/campus-ideas-impact-smoke.mjs
 
   responsive-browser:
     name: Responsive browser and navigation checks
@@ -49,7 +59,7 @@ jobs:
         with:
           node-version: 22
       - name: Install browser-test dependency
-        run: npm install --no-save --no-package-lock @playwright/test
+        run: npm install --no-save --no-package-lock @playwright/test@1.64.1
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Run responsive browser tests

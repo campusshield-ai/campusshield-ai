@@ -1,0 +1,42 @@
+name: Campus Ideas & Impact checks
+
+on:
+  push:
+    branches: [feat/campuspulse-ideas-impact-staging]
+    paths:
+      - "campus-ideas-impact.js"
+      - "campus-ideas-impact.css"
+      - "index.html"
+      - "supabase/migrations/20261105130000_campus_ideas_impact_mvp.sql"
+      - "supabase/migrations/20261105131500_campus_idea_status_context_guard.sql"
+      - "supabase/migrations/20261105131500_campus_idea_status_context_guard.sql"
+      - "tests/campus-ideas-impact-smoke.mjs"
+      - ".github/workflows/campus-ideas-impact.yml"
+  pull_request:
+    branches: [staging/preview, main]
+    paths:
+      - "campus-ideas-impact.js"
+      - "campus-ideas-impact.css"
+      - "index.html"
+      - "supabase/migrations/20261105130000_campus_ideas_impact_mvp.sql"
+      - "tests/campus-ideas-impact-smoke.mjs"
+      - ".github/workflows/campus-ideas-impact.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  ideas-impact:
+    name: Ideas & Impact syntax, privacy and regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check campus-ideas-impact.js
+      - name: Verify Ideas & Impact feature and RLS contracts
+        run: node tests/campus-ideas-impact-smoke.mjs
+      - name: Run full CampusShield smoke suite
+        run: node tests/smoke-check.mjs
