@@ -110,3 +110,36 @@ test("AI-generated exam practice and AI marking stay locked without the paid ent
   await expect(form.locator("input,select,textarea").first()).toBeEnabled();
   await expect(page.locator("#pq-ai-generate")).toBeEnabled();
 });
+
+test("active ShieldMind plan allowances are clear and responsive", async ({ page }) => {
+  await openWorkspace(page, "shieldmind");
+  const summary = page.locator("#shieldmind-plan-summary");
+  await expect(summary).toBeHidden();
+  await page.evaluate(() => {
+    const values = {
+      name: "PRO",
+      expiry: "Active until 12/31/2099",
+      requests: "25 / 1,500",
+      images: "150"
+    };
+    document.querySelector("#shieldmind-plan-summary-name").textContent = values.name;
+    document.querySelector("#shieldmind-plan-summary-expiry").textContent = values.expiry;
+    document.querySelector("#shieldmind-plan-summary-requests").textContent = values.requests;
+    document.querySelector("#shieldmind-plan-summary-images").textContent = values.images;
+    document.querySelector("#shieldmind-plan-summary").hidden = false;
+  });
+  await expect(summary).toContainText("PRO");
+  await expect(summary).toContainText("25 / 1,500");
+  await expect(summary).toContainText("150");
+  await expect(summary.locator("[data-page=billing]")).toBeVisible();
+  for (const width of [320, 360, 390, 430, 768, 1024, 1366]) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await summary.evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      return { left: rect.left, right: rect.right, scrollWidth: document.documentElement.scrollWidth };
+    });
+    expect(metrics.left).toBeGreaterThanOrEqual(-1);
+    expect(metrics.right).toBeLessThanOrEqual(width + 1);
+    expect(metrics.scrollWidth).toBeLessThanOrEqual(width + 1);
+  }
+});
