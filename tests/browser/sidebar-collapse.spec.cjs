@@ -41,6 +41,7 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
         sidebarClientWidth: sidebar.clientWidth,
         mainMarginLeft: parseFloat(getComputedStyle(main).marginLeft),
         iconDisplay: getComputedStyle(sidebar.querySelector(".nav button .nav-icon")).display,
+        iconWidth: sidebar.querySelector(".nav button .nav-icon").getBoundingClientRect().width,
         toggleIconDisplay: getComputedStyle(document.querySelector("#sidebar-collapse-toggle .sidebar-toggle-icon")).display,
         documentWidth: document.documentElement.scrollWidth,
         viewportWidth: document.documentElement.clientWidth,
@@ -51,7 +52,8 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
     expect(metrics.sidebarWidth, `collapsed rail width at ${width}px`).toBe(expectedWidth);
     expect(metrics.mainMarginLeft, `content offset at ${width}px`).toBe(expectedWidth);
     expect(metrics.sidebarScrollWidth, `collapsed rail content must not be clipped horizontally at ${width}px`).toBeLessThanOrEqual(metrics.sidebarClientWidth + 1);
-    expect(metrics.iconDisplay).toBe("inline-flex");
+    expect(metrics.iconDisplay).not.toBe("none");
+    expect(metrics.iconWidth).toBeGreaterThanOrEqual(18);
     expect(metrics.toggleIconDisplay).not.toBe("none");
     expect(metrics.documentWidth).toBeLessThanOrEqual(metrics.viewportWidth + 1);
 
