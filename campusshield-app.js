@@ -464,7 +464,7 @@
       }
     } else if(role==='admin' && campusOk){
       state='approved';badge='Verified campus administrator';title='Campus administrator workspace';description='You have administrator access for your approved campus, subject to database authorization.';
-      items=['Review campus staff and account-verification applications available to your role.','Access and supervise online classrooms and live sessions across your approved campus.','Use incident management, risk analysis and analytics for your authorized campus.'];
+      items=['Create and manage the classrooms you own for your university.','Access and supervise live sessions across your approved campus, including teacher-owned classrooms.','Review campus staff applications and use incident management, risk analysis and analytics where your role permits.'];
       limit='Platform-wide administration and trusted platform-admin assignments require separate platform-level provisioning. Your campus role does not grant access to another university.';
     } else if(role==='security' && campusOk){
       state='approved';badge='Verified campus security';title='Campus safety operations';description='Your approved security role unlocks safety operations for your verified campus.';
