@@ -20,8 +20,8 @@ assert.match(html, /campus-live-classroom\.js/);
 assert.match(html, /id="campus-live-classroom-root"/);
 assert.match(html, /Online Classroom/);
 
-assert.match(app, /\['teacher','student'\]\.includes\(currentProfile\?\.role\)/);
-assert.match(app, /\['teacher','student'\]\.includes\(currentProfile\.role\)/);
+assert.match(app, /\['admin','teacher','student'\]\.includes\(currentProfile\?\.role\)/);
+assert.match(app, /\['admin','teacher','student'\]\.includes\(currentProfile\.role\)/);
 assert.match(backend, /listCampusLiveClassSessions/);
 assert.match(backend, /createCampusLiveClassSession/);
 assert.match(backend, /startCampusLiveClassSession/);
