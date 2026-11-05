@@ -212,7 +212,7 @@
         return;
       }
       if (button.dataset.page === 'classroom') {
-        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['teacher','security','admin'].includes(currentProfile?.role));
+        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['teacher','student'].includes(currentProfile?.role));
         return;
       }
       if (button.dataset.page === 'opportunities') {
@@ -989,9 +989,9 @@
       toast('Only verified administrators can access account approvals.');
     }
     if (page === 'classroom' &&
-        (!verified || !hasVerifiedCampusStaffMembership() || !['teacher','security','admin'].includes(currentProfile.role))) {
+        (!verified || !hasVerifiedCampusStaffMembership() || !['teacher','student'].includes(currentProfile.role))) {
       page = 'dashboard';
-      toast('Teacher Classroom requires a verified campus staff account.');
+      toast('Online Classroom requires a verified teacher or student campus membership.');
     }
     if (page === 'opportunities' && (!verified || !hasVerifiedCampusStaffMembership())) {
       page = 'dashboard';
