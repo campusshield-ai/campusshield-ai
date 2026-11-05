@@ -7529,7 +7529,6 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     if($('shieldmind-image-confirm')) $('shieldmind-image-confirm').checked=false;
     $('shieldmind-status').textContent='Ready for a new study conversation.';
     renderShieldMindRecentQuestions();
-    void loadShieldMindConversations({force:true});
   }
 
   $('shieldmind-conversations-list')?.addEventListener('click',async event=>{
