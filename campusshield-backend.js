@@ -1149,11 +1149,22 @@ async getCurrentUser() {
 
     async endCampusLiveClassSession(sessionId) {
       if (!client) throw new Error("Supabase is not configured.");
-      const { data, error } = await client.rpc("end_campus_live_class_session", {
-        p_session_id: sessionId
+      const { data, error } = await client.functions.invoke("campus-live-class-end", {
+        body: { session_id: sessionId }
       });
-      if (error) throw error;
-      return data;
+      if (error) {
+        let message = "";
+        try {
+          const response = error.context;
+          if (response && typeof response.clone === "function") {
+            const payload = await response.clone().json();
+            if (typeof payload?.error === "string") message = payload.error;
+          }
+        } catch (_parseError) {}
+        throw new Error(message || error.message || "Could not end the live class.");
+      }
+      if (data?.error) throw new Error(String(data.error));
+      return data || {};
     },
 
     async setCampusLiveClassRecording(sessionId, recordingUrl) {
