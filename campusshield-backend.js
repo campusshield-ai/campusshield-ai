@@ -1018,6 +1018,14 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    // Live Classroom selector: admins see only classes at their own verified university.
+    async listCampusLiveClassrooms() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_live_classrooms");
+      if (error) throw error;
+      return data || [];
+    },
+
     // Classroom API: table reads are RLS-scoped; all writes use guarded database RPCs.
     async listCampusClassrooms() {
       if (!client) throw new Error("Supabase is not configured.");
