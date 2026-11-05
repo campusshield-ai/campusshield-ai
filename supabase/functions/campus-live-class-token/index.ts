@@ -61,13 +61,13 @@ Deno.serve(async (req: Request) => {
     }
 
     // The caller's own JWT is used for this RPC. The database verifies the
-    // verified campus membership, enrolment/teacher relationship, and live status.
+    // verified campus membership, classroom access and live status (including campus administrators).
     const { data: contextData, error: contextError } = await client.rpc(
       "get_campus_live_class_token_context",
       { p_session_id: sessionId },
     );
     const context = Array.isArray(contextData) ? contextData[0] : contextData;
-    if (contextError || !context?.room_name || !["teacher", "assistant", "student"].includes(context.participant_role)) {
+    if (contextError || !context?.room_name || !["teacher", "assistant", "student", "admin"].includes(context.participant_role)) {
       return json({ error: "This live class is not currently available to your account." }, 403);
     }
 
