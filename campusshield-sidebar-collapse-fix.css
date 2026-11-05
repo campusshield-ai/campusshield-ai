@@ -1,0 +1,211 @@
+/*
+ * Sidebar collapse state guard.
+ * This file is loaded after the Base44/forest-green theme styles because those
+ * theme rules intentionally use !important for their expanded-state layout.
+ * The collapsed state must win over those visibility declarations.
+ */
+
+/* Desktop and tablet: a real icon-only rail when the workspace is collapsed. */
+@media (min-width: 651px) {
+  #workspace.app.sidebar-collapsed #app-sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: 82px !important;
+    min-width: 82px !important;
+    max-width: 82px !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    padding: 18px 11px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    z-index: 30;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .brand {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    width: 100%;
+    min-width: 0;
+    padding: 4px 0 15px !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .brand-copy,
+  #workspace.app.sidebar-collapsed #app-sidebar > .nav-label,
+  #workspace.app.sidebar-collapsed #app-sidebar .nav .nav-section-label,
+  #workspace.app.sidebar-collapsed #app-sidebar .sidebar-status {
+    display: none !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .brand-logo {
+    display: block !important;
+    width: 44px !important;
+    height: 44px !important;
+    flex: 0 0 44px !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .sidebar-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    width: 100% !important;
+    min-height: 34px !important;
+    margin: 0 0 14px !important;
+    padding: 5px 4px !important;
+    flex: 0 0 auto !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .sidebar-toggle-label {
+    display: none !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .sidebar-toggle-icon {
+    display: inline-block !important;
+    transform: none !important;
+    font-size: 22px !important;
+    line-height: 1 !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .nav {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding: 4px 0 10px !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .nav button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    flex: 0 0 auto !important;
+    padding: 10px 5px !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .nav button .nav-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .nav button .nav-icon svg {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .nav button[hidden] {
+    display: none !important;
+  }
+
+  #workspace.app.sidebar-collapsed .main {
+    margin-left: 82px !important;
+    min-width: 0 !important;
+  }
+}
+
+/* The existing tablet breakpoint uses a slightly slimmer rail. */
+@media (min-width: 651px) and (max-width: 900px) {
+  #workspace.app.sidebar-collapsed #app-sidebar {
+    width: 74px !important;
+    min-width: 74px !important;
+    max-width: 74px !important;
+    padding: 18px 9px !important;
+  }
+
+  #workspace.app.sidebar-collapsed .main {
+    margin-left: 74px !important;
+  }
+}
+
+/* Mobile uses the slide-in drawer, never the desktop collapse button. */
+@media (max-width: 650px) {
+  #app-sidebar .sidebar-toggle {
+    display: none !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: min(320px, 88vw) !important;
+    min-width: 0 !important;
+    max-width: 88vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    padding: 18px 14px calc(18px + env(safe-area-inset-bottom)) !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .brand {
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding: 2px 6px 18px !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .brand-copy {
+    display: flex !important;
+    min-width: 0 !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar > .nav-label,
+  #workspace.app.sidebar-collapsed #app-sidebar .nav .nav-section-label {
+    display: block !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .sidebar-status {
+    display: block !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .nav {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .nav button {
+    justify-content: flex-start !important;
+    gap: 11px !important;
+    min-height: 46px !important;
+    padding: 11px 12px !important;
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    white-space: normal !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar .nav button .nav-icon {
+    display: inline-flex !important;
+    flex: 0 0 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 18px !important;
+  }
+
+  #workspace.app.sidebar-collapsed .main {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+  }
+}
