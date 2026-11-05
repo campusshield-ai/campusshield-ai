@@ -56,14 +56,14 @@ Deno.serve(async (req: Request) => {
     }
 
     // This RPC checks the live session, verified campus and classroom membership.
-    // Only teachers and appointed class assistants may close the provider room.
+    // Verified teachers, appointed class assistants and campus administrators for the class's university may close the provider room.
     const { data: contextData, error: contextError } = await client.rpc(
       "get_campus_live_class_token_context",
       { p_session_id: sessionId },
     );
     const context = Array.isArray(contextData) ? contextData[0] : contextData;
-    if (contextError || !context?.room_name || !["teacher", "assistant"].includes(context.participant_role)) {
-      return json({ error: "Only the verified teacher or appointed class assistant can end this live class." }, 403);
+    if (contextError || !context?.room_name || !["teacher", "assistant", "admin"].includes(context.participant_role)) {
+      return json({ error: "Only the verified teacher, appointed class assistant or campus administrator can end this live class." }, 403);
     }
 
     const livekitUrl = Deno.env.get("LIVEKIT_URL");
