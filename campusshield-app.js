@@ -212,7 +212,7 @@
         return;
       }
       if (button.dataset.page === 'classroom') {
-        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['teacher','student'].includes(currentProfile?.role));
+        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['admin','teacher','student'].includes(currentProfile?.role));
         return;
       }
       if (button.dataset.page === 'opportunities') {
@@ -464,7 +464,7 @@
       }
     } else if(role==='admin' && campusOk){
       state='approved';badge='Verified campus administrator';title='Campus administrator workspace';description='You have administrator access for your approved campus, subject to database authorization.';
-      items=['Review campus staff and account-verification applications available to your role.','Use incident management, risk analysis and analytics for your authorized campus.','Use campus administrative controls and institutional billing only where server-side policies permit.'];
+      items=['Review campus staff and account-verification applications available to your role.','Access and supervise online classrooms and live sessions across your approved campus.','Use incident management, risk analysis and analytics for your authorized campus.'];
       limit='Platform-wide administration and trusted platform-admin assignments require separate platform-level provisioning. Your campus role does not grant access to another university.';
     } else if(role==='security' && campusOk){
       state='approved';badge='Verified campus security';title='Campus safety operations';description='Your approved security role unlocks safety operations for your verified campus.';
@@ -472,7 +472,7 @@
       limit='Security access does not grant staff-application approvals, institutional billing administration, campus administrator powers, or platform-wide controls.';
     } else if(role==='teacher' && campusOk){
       state='approved';badge='Verified university staff';title='University staff workspace';description='Your verified staff workspace is based on the teacher/staff system role, not your job title.';
-      items=['Create and manage classroom spaces where enabled for verified teachers.','Use campus opportunities, community and student-support features available to verified staff.','Publish official campus notices where the feature and campus policies allow it.'];
+      items=['Create and manage classroom spaces, schedule live online classes and teach enrolled students.','Use campus opportunities, community and student-support features available to verified staff.','Publish official campus notices where the feature and campus policies allow it.'];
       limit='The standard staff role cannot manage/resolve incident reports, access staff-review queues, administer institutional billing, or grant campus/platform administrator access. Security-console access requires a separate security-role assignment.';
     } else if(['teacher','security','admin'].includes(role) && !campusOk){
       state='restricted';badge='Campus membership not verified';title='Campus access is not fully enabled';description='Your account exists, but the campus membership required for these tools is not currently verified.';
@@ -989,9 +989,9 @@
       toast('Only verified administrators can access account approvals.');
     }
     if (page === 'classroom' &&
-        (!verified || !hasVerifiedCampusStaffMembership() || !['teacher','student'].includes(currentProfile.role))) {
+        (!verified || !hasVerifiedCampusStaffMembership() || !['admin','teacher','student'].includes(currentProfile.role))) {
       page = 'dashboard';
-      toast('Online Classroom requires a verified teacher or student campus membership.');
+      toast('Online Classroom requires a verified teacher, student or campus administrator with active campus membership.');
     }
     if (page === 'opportunities' && (!verified || !hasVerifiedCampusStaffMembership())) {
       page = 'dashboard';
