@@ -44,7 +44,7 @@
     <div class="actions"><a class="button" href="./index.html#login-screen">← Back to CampusShield</a><a class="button" href="./contact.html">Privacy questions</a></div>
     <article>
       <h1>Privacy Policy</h1>
-      <p class="muted">Last updated: 27 October 2026</p>
+      <p class="muted">Last updated: 5 November 2026</p>
       <p>This Privacy Policy describes the CampusShield AI service as currently implemented in the repository and the integrations that may be enabled. Features, hosting and processors can differ between preview and production deployments.</p>
       <div class="notice"><strong>Development-stage notice:</strong> Do not upload real student IDs, incident details, or other sensitive personal information to staging or preview environments. Use fictional test data only. This page is an interim operational notice, not a substitute for legal review before public production use.</div>
 
@@ -89,9 +89,12 @@
 
       <h2>6. AI features and external services</h2>
       <p>If an AI assistant or other AI-powered feature is enabled and you use it, the text or context you submit may be sent to the AI provider configured for that feature so it can produce a response. Avoid including unnecessary sensitive details. AI output can be incomplete or wrong and is not a substitute for human review or professional advice. If Google sign-in or payment checkout is enabled, those services are governed by their own privacy notices and terms.</p>
+      <p><strong>ShieldMind saved conversations:</strong> when you use the paid ShieldMind workspace, the service stores your conversation title, text questions, and text answers in the configured Supabase database so you can search for and reopen previous study sessions. These records are protected by account-ownership database policies. You can delete an individual conversation from the ShieldMind history panel; deleting a conversation also deletes its messages. Conversation records are not shared in CampusPulse or with other students. The text you choose to submit is still sent to the configured AI provider to produce an answer, as described above.</p>
+      <p>Study images attached to a ShieldMind request may be sent to the AI provider for that individual response, but image files and image binaries are not saved in chat history or CampusShield storage. The saved transcript may include personal information if you type it into a prompt, so do not include student IDs, passwords, incident reports, medical details, or other sensitive information.</p>
 
       <h2>7. Retention and security</h2>
       <p><strong>No fixed, time-based retention schedule was verified in the project materials.</strong> Therefore this notice does not promise deletion after a specific number of days. At present, records may remain in the configured services while they are needed to operate accounts, review incidents or identity applications, preserve safety/audit history, reconcile payments, or address security and legal obligations. Backups and provider logs may follow separate service-specific retention settings.</p>
+      <p><strong>ShieldMind conversation retention:</strong> saved conversation text remains in your account until you delete the conversation or the associated account is deleted, subject to any provider backups, legal holds, or other obligations described above. No automatic age-based expiration is implemented for saved ShieldMind conversations.</p>
       <ul>
         <li><strong>Accounts and profiles:</strong> no published automatic deletion timeline was verified.</li>
         <li><strong>Safety reports, identity-review records and community moderation:</strong> no universal expiration period was verified; retention must be set according to approved safety, review and legal requirements.</li>

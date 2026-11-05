@@ -1,0 +1,193 @@
+/* ShieldMind Learning Intelligence — premium progress summary */
+#page-shieldmind .shieldmind-insights-panel {
+  margin: 0 0 17px;
+  padding: clamp(16px, 2.2vw, 24px);
+  border: 1px solid #cfe7d6;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #fbfffc 0%, #f0f8f2 100%);
+  box-shadow: 0 10px 28px rgba(12, 65, 40, .07);
+}
+#page-shieldmind .shieldmind-insights-panel[hidden] { display: none !important; }
+#page-shieldmind .shieldmind-insights-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+#page-shieldmind .shieldmind-insights-eyebrow {
+  display: block;
+  color: #28734b;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+#page-shieldmind .shieldmind-insights-heading h2 {
+  margin: 4px 0 3px;
+  color: #123e2a;
+  font-size: clamp(17px, 2.1vw, 21px);
+  letter-spacing: -.035em;
+}
+#page-shieldmind .shieldmind-insights-heading p {
+  margin: 0;
+  color: #5c7566;
+  font-size: 11px;
+}
+#page-shieldmind .shieldmind-insights-heading .btn {
+  flex: 0 0 auto;
+  min-height: 36px;
+}
+#page-shieldmind .shieldmind-insights-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 15px;
+}
+#page-shieldmind .shieldmind-insights-metric {
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid #dcebe0;
+  border-radius: 13px;
+  background: rgba(255,255,255,.84);
+}
+#page-shieldmind .shieldmind-insights-metric span {
+  display: block;
+  color: #668071;
+  font-size: 10px;
+  font-weight: 750;
+}
+#page-shieldmind .shieldmind-insights-metric strong {
+  display: block;
+  margin-top: 5px;
+  color: #123e2a;
+  font-size: clamp(20px, 2.3vw, 27px);
+  line-height: 1.1;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+#page-shieldmind .shieldmind-insights-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(220px, .8fr);
+  gap: 12px;
+}
+#page-shieldmind .shieldmind-insights-topics,
+#page-shieldmind .shieldmind-insights-recommendation {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #dcebe0;
+  border-radius: 13px;
+  background: rgba(255,255,255,.82);
+}
+#page-shieldmind .shieldmind-insights-topics h3,
+#page-shieldmind .shieldmind-insights-recommendation h3 {
+  margin: 0 0 10px;
+  color: #244d37;
+  font-size: 12px;
+}
+#page-shieldmind .shieldmind-insights-topic { margin: 0 0 12px; }
+#page-shieldmind .shieldmind-insights-topic:last-child { margin-bottom: 0; }
+#page-shieldmind .shieldmind-insights-topic-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+#page-shieldmind .shieldmind-insights-topic-name {
+  min-width: 0;
+  color: #234c37;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+#page-shieldmind .shieldmind-insights-topic-score {
+  color: #234c37;
+  font-size: 11px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+#page-shieldmind .shieldmind-insights-progress {
+  height: 7px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #e8f0ea;
+}
+#page-shieldmind .shieldmind-insights-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #1b7250, #7bcf91);
+}
+#page-shieldmind .shieldmind-insights-topic[data-level="priority"] .shieldmind-insights-progress span { background: linear-gradient(90deg, #bc6c36, #e3a65a); }
+#page-shieldmind .shieldmind-insights-topic[data-level="early"] .shieldmind-insights-progress span { background: linear-gradient(90deg, #688c9e, #9abac5); }
+#page-shieldmind .shieldmind-insights-topic-detail {
+  display: block;
+  margin-top: 4px;
+  color: #718778;
+  font-size: 9px;
+}
+#page-shieldmind .shieldmind-insights-recommendation {
+  background: linear-gradient(145deg, #edf8ef, #e5f2e8);
+}
+#page-shieldmind .shieldmind-insights-recommendation strong {
+  display: block;
+  color: #174c32;
+  font-size: 13px;
+}
+#page-shieldmind .shieldmind-insights-recommendation p {
+  margin: 7px 0 0;
+  color: #557161;
+  font-size: 11px;
+  line-height: 1.55;
+}
+#page-shieldmind .shieldmind-insights-empty {
+  margin: 0;
+  color: #718778;
+  font-size: 11px;
+  line-height: 1.6;
+}
+#page-shieldmind .shieldmind-insights-status {
+  min-height: 18px;
+  margin: 12px 0 0;
+  color: #647c6b;
+  font-size: 10px;
+}
+#page-shieldmind .shieldmind-insights-status[data-state="error"] { color: #a23d3d; }
+#page-shieldmind .shieldmind-insights-status[data-state="empty"] { color: #647c6b; }
+#page-shieldmind .shieldmind-insights-actions { margin-top: 10px; }
+#page-shieldmind .shieldmind-insights-actions[hidden] { display: none !important; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-panel {
+  border-color: #315943;
+  background: linear-gradient(145deg, #112a20, #10251d);
+}
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-heading h2,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-metric strong,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topic-name,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topic-score,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-recommendation strong { color: #d8f3df; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-heading p,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-metric span,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topic-detail,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-recommendation p,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-empty,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-status { color: #a3bba9; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-metric,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topics,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-recommendation {
+  border-color: #2d4c39;
+  background: rgba(15, 39, 29, .88);
+}
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-progress { background: #294535; }
+@media (max-width: 760px) {
+  #page-shieldmind .shieldmind-insights-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #page-shieldmind .shieldmind-insights-body { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 420px) {
+  #page-shieldmind .shieldmind-insights-heading { align-items: flex-start; flex-direction: column; }
+  #page-shieldmind .shieldmind-insights-heading .btn { width: 100%; }
+  #page-shieldmind .shieldmind-insights-metric { padding: 11px; }
+  #page-shieldmind .shieldmind-insights-metric strong { font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-shieldmind .shieldmind-insights-progress span { transition: none; }
+}

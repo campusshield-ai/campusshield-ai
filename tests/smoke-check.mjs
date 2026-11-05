@@ -20,6 +20,11 @@ const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.j
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
+const learningInsightsScript = await readFile(new URL("../shieldmind-learning-insights.js", import.meta.url), "utf8");
+const learningInsightsCss = await readFile(new URL("../shieldmind-learning-insights.css", import.meta.url), "utf8");
+const shieldmindChatHistoryCss = await readFile(new URL("../shieldmind-chat-history.css", import.meta.url), "utf8");
+const shieldmindChatHistoryMigration = await readFile(new URL("../supabase/migrations/20261105013000_shieldmind_private_chat_history.sql", import.meta.url), "utf8");
+const shieldmindChatHistoryIndexMigration = await readFile(new URL("../supabase/migrations/20261105014500_shieldmind_messages_owner_fk_index.sql", import.meta.url), "utf8");
 const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
 const paystackWebhookFunction = await readFile(new URL("../supabase/functions/paystack-webhook/index.ts", import.meta.url), "utf8");
@@ -178,6 +183,11 @@ assert.ok(htmlMarkup.includes('<script src="./shieldmind-planner.js" defer></scr
 assert.doesNotMatch(html, /campusshield-backend-identity-addon\.js/);
 assert.match(planner, /create_my_shieldmind_planner_item/);
 assert.match(planner, /list_my_shieldmind_planner_items/);
+assert.match(appScript, /function addShieldMindMessage\(role, message, metadata = \{\}\)/, "ShieldMind renders source and saved-chat metadata alongside AI answers");
+assert.match(appScript, /Array\.isArray\(metadata\).*metadata\?\.sources/s, "ShieldMind supports live source arrays and saved source metadata");
+assert.match(appScript, /parsed\.protocol === 'https:' \|\| parsed\.protocol === 'http:'/ , "ShieldMind source links are restricted to HTTP(S)");
+assert.match(appScript, /navigator\.clipboard\?\.writeText/, "ShieldMind answers can be copied from the chat");
+assert.match(appScript, /result\?\.sources/, "ShieldMind displays approved source links returned by its Edge Function");
 assert.match(planner, /update_my_shieldmind_planner_item/);
 assert.match(planner, /delete_my_shieldmind_planner_item/);
 
@@ -378,6 +388,11 @@ const billingPageStart = html.indexOf('<section class="page" id="page-billing">'
 assert.ok(shieldmindPageStart >= 0 && billingPageStart > shieldmindPageStart, "ShieldMind and billing pages exist in order");
 const shieldmindPageMarkup = html.slice(shieldmindPageStart, billingPageStart);
 assert.match(shieldmindPageMarkup, /id="shieldmind-plan-status"/);
+assert.match(shieldmindPageMarkup, /id="shieldmind-plan-summary"/, "ShieldMind has an active-plan allowance summary");
+assert.match(shieldmindPageMarkup, /id="shieldmind-plan-summary-requests"/, "ShieldMind plan summary has an AI request allowance");
+assert.match(shieldmindPageMarkup, /id="shieldmind-plan-summary-images"/, "ShieldMind plan summary has a monthly image allowance");
+assert.match(appScript, /starter: \{ minute: 10, day: 250, images: 20 \}/, "Starter allowance summary matches the server quota");
+assert.match(appScript, /max: \{ minute: 50, day: 4000, images: 600 \}/, "Max allowance summary matches the server quota");
 assert.match(shieldmindPageMarkup, /id="shieldmind-paid-gate"/);
 assert.match(shieldmindPageMarkup, /data-page="billing">Compare plans &amp; subscribe/);
 assert.match(shieldmindPageMarkup, /class="shieldmind-quick-actions" aria-label="ShieldMind quick actions" hidden/);
@@ -893,3 +908,72 @@ assert.match(creatorToolsCss, /prefers-reduced-motion:reduce/);
 assert.match(visualRefreshCss, /prefers-reduced-motion/);
 assert.match(visualRefreshCss, /\.campus-dashboard-hero/);
 console.log("PASS independent visual refresh and static Creator & Tools Hub isolation, content, privacy, navigation and responsive styling");
+
+
+// ShieldMind private conversation history: staging migration, owner RLS, paid UI and privacy disclosure.
+assert.doesNotThrow(() => new Function(appScript), "CampusShield app script parses after chat-history wiring");
+assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./shieldmind-chat-history.css">'), "saved conversation styling is loaded");
+assert.doesNotMatch(htmlMarkup, /shieldmind-chat-history\.js/, "chat-history behavior is integrated into the main app without a missing script dependency");
+for (const id of ["shieldmind-history-title", "shieldmind-history-new", "shieldmind-history-search", "shieldmind-conversations-list", "shieldmind-history-status"]) {
+  assert.ok(htmlMarkup.includes('id="' + id + '"'), "ShieldMind saved history includes " + id);
+}
+assert.match(htmlMarkup, /id="shieldmind-clear"[^>]*data-shieldmind-new-chat/, "composer New chat control preserves saved history");
+assert.match(appScript, /async function ensureShieldMindConversation/);
+assert.match(appScript, /async function saveShieldMindConversationMessage/);
+assert.match(appScript, /async function loadShieldMindConversations/);
+assert.match(appScript, /async function openShieldMindConversation/);
+assert.match(appScript, /async function deleteShieldMindConversation/);
+assert.match(appScript, /\.from\('shieldmind_conversations'\)/);
+assert.match(appScript, /\.from\('shieldmind_messages'\)/);
+assert.match(appScript, /\.eq\('user_id',user\.id\)/, "conversation and message queries are explicitly owner-scoped");
+assert.match(appScript, /\.ilike\('content',pattern\)/, "saved chat search includes message text");
+assert.match(appScript, /addShieldMindMessage\(item\.role,item\.content,item\.metadata\|\|\{\}\)/, "reopened transcript restores text-only attachment notes");
+assert.match(appScript, /image_saved:false/, "image attachment metadata records that the image itself is not retained");
+assert.match(appScript, /startNewShieldMindConversation\(\)/, "New chat starts a separate conversation rather than deleting history");
+assert.match(appScript, /from\('shieldmind_conversations'\)\.delete\(\)/, "deleting history is an explicit per-conversation action");
+assert.match(shieldmindChatHistoryMigration, /create table if not exists public\.shieldmind_conversations/i);
+assert.match(shieldmindChatHistoryMigration, /create table if not exists public\.shieldmind_messages/i);
+assert.match(shieldmindChatHistoryMigration, /alter table public\.shieldmind_conversations enable row level security/i);
+assert.match(shieldmindChatHistoryMigration, /alter table public\.shieldmind_messages enable row level security/i);
+assert.match(shieldmindChatHistoryMigration, /grant select, insert, update, delete on table public\.shieldmind_conversations to authenticated/i);
+assert.match(shieldmindChatHistoryMigration, /grant select, insert, delete on table public\.shieldmind_messages to authenticated/i);
+assert.doesNotMatch(shieldmindChatHistoryMigration, /grant [^;]*update[^;]*shieldmind_messages/i, "chat messages are immutable through the Data API");
+assert.match(shieldmindChatHistoryMigration, /revoke all on table public\.shieldmind_conversations, public\.shieldmind_messages from authenticated, anon, public/i);
+assert.match(shieldmindChatHistoryMigration, /using \(\(select auth\.uid\(\)\) = user_id\)/i);
+assert.match(shieldmindChatHistoryMigration, /with check \(\(select auth\.uid\(\)\) = user_id\)/i);
+assert.match(shieldmindChatHistoryMigration, /foreign key \(conversation_id, user_id\)[\s\S]*references public\.shieldmind_conversations \(id, user_id\)/i);
+assert.match(shieldmindChatHistoryMigration, /role in \('user', 'assistant'\)/i);
+assert.doesNotMatch(shieldmindChatHistoryMigration, /security definer/i, "chat history uses ordinary owner RLS, not a privileged bypass function");
+assert.match(shieldmindChatHistoryIndexMigration, /on public[.]shieldmind_messages \(conversation_id, user_id\)/i, "message ownership foreign key has a covering index");
+assert.match(shieldmindChatHistoryCss, /@media \(max-width: 420px\)/);
+assert.match(shieldmindChatHistoryCss, /html\[data-theme="dark"\]/);
+assert.match(privacyPage, /ShieldMind saved conversations/);
+assert.match(privacyPage, /Study images attached to a ShieldMind request[\s\S]*not saved in chat history/);
+assert.match(privacyPage, /No automatic age-based expiration is implemented for saved ShieldMind conversations/);
+console.log("PASS ShieldMind private persistent chat history, owner RLS, search/reopen/delete actions, image non-retention, responsive UI and privacy disclosure");
+
+
+// ShieldMind Premium learning intelligence: private, staged, read-only progress analytics.
+assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./shieldmind-learning-insights.css">'), "ShieldMind learning insights stylesheet is loaded");
+assert.ok(htmlMarkup.includes('<script src="./shieldmind-learning-insights.js" defer></script>'), "ShieldMind learning insights module loads before the main app");
+assert.ok(htmlMarkup.includes('id="shieldmind-learning-insights"') && htmlMarkup.includes('hidden>'), "learning insights are hidden until paid access is verified");
+for (const id of ["shieldmind-insights-attempts", "shieldmind-insights-average", "shieldmind-insights-days", "shieldmind-insights-topics-count", "shieldmind-insights-topics", "shieldmind-insights-recommendation"]) {
+  assert.ok(htmlMarkup.includes('id="' + id + '"'), "learning insights include " + id);
+}
+assert.doesNotThrow(() => new Function(learningInsightsScript), "ShieldMind learning insights module parses");
+assert.match(learningInsightsScript, /CampusShieldShieldMindAccess\?\.active/, "learning insights require the verified paid access state");
+assert.match(learningInsightsScript, /campusshield:shieldmind-access/, "learning insights respond to verified subscription changes");
+assert.match(learningInsightsScript, /STAGING_PROJECT_REF/, "learning insights remain staging-only until production schema promotion");
+assert.match(learningInsightsScript, /\.from\("practice_attempts"\)/, "learning insights use submitted practice attempts");
+assert.match(learningInsightsScript, /\.eq\("user_id", user\.id\)/, "practice attempt reads are explicitly scoped to the signed-in user");
+assert.match(learningInsightsScript, /\.from\("practice_answers"\)/, "topic analytics use the student's answer records");
+assert.match(learningInsightsScript, /\.in\("attempt_id", batch\)/, "answer reads are limited to the student's own attempt IDs");
+assert.match(learningInsightsScript, /marking_status === "needs_review"/, "unmarked written answers are excluded from topic scores");
+assert.match(learningInsightsScript, /attempt\.percent !== null/, "missing attempt scores do not count as zero");
+assert.match(learningInsightsScript, /answer\.awarded_marks === null/, "missing awarded marks are excluded instead of counted as zero");
+assert.doesNotMatch(learningInsightsScript, /past_question_answer_keys/, "learning insights never request protected answer keys");
+assert.match(learningInsightsScript, /textContent = String\(value \?\? ""\)/, "student-controlled topic labels are rendered as text, not HTML");
+assert.match(learningInsightsCss, /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/, "learning metrics use a desktop grid");
+assert.match(learningInsightsCss, /@media \(max-width: 760px\)/, "learning insights collapse for tablet and phone widths");
+assert.match(learningInsightsCss, /html\[data-theme="dark"\]/, "learning insights support dark mode");
+console.log("PASS ShieldMind paid-state learning intelligence, private practice analytics, safe topic rendering, and responsive styling");

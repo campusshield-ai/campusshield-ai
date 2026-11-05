@@ -24,6 +24,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./campus-dashboard-upgrade.css">
+<link rel="stylesheet" href="./shieldmind-learning-insights.css">
+<link rel="stylesheet" href="./shieldmind-chat-history.css">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <title>CampusShield AI | Intelligent Campus Safety</title>
@@ -3246,6 +3248,25 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <span class="shieldmind-workspace-badge" role="status" aria-live="polite"><span aria-hidden="true">◈</span><span id="shieldmind-plan-status">Checking your plan…</span></span>
   </div>
 
+  <section class="shieldmind-plan-summary" id="shieldmind-plan-summary" aria-label="Your ShieldMind subscription allowances" hidden>
+    <div class="shieldmind-plan-summary-tier">
+      <span class="shieldmind-plan-summary-label">YOUR ACTIVE PLAN</span>
+      <strong id="shieldmind-plan-summary-name">—</strong>
+      <small id="shieldmind-plan-summary-expiry">Checking expiry…</small>
+    </div>
+    <div class="shieldmind-plan-summary-metric">
+      <span class="shieldmind-plan-summary-label">AI REQUEST ALLOWANCE</span>
+      <strong id="shieldmind-plan-summary-requests">—</strong>
+      <small>Per minute · per day</small>
+    </div>
+    <div class="shieldmind-plan-summary-metric">
+      <span class="shieldmind-plan-summary-label">STUDY IMAGES</span>
+      <strong id="shieldmind-plan-summary-images">—</strong>
+      <small>Uploads per month</small>
+    </div>
+    <button class="btn secondary shieldmind-plan-summary-manage" type="button" data-page="billing">Manage plan</button>
+  </section>
+
   <div class="shieldmind-hero shieldmind-hero-compact">
     <div class="shieldmind-hero-copy">
       <h2>Your premium AI study workspace</h2>
@@ -3289,6 +3310,38 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <button type="button" class="shieldmind-quick-action" data-page="student-rewards"><span aria-hidden="true">◷</span>My progress</button>
   </div>
 
+
+  <section class="panel shieldmind-insights-panel" id="shieldmind-learning-insights" aria-labelledby="shieldmind-insights-title" hidden>
+    <div class="shieldmind-insights-heading">
+      <div>
+        <span class="shieldmind-insights-eyebrow">SHIELDMIND PREMIUM · LEARNING INTELLIGENCE</span>
+        <h2 id="shieldmind-insights-title">Your learning progress</h2>
+        <p>Track recent practice performance and spot the topics that deserve more revision.</p>
+      </div>
+      <button class="btn secondary" type="button" id="shieldmind-insights-refresh">Refresh insights</button>
+    </div>
+    <div class="shieldmind-insights-metrics" aria-label="Recent learning metrics">
+      <div class="shieldmind-insights-metric"><span>Submitted sessions</span><strong id="shieldmind-insights-attempts">—</strong></div>
+      <div class="shieldmind-insights-metric"><span>Average score</span><strong id="shieldmind-insights-average">—</strong></div>
+      <div class="shieldmind-insights-metric"><span>Study days · 7d</span><strong id="shieldmind-insights-days">—</strong></div>
+      <div class="shieldmind-insights-metric"><span>Topics analysed</span><strong id="shieldmind-insights-topics-count">—</strong></div>
+    </div>
+    <div class="shieldmind-insights-body">
+      <section class="shieldmind-insights-topics" aria-labelledby="shieldmind-insights-topics-title">
+        <h3 id="shieldmind-insights-topics-title">Topic performance</h3>
+        <div id="shieldmind-insights-topics"><p class="shieldmind-insights-empty">Your topic performance will appear here.</p></div>
+      </section>
+      <aside class="shieldmind-insights-recommendation" aria-labelledby="shieldmind-insights-recommendation-title">
+        <h3 id="shieldmind-insights-recommendation-title">Suggested next step</h3>
+        <div id="shieldmind-insights-recommendation"><p>Complete a practice session to get a focused revision suggestion.</p></div>
+        <div class="shieldmind-insights-actions" id="shieldmind-insights-actions" hidden>
+          <button class="btn secondary" type="button" data-page="past-questions" id="shieldmind-insights-start">Start a practice session</button>
+        </div>
+      </aside>
+    </div>
+    <p class="shieldmind-insights-status" id="shieldmind-insights-status" role="status" aria-live="polite">Your learning data is private to your account.</p>
+  </section>
+
   <div class="shieldmind-grid shieldmind-workspace-grid" id="shieldmind-workspace-grid" hidden>
     <section class="panel shieldmind-chat-panel" aria-labelledby="shieldmind-chat-title">
       <div class="panel-heading shieldmind-chat-heading">
@@ -3316,7 +3369,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         </details>
         <div class="shieldmind-composer-footer">
           <span class="shieldmind-composer-hint"><span aria-hidden="true">✧</span> Study support · Source-aware answers</span>
-          <div class="actions"><button class="btn" type="submit" id="shieldmind-submit"><span aria-hidden="true">↗</span> Ask ShieldMind</button><button class="btn secondary" type="button" id="shieldmind-clear">Clear chat</button></div>
+          <div class="actions"><button class="btn" type="submit" id="shieldmind-submit"><span aria-hidden="true">↗</span> Ask ShieldMind</button><button class="btn secondary" type="button" id="shieldmind-clear" data-shieldmind-new-chat>New chat</button></div>
         </div>
         <p id="shieldmind-status" class="message" role="status" aria-live="polite">Ready for a general academic question.</p>
       </form>
@@ -3332,10 +3385,24 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <button class="shieldmind-tool" type="button" data-page="timetable"><span>05</span><div><strong>Study planner</strong><small>Open saved sessions and reminders</small></div><b aria-hidden="true">›</b></button>
       </section>
 
+      <section class="panel shieldmind-side-panel shieldmind-history-panel" aria-labelledby="shieldmind-history-title">
+        <div class="shieldmind-side-heading shieldmind-history-heading">
+          <div><h2 id="shieldmind-history-title">Saved conversations</h2><p>Private study sessions on this account</p></div>
+          <button type="button" class="btn secondary" id="shieldmind-history-new" data-shieldmind-new-chat>New chat</button>
+        </div>
+        <label class="shieldmind-history-search-label" for="shieldmind-history-search">Search saved chats</label>
+        <input id="shieldmind-history-search" class="shieldmind-history-search" type="search" maxlength="80" autocomplete="off" placeholder="Search titles and message text">
+        <div id="shieldmind-conversations-list" class="shieldmind-conversations-list" aria-live="polite">
+          <p class="shieldmind-history-empty">Your saved conversations will appear here after your first ShieldMind question.</p>
+        </div>
+        <p id="shieldmind-history-status" class="shieldmind-history-status" role="status" aria-live="polite">An active paid plan is required to view saved conversations.</p>
+        <p class="shieldmind-history-privacy">Conversation text is saved privately to your account. Study images are never stored. Do not enter passwords, student IDs, incident reports or other sensitive personal information.</p>
+      </section>
+
       <section class="panel shieldmind-side-panel shieldmind-recent-panel">
-        <div class="shieldmind-side-heading"><div><h2>Recent chats</h2><p>Questions from this session</p></div><button type="button" class="shieldmind-text-button" id="shieldmind-recent-clear">Clear</button></div>
+        <div class="shieldmind-side-heading"><div><h2>Recent questions</h2><p>Quick prompts from this session</p></div><button type="button" class="shieldmind-text-button" id="shieldmind-recent-clear">Clear</button></div>
         <div id="shieldmind-recent-list" class="shieldmind-recent-list"><p class="shieldmind-recent-empty">Your recent questions will appear here during this session.</p></div>
-        <p class="shieldmind-session-note">Recent prompts are kept in this page session only; they are not saved as a permanent chat history.</p>
+        <p class="shieldmind-session-note">Use Saved conversations to reopen a complete study session. Recent questions here are only quick prompts.</p>
       </section>
 
       <section class="panel shieldmind-side-panel shieldmind-campus-panel">
@@ -4261,6 +4328,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <script src="./campusshield-backend.js" defer></script>
 <script src="./campus-service-directory.js" defer></script>
 <script src="./shieldmind-planner.js" defer></script>
+<script src="./shieldmind-learning-insights.js" defer></script>
 <script src="./campus-timetable.js" defer></script>
 <script src="./campus-course-community.js" defer></script>
 <script src="./student-rewards.js" defer></script>
