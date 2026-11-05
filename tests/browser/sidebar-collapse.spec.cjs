@@ -22,6 +22,7 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
     const collapseButton = page.locator("#sidebar-collapse-toggle");
 
     await expect(collapseButton).toBeVisible();
+    const expandedWidth = await sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width));
     const expectedWidth = width <= 900 ? 74 : 82;
     await collapseButton.click();
     await expect(app).toHaveClass(/sidebar-collapsed/);
@@ -60,7 +61,7 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
 
     await collapseButton.click();
     await expect(app).not.toHaveClass(/sidebar-collapsed/);
-    await expect.poll(() => sidebar.evaluate(el => el.getBoundingClientRect().width)).toBeGreaterThan(250);
+    await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(expandedWidth);
     await expect(page.locator("#app-sidebar .brand-copy")).toBeVisible();
     await expect(page.locator("#app-sidebar .nav-section-label").first()).toBeVisible();
   }
