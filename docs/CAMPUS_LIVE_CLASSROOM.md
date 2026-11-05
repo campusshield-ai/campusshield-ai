@@ -2,9 +2,9 @@
 
 ## Current staging implementation
 
-The Online Classroom extends the existing campus-scoped classroom feature. It adds scheduled live-class sessions, teacher/assistant start and end controls, student join controls, optional HTTPS meeting links, and a place to attach a recorded-lecture URL after a session ends.
+The Online Classroom extends the existing campus-scoped classroom feature. It adds scheduled live-class sessions, teacher/campus-admin start and end controls, student join controls, optional HTTPS meeting links, and a place to attach a recorded-lecture URL after a session ends.
 
-The database migration is applied to **CampusShield AI Staging only**. The live-session table has RLS enabled, no direct Data API table grants, and all session actions are routed through authenticated RPC wrappers. Those wrappers use the existing verified campus membership, classroom enrolment, teacher and appointed-assistant checks.
+The database migration is applied to **CampusShield AI Staging only**. The live-session table has RLS enabled, no direct Data API table grants, and all session actions are routed through authenticated RPC wrappers. Those wrappers use the existing verified campus membership, classroom enrolment, teacher, appointed-assistant and campus-admin checks.
 
 ## Integrated video provider
 
