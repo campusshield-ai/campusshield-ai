@@ -115,7 +115,7 @@
       '<section class="cs-live-room" id="cs-live-room-panel" hidden>' +
         '<div class="cs-live-room-heading"><div><span class="cs-live-room-kicker">CAMPUSSHIELD LIVE</span><h3 id="cs-live-room-title">Live classroom</h3></div><button class="btn secondary" type="button" data-live-action="leave">Leave room</button></div>' +
         '<div class="cs-live-media-grid" id="cs-live-media-grid"><div class="cs-live-empty">Connecting to the classroom…</div></div>' +
-        '<div class="cs-live-room-controls"><button class="btn secondary" type="button" data-live-action="mic">Mute microphone</button><button class="btn secondary" type="button" data-live-action="camera">Turn camera on</button><button class="btn secondary" type="button" data-live-action="screen">Share screen</button><button class="btn secondary" type="button" data-live-action="audio">Enable audio</button></div>' +
+        '<div class="cs-live-room-controls"><button class="btn secondary" type="button" data-live-action="mic">Unmute microphone</button><button class="btn secondary" type="button" data-live-action="camera">Turn camera on</button><button class="btn secondary" type="button" data-live-action="screen">Share screen</button><button class="btn secondary" type="button" data-live-action="audio">Enable audio</button></div>' +
         '<p class="cs-live-room-footnote">Use headphones where possible. Your browser may ask for microphone, camera or screen-sharing permission.</p>' +
       '</section>';
 
@@ -262,7 +262,8 @@
     });
 
     await room.connect(access.serverUrl, access.token);
-    await room.localParticipant.setMicrophoneEnabled(true);
+    // Keep the microphone off by default; users opt in from the room controls.
+    await room.localParticipant.setMicrophoneEnabled(false);
     await room.localParticipant.setCameraEnabled(false);
     addParticipantTile("local-" + room.localParticipant.identity, "You · " + (access.room?.participantRole || "member"), true);
     for (const publication of room.localParticipant.videoTrackPublications.values()) {
