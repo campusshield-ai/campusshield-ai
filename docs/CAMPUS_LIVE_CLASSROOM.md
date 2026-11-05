@@ -8,6 +8,12 @@ The database migration is applied to **CampusShield AI Staging only**. The live-
 
 ## Integrated video provider
 
+For initial tests, LiveKit Cloud offers a free **Build** plan with no credit card required. Current included WebRTC allowance is 5,000 participant-minutes per month and 50 GB of downstream data transfer. The free plan stops new usage when the included allowance is exhausted; it does not automatically bill overages. Check the provider's current limits before a campus-wide rollout:
+- LiveKit Cloud sign-up: https://cloud.livekit.io/
+- LiveKit pricing: https://livekit.com/pricing
+- LiveKit quotas: https://docs.livekit.io/deploy/admin/quotas-and-limits/
+
+
 LiveKit is the selected real-time video provider. The browser loads the pinned LiveKit JavaScript client only when a student or lecturer joins a live room. A Supabase Edge Function verifies the caller's JWT, asks the database for a session-specific access context, and mints a short-lived room token. LiveKit API credentials never go to browser code or GitHub.
 
 ### Staging-only secrets required
@@ -37,3 +43,16 @@ After these three LiveKit secrets are entered in Staging, the `campus-live-class
 7. Test narrow mobile layouts and supported browsers before considering a broader rollout.
 
 Recordings are currently represented by teacher-managed HTTPS links; automatic recording/egress storage, assignments, quizzes, grading and deeper academic analytics are later learning-system phases. No production migration or deployment is authorized by this staging implementation.
+
+## Dashboard setup walkthrough
+
+1. Open LiveKit Cloud and create a free Build project.
+2. Open that project's API keys/settings page and copy its WebSocket server URL, API key and API secret.
+3. Open the CampusShield AI Staging Supabase project, then Edge Functions → Secrets:
+   https://supabase.com/dashboard/project/hywcpnoqqhxvujnimhxl/functions/secrets
+4. Add the three variable names shown above, using the matching values from the LiveKit project, then save.
+5. Do not place the values in GitHub, Vercel, browser configuration, a local file that may be committed, or this chat.
+6. Tell the project maintainer that the Staging secrets have been saved (do not send the values). The next test can then verify that the token endpoint reads its runtime configuration.
+
+Supabase documents this dashboard flow at https://supabase.com/docs/guides/functions/secrets. Secrets added to the Supabase Edge Function environment are available to deployed functions immediately; a function redeployment is not required.
+
