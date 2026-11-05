@@ -384,6 +384,14 @@ as $function$
 $function$;
 
 grant usage on schema private to authenticated;
+
+revoke all on function private.create_campus_live_class_session_impl(uuid, text, text, timestamptz, integer, text) from public, anon, authenticated;
+revoke all on function private.list_campus_live_class_sessions_impl(uuid) from public, anon, authenticated;
+revoke all on function private.get_campus_live_classroom_capabilities_impl(uuid) from public, anon, authenticated;
+revoke all on function private.start_campus_live_class_session_impl(uuid) from public, anon, authenticated;
+revoke all on function private.end_campus_live_class_session_impl(uuid) from public, anon, authenticated;
+revoke all on function private.set_campus_live_class_recording_impl(uuid, text) from public, anon, authenticated;
+revoke all on function private.get_campus_live_class_token_context_impl(uuid) from public, anon, authenticated;
 grant execute on function private.create_campus_live_class_session_impl(uuid, text, text, timestamptz, integer, text) to authenticated;
 grant execute on function private.list_campus_live_class_sessions_impl(uuid) to authenticated;
 grant execute on function private.get_campus_live_classroom_capabilities_impl(uuid) to authenticated;
