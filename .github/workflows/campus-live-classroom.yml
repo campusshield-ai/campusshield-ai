@@ -12,6 +12,7 @@ on:
       - "supabase/migrations/*campus_live_classroom*"
       - "supabase/functions/campus-live-class-token/**"
       - "tests/campus-live-classroom-smoke.mjs"
+      - "tests/smoke-check.mjs"
       - ".github/workflows/campus-live-classroom.yml"
   workflow_dispatch:
 
