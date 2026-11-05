@@ -9,6 +9,7 @@ const html = read("../index.html");
 const sql = read("../supabase/migrations/20261105130000_campus_ideas_impact_mvp.sql");
 const statusGuard = read("../supabase/migrations/20261105131500_campus_idea_status_context_guard.sql");
 const statusContextSql = read("../supabase/migrations/20261105131500_campus_idea_status_context_guard.sql");
+const globalAccessSql = read("../supabase/migrations/20261105221500_global_ideas_voice_access_sidebar_fix.sql");
 
 new vm.Script(js, { filename: "campus-ideas-impact.js" });
 assert.match(html, /campus-ideas-impact\.css/);
@@ -69,3 +70,16 @@ assert.ok(statusGuard.includes("private.current_campus_role() not in ('admin','s
 assert.ok(statusGuard.includes("new.reviewer_id := (select auth.uid())"));
 assert.ok(statusGuard.includes("new.university_id := private.current_campus_university_id()"));
 assert.ok(statusGuard.includes("revoke all on function private.prepare_campus_idea_status_update() from public, anon, authenticated"));
+
+assert.ok(globalAccessSql.includes("campus_ideas_read_global_published"));
+assert.ok(globalAccessSql.includes("campus_idea_comments_read_global_published"));
+assert.ok(globalAccessSql.includes("campus_idea_supports_insert_global_published"));
+assert.ok(globalAccessSql.includes("private.prepare_campus_idea_comment_global()"));
+assert.ok(globalAccessSql.includes("private.current_user_has_verified_campus_access()"));
+assert.ok(globalAccessSql.includes("private.can_read_campus_direct_message("));
+assert.ok(js.includes("requireVerifiedCampus: false"));
+assert.ok(!js.includes('.eq("university_id", state.campus.university_id)'));
+assert.ok(js.includes("Across CampusShield"));
+assert.ok(js.includes("state.canContribute"));
+assert.ok(js.includes("state.campus?.university_id === idea.university_id"));
+console.log("Global Ideas & Impact cross-campus access checks passed.");
