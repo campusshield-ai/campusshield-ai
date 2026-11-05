@@ -150,7 +150,7 @@
     const sequence = ++refreshSequence;
     renderLoading();
     try {
-      const rows = await backend().listCampusClassrooms();
+      const rows = await backend().listCampusLiveClassrooms();
       if (sequence !== refreshSequence) return;
       classrooms = Array.isArray(rows) ? rows : [];
       if (!classrooms.some(item => item.id === selectedClassroomId)) {
