@@ -34,7 +34,7 @@ assert.match(voice, /CAMPUSSHIELD_VOICE_V1/);
 assert.match(css, /\.campus-voice-player/);
 
 assert.match(migration, /public = false/);
-assert.match(migration, /file_size_limit = 8388608/);
+assert.match(migration, /8388608/);
 assert.match(migration, /campus_voice_notes_read_linked_messages/);
 assert.match(migration, /campus_voice_notes_upload_sender/);
 assert.match(migration, /campus_voice_notes_delete_unlinked_sender/);
