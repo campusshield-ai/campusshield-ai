@@ -10,6 +10,8 @@
   let loading = false;
   let lastLoadedAt = 0;
   let requestVersion = 0;
+  let loadingRequest = 0;
+  let reloadWhenIdle = false;
 
   function isStagingEnvironment() {
     try {
@@ -47,7 +49,9 @@
   }
 
   function showStartPractice(show) {
+    const actions = $("shieldmind-insights-actions");
     const button = $("shieldmind-insights-start");
+    if (actions) actions.hidden = !show;
     if (button) button.hidden = !show;
   }
 
@@ -203,11 +207,15 @@
       return;
     }
     panel.hidden = false;
-    if (loading) return;
+    if (loading) {
+      if (loadingRequest !== requestVersion) reloadWhenIdle = true;
+      return;
+    }
     if (!options.force && lastLoadedAt && Date.now() - lastLoadedAt < 60000) return;
 
     const request = ++requestVersion;
     loading = true;
+    loadingRequest = request;
     setStatus("Loading your private practice history…");
     try {
       const client = window.CampusShieldBackend?.client;
@@ -238,7 +246,14 @@
         setStatus("We could not load your learning insights. Refresh to try again; your practice records have not been changed.", "error");
       }
     } finally {
-      if (request === requestVersion) loading = false;
+      loading = false;
+      loadingRequest = 0;
+      if (reloadWhenIdle && window.CampusShieldShieldMindAccess?.active && !panel.hidden) {
+        reloadWhenIdle = false;
+        void load({ force: true });
+      } else {
+        reloadWhenIdle = false;
+      }
     }
   }
 
