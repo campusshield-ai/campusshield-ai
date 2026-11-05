@@ -38,7 +38,9 @@ jobs:
           node --check campusshield-backend.js
           node --check campusshield-app.js
       - name: Type-check authenticated LiveKit token function
-        run: deno check supabase/functions/campus-live-class-token/index.ts
+        run: |
+          deno check supabase/functions/campus-live-class-token/index.ts
+          deno check supabase/functions/campus-live-class-end/index.ts
       - name: Run live classroom security and integration smoke checks
         run: node tests/campus-live-classroom-smoke.mjs
       - name: Run full CampusShield regression smoke suite
