@@ -697,3 +697,20 @@ html[data-theme="dark"] #page-past-questions .pq-access-gate{border-color:#315b4
   #page-shieldmind .shieldmind-workspace-badge { flex:0 1 104px; min-width:0; padding:6px 8px; }
   #page-shieldmind .shieldmind-workspace-badge #shieldmind-plan-status { font-size:8px; line-height:1.2; }
 }
+
+
+/* ShieldMind answer utilities: readable, source-linked and easy to reuse. */
+#page-shieldmind .shieldmind-message-sources{margin:13px 0 0;padding:11px 12px;border:1px solid #d9e9dc;border-radius:12px;background:#f5faf5}
+#page-shieldmind .shieldmind-message-sources>strong{display:block;margin-bottom:7px;color:#245d3c;font-size:10px;letter-spacing:.04em;text-transform:uppercase}
+#page-shieldmind .shieldmind-message-sources ul{display:grid;gap:7px;margin:0;padding:0;list-style:none}
+#page-shieldmind .shieldmind-message-sources li{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:3px 7px;min-width:0}
+#page-shieldmind .shieldmind-source-marker{color:#267248;font-size:10px;font-weight:900}
+#page-shieldmind .shieldmind-message-sources a,#page-shieldmind .shieldmind-message-sources li>span:not(.shieldmind-source-marker){min-width:0;color:#285f40;font-size:11px;line-height:1.45;overflow-wrap:anywhere;text-decoration:underline;text-decoration-color:#a9cfb3;text-underline-offset:2px}
+#page-shieldmind .shieldmind-message-sources small{grid-column:2;color:#74877a;font-size:9px}
+#page-shieldmind .shieldmind-copy-answer{display:inline-flex;align-items:center;min-height:30px;margin-top:9px;padding:5px 10px;border:1px solid #d8e7dc;border-radius:9px;background:#fff;color:#356849;font-size:10px;font-weight:800;cursor:pointer}
+#page-shieldmind .shieldmind-copy-answer:hover{background:#edf7ef;border-color:#a8d0b3}
+html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources{border-color:#315342;background:#142d21}
+html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources>strong,html[data-theme="dark"] #page-shieldmind .shieldmind-source-marker,html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources a,html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources li>span:not(.shieldmind-source-marker){color:#b4e8bd}
+html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources small{color:#a6bca9}
+html[data-theme="dark"] #page-shieldmind .shieldmind-copy-answer{border-color:#365a43;background:#183626;color:#b9ebc2}
+@media(max-width:600px){#page-shieldmind .shieldmind-message-sources{padding:9px}#page-shieldmind .shieldmind-copy-answer{min-height:36px}}
