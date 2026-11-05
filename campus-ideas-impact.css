@@ -1,0 +1,81 @@
+.campus-ideas-impact{margin:22px 0;padding:clamp(16px,2.2vw,26px);border:1px solid #d9e8df;border-radius:20px;background:linear-gradient(145deg,#fff 0%,#f6fbf7 100%);box-shadow:0 12px 30px rgba(15,58,41,.055);color:#193b2e}
+.campus-ideas-impact[hidden]{display:none!important}
+.campus-ideas-impact .cii-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:4px 2px 18px}
+.campus-ideas-impact .cii-hero-copy{max-width:760px}
+.campus-ideas-impact .cii-kicker,.campus-ideas-impact .cii-eyebrow{color:#287a56;font-size:.69rem;font-weight:850;letter-spacing:.14em}
+.campus-ideas-impact .cii-hero h2{margin:7px 0 7px;color:#173b2d;font-size:clamp(1.55rem,3vw,2.2rem);letter-spacing:-.045em}
+.campus-ideas-impact .cii-hero p,.campus-ideas-impact .cii-section-heading p{margin:0;color:#657b70;line-height:1.65;font-size:.92rem}
+.campus-ideas-impact .cii-hero-mark{width:62px;height:62px;flex:0 0 62px;display:grid;place-items:center;border:1px solid #c9e6d1;border-radius:19px;background:linear-gradient(145deg,#eaf7ed,#d9f1e2);color:#23774d;font-size:2rem}
+.campus-ideas-impact .cii-principles{display:flex;flex-wrap:wrap;gap:9px 18px;padding:13px 15px;border:1px solid #e0ece4;border-radius:13px;background:#fbfefb;color:#4a6658;font-size:.78rem}
+.campus-ideas-impact .cii-principles strong{margin-right:6px;color:#2b8b5f;font-size:.72rem}
+.campus-ideas-impact .cii-privacy-note{margin:14px 0 20px;padding:12px 14px;border-left:3px solid #4d9b71;border-radius:9px;background:#edf7ef;color:#516e5d;font-size:.8rem;line-height:1.55}
+.campus-ideas-impact .cii-layout{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(0,1.22fr);gap:18px;align-items:start}
+.campus-ideas-impact .cii-compose,.campus-ideas-impact .cii-board{min-width:0;padding:17px;border:1px solid #dfeae2;border-radius:16px;background:#fff}
+.campus-ideas-impact .cii-section-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.campus-ideas-impact .cii-section-heading h3{margin:5px 0 5px;color:#1c4735;font-size:1.12rem;letter-spacing:-.025em}
+.campus-ideas-impact .cii-section-heading p{font-size:.8rem}
+.campus-ideas-impact #cii-form{display:grid;gap:11px}
+.campus-ideas-impact .field{min-width:0;margin:0}
+.campus-ideas-impact .field label,.campus-ideas-impact .cii-search-label{display:block;margin:0 0 6px;color:#385b48;font-size:.78rem;font-weight:750}
+.campus-ideas-impact input,.campus-ideas-impact textarea,.campus-ideas-impact select{box-sizing:border-box;width:100%;min-width:0;max-width:100%;border:1px solid #d8e5dc;border-radius:10px;background:#fbfdfb;color:#193b2e;padding:10px 11px;font:inherit;font-size:.84rem;line-height:1.45}
+.campus-ideas-impact textarea{min-height:82px;resize:vertical}
+.campus-ideas-impact input:focus-visible,.campus-ideas-impact textarea:focus-visible,.campus-ideas-impact select:focus-visible,.campus-ideas-impact button:focus-visible{outline:3px solid #8ed8a6;outline-offset:2px}
+.campus-ideas-impact .cii-form-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.campus-ideas-impact .cii-submit{justify-self:start;min-height:42px;padding:10px 16px;background:#236c4b;color:#fff;border-color:#236c4b}
+.campus-ideas-impact .cii-form-status,.campus-ideas-impact .cii-board-status{margin:0;color:#6c7e73;font-size:.75rem;line-height:1.5}
+.campus-ideas-impact .cii-board-heading{align-items:center}
+.campus-ideas-impact .cii-filters{display:grid;gap:7px;margin:0 0 12px;padding:12px;border:1px solid #e4ece6;border-radius:12px;background:#f8fbf8}
+.campus-ideas-impact .cii-filter-row{display:grid;grid-template-columns:auto minmax(100px,1fr) auto minmax(100px,1fr) auto minmax(90px,.7fr);align-items:center;gap:7px}
+.campus-ideas-impact .cii-filter-row label{color:#5c7164;font-size:.7rem;font-weight:700}
+.campus-ideas-impact .cii-filter-row select{padding:8px 9px;font-size:.76rem}
+.campus-ideas-impact .cii-stats{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.campus-ideas-impact .cii-stats span{padding:6px 10px;border:1px solid #dceae0;border-radius:999px;background:#f3faf4;color:#3d6b50;font-size:.72rem;font-weight:750}
+.campus-ideas-impact .cii-feed{display:grid;gap:12px;margin-top:10px}
+.campus-ideas-impact .cii-idea-card{min-width:0;padding:15px;border:1px solid #dfe9e2;border-radius:14px;background:#fff;box-shadow:0 5px 16px rgba(20,58,42,.035)}
+.campus-ideas-impact .cii-idea-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.campus-ideas-impact .cii-idea-title-wrap{min-width:0}
+.campus-ideas-impact .cii-category{display:inline-flex;margin-bottom:7px;padding:4px 8px;border-radius:999px;background:#edf7ef;color:#2d7650;font-size:.67rem;font-weight:800}
+.campus-ideas-impact .cii-idea-card h3{margin:0 0 5px;color:#1a3c2e;font-size:1.03rem;line-height:1.35;overflow-wrap:anywhere}
+.campus-ideas-impact .cii-meta,.campus-ideas-impact .cii-muted{margin:0;color:#748378;font-size:.72rem;line-height:1.5;overflow-wrap:anywhere}
+.campus-ideas-impact .cii-status{display:inline-flex;flex:0 0 auto;max-width:145px;padding:5px 8px;border:1px solid #d7e7dc;border-radius:999px;background:#f5faf6;color:#476a54;font-size:.67rem;font-weight:800;text-align:center}
+.campus-ideas-impact .cii-status-pending{border-color:#edd9a6;background:#fff9e8;color:#88651f}
+.campus-ideas-impact .cii-status-in_progress{border-color:#b9dce8;background:#eef8fc;color:#286176}
+.campus-ideas-impact .cii-status-implemented{border-color:#b8dec5;background:#edf9f0;color:#246843}
+.campus-ideas-impact .cii-status-declined{border-color:#ead0cf;background:#fff4f3;color:#92504b}
+.campus-ideas-impact .cii-idea-section{margin:10px 0;padding:10px 12px;border-radius:10px;background:#f8fbf8}
+.campus-ideas-impact .cii-idea-section h4{margin:0 0 4px;color:#4e6c59;font-size:.72rem}
+.campus-ideas-impact .cii-idea-section p{margin:0;color:#405c49;font-size:.8rem;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.campus-ideas-impact .cii-update-note{margin:10px 0;padding:10px 12px;border-left:3px solid #4d9b71;border-radius:8px;background:#f1f8f2;color:#4d6c57;font-size:.78rem;line-height:1.5;overflow-wrap:anywhere}
+.campus-ideas-impact .cii-idea-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:12px 0}
+.campus-ideas-impact .cii-support{min-height:34px;padding:7px 11px;font-size:.75rem}
+.campus-ideas-impact .cii-support.is-supported{background:#e4f5e9;border-color:#bfe3ca;color:#216a43}
+.campus-ideas-impact .cii-discussion{margin-top:12px;padding-top:12px;border-top:1px solid #e7eee8}
+.campus-ideas-impact .cii-discussion h4{margin:0 0 8px;color:#315640;font-size:.82rem}
+.campus-ideas-impact .cii-comments{display:grid;gap:7px;margin-bottom:9px}
+.campus-ideas-impact .cii-comment{padding:8px 10px;border-radius:9px;background:#f8fbf8}
+.campus-ideas-impact .cii-comment strong{color:#3a6f4d;font-size:.72rem}
+.campus-ideas-impact .cii-comment p{margin:3px 0;color:#4c6051;font-size:.78rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.campus-ideas-impact .cii-comment time{color:#819087;font-size:.65rem}
+.campus-ideas-impact .cii-comment-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+.campus-ideas-impact .cii-comment-form textarea{min-height:50px}
+.campus-ideas-impact .cii-comment-form button{min-height:38px;white-space:nowrap}
+.campus-ideas-impact .cii-review{margin-top:12px;padding:11px;border:1px solid #e3eae4;border-radius:11px;background:#fbfdfb}
+.campus-ideas-impact .cii-review>strong{display:block;margin-bottom:8px;color:#486b52;font-size:.74rem}
+.campus-ideas-impact .cii-review-controls{display:grid;grid-template-columns:minmax(110px,.7fr) minmax(0,1.3fr) auto;gap:7px}
+.campus-ideas-impact .cii-review-controls input,.campus-ideas-impact .cii-review-controls select{font-size:.72rem;padding:8px}
+.campus-ideas-impact .cii-review-controls button{font-size:.72rem;white-space:nowrap}
+.campus-ideas-impact .cii-empty{padding:20px 14px;border:1px dashed #d4e4d9;border-radius:12px;background:#f9fcf9;color:#587063;text-align:center;font-size:.8rem;line-height:1.55}
+.campus-ideas-impact .cii-empty strong{color:#305940}
+.campus-ideas-impact .cii-empty p{margin:5px 0 0}
+.campus-ideas-impact .cii-footer{margin:16px 2px 0;color:#718177;font-size:.72rem;line-height:1.6}
+.campus-ideas-impact [data-state="error"]{color:#a1433d}
+.campus-ideas-impact button:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:980px){.campus-ideas-impact .cii-layout{grid-template-columns:minmax(0,1fr)}.campus-ideas-impact .cii-compose{order:1}.campus-ideas-impact .cii-board{order:2}}
+@media(max-width:680px){.campus-ideas-impact{padding:14px;border-radius:15px}.campus-ideas-impact .cii-hero-mark{width:46px;height:46px;flex-basis:46px;border-radius:14px;font-size:1.5rem}.campus-ideas-impact .cii-form-row{grid-template-columns:1fr}.campus-ideas-impact .cii-filter-row{grid-template-columns:1fr 1fr}.campus-ideas-impact .cii-filter-row label{grid-column:auto}.campus-ideas-impact .cii-comment-form{grid-template-columns:1fr}.campus-ideas-impact .cii-comment-form button{justify-self:start}.campus-ideas-impact .cii-review-controls{grid-template-columns:1fr}.campus-ideas-impact .cii-idea-head{flex-direction:column}.campus-ideas-impact .cii-board-heading{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){.campus-ideas-impact *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+body.dark .campus-ideas-impact,[data-theme="dark"] .campus-ideas-impact{border-color:#344f42;background:#182b22;color:#e1ede4;box-shadow:none}
+body.dark .campus-ideas-impact .cii-hero h2,[data-theme="dark"] .campus-ideas-impact .cii-hero h2,body.dark .campus-ideas-impact .cii-section-heading h3,[data-theme="dark"] .campus-ideas-impact .cii-section-heading h3,body.dark .campus-ideas-impact .cii-idea-card h3,[data-theme="dark"] .campus-ideas-impact .cii-idea-card h3{color:#e0efe4}
+body.dark .campus-ideas-impact .cii-principles,[data-theme="dark"] .campus-ideas-impact .cii-principles,body.dark .campus-ideas-impact .cii-compose,[data-theme="dark"] .campus-ideas-impact .cii-compose,body.dark .campus-ideas-impact .cii-board,[data-theme="dark"] .campus-ideas-impact .cii-board,body.dark .campus-ideas-impact .cii-idea-card,[data-theme="dark"] .campus-ideas-impact .cii-idea-card{background:#20352a;border-color:#3a5546}
+body.dark .campus-ideas-impact input,body.dark .campus-ideas-impact textarea,body.dark .campus-ideas-impact select,[data-theme="dark"] .campus-ideas-impact input,[data-theme="dark"] .campus-ideas-impact textarea,[data-theme="dark"] .campus-ideas-impact select{background:#172a20;border-color:#455f4d;color:#e1ede4}
+body.dark .campus-ideas-impact .cii-idea-section,body.dark .campus-ideas-impact .cii-comment,body.dark .campus-ideas-impact .cii-filters,[data-theme="dark"] .campus-ideas-impact .cii-idea-section,[data-theme="dark"] .campus-ideas-impact .cii-comment,[data-theme="dark"] .campus-ideas-impact .cii-filters{background:#1a3025}
+body.dark .campus-ideas-impact .cii-idea-section p,body.dark .campus-ideas-impact .cii-comment p,[data-theme="dark"] .campus-ideas-impact .cii-idea-section p,[data-theme="dark"] .campus-ideas-impact .cii-comment p{color:#cad9cf}

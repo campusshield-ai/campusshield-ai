@@ -12,6 +12,10 @@ on:
       - "supabase/migrations/20261101174607_campuspulse_peer_connections_respect_blocks.sql"
       - "supabase/migrations/20261101190831_campuspulse_social_privilege_hardening.sql"
       - "tests/campuspulse-social-smoke.mjs"
+      - "campus-ideas-impact.js"
+      - "campus-ideas-impact.css"
+      - "supabase/migrations/20261105130000_campus_ideas_impact_mvp.sql"
+      - "tests/campus-ideas-impact-smoke.mjs"
       - ".github/workflows/campuspulse-social.yml"
   pull_request:
     branches: [staging/preview]
@@ -42,5 +46,9 @@ jobs:
         run: node --check campuspulse-social.js
       - name: Check CampusPulse social feature contracts
         run: node tests/campuspulse-social-smoke.mjs
+      - name: Check Ideas & Impact JavaScript syntax
+        run: node --check campus-ideas-impact.js
+      - name: Check Ideas & Impact privacy and RLS contracts
+        run: node tests/campus-ideas-impact-smoke.mjs
       - name: Run full CampusShield regression suite
         run: node tests/smoke-check.mjs
