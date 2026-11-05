@@ -211,7 +211,7 @@
         return;
       }
       if (button.dataset.page === 'classroom') {
-        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['teacher','security','admin'].includes(currentProfile?.role));
+        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['admin','teacher','student'].includes(currentProfile?.role));
         return;
       }
       if (button.dataset.page === 'opportunities') {
