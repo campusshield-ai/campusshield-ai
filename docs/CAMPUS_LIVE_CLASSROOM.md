@@ -20,7 +20,9 @@ In Supabase Dashboard → **CampusShield AI Staging** → Edge Functions → Sec
 
 Do not put these values in GitHub, frontend config, HTML, JavaScript, screenshots or chat. Do not add them to the Production Supabase project for this staging test.
 
-The Supabase Edge Function provides `SUPABASE_URL` and publishable/anon key environment variables automatically. The function uses the caller's JWT and does not use the service-role key.
+The Supabase Edge Functions provide `SUPABASE_URL` and publishable/anon key environment variables automatically. The functions use the caller's JWT and do not use the service-role key.
+
+The staging deployment also includes `campus-live-class-end`. It verifies that the caller is the verified teacher or appointed assistant, closes the LiveKit room using the server SDK (disconnecting current participants), and then marks the session as ended in Supabase.
 
 After these three LiveKit secrets are entered in Staging, the `campus-live-class-token` function can mint tokens. Until then, the app still supports scheduled class records and an optional external HTTPS meeting link, while integrated video returns a safe configuration message.
 
