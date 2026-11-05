@@ -982,7 +982,7 @@
       toast('Only verified administrators can access account approvals.');
     }
     if (page === 'classroom' &&
-        (!verified || !hasVerifiedCampusStaffMembership() || !['teacher','security','admin'].includes(currentProfile.role))) {
+        (!verified || !hasVerifiedCampusStaffMembership() || !['admin','teacher','student'].includes(currentProfile.role))) {
       page = 'dashboard';
       toast('Teacher Classroom requires a verified campus staff account.');
     }
