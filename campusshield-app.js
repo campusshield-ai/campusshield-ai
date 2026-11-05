@@ -7213,6 +7213,29 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if (gate) gate.hidden = state.active;
       if (workspace) workspace.hidden = !state.active;
       if (quickActions) quickActions.hidden = !state.active;
+      const planSummary = $('shieldmind-plan-summary');
+      const planCaps = {
+        starter: { minute: 10, day: 250, images: 20 },
+        plus: { minute: 15, day: 700, images: 60 },
+        pro: { minute: 25, day: 1500, images: 150 },
+        ultra: { minute: 35, day: 2500, images: 300 },
+        max: { minute: 50, day: 4000, images: 600 },
+        premium: { minute: 10, day: 250, images: 20 },
+      };
+      const caps = state.active ? planCaps[state.plan] : null;
+      if (planSummary) planSummary.hidden = !caps;
+      if (caps) {
+        const planName = $('shieldmind-plan-summary-name');
+        const expiry = $('shieldmind-plan-summary-expiry');
+        const requests = $('shieldmind-plan-summary-requests');
+        const images = $('shieldmind-plan-summary-images');
+        if (planName) planName.textContent = state.plan.toUpperCase();
+        if (expiry) expiry.textContent = state.expiresAt
+          ? 'Active until ' + new Date(state.expiresAt).toLocaleDateString()
+          : 'Active subscription';
+        if (requests) requests.textContent = caps.minute.toLocaleString() + ' / ' + caps.day.toLocaleString();
+        if (images) images.textContent = caps.images.toLocaleString();
+      }
       // Keep the header badge compact on narrow phones; full detail remains in the gate and billing page.
       if (status) status.textContent = state.active ? state.plan.toUpperCase() + ' active' : 'No plan';
       if (gateStatus) gateStatus.textContent = state.active
