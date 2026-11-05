@@ -9,7 +9,7 @@ const app = await read("campusshield-app.js");
 const backend = await read("campusshield-backend.js");
 const ui = await read("campus-live-classroom.js");
 const css = await read("campus-live-classroom.css");
-const migration = await read("supabase/migrations/20261105030000_campus_live_classroom_sessions.sql");
+const migration = await read("supabase/migrations/20261105022245_campus_live_classroom_sessions.sql");
 const tokenFunction = await read("supabase/functions/campus-live-class-token/index.ts");
 
 assert.match(html, /campus-live-classroom\.css/);
