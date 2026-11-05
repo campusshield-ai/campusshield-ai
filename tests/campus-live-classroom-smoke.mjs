@@ -45,6 +45,7 @@ assert.match(migration, /get_campus_live_class_token_context_impl/i);
 assert.match(migration, /revoke all on function public\.get_campus_live_class_token_context\(uuid\) from public, anon/i);
 assert.match(migration, /grant execute on function public\.get_campus_live_class_token_context\(uuid\) to authenticated/i);
 
+assert.match(indexMigration, /campus_live_class_sessions_created_by_idx/);
 assert.match(tokenFunction, /client\.auth\.getUser\(\)/);
 assert.match(tokenFunction, /get_campus_live_class_token_context/);
 assert.match(tokenFunction, /LIVEKIT_API_SECRET/);
