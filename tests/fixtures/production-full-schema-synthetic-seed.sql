@@ -78,10 +78,6 @@ commit;
 -- Assert the four access contexts the downstream role tests rely on.
 do $seed_assertions$
 begin
-  if not private.current_user_can_use_restricted_features() then
-    -- No JWT claim is set in this session; use explicit fixture checks below instead.
-    null;
-  end if;
   if (select count(*) from public.campus_memberships
       where user_id in (
         '22222222-2222-4222-8222-000000000001',
