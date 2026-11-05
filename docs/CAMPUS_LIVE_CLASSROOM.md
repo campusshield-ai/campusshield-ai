@@ -2,9 +2,9 @@
 
 ## Current staging implementation
 
-The Online Classroom extends the existing campus-scoped classroom feature. It adds scheduled live-class sessions, teacher/campus-admin start and end controls, student join controls, optional HTTPS meeting links, and a place to attach a recorded-lecture URL after a session ends.
+The Online Classroom extends the existing campus-scoped classroom feature. Verified teachers and campus administrators can create classrooms for their own university. A campus administrator owns only the classrooms they create; existing teacher-owned classrooms remain teacher-owned. It adds scheduled live-class sessions, teacher/campus-admin start and end controls, student join controls, optional HTTPS meeting links, and a place to attach a recorded-lecture URL after a session ends.
 
-The database migration is applied to **CampusShield AI Staging only**. The live-session table has RLS enabled, no direct Data API table grants, and all session actions are routed through authenticated RPC wrappers. Those wrappers use the existing verified campus membership, classroom enrolment, teacher, appointed-assistant and campus-admin checks.
+The database migration is applied to **CampusShield AI Staging only**. The live-session table has RLS enabled, no direct Data API table grants, and all session actions are routed through authenticated RPC wrappers. Those wrappers use verified campus membership, classroom enrolment, teacher, appointed-assistant and campus-admin checks. Admin-created classes are visible and manageable by their verified creator; administrators from other universities cannot read or manage those full classroom resources. Live-class supervision uses its separate same-campus admin permission.
 
 ## Integrated video provider
 
@@ -28,17 +28,17 @@ Do not put these values in GitHub, frontend config, HTML, JavaScript, screenshot
 
 The Supabase Edge Functions provide `SUPABASE_URL` and publishable/anon key environment variables automatically. The functions use the caller's JWT and do not use the service-role key.
 
-The staging deployment also includes `campus-live-class-end`. It verifies that the caller is the verified teacher or appointed assistant, closes the LiveKit room using the server SDK (disconnecting current participants), and then marks the session as ended in Supabase.
+The staging deployment also includes `campus-live-class-end`. It verifies that the caller is the verified teacher, appointed assistant, or verified campus administrator for the class's university, closes the LiveKit room using the server SDK (disconnecting current participants), and then marks the session as ended in Supabase.
 
 After these three LiveKit secrets are entered in Staging, the `campus-live-class-token` function can mint tokens. Until then, the app still supports scheduled class records and an optional external HTTPS meeting link, while integrated video returns a safe configuration message.
 
 ## Rollout gates
 
 1. Apply the migration to Staging and verify RLS, table grants, RPC grants and advisor results.
-2. Deploy `campus-live-class-token` to Staging with JWT verification enabled.
+2. Deploy `campus-live-class-token` and `campus-live-class-end` to Staging with JWT verification enabled.
 3. Add the three LiveKit secrets to Staging only.
-4. Run the live classroom workflow and authenticated browser checks with synthetic verified teacher and student accounts from the same campus.
-5. Verify cross-campus students, unverified members and anonymous callers cannot list, start, end or join a live class.
+4. Run the live classroom workflow and authenticated browser checks with verified teacher/admin and student accounts from the same campus. Verify admins can create classes and access the classes they own.
+5. Verify admins cannot access full classroom content from another university; cross-campus students, unverified members and anonymous callers cannot list, start, end or join a live class.
 6. Verify teacher start/end, student join/leave, microphone/camera/screen-share permissions and an optional HTTPS fallback meeting link.
 7. Test narrow mobile layouts and supported browsers before considering a broader rollout.
 
