@@ -212,7 +212,7 @@
         return;
       }
       if (button.dataset.page === 'classroom') {
-        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['teacher','security','admin'].includes(currentProfile?.role));
+        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['admin','teacher','student'].includes(currentProfile?.role));
         return;
       }
       if (button.dataset.page === 'opportunities') {
@@ -464,7 +464,7 @@
       }
     } else if(role==='admin' && campusOk){
       state='approved';badge='Verified campus administrator';title='Campus administrator workspace';description='You have administrator access for your approved campus, subject to database authorization.';
-      items=['Review campus staff and account-verification applications available to your role.','Use incident management, risk analysis and analytics for your authorized campus.','Use campus administrative controls and institutional billing only where server-side policies permit.'];
+      items=['Create and manage the classrooms you own for your university.','Access and supervise live sessions across your approved campus, including teacher-owned classrooms.','Review campus staff applications and use incident management, risk analysis and analytics where your role permits.'];
       limit='Platform-wide administration and trusted platform-admin assignments require separate platform-level provisioning. Your campus role does not grant access to another university.';
     } else if(role==='security' && campusOk){
       state='approved';badge='Verified campus security';title='Campus safety operations';description='Your approved security role unlocks safety operations for your verified campus.';
@@ -472,7 +472,7 @@
       limit='Security access does not grant staff-application approvals, institutional billing administration, campus administrator powers, or platform-wide controls.';
     } else if(role==='teacher' && campusOk){
       state='approved';badge='Verified university staff';title='University staff workspace';description='Your verified staff workspace is based on the teacher/staff system role, not your job title.';
-      items=['Create and manage classroom spaces where enabled for verified teachers.','Use campus opportunities, community and student-support features available to verified staff.','Publish official campus notices where the feature and campus policies allow it.'];
+      items=['Create and manage classroom spaces, schedule live online classes and teach enrolled students.','Use campus opportunities, community and student-support features available to verified staff.','Publish official campus notices where the feature and campus policies allow it.'];
       limit='The standard staff role cannot manage/resolve incident reports, access staff-review queues, administer institutional billing, or grant campus/platform administrator access. Security-console access requires a separate security-role assignment.';
     } else if(['teacher','security','admin'].includes(role) && !campusOk){
       state='restricted';badge='Campus membership not verified';title='Campus access is not fully enabled';description='Your account exists, but the campus membership required for these tools is not currently verified.';
@@ -989,9 +989,9 @@
       toast('Only verified administrators can access account approvals.');
     }
     if (page === 'classroom' &&
-        (!verified || !hasVerifiedCampusStaffMembership() || !['teacher','security','admin'].includes(currentProfile.role))) {
+        (!verified || !hasVerifiedCampusStaffMembership() || !['admin','teacher','student'].includes(currentProfile.role))) {
       page = 'dashboard';
-      toast('Teacher Classroom requires a verified campus staff account.');
+      toast('Online Classroom requires a verified teacher, student or campus administrator with active campus membership.');
     }
     if (page === 'opportunities' && (!verified || !hasVerifiedCampusStaffMembership())) {
       page = 'dashboard';
@@ -5392,8 +5392,8 @@
   async function loadCampusClassroomsPage() {
     const status = $('campus-classrooms-status');
     const feed = $('campus-classrooms-feed');
-    const teacherAccess = currentProfile?.role === 'teacher' && hasVerifiedCampusStaffMembership();
-    $('classroom-create-panel').hidden = !teacherAccess;
+    const classroomOwnerAccess = ['teacher','admin'].includes(currentProfile?.role) && hasVerifiedCampusStaffMembership();
+    $('classroom-create-panel').hidden = !classroomOwnerAccess;
     $('classroom-join-panel').hidden = !isStudentAccount();
     if (!hasVerifiedCampusStaffMembership()) {
       status.textContent = 'A verified account and active verified campus membership are required.';
@@ -5409,7 +5409,7 @@
           <div class="panel-heading"><div><h3>${escapeHubHtml(row.name)}</h3><p class="muted">${escapeHubHtml(row.subject)}</p></div><button class="btn secondary" type="button" data-classroom-open="${escapeHubHtml(row.id)}">Open classroom</button></div>
           <p>${escapeHubHtml(row.description || 'No class description provided.')}</p>
           <p class="muted">Created ${escapeHubHtml(formatHubDate(row.created_at))}</p>
-        </article>`).join('') : '<div class="community-empty">No classes yet. A verified teacher can create one, or a student can join using a teacher-provided code.</div>';
+        </article>`).join('') : '<div class="community-empty">No classes yet. A verified teacher or campus administrator can create one, or a student can join using a class code.</div>';
     } catch (err) {
       status.textContent = err.message || 'Could not load classrooms.';
       feed.innerHTML = '<div class="community-empty">Classroom data could not be loaded. Check the staging migration and campus access.</div>';
@@ -5431,7 +5431,7 @@
         window.CampusShieldBackend.listCampusClassroomAnnouncements(classroomId),
         window.CampusShieldBackend.listCampusClassroomMaterials(classroomId)
       ]);
-      const teacherAccess = currentProfile?.role === 'teacher' && hasVerifiedCampusStaffMembership();
+      const classroomOwnerAccess = ['teacher','admin'].includes(currentProfile?.role) && hasVerifiedCampusStaffMembership();
       $('classroom-detail-title').textContent = classroom.name;
       $('classroom-detail-subtitle').textContent = classroom.subject + (classroom.description ? ' · ' + classroom.description : '');
       content.innerHTML = `
@@ -5441,8 +5441,8 @@
         <section class="panel"><h3>Learning links</h3>
           ${materials.length ? materials.map(item => { const url = safeHttpUrl(item.resource_url); return `<article class="panel"><h4>${escapeHubHtml(item.title)}</h4><p>${escapeHubHtml(item.description || '')}</p>${url ? `<p><a href="${escapeHubHtml(url)}" target="_blank" rel="noopener noreferrer">Open learning resource</a></p>` : '<p class="muted">This link is not valid and cannot be opened.</p>'}<p class="muted">${escapeHubHtml(formatHubDate(item.created_at))}</p></article>`; }).join('') : '<p class="muted">No learning links have been shared yet.</p>'}
         </section>
-        ${teacherAccess ? `
-          <section class="panel"><div class="panel-heading"><div><h3>Teacher tools</h3><p class="muted">These actions are checked again by Supabase.</p></div><button type="button" class="btn secondary" data-classroom-code="${escapeHubHtml(classroomId)}">Show join code</button></div>
+        ${classroomOwnerAccess ? `
+          <section class="panel"><div class="panel-heading"><div><h3>Class owner tools</h3><p class="muted">Available to the verified teacher or campus administrator who owns this class. Supabase checks every action.</p></div><button type="button" class="btn secondary" data-classroom-code="${escapeHubHtml(classroomId)}">Show join code</button></div>
             <p id="classroom-join-code-output" class="message" role="status" aria-live="polite"></p>
             <form id="classroomAnnouncementForm" data-classroom-id="${escapeHubHtml(classroomId)}">
               <div class="field"><label for="classroom-announcement-title">Announcement title *</label><input id="classroom-announcement-title" required minlength="3" maxlength="120"></div>

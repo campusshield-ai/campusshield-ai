@@ -353,7 +353,7 @@ assert.match(html, /id="nav-admin-heading" hidden/);
 assert.match(html, /function syncNavSectionHeadings\(\)/);
 assert.match(html, /!canManageIncidents\(\)/);
 assert.match(html, /\['teacher','security','admin'\]\.includes\(currentProfile\?\.role\)/);
-assert.match(html, /Teacher Classroom requires a verified campus staff account/);
+assert.match(html, /Online Classroom requires a verified teacher, student or campus administrator with active campus membership/);
 assert.doesNotMatch(html, /Campus Map &amp; Lost and Found/i);
 assert.match(html, /data-page="groups">Explore groups<\/button>/);
 assert.match(html, /data-page="noticeboard">Noticeboard<\/button>/);
