@@ -3246,6 +3246,25 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <span class="shieldmind-workspace-badge" role="status" aria-live="polite"><span aria-hidden="true">◈</span><span id="shieldmind-plan-status">Checking your plan…</span></span>
   </div>
 
+  <section class="shieldmind-plan-summary" id="shieldmind-plan-summary" aria-label="Your ShieldMind subscription allowances" hidden>
+    <div class="shieldmind-plan-summary-tier">
+      <span class="shieldmind-plan-summary-label">YOUR ACTIVE PLAN</span>
+      <strong id="shieldmind-plan-summary-name">—</strong>
+      <small id="shieldmind-plan-summary-expiry">Checking expiry…</small>
+    </div>
+    <div class="shieldmind-plan-summary-metric">
+      <span class="shieldmind-plan-summary-label">AI REQUEST ALLOWANCE</span>
+      <strong id="shieldmind-plan-summary-requests">—</strong>
+      <small>Per minute · per day</small>
+    </div>
+    <div class="shieldmind-plan-summary-metric">
+      <span class="shieldmind-plan-summary-label">STUDY IMAGES</span>
+      <strong id="shieldmind-plan-summary-images">—</strong>
+      <small>Uploads per month</small>
+    </div>
+    <button class="btn secondary shieldmind-plan-summary-manage" type="button" data-page="billing">Manage plan</button>
+  </section>
+
   <div class="shieldmind-hero shieldmind-hero-compact">
     <div class="shieldmind-hero-copy">
       <h2>Your premium AI study workspace</h2>
