@@ -59,7 +59,8 @@ jobs:
           --health-retries 20
     env:
       PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
-      TARGET_DB_URL: postgresql://supabase_admin:local-only-schema-test@127.0.0.1:5432/postgres
+      BOOTSTRAP_DB_URL: postgresql://supabase_admin:local-only-schema-test@127.0.0.1:5432/postgres
+      TARGET_DB_URL: postgresql://supabase_admin:local-only-schema-test@127.0.0.1:5432/campusshield_full_schema_test
     steps:
       - name: Check out review branch
         uses: actions/checkout@v4
@@ -70,6 +71,18 @@ jobs:
           set -euo pipefail
           docker run --rm supabase/postgres:17.11.0.018 pg_dump --version
           docker run --rm supabase/postgres:17.11.0.018 psql --version
+
+      - name: Create clean disposable target database from template0
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The Supabase service image initializes its postgres database with
+          # auth/storage and other platform schemas. Restore the Production
+          # schema-only dump into a fresh template0 database to avoid collisions.
+          psql "$BOOTSTRAP_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -c "CREATE DATABASE campusshield_full_schema_test TEMPLATE template0;"
+          test "$(psql "$TARGET_DB_URL" -X -qAt -c "select current_database()")" = "campusshield_full_schema_test"
+          echo "Clean disposable PostgreSQL target database is ready."
 
       - name: Validate Production connection URI metadata without exposing credentials
         shell: bash
