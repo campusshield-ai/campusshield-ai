@@ -924,7 +924,8 @@ assert.match(shieldmindChatHistoryMigration, /alter table public\.shieldmind_con
 assert.match(shieldmindChatHistoryMigration, /alter table public\.shieldmind_messages enable row level security/i);
 assert.match(shieldmindChatHistoryMigration, /grant select, insert, update, delete on table public\.shieldmind_conversations to authenticated/i);
 assert.match(shieldmindChatHistoryMigration, /grant select, insert, delete on table public\.shieldmind_messages to authenticated/i);
-assert.match(shieldmindChatHistoryMigration, /revoke all on table public\.shieldmind_conversations, public\.shieldmind_messages from anon, public/i);
+assert.doesNotMatch(shieldmindChatHistoryMigration, /grant [^;]*update[^;]*shieldmind_messages/i, "chat messages are immutable through the Data API");
+assert.match(shieldmindChatHistoryMigration, /revoke all on table public\.shieldmind_conversations, public\.shieldmind_messages from authenticated, anon, public/i);
 assert.match(shieldmindChatHistoryMigration, /using \(\(select auth\.uid\(\)\) = user_id\)/i);
 assert.match(shieldmindChatHistoryMigration, /with check \(\(select auth\.uid\(\)\) = user_id\)/i);
 assert.match(shieldmindChatHistoryMigration, /foreign key \(conversation_id, user_id\)[\s\S]*references public\.shieldmind_conversations \(id, user_id\)/i);
