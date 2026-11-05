@@ -12,11 +12,16 @@ on:
       - "tests/smoke-check.mjs"
       - "tests/browser/**"
       - "playwright.config.cjs"
+      - "campusshield-app.js"
+      - "campus-voice-notes.js"
+      - "campus-voice-notes.css"
+      - "campusshield-sidebar-collapse-fix.css"
+      - "supabase/migrations/20261105221500_global_ideas_voice_access_sidebar_fix.sql"
+      - "tests/campus-voice-notes-smoke.mjs"
       - ".github/workflows/release-readiness.yml"
       - "campus-ideas-impact.js"
       - "campus-ideas-impact.css"
       - "supabase/migrations/20261105130000_campus_ideas_impact_mvp.sql"
-      - "supabase/migrations/20261105131500_campus_idea_status_context_guard.sql"
       - "supabase/migrations/20261105131500_campus_idea_status_context_guard.sql"
       - "tests/campus-ideas-impact-smoke.mjs"
   workflow_dispatch:
@@ -46,6 +51,13 @@ jobs:
         run: node --check campus-ideas-impact.js
       - name: Verify Ideas & Impact security and RLS contracts
         run: node tests/campus-ideas-impact-smoke.mjs
+      - name: Check chat, voice-note and Ideas JavaScript syntax
+        run: |
+          node --check campusshield-app.js
+          node --check campus-voice-notes.js
+          node --check campus-ideas-impact.js
+      - name: Verify voice-note participant privacy
+        run: node tests/campus-voice-notes-smoke.mjs
 
   responsive-browser:
     name: Responsive browser and navigation checks

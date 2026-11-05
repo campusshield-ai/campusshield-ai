@@ -22,8 +22,10 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
     const collapseButton = page.locator("#sidebar-collapse-toggle");
 
     await expect(collapseButton).toBeVisible();
+    const expectedWidth = width <= 900 ? 74 : 82;
     await collapseButton.click();
     await expect(app).toHaveClass(/sidebar-collapsed/);
+    await expect.poll(() => sidebar.evaluate(el => el.getBoundingClientRect().width)).toBe(expectedWidth);
     await expect(collapseButton).toHaveAttribute("aria-expanded", "false");
     await expect(page.locator("#app-sidebar .brand-copy")).toBeHidden();
     await expect(page.locator("#app-sidebar > .nav-label")).toBeHidden();
@@ -48,7 +50,6 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
       };
     });
 
-    const expectedWidth = width <= 900 ? 74 : 82;
     expect(metrics.sidebarWidth, `collapsed rail width at ${width}px`).toBe(expectedWidth);
     expect(metrics.mainMarginLeft, `content offset at ${width}px`).toBe(expectedWidth);
     expect(metrics.sidebarScrollWidth, `collapsed rail content must not be clipped horizontally at ${width}px`).toBeLessThanOrEqual(metrics.sidebarClientWidth + 1);
@@ -59,6 +60,7 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
 
     await collapseButton.click();
     await expect(app).not.toHaveClass(/sidebar-collapsed/);
+    await expect.poll(() => sidebar.evaluate(el => el.getBoundingClientRect().width)).toBeGreaterThan(250);
     await expect(page.locator("#app-sidebar .brand-copy")).toBeVisible();
     await expect(page.locator("#app-sidebar .nav-section-label").first()).toBeVisible();
   }
@@ -71,7 +73,7 @@ test("mobile drawer remains full-width and readable when a desktop collapse pref
   await revealWorkspace(page);
   await expect(page.locator("#workspace")).toHaveClass(/sidebar-collapsed/);
 
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 333, height: 844 });
   const app = page.locator("#workspace");
   const sidebar = page.locator("#app-sidebar");
   const mobileButton = page.locator("#mobile-nav-toggle");
@@ -80,6 +82,8 @@ test("mobile drawer remains full-width and readable when a desktop collapse pref
   await mobileButton.click();
   await expect(app).toHaveClass(/mobile-nav-open/);
   await expect(sidebar).toBeVisible();
+  await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().left))).toBe(0);
+  await expect(page.locator("#sidebar-backdrop")).toHaveCSS("opacity", "1");
   await expect(page.locator("#app-sidebar .sidebar-toggle")).toBeHidden();
   await expect(page.locator("#app-sidebar .brand-copy")).toBeVisible();
   await expect(page.locator("#app-sidebar .nav-section-label").first()).toBeVisible();
@@ -99,4 +103,15 @@ test("mobile drawer remains full-width and readable when a desktop collapse pref
   expect(metrics.sidebarWidth).toBeLessThanOrEqual(metrics.viewportWidth);
   expect(metrics.mainMarginLeft).toBe(0);
   expect(metrics.documentWidth).toBeLessThanOrEqual(metrics.viewportWidth + 1);
+  await expect.poll(() => page.locator("body").evaluate(el => getComputedStyle(el).overflow)).toBe("hidden");
+  await page.locator("#sidebar-backdrop").click({ position: { x: metrics.viewportWidth - 10, y: 500 } });
+  await expect(app).not.toHaveClass(/mobile-nav-open/);
+  await expect(mobileButton).toBeFocused();
+  await expect.poll(() => sidebar.evaluate(el => el.getBoundingClientRect().left)).toBeLessThan(-250);
+  await expect(page.locator("#sidebar-backdrop")).toBeHidden();
+  await mobileButton.click();
+  await expect(app).toHaveClass(/mobile-nav-open/);
+  await page.keyboard.press("Escape");
+  await expect(app).not.toHaveClass(/mobile-nav-open/);
+  await expect(mobileButton).toBeFocused();
 });

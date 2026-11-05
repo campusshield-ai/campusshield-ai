@@ -9,6 +9,7 @@ const app = read("campusshield-app.js");
 const voice = read("campus-voice-notes.js");
 const css = read("campus-voice-notes.css");
 const migration = read("supabase/migrations/20261105205000_campus_chat_private_voice_notes.sql");
+const privacyFix = read("supabase/migrations/20261105221500_global_ideas_voice_access_sidebar_fix.sql");
 
 assert.match(html, /id="ideas-impact-nav"[^>]*data-ideas-impact-nav/);
 assert.match(html, /campus-voice-notes\.js/);
@@ -43,3 +44,9 @@ assert.match(migration, /private\.current_user_has_verified_campus_access/);
 assert.match(migration, /m\.status = 'published'/);
 assert.doesNotMatch(migration, /to\s+anon/i);
 console.log("CampusShield voice-note and Ideas & Impact navigation smoke checks passed.");
+assert.match(privacyFix, /drop policy if exists campus_voice_notes_read_linked_messages/);
+assert.match(privacyFix, /private\.can_read_campus_direct_message\(/);
+assert.match(privacyFix, /private\.current_user_has_verified_campus_access\(\)/);
+assert.match(privacyFix, /m\.status = 'published'/);
+assert.match(privacyFix, /campus_ideas_read_global_published/);
+console.log("Cross-campus Ideas & Impact and voice storage privacy regression checks passed.");
