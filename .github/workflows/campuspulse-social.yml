@@ -15,6 +15,7 @@ on:
       - "campus-ideas-impact.js"
       - "campus-ideas-impact.css"
       - "supabase/migrations/20261105130000_campus_ideas_impact_mvp.sql"
+      - "supabase/migrations/20261105131500_campus_idea_status_context_guard.sql"
       - "tests/campus-ideas-impact-smoke.mjs"
       - ".github/workflows/campuspulse-social.yml"
   pull_request:
