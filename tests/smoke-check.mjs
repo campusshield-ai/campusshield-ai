@@ -913,6 +913,8 @@ assert.match(learningInsightsScript, /\.eq\("user_id", user\.id\)/, "practice at
 assert.match(learningInsightsScript, /\.from\("practice_answers"\)/, "topic analytics use the student's answer records");
 assert.match(learningInsightsScript, /\.in\("attempt_id", batch\)/, "answer reads are limited to the student's own attempt IDs");
 assert.match(learningInsightsScript, /marking_status === "needs_review"/, "unmarked written answers are excluded from topic scores");
+assert.match(learningInsightsScript, /attempt\.percent !== null/, "missing attempt scores do not count as zero");
+assert.match(learningInsightsScript, /answer\.awarded_marks === null/, "missing awarded marks are excluded instead of counted as zero");
 assert.doesNotMatch(learningInsightsScript, /past_question_answer_keys/, "learning insights never request protected answer keys");
 assert.match(learningInsightsScript, /textContent = String\(value \?\? ""\)/, "student-controlled topic labels are rendered as text, not HTML");
 assert.match(learningInsightsCss, /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/, "learning metrics use a desktop grid");
