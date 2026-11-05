@@ -12,6 +12,7 @@
   let canManage = false;
   let room = null;
   let activeSessionId = null;
+  let screenShareEnabled = false;
   let loading = false;
   let refreshSequence = 0;
 
@@ -241,6 +242,14 @@
     room.on(roomEvents.TrackUnsubscribed, track => {
       track.detach().forEach(element => element.remove());
     });
+    room.on(roomEvents.LocalTrackPublished, publication => {
+      if (publication.track && room) {
+        attachTrack(publication.track, "local-" + room.localParticipant.identity, "You", true);
+      }
+    });
+    room.on(roomEvents.LocalTrackUnpublished, publication => {
+      publication.track?.detach().forEach(element => element.remove());
+    });
     room.on(roomEvents.ParticipantDisconnected, participant => {
       const key = String(participant.identity || "").replace(/[^a-zA-Z0-9_-]/g, "-");
       root.querySelector('[data-live-participant="' + key + '"]')?.remove();
@@ -255,7 +264,7 @@
     await room.connect(access.serverUrl, access.token);
     await room.localParticipant.setMicrophoneEnabled(true);
     await room.localParticipant.setCameraEnabled(false);
-    addParticipantTile("local-" + Date.now(), "You · " + (access.room?.participantRole || "member"), true);
+    addParticipantTile("local-" + room.localParticipant.identity, "You · " + (access.room?.participantRole || "member"), true);
     for (const publication of room.localParticipant.videoTrackPublications.values()) {
       if (publication.track) attachTrack(publication.track, "local-" + Date.now(), "You", true);
     }
@@ -270,6 +279,7 @@
     const current = room;
     room = null;
     activeSessionId = null;
+    screenShareEnabled = false;
     if (current) {
       try { await current.disconnect(true); } catch (_) {}
     }
@@ -412,7 +422,4 @@
   });
   observer.observe(page, { attributes: true, attributeFilter: ["class"] });
 
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden && room) leaveLiveRoom();
-  });
 })();
