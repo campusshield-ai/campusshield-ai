@@ -1,0 +1,39 @@
+.cs-live-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,340px);gap:10px;align-items:center;margin-bottom:16px}
+.cs-live-toolbar label,.cs-live-form-grid label,.cs-live-full-field{display:grid;gap:7px;color:var(--ink,#17313a);font-size:12px;font-weight:750}
+.cs-live-toolbar select,.cs-live-form-grid input,.cs-live-form-grid select,.cs-live-full-field textarea,.cs-live-recording-form input{width:100%;min-width:0;border:1px solid var(--line,#e2eae6);border-radius:11px;background:#fff;padding:11px 12px;color:var(--ink,#17313a);font:inherit}
+.cs-live-create-card,.cs-live-list-section{border:1px solid var(--line,#e2eae6);border-radius:16px;background:#fff;padding:18px;margin:14px 0}
+.cs-live-section-title,.cs-live-room-heading,.cs-live-session-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.cs-live-section-title h3,.cs-live-session-head h3,.cs-live-room-heading h3{margin:0 0 5px;font-size:17px}
+.cs-live-section-title p,.cs-live-room-footnote{margin:0;color:var(--muted,#71828a);font-size:12px}
+.cs-live-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#e8f7f1;color:#147c62;font-size:23px}
+.cs-live-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:15px}
+.cs-live-full-field{margin-top:13px}
+.cs-live-full-field textarea{resize:vertical}
+.cs-live-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:13px}
+.cs-live-session-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.cs-live-session-card{min-width:0;border:1px solid var(--line,#e2eae6);border-radius:14px;padding:15px;background:linear-gradient(180deg,#fff,#fbfdfc)}
+.cs-live-status{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:850;letter-spacing:.03em;background:#edf2f4;color:#52646b;margin-bottom:8px}
+.cs-live-status-live{background:#e5f8ee;color:#187b61}
+.cs-live-status-scheduled{background:#edf4ff;color:#2865a3}
+.cs-live-status-ended{background:#f1f3f5;color:#64717a}
+.cs-live-status-cancelled{background:#fff0f0;color:#a33f46}
+.cs-live-duration{flex:none;color:var(--muted,#71828a);font-size:11px}
+.cs-live-description,.cs-live-time{font-size:12px;color:var(--muted,#71828a);line-height:1.55}
+.cs-live-link{color:#167a68;font-size:12px;font-weight:750;text-decoration:none}
+.cs-live-link:hover{text-decoration:underline}
+.cs-live-recording-form{display:grid;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line,#e2eae6)}
+.cs-live-recording-form label{display:grid;gap:6px;font-size:11px;font-weight:750}
+.cs-live-status-message{min-height:20px;margin:10px 0 0;color:var(--muted,#71828a);font-size:12px}
+.cs-live-status-message[data-kind="error"]{color:#a33f46}
+.cs-live-empty{border:1px dashed var(--line,#d8e4de);border-radius:13px;padding:18px;color:var(--muted,#71828a);font-size:13px;text-align:center;background:#fbfdfc}
+.cs-live-room{margin-top:18px;border:1px solid #b9ddd0;border-radius:17px;padding:17px;background:#f7fcf9}
+.cs-live-room-kicker{display:block;color:#177b63;font-size:9px;font-weight:900;letter-spacing:.17em;margin-bottom:5px}
+.cs-live-media-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:15px 0}
+.cs-live-participant{min-width:0;border:1px solid #dcebe4;border-radius:13px;padding:10px;background:#102b35;color:#fff}
+.cs-live-participant strong{display:block;font-size:11px;margin-bottom:8px}
+.cs-live-participant-media{min-height:140px;display:grid;place-items:center;overflow:hidden;border-radius:9px;background:#193c42}
+.cs-live-video{display:block;width:100%;max-height:320px;aspect-ratio:16/9;object-fit:cover}
+.cs-live-audio{display:block;width:100%;height:28px}
+.cs-live-room-controls{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.cs-live-room-footnote{margin-top:10px}
+@media(max-width:720px){.cs-live-session-list{grid-template-columns:1fr}.cs-live-toolbar{grid-template-columns:1fr}.cs-live-form-grid{grid-template-columns:1fr}.cs-live-create-card,.cs-live-list-section,.cs-live-room{padding:13px}.cs-live-media-grid{grid-template-columns:1fr}}
