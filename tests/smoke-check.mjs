@@ -378,6 +378,11 @@ const billingPageStart = html.indexOf('<section class="page" id="page-billing">'
 assert.ok(shieldmindPageStart >= 0 && billingPageStart > shieldmindPageStart, "ShieldMind and billing pages exist in order");
 const shieldmindPageMarkup = html.slice(shieldmindPageStart, billingPageStart);
 assert.match(shieldmindPageMarkup, /id="shieldmind-plan-status"/);
+assert.match(shieldmindPageMarkup, /id="shieldmind-plan-summary"/, "ShieldMind has an active-plan allowance summary");
+assert.match(shieldmindPageMarkup, /id="shieldmind-plan-summary-requests"/, "ShieldMind plan summary has an AI request allowance");
+assert.match(shieldmindPageMarkup, /id="shieldmind-plan-summary-images"/, "ShieldMind plan summary has a monthly image allowance");
+assert.match(appScript, /starter: \{ minute: 10, day: 250, images: 20 \}/, "Starter allowance summary matches the server quota");
+assert.match(appScript, /max: \{ minute: 50, day: 4000, images: 600 \}/, "Max allowance summary matches the server quota");
 assert.match(shieldmindPageMarkup, /id="shieldmind-paid-gate"/);
 assert.match(shieldmindPageMarkup, /data-page="billing">Compare plans &amp; subscribe/);
 assert.match(shieldmindPageMarkup, /class="shieldmind-quick-actions" aria-label="ShieldMind quick actions" hidden/);
