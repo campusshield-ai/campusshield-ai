@@ -22,6 +22,7 @@ const backend = await readFile(new URL("../campusshield-backend.js", import.meta
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
 const shieldmindChatHistoryCss = await readFile(new URL("../shieldmind-chat-history.css", import.meta.url), "utf8");
 const shieldmindChatHistoryMigration = await readFile(new URL("../supabase/migrations/20261105013000_shieldmind_private_chat_history.sql", import.meta.url), "utf8");
+const shieldmindChatHistoryIndexMigration = await readFile(new URL("../supabase/migrations/20261105014500_shieldmind_messages_owner_fk_index.sql", import.meta.url), "utf8");
 const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
 const paystackWebhookFunction = await readFile(new URL("../supabase/functions/paystack-webhook/index.ts", import.meta.url), "utf8");
@@ -931,6 +932,7 @@ assert.match(shieldmindChatHistoryMigration, /with check \(\(select auth\.uid\(\
 assert.match(shieldmindChatHistoryMigration, /foreign key \(conversation_id, user_id\)[\s\S]*references public\.shieldmind_conversations \(id, user_id\)/i);
 assert.match(shieldmindChatHistoryMigration, /role in \('user', 'assistant'\)/i);
 assert.doesNotMatch(shieldmindChatHistoryMigration, /security definer/i, "chat history uses ordinary owner RLS, not a privileged bypass function");
+assert.match(shieldmindChatHistoryIndexMigration, /on public\\.shieldmind_messages \(conversation_id, user_id\)/i, "message ownership foreign key has a covering index");
 assert.match(shieldmindChatHistoryCss, /@media \(max-width: 420px\)/);
 assert.match(shieldmindChatHistoryCss, /html\[data-theme="dark"\]/);
 assert.match(privacyPage, /ShieldMind saved conversations/);
