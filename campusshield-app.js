@@ -7575,7 +7575,6 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     renderShieldMindRecentQuestions();
     $('shieldmind-status').textContent='Recent questions cleared for this session.';
   });
-  $('shieldmind-clear').addEventListener('click',startNewShieldMindConversation);
   document.querySelectorAll('[data-shieldmind-prompt]').forEach(button=>button.addEventListener('click',()=>{
     $('shieldmind-question').value=button.dataset.shieldmindPrompt;
     $('shieldmind-question').focus();
