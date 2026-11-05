@@ -91,7 +91,6 @@
         (canStart ? '<button class="btn" type="button" data-live-action="start" data-session-id="' + escapeHtml(item.id) + '">Start class</button>' : '') +
         (canJoin ? '<button class="btn" type="button" data-live-action="join" data-session-id="' + escapeHtml(item.id) + '">Join live class</button>' : '') +
         (canEnd ? '<button class="btn danger" type="button" data-live-action="end" data-session-id="' + escapeHtml(item.id) + '">End class</button>' : '') +
-        (canRecord && !recording ? '<button class="btn secondary" type="button" data-live-action="add-recording" data-session-id="' + escapeHtml(item.id) + '">Add recording link</button>' : '') +
         '</div>' +
         (canRecord && !recording ? '<form class="cs-live-recording-form" data-live-recording-form="' + escapeHtml(item.id) + '">' +
           '<label>Recorded lecture HTTPS link<input name="recording_url" type="url" placeholder="https://…" required></label>' +
@@ -143,6 +142,7 @@
 
   async function refresh() {
     if (loading) return;
+    if (room) await leaveLiveRoom();
     if (!backend()?.isConfigured) {
       return renderEmpty("CampusShield's learning service is not configured in this browser.");
     }
@@ -243,7 +243,7 @@
       track.detach().forEach(element => element.remove());
     });
     room.on(roomEvents.LocalTrackPublished, publication => {
-      if (publication.track && room) {
+      if (publication.track?.kind === "video" && room) {
         attachTrack(publication.track, "local-" + room.localParticipant.identity, "You", true);
       }
     });
@@ -298,10 +298,12 @@
         await refreshSelected();
         setMessage("Class started. Students can now join.");
       } else if (action === "end") {
-        await backend().endCampusLiveClassSession(sessionId);
+        const result = await backend().endCampusLiveClassSession(sessionId);
         if (activeSessionId === sessionId) await leaveLiveRoom();
         await refreshSelected();
-        setMessage("The live class has ended.");
+        setMessage(result.roomClosed === false
+          ? "The class ended, but the video provider did not confirm that all participants disconnected."
+          : "The class ended and the live room was closed.");
       } else if (action === "join") {
         try {
           await joinLiveClass(sessionId);
@@ -343,6 +345,7 @@
 
   async function refreshSelected() {
     if (!selectedClassroomId) return refresh();
+    if (room) await leaveLiveRoom();
     const sequence = ++refreshSequence;
     try {
       await loadSelectedClassroom(sequence);
