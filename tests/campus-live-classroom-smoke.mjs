@@ -10,6 +10,7 @@ const backend = await read("campusshield-backend.js");
 const ui = await read("campus-live-classroom.js");
 const css = await read("campus-live-classroom.css");
 const migration = await read("supabase/migrations/20261105022245_campus_live_classroom_sessions.sql");
+const indexMigration = await read("supabase/migrations/20261105024500_index_live_class_session_creator.sql");
 const tokenFunction = await read("supabase/functions/campus-live-class-token/index.ts");
 const endFunction = await read("supabase/functions/campus-live-class-end/index.ts");
 
