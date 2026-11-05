@@ -1025,7 +1025,7 @@
       groups:'Campus groups',
       events:'Events & Campus Services',
       marketplace:'Campus marketplace',
-      classroom:'Teacher Classroom',
+      classroom:'CampusShield Classroom',
       courses:'Courses & Study Resources',
       'past-questions':'Past Questions & Exam Prep',
       'creator-tools':'Creator & Tools Hub',
