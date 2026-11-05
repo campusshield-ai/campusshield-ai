@@ -20,6 +20,8 @@ const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.j
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
+const learningInsightsScript = await readFile(new URL("../shieldmind-learning-insights.js", import.meta.url), "utf8");
+const learningInsightsCss = await readFile(new URL("../shieldmind-learning-insights.css", import.meta.url), "utf8");
 const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
 const paystackWebhookFunction = await readFile(new URL("../supabase/functions/paystack-webhook/index.ts", import.meta.url), "utf8");
@@ -893,3 +895,27 @@ assert.match(creatorToolsCss, /prefers-reduced-motion:reduce/);
 assert.match(visualRefreshCss, /prefers-reduced-motion/);
 assert.match(visualRefreshCss, /\.campus-dashboard-hero/);
 console.log("PASS independent visual refresh and static Creator & Tools Hub isolation, content, privacy, navigation and responsive styling");
+
+
+// ShieldMind Premium learning intelligence: private, staged, read-only progress analytics.
+assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./shieldmind-learning-insights.css">'), "ShieldMind learning insights stylesheet is loaded");
+assert.ok(htmlMarkup.includes('<script src="./shieldmind-learning-insights.js" defer></script>'), "ShieldMind learning insights module loads before the main app");
+assert.ok(htmlMarkup.includes('id="shieldmind-learning-insights"') && htmlMarkup.includes('hidden>'), "learning insights are hidden until paid access is verified");
+for (const id of ["shieldmind-insights-attempts", "shieldmind-insights-average", "shieldmind-insights-days", "shieldmind-insights-topics-count", "shieldmind-insights-topics", "shieldmind-insights-recommendation"]) {
+  assert.ok(htmlMarkup.includes('id="' + id + '"'), "learning insights include " + id);
+}
+assert.doesNotThrow(() => new Function(learningInsightsScript), "ShieldMind learning insights module parses");
+assert.match(learningInsightsScript, /CampusShieldShieldMindAccess\?\.active/, "learning insights require the verified paid access state");
+assert.match(learningInsightsScript, /campusshield:shieldmind-access/, "learning insights respond to verified subscription changes");
+assert.match(learningInsightsScript, /STAGING_PROJECT_REF/, "learning insights remain staging-only until production schema promotion");
+assert.match(learningInsightsScript, /\.from\("practice_attempts"\)/, "learning insights use submitted practice attempts");
+assert.match(learningInsightsScript, /\.eq\("user_id", user\.id\)/, "practice attempt reads are explicitly scoped to the signed-in user");
+assert.match(learningInsightsScript, /\.from\("practice_answers"\)/, "topic analytics use the student's answer records");
+assert.match(learningInsightsScript, /\.in\("attempt_id", batch\)/, "answer reads are limited to the student's own attempt IDs");
+assert.match(learningInsightsScript, /marking_status === "needs_review"/, "unmarked written answers are excluded from topic scores");
+assert.doesNotMatch(learningInsightsScript, /past_question_answer_keys/, "learning insights never request protected answer keys");
+assert.match(learningInsightsScript, /textContent = String\(value \?\? ""\)/, "student-controlled topic labels are rendered as text, not HTML");
+assert.match(learningInsightsCss, /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/, "learning metrics use a desktop grid");
+assert.match(learningInsightsCss, /@media \(max-width: 760px\)/, "learning insights collapse for tablet and phone widths");
+assert.match(learningInsightsCss, /html\[data-theme="dark"\]/, "learning insights support dark mode");
+console.log("PASS ShieldMind paid-state learning intelligence, private practice analytics, safe topic rendering, and responsive styling");
