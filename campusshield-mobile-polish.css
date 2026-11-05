@@ -697,3 +697,18 @@ html[data-theme="dark"] #page-past-questions .pq-access-gate{border-color:#315b4
   #page-shieldmind .shieldmind-workspace-badge { flex:0 1 104px; min-width:0; padding:6px 8px; }
   #page-shieldmind .shieldmind-workspace-badge #shieldmind-plan-status { font-size:8px; line-height:1.2; }
 }
+
+
+/* Active ShieldMind plan allowance summary. Values mirror server-enforced tier limits. */
+#page-shieldmind .shieldmind-plan-summary{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,.85fr) auto;align-items:center;gap:12px;margin:12px 0 16px;padding:13px 15px;border:1px solid #d5e9da;border-radius:15px;background:linear-gradient(110deg,#f1faf3,#f8fcf8);color:#254d35}
+#page-shieldmind .shieldmind-plan-summary[hidden]{display:none!important}
+#page-shieldmind .shieldmind-plan-summary-tier,#page-shieldmind .shieldmind-plan-summary-metric{display:grid;gap:3px;min-width:0}
+#page-shieldmind .shieldmind-plan-summary-label{color:#668573;font-size:9px;font-weight:900;letter-spacing:.09em}
+#page-shieldmind .shieldmind-plan-summary strong{color:#1d6138;font-size:16px;line-height:1.25}
+#page-shieldmind .shieldmind-plan-summary small{color:#6d8574;font-size:10px;line-height:1.35}
+#page-shieldmind .shieldmind-plan-summary-manage{min-height:36px;white-space:nowrap}
+html[data-theme="dark"] #page-shieldmind .shieldmind-plan-summary{border-color:#31543c;background:linear-gradient(110deg,#142c1e,#182c22);color:#d7ebda}
+html[data-theme="dark"] #page-shieldmind .shieldmind-plan-summary-label,html[data-theme="dark"] #page-shieldmind .shieldmind-plan-summary small{color:#a8c5ad}
+html[data-theme="dark"] #page-shieldmind .shieldmind-plan-summary strong{color:#b9e8c1}
+@media(max-width:760px){#page-shieldmind .shieldmind-plan-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#page-shieldmind .shieldmind-plan-summary-manage{grid-column:1/-1;width:100%}}
+@media(max-width:370px){#page-shieldmind .shieldmind-plan-summary{padding:11px;gap:10px}#page-shieldmind .shieldmind-plan-summary strong{font-size:14px}}
