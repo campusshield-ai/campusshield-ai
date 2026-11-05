@@ -38,7 +38,7 @@ create index if not exists shieldmind_messages_user_created_idx
 alter table public.shieldmind_conversations enable row level security;
 alter table public.shieldmind_messages enable row level security;
 
-revoke all on table public.shieldmind_conversations, public.shieldmind_messages from anon, public;
+revoke all on table public.shieldmind_conversations, public.shieldmind_messages from authenticated, anon, public;
 grant select, insert, update, delete on table public.shieldmind_conversations to authenticated;
 grant select, insert, delete on table public.shieldmind_messages to authenticated;
 
