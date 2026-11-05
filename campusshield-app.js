@@ -984,7 +984,7 @@
     if (page === 'classroom' &&
         (!verified || !hasVerifiedCampusStaffMembership() || !['admin','teacher','student'].includes(currentProfile.role))) {
       page = 'dashboard';
-      toast('Teacher Classroom requires a verified campus staff account.');
+      toast('Online Classroom requires a verified teacher, student or campus administrator with active campus membership.');
     }
     if (page === 'opportunities' && (!verified || !hasVerifiedCampusStaffMembership())) {
       page = 'dashboard';
