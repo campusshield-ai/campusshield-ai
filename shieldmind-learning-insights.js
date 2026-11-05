@@ -128,6 +128,7 @@
 
   function summarize(attempts, answers) {
     const scoredAttempts = attempts
+      .filter((attempt) => attempt.percent !== null && attempt.percent !== undefined && attempt.percent !== "")
       .map((attempt) => Number(attempt.percent))
       .filter((score) => Number.isFinite(score) && score >= 0 && score <= 100);
     const average = scoredAttempts.length
@@ -145,6 +146,8 @@
     const topics = new Map();
     for (const answer of answers) {
       if (answer.marking_status === "needs_review") continue;
+      if (answer.maximum_marks === null || answer.maximum_marks === undefined ||
+          answer.awarded_marks === null || answer.awarded_marks === undefined) continue;
       const maximum = Number(answer.maximum_marks);
       const awarded = Number(answer.awarded_marks);
       if (!Number.isFinite(maximum) || maximum <= 0 || !Number.isFinite(awarded) || awarded < 0) continue;
