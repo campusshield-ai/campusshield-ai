@@ -12,6 +12,7 @@ const css = await read("campus-live-classroom.css");
 const migration = await read("supabase/migrations/20261105022245_campus_live_classroom_sessions.sql");
 const indexMigration = await read("supabase/migrations/20261105024500_index_live_class_session_creator.sql");
 const adminMigration = await read("supabase/migrations/20261105102246_campus_admin_live_classroom_access.sql");
+const adminScopeMigration = await read("supabase/migrations/20261105103142_campus_live_classroom_admin_only_scope.sql");
 const tokenFunction = await read("supabase/functions/campus-live-class-token/index.ts");
 const endFunction = await read("supabase/functions/campus-live-class-end/index.ts");
 
@@ -22,6 +23,10 @@ assert.match(html, /Online Classroom/);
 
 assert.match(app, /\['admin','teacher','student'\]\.includes\(currentProfile\?\.role\)/);
 assert.match(app, /\['admin','teacher','student'\]\.includes\(currentProfile\.role\)/);
+assert.match(backend, /listCampusLiveClassrooms/);
+assert.match(adminScopeMigration, /private\.can_access_live_classroom/);
+assert.match(adminScopeMigration, /public\.list_campus_live_classrooms/);
+assert.match(adminScopeMigration, /private\.can_access_classroom\(p_classroom_id\)/);
 assert.match(backend, /listCampusLiveClassSessions/);
 assert.match(backend, /createCampusLiveClassSession/);
 assert.match(backend, /startCampusLiveClassSession/);
@@ -47,6 +52,8 @@ assert.match(adminMigration, /private\.is_verified_campus_admin_for_classroom/);
 assert.match(adminMigration, /private\.can_manage_campus_live_classroom/);
 assert.match(adminMigration, /m\.campus_role = 'admin'/);
 assert.match(adminMigration, /m\.university_id = c\.university_id/);
+assert.match(adminScopeMigration, /p\.role = 'teacher'/);
+assert.match(adminScopeMigration, /p\.role = 'student'/);
 assert.match(migration, /revoke all on function public\.get_campus_live_class_token_context\(uuid\) from public, anon/i);
 assert.match(migration, /grant execute on function public\.get_campus_live_class_token_context\(uuid\) to authenticated/i);
 
