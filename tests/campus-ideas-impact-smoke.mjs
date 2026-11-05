@@ -7,6 +7,7 @@ const js = read("../campus-ideas-impact.js");
 const css = read("../campus-ideas-impact.css");
 const html = read("../index.html");
 const sql = read("../supabase/migrations/20261105130000_campus_ideas_impact_mvp.sql");
+const statusGuard = read("../supabase/migrations/20261105131500_campus_idea_status_context_guard.sql");
 const statusContextSql = read("../supabase/migrations/20261105131500_campus_idea_status_context_guard.sql");
 
 new vm.Script(js, { filename: "campus-ideas-impact.js" });
@@ -58,3 +59,11 @@ assert.match(statusContextSql, /new\.reviewer_id := \(select auth\.uid\(\)\)/i);
 assert.match(statusContextSql, /new\.university_id := private\.current_campus_university_id\(\)/i);
 assert.match(statusContextSql, /before insert on public\.campus_idea_status_updates/i);
 assert.match(statusContextSql, /revoke all on function private\.prepare_campus_idea_status_update\(\) from public, anon, authenticated/i);
+
+assert.match(statusGuard, /create or replace function private\\.prepare_campus_idea_status_update\\(\\)/);
+assert.match(statusGuard, /security invoker[\\s\\S]*set search_path = ''/i);
+assert.match(statusGuard, /private\\.current_user_has_verified_campus_access\\(\\)/);
+assert.match(statusGuard, /private\\.current_campus_role\\(\\) not in \\('admin','security','teacher'\\)/i);
+assert.match(statusGuard, /new\\.reviewer_id := \\(select auth\\.uid\\(\\)\\)/);
+assert.match(statusGuard, /new\\.university_id := private\\.current_campus_university_id\\(\\)/);
+assert.match(statusGuard, /revoke all on function private\\.prepare_campus_idea_status_update\\(\\) from public, anon, authenticated/i);
