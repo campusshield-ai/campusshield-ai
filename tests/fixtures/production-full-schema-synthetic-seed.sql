@@ -16,11 +16,11 @@ on conflict (id) do nothing;
 insert into auth.users
   (id,aud,role,email,email_confirmed_at,created_at,updated_at,raw_app_meta_data,raw_user_meta_data)
 values
-  ('22222222-2222-4222-8222-000000000001','authenticated','authenticated','admin-a@example.invalid',now(),now(),now(),'{}'::jsonb,'{"display_name":"Synthetic Admin A"}'::jsonb),
-  ('22222222-2222-4222-8222-000000000002','authenticated','authenticated','student-a@example.invalid',now(),now(),now(),'{}'::jsonb,'{"display_name":"Synthetic Student A"}'::jsonb),
-  ('22222222-2222-4222-8222-000000000003','authenticated','authenticated','unapproved-student-a@example.invalid',now(),now(),now(),'{}'::jsonb,'{"display_name":"Synthetic Unapproved Student A"}'::jsonb),
-  ('22222222-2222-4222-8222-000000000004','authenticated','authenticated','teacher-a@example.invalid',now(),now(),now(),'{}'::jsonb,'{"display_name":"Synthetic Teacher A"}'::jsonb),
-  ('22222222-2222-4222-8222-000000000005','authenticated','authenticated','student-b@example.invalid',now(),now(),now(),'{}'::jsonb,'{"display_name":"Synthetic Student B"}'::jsonb)
+  ('22222222-2222-4222-8222-000000000001','authenticated','authenticated','admin-a@example.invalid',now(),now(),now(),'{}'::jsonb,'{"display_name":"Synthetic Admin A","username":"qa_admin_a"}'::jsonb),
+  ('22222222-2222-4222-8222-000000000002','authenticated','authenticated','student-a@example.invalid',now(),now(),now(),'{}'::jsonb,'{"display_name":"Synthetic Student A","username":"qa_student_a"}'::jsonb),
+  ('22222222-2222-4222-8222-000000000003','authenticated','authenticated','unapproved-student-a@example.invalid',now(),now(),now(),'{}'::jsonb,'{"display_name":"Synthetic Unapproved Student A","username":"qa_unapproved_a"}'::jsonb),
+  ('22222222-2222-4222-8222-000000000004','authenticated','authenticated','teacher-a@example.invalid',now(),now(),now(),'{}'::jsonb,'{"display_name":"Synthetic Teacher A","username":"qa_teacher_a"}'::jsonb),
+  ('22222222-2222-4222-8222-000000000005','authenticated','authenticated','student-b@example.invalid',now(),now(),now(),'{}'::jsonb,'{"display_name":"Synthetic Student B","username":"qa_student_b"}'::jsonb)
 on conflict (id) do nothing;
 
 insert into public.profiles
@@ -63,15 +63,6 @@ on conflict (user_id) do update set
   object_path=excluded.object_path,
   status=excluded.status,
   confirmed_fraud=false;
-
-insert into public.community_profiles (user_id,username)
-values
-  ('22222222-2222-4222-8222-000000000001','admin_a'),
-  ('22222222-2222-4222-8222-000000000002','student_a'),
-  ('22222222-2222-4222-8222-000000000003','student_a_unapproved'),
-  ('22222222-2222-4222-8222-000000000004','teacher_a'),
-  ('22222222-2222-4222-8222-000000000005','student_b')
-on conflict (user_id) do update set username=excluded.username,updated_at=now();
 
 commit;
 
