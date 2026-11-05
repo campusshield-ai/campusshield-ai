@@ -13,6 +13,7 @@ const migration = await read("supabase/migrations/20261105022245_campus_live_cla
 const indexMigration = await read("supabase/migrations/20261105024500_index_live_class_session_creator.sql");
 const adminMigration = await read("supabase/migrations/20261105102246_campus_admin_live_classroom_access.sql");
 const adminScopeMigration = await read("supabase/migrations/20261105103142_campus_live_classroom_admin_only_scope.sql");
+const adminCreateMigration = await read("supabase/migrations/20261105105004_campus_admin_classroom_creation.sql");
 const tokenFunction = await read("supabase/functions/campus-live-class-token/index.ts");
 const endFunction = await read("supabase/functions/campus-live-class-end/index.ts");
 
@@ -24,6 +25,11 @@ assert.match(html, /Online Classroom/);
 assert.match(app, /\['admin','teacher','student'\]\.includes\(currentProfile\?\.role\)/);
 assert.match(app, /\['admin','teacher','student'\]\.includes\(currentProfile\.role\)/);
 assert.match(backend, /listCampusLiveClassrooms/);
+assert.match(adminCreateMigration, /p\.role = 'admin'/);
+assert.match(adminCreateMigration, /m\.campus_role = 'admin'/);
+assert.match(adminCreateMigration, /u\.is_active = true/);
+assert.match(adminCreateMigration, /c\.teacher_id = p\.id/);
+assert.match(adminCreateMigration, /private\.is_verified_classroom_teacher/);
 assert.match(adminScopeMigration, /private\.can_access_live_classroom/);
 assert.match(adminScopeMigration, /public\.list_campus_live_classrooms/);
 assert.match(adminScopeMigration, /private\.can_access_classroom\(p_classroom_id\)/);
@@ -33,6 +39,8 @@ assert.match(backend, /startCampusLiveClassSession/);
 assert.match(backend, /endCampusLiveClassSession/);
 assert.match(backend, /requestCampusLiveClassToken/);
 
+assert.match(app, /\['teacher','admin'\]\.includes\(currentProfile\?\.role\)/);
+assert.match(html, /Verified teachers and campus administrators can create classes/);
 assert.match(ui, /listCampusLiveClassSessions/);
 assert.match(ui, /getCampusLiveClassroomCapabilities/);
 assert.match(ui, /data-live-action="join"/);
