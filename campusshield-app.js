@@ -2187,6 +2187,7 @@
       card.className = "campus-chat-message" +
         (myUsername && row.author_username === myUsername ? " is-mine" : "") +
         (row.status === "hidden" ? " is-hidden" : "");
+      card.dataset.status = String(row.status || "");
       const meta = document.createElement("div");
       meta.className = "campus-chat-message-meta";
       const author = document.createElement("strong");
@@ -2545,6 +2546,7 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = "campus-dm-conversation" + (conversation.conversation_id === campusDirectActiveId ? " active" : "");
+      button.dataset.conversationId = conversation.conversation_id;
       button.setAttribute("aria-pressed", String(conversation.conversation_id === campusDirectActiveId));
       const avatar = document.createElement("span");
       avatar.className = "campus-dm-conversation-avatar";
@@ -2626,6 +2628,7 @@
     renderCampusDirectConversations();
     renderCampusDirectThreadHeader(conversation);
     const thread = $("campus-dm-thread-messages");
+    thread.dataset.conversationId = conversationId;
     const status = $("campus-dm-thread-status");
     thread.replaceChildren();
     const loading = document.createElement("div");
@@ -2689,6 +2692,7 @@
     rows.forEach(function(row) {
       const card = document.createElement("article");
       card.className = "campus-dm-message" + (row.is_mine ? " is-mine" : "");
+      card.dataset.status = String(row.status || "");
       const head = document.createElement("div");
       head.className = "campus-dm-message-head";
       const author = document.createElement("span");

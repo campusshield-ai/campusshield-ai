@@ -1,0 +1,14 @@
+.campus-voice-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;margin:9px 0 2px;padding:9px 10px;border:1px solid #dfeae4;border-radius:12px;background:#f7fbf8}
+.campus-voice-tools .campus-voice-record{min-height:34px;padding:7px 11px;font-size:10px}
+.campus-voice-tools .campus-voice-discard{min-height:34px;padding:7px 10px;font-size:10px}
+.campus-voice-status{color:#71847c;font-size:10px;line-height:1.45;flex:1 1 180px}
+.campus-voice-status[data-state="error"]{color:#a83f46}
+.campus-voice-preview{display:block;flex:1 1 100%;width:100%;max-width:430px;height:38px}
+.campus-voice-player{display:block;width:min(100%,360px);height:38px;margin:8px 0 2px;accent-color:#237f8d}
+.campus-voice-duration{display:block;margin-top:7px;color:#70877d;font-size:10px;font-weight:750}
+.campus-voice-unavailable{display:block;margin-top:7px;color:#a3474c;font-size:10px}
+.campus-chat-message-body+.campus-voice-duration,.campus-dm-message-body+.campus-voice-duration{margin-top:8px}
+.campus-voice-tools button:disabled{opacity:.5;cursor:not-allowed}
+#ideas-impact-nav .nav-icon{color:#79e0c4}
+@media(max-width:650px){.campus-voice-tools{align-items:flex-start}.campus-voice-status{flex-basis:100%}.campus-voice-preview{max-width:100%}}
+@media(prefers-reduced-motion:reduce){.campus-voice-tools *{transition:none!important}}
