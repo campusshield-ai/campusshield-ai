@@ -11,6 +11,7 @@ const ui = await read("campus-live-classroom.js");
 const css = await read("campus-live-classroom.css");
 const migration = await read("supabase/migrations/20261105022245_campus_live_classroom_sessions.sql");
 const tokenFunction = await read("supabase/functions/campus-live-class-token/index.ts");
+const endFunction = await read("supabase/functions/campus-live-class-end/index.ts");
 
 assert.match(html, /campus-live-classroom\.css/);
 assert.match(html, /campus-live-classroom\.js/);
@@ -49,6 +50,12 @@ assert.match(tokenFunction, /LIVEKIT_API_SECRET/);
 assert.match(tokenFunction, /token\.addGrant\(/);
 assert.match(tokenFunction, /roomJoin: true/);
 assert.doesNotMatch(tokenFunction, /SUPABASE_SERVICE_ROLE_KEY/);
+assert.match(endFunction, /get_campus_live_class_token_context/);
+assert.match(endFunction, /participant_role/);
+assert.match(endFunction, /RoomServiceClient/);
+assert.match(endFunction, /deleteRoom\(context\.room_name\)/);
+assert.match(endFunction, /end_campus_live_class_session/);
+assert.doesNotMatch(endFunction, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.doesNotMatch(ui + backend + html, /LIVEKIT_API_SECRET|LIVEKIT_API_KEY/);
 
 console.log("Campus live-classroom smoke checks passed.");
