@@ -932,7 +932,7 @@ assert.match(shieldmindChatHistoryMigration, /with check \(\(select auth\.uid\(\
 assert.match(shieldmindChatHistoryMigration, /foreign key \(conversation_id, user_id\)[\s\S]*references public\.shieldmind_conversations \(id, user_id\)/i);
 assert.match(shieldmindChatHistoryMigration, /role in \('user', 'assistant'\)/i);
 assert.doesNotMatch(shieldmindChatHistoryMigration, /security definer/i, "chat history uses ordinary owner RLS, not a privileged bypass function");
-assert.match(shieldmindChatHistoryIndexMigration, /on public\\.shieldmind_messages \(conversation_id, user_id\)/i, "message ownership foreign key has a covering index");
+assert.match(shieldmindChatHistoryIndexMigration, /on public[.]shieldmind_messages \(conversation_id, user_id\)/i, "message ownership foreign key has a covering index");
 assert.match(shieldmindChatHistoryCss, /@media \(max-width: 420px\)/);
 assert.match(shieldmindChatHistoryCss, /html\[data-theme="dark"\]/);
 assert.match(privacyPage, /ShieldMind saved conversations/);
