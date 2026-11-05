@@ -7256,11 +7256,83 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       return applyAccess(false, null, 'We could not verify your subscription. AI access stays locked until the payment status can be checked.');
     }
   }
-  function addShieldMindMessage(role,message) {
-    const article=document.createElement('article'); article.className='shieldmind-message '+(role==='user'?'user':'assistant');
-    const title=document.createElement('strong'); title.textContent=role==='user'?'You':'ShieldMind AI';
-    const body=document.createElement('p'); body.textContent=message; article.append(title,body);
-    $('shieldmind-messages').appendChild(article); $('shieldmind-messages').scrollTop=$('shieldmind-messages').scrollHeight;
+  function addShieldMindMessage(role, message, sources = []) {
+    const article = document.createElement('article');
+    article.className = 'shieldmind-message ' + (role === 'user' ? 'user' : 'assistant');
+    const title = document.createElement('strong');
+    title.textContent = role === 'user' ? 'You' : 'ShieldMind AI';
+    const body = document.createElement('p');
+    body.textContent = String(message || '');
+    article.append(title, body);
+
+    // Source metadata comes from the Edge Function. Render titles as text and
+    // allow only absolute HTTP(S) links; never inject provider/source HTML.
+    if (role !== 'user' && Array.isArray(sources) && sources.length) {
+      const sourceSection = document.createElement('section');
+      sourceSection.className = 'shieldmind-message-sources';
+      const sourceHeading = document.createElement('strong');
+      sourceHeading.textContent = 'Sources used';
+      const sourceList = document.createElement('ul');
+      sources.slice(0, 5).forEach((source, index) => {
+        if (!source || typeof source !== 'object') return;
+        const item = document.createElement('li');
+        const marker = document.createElement('span');
+        marker.className = 'shieldmind-source-marker';
+        marker.textContent = String(source.marker || '[' + (index + 1) + ']');
+        item.appendChild(marker);
+        let safeUrl = '';
+        try {
+          const parsed = new URL(String(source.url || ''));
+          if (parsed.protocol === 'https:' || parsed.protocol === 'http:') safeUrl = parsed.href;
+        } catch (_error) {}
+        if (safeUrl) {
+          const link = document.createElement('a');
+          link.href = safeUrl;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = String(source.title || safeUrl).slice(0, 180);
+          item.appendChild(link);
+        } else {
+          const label = document.createElement('span');
+          label.textContent = String(source.title || 'Source link unavailable').slice(0, 180);
+          item.appendChild(label);
+        }
+        if (source.fetched_at) {
+          const retrieved = new Date(source.fetched_at);
+          if (!Number.isNaN(retrieved.getTime())) {
+            const date = document.createElement('small');
+            date.textContent = 'Retrieved ' + retrieved.toLocaleDateString();
+            item.appendChild(date);
+          }
+        }
+        sourceList.appendChild(item);
+      });
+      if (sourceList.children.length) {
+        sourceSection.append(sourceHeading, sourceList);
+        article.appendChild(sourceSection);
+      }
+    }
+
+    if (role !== 'user' && String(message || '').trim()) {
+      const copy = document.createElement('button');
+      copy.type = 'button';
+      copy.className = 'shieldmind-copy-answer';
+      copy.textContent = 'Copy answer';
+      copy.setAttribute('aria-label', 'Copy ShieldMind answer');
+      copy.addEventListener('click', async () => {
+        try {
+          if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+          await navigator.clipboard.writeText(String(message));
+          copy.textContent = 'Copied';
+        } catch (_error) {
+          copy.textContent = 'Copy unavailable';
+        }
+      });
+      article.appendChild(copy);
+    }
+
+    $('shieldmind-messages').appendChild(article);
+    $('shieldmind-messages').scrollTop = $('shieldmind-messages').scrollHeight;
   }
   function renderShieldMindRecentQuestions() {
     const list=$('shieldmind-recent-list');
@@ -7360,7 +7432,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if($('shieldmind-image')) $('shieldmind-image').value='';
       if($('shieldmind-image-confirm')) $('shieldmind-image-confirm').checked=false;
       if(currentProfile!==profileAtRequest||currentProfile?.id!==userId){shieldMindHistory=[];$('shieldmind-messages').innerHTML='';resetShieldMindForSession();return;}
-      addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'));
+      addShieldMindMessage('assistant', String(result?.answer || 'I could not produce an answer.'), result?.sources);
       shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-8);
       shieldMindRecentQuestions=[question,...shieldMindRecentQuestions.filter(item=>item!==question)].slice(0,5);
       renderShieldMindRecentQuestions();
