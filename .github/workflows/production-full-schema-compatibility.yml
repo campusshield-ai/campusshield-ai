@@ -10,6 +10,7 @@ on:
       - ".github/workflows/production-full-schema-compatibility.yml"
       - "supabase/production-candidates/**"
       - "tests/production-migration-candidate-postgres.sql"
+      - "tests/fixtures/production-full-schema-synthetic-seed.sql"
 
 permissions:
   contents: read
@@ -284,6 +285,13 @@ jobs:
             exit 1
           fi
           echo "Existing Production identity/access helper definitions remained unchanged in the clone."
+
+      - name: Seed synthetic users and campus memberships in the disposable clone
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/production-full-schema-synthetic-seed.sql
 
       - name: Test synthetic authenticated roles and campus isolation
         run: |
