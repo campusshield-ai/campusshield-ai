@@ -60,10 +60,12 @@ assert.match(statusContextSql, /new\.university_id := private\.current_campus_un
 assert.match(statusContextSql, /before insert on public\.campus_idea_status_updates/i);
 assert.match(statusContextSql, /revoke all on function private\.prepare_campus_idea_status_update\(\) from public, anon, authenticated/i);
 
-assert.match(statusGuard, /create or replace function private\\.prepare_campus_idea_status_update\\(\\)/);
-assert.match(statusGuard, /security invoker[\\s\\S]*set search_path = ''/i);
-assert.match(statusGuard, /private\\.current_user_has_verified_campus_access\\(\\)/);
-assert.match(statusGuard, /private\\.current_campus_role\\(\\) not in \\('admin','security','teacher'\\)/i);
-assert.match(statusGuard, /new\\.reviewer_id := \\(select auth\\.uid\\(\\)\\)/);
-assert.match(statusGuard, /new\\.university_id := private\\.current_campus_university_id\\(\\)/);
-assert.match(statusGuard, /revoke all on function private\\.prepare_campus_idea_status_update\\(\\) from public, anon, authenticated/i);
+
+assert.ok(statusGuard.includes("create or replace function private.prepare_campus_idea_status_update()"));
+assert.ok(statusGuard.includes("security invoker"));
+assert.ok(statusGuard.includes("set search_path = ''"));
+assert.ok(statusGuard.includes("private.current_user_has_verified_campus_access()"));
+assert.ok(statusGuard.includes("private.current_campus_role() not in ('admin','security','teacher')"));
+assert.ok(statusGuard.includes("new.reviewer_id := (select auth.uid())"));
+assert.ok(statusGuard.includes("new.university_id := private.current_campus_university_id()"));
+assert.ok(statusGuard.includes("revoke all on function private.prepare_campus_idea_status_update() from public, anon, authenticated"));
