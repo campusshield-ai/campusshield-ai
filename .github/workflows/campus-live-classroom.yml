@@ -1,0 +1,43 @@
+name: Campus live classroom checks
+
+on:
+  pull_request:
+    branches: ["staging/preview"]
+    paths:
+      - "index.html"
+      - "campusshield-app.js"
+      - "campusshield-backend.js"
+      - "campus-live-classroom.js"
+      - "campus-live-classroom.css"
+      - "supabase/migrations/*campus_live_classroom*"
+      - "supabase/functions/campus-live-class-token/**"
+      - "tests/campus-live-classroom-smoke.mjs"
+      - ".github/workflows/campus-live-classroom.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-classroom:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check browser JavaScript syntax
+        run: |
+          node --check campus-live-classroom.js
+          node --check campusshield-backend.js
+          node --check campusshield-app.js
+      - name: Type-check authenticated LiveKit token function
+        run: deno check supabase/functions/campus-live-class-token/index.ts
+      - name: Run live classroom security and integration smoke checks
+        run: node tests/campus-live-classroom-smoke.mjs
+      - name: Run full CampusShield regression smoke suite
+        run: node tests/smoke-check.mjs
