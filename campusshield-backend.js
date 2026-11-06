@@ -1641,7 +1641,7 @@ async getCurrentUser() {
         .order("updated_at", { ascending: false })
         .limit(50);
       const cleanSearch = String(search || "").trim().slice(0, 120);
-      if (cleanSearch) query = query.ilike("search_text", "%" + cleanSearch.replace(/[%,_]/g, "\\    async askShieldMind(question, history = [], image = null) {") + "%");
+      if (cleanSearch) query = query.ilike("search_text", "%" + cleanSearch + "%");
       const { data, error } = await query;
       if (error) throw error;
       return data || [];
