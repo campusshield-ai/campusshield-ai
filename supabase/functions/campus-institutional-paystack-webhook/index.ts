@@ -7,6 +7,17 @@ const json = (body: Record<string, unknown>, status = 200) =>
     headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
   });
 
+function expectedPaystackDomain(supabaseUrl: string): "test" | "live" | null {
+  try {
+    const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
+    if (projectRef === "hywcpnoqqhxvujnimhxl") return "test";
+    if (projectRef === "fvgtnujjnvdkhzqqcaqe") return "live";
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let mismatch = 0;
@@ -28,6 +39,12 @@ async function sha256(value: string): Promise<string> {
   return [...digest].map((part) => part.toString(16).padStart(2, "0")).join("");
 }
 
+function validDate(value: unknown): string | null {
+  if (!value) return null;
+  const date = new Date(String(value));
+  return Number.isFinite(date.getTime()) ? date.toISOString() : null;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "Method not allowed." }, 405);
 
@@ -35,9 +52,12 @@ Deno.serve(async (req: Request) => {
     const secret = Deno.env.get("PAYSTACK_SECRET_KEY") || "";
     const url = Deno.env.get("SUPABASE_URL") || "";
     const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    if (!url || !service || !secret) return json({ error: "Staging institutional webhook is not configured." }, 503);
-    if (!secret.startsWith("sk_test_")) {
-      return json({ error: "This Staging webhook accepts Paystack test events only." }, 409);
+    const expectedDomain = expectedPaystackDomain(url);
+    if (!url || !service || !secret || !expectedDomain) {
+      return json({ error: "Institutional Paystack webhook is not configured for this project." }, 503);
+    }
+    if (!secret.startsWith("sk_" + expectedDomain + "_")) {
+      return json({ error: "Paystack secret key does not match this Supabase project's payment environment." }, 503);
     }
 
     const raw = await req.text();
@@ -59,7 +79,10 @@ Deno.serve(async (req: Request) => {
       "subscription.disable",
       "subscription.not_renew",
       "refund.processed",
+      "refund.failed",
       "charge.dispute.create",
+      "charge.dispute.resolve",
+      "charge.dispute.remind",
     ]);
     if (!supported.has(eventType)) return json({ received: true, ignored: true });
 
@@ -68,39 +91,59 @@ Deno.serve(async (req: Request) => {
     const customer = data.customer || {};
     const plan = data.plan || {};
     const reference = String(data.reference || transaction.reference || "").trim() || null;
-    const subscriptionCode = String(data.subscription_code || subscription.subscription_code || "").trim() || null;
+    const subscriptionCode = String(
+      data.subscription_code || subscription.subscription_code || data.subscription?.code || "",
+    ).trim() || null;
     const invoiceCode = String(data.invoice_code || data.invoice?.invoice_code || "").trim() || null;
     const amount = Number(data.amount ?? transaction.amount ?? subscription.amount);
     const email = String(customer.email || data.email || data.customer_email || "").trim().toLowerCase() || null;
     const currency = String(data.currency || transaction.currency || "").trim() || null;
-    const domain = String(data.domain || transaction.domain || "").trim() || null;
+    const domain = String(data.domain || transaction.domain || subscription.domain || "").trim() || null;
     const providerStatus = String(data.status || transaction.status || subscription.status || "").trim() || null;
     const transactionId = data.id ?? transaction.id;
-    const planCode = String(plan.plan_code || data.plan_code || "").trim() || null;
+    const planCode = String(plan.plan_code || data.plan_code || subscription.plan?.plan_code || "").trim() || null;
+    const paidAt = validDate(data.paid_at || transaction.paid_at);
+    const periodStart = validDate(data.period_start || data.invoice?.period_start);
+    const periodEnd = validDate(data.period_end || data.invoice?.period_end);
+    const nextPaymentAt = validDate(subscription.next_payment_date || data.next_payment_date);
+    const isPaid = data.paid === true || data.paid === 1 ||
+      providerStatus === "success" || transaction.status === "success";
+    const transactionReference = reference || String(transaction.reference || "").trim() || null;
 
-    const keyMaterial = reference || subscriptionCode || invoiceCode || String(transactionId || "");
+    // Paystack Test Mode and Live Mode are separate. Never let an event from one
+    // environment update the other environment's institutional subscriptions.
+    if (domain && domain !== expectedDomain) {
+      return json({ received: true, ignored: true, reason: "payment_environment_mismatch" });
+    }
+
+    const keyMaterial = reference || invoiceCode || subscriptionCode || String(transactionId || "");
     const eventKey = eventType + ":" + (keyMaterial || await sha256(raw));
     const eventPayload = {
       event: eventType,
-      reference,
+      reference: transactionReference,
       transaction_id: transactionId == null ? null : String(transactionId),
       subscription_code: subscriptionCode,
       invoice_code: invoiceCode,
       customer_email: email,
+      customer_code: String(customer.customer_code || "").trim() || null,
       plan_code: planCode,
-      amount_kobo: Number.isFinite(amount) ? amount : null,
+      amount_kobo: Number.isFinite(amount) ? Math.trunc(amount) : null,
       currency,
       domain,
       status: providerStatus,
-      paid_at: data.paid_at || transaction.paid_at || null,
+      paid: isPaid,
+      paid_at: paidAt,
+      period_start: periodStart,
+      period_end: periodEnd,
+      next_payment_date: nextPaymentAt,
       received_at: new Date().toISOString(),
     };
 
     const admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
-    const { error } = await admin.schema("private").from("campus_institutional_paystack_events").upsert({
+    const { error: storeError } = await admin.schema("private").from("campus_institutional_paystack_events").upsert({
       event_key: eventKey,
       event_type: eventType,
-      provider_reference: reference,
+      provider_reference: transactionReference,
       provider_transaction_id: transactionId == null ? null : String(transactionId),
       provider_subscription_code: subscriptionCode,
       provider_invoice_code: invoiceCode,
@@ -112,14 +155,112 @@ Deno.serve(async (req: Request) => {
       provider_status: providerStatus,
       event_payload: eventPayload,
       received_at: new Date().toISOString(),
+      review_status: "received",
     }, { onConflict: "event_key", ignoreDuplicates: true });
 
-    if (error) {
-      console.error("Institutional Paystack event could not be stored.", { code: error.code || "unknown" });
+    if (storeError) {
+      console.error("Institutional Paystack event could not be stored.", { code: storeError.code || "unknown" });
       return json({ error: "Webhook event could not be stored." }, 503);
     }
 
-    // Evidence is recorded only. Finance must verify a transaction against an issued invoice.
+    const { data: storedEvent, error: eventLookupError } = await admin.schema("private")
+      .from("campus_institutional_paystack_events")
+      .select("id")
+      .eq("event_key", eventKey)
+      .maybeSingle();
+    if (eventLookupError || !storedEvent?.id) return json({ error: "Stored webhook event could not be retrieved." }, 503);
+    const eventId = String(storedEvent.id);
+
+    if (eventType === "invoice.update" && isPaid && subscriptionCode && transactionReference && email) {
+      const verificationResponse = await fetch(
+        "https://api.paystack.co/transaction/verify/" + encodeURIComponent(transactionReference),
+        { headers: { Authorization: "Bearer " + secret } },
+      );
+      const verification = await verificationResponse.json().catch(() => null);
+      const tx = verification?.data;
+      if (!verificationResponse.ok || verification?.status !== true ||
+          tx?.status !== "success" || tx?.reference !== transactionReference ||
+          Number(tx?.amount) !== amount || tx?.currency !== "NGN" ||
+          tx?.domain !== expectedDomain ||
+          String(tx?.customer?.email || "").trim().toLowerCase() !== email) {
+        await admin.schema("private").from("campus_institutional_paystack_events")
+          .update({ review_status: "review_required" }).eq("id", eventId);
+        return json({ received: true, recorded: true, review_required: true, reason: "renewal_verification_mismatch" });
+      }
+
+      const verifiedPaidAt = validDate(tx.paid_at || tx.created_at);
+      const accessThrough = nextPaymentAt || periodEnd;
+      if (!verifiedPaidAt || !accessThrough || !periodStart || !invoiceCode) {
+        await admin.schema("private").from("campus_institutional_paystack_events")
+          .update({ review_status: "review_required" }).eq("id", eventId);
+        return json({ received: true, recorded: true, review_required: true, reason: "renewal_period_data_missing" });
+      }
+
+      const { error: renewalError } = await admin.rpc("record_campus_institutional_paystack_renewal", {
+        p_subscription_code: subscriptionCode,
+        p_event_id: eventId,
+        p_reference: transactionReference,
+        p_transaction_id: String(tx.id),
+        p_invoice_code: invoiceCode,
+        p_amount_kobo: Number(tx.amount),
+        p_currency: String(tx.currency),
+        p_customer_email: email,
+        p_provider_domain: String(tx.domain),
+        p_paid_at: verifiedPaidAt,
+        p_period_start: periodStart,
+        p_access_through: accessThrough,
+        p_next_payment_at: nextPaymentAt,
+      });
+      if (renewalError) {
+        console.error("Institutional Paystack renewal needs review.", { code: renewalError.code || "unknown" });
+        await admin.schema("private").from("campus_institutional_paystack_events")
+          .update({ review_status: "review_required" }).eq("id", eventId);
+        return json({ received: true, recorded: true, review_required: true });
+      }
+      return json({ received: true, recorded: true, renewal_processed: true });
+    }
+
+    if (eventType === "invoice.payment_failed" && subscriptionCode && email && Number.isFinite(amount)) {
+      const { error: failedError } = await admin.rpc("mark_campus_institutional_paystack_renewal_failed", {
+        p_subscription_code: subscriptionCode,
+        p_event_id: eventId,
+        p_customer_email: email,
+        p_amount_kobo: Math.trunc(amount),
+        p_currency: currency || "NGN",
+        p_provider_domain: domain || expectedDomain,
+        p_failed_at: new Date().toISOString(),
+      });
+      if (failedError) {
+        await admin.schema("private").from("campus_institutional_paystack_events")
+          .update({ review_status: "review_required" }).eq("id", eventId);
+      }
+      return json({ received: true, recorded: true, renewal_attention: !failedError });
+    }
+
+    if ((eventType === "subscription.not_renew" || eventType === "subscription.disable") &&
+        subscriptionCode && email) {
+      const { error: lifecycleError } = await admin.rpc("mark_campus_institutional_paystack_subscription_nonrenewing", {
+        p_subscription_code: subscriptionCode,
+        p_event_id: eventId,
+        p_event_type: eventType,
+        p_customer_email: email,
+        p_provider_domain: domain || expectedDomain,
+        p_event_at: new Date().toISOString(),
+      });
+      if (lifecycleError) {
+        await admin.schema("private").from("campus_institutional_paystack_events")
+          .update({ review_status: "review_required" }).eq("id", eventId);
+      }
+      return json({ received: true, recorded: true, nonrenewing: !lifecycleError });
+    }
+
+    if (eventType === "refund.processed" || eventType.startsWith("charge.dispute.")) {
+      await admin.schema("private").from("campus_institutional_paystack_events")
+        .update({ review_status: "review_required" }).eq("id", eventId);
+    }
+
+    // Initial payments are matched to their issued invoice by finance. A
+    // subscription.create event alone is never treated as payment.
     return json({ received: true, recorded: true, activated: false });
   } catch (error) {
     console.error("Institutional Paystack webhook failed.", {
