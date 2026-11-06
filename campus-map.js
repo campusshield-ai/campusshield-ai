@@ -741,9 +741,9 @@ import './campus-map-discovery.js';
     };
   }
 
-  function updateSource() {
+  function updateSource(items = features) {
     const source = map?.getSource('campus-features');
-    if (source) source.setData(featureCollection(features));
+    if (source) source.setData(featureCollection(items));
   }
 
   function validMapColour(value) {
