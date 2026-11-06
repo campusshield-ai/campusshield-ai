@@ -15,6 +15,7 @@
   let baseStyleLayerIds = [];
   let baseStyleRoadLayerIds = [];
   let baseStyleRoadLabelLayerIds = [];
+  let baseStyleBuildingLayerIds = [];
   let baseStyleLabelLayerIds = [];
   let campusProfiles = [];
   let activeCampusProfile = null;
@@ -182,6 +183,7 @@
       );
       baseStyleRoadLayerIds = styleLayers.filter(layer => layer.type !== 'symbol' && isTransportLayer(layer)).map(layer => layer.id);
       baseStyleRoadLabelLayerIds = styleLayers.filter(layer => layer.type === 'symbol' && isTransportLayer(layer)).map(layer => layer.id);
+      baseStyleBuildingLayerIds = styleLayers.filter(layer => /building|building_part/i.test(layer.id + ' ' + String(layer['source-layer'] || ''))).map(layer => layer.id);
       baseStyleLabelLayerIds = styleLayers.filter(layer => layer.type === 'symbol').map(layer => layer.id);
       map.addSource('campus-features', { type: 'geojson', data: featureCollection([]) });
       map.addLayer({
@@ -1010,8 +1012,9 @@
 
     baseStyleLayerIds.forEach(id => {
       const isRoad = baseStyleRoadLayerIds.includes(id) || baseStyleRoadLabelLayerIds.includes(id);
+      const isBuilding = baseStyleBuildingLayerIds.includes(id);
       const isLabel = baseStyleLabelLayerIds.includes(id);
-      setLayerVisibility(id, streetMode && (!isRoad || preferences.roads) && (!isLabel || preferences.labels));
+      setLayerVisibility(id, streetMode && (!isRoad || preferences.roads) && (!isBuilding || preferences.buildings) && (!isLabel || preferences.labels));
     });
 
     setLayerVisibility('campus-feature-points', preferences.locations);
