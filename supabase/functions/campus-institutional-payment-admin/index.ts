@@ -150,13 +150,18 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Payment was verified by Paystack but could not be committed. Contact support before retrying or paying again." }, 503);
     }
 
+    const { data: activeSubscription } = await db.from("campus_institutional_subscriptions")
+      .select("expires_at")
+      .eq("id", subscriptionId)
+      .maybeSingle();
+
     return json({
       verified: true,
       activated: true,
       subscription_id: subscriptionId,
       invoice_number: invoice.invoice_number,
       provider_reference: reference,
-      expires_at: new Date(paidAt.getTime() + 30 * 86400000).toISOString(),
+      expires_at: activeSubscription?.expires_at || null,
       recurring_subscription_linked: Boolean(subscriptionCode),
     });
   } catch (error) {
