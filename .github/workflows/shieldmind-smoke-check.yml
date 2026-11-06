@@ -25,3 +25,5 @@ jobs:
           node-version: 22
       - name: Run complete smoke suite
         run: node tests/smoke-check.mjs
+      - name: Run private conversation history checks
+        run: node tests/shieldmind-history-smoke.mjs
