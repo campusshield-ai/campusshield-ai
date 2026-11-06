@@ -92,6 +92,8 @@ assert.match(js, /hasValidCoordinates\(target\)/,
   'Route requests validate destination coordinates before calling the foot router');
 assert.match(js, /hasValidCoordinates\(startPosition\)/,
   'Route requests validate the device GPS origin before calling the foot router');
+assert.match(js, /routeRequestStartedAt - lastWalkingRouteRequestAt < 1000/,
+  'CampusMap enforces the public walking router one-request-per-second limit');
 assert.match(js, /describeRouteTarget\(item, standardRouteTarget, false\)/,
   'The Passport explains the selected normal-route destination');
 assert.match(js, /describeRouteTarget\(item, accessibleRouteTarget, true\)/,
