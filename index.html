@@ -3746,7 +3746,16 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <section class="panel shieldmind-side-panel shieldmind-recent-panel">
         <div class="shieldmind-side-heading"><div><h2>Recent chats</h2><p>Questions from this session</p></div><button type="button" class="shieldmind-text-button" id="shieldmind-recent-clear">Clear</button></div>
         <div id="shieldmind-recent-list" class="shieldmind-recent-list"><p class="shieldmind-recent-empty">Your recent questions will appear here during this session.</p></div>
-        <p class="shieldmind-session-note">Recent prompts are kept in this page session only; they are not saved as a permanent chat history.</p>
+        <p class="shieldmind-session-note">Recent prompts are kept in this page session only.</p>
+        <section class="shieldmind-saved-history" aria-labelledby="shieldmind-history-title">
+          <div class="shieldmind-side-heading"><div><h3 id="shieldmind-history-title">Saved conversations</h3><p>Private to your signed-in account</p></div></div>
+          <label class="sr-only" for="shieldmind-history-search">Search saved conversations</label>
+          <input id="shieldmind-history-search" type="search" maxlength="120" placeholder="Search saved chats…" autocomplete="off">
+          <div id="shieldmind-history-list" class="shieldmind-history-list" aria-live="polite">
+            <p class="shieldmind-recent-empty">Sign in to view your saved conversations.</p>
+          </div>
+          <p class="shieldmind-session-note">Only conversation text is saved. Study images are not stored in chat history.</p>
+        </section>
       </section>
 
       <section class="panel shieldmind-side-panel shieldmind-campus-panel">
