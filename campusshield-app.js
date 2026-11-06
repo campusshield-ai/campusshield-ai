@@ -7766,7 +7766,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       const messages = row.messages.filter(item =>
         item && ['user', 'assistant'].includes(item.role) &&
         typeof item.content === 'string' && item.content.length <= 12000
-      ).slice(-200);
+      ).slice(-100);
       shieldMindConversationId = row.id;
       shieldMindHistory = messages;
       shieldMindRecentQuestions = messages.filter(item => item.role === 'user')
@@ -7806,7 +7806,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     const title = firstQuestion.replace(/\s+/g, ' ').trim().slice(0, 120) || 'ShieldMind conversation';
     const expectedUserId = currentProfile.id;
     const savedId = await backend.saveMyShieldMindConversation(
-      shieldMindConversationId, title, shieldMindHistory.slice(-200)
+      shieldMindConversationId, title, shieldMindHistory.slice(-100), expectedUserId
     );
     if (currentProfile?.id !== expectedUserId) return;
     shieldMindConversationId = savedId;
