@@ -275,6 +275,8 @@ assert.match(js, /import '\.\/campus-map-discovery\.js'/, 'CampusMap loads the d
 assert.match(js, /getTypeCounts\(features, activeDiscoveryFilter\)/, 'Facility type chips are derived from current campus published locations');
 assert.match(js, /matchesType\(item, activeFeatureTypeFilter\)/, 'Broad categories and precise facility type filters are combined');
 assert.match(js, /matchesSearch\(item, term\)/, 'Campus search uses accent-normalised aliases and Passport metadata');
+assert.match(js, /updateSource\(matches\)/, 'Map markers and location cards use the same active discovery filters');
+assert.match(js, /filterFeatures\(search\?\.value \|\| ''\)/, 'A newly loaded map style restores the active facility filter state');
 assert.match(js, /data-campus-type-filter/, 'Facility type filter clicks are handled by the CampusMap module');
 assert.match(js, /campus-map-results-summary/, 'Filtered published location counts are announced accessibly');
 assert.match(js, /campus-map-clear-filters/, 'Students can clear category, type and text filters together');
