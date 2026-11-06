@@ -795,11 +795,23 @@
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
     $('community-announcement-option').disabled = !canPublishOfficial;
     syncIdentityNavigation();
-    const returnedFromPayment = new URLSearchParams(window.location.search).get('billing') === 'return';
-    navigate(returnedFromPayment ? 'billing' : 'dashboard');
+    const returnParams = new URLSearchParams(window.location.search);
+    const returnedFromInstitutionalPayment = returnParams.get('institution-billing') === 'return';
+    const returnedFromPayment = returnParams.get('billing') === 'return';
+    navigate(returnedFromInstitutionalPayment || returnedFromPayment ? 'billing' : 'dashboard');
     $('billing-reconcile-button').onclick = reconcileReturnedPaystackPayment;
-    if (returnedFromPayment) {
-      const returnParams = new URLSearchParams(window.location.search);
+    if (returnedFromInstitutionalPayment) {
+      const returnedReference = returnParams.get('reference') || returnParams.get('trxref');
+      $('billing-reconcile-button').hidden = true;
+      $('billing-payment-message').textContent = returnedReference
+        ? 'Paystack returned transaction reference ' + returnedReference +
+          '. The institutional payment is awaiting finance verification against the invoice and recurring subscription. Keep the SUB_… subscription code and do not pay again while verification is pending.'
+        : 'Paystack returned to CampusShield. This redirect is not proof of payment. Keep your transaction reference and SUB_… subscription code for finance verification. Do not pay again while verification is pending.';
+      loadInstitutionalBillingRequests();
+      const cleanUrl = new URL(window.location.href);
+      ['institution-billing', 'reference', 'trxref'].forEach(key => cleanUrl.searchParams.delete(key));
+      window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+    } else if (returnedFromPayment) {
       const returnedReference = returnParams.get('reference') || returnParams.get('trxref');
       $('billing-reconcile-button').hidden = !returnedReference;
       if (returnedReference) {
