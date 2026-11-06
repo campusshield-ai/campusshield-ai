@@ -714,7 +714,7 @@ import './campus-map-discovery.js';
       // Keep street names legible above raised buildings, while keeping interactive
       // campus pins and verified features above the labels.
       if (map.getLayer('campus-road-labels')) map.moveLayer('campus-road-labels', 'campus-feature-points');
-      updateSource();
+      filterFeatures(search?.value || '');
       updateDraftSource();
       updateIncidentSource();
       // Campus/profile data may finish loading before or after MapLibre's first style load.
@@ -2083,6 +2083,7 @@ import './campus-map-discovery.js';
     const draftMatches = isCampusAdmin && term ? adminDrafts.filter(item =>
       matchesCampusFilter(item) && window.CampusMapDiscovery.matchesSearch(item, term)
     ) : [];
+    updateSource(matches);
     renderFeatures(matches);
     updateDiscoverySummary(matches.length, term, draftMatches.length);
     results.hidden = !term;
