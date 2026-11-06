@@ -62,6 +62,22 @@ assert.match(html, /id="institutional-billing-invoices"/,
   'Verified campus admins have a dedicated invoice history area');
 assert.match(app, /async function loadInstitutionalBillingInvoices\(\)/,
   'The requester can load their own institutional invoices');
+assert.match(app, /const institutionalPaystackMonthlyLinks = Object\.freeze\(/,
+  'The three account-owner-provided institutional Paystack links are configured as fixed monthly pages');
+assert.match(app, /https:\/\/paystack\.shop\/pay\/gqjub0yz1y[\s\S]*https:\/\/paystack\.shop\/pay\/8u81ku5v94[\s\S]*https:\/\/paystack\.shop\/pay\/p1h6s3mgcj/,
+  'Starter, Professional and Enterprise use their exact supplied Paystack URLs');
+assert.match(app, /invoice\?\.status !== 'issued'[\s\S]*invoice\?\.billing_period !== 'monthly'[\s\S]*invoice\?\.currency !== 'NGN'[\s\S]*Number\(invoice\?\.total_kobo\) !== page\.amountKobo/,
+  'Paystack links are shown only for issued NGN monthly invoices matching the exact fixed page total');
+assert.match(app, /This Paystack page starts a recurring monthly charge \(not a one-time invoice payment\)/,
+  'The requester is warned that Paystack pages create recurring monthly charges');
+assert.match(app, /Returning from Paystack does not activate access/,
+  'Returning from a Paystack page never activates institutional access');
+assert.match(app, /This is an annual invoice[\s\S]*monthly recurring plans/,
+  'Annual invoices cannot use monthly Paystack links');
+assert.match(app, /custom Enterprise invoice totals are kept off the fixed-price Enterprise link|custom Enterprise quote/,
+  'Custom Enterprise invoice totals are kept off the fixed-price Enterprise link');
+assert.match(html, /Request invoice &amp; payment link/,
+  'Institutional plan CTAs guide the requester into the invoice-first flow');
 assert.match(app, /function printInstitutionalInvoice\(invoice\)/,
   'Issued invoices have a printable invoice view that can be saved as PDF');
 assert.match(app, /PRO FORMA · AWAITING PAYMENT/,
