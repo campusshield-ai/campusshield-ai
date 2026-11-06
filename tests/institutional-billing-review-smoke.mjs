@@ -75,12 +75,12 @@ assert.match(app, /https:\/\/paystack\.shop\/pay\/gqjub0yz1y[\s\S]*https:\/\/pay
   'Starter, Professional and Enterprise use their exact supplied Paystack URLs');
 assert.match(app, /function institutionalInvoiceMatchesFixedPaystackPlan[\s\S]*invoice\?\.status === 'issued'[\s\S]*invoice\?\.billing_period === 'monthly'[\s\S]*invoice\?\.currency === 'NGN'[\s\S]*Number\(invoice\?\.total_kobo\) === page\.amountKobo/,
   'Paystack links are shown only for issued NGN monthly invoices matching the exact fixed page total');
-assert.match(app, /This is a recurring monthly subscription, not a one-time invoice payment/,
+assert.match(app, /This is a live recurring monthly subscription, not a one-time invoice payment/,
   'The requester is warned that Paystack pages create recurring monthly charges');
-assert.match(app, /Returning from Paystack does not activate access/,
+assert.match(app, /returnedFromInstitutionalPayment[\s\S]*awaiting finance verification/,
   'Returning from a Paystack page never activates institutional access');
-assert.match(app, /Paystack charges monthly until cancelled/,
-  'The requester is told that an unlimited Paystack subscription keeps recurring until cancelled');
+assert.match(app, /Paystack may charge monthly until cancelled/,
+  'The requester is told that a Paystack subscription may keep recurring until cancelled');
 assert.match(app, /This is an annual invoice[\s\S]*monthly recurring plans/,
   'Annual invoices cannot use monthly Paystack links');
 assert.match(app, /custom Enterprise invoice totals are kept off the fixed-price Enterprise link|custom Enterprise quote/,
