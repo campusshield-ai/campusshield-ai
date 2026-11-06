@@ -71,7 +71,7 @@ assert.match(app, /https:\/\/paystack\.shop\/pay\/gqjub0yz1y[\s\S]*https:\/\/pay
   'Starter, Professional and Enterprise use their exact supplied Paystack URLs');
 assert.match(app, /invoice\?\.status !== 'issued'[\s\S]*invoice\?\.billing_period !== 'monthly'[\s\S]*invoice\?\.currency !== 'NGN'[\s\S]*Number\(invoice\?\.total_kobo\) !== page\.amountKobo/,
   'Paystack links are shown only for issued NGN monthly invoices matching the exact fixed page total');
-assert.match(app, /This Paystack page starts a recurring monthly charge \(not a one-time invoice payment\)/,
+assert.match(app, /This is a recurring monthly subscription, not a one-time invoice payment/,
   'The requester is warned that Paystack pages create recurring monthly charges');
 assert.match(app, /Returning from Paystack does not activate access/,
   'Returning from a Paystack page never activates institutional access');
