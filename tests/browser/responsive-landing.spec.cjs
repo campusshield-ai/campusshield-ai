@@ -506,6 +506,10 @@ test("CampusMap facility type filters and live counts stay usable across seven v
   await page.evaluate(() => {
     document.querySelector("#login-screen").hidden = true;
     document.querySelector("#workspace").hidden = false;
+    // This case tests the sidebar controls, not map rendering or remote style loading.
+    // Disable MapLibre before activating CampusMap so its async style callback cannot
+    // re-render the synthetic fixture while viewport measurements are being taken.
+    window.maplibregl = undefined;
     document.querySelector("#page-campus-map").classList.add("active");
   });
   await page.waitForFunction(() => typeof window.CampusMapDiscovery?.getTypeCounts === "function", { timeout: 20000 });
