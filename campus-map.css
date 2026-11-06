@@ -618,3 +618,149 @@ html[data-theme="dark"] .campus-map-profile-setup input[type="file"] {
   background: #172f27;
   color: #d9eee0;
 }
+
+/* Accessible, user-controlled CampusMap cartographic layers. */
+.campus-map-layer-tools{
+  position:absolute;
+  top:58px;
+  left:0;
+  z-index:9;
+  width:min(280px,calc(100% - 82px));
+  pointer-events:auto;
+}
+.campus-map-layer-toggle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:38px;
+  padding:8px 13px;
+  border:1px solid #d6e4db;
+  border-radius:11px;
+  background:#ffffffef;
+  color:#21483e;
+  box-shadow:0 5px 18px #173d3022;
+  font-size:11px;
+  font-weight:850;
+  backdrop-filter:blur(12px);
+  cursor:pointer;
+}
+.campus-map-layer-toggle:hover,
+.campus-map-layer-toggle[aria-expanded="true"]{
+  border-color:#8fc6ae;
+  background:#f2faf5;
+  color:#0e6657;
+}
+.campus-map-layer-toggle:focus-visible,
+.campus-map-layer-option input:focus-visible{
+  outline:3px solid #4aab8c;
+  outline-offset:2px;
+}
+.campus-map-layer-chevron{
+  margin-left:2px;
+  color:#71877e;
+  transition:transform .16s ease;
+}
+.campus-map-layer-toggle[aria-expanded="true"] .campus-map-layer-chevron{transform:rotate(180deg)}
+.campus-map-layer-panel{
+  position:absolute;
+  top:44px;
+  left:0;
+  display:grid;
+  gap:10px;
+  width:270px;
+  max-width:100%;
+  max-height:min(420px,calc(100% - 130px));
+  overflow:auto;
+  overscroll-behavior:contain;
+  padding:13px;
+  border:1px solid #d9e7de;
+  border-radius:15px;
+  background:#fffffffa;
+  color:#23483e;
+  box-shadow:0 14px 34px #173d3030;
+  backdrop-filter:blur(16px);
+}
+.campus-map-layer-panel[hidden],
+.campus-map-layer-option[hidden]{display:none!important}
+.campus-map-layer-panel-heading{display:grid;gap:3px}
+.campus-map-layer-panel-heading strong{color:#17463b;font-size:13px}
+.campus-map-layer-panel-heading small{color:#758980;font-size:9px}
+.campus-map-layer-options{display:grid;gap:3px}
+.campus-map-layer-option{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  min-width:0;
+  padding:8px 7px;
+  border-radius:10px;
+  cursor:pointer;
+}
+.campus-map-layer-option:hover{background:#f0f7f2}
+.campus-map-layer-option input{
+  width:16px;
+  height:16px;
+  flex:0 0 16px;
+  margin:2px 0 0;
+  accent-color:#0f7565;
+}
+.campus-map-layer-option>span{display:grid;gap:3px;min-width:0}
+.campus-map-layer-option strong{color:#2a5145;font-size:10px;font-weight:800}
+.campus-map-layer-option small{color:#788a82;font-size:8px;font-weight:500;line-height:1.4}
+.campus-map-layer-footnote{
+  margin:0;
+  padding:8px 9px;
+  border:1px solid #e0ebe4;
+  border-radius:9px;
+  background:#f7fbf8;
+  color:#70847a;
+  font-size:8px;
+  line-height:1.5;
+}
+.campus-map-stage.has-layer-panel .campus-map-legend{visibility:hidden}
+html[data-theme="dark"] .campus-map-layer-toggle{
+  border-color:#35594d;
+  background:#172f2b;
+  color:#dceee5;
+}
+html[data-theme="dark"] .campus-map-layer-toggle:hover,
+html[data-theme="dark"] .campus-map-layer-toggle[aria-expanded="true"]{
+  border-color:#4b8d73;
+  background:#1d3b33;
+  color:#e9f8ee;
+}
+html[data-theme="dark"] .campus-map-layer-panel{
+  border-color:#35594d;
+  background:#132a26f7;
+  color:#dceee5;
+}
+html[data-theme="dark"] .campus-map-layer-panel-heading strong,
+html[data-theme="dark"] .campus-map-layer-option strong{color:#d9eee2}
+html[data-theme="dark"] .campus-map-layer-panel-heading small,
+html[data-theme="dark"] .campus-map-layer-option small,
+html[data-theme="dark"] .campus-map-layer-footnote{color:#a5bdb1}
+html[data-theme="dark"] .campus-map-layer-option:hover{background:#203d34}
+html[data-theme="dark"] .campus-map-layer-footnote{
+  border-color:#35594d;
+  background:#1a342d;
+}
+@media(max-width:760px){
+  .campus-map-layer-tools{top:59px;left:0;width:min(280px,calc(100% - 62px))}
+  .campus-map-layer-toggle{min-height:36px;padding:7px 11px;font-size:10px}
+  .campus-map-layer-panel{
+    top:42px;
+    width:min(270px,calc(100vw - 34px));
+    max-height:min(52svh,350px);
+    padding:11px;
+  }
+  .campus-map-legend{top:112px}
+}
+@media(max-width:420px){
+  .campus-map-layer-tools{top:57px}
+  .campus-map-layer-panel{max-height:calc(54svh - 12px);gap:8px}
+  .campus-map-layer-option{padding:7px 6px}
+  .campus-map-legend{top:108px}
+}
+@media(max-height:520px) and (orientation:landscape){
+  .campus-map-layer-panel{max-height:calc(100svh - 170px)}
+}

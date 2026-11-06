@@ -2571,8 +2571,47 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <div class="campus-map-shell">
     <div class="campus-map-stage"><div id="campus-map-canvas" role="application" aria-label="Interactive university map"></div>
       <div class="campus-map-overlay"><label class="campus-map-search-wrap"><span aria-hidden="true">⌕</span><input id="campus-map-search" type="search" placeholder="Search buildings and facilities" autocomplete="off" aria-label="Search campus locations"></label>
-        <div class="campus-map-controls" role="group" aria-label="Campus map style"><button type="button" id="campus-map-2d" class="active" aria-pressed="true" title="Street map">2D</button><button type="button" id="campus-map-satellite" aria-pressed="false" title="Satellite imagery">SAT</button><button type="button" id="campus-map-3d" aria-pressed="false" title="Satellite imagery with 3D building footprints">3D</button></div></div>
-      <div class="campus-map-legend" aria-label="Map marker legend">
+        <div class="campus-map-controls" role="group" aria-label="Campus map style"><button type="button" id="campus-map-2d" class="active" aria-pressed="true" title="Street map">2D</button><button type="button" id="campus-map-satellite" aria-pressed="false" title="Satellite imagery">SAT</button><button type="button" id="campus-map-3d" aria-pressed="false" title="Satellite imagery with 3D building footprints">3D</button></div>
+        <div class="campus-map-layer-tools">
+          <button type="button" class="campus-map-layer-toggle" id="campus-map-layers-toggle" aria-expanded="false" aria-controls="campus-map-layer-panel" aria-label="Show map layers">
+            <span aria-hidden="true">☷</span><span>Layers</span><span class="campus-map-layer-chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div class="campus-map-layer-panel" id="campus-map-layer-panel" role="group" aria-label="Map layer visibility" hidden>
+            <div class="campus-map-layer-panel-heading">
+              <strong>Map layers</strong>
+              <small>Choose what appears on the map</small>
+            </div>
+            <div class="campus-map-layer-options">
+              <label class="campus-map-layer-option">
+                <input type="checkbox" data-map-layer="locations" checked>
+                <span><strong>Campus locations</strong><small>Published buildings, facilities and entrances</small></span>
+              </label>
+              <label class="campus-map-layer-option">
+                <input type="checkbox" data-map-layer="boundary" checked>
+                <span><strong>Campus boundary</strong><small>Solid verified line or dashed candidate line</small></span>
+              </label>
+              <label class="campus-map-layer-option">
+                <input type="checkbox" data-map-layer="buildings" checked>
+                <span><strong>Building footprints</strong><small>Campus records and mapped 3D outlines</small></span>
+              </label>
+              <label class="campus-map-layer-option">
+                <input type="checkbox" data-map-layer="roads" checked>
+                <span><strong>Roads and footpaths</strong><small>Mapped transport network; coverage varies</small></span>
+              </label>
+              <label class="campus-map-layer-option">
+                <input type="checkbox" data-map-layer="labels" checked>
+                <span><strong>Map labels</strong><small>Place, road and campus names</small></span>
+              </label>
+              <label class="campus-map-layer-option campus-map-layer-admin-option" id="campus-map-layer-drafts-option" hidden>
+                <input type="checkbox" data-map-layer="drafts" checked>
+                <span><strong>Admin draft pins</strong><small>Private, unpublished review candidates</small></span>
+              </label>
+            </div>
+            <p class="campus-map-layer-footnote">OpenStreetMap roads and place names are reference context, not university-verified information.</p>
+          </div>
+        </div>
+      </div>
+            <div class="campus-map-legend" aria-label="Map marker legend">
         <span><i class="campus-map-legend-verified"></i> Published location</span>
         <span><i class="campus-map-legend-draft"></i> Admin-only draft pin</span>
         <span class="campus-map-legend-context"><i></i> OSM roads and place labels · context only, not university-verified</span>

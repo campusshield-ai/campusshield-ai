@@ -372,3 +372,62 @@ test("Campus Passport and entrance discovery fit the CampusMap experience at sev
   );
   expect(duration).toBeLessThanOrEqual(0.001);
 });
+
+test("CampusMap layer controls are keyboard-accessible, persistent, and fit mobile screens", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  const revealCampusMap = async () => {
+    await page.evaluate(() => {
+      document.querySelector("#login-screen").hidden = true;
+      document.querySelector("#workspace").hidden = false;
+      document.querySelector("#page-campus-map").classList.add("active");
+    });
+    await page.waitForFunction(() => typeof window.maplibregl?.Map === "function", { timeout: 15000 });
+  };
+  await revealCampusMap();
+
+  const toggle = page.locator("#campus-map-layers-toggle");
+  const panel = page.locator("#campus-map-layer-panel");
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await toggle.click();
+  await expect(panel).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(panel.locator("input[data-map-layer]")).toHaveCount(6);
+  await expect(page.locator("#campus-map-layer-drafts-option")).toBeHidden();
+
+  const roads = panel.locator('input[data-map-layer="roads"]');
+  await roads.uncheck();
+  await expect(roads).not.toBeChecked();
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(toggle).toBeFocused();
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await revealCampusMap();
+  await toggle.click();
+  await expect(panel).toBeVisible();
+  const persistedRoads = panel.locator('input[data-map-layer="roads"]');
+  await expect(persistedRoads).not.toBeChecked();
+  await page.keyboard.press("Escape");
+
+  for (const width of [360, 390, 430, 768, 1024, 1366, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    await toggle.click();
+    await expect(panel).toBeVisible();
+    const bounds = await page.evaluate(() => {
+      const panelBox = document.querySelector("#campus-map-layer-panel").getBoundingClientRect();
+      const stageBox = document.querySelector(".campus-map-stage").getBoundingClientRect();
+      return {
+        panelLeft: panelBox.left,
+        panelRight: panelBox.right,
+        stageLeft: stageBox.left,
+        stageRight: stageBox.right,
+        documentWidth: document.documentElement.scrollWidth
+      };
+    });
+    expect(bounds.panelLeft, `layer panel should stay inside the stage at ${width}px`).toBeGreaterThanOrEqual(bounds.stageLeft - 1);
+    expect(bounds.panelRight, `layer panel should stay inside the stage at ${width}px`).toBeLessThanOrEqual(bounds.stageRight + 1);
+    expect(bounds.documentWidth, `layer panel must not cause horizontal page overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    await page.keyboard.press("Escape");
+  }
+});

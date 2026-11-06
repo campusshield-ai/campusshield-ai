@@ -13,6 +13,10 @@
   const mapKey = 'campus-map';
   let map = null;
   let baseStyleLayerIds = [];
+  let baseStyleRoadLayerIds = [];
+  let baseStyleRoadLabelLayerIds = [];
+  let baseStyleBuildingLayerIds = [];
+  let baseStyleLabelLayerIds = [];
   let campusProfiles = [];
   let activeCampusProfile = null;
   let campusBuildings = [];
@@ -53,6 +57,45 @@
     'campus-footpaths',
     'campus-road-labels'
   ];
+
+
+  const MAP_LAYER_STORAGE_KEY = 'campusshield_map_layers_v1';
+  const MAP_LAYER_DEFAULTS = Object.freeze({
+    locations: true, boundary: true, buildings: true, roads: true, labels: true, drafts: true
+  });
+  function readMapLayerPreferences() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(MAP_LAYER_STORAGE_KEY) || '{}');
+      return Object.fromEntries(Object.entries(MAP_LAYER_DEFAULTS).map(([key, fallback]) => [
+        key, typeof saved?.[key] === 'boolean' ? saved[key] : fallback
+      ]));
+    } catch (_) { return { ...MAP_LAYER_DEFAULTS }; }
+  }
+  let mapLayerPreferences = readMapLayerPreferences();
+  function saveMapLayerPreferences() {
+    try { window.localStorage.setItem(MAP_LAYER_STORAGE_KEY, JSON.stringify(mapLayerPreferences)); }
+    catch (_) { /* Layer controls still work when browser storage is unavailable. */ }
+  }
+  function syncMapLayerControls() {
+    const panel = $('campus-map-layer-panel');
+    if (!panel) return;
+    panel.querySelectorAll('input[data-map-layer]').forEach(input => {
+      const key = input.dataset.mapLayer;
+      if (Object.prototype.hasOwnProperty.call(MAP_LAYER_DEFAULTS, key)) input.checked = Boolean(mapLayerPreferences[key]);
+    });
+    const draftsOption = $('campus-map-layer-drafts-option');
+    if (draftsOption) draftsOption.hidden = !isCampusAdmin;
+  }
+  function setMapLayerPanelOpen(open) {
+    const panel = $('campus-map-layer-panel');
+    const button = $('campus-map-layers-toggle');
+    if (!panel || !button) return;
+    panel.hidden = !open;
+    button.setAttribute('aria-expanded', open ? 'true' : 'false');
+    button.setAttribute('aria-label', open ? 'Hide map layers' : 'Show map layers');
+    mapHost?.parentElement?.classList.toggle('has-layer-panel', open);
+    if (open) syncMapLayerControls();
+  }
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -133,7 +176,15 @@
     map.on('load', () => {
       // Save provider-owned layers before app overlays are added. SAT/3D can hide
       // these layers cleanly while retaining campus pins, routes and road overlays.
-      baseStyleLayerIds = (map.getStyle()?.layers || []).map(layer => layer.id);
+      const styleLayers = map.getStyle()?.layers || [];
+      baseStyleLayerIds = styleLayers.map(layer => layer.id);
+      const isTransportLayer = layer => /transportation|road|street|path|motorway|highway/i.test(
+        layer.id + ' ' + String(layer['source-layer'] || '')
+      );
+      baseStyleRoadLayerIds = styleLayers.filter(layer => layer.type !== 'symbol' && isTransportLayer(layer)).map(layer => layer.id);
+      baseStyleRoadLabelLayerIds = styleLayers.filter(layer => layer.type === 'symbol' && isTransportLayer(layer)).map(layer => layer.id);
+      baseStyleBuildingLayerIds = styleLayers.filter(layer => /building|building_part/i.test(layer.id + ' ' + String(layer['source-layer'] || ''))).map(layer => layer.id);
+      baseStyleLabelLayerIds = styleLayers.filter(layer => layer.type === 'symbol').map(layer => layer.id);
       map.addSource('campus-features', { type: 'geojson', data: featureCollection([]) });
       map.addLayer({
         id: 'campus-feature-points',
@@ -721,6 +772,7 @@
       setLayerVisibility('campus-curated-building-extrusions', mapMode === '3d' && hasUniversityFootprints);
       setLayerVisibility('campus-curated-building-3d-outline', mapMode === '3d' && hasUniversityFootprints);
       setLayerVisibility('campus-curated-building-labels', mapMode !== '2d' && hasUniversityFootprints);
+      applyMapLayerPreferences();
     }
     updateBuildingCoverageSummary();
   }
@@ -950,6 +1002,45 @@
     baseStyleLayerIds.forEach(id => setLayerVisibility(id, visible));
   }
 
+  function applyMapLayerPreferences() {
+    if (!map) return;
+    const preferences = mapLayerPreferences;
+    const streetMode = mapMode === '2d';
+    const flatBuildingMode = mapMode !== '3d';
+    const imageryMode = !streetMode;
+    const hasCuratedFootprints = campusBuildings.length > 0;
+
+    baseStyleLayerIds.forEach(id => {
+      const isRoad = baseStyleRoadLayerIds.includes(id) || baseStyleRoadLabelLayerIds.includes(id);
+      const isBuilding = baseStyleBuildingLayerIds.includes(id);
+      const isLabel = baseStyleLabelLayerIds.includes(id);
+      setLayerVisibility(id, streetMode && (!isRoad || preferences.roads) && (!isBuilding || preferences.buildings) && (!isLabel || preferences.labels));
+    });
+
+    setLayerVisibility('campus-feature-points', preferences.locations);
+    setLayerVisibility('campus-feature-labels', preferences.locations && preferences.labels);
+    ['campus-campus-boundary-fill','campus-campus-boundary-verified-line','campus-campus-boundary-candidate-line']
+      .forEach(id => setLayerVisibility(id, preferences.boundary));
+
+    setLayerVisibility('campus-curated-building-footprints', preferences.buildings && flatBuildingMode);
+    setLayerVisibility('campus-curated-building-verified-outline', preferences.buildings && flatBuildingMode);
+    setLayerVisibility('campus-curated-building-candidate-outline', preferences.buildings && flatBuildingMode);
+    setLayerVisibility('campus-curated-building-extrusions', preferences.buildings && mapMode === '3d' && hasCuratedFootprints);
+    setLayerVisibility('campus-curated-building-3d-outline', preferences.buildings && mapMode === '3d' && hasCuratedFootprints);
+    setLayerVisibility('campus-osm-3d-buildings', preferences.buildings && mapMode === '3d' && !hasCuratedFootprints);
+    setLayerVisibility('campus-osm-3d-building-edges', preferences.buildings && mapMode === '3d' && !hasCuratedFootprints);
+
+    SATELLITE_ROAD_LAYER_IDS.filter(id => id !== 'campus-road-labels')
+      .forEach(id => setLayerVisibility(id, preferences.roads && imageryMode));
+    setLayerVisibility('campus-road-labels', preferences.roads && preferences.labels && imageryMode);
+    setLayerVisibility('campus-osm-3d-poi-labels', preferences.labels && imageryMode);
+    setLayerVisibility('campus-curated-building-labels', preferences.buildings && preferences.labels && imageryMode && hasCuratedFootprints);
+
+    const showAdminDrafts = isCampusAdmin && preferences.drafts;
+    ['campus-draft-clusters','campus-draft-cluster-count','campus-draft-points','campus-draft-labels']
+      .forEach(id => setLayerVisibility(id, showAdminDrafts && (id !== 'campus-draft-labels' || preferences.labels)));
+  }
+
   function updateBuildingCoverageSummary() {
     const target = $('campus-map-3d-coverage');
     if (!target) return;
@@ -1077,6 +1168,7 @@
     setLayerVisibility('campus-curated-building-extrusions', buildingsOn && hasCuratedFootprints);
     setLayerVisibility('campus-curated-building-3d-outline', buildingsOn && hasCuratedFootprints);
     setLayerVisibility('campus-curated-building-labels', labelsOn && hasCuratedFootprints);
+    applyMapLayerPreferences();
     if (mode !== '3d' && map?.getTerrain()) map.setTerrain(null);
     if (mode === '3d' && map?.getSource('campus-terrain')) map.setTerrain({ source: 'campus-terrain', exaggeration: 1.1 });
     if (map) {
@@ -1848,6 +1940,7 @@
         const verifiedMembership = membershipResult.data?.membership_status === 'active' && membershipResult.data?.verification_status === 'verified';
         isVerifiedStaff = verifiedProfile && verifiedMembership && ['admin','security'].includes(profileResult.data?.role) && ['admin','security'].includes(campusRole);
         isCampusAdmin = verifiedProfile && verifiedMembership && profileResult.data?.role === 'admin' && campusRole === 'admin';
+        syncMapLayerControls();
       }
       $('campus-map-admin').hidden = !isCampusAdmin;
       const profileColumns = 'id,university_id,campus_name,campus_slug,state,location_hint,center_latitude,center_longitude,center_source_url,center_status,center_verified_by,center_verified_at,boundary_geojson,boundary_source_url,boundary_status,building_data_provider,building_coverage_status,model_format,model_status,metadata,is_active' + (isCampusAdmin ? ',model_storage_path,model_source_url,model_attribution' : '');
@@ -2138,6 +2231,38 @@
   $('campus-map-2d')?.addEventListener('click', () => applyMapMode('2d'));
   $('campus-map-satellite')?.addEventListener('click', () => applyMapMode('satellite'));
   $('campus-map-3d')?.addEventListener('click', () => applyMapMode('3d'));
+
+  $('campus-map-layers-toggle')?.addEventListener('click', () => {
+    const panel = $('campus-map-layer-panel');
+    setMapLayerPanelOpen(Boolean(panel?.hidden));
+  });
+  $('campus-map-layer-panel')?.addEventListener('change', event => {
+    const input = event.target.closest('input[data-map-layer]');
+    if (!input) return;
+    const key = input.dataset.mapLayer;
+    if (!Object.prototype.hasOwnProperty.call(MAP_LAYER_DEFAULTS, key)) return;
+    if (key === 'drafts' && !isCampusAdmin) {
+      input.checked = false;
+      return setStatus('Admin draft pins are available only to verified campus administrators.', 'warning');
+    }
+    mapLayerPreferences[key] = input.checked;
+    saveMapLayerPreferences();
+    syncMapLayerControls();
+    applyMapLayerPreferences();
+    setStatus('Map layer preferences updated on this device.', 'info');
+  });
+  root.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !$('campus-map-layer-panel')?.hidden) {
+      event.preventDefault();
+      setMapLayerPanelOpen(false);
+      $('campus-map-layers-toggle')?.focus();
+    }
+  });
+  root.addEventListener('click', event => {
+    const panel = $('campus-map-layer-panel');
+    if (panel && !panel.hidden && !event.target.closest('.campus-map-layer-tools')) setMapLayerPanelOpen(false);
+  });
+  syncMapLayerControls();
 
   $('campus-map-locate')?.addEventListener('click', () => {
     if (!navigator.geolocation) return setStatus('Location services are not available in this browser.', 'warning');
