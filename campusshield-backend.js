@@ -1801,7 +1801,7 @@ async getCurrentUser() {
       }
       const now = new Date().toISOString();
       const { error: updateError } = await client.from("shieldmind_conversations")
-        .update({ title: cleanTitle, updated_at: now, last_message_at: now })
+        .update({ updated_at: now, last_message_at: now })
         .eq("id", savedId)
         .eq("user_id", user.id);
       if (updateError) throw updateError;
