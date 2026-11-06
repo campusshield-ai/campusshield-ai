@@ -2774,9 +2774,18 @@ button,input,select,textarea{max-width:100%;min-width:0}
       </div>
           </div>
     <aside class="campus-map-sidebar"><h2 id="campus-map-campus-name">Your university</h2><p>Campus locations and facilities</p>
-      <div class="campus-map-actions"><button class="campus-map-action" type="button" id="campus-map-locate">◎ My location</button><button class="campus-map-action primary" type="button" id="campus-map-route">↗ Walking route</button><button class="campus-map-action" type="button" id="campus-map-emergency">Emergency points</button><button class="campus-map-action" type="button" id="campus-map-incidents" hidden>Incident pins</button></div>
+      <div class="campus-map-actions"><button class="campus-map-action" type="button" id="campus-map-locate">◎ My location</button><button class="campus-map-action primary" type="button" id="campus-map-route">↗ Walking route</button><button class="campus-map-action" type="button" id="campus-map-emergency">Emergency points</button><button class="campus-map-action" type="button" id="campus-map-nearby-safety">◎ Find nearby safety</button><button class="campus-map-action" type="button" id="campus-map-incidents" hidden>Incident pins</button></div>
       <label class="campus-map-campus-picker">Campus<select id="campus-map-campus-select"><option value="main-campus">Main Campus</option></select></label>
       <p class="campus-map-profile-summary" id="campus-map-profile-status" role="status">Loading campus map profile…</p>
+      <section id="campus-map-nearby-safety-panel" class="campus-map-nearby-safety" aria-labelledby="campus-map-nearby-safety-title" hidden>
+        <div class="campus-map-nearby-safety-heading">
+          <strong id="campus-map-nearby-safety-title">Nearest campus safety facilities</strong>
+          <button type="button" id="campus-map-nearby-safety-clear">Clear</button>
+        </div>
+        <p id="campus-map-nearby-safety-status" role="status" aria-live="polite">Use your location to find the closest published campus safety facilities.</p>
+        <div id="campus-map-nearby-safety-list" class="campus-map-nearby-safety-list"></div>
+        <small class="campus-map-nearby-safety-note">Distances are straight-line estimates, not walking distances. Your GPS position is used in this browser for the search and is not saved as a CampusShield or Supabase record. Use official campus security or emergency services in an emergency.</small>
+      </section>
       <div id="campus-map-results" class="campus-map-search-results" hidden></div>
       <nav id="campus-map-discovery-filters" class="campus-map-discovery-filters" aria-label="Filter campus locations">
         <button type="button" class="active" data-campus-filter="all" aria-pressed="true">All</button>
