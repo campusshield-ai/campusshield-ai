@@ -108,6 +108,10 @@ assert.match(html, /href="https:\/\/routing\.openstreetmap\.de\/about\.html"[^>]
   'CampusMap displays the routing provider attribution link');
 assert.match(html, /href="https:\/\/www\.openstreetmap\.org\/fixthemap"[^>]*>Fix the map<\/a>/,
   'CampusMap displays the OpenStreetMap data feedback link required by the routing provider');
+assert.match(html, /href="https:\/\/routing\.openstreetmap\.de\/about\.html"[^>]*>FOSSGIS<\/a>/,
+  'CampusMap displays the routing provider attribution link');
+assert.match(html, /href="https:\/\/www\.openstreetmap\.org\/fixthemap"[^>]*>Fix the map<\/a>/,
+  'CampusMap displays the OpenStreetMap data feedback link required by the routing provider');
 assert.match(html, /does not save your live GPS position as a CampusShield or Supabase record/i,
   'Campus Passport distinguishes on-demand third-party routing from Supabase location storage');
 const expectedCampusIconTypes = [
