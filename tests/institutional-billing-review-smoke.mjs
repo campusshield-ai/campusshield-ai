@@ -13,6 +13,7 @@ const invoiceIssuerIndexMigration = read('supabase/migrations/20261106221410_ins
 const paymentReconciliationMigration = read('supabase/migrations/20261106225141_institutional_payment_reconciliation.sql');
 const subscriptionLifecycleMigration = read('supabase/migrations/20261106232713_institutional_subscription_lifecycle.sql');
 const subscriptionLifecycleIndexMigration = read('supabase/migrations/20261106233030_institutional_subscription_lifecycle_fk_indexes.sql');
+const subscriptionWebhookHardeningMigration = read('supabase/migrations/20261106233337_institutional_subscription_webhook_validation_hardening.sql');
 const institutionalPaymentAdmin = read('supabase/functions/campus-institutional-payment-admin/index.ts');
 const institutionalPaystackWebhook = read('supabase/functions/campus-institutional-paystack-webhook/index.ts');
 const docs = read('docs/INSTITUTIONAL_BILLING_REVIEW.md');
@@ -139,6 +140,38 @@ assert.match(subscriptionLifecycleMigration, /REVOKE ALL ON FUNCTION public\.rec
   'Only the service role can update subscription renewal periods from Paystack events');
 assert.match(subscriptionLifecycleIndexMigration, /campus_institutional_payment_audit_subscription_idx/,
   'Institutional payment audit foreign-key lookups are indexed');
+assert.match(subscriptionWebhookHardeningMigration, /p_subscription_code[\s\S]*IS NULL[\s\S]*p_event_id IS NULL[\s\S]*p_amount_kobo IS NULL/,
+  'Recurring-payment routines reject missing provider identifiers, event IDs and amounts at the database layer');
+assert.match(subscriptionWebhookHardeningMigration, /p_customer_email[\s\S]*IS NULL[\s\S]*p_provider_domain IS NULL/,
+  'Recurring-payment routines reject missing customer and environment details');
+assert.match(institutionalPaymentAdmin, /expectedPaystackDomain\(url\)/,
+  'The finance action determines Test or Live mode from its Supabase project');
+assert.match(institutionalPaymentAdmin, /providerSubscription\?\.domain !== expectedDomain/,
+  'The recurring Paystack subscription must match the configured environment');
+assert.match(institutionalPaymentAdmin, /providerSubscription\?\.status !== "active"/,
+  'The first charge cannot activate a university without an active Paystack subscription');
+assert.match(institutionalPaymentAdmin, /providerSubscription\?\.plan\?\.interval !== "monthly"/,
+  'The first charge cannot activate an invoice against a non-monthly Paystack plan');
+assert.match(institutionalPaystackWebhook, /expectedPaystackDomain\(url\)/,
+  'The institutional webhook is isolated to its own Test or Live project environment');
+assert.match(institutionalPaystackWebhook, /record_campus_institutional_paystack_renewal/,
+  'Verified recurring invoice updates renew the institutional paid-through date');
+assert.match(institutionalPaystackWebhook, /mark_campus_institutional_paystack_renewal_failed/,
+  'Failed recurring charges mark institutional renewal attention');
+assert.match(institutionalPaystackWebhook, /mark_campus_institutional_paystack_subscription_nonrenewing/,
+  'Paystack cancellation events stop future renewal scheduling');
+assert.match(app, /function isProductionSupabaseEnvironment\(\)/,
+  'The supplied hosted payment links are enabled only in the Production Supabase environment');
+assert.match(app, /Live collection is disabled in this Staging preview/,
+  'Staging invoice history blocks the supplied live payment links');
+assert.match(app, /subscription_code: subscriptionCode/,
+  'Finance submits the transaction reference and recurring subscription code together');
+assert.match(app, /Manage \/ cancel recurring payments/,
+  'Verified campus administrators can manage or cancel recurring billing');
+assert.match(docs, /The three links supplied by the account owner are live payment pages/,
+  'The release documentation identifies the supplied pages as live collection links');
+assert.match(docs, /hidden from Staging/,
+  'The documentation states live collection links are not displayed in Staging');
 assert.match(institutionalPaystackWebhook, /x-paystack-signature/,
   'Institutional webhook reads the Paystack signature header');
 assert.match(institutionalPaystackWebhook, /name: "HMAC", hash: "SHA-512"/,
