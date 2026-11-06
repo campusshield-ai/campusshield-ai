@@ -2647,6 +2647,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <button type="button" data-campus-filter="access" aria-pressed="false">Access</button>
         <button type="button" data-campus-filter="emergency" aria-pressed="false">Emergency</button>
       </nav>
+      <div class="campus-map-discovery-summary">
+        <p id="campus-map-results-summary" role="status" aria-live="polite">Loading published campus locations…</p>
+        <button type="button" id="campus-map-clear-filters" hidden>Clear filters</button>
+      </div>
+      <nav id="campus-map-type-filters" class="campus-map-type-filters" aria-label="Filter by facility type" hidden></nav>
       <section id="campus-map-passport" class="campus-map-passport" aria-labelledby="campus-map-passport-title" hidden>
         <div class="campus-map-passport-topline"><span class="campus-map-passport-kicker">CAMPUS PASSPORT</span><span id="campus-map-passport-status" class="campus-map-passport-status">Verified location</span></div>
         <h3 id="campus-map-passport-title">Select a campus location</h3>

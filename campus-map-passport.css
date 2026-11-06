@@ -117,3 +117,110 @@ html[data-theme="dark"] .campus-map-passport-safety-note{
 }
 html[data-theme="dark"] .campus-map-admin-draft-links a{color:#91dfb8}
 html[data-theme="dark"] .campus-map-admin-coordinate-note{color:#d9c18f}
+
+
+/* Data-driven facility type filters and accessible result summary. */
+.campus-map-discovery-summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  min-width:0;
+  margin:-3px 0 8px;
+}
+.campus-map-discovery-summary p{
+  min-width:0;
+  margin:0;
+  color:#74877e;
+  font-size:9px;
+  line-height:1.4;
+  font-weight:700;
+}
+.campus-map-discovery-summary button{
+  flex:0 0 auto;
+  min-height:26px;
+  padding:5px 9px;
+  border:1px solid #d7e7dd;
+  border-radius:999px;
+  background:#fff;
+  color:#286b57;
+  font-size:8px;
+  font-weight:850;
+}
+.campus-map-discovery-summary button[hidden],
+.campus-map-type-filters[hidden]{display:none!important}
+.campus-map-discovery-summary button:hover{border-color:#78b99c;background:#f2faf5}
+.campus-map-type-filters{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  min-width:0;
+  margin:0 0 12px;
+}
+.campus-map-type-filters button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  max-width:100%;
+  min-height:29px;
+  padding:5px 8px;
+  border:1px solid #dce9e2;
+  border-radius:9px;
+  background:#fff;
+  color:#526c61;
+  font-size:8px;
+  font-weight:800;
+  line-height:1.25;
+  text-align:left;
+}
+.campus-map-type-filters button span{min-width:0;overflow-wrap:anywhere}
+.campus-map-type-filters button small{
+  display:inline-grid;
+  place-items:center;
+  min-width:17px;
+  height:17px;
+  padding:0 4px;
+  border-radius:999px;
+  background:#edf5ef;
+  color:#55786a;
+  font-size:8px;
+  font-variant-numeric:tabular-nums;
+}
+.campus-map-type-filters button.active{
+  border-color:#1c7562;
+  background:#174b43;
+  color:#fff;
+}
+.campus-map-type-filters button.active small{background:#2a7261;color:#fff}
+.campus-map-type-filters button:focus-visible,
+.campus-map-discovery-summary button:focus-visible{
+  outline:3px solid #4aab8c;
+  outline-offset:2px;
+}
+html[data-theme="dark"] .campus-map-discovery-summary p{color:#a8bfb2}
+html[data-theme="dark"] .campus-map-discovery-summary button{
+  border-color:#315648;
+  background:#183a31;
+  color:#bde4cf;
+}
+html[data-theme="dark"] .campus-map-type-filters button{
+  border-color:#315148;
+  background:#152f2a;
+  color:#c3d8cd;
+}
+html[data-theme="dark"] .campus-map-type-filters button small{background:#25493d;color:#c9e4d5}
+html[data-theme="dark"] .campus-map-type-filters button.active{
+  border-color:#4c9b7b;
+  background:#1c5b48;
+  color:#fff;
+}
+html[data-theme="dark"] .campus-map-type-filters button.active small{background:#32785e;color:#fff}
+@media(max-width:420px){
+  .campus-map-discovery-summary{align-items:flex-start}
+  .campus-map-type-filters{gap:4px}
+  .campus-map-type-filters button{min-height:28px;padding:5px 7px}
+}
+@media(prefers-reduced-motion:reduce){
+  .campus-map-type-filters button,.campus-map-discovery-summary button{transition:none!important}
+}

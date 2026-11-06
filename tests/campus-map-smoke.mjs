@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const html = read('index.html');
 const js = read('campus-map.js');
+const discoverySource = read('campus-map-discovery.js');
 const iconSource = read('campus-map-icons.js');
 const mapConfig = read('campus-map-config.js');
 const mapLoader = read('campus-map-loader.js');
@@ -233,6 +234,60 @@ assert.match(js, /updateCampusBoundarySource/, 'Saved campus boundaries are draw
 assert.match(js, /validateCampusBoundaryGeometry/, 'Campus boundary polygons are validated before saving');
 assert.match(js, /const preferredLayer = hasCurated \? 'campus-curated-building-extrusions' : 'campus-osm-3d-buildings'/, 'Map prefers university-curated footprints and falls back to global OSM buildings');
 assert.match(js, /queryRenderedFeatures\(\{ layers: \[preferredLayer\] \}\)/, 'Map coverage indicator counts the active building source');
+
+const discoveryContext = { window: {} };
+runInNewContext(discoverySource, discoveryContext);
+const discovery = discoveryContext.window.CampusMapDiscovery;
+assert.ok(discovery, 'CampusMap exposes pure facility discovery helpers');
+const discoveryTypes = Array.from(discovery.featureTypes, item => item.type);
+assert.deepEqual(discoveryTypes, [
+  'building','lecture_hall','hostel','library','cafeteria','medical','security','gate',
+  'parking','sports','facility','assembly_point','entrance','accessible_entry','emergency_point'
+], 'Facility type filters use the supported CampusMap admin categories');
+const discoveryFixtures = [
+  { id: 'lib', name: 'Learning Resource Centre', feature_type: 'library', description: 'Quiet study space', metadata: { facilities: ['Wi-Fi', 'group rooms'] } },
+  { id: 'clinic', name: 'Campus Health Unit', feature_type: 'medical', description: 'First aid support', metadata: { opening_hours: 'Weekdays' } },
+  { id: 'hostel', name: 'West Residence', feature_type: 'hostel', metadata: {} },
+  { id: 'security', name: 'Main Security Post', feature_type: 'security', metadata: {} },
+  { id: 'access', name: 'Library step-free entrance', feature_type: 'building', metadata: { accessibility_features: ['ramp','step_free_entry'] } },
+  { id: 'cafe', name: 'Student Canteen', feature_type: 'cafeteria', metadata: {} }
+];
+assert.equal(discovery.matchesCategory(discoveryFixtures[0], 'academic'), true, 'Academic filter includes a library');
+assert.equal(discovery.matchesCategory(discoveryFixtures[2], 'residential'), true, 'Residential filter includes a hostel');
+assert.equal(discovery.matchesCategory(discoveryFixtures[5], 'services'), true, 'Services filter includes a cafeteria');
+assert.equal(discovery.matchesCategory(discoveryFixtures[4], 'access'), true, 'Access filter includes a building with recorded accessibility attributes');
+assert.equal(discovery.matchesCategory(discoveryFixtures[1], 'emergency'), true, 'Emergency filter preserves medical locations');
+assert.equal(discovery.matchesType(discoveryFixtures[0], 'library'), true, 'Exact type filter selects libraries only');
+assert.equal(discovery.matchesType(discoveryFixtures[0], 'medical'), false, 'Exact type filter excludes a different facility type');
+assert.equal(discovery.matchesSearch(discoveryFixtures[1], 'clinic'), true, 'Clinic search alias finds medical locations');
+assert.equal(discovery.matchesSearch(discoveryFixtures[5], 'canteen'), true, 'Canteen search alias finds cafeterias');
+assert.equal(discovery.matchesSearch(discoveryFixtures[0], 'wifi group rooms'), true, 'Multi-word searches include Passport facility metadata');
+assert.equal(discovery.matchesSearch(discoveryFixtures[0], 'quiet research centre'), true, 'Search matches descriptions and facility type synonyms');
+assert.equal(discovery.matchesSearch(discoveryFixtures[0], 'sports'), false, 'Search excludes unrelated location categories');
+assert.equal(discovery.normalize('École CAFÉ'), 'ecole cafe', 'Search normalisation handles accents and letter case');
+const academicCounts = discovery.getTypeCounts(discoveryFixtures, 'academic');
+assert.deepEqual(Array.from(academicCounts, item => [item.type, item.label, item.count]), [
+  ['building','Buildings',1], ['library','Libraries',1]
+], 'Type chips derive counts from the selected broad filter and current campus records');
+assert.equal(discovery.getTypeCounts(discoveryFixtures, 'all').reduce((sum, item) => sum + item.count, 0), discoveryFixtures.length, 'Published facility type counts cover the supplied current-campus records');
+
+assert.match(js, /import '\.\/campus-map-discovery\.js'/, 'CampusMap loads the dedicated facility discovery helper');
+assert.match(js, /getTypeCounts\(features, activeDiscoveryFilter\)/, 'Facility type chips are derived from current campus published locations');
+assert.match(js, /matchesType\(item, activeFeatureTypeFilter\)/, 'Broad categories and precise facility type filters are combined');
+assert.match(js, /matchesSearch\(item, term\)/, 'Campus search uses accent-normalised aliases and Passport metadata');
+assert.match(js, /updateSource\(matches\)/, 'Map markers and location cards use the same active discovery filters');
+assert.match(js, /selectedFeature && !matches\.some\(item => item\.id === selectedFeature\.id\)/, 'Filtering clears a Campus Passport selection that is no longer visible');
+assert.match(js, /filterFeatures\(search\?\.value \|\| ''\)/, 'A newly loaded map style restores the active facility filter state');
+assert.match(js, /data-campus-type-filter/, 'Facility type filter clicks are handled by the CampusMap module');
+assert.match(js, /campus-map-results-summary/, 'Filtered published location counts are announced accessibly');
+assert.match(js, /campus-map-clear-filters/, 'Students can clear category, type and text filters together');
+assert.match(js, /isCampusAdmin && term \? adminDrafts\.filter/, 'Search results for private draft records remain admin-only');
+assert.match(js, /item\.is_published && item\.campus_slug === selected && item\.latitude != null && item\.longitude != null/, 'Type counts only use published mapped locations for the selected campus');
+assert.match(html, /id="campus-map-type-filters"[^>]*aria-label="Filter by facility type"/, 'Facility type filters have an accessible navigation label');
+assert.match(html, /id="campus-map-results-summary" role="status" aria-live="polite"/, 'Facility result count is announced through a live status');
+assert.match(html, /id="campus-map-clear-filters" hidden/, 'Clear filters is hidden until a filter is active');
+assert.match(passportCss, /campus-map-type-filters/, 'Facility type chips have a responsive style system');
+assert.match(passportCss, /html\[data-theme="dark"\] \.campus-map-type-filters/, 'Facility type chips are readable in dark mode');
 
 assert.ok(geometry && typeof geometry.osmWayToBuildingCandidate === 'function', 'CampusMap geometry helpers are exported');
 
