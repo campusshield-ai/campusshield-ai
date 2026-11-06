@@ -9,6 +9,7 @@ on:
       - "supabase/migrations/*institutional_billing_review*"
       - "supabase/migrations/*institutional_invoice*"
       - "supabase/migrations/*institutional_payment_reconciliation*"
+      - "supabase/migrations/*institutional_subscription_*"
       - "supabase/functions/campus-institutional-payment-admin/**"
       - "supabase/functions/campus-institutional-paystack-webhook/**"
       - "docs/INSTITUTIONAL_BILLING_REVIEW.md"
