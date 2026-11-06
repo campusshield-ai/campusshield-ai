@@ -171,7 +171,7 @@ assert.match(app, /subscription_code: subscriptionCode/,
   'Finance submits the transaction reference and recurring subscription code together');
 assert.match(app, /Manage \/ cancel recurring payments/,
   'Verified campus administrators can manage or cancel recurring billing');
-assert.match(app, /institution-billing/\s*[,)]/,
+assert.match(app, /get\('institution-billing'\)/,
   'Institutional Paystack return navigation uses a separate query parameter');
 assert.match(app, /returnedFromInstitutionalPayment[\s\S]*awaiting finance verification/,
   'Institutional Paystack returns display a pending-verification message without activating access');
