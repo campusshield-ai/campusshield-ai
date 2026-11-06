@@ -730,6 +730,8 @@ html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources small{color
 html[data-theme="dark"] #page-shieldmind .shieldmind-copy-answer{border-color:#365a43;background:#183626;color:#b9ebc2}
 @media(max-width:600px){#page-shieldmind .shieldmind-message-sources{padding:9px}#page-shieldmind .shieldmind-copy-answer{min-height:36px}}
 
+.mobile-theme-toggle { display: none; }
+
 /* Mobile theme control: keep the theme switch reachable when desktop actions
    are hidden, and let the mobile header itself follow the selected theme. */
 @media (max-width: 650px) {
