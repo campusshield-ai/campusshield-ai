@@ -346,6 +346,22 @@
     return '₦' + (amount / 100).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  // Public Paystack subscription pages are intentionally exposed only beside an issued invoice
+  // whose plan, monthly term and total amount exactly match the fixed recurring page price.
+  // These pages do not carry the invoice ID as metadata; finance must still reconcile the payment.
+  const institutionalPaystackMonthlyLinks = Object.freeze({
+    'university-starter': { amountKobo: 10000000, url: 'https://paystack.shop/pay/gqjub0yz1y' },
+    'university-professional': { amountKobo: 25000000, url: 'https://paystack.shop/pay/8u81ku5v94' },
+    'university-enterprise': { amountKobo: 50000000, url: 'https://paystack.shop/pay/p1h6s3mgcj' }
+  });
+
+  function institutionalPaystackLinkForInvoice(invoice) {
+    const page = institutionalPaystackMonthlyLinks[String(invoice?.plan || '')];
+    if (!page || invoice?.status !== 'issued' || invoice?.billing_period !== 'monthly' ||
+        invoice?.currency !== 'NGN' || Number(invoice?.total_kobo) !== page.amountKobo) return null;
+    return page.url;
+  }
+
   function printInstitutionalInvoice(invoice) {
     const printWindow = window.open('', '_blank', 'width=900,height=1000');
     if (!printWindow) throw new Error('Allow pop-ups for CampusShield to print this invoice.');
@@ -384,7 +400,7 @@
       const { data: { user }, error: userError } = await backend.client.auth.getUser();
       if (userError || !user) throw new Error('Session could not be verified.');
       const { data, error } = await backend.client.from('campus_institutional_invoices')
-        .select('id,invoice_number,bill_to_name,bill_to_email,description,subtotal_kobo,tax_kobo,total_kobo,currency,due_date,payment_instructions,status,issued_at,billing_period')
+        .select('id,invoice_number,bill_to_name,bill_to_email,description,subtotal_kobo,tax_kobo,total_kobo,currency,due_date,payment_instructions,status,issued_at,billing_period,plan')
         .eq('requester_id', user.id).order('issued_at', { ascending: false }).limit(25);
       if (error) throw error;
       if (!data?.length) {
@@ -409,10 +425,33 @@
           try { printInstitutionalInvoice(invoice); }
           catch (error) { toast(error.message || 'Could not open the invoice for printing.'); }
         });
+        card.append(title, amount, details, action);
+
+        const paystackUrl = institutionalPaystackLinkForInvoice(invoice);
+        if (paystackUrl) {
+          const paystackAction = document.createElement('a');
+          paystackAction.className = 'btn';
+          paystackAction.href = paystackUrl;
+          paystackAction.target = '_blank';
+          paystackAction.rel = 'noopener noreferrer';
+          paystackAction.textContent = 'Start monthly Paystack subscription';
+          card.appendChild(paystackAction);
+        }
+
         const warning = document.createElement('p');
         warning.className = 'muted';
-        warning.textContent = 'Invoice issued · payment has not yet been verified · subscription is not active.';
-        card.append(title, amount, details, action, warning);
+        if (invoice.status === 'paid') {
+          warning.textContent = 'Finance has marked this invoice as paid. No further payment is required for this invoice.';
+        } else if (invoice.status === 'void') {
+          warning.textContent = 'This invoice has been voided. Do not pay it; contact CampusShield finance for an updated invoice.';
+        } else if (paystackUrl) {
+          warning.textContent = 'This Paystack page starts a recurring monthly charge (not a one-time invoice payment). The page does not carry this invoice number. Use it only with institutional authorisation, save the Paystack transaction reference, and wait for CampusShield finance to reconcile the payment. Returning from Paystack does not activate access.';
+        } else if (invoice.billing_period !== 'monthly') {
+          warning.textContent = 'This is an annual invoice. The available Paystack pages are monthly recurring plans, so use the payment instructions on this invoice or contact finance for an annual payment method.';
+        } else {
+          warning.textContent = 'This invoice does not exactly match a fixed monthly Paystack page price (including any tax or custom Enterprise quote). Use the payment instructions on the invoice or contact finance for a matching payment method.';
+        }
+        card.appendChild(warning);
         container.appendChild(card);
       });
     } catch (error) {
