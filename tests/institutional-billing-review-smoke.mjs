@@ -9,6 +9,7 @@ const campusScopeMigration = read('supabase/migrations/20261106220002_institutio
 const universityIndexMigration = read('supabase/migrations/20261106220108_institutional_billing_review_university_index.sql');
 const invoiceMigration = read('supabase/migrations/20261106221005_institutional_invoice_issuance.sql');
 const invoiceLockMigration = read('supabase/migrations/20261106221257_institutional_invoice_request_status_lock.sql');
+const invoiceIssuerIndexMigration = read('supabase/migrations/20261106221410_institutional_invoice_issuer_index.sql');
 const docs = read('docs/INSTITUTIONAL_BILLING_REVIEW.md');
 
 assert.match(html, /id="platform-admin-institutional-billing"/,
@@ -85,6 +86,8 @@ assert.doesNotMatch(invoiceMigration, /GRANT UPDATE|GRANT DELETE/i,
   'Authenticated users cannot update or delete issued invoices');
 assert.doesNotMatch(invoiceMigration, /SECURITY DEFINER/i,
   'Invoice creation trigger does not introduce a SECURITY DEFINER function');
+assert.match(invoiceIssuerIndexMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_invoices_issued_by_idx/i,
+  'Invoice issuer foreign-key lookups are indexed');
 assert.match(invoiceLockMigration, /campus_billing_request_lock_after_invoice/i,
   'The database locks billing request status after an invoice is issued');
 assert.match(invoiceLockMigration, /billing_request_status_change_after_invoice/i,
