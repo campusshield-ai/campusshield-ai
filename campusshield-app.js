@@ -7803,7 +7803,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     const backend = window.CampusShieldBackend;
     if (!backend?.isConfigured || !currentProfile || !shieldMindHistory.length) return;
     const firstQuestion = shieldMindHistory.find(item => item.role === 'user')?.content || 'ShieldMind conversation';
-    const title = firstQuestion.replace(/\\s+/g, ' ').trim().slice(0, 120) || 'ShieldMind conversation';
+    const title = firstQuestion.replace(/\s+/g, ' ').trim().slice(0, 120) || 'ShieldMind conversation';
     const expectedUserId = currentProfile.id;
     const savedId = await backend.saveMyShieldMindConversation(
       shieldMindConversationId, title, shieldMindHistory.slice(-200)
