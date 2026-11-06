@@ -339,11 +339,93 @@
       }
     });
   }
+  function formatNairaFromKobo(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return 'Amount unavailable';
+    return '₦' + (amount / 100).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function printInstitutionalInvoice(invoice) {
+    const printWindow = window.open('', '_blank', 'width=900,height=1000');
+    if (!printWindow) throw new Error('Allow pop-ups for CampusShield to print this invoice.');
+    printWindow.opener = null;
+    const issuedDate = invoice.issued_at ? new Date(invoice.issued_at).toLocaleDateString('en-NG') : 'Not available';
+    const dueDate = invoice.due_date ? new Date(invoice.due_date + 'T00:00:00').toLocaleDateString('en-NG') : 'Not available';
+    const invoiceHtml = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CampusShield invoice ${esc(invoice.invoice_number)}</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#142b36}*{box-sizing:border-box}body{margin:0;padding:36px;background:#f3f6f5}main{max-width:820px;margin:auto;background:#fff;padding:44px;border:1px solid #dce5e3}header{display:flex;justify-content:space-between;gap:24px;border-bottom:3px solid #147d68;padding-bottom:22px}h1{font-size:29px;margin:0 0 6px;color:#0b3d39}h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:#547069}p{line-height:1.5;margin:6px 0}.number{text-align:right}.number strong{font-size:18px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px 0}table{width:100%;border-collapse:collapse;margin:20px 0}th,td{text-align:left;padding:14px 12px;border-bottom:1px solid #e3ebe8}th{background:#f3f7f5;color:#466158}.totals{margin-left:auto;width:min(100%,360px)}.totals p{display:flex;justify-content:space-between;padding:6px 0}.grand{font-size:20px;font-weight:700;border-top:2px solid #147d68;margin-top:10px;padding-top:14px!important}.instructions{background:#f4f8f6;padding:18px;margin-top:28px;white-space:pre-wrap}footer{margin-top:38px;border-top:1px solid #dce5e3;padding-top:18px;color:#647b73;font-size:12px}.status{display:inline-block;padding:6px 10px;background:#e8f4ee;border-radius:4px;color:#17614e;font-weight:700}@media print{body{background:#fff;padding:0}main{border:0;padding:0;max-width:none}@page{size:A4;margin:16mm}}@media(max-width:600px){body{padding:12px}main{padding:22px}header{display:block}.number{text-align:left;margin-top:18px}}
+</style></head><body><main>
+<header><div><h1>CampusShield AI</h1><p>Institutional subscription invoice</p><p><strong>CampusShield AI Technologies</strong></p></div><div class="number"><h2>Invoice</h2><strong>${esc(invoice.invoice_number)}</strong><p><span class="status">ISSUED · AWAITING PAYMENT</span></p></div></header>
+<section class="meta"><div><h2>Bill to</h2><p><strong>${esc(invoice.bill_to_name)}</strong></p><p>${esc(invoice.bill_to_email)}</p></div><div><h2>Invoice details</h2><p>Issued: ${esc(issuedDate)}</p><p>Due: ${esc(dueDate)}</p><p>Currency: NGN</p></div></section>
+<table><thead><tr><th>Description</th><th>Billing period</th><th>Amount</th></tr></thead><tbody><tr><td>${esc(invoice.description)}</td><td>${esc(invoice.billing_period)}</td><td>${esc(formatNairaFromKobo(invoice.subtotal_kobo))}</td></tr></tbody></table>
+<section class="totals"><p><span>Subtotal</span><strong>${esc(formatNairaFromKobo(invoice.subtotal_kobo))}</strong></p><p><span>Tax</span><strong>${esc(formatNairaFromKobo(invoice.tax_kobo))}</strong></p><p class="grand"><span>Total due</span><strong>${esc(formatNairaFromKobo(invoice.total_kobo))}</strong></p></section>
+<section class="instructions"><h2>Payment instructions</h2>${esc(invoice.payment_instructions)}</section>
+<footer><p>This invoice records an amount due only. Payment is recognised after CampusShield verifies the transaction or reconciles the transfer. Issuing this invoice does not activate a subscription. Essential student safety access remains free.</p><p>CampusShield AI · Institutional Billing</p></footer>
+</main></body></html>`;
+    printWindow.document.open();
+    printWindow.document.write(invoiceHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  }
+
+  async function loadInstitutionalBillingInvoices() {
+    const container = $('institutional-billing-invoices');
+    if (!container) return;
+    container.replaceChildren();
+    if (!canManageInstitutionalBilling()) return;
+    const backend = window.CampusShieldBackend;
+    if (!currentProfile || !backend?.isConfigured) {
+      container.textContent = 'Sign in to view university invoices.';
+      return;
+    }
+    try {
+      const { data: { user }, error: userError } = await backend.client.auth.getUser();
+      if (userError || !user) throw new Error('Session could not be verified.');
+      const { data, error } = await backend.client.from('campus_institutional_invoices')
+        .select('id,invoice_number,bill_to_name,bill_to_email,description,subtotal_kobo,tax_kobo,total_kobo,currency,due_date,payment_instructions,status,issued_at,billing_period')
+        .eq('requester_id', user.id).order('issued_at', { ascending: false }).limit(25);
+      if (error) throw error;
+      if (!data?.length) {
+        container.textContent = 'No invoices have been issued to your university yet.';
+        return;
+      }
+      data.forEach(invoice => {
+        const card = document.createElement('article');
+        card.className = 'community-post';
+        const title = document.createElement('strong');
+        title.textContent = invoice.invoice_number + ' · ' + invoice.bill_to_name;
+        const amount = document.createElement('p');
+        amount.textContent = 'Total due: ' + formatNairaFromKobo(invoice.total_kobo);
+        const details = document.createElement('p');
+        details.textContent = 'Due ' + new Date(invoice.due_date + 'T00:00:00').toLocaleDateString('en-NG')
+          + ' · ' + String(invoice.status || 'issued').toUpperCase();
+        const action = document.createElement('button');
+        action.type = 'button';
+        action.className = 'btn secondary';
+        action.textContent = 'Print invoice / Save PDF';
+        action.addEventListener('click', () => {
+          try { printInstitutionalInvoice(invoice); }
+          catch (error) { toast(error.message || 'Could not open the invoice for printing.'); }
+        });
+        const warning = document.createElement('p');
+        warning.className = 'muted';
+        warning.textContent = 'Invoice issued · payment has not yet been verified · subscription is not active.';
+        card.append(title, amount, details, action, warning);
+        container.appendChild(card);
+      });
+    } catch (error) {
+      container.textContent = error?.message || 'University invoices could not be loaded.';
+    }
+  }
+
   async function loadInstitutionalBillingRequests() {
     const container = $('institutional-billing-requests');
     if (!container) return;
     if (!canManageInstitutionalBilling()) {
       container.replaceChildren();
+      const invoiceContainer = $('institutional-billing-invoices');
+      if (invoiceContainer) invoiceContainer.replaceChildren();
       return;
     }
     const backend = window.CampusShieldBackend;
@@ -356,43 +438,42 @@
       if (userError || !user) throw new Error('Session could not be verified.');
       const { data, error } = await backend.client.from('campus_institutional_billing_requests')
         .select('institution_name,requested_plan,billing_period,status,created_at,response_message,reviewed_at')
-        .eq('requester_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .eq('requester_id', user.id).order('created_at', { ascending: false }).limit(10);
       if (error) throw error;
       container.replaceChildren();
       if (!data?.length) {
         container.textContent = 'No institutional billing requests submitted yet.';
-        return;
+      } else {
+        const statusLabels = {
+          pending: 'Awaiting review',
+          contacted: 'CampusShield has contacted your institution',
+          approved: 'Request approved · invoice and payment still pending',
+          rejected: 'Request not approved'
+        };
+        data.forEach(item => {
+          const card = document.createElement('article');
+          card.className = 'community-post';
+          const title = document.createElement('strong');
+          title.textContent = item.institution_name + ' · ' + String(item.requested_plan || '').replace(/-/g, ' ');
+          const detail = document.createElement('p');
+          detail.textContent = item.billing_period + ' billing · Submitted ' + new Date(item.created_at).toLocaleDateString();
+          const status = document.createElement('p');
+          status.className = 'shieldmind-pill';
+          status.textContent = statusLabels[item.status] || 'Status update pending';
+          card.append(title, detail, status);
+          if (item.response_message) {
+            const response = document.createElement('p');
+            response.textContent = 'CampusShield response: ' + item.response_message;
+            card.appendChild(response);
+          }
+          const boundary = document.createElement('p');
+          boundary.className = 'muted';
+          boundary.textContent = 'Request tracking only. Approval does not activate institutional features; an issued invoice and verified payment are required.';
+          card.appendChild(boundary);
+          container.appendChild(card);
+        });
       }
-      const statusLabels = {
-        pending: 'Awaiting review',
-        contacted: 'CampusShield has contacted your institution',
-        approved: 'Request approved · invoice and payment still pending',
-        rejected: 'Request not approved'
-      };
-      data.forEach(item => {
-        const card = document.createElement('article');
-        card.className = 'community-post';
-        const title = document.createElement('strong');
-        title.textContent = item.institution_name + ' · ' + String(item.requested_plan || '').replace(/-/g, ' ');
-        const detail = document.createElement('p');
-        detail.textContent = item.billing_period + ' billing · Submitted ' + new Date(item.created_at).toLocaleDateString();
-        const status = document.createElement('p');
-        status.className = 'shieldmind-pill';
-        status.textContent = statusLabels[item.status] || 'Status update pending';
-        card.append(title, detail, status);
-        if (item.response_message) {
-          const response = document.createElement('p');
-          response.textContent = 'CampusShield response: ' + item.response_message;
-          card.appendChild(response);
-        }
-        const boundary = document.createElement('p');
-        boundary.className = 'muted';
-        boundary.textContent = 'Request tracking only. Approval does not activate institutional features; a separate invoice and verified payment are required.';
-        card.appendChild(boundary);
-        container.appendChild(card);
-      });
+      await loadInstitutionalBillingInvoices();
     } catch (_error) {
       container.textContent = 'Requests could not be loaded right now.';
     }
