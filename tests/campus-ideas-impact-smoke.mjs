@@ -51,6 +51,23 @@ assert.doesNotMatch(js, /service_role|SUPABASE_SERVICE_ROLE|\.from\(["']profiles
 assert.match(css, /@media\(max-width:680px\)/);
 assert.match(css, /prefers-reduced-motion:reduce/);
 assert.match(css, /data-theme=\"dark\"/);
+
+assert.ok(js.includes("requireVerifiedCampus: false"),
+  "Signed-in members must be able to browse without a verified campus membership");
+assert.ok(!js.includes('.eq("university_id", state.campus.university_id)'),
+  "The discovery feed must not filter ideas to the viewer's university");
+assert.ok(js.includes("Across CampusShield"),
+  "The Ideas & Impact board must identify the CampusShield-wide feed");
+assert.ok(js.includes("state.canContribute"),
+  "Submission, support and discussion actions must remain gated to verified campus members");
+assert.ok(js.includes("state.staff && state.campus?.university_id === idea.university_id"),
+  "Moderation controls must remain scoped to the staff member's own university");
+assert.ok(js.includes("This proposal is visible only to its author and moderators at the originating university"),
+  "Pending proposals must stay private until moderation approves them");
+assert.match(js, /const PUBLIC_STATUSES = \["published", "planned", "in_progress", "implemented"\]/,
+  "Only moderated public statuses should appear in the cross-campus discovery board");
+console.log("CampusShield-wide Ideas & Impact visibility and privacy checks passed.");
+
 console.log("Campus Ideas & Impact smoke checks passed.");
 
 assert.match(statusContextSql, /create or replace function private\.prepare_campus_idea_status_update\(\)/i);

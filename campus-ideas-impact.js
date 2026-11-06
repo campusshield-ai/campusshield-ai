@@ -36,6 +36,7 @@
     profile: null,
     username: "",
     staff: false,
+    canContribute: false,
     loading: false,
     ideas: [],
     comments: [],
@@ -86,7 +87,7 @@
         <div class="cii-hero-copy">
           <span class="cii-kicker">CAMPUSPULSE · STUDENT-LED CHANGE</span>
           <h2 id="cii-title">Ideas &amp; Impact</h2>
-          <p>Good ideas deserve a path to action. Identify a problem, propose a practical solution and bring your campus together to make progress.</p>
+          <p>Good ideas deserve a path to action. Share solutions to improve education, communities and the wider world — then help turn them into measurable progress.</p>
         </div>
         <div class="cii-hero-mark" aria-hidden="true">✦</div>
       </div>
@@ -95,7 +96,7 @@
         <span><strong>02</strong> Propose a solution</span>
         <span><strong>03</strong> Build support and track progress</span>
       </div>
-      <div class="cii-privacy-note"><strong>Campus-first privacy.</strong> Ideas are visible only to verified members of your university after review. You can choose campus, community, national or global impact as the ambition of your idea; the audience remains campus-only in this first release.</div>
+      <div class="cii-privacy-note"><strong>Open CampusShield idea board.</strong> Every signed-in member can explore approved ideas from every participating university. Verified campus members can propose, support and discuss ideas. New proposals remain private to their author and the originating university moderators until approved.</div>
       <div class="cii-layout">
         <section class="cii-compose" aria-labelledby="cii-compose-title">
           <div class="cii-section-heading">
@@ -181,7 +182,7 @@
               <select id="cii-sort"><option value="newest">Newest</option><option value="support">Most supported</option></select>
             </div>
           </div>
-          <p class="cii-board-status" id="cii-status" role="status" aria-live="polite">Sign in with a verified campus account to load ideas.</p>
+          <p class="cii-board-status" id="cii-status" role="status" aria-live="polite">Sign in to explore approved ideas from across CampusShield.</p>
           <div class="cii-stats" id="cii-stats" hidden></div>
           <div class="cii-feed" id="cii-feed"><div class="cii-empty"><strong>Make the first move.</strong><p>Share a clear idea that could make student life, education or the wider community better.</p></div></div>
         </section>
@@ -192,39 +193,51 @@
     wire();
   }
 
-  async function prepare() {
+  async function prepare(options = {}) {
+    const requireVerifiedCampus = options.requireVerifiedCampus !== false;
     const api = window.CampusShieldBackend;
     if (!api?.isConfigured || !api.client) throw new Error("CampusShield could not connect to the campus database.");
     const user = await api.getCurrentUser();
-    if (!user) throw new Error("Sign in with your student or verified campus account to explore Ideas & Impact.");
-    const campus = await api.getMyCampusContext();
-    if (!campus?.university_id) throw new Error("Choose your university in CampusPulse before sharing an idea.");
-    if (campus.membership_status !== "active" || campus.verification_status !== "verified") {
-      throw new Error("Ideas & Impact requires an active, verified campus membership.");
-    }
+    if (!user) throw new Error("Sign in to explore Ideas & Impact across CampusShield.");
+
+    let campus = null;
+    try { campus = await api.getMyCampusContext(); } catch (_error) {}
     const { data: profile, error } = await api.client.from("profiles")
       .select("role,verification_status")
       .eq("id", user.id)
       .maybeSingle();
     if (error) throw error;
-    if (!profile || profile.verification_status !== "verified") {
-      throw new Error("Complete campus identity verification before using Ideas & Impact.");
-    }
-    const community = await api.getMyCommunityProfile();
+
+    let community = null;
+    try { community = await api.getMyCommunityProfile(); } catch (_error) {}
+    const verifiedCampus = !!(
+      profile &&
+      profile.verification_status === "verified" &&
+      campus?.university_id &&
+      campus.membership_status === "active" &&
+      campus.verification_status === "verified"
+    );
+
     state.api = api;
     state.client = api.client;
     state.user = user;
     state.campus = campus;
-    state.profile = profile;
+    state.profile = profile || null;
     state.username = community?.username || "";
-    state.staff = ["admin","security","teacher"].includes(profile.role);
+    state.canContribute = verifiedCampus && !!state.username;
+    state.staff = verifiedCampus && ["admin","security","teacher"].includes(profile?.role);
+    if (requireVerifiedCampus && !state.canContribute) {
+      throw new Error("Browsing is open to signed-in CampusShield members. Verify your campus membership and create a CampusPulse username to submit, support or discuss ideas.");
+    }
+
     const form = $("#cii-form");
     if (form) {
-      const controls = form.querySelectorAll("input,select,textarea,button");
-      controls.forEach((control) => { control.disabled = !state.username; });
-      $("#cii-form-status").textContent = state.username
-        ? "Your idea will stay visible only to you and campus moderators until it is approved."
-        : "Create your CampusPulse username before submitting an idea.";
+      form.querySelectorAll("input,select,textarea,button").forEach((control) => {
+        control.disabled = !state.canContribute;
+      });
+      $("#cii-form-status").textContent = state.canContribute
+        ? "Your proposal stays private to you and moderators at your university until approved. Once published, it is visible across CampusShield."
+        : "You can explore approved ideas across CampusShield. Verify your campus membership and create a CampusPulse username to contribute.";
     }
   }
 
@@ -243,13 +256,13 @@
     state.loading = true;
     const feed = $("#cii-feed");
     if (feed) {
-      feed.replaceChildren(create("p","cii-empty","Loading ideas from your university…"));
+      feed.replaceChildren(create("p","cii-empty","Loading approved ideas across CampusShield…"));
     }
     try {
-      await prepare();
+      await prepare({ requireVerifiedCampus: false });
       let request = state.client.from("campus_ideas")
         .select("id,user_id,creator_username,title,category,impact_scope,problem_statement,proposed_solution,expected_impact,status,support_count,created_at,updated_at")
-        .eq("university_id", state.campus.university_id);
+;
       if (state.category !== "all") request = request.eq("category", state.category);
       if (state.status !== "all") request = request.eq("status", state.status);
       request = state.sort === "support"
@@ -291,10 +304,10 @@
         stats.replaceChildren(
           create("span","","" + state.ideas.length + (state.ideas.length === 1 ? " idea" : " ideas")),
           create("span","","" + totalSupport + (totalSupport === 1 ? " support" : " supports")),
-          create("span","",state.campus.university_name || "Your university")
+          create("span","","Across CampusShield")
         );
       }
-      setStatus("Showing " + state.ideas.length + " idea" + (state.ideas.length === 1 ? "" : "s") + " for " + (state.campus.university_name || "your university") + ".");
+      setStatus("Showing " + state.ideas.length + " approved idea" + (state.ideas.length === 1 ? "" : "s") + " across CampusShield. Verified members can support, comment and submit proposals.");
     } catch (error) {
       if (feed) {
         feed.replaceChildren(create("div","cii-empty","Ideas & Impact is unavailable for this account right now."));
@@ -346,7 +359,7 @@
     }
 
     const actionRow = create("div","cii-idea-actions");
-    const canSupport = PUBLIC_STATUSES.includes(idea.status) && idea.user_id !== state.user?.id;
+    const canSupport = state.canContribute && PUBLIC_STATUSES.includes(idea.status) && idea.user_id !== state.user?.id;
     const support = create("button",state.supported.has(idea.id) ? "btn cii-support is-supported" : "btn cii-support",
       (state.supported.has(idea.id) ? "Supported" : "Support idea") + " · " + Number(idea.support_count || 0));
     support.type = "button";
@@ -367,19 +380,23 @@
         commentList.append(item);
       });
       discussion.append(commentList);
-      const form = create("form","cii-comment-form");
-      form.dataset.ideaCommentForm = idea.id;
-      const input = create("textarea",""); input.required = true; input.minLength = 3; input.maxLength = 700; input.rows = 2;
-      input.placeholder = "Add a helpful comment or offer to contribute…";
-      const submit = create("button","btn secondary","Post comment"); submit.type = "submit";
-      form.append(input,submit);
-      discussion.append(form);
+      if (state.canContribute) {
+        const form = create("form","cii-comment-form");
+        form.dataset.ideaCommentForm = idea.id;
+        const input = create("textarea",""); input.required = true; input.minLength = 3; input.maxLength = 700; input.rows = 2;
+        input.placeholder = "Add a helpful comment or offer to contribute…";
+        const submit = create("button","btn secondary","Post comment"); submit.type = "submit";
+        form.append(input,submit);
+        discussion.append(form);
+      } else {
+        discussion.append(create("p","cii-muted","Verify your campus membership to join this discussion."));
+      }
       card.append(discussion);
     } else if (idea.status === "pending") {
-      card.append(create("p","cii-muted","This proposal is visible to you and campus moderators. Discussion opens after it is approved."));
+      card.append(create("p","cii-muted","This proposal is visible only to its author and moderators at the originating university. Discussion opens after approval."));
     }
 
-    if (state.staff) {
+    if (state.staff && state.campus?.university_id === idea.university_id) {
       const allowed = idea.status === "pending"
         ? ["published","declined"]
         : idea.status === "published"
@@ -430,7 +447,7 @@
       const { error } = await state.client.from("campus_ideas").insert(payload);
       if (error) throw error;
       form.reset();
-      $("#cii-form-status").textContent = "Idea submitted. It is private to you and campus moderators until approved.";
+      $("#cii-form-status").textContent = "Idea submitted. It is private to you and moderators at your university until it is approved for the CampusShield-wide board."
       setStatus("Your proposal was submitted for campus review.");
       await loadIdeas();
     } catch (error) {
