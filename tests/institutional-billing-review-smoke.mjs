@@ -73,7 +73,7 @@ assert.match(app, /const institutionalPaystackMonthlyLinks = Object\.freeze\(/,
   'The three account-owner-provided institutional Paystack links are configured as fixed monthly pages');
 assert.match(app, /https:\/\/paystack\.shop\/pay\/gqjub0yz1y[\s\S]*https:\/\/paystack\.shop\/pay\/8u81ku5v94[\s\S]*https:\/\/paystack\.shop\/pay\/p1h6s3mgcj/,
   'Starter, Professional and Enterprise use their exact supplied Paystack URLs');
-assert.match(app, /invoice\?\.status !== 'issued'[\s\S]*invoice\?\.billing_period !== 'monthly'[\s\S]*invoice\?\.currency !== 'NGN'[\s\S]*Number\(invoice\?\.total_kobo\) !== page\.amountKobo/,
+assert.match(app, /function institutionalInvoiceMatchesFixedPaystackPlan[\s\S]*invoice\?\.status === 'issued'[\s\S]*invoice\?\.billing_period === 'monthly'[\s\S]*invoice\?\.currency === 'NGN'[\s\S]*Number\(invoice\?\.total_kobo\) === page\.amountKobo/,
   'Paystack links are shown only for issued NGN monthly invoices matching the exact fixed page total');
 assert.match(app, /This is a recurring monthly subscription, not a one-time invoice payment/,
   'The requester is warned that Paystack pages create recurring monthly charges');
