@@ -17,3 +17,13 @@
 .shieldmind-paid-gate[hidden],.shieldmind-plan-summary[hidden],.shieldmind-workspace-grid[hidden],.shieldmind-quick-actions[hidden]{display:none!important}
 @media(max-width:760px){.shieldmind-plan-summary{grid-template-columns:repeat(2,minmax(0,1fr));padding:15px}.shieldmind-plan-summary>.btn{grid-column:1/-1;width:100%}.shieldmind-paid-gate{grid-template-columns:minmax(0,1fr)}.shieldmind-paid-mark{display:none}.shieldmind-paid-benefits{grid-template-columns:1fr}.shieldmind-paid-actions{align-items:flex-start;flex-direction:column}.shieldmind-paid-actions .btn{width:100%}}
 @media(prefers-reduced-motion:no-preference){.shieldmind-paid-gate{animation:shieldmindGateIn .35s ease-out both}@keyframes shieldmindGateIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}}
+
+/* Private ShieldMind conversation history */
+.shieldmind-saved-history{display:grid;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border,#dce7e3)}
+.shieldmind-saved-history input{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--border,#dce7e3);border-radius:10px;background:var(--surface,#fff);color:inherit}
+.shieldmind-history-list{display:grid;gap:8px;max-height:320px;overflow:auto}
+.shieldmind-history-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;align-items:center;padding:9px 10px;border:1px solid var(--border,#dce7e3);border-radius:10px}
+.shieldmind-history-open{min-width:0;overflow:hidden;text-align:left;text-overflow:ellipsis;white-space:nowrap;background:transparent;border:0;color:var(--text,#173b34);font:inherit;font-weight:650;cursor:pointer}
+.shieldmind-history-item small{grid-column:1;color:var(--muted,#647b74);font-size:11px}
+.shieldmind-history-delete{grid-column:2;grid-row:1/3;padding:6px 9px;border:1px solid var(--border,#dce7e3);border-radius:8px;background:transparent;color:var(--muted,#647b74);font:inherit;font-size:12px;cursor:pointer}
+.shieldmind-history-open:focus-visible,.shieldmind-history-delete:focus-visible,.shieldmind-saved-history input:focus-visible{outline:3px solid #21a887;outline-offset:2px}
