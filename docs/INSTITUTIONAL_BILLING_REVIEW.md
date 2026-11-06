@@ -81,7 +81,7 @@ The three URLs are deliberately hidden in CampusShield Staging: a real charge mu
 
 For each Paystack Shop page, set the **Redirect after payment** URL to:
 
-`https://campusshield-ai.github.io/?institution-billing=return`
+`https://campusshield-ai.github.io/campusshield-ai/?institution-billing=return`
 
 Use this **Success message**:
 
