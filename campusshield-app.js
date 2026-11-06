@@ -4005,11 +4005,12 @@
     const button = event.target.closest('[data-institutional-subscription-manage]');
     if (!button) return;
     const subscriptionId = button.dataset.institutionalSubscriptionManage;
-    const manageWindow = window.open('', '_blank', 'noopener,noreferrer');
+    const manageWindow = window.open('', '_blank');
     if (!manageWindow) {
       toast('Allow pop-ups to open Paystack subscription management.');
       return;
     }
+    manageWindow.opener = null;
     button.disabled = true;
     try {
       const backend = window.CampusShieldBackend;
