@@ -425,6 +425,8 @@ assert.match(css, /html\[data-theme="dark"\] \.campus-map-layer-panel/, 'Map lay
 assert.match(js, /MAP_LAYER_STORAGE_KEY/, 'Layer preferences are persisted locally');
 assert.match(js, /function applyMapLayerPreferences\(\)/, 'Layer visibility is centralised in one map preference function');
 assert.match(js, /baseStyleRoadLayerIds/, 'Street basemap road layers are independently controllable');
+assert.match(js, /baseStyleBuildingLayerIds/, 'Vector basemap building footprints are independently controllable');
+assert.match(js, /!isBuilding \|\| preferences\.buildings/, 'The building toggle applies to vector basemap buildings');
 assert.match(js, /baseStyleLabelLayerIds/, 'Basemap labels are independently controllable');
 assert.match(js, /key === 'drafts' && !isCampusAdmin/, 'Admin draft pins remain restricted to verified campus admins');
 assert.match(js, /event\.key === 'Escape'/, 'Layer panel supports Escape-key dismissal');
