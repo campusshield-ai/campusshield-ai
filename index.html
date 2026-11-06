@@ -5,16 +5,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0d3b2e">
-<meta name="description" content="CampusShield AI campus safety incident reporting and campus support platform.">
+<meta name="description" content="CampusShield AI helps students and campus teams access safety reporting, verified campus updates, learning support and student-life resources.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CampusShield AI">
+<meta property="og:title" content="CampusShield AI | Intelligent Campus Safety">
+<meta property="og:description" content="Campus safety reporting, verified campus updates, learning support and student-life resources in one responsible campus platform.">
+<meta property="og:image" content="https://campusshield-ai-staging-preview.vercel.app/icons/campusshield-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="CampusShield AI shield logo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CampusShield AI | Intelligent Campus Safety">
+<meta name="twitter:description" content="Campus safety reporting, verified campus updates, learning support and student-life resources in one responsible campus platform.">
+<meta name="twitter:image" content="https://campusshield-ai-staging-preview.vercel.app/icons/campusshield-512.png">
+<meta name="twitter:image:alt" content="CampusShield AI shield logo">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="CampusShield">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./campus-dashboard-upgrade.css">
+<link rel="stylesheet" href="./shieldmind-subscription.css">
+<link rel="stylesheet" href="./shieldmind-learning-insights.css">
+<link rel="stylesheet" href="./campusshield-mobile-theme.css">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
 <link rel="stylesheet" href="./campus-map.css">
 <link rel="stylesheet" href="./campus-map-passport.css">
 <link rel="stylesheet" href="./campuspulse-social.css">
+<link rel="stylesheet" href="./campus-voice-notes.css">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <title>CampusShield AI | Intelligent Campus Safety</title>
@@ -3264,7 +3281,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
     </div>
     <form id="campus-chat-form" class="campus-chat-compose">
       <label class="visually-hidden" for="campus-chat-input">Write a campus chat message</label>
-      <textarea id="campus-chat-input" maxlength="1200" rows="2" placeholder="Message your campus…" required disabled></textarea>
+      <textarea id="campus-chat-input" maxlength="1200" rows="2" placeholder="Message your campus…" disabled></textarea>
+      <div class="campus-voice-tools" data-voice-composer="campus">
+        <button type="button" class="btn secondary campus-voice-record" id="campus-chat-voice-record" disabled>Record voice note</button>
+        <button type="button" class="btn secondary campus-voice-discard" id="campus-chat-voice-discard" hidden>Discard recording</button>
+        <span class="campus-voice-status" id="campus-chat-voice-status" role="status" aria-live="polite">Optional voice note · up to 90 seconds</span>
+        <audio class="campus-voice-preview" id="campus-chat-voice-preview" controls preload="metadata" hidden></audio>
+      </div>
       <div class="campus-chat-compose-footer"><span>Be respectful. Messages are limited to 1,200 characters.</span><button class="btn" type="submit" id="campus-chat-send" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-7 18-3-7-8-3Z"/><path d="M11 14 21 3"/></svg>Send message</button></div>
     </form>
   </section>
@@ -3337,7 +3360,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <div id="campus-dm-thread-messages" class="campus-dm-thread-messages" role="log" aria-label="Private messages" aria-live="polite" aria-relevant="additions text"></div>
         <form id="campus-dm-compose-form" class="campus-dm-compose">
           <label for="campus-dm-compose-input" class="visually-hidden">Write a private message</label>
-          <textarea id="campus-dm-compose-input" rows="2" maxlength="1200" placeholder="Write a private message…" required disabled></textarea>
+          <textarea id="campus-dm-compose-input" rows="2" maxlength="1200" placeholder="Write a private message…" disabled></textarea>
+          <div class="campus-voice-tools" data-voice-composer="direct">
+            <button type="button" class="btn secondary campus-voice-record" id="campus-dm-voice-record" disabled>Record voice note</button>
+            <button type="button" class="btn secondary campus-voice-discard" id="campus-dm-voice-discard" hidden>Discard recording</button>
+            <span class="campus-voice-status" id="campus-dm-voice-status" role="status" aria-live="polite">Private voice note · up to 90 seconds</span>
+            <audio class="campus-voice-preview" id="campus-dm-voice-preview" controls preload="metadata" hidden></audio>
+          </div>
           <div class="campus-dm-compose-footer"><span id="campus-dm-compose-hint">Only visible to this conversation</span><button type="submit" class="btn" id="campus-dm-compose-send" aria-label="Send private message" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-7 18-3-7-8-3Z"/><path d="M11 14 21 3"/></svg>Send</button></div>
         </form>
       </div>
@@ -3619,8 +3648,26 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <span class="shieldmind-mark" aria-hidden="true">✦</span>
       <div><span class="campus-hub-eyebrow">CAMPUSSHIELD AI · LEARNING ASSISTANT</span><h1>ShieldMind AI</h1><p>Your campus learning companion</p></div>
     </div>
-    <span class="shieldmind-workspace-badge"><span aria-hidden="true">●</span> AI assistant</span>
+    <span class="shieldmind-workspace-badge" id="shieldmind-plan-status" role="status" aria-live="polite">Checking your plan…</span>
   </div>
+  <section class="shieldmind-plan-summary" id="shieldmind-plan-summary" aria-label="Your ShieldMind subscription allowances" hidden>
+    <div class="shieldmind-plan-summary-tier">
+      <span class="shieldmind-plan-summary-label">YOUR ACTIVE PLAN</span>
+      <strong id="shieldmind-plan-summary-name">—</strong>
+      <small id="shieldmind-plan-summary-expiry">Checking expiry…</small>
+    </div>
+    <div class="shieldmind-plan-summary-metric">
+      <span class="shieldmind-plan-summary-label">AI REQUEST ALLOWANCE</span>
+      <strong id="shieldmind-plan-summary-requests">—</strong>
+      <small>Requests per minute / day</small>
+    </div>
+    <div class="shieldmind-plan-summary-metric">
+      <span class="shieldmind-plan-summary-label">STUDY IMAGE ALLOWANCE</span>
+      <strong id="shieldmind-plan-summary-images">—</strong>
+      <small>Uploads per 30-day term</small>
+    </div>
+    <button type="button" class="btn secondary" data-page="billing">Manage plan</button>
+  </section>
 
   <div class="shieldmind-hero shieldmind-hero-compact">
     <div class="shieldmind-hero-copy">
@@ -3633,9 +3680,28 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <div class="shieldmind-hero-art" aria-hidden="true"><span>✦</span><span>AI</span><span>＋</span></div>
   </div>
 
-  <div class="notice-inline shieldmind-access-notice" id="shieldmind-access-notice" role="status" aria-live="polite">AI requests require a verified account and university membership. Student accounts also need approved identity verification.</div>
+  <div class="notice-inline shieldmind-access-notice" id="shieldmind-access-notice" role="status" aria-live="polite">ShieldMind AI responses and generated study material require an active paid plan. Official campus-source answers also require verified university access.</div>
+  <section class="shieldmind-paid-gate" id="shieldmind-paid-gate" aria-labelledby="shieldmind-paid-gate-title" hidden>
+    <div class="shieldmind-paid-gate-copy">
+      <span class="shieldmind-paid-eyebrow">✦ SHIELDMIND PREMIUM · SUBSCRIPTION REQUIRED</span>
+      <h2 id="shieldmind-paid-gate-title">Make every study session count.</h2>
+      <p>Unlock your private AI learning workspace with a prepaid 30-day plan. Your subscription is checked securely before AI requests are processed.</p>
+      <ul class="shieldmind-paid-benefits">
+        <li>Step-by-step academic tutor and explanations</li>
+        <li>Lecture-note summaries, quizzes and revision support</li>
+        <li>Study-image explanations within your plan allowance</li>
+        <li>Source-aware campus help when verified sources are available</li>
+      </ul>
+      <div class="shieldmind-paid-actions">
+        <button class="btn" type="button" data-page="billing">View plans &amp; subscriptions</button>
+        <span>Essential campus safety and incident reporting remain free.</span>
+      </div>
+    </div>
+    <div class="shieldmind-paid-mark" aria-hidden="true">✦</div>
+    <p id="shieldmind-paid-gate-status" class="message" role="status" aria-live="polite">Checking your subscription…</p>
+  </section>
 
-  <div class="shieldmind-quick-actions" aria-label="ShieldMind quick actions">
+  <div class="shieldmind-quick-actions" aria-label="ShieldMind quick actions" hidden>
     <button type="button" class="shieldmind-quick-action is-active" data-shieldmind-focus-chat><span aria-hidden="true">⌕</span>Ask anything</button>
     <button type="button" class="shieldmind-quick-action" data-shieldmind-scroll-tools><span aria-hidden="true">▤</span>Study tools</button>
     <button type="button" class="shieldmind-quick-action" data-shieldmind-prompt="Help me find official campus information. Ask me which university and topic, and clearly distinguish approved source material from information that is not verified."><span aria-hidden="true">⌂</span>Campus info</button>
@@ -3644,7 +3710,38 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <button type="button" class="shieldmind-quick-action" data-page="student-rewards"><span aria-hidden="true">◷</span>My progress</button>
   </div>
 
-  <div class="shieldmind-grid shieldmind-workspace-grid">
+  <section class="panel shieldmind-insights-panel" id="shieldmind-learning-insights" aria-labelledby="shieldmind-insights-title" hidden>
+    <div class="shieldmind-insights-heading">
+      <div>
+        <span class="shieldmind-insights-eyebrow">SHIELDMIND PREMIUM · LEARNING INTELLIGENCE</span>
+        <h2 id="shieldmind-insights-title">Your learning progress</h2>
+        <p>Track recent practice performance and spot the topics that deserve more revision.</p>
+      </div>
+      <button class="btn secondary" type="button" id="shieldmind-insights-refresh">Refresh insights</button>
+    </div>
+    <div class="shieldmind-insights-metrics" aria-label="Recent learning metrics">
+      <div class="shieldmind-insights-metric"><span>Submitted sessions</span><strong id="shieldmind-insights-attempts">—</strong></div>
+      <div class="shieldmind-insights-metric"><span>Average score</span><strong id="shieldmind-insights-average">—</strong></div>
+      <div class="shieldmind-insights-metric"><span>Study days · 7d</span><strong id="shieldmind-insights-days">—</strong></div>
+      <div class="shieldmind-insights-metric"><span>Topics analysed</span><strong id="shieldmind-insights-topics-count">—</strong></div>
+    </div>
+    <div class="shieldmind-insights-body">
+      <section class="shieldmind-insights-topics" aria-labelledby="shieldmind-insights-topics-title">
+        <h3 id="shieldmind-insights-topics-title">Topic performance</h3>
+        <div id="shieldmind-insights-topics"><p class="shieldmind-insights-empty">Your topic performance will appear here.</p></div>
+      </section>
+      <aside class="shieldmind-insights-recommendation" aria-labelledby="shieldmind-insights-recommendation-title">
+        <h3 id="shieldmind-insights-recommendation-title">Suggested next step</h3>
+        <div id="shieldmind-insights-recommendation"><p>Complete a practice session to get a focused revision suggestion.</p></div>
+        <div class="shieldmind-insights-actions" id="shieldmind-insights-actions" hidden>
+          <button class="btn secondary" type="button" data-page="past-questions" id="shieldmind-insights-start">Start a practice session</button>
+        </div>
+      </aside>
+    </div>
+    <p class="shieldmind-insights-status" id="shieldmind-insights-status" role="status" aria-live="polite">Your learning data is private to your account.</p>
+  </section>
+
+  <div class="shieldmind-grid shieldmind-workspace-grid" id="shieldmind-workspace-grid" hidden>
     <section class="panel shieldmind-chat-panel" aria-labelledby="shieldmind-chat-title">
       <div class="panel-heading shieldmind-chat-heading">
         <div><h2 id="shieldmind-chat-title">Ask ShieldMind</h2><p>Ask a question, explore a topic or work through your notes.</p></div>
@@ -3690,7 +3787,16 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <section class="panel shieldmind-side-panel shieldmind-recent-panel">
         <div class="shieldmind-side-heading"><div><h2>Recent chats</h2><p>Questions from this session</p></div><button type="button" class="shieldmind-text-button" id="shieldmind-recent-clear">Clear</button></div>
         <div id="shieldmind-recent-list" class="shieldmind-recent-list"><p class="shieldmind-recent-empty">Your recent questions will appear here during this session.</p></div>
-        <p class="shieldmind-session-note">Recent prompts are kept in this page session only; they are not saved as a permanent chat history.</p>
+        <p class="shieldmind-session-note">Recent prompts are kept in this page session only.</p>
+        <section class="shieldmind-saved-history" aria-labelledby="shieldmind-history-title">
+          <div class="shieldmind-side-heading"><div><h3 id="shieldmind-history-title">Saved conversations</h3><p>Private to your signed-in account</p></div></div>
+          <label class="sr-only" for="shieldmind-history-search">Search saved conversations</label>
+          <input id="shieldmind-history-search" type="search" maxlength="120" placeholder="Search saved chats…" autocomplete="off">
+          <div id="shieldmind-history-list" class="shieldmind-history-list" aria-live="polite">
+            <p class="shieldmind-recent-empty">Sign in to view your saved conversations.</p>
+          </div>
+          <p class="shieldmind-session-note">Only conversation text is saved. Study images are not stored in chat history.</p>
+        </section>
       </section>
 
       <section class="panel shieldmind-side-panel shieldmind-campus-panel">
@@ -3701,7 +3807,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       </section>
 
       <section class="panel shieldmind-side-panel shieldmind-plan-mini" aria-labelledby="shieldmind-plan-heading">
-        <div class="shieldmind-side-heading"><div><h2 id="shieldmind-plan-heading">Your plan</h2><p id="shieldmind-plan-status" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p></div><span aria-hidden="true">◈</span></div>
+        <div class="shieldmind-side-heading"><div><h2 id="shieldmind-plan-heading">Your plan</h2><p id="shieldmind-plan-status-side" class="message" role="status" aria-live="polite">Checking your ShieldMind plan…</p></div><span aria-hidden="true">◈</span></div>
         <button class="btn secondary" type="button" data-page="billing">View plans &amp; subscriptions</button>
       </section>
     </aside>
@@ -3798,6 +3904,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <div class="pq-panel-eyebrow">ORIGINAL PRACTICE</div>
         <h2 id="pq-ai-title">Generate a practice exam</h2>
         <p class="pq-side-intro">Create fresh questions for a course topic. The result is clearly labelled AI-generated, not a past paper or an official marking scheme.</p>
+        <div id="pq-ai-paid-gate" class="pq-access-gate" role="status" aria-live="polite">AI-generated practice and AI-assisted marking require an active ShieldMind subscription. Approved authentic papers remain available in the library. <button class="btn secondary" type="button" data-page="billing">View paid plans</button></div>
         <form id="pq-ai-form">
           <div class="field"><label for="pq-ai-course-code">Course code *</label><input id="pq-ai-course-code" required minlength="2" maxlength="32" placeholder="CSC 201"></div>
           <div class="field"><label for="pq-ai-course-title">Course title *</label><input id="pq-ai-course-title" required minlength="3" maxlength="160" placeholder="Computer Programming"></div>
@@ -3939,12 +4046,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
 
 <section class="page" id="page-billing">
   <div class="heading"><div><span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · PLANS</span><h1>Subscriptions &amp; billing</h1><p>Manage ShieldMind AI study plans and explore institutional subscriptions for your university.</p></div></div>
-  <div class="notice-inline"><strong>Essential safety stays free.</strong> Student safety reporting and core access are not paywalled. Payments must be verified by CampusShield's server before a paid plan is activated. Do not send card details or payment credentials in chat.</div>
+  <div class="notice-inline"><strong>Essential campus safety stays free.</strong> Student safety reporting and core access are not paywalled. Payments must be verified by CampusShield's server before a paid plan is activated. Do not send card details or payment credentials in chat.</div>
   <section class="panel">
-    <div class="panel-heading"><div><h2>ShieldMind AI · Individual plans</h2><p>Prepaid 30-day access for additional academic AI usage.</p></div><span class="shieldmind-pill">NGN</span></div>
-    <p id="billing-ai-status" class="message" role="status" aria-live="polite">Your current plan and payment status will be shown here when billing is connected.</p>
+    <div class="panel-heading"><div><h2>ShieldMind AI · Individual plans</h2><p>Prepaid 30-day access to AI answers, study generation and image-assisted explanations. Plans do not auto-renew.</p></div><span class="shieldmind-pill">NGN</span></div>
+    <p id="billing-ai-status" class="message" role="status" aria-live="polite">Checking your paid ShieldMind access and payment status…</p>
     <div class="shieldmind-prices">
-      <article class="shieldmind-price"><strong>Free</strong><b>₦0</b><span>5 requests/min · 80/day</span><small>Core academic Q&amp;A and study prompts</small><button class="btn secondary" type="button" disabled>Included</button></article>
       <article class="shieldmind-price premium"><strong>Starter</strong><b>₦2,000</b><span>10 requests/min · 250/day</span><small>20 image uploads/month</small><button class="btn" type="button" data-billing-plan="starter" data-billing-kind="individual">Continue to payment</button></article>
       <article class="shieldmind-price premium"><strong>Plus</strong><b>₦5,000</b><span>15 requests/min · 700/day</span><small>60 image uploads/month</small><button class="btn" type="button" data-billing-plan="plus" data-billing-kind="individual">Continue to payment</button></article>
       <article class="shieldmind-price premium"><strong>Pro</strong><b>₦10,000</b><span>25 requests/min · 1,500/day</span><small>150 image uploads/month</small><button class="btn" type="button" data-billing-plan="pro" data-billing-kind="individual">Continue to payment</button></article>
@@ -4487,6 +4593,8 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <script src="./campus-map-geometry.js" defer></script>
 <script type="module" src="./campus-map-loader.js"></script>
 <script src="./campusshield-app.js" defer></script>
+<script src="./campus-voice-notes.js" defer></script>
+<script src="./shieldmind-learning-insights.js" defer></script>
 <script src="./campuspulse-social.js" defer></script>
 <script src="./campus-ideas-impact.js" defer></script>
 <script>
@@ -5585,7 +5693,6 @@ table { max-width: 100%; }
 <link rel="stylesheet" href="./campusshield-visual-refresh.css">
 <link rel="stylesheet" href="./student-creator-tools.css">
 <link rel="stylesheet" href="./campusshield-sidebar-collapse-fix.css">
-<link rel="stylesheet" href="./campusshield-mobile-theme.css">
 <link rel="stylesheet" href="./campus-ideas-impact.css">
 <script src="./campus-dashboard-upgrade.js" defer></script>
 <script src="./student-creator-tools.js" defer></script>

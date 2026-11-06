@@ -20,6 +20,9 @@ const responsiveCss = responsiveCssStart >= 0 && responsiveCssEnd > responsiveCs
 const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.js", import.meta.url), "utf8");
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
+const shieldmindApp = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
+const learningInsightsScript = await readFile(new URL("../shieldmind-learning-insights.js", import.meta.url), "utf8");
+const learningInsightsCss = await readFile(new URL("../shieldmind-learning-insights.css", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
 const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
@@ -238,6 +241,28 @@ assert.match(html, /createSignedUrl\(String\(avatarPath\), 3600\)/, "private ava
 assert.match(html, /profileAvatarRenderTokens/, "avatar rendering guards against stale asynchronous image responses");
 assert.match(html, /data-page="report"><svg[\s\S]*?Report an incident/);
 assert.match(html, /data-page="shieldmind"><svg[\s\S]*?Ask the assistant/);
+
+assert.match(html, /id="shieldmind-paid-gate"/, "ShieldMind has a subscription-required access gate");
+assert.match(html, /id="shieldmind-plan-summary"/, "active ShieldMind plans have a visible allowance summary");
+
+assert.match(html, /id="shieldmind-learning-insights"/, "ShieldMind learning progress panel is present");
+assert.match(html, /shieldmind-learning-insights\.js/, "learning insights module is loaded");
+assert.match(html, /shieldmind-learning-insights\.css/, "learning insights styling is loaded");
+assert.match(learningInsightsScript, /function isStagingEnvironment\(\)/, "learning insights stay restricted to the staging project");
+assert.match(learningInsightsScript, /window\.CampusShieldShieldMindAccess/, "learning insights require active paid ShieldMind access");
+assert.match(learningInsightsScript, /from\("practice_attempts"\)/, "learning insights read only submitted practice attempts");
+assert.match(learningInsightsScript, /from\("practice_answers"\)/, "topic summaries use the student's own answer records");
+assert.doesNotMatch(learningInsightsScript, /past_question_answer_keys/, "learning insights never access protected answer keys");
+assert.match(learningInsightsCss, /@media \(max-width: 760px\)/, "learning insights include a mobile layout");
+console.log("PASS ShieldMind private learning insights, paid entitlement and staging-only access checks");
+
+assert.equal((html.match(/id="shieldmind-plan-status"/g) || []).length, 1, "ShieldMind plan status ID is unique");
+assert.match(html, /id="shieldmind-workspace-grid" hidden/, "AI workspace is hidden until entitlement is verified");
+assert.match(html, /class="shieldmind-quick-actions"[^>]*hidden/, "AI quick actions are hidden until entitlement is verified");
+assert.match(shieldmindApp, /if \(!window\.CampusShieldShieldMindAccess\?\.active\)/, "chat submit is blocked in the UI without paid entitlement");
+assert.match(shieldmindApp, /select\('plan,status,expires_at,image_upload_limit'\)/, "plan summary reads server-stored image allowance");
+assert.match(shieldmindApp, /We could not verify your subscription\. AI access stays locked/, "subscription lookup failures fail closed");
+console.log("PASS ShieldMind paid gate, plan summary and fail-closed UI checks");
 assert.match(html, /Emergency guidance/);
 assert.match(html, /Campus service contacts/);
 assert.match(html, /\.campus-dashboard-hero\{[\s\S]*?background:[\s\S]*?linear-gradient/);
@@ -431,6 +456,24 @@ assert.match(pastQuestionMigration, /create table if not exists public\.practice
 assert.match(pastQuestionMigration, /private\.current_user_has_verified_campus_access\(\)/i, "library and attempt access require verified campus access");
 assert.match(pastQuestionMigration, /public\.past_question_exam_prep_access\(\)/i, "Edge Functions can enforce the database's full verified-access rule");
 assert.match(pastQuestionFunction, /rpc\("past_question_exam_prep_access"\)/, "AI-generated content requires the database eligibility check");
+
+const practiceSubscriptionGate = pastQuestionFunction.indexOf('from("shieldmind_subscriptions")');
+const practiceModelCall = pastQuestionFunction.indexOf('const apiKey = Deno.env.get("OPENAI_API_KEY")');
+assert.ok(practiceSubscriptionGate >= 0 && practiceSubscriptionGate < practiceModelCall, "AI practice and marking verify paid access before model use");
+assert.match(pastQuestionFunction, /code: "SUBSCRIPTION_REQUIRED"/);
+assert.match(pastQuestionFunction, /subscription.status === "active"/);
+assert.match(pastQuestionFunction, /Date\.parse\(subscription\.expires_at\) > Date\.now\(\)/);
+assert.match(pastQuestionScript, /function syncShieldMindAiAccess\(\)/);
+assert.match(pastQuestionScript, /campusshield:shieldmind-access/);
+assert.match(html, /id="pq-ai-paid-gate"/);
+const billingStart = html.indexOf('<section class="page" id="page-billing">');
+const billingEnd = html.indexOf('<section class="page"', billingStart + 1);
+const billingMarkup = html.slice(billingStart, billingEnd < 0 ? undefined : billingEnd);
+assert.doesNotMatch(billingMarkup, /<strong>Free<\/strong>|₦0/, "ShieldMind does not offer a free AI tier");
+assert.match(billingMarkup, /Essential campus safety stays free/);
+assert.match(billingMarkup, /Plans do not auto-renew/);
+console.log("PASS ShieldMind paid exam generation, AI marking gate and paid-only plan catalogue");
+
 assert.doesNotMatch(pastQuestionFunction, /profile\.university_id|profile\.department/, "Edge Function uses the actual profile and membership schema");
 assert.match(pastQuestionMigration, /past_question_answer_keys_reviewer_only/i, "answer keys are reviewer-protected");
 assert.match(pastQuestionMigration, /grant select on public\.practice_answers to authenticated/i, "students can read only their RLS-filtered results");
@@ -637,6 +680,23 @@ assert.match(shieldmindFunction, /ShieldMind provider returned a non-success res
 assert.match(shieldmindFunction, /ShieldMind request failed unexpectedly/,"unexpected runtime failures are visible without logging prompts or secrets");
 assert.doesNotMatch(shieldmindFunction, /console\.(?:log|warn|error)\([^\n]*(?:question|providerKey|Authorization|apiKey)/i,"diagnostics do not log prompt text or provider credentials");
 assert.match(shieldmindFunction, /your ShieldMind account limit has not been reached/i);
+
+const shieldmindPaidGate = shieldmindFunction.indexOf("// ShieldMind is a paid AI service.");
+const shieldmindCampusContext = shieldmindFunction.indexOf('client.rpc("get_my_campus_context")');
+assert.ok(shieldmindPaidGate >= 0 && shieldmindPaidGate < shieldmindCampusContext,
+  "paid entitlement is checked before campus-source context is read");
+assert.match(shieldmindFunction, /from\("shieldmind_subscriptions"\)/,
+  "ShieldMind checks the caller-scoped subscription record");
+assert.match(shieldmindFunction, /subscription.status === "active"/,
+  "only active ShieldMind subscriptions unlock AI");
+assert.match(shieldmindFunction, /Date.parse\(subscription.expires_at\) > Date.now\(\)/,
+  "expired ShieldMind subscriptions cannot unlock AI");
+assert.match(shieldmindFunction, /code: "SUBSCRIPTION_REQUIRED"/,
+  "unpaid ShieldMind requests receive an explicit subscription-required response");
+assert.match(shieldmindFunction, /}, 402\)/,
+  "unpaid ShieldMind requests are rejected with HTTP 402");
+console.log("PASS ShieldMind AI requires an active, unexpired paid subscription server-side");
+
 console.log("PASS ShieldMind surfaces safe provider rate-limit and billing errors");
 
 

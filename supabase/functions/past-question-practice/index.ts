@@ -342,6 +342,31 @@ Deno.serve(async (req: Request) => {
       const message = error instanceof Error ? error.message : "Sign in to continue.";
       return json({ error: message }, message.startsWith("Sign in") || message.includes("session") ? 401 : 403);
     }
+    // AI-generated practice sets and AI-assisted marking are part of the paid ShieldMind
+    // service. Use the server-only client and caller ID supplied by verified Auth context.
+    const { data: subscription, error: subscriptionError } = await service
+      .from("shieldmind_subscriptions")
+      .select("plan,status,expires_at")
+      .eq("user_id", context.user.id)
+      .maybeSingle();
+    if (subscriptionError) {
+      console.error("Exam-prep subscription verification failed", { code: subscriptionError.code || null });
+      return json({ error: "Paid ShieldMind access could not be verified. Try again later." }, 503);
+    }
+    const hasPaidAccess = Boolean(
+      subscription &&
+      ["starter", "plus", "pro", "ultra", "max", "premium"].includes(String(subscription.plan)) &&
+      subscription.status === "active" &&
+      subscription.expires_at &&
+      Date.parse(subscription.expires_at) > Date.now()
+    );
+    if (!hasPaidAccess) {
+      return json({
+        code: "SUBSCRIPTION_REQUIRED",
+        subscription_required: true,
+        error: "AI-generated practice and AI-assisted marking require an active ShieldMind subscription. Open Subscriptions & billing to choose a 30-day plan.",
+      }, 402);
+    }
     const apiKey = Deno.env.get("OPENAI_API_KEY") || "";
     const model = (Deno.env.get("SHIELDMIND_MODEL") || "gpt-4.1-mini").slice(0, 80);
     try {

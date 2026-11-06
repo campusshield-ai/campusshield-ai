@@ -1,0 +1,21 @@
+name: ShieldMind private history checks
+
+on:
+  pull_request:
+    branches: [staging/preview]
+  push:
+    branches: [reconcile/**]
+
+permissions:
+  contents: read
+
+jobs:
+  history-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run private history regression checks
+        run: node tests/shieldmind-history-smoke.mjs

@@ -1,0 +1,29 @@
+/* ShieldMind subscription gate and active-plan summary */
+.shieldmind-plan-summary{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(2,minmax(0,1fr)) auto;gap:14px;align-items:center;margin:0 0 18px;padding:18px 20px;border:1px solid #dcebe6;border-radius:18px;background:linear-gradient(120deg,#f3fbf8,#fff);box-shadow:0 12px 30px rgba(11,55,43,.06)}
+.shieldmind-plan-summary-tier,.shieldmind-plan-summary-metric{display:grid;gap:4px;min-width:0}
+.shieldmind-plan-summary-label{font-size:10px;font-weight:850;letter-spacing:.1em;color:#55776d}
+.shieldmind-plan-summary strong{font-size:20px;color:#123d32;overflow-wrap:anywhere}
+.shieldmind-plan-summary small{font-size:11px;color:#647a73}
+.shieldmind-paid-gate{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:20px;align-items:center;margin:16px 0 20px;padding:clamp(20px,4vw,34px);border:1px solid #cce8df;border-radius:22px;background:radial-gradient(circle at 90% 12%,rgba(24,169,135,.14),transparent 34%),linear-gradient(135deg,#f1faf6,#fff 68%);box-shadow:0 18px 45px rgba(9,59,46,.08)}
+.shieldmind-paid-gate-copy{max-width:760px}
+.shieldmind-paid-eyebrow{font-size:10px;font-weight:900;letter-spacing:.13em;color:#137b65}
+.shieldmind-paid-gate h2{margin:12px 0 8px;font-size:clamp(24px,3vw,34px);line-height:1.15;color:#123d32}
+.shieldmind-paid-gate p{max-width:680px;color:#526b63}
+.shieldmind-paid-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 18px;margin:18px 0;padding-left:19px;color:#294e43;font-size:13px}
+.shieldmind-paid-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.shieldmind-paid-actions span{font-size:11px;color:#55776d}
+.shieldmind-paid-mark{display:grid;place-items:center;width:94px;height:94px;border-radius:28px;background:linear-gradient(145deg,#0e725d,#092e39);color:#a6f3dd;font-size:52px;box-shadow:0 16px 34px rgba(8,68,55,.2)}
+.shieldmind-paid-gate>.message{grid-column:1/-1;margin:0;font-size:12px;color:#55776d}
+.shieldmind-paid-gate[hidden],.shieldmind-plan-summary[hidden],.shieldmind-workspace-grid[hidden],.shieldmind-quick-actions[hidden]{display:none!important}
+@media(max-width:760px){.shieldmind-plan-summary{grid-template-columns:repeat(2,minmax(0,1fr));padding:15px}.shieldmind-plan-summary>.btn{grid-column:1/-1;width:100%}.shieldmind-paid-gate{grid-template-columns:minmax(0,1fr)}.shieldmind-paid-mark{display:none}.shieldmind-paid-benefits{grid-template-columns:1fr}.shieldmind-paid-actions{align-items:flex-start;flex-direction:column}.shieldmind-paid-actions .btn{width:100%}}
+@media(prefers-reduced-motion:no-preference){.shieldmind-paid-gate{animation:shieldmindGateIn .35s ease-out both}@keyframes shieldmindGateIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}}
+
+/* Private ShieldMind conversation history */
+.shieldmind-saved-history{display:grid;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border,#dce7e3)}
+.shieldmind-saved-history input{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--border,#dce7e3);border-radius:10px;background:var(--surface,#fff);color:inherit}
+.shieldmind-history-list{display:grid;gap:8px;max-height:320px;overflow:auto}
+.shieldmind-history-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;align-items:center;padding:9px 10px;border:1px solid var(--border,#dce7e3);border-radius:10px}
+.shieldmind-history-open{min-width:0;overflow:hidden;text-align:left;text-overflow:ellipsis;white-space:nowrap;background:transparent;border:0;color:var(--text,#173b34);font:inherit;font-weight:650;cursor:pointer}
+.shieldmind-history-item small{grid-column:1;color:var(--muted,#647b74);font-size:11px}
+.shieldmind-history-delete{grid-column:2;grid-row:1/3;padding:6px 9px;border:1px solid var(--border,#dce7e3);border-radius:8px;background:transparent;color:var(--muted,#647b74);font:inherit;font-size:12px;cursor:pointer}
+.shieldmind-history-open:focus-visible,.shieldmind-history-delete:focus-visible,.shieldmind-saved-history input:focus-visible{outline:3px solid #21a887;outline-offset:2px}

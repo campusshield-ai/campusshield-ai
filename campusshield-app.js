@@ -888,7 +888,7 @@
   }
 
 
-  // Sidebar controls: remember desktop collapse preference, while mobile uses a modal drawer.
+  // Sidebar controls: persisted desktop rail and accessible, animated mobile drawer.
   (() => {
     const app = document.querySelector('.app');
     const sidebar = $('app-sidebar');
@@ -897,33 +897,85 @@
     const backdrop = $('sidebar-backdrop');
     if (!app || !sidebar || !collapseButton || !mobileButton || !backdrop) return;
     const mobile = () => window.matchMedia('(max-width: 650px)').matches;
-    try { if (localStorage.getItem('campusshield-sidebar-collapsed') === 'true' && !mobile()) app.classList.add('sidebar-collapsed'); } catch (_) {}
+    let backdropCloseTimer = null;
+
+    try {
+      if (localStorage.getItem('campusshield-sidebar-collapsed') === 'true' && !mobile()) {
+        app.classList.add('sidebar-collapsed');
+      }
+    } catch (_) {}
+
     const sync = () => {
       const collapsed = app.classList.contains('sidebar-collapsed');
+      const mobileOpen = app.classList.contains('mobile-nav-open');
       collapseButton.setAttribute('aria-expanded', String(!collapsed));
       collapseButton.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
       collapseButton.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
       collapseButton.querySelector('span:first-child').textContent = collapsed ? '›' : '‹';
-      mobileButton.setAttribute('aria-expanded', String(app.classList.contains('mobile-nav-open')));
-      mobileButton.setAttribute('aria-label', app.classList.contains('mobile-nav-open') ? 'Close navigation menu' : 'Open navigation menu');
-      backdrop.hidden = !app.classList.contains('mobile-nav-open');
+      mobileButton.setAttribute('aria-expanded', String(mobileOpen));
+      mobileButton.setAttribute('aria-label', mobileOpen ? 'Close navigation menu' : 'Open navigation menu');
+      mobileButton.setAttribute('aria-controls', 'app-sidebar');
+
+      if (backdropCloseTimer) {
+        window.clearTimeout(backdropCloseTimer);
+        backdropCloseTimer = null;
+      }
+      backdrop.setAttribute('aria-hidden', String(!mobileOpen));
+      if (mobileOpen) {
+        backdrop.hidden = false;
+        document.body.classList.add('campus-nav-locked');
+      } else {
+        document.body.classList.remove('campus-nav-locked');
+        if (!backdrop.hidden) {
+          backdropCloseTimer = window.setTimeout(() => {
+            if (!app.classList.contains('mobile-nav-open')) backdrop.hidden = true;
+          }, 260);
+        }
+      }
     };
-    const closeMobile = () => { app.classList.remove('mobile-nav-open'); sync(); };
+
+    const closeMobile = (restoreFocus = true) => {
+      const wasOpen = app.classList.contains('mobile-nav-open');
+      app.classList.remove('mobile-nav-open');
+      sync();
+      if (wasOpen && restoreFocus && mobileButton.isConnected) mobileButton.focus({ preventScroll: true });
+    };
+
+    const openMobile = () => {
+      app.classList.add('mobile-nav-open');
+      sync();
+      const firstLink = sidebar.querySelector('button[data-page]:not([hidden])');
+      if (firstLink) window.requestAnimationFrame(() => firstLink.focus({ preventScroll: true }));
+    };
+
     collapseButton.addEventListener('click', () => {
       if (mobile()) { closeMobile(); return; }
       app.classList.toggle('sidebar-collapsed');
-      try { localStorage.setItem('campusshield-sidebar-collapsed', String(app.classList.contains('sidebar-collapsed'))); } catch (_) {}
+      try {
+        localStorage.setItem('campusshield-sidebar-collapsed', String(app.classList.contains('sidebar-collapsed')));
+      } catch (_) {}
       sync();
     });
-    mobileButton.addEventListener('click', () => { app.classList.toggle('mobile-nav-open'); sync(); });
-    backdrop.addEventListener('click', closeMobile);
+
+    mobileButton.addEventListener('click', () => {
+      if (app.classList.contains('mobile-nav-open')) closeMobile();
+      else openMobile();
+    });
+    backdrop.addEventListener('click', () => closeMobile());
+
     sidebar.querySelectorAll('button[data-page]').forEach(button => {
       const label = button.textContent.trim().replace(/\s+/g, ' ');
       if (label) { button.title = label; button.setAttribute('aria-label', label); }
       button.addEventListener('click', () => { if (mobile()) closeMobile(); });
     });
-    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeMobile(); });
-    window.addEventListener('resize', () => { if (!mobile()) closeMobile(); sync(); });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && app.classList.contains('mobile-nav-open')) closeMobile();
+    });
+    window.addEventListener('resize', () => {
+      if (!mobile()) closeMobile(false);
+      sync();
+    });
     sync();
   })();
 
@@ -7462,20 +7514,24 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   }
   
   let shieldMindSessionUserId = null, shieldMindHistory = [], shieldMindRecentQuestions = [];
+  let shieldMindConversationId = null;
+  let shieldMindHistorySearchRequest = 0;
   function resetShieldMindForSession() {
-    if (!currentProfile) { shieldMindSessionUserId=null; shieldMindHistory=[]; shieldMindRecentQuestions=[]; renderShieldMindRecentQuestions(); return; }
+    if (!currentProfile) { shieldMindSessionUserId=null; shieldMindConversationId=null; shieldMindHistory=[]; shieldMindRecentQuestions=[]; renderShieldMindRecentQuestions(); loadShieldMindConversations(); return; }
     // Let all signed-in accounts ask general academic questions. The backend independently
     // blocks campus-specific and sensitive actions when the account is not eligible.
     const allowed=true;
     if ($('shieldmind-submit')) $('shieldmind-submit').disabled=false;
     if (shieldMindSessionUserId!==currentProfile.id) {
       shieldMindSessionUserId=currentProfile.id;
+      shieldMindConversationId=null;
       shieldMindHistory=[];
       shieldMindRecentQuestions=[];
       renderShieldMindRecentQuestions();
       if ($('shieldmind-messages')) $('shieldmind-messages').innerHTML='<article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Chat ready. Ask a general academic question. Official campus details are only answered when approved campus sources support them.</p></article>';
     }
     if ($('shieldmind-status')) $('shieldmind-status').textContent='Ready for a general academic question.';
+    loadShieldMindConversations();
   }
 
   async function reconcileReturnedPaystackPayment() {
@@ -7534,30 +7590,87 @@ $('resend-confirmation-button').addEventListener('click', async () => {
 
   async function refreshShieldMindPlan() {
     const status = $('shieldmind-plan-status');
-    if (!status) return;
+    const statusSide = $('shieldmind-plan-status-side');
+    const gateStatus = $('shieldmind-paid-gate-status');
+    const billingStatus = $('billing-ai-status');
+    const gate = $('shieldmind-paid-gate');
+    const workspace = $('shieldmind-workspace-grid');
+    const quickActions = document.querySelector('#page-shieldmind .shieldmind-quick-actions');
+    const summary = $('shieldmind-plan-summary');
+
+    const applyAccess = (active, subscription = null, message = '') => {
+      const state = {
+        active: Boolean(active),
+        plan: active ? String(subscription?.plan || '') : null,
+        expiresAt: active ? subscription?.expires_at || null : null,
+        checkedAt: new Date().toISOString(),
+      };
+      window.CampusShieldShieldMindAccess = state;
+      if (gate) gate.hidden = state.active;
+      if (workspace) workspace.hidden = !state.active;
+      if (quickActions) quickActions.hidden = !state.active;
+
+      const caps = {
+        starter: { minute: 10, day: 250 },
+        plus: { minute: 15, day: 700 },
+        pro: { minute: 25, day: 1500 },
+        ultra: { minute: 35, day: 2500 },
+        max: { minute: 50, day: 4000 },
+        premium: { minute: 10, day: 250 },
+      };
+      const planCaps = state.active ? caps[state.plan] : null;
+      if (summary) summary.hidden = !planCaps;
+      if (planCaps) {
+        $('shieldmind-plan-summary-name').textContent = state.plan.toUpperCase();
+        $('shieldmind-plan-summary-expiry').textContent = state.expiresAt
+          ? 'Active until ' + new Date(state.expiresAt).toLocaleDateString()
+          : 'Active subscription';
+        $('shieldmind-plan-summary-requests').textContent =
+          planCaps.minute.toLocaleString() + ' / ' + planCaps.day.toLocaleString();
+        $('shieldmind-plan-summary-images').textContent =
+          Number(subscription?.image_upload_limit || 0).toLocaleString();
+      }
+      if (status) status.textContent = state.active ? state.plan.toUpperCase() + ' active' : 'No active plan';
+      if (statusSide) statusSide.textContent = state.active
+        ? state.plan.toUpperCase() + ' active until ' + new Date(state.expiresAt).toLocaleDateString() + '.'
+        : (message || 'No active paid ShieldMind plan.');
+      if (gateStatus) gateStatus.textContent = state.active
+        ? state.plan.toUpperCase() + ' is active. Your ShieldMind workspace is unlocked.'
+        : (message || 'Choose a paid 30-day plan to unlock ShieldMind AI responses.');
+      if (billingStatus) billingStatus.textContent = state.active
+        ? state.plan.toUpperCase() + ' active until ' + new Date(state.expiresAt).toLocaleDateString() + '.'
+        : (message || 'Current plan: Free. Paid access activates only after Paystack payment is independently verified.');
+      document.dispatchEvent(new CustomEvent('campusshield:shieldmind-access', { detail: state }));
+      return state.active;
+    };
+
     const backend = window.CampusShieldBackend;
-    if (!currentProfile || !backend?.isConfigured) { status.textContent='Sign in to view your plan. ShieldMind and subscription information are available to every signed-in user.'; return; }
-    status.textContent='Checking your plan…';
+    if (!currentProfile || !backend?.isConfigured) {
+      return applyAccess(false, null, 'Sign in and purchase a ShieldMind plan to unlock AI responses.');
+    }
+    if (status) status.textContent = 'Checking your plan…';
+    if (gateStatus) gateStatus.textContent = 'Verifying your subscription securely…';
     try {
-      const {data:{user},error:userError}=await backend.client.auth.getUser();
-      if (userError || !user) { status.textContent='Sign in to view or upgrade your plan.'; return; }
-      const {data,error}=await backend.client.from('shieldmind_subscriptions')
-        .select('plan,status,expires_at').eq('user_id',user.id).maybeSingle();
+      const { data: { user }, error: userError } = await backend.client.auth.getUser();
+      if (userError || !user) {
+        return applyAccess(false, null, 'Sign in and purchase a ShieldMind plan to unlock AI responses.');
+      }
+      const { data, error } = await backend.client.from('shieldmind_subscriptions')
+        .select('plan,status,expires_at,image_upload_limit').eq('user_id', user.id).maybeSingle();
       if (error) throw error;
-      const active=Boolean(data && ['starter','plus','pro','ultra','max','premium'].includes(data.plan) &&
-        data.status==='active' && data.expires_at && new Date(data.expires_at).getTime()>Date.now());
-      document.querySelectorAll('[data-billing-plan]').forEach(button=>{ button.disabled=false; });
-      status.textContent=active
-        ? data.plan.toUpperCase()+' active until '+new Date(data.expires_at).toLocaleDateString()+'. Your tier limits are enabled.'
-        : 'You are on ShieldMind Free. Visit Subscriptions & billing to compare paid plans. Payment must be confirmed by the server before Premium activates.';
-      const billingStatus=$('billing-ai-status');
-      if(billingStatus) billingStatus.textContent=active
-        ? data.plan.toUpperCase()+' active until '+new Date(data.expires_at).toLocaleDateString()+'.'
-        : 'Current plan: Free. Paid access activates only after Paystack payment is independently verified.';
-    } catch (_error) {
-      status.textContent='Plan status could not be loaded. Your AI can still be used within Free-tier server limits.';
-      const billingStatus=$('billing-ai-status');
-      if(billingStatus) billingStatus.textContent='Plan status is temporarily unavailable. Paid access cannot be granted without a verified server-side payment.';
+      const active = Boolean(
+        data &&
+        ['starter','plus','pro','ultra','max','premium'].includes(data.plan) &&
+        data.status === 'active' &&
+        data.expires_at &&
+        new Date(data.expires_at).getTime() > Date.now()
+      );
+      return applyAccess(active, active ? data : null, active
+        ? ''
+        : 'Your ShieldMind plan is not active. Choose Starter, Plus, Pro, Ultra or Max to continue.');
+    } catch (error) {
+      console.warn('ShieldMind subscription verification failed:', error?.message || 'Unknown error');
+      return applyAccess(false, null, 'We could not verify your subscription. AI access stays locked until payment status can be checked.');
     }
   }
   function addShieldMindMessage(role,message) {
@@ -7594,6 +7707,116 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       list.appendChild(item);
     });
   }
+  async function loadShieldMindConversations(search = '') {
+    const list = $('shieldmind-history-list');
+    const backend = window.CampusShieldBackend;
+    if (!list) return;
+    const requestId = ++shieldMindHistorySearchRequest;
+    if (!currentProfile || !backend?.isConfigured) {
+      list.textContent = 'Sign in to view your saved conversations.';
+      return;
+    }
+    list.textContent = 'Loading saved conversations…';
+    try {
+      const rows = await backend.listMyShieldMindConversations(search);
+      if (requestId !== shieldMindHistorySearchRequest || !currentProfile) return;
+      list.replaceChildren();
+      if (!rows.length) {
+        const empty = document.createElement('p');
+        empty.className = 'shieldmind-recent-empty';
+        empty.textContent = search ? 'No saved conversations match your search.' : 'Your saved conversations will appear here after your first answer.';
+        list.appendChild(empty);
+        return;
+      }
+      rows.forEach(row => {
+        const item = document.createElement('div');
+        item.className = 'shieldmind-history-item';
+        const open = document.createElement('button');
+        open.type = 'button';
+        open.className = 'shieldmind-history-open';
+        open.textContent = row.title || 'Untitled conversation';
+        open.addEventListener('click', () => openShieldMindConversation(row.id));
+        const date = document.createElement('small');
+        date.textContent = row.updated_at ? new Date(row.updated_at).toLocaleString() : '';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'shieldmind-history-delete';
+        remove.textContent = 'Delete';
+        remove.setAttribute('aria-label', 'Delete conversation: ' + (row.title || 'Untitled conversation'));
+        remove.addEventListener('click', () => deleteShieldMindConversation(row.id));
+        item.append(open, date, remove);
+        list.appendChild(item);
+      });
+    } catch (error) {
+      if (requestId !== shieldMindHistorySearchRequest) return;
+      list.textContent = error?.message || 'Saved conversations could not be loaded.';
+    }
+  }
+
+  async function openShieldMindConversation(conversationId) {
+    const backend = window.CampusShieldBackend;
+    const expectedUserId = currentProfile?.id;
+    if (!expectedUserId || !backend?.isConfigured) return;
+    const status = $('shieldmind-status');
+    try {
+      status.textContent = 'Loading your saved conversation…';
+      const row = await backend.loadMyShieldMindConversation(conversationId);
+      if (currentProfile?.id !== expectedUserId) return;
+      if (!Array.isArray(row.messages)) throw new Error('This saved conversation has an invalid format.');
+      const messages = row.messages.filter(item =>
+        item && ['user', 'assistant'].includes(item.role) &&
+        typeof item.content === 'string' && item.content.length <= 12000
+      ).slice(-100);
+      shieldMindConversationId = row.id;
+      shieldMindHistory = messages;
+      shieldMindRecentQuestions = messages.filter(item => item.role === 'user')
+        .map(item => item.content).slice(-5).reverse();
+      renderShieldMindRecentQuestions();
+      $('shieldmind-messages').replaceChildren();
+      messages.forEach(item => addShieldMindMessage(item.role, item.content));
+      status.textContent = 'Saved conversation loaded privately from your account.';
+    } catch (error) {
+      status.textContent = error?.message || 'This conversation could not be loaded.';
+    }
+  }
+
+  async function deleteShieldMindConversation(conversationId) {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !conversationId) return;
+    if (!window.confirm('Delete this saved ShieldMind conversation? This cannot be undone.')) return;
+    try {
+      await backend.deleteMyShieldMindConversation(conversationId);
+      if (shieldMindConversationId === conversationId) {
+        shieldMindConversationId = null;
+        shieldMindHistory = [];
+        $('shieldmind-messages').replaceChildren();
+        addShieldMindMessage('assistant', 'Start a new private conversation whenever you are ready.');
+      }
+      await loadShieldMindConversations($('shieldmind-history-search')?.value || '');
+      $('shieldmind-status').textContent = 'Saved conversation deleted.';
+    } catch (error) {
+      $('shieldmind-status').textContent = error?.message || 'The conversation could not be deleted.';
+    }
+  }
+
+  async function saveShieldMindConversation() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile || !shieldMindHistory.length) return;
+    const firstQuestion = shieldMindHistory.find(item => item.role === 'user')?.content || 'ShieldMind conversation';
+    const title = firstQuestion.replace(/\s+/g, ' ').trim().slice(0, 100) || 'ShieldMind conversation';
+    const expectedUserId = currentProfile.id;
+    const savedId = await backend.saveMyShieldMindConversation(
+      shieldMindConversationId, title, shieldMindHistory.slice(-100), expectedUserId
+    );
+    if (currentProfile?.id !== expectedUserId) return;
+    shieldMindConversationId = savedId;
+    await loadShieldMindConversations($('shieldmind-history-search')?.value || '');
+  }
+
+  $('shieldmind-history-search')?.addEventListener('input', event => {
+    loadShieldMindConversations(event.target.value || '');
+  });
+
   function setShieldMindQuickActionActive(button) {
     const bar=button?.closest('.shieldmind-quick-actions');
     if(!bar) return;
@@ -7619,13 +7842,17 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     renderShieldMindRecentQuestions();
     $('shieldmind-status').textContent='Recent questions cleared for this session.';
   });
-  $('shieldmind-clear').addEventListener('click',()=>{
+  $('shieldmind-clear').addEventListener('click',async()=>{
+    if (shieldMindConversationId) {
+      await deleteShieldMindConversation(shieldMindConversationId);
+      return;
+    }
     shieldMindHistory=[];
     shieldMindRecentQuestions=[];
     renderShieldMindRecentQuestions();
-    $('shieldmind-messages').innerHTML='';
-    addShieldMindMessage('assistant','Chat cleared. Official campus policy answers remain unavailable until approved sources are configured.');
-    $('shieldmind-status').textContent='Chat cleared. This interface does not save your conversation.';
+    $('shieldmind-messages').replaceChildren();
+    addShieldMindMessage('assistant','Start a new private conversation whenever you are ready.');
+    $('shieldmind-status').textContent='This unsaved conversation has been cleared.';
   });
   document.querySelectorAll('[data-shieldmind-prompt]').forEach(button=>button.addEventListener('click',()=>{
     $('shieldmind-question').value=button.dataset.shieldmindPrompt;
@@ -7635,7 +7862,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     if(quick) $('shieldmind-question').scrollIntoView({behavior:'smooth',block:'center'});
   }));
   $('shieldmind-form').addEventListener('submit',async event=>{
-    event.preventDefault(); const question=String($('shieldmind-question').value||'').trim(),backend=window.CampusShieldBackend,imageFile=$('shieldmind-image')?.files?.[0]||null;
+    event.preventDefault();
+    if (!window.CampusShieldShieldMindAccess?.active) { $('shieldmind-status').textContent='An active paid ShieldMind plan is required. Open Subscriptions & billing to continue.'; return; }
+    const question=String($('shieldmind-question').value||'').trim(),backend=window.CampusShieldBackend,imageFile=$('shieldmind-image')?.files?.[0]||null;
     const allowed=Boolean(currentProfile);
     if(!question||question.length>1200)return;
     if (!backend?.isConfigured) { $('shieldmind-status').textContent='ShieldMind backend is unavailable. Please try again later.'; return; }
@@ -7660,10 +7889,17 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if($('shieldmind-image-confirm')) $('shieldmind-image-confirm').checked=false;
       if(currentProfile!==profileAtRequest||currentProfile?.id!==userId){shieldMindHistory=[];$('shieldmind-messages').innerHTML='';resetShieldMindForSession();return;}
       addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'));
-      shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-8);
+      shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-100);
       shieldMindRecentQuestions=[question,...shieldMindRecentQuestions.filter(item=>item!==question)].slice(0,5);
       renderShieldMindRecentQuestions();
       $('shieldmind-status').textContent=result?.mode==='provider'?'Study support · Verify important facts against your course materials.':'Safe response · official campus sources are not connected, so verify important facts with your course materials.';
+      try {
+        await saveShieldMindConversation();
+        $('shieldmind-status').textContent += ' · Saved privately to your account.';
+      } catch (saveError) {
+        console.warn('ShieldMind history save failed:', saveError?.message || 'Unknown error');
+        $('shieldmind-status').textContent += ' · Answer ready, but chat history could not be saved. Retry after checking your connection.';
+      }
     }catch(error){
       const detail=String(error?.message||'').trim();
       const friendlyMessage=detail&&!/Edge Function returned a non-2xx status code/i.test(detail)

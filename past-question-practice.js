@@ -793,10 +793,21 @@
     await refreshLibrary();
   }
 
+  function syncShieldMindAiAccess() {
+    const active = window.CampusShieldShieldMindAccess?.active === true;
+    const gate = $("pq-ai-paid-gate");
+    const form = $("pq-ai-form");
+    if (gate) gate.hidden = active;
+    if (form) form.querySelectorAll("input,select,textarea,button").forEach(control => { control.disabled = !active; });
+    if (!active) message("pq-ai-status", "An active paid ShieldMind plan is required for AI-generated practice and AI-assisted marking. Approved past-paper browsing remains available.");
+  }
+
   function wire() {
     applyEnvironmentGate();
+    syncShieldMindAiAccess();
     if (state.wired) return;
     state.wired = true;
+    document.addEventListener("campusshield:shieldmind-access", syncShieldMindAiAccess);
     const scrollToPanel = id => $(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     $("pq-source-contribute")?.addEventListener("click", () => scrollToPanel("pq-submit-section"));
     $("pq-source-practice")?.addEventListener("click", () => scrollToPanel("pq-ai-section"));
