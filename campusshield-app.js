@@ -7517,13 +7517,14 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   let shieldMindConversationId = null;
   let shieldMindHistorySearchRequest = 0;
   function resetShieldMindForSession() {
-    if (!currentProfile) { shieldMindSessionUserId=null; shieldMindHistory=[]; shieldMindRecentQuestions=[]; renderShieldMindRecentQuestions(); return; }
+    if (!currentProfile) { shieldMindSessionUserId=null; shieldMindConversationId=null; shieldMindHistory=[]; shieldMindRecentQuestions=[]; renderShieldMindRecentQuestions(); loadShieldMindConversations(); return; }
     // Let all signed-in accounts ask general academic questions. The backend independently
     // blocks campus-specific and sensitive actions when the account is not eligible.
     const allowed=true;
     if ($('shieldmind-submit')) $('shieldmind-submit').disabled=false;
     if (shieldMindSessionUserId!==currentProfile.id) {
       shieldMindSessionUserId=currentProfile.id;
+      shieldMindConversationId=null;
       shieldMindHistory=[];
       shieldMindRecentQuestions=[];
       renderShieldMindRecentQuestions();
