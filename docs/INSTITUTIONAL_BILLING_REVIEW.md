@@ -79,6 +79,16 @@ Annual invoices are not sent to monthly pages. Enterprise custom quotes and any 
 
 The three URLs are deliberately hidden in CampusShield Staging: a real charge must not land in a Test Mode database. The live links are intended for the Production site only after the Production institutional schema, finance verification function and separate Live Mode webhook have been deployed and tested. The existing personal ShieldMind Paystack webhook must remain separate.
 
+For each Paystack Shop page, set the **Redirect after payment** URL to:
+
+`https://campusshield-ai.github.io/?institution-billing=return`
+
+Use this **Success message**:
+
+> Thank you. Your payment is awaiting CampusShield verification. Keep your Paystack transaction reference and subscription code. Do not pay again while verification is pending.
+
+The return route is informational only. It displays the pending-verification message, loads the institution's billing history, and does not call the personal ShieldMind verifier or activate an institutional subscription.
+
 ## Institutional payment verification and recurring lifecycle
 
 Staging now contains a separate institutional Paystack event inbox, finance verification path and recurring-subscription lifecycle. These are separate from ShieldMind's personal subscription tables and webhook processing.
