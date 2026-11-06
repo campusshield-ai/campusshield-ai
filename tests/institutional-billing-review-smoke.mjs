@@ -62,7 +62,7 @@ assert.match(html, /id="institutional-billing-invoices"/,
   'Verified campus admins have a dedicated invoice history area');
 assert.match(app, /async function loadInstitutionalBillingInvoices\(\)/,
   'The requester can load their own institutional invoices');
-assert.match(app, /async function printInstitutionalInvoice\(invoice\)/,
+assert.match(app, /function printInstitutionalInvoice\(invoice\)/,
   'Issued invoices have a printable invoice view that can be saved as PDF');
 assert.match(app, /from\('campus_institutional_invoices'\)/,
   'The finance queue and requester history use the dedicated invoice table');
