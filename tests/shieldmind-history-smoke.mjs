@@ -34,7 +34,7 @@ assert.match(migration, /enable row level security/i, "history table enables RLS
 assert.match(migration, /force row level security/i, "history table forces RLS");
 assert.match(migration, /user_id = \(select auth\.uid\(\)\)/, "RLS policies bind access to auth.uid()");
 assert.match(migration, /on delete cascade/i, "account deletion cascades to private history");
-assert.match(migration, /grant select, insert, update, delete to authenticated/i, "authenticated users receive only the required table operations");
+assert.match(migration, /grant select, insert, update, delete on public\\.shieldmind_conversations to authenticated/i, "authenticated users receive only the required table operations");
 assert.match(migration, /revoke all .* from anon, public/i, "anonymous/public access is revoked");
 
 console.log("ShieldMind private conversation history smoke checks passed.");
