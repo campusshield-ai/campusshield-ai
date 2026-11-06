@@ -3782,7 +3782,132 @@
   });
 
   $('platform-admin-refresh-admin-requests').addEventListener('click', loadPlatformCampusAdminRequests);
+
   $('platform-admin-refresh-billing-requests')?.addEventListener('click', loadInstitutionalBillingAdminRequests);
+
+  const institutionalInvoiceForm = $('platform-admin-invoice-form');
+  $('platform-admin-invoice-cancel')?.addEventListener('click', () => {
+    institutionalInvoiceForm.hidden = true;
+    institutionalInvoiceForm.reset();
+  });
+
+  $('platform-admin-billing-requests-table')?.addEventListener('click', async event => {
+    const printButton = event.target.closest('[data-institutional-invoice-admin-print]');
+    if (printButton) {
+      printButton.disabled = true;
+      try {
+        const backend = window.CampusShieldBackend;
+        if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+          throw new Error('Trusted platform administrator access is required.');
+        }
+        const { data, error } = await backend.client.from('campus_institutional_invoices')
+          .select('invoice_number,bill_to_name,bill_to_email,description,billing_period,subtotal_kobo,tax_kobo,total_kobo,currency,due_date,payment_instructions,status,issued_at')
+          .eq('id', printButton.dataset.institutionalInvoiceAdminPrint)
+          .single();
+        if (error) throw error;
+        printInstitutionalInvoice(data);
+      } catch (error) {
+        toast(error?.message || 'Could not open the invoice for printing.');
+      } finally {
+        printButton.disabled = false;
+      }
+      return;
+    }
+
+    const createButton = event.target.closest('[data-institutional-invoice-create]');
+    if (!createButton) return;
+    const plan = createButton.dataset.invoicePlan;
+    const period = createButton.dataset.invoicePeriod || 'monthly';
+    const monthlyPrices = {
+      'university-starter': 100000,
+      'university-professional': 250000,
+      'university-enterprise': 500000
+    };
+    const suggestedAmount = (monthlyPrices[plan] || 0) * (period === 'yearly' ? 10 : 1);
+    $('platform-admin-invoice-request-id').value = createButton.dataset.institutionalInvoiceCreate;
+    $('platform-admin-invoice-context').textContent =
+      createButton.dataset.invoiceInstitution + ' · ' + String(plan || '').replace(/-/g, ' ')
+      + ' · ' + period + ' billing. Verify the final agreed quote before issuing.';
+    $('platform-admin-invoice-subtotal').value = suggestedAmount ? suggestedAmount.toFixed(2) : '';
+    $('platform-admin-invoice-tax').value = '0';
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 14);
+    $('platform-admin-invoice-due-date').value = [
+      dueDate.getFullYear(),
+      String(dueDate.getMonth() + 1).padStart(2, '0'),
+      String(dueDate.getDate()).padStart(2, '0')
+    ].join('-');
+    $('platform-admin-invoice-instructions').value = '';
+    institutionalInvoiceForm.hidden = false;
+    institutionalInvoiceForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('platform-admin-invoice-subtotal').focus({ preventScroll: true });
+  });
+
+  institutionalInvoiceForm?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const message = $('platform-admin-billing-requests-message');
+    const submit = $('platform-admin-invoice-submit');
+    const requestId = String($('platform-admin-invoice-request-id').value || '');
+    const subtotalText = String($('platform-admin-invoice-subtotal').value || '').trim();
+    const taxText = String($('platform-admin-invoice-tax').value || '0').trim();
+    const dueDate = String($('platform-admin-invoice-due-date').value || '');
+    const paymentInstructions = String($('platform-admin-invoice-instructions').value || '').trim();
+    const amountPattern = /^\\d{1,10}(?:\\.\\d{1,2})?$/;
+    if (!requestId || !amountPattern.test(subtotalText) || !amountPattern.test(taxText)) {
+      message.textContent = 'Enter a valid invoice subtotal and tax amount with up to two decimal places.';
+      return;
+    }
+    const subtotalKobo = Math.round(Number(subtotalText) * 100);
+    const taxKobo = Math.round(Number(taxText) * 100);
+    if (!Number.isSafeInteger(subtotalKobo) || subtotalKobo <= 0
+        || !Number.isSafeInteger(taxKobo) || taxKobo < 0) {
+      message.textContent = 'The invoice amounts are outside the allowed range.';
+      return;
+    }
+    const today = new Date();
+    const localToday = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0')
+    ].join('-');
+    if (!dueDate || dueDate < localToday) {
+      message.textContent = 'Choose a due date that is today or later.';
+      return;
+    }
+    if (paymentInstructions.length < 8 || paymentInstructions.length > 2000) {
+      message.textContent = 'Enter verified payment instructions between 8 and 2,000 characters.';
+      return;
+    }
+    if (!confirm('Issue this immutable NGN invoice? Check the amount, tax, due date and payment instructions. Issuing it does not mark it as paid or activate a subscription.')) return;
+    submit.disabled = true;
+    message.textContent = 'Issuing the invoice securely…';
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+        throw new Error('Trusted platform administrator access is required.');
+      }
+      const { data, error } = await backend.client.from('campus_institutional_invoices')
+        .insert({
+          billing_request_id: requestId,
+          subtotal_kobo: subtotalKobo,
+          tax_kobo: taxKobo,
+          due_date: dueDate,
+          payment_instructions: paymentInstructions
+        })
+        .select('invoice_number,total_kobo')
+        .single();
+      if (error) throw error;
+      institutionalInvoiceForm.hidden = true;
+      institutionalInvoiceForm.reset();
+      await loadInstitutionalBillingAdminRequests();
+      toast('Invoice ' + data.invoice_number + ' issued for ' + formatNairaFromKobo(data.total_kobo) + '. Awaiting verified payment.');
+    } catch (error) {
+      message.textContent = error?.message || 'The invoice could not be issued. Refresh the queue and check whether one already exists.';
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
   $('platform-admin-billing-requests-table')?.addEventListener('click', async event => {
     const button = event.target.closest('[data-institution-billing-review-save]');
     if (!button) return;
