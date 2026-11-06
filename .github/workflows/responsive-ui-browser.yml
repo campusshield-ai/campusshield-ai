@@ -6,6 +6,9 @@ on:
       - codex/fix-registration-confirmation-role
     paths:
       - "index.html"
+      - "about.html"
+      - "features.html"
+      - "help.html"
       - "campusshield-i18n.js"
       - "privacy.html"
       - "terms.html"
@@ -17,6 +20,9 @@ on:
     branches: [main]
     paths:
       - "index.html"
+      - "about.html"
+      - "features.html"
+      - "help.html"
       - "campusshield-i18n.js"
       - "privacy.html"
       - "terms.html"

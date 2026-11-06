@@ -1,0 +1,32 @@
+name: CampusShield guide checks
+
+on:
+  pull_request:
+    branches: [staging/preview, main]
+    paths:
+      - "index.html"
+      - "campusshield-app.js"
+      - "campusshield-guide.js"
+      - "campusshield-guide.css"
+      - "help.html"
+      - "tests/campusshield-guide-smoke.mjs"
+      - ".github/workflows/campusshield-guide.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  guide:
+    name: Guide navigation, content and responsive checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check application JavaScript syntax
+        run: node --check campusshield-app.js
+      - name: Check guide JavaScript syntax
+        run: node --check campusshield-guide.js
+      - name: Verify in-app guide and Help Centre
+        run: node tests/campusshield-guide-smoke.mjs
