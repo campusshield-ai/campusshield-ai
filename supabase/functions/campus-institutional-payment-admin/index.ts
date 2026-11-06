@@ -112,28 +112,17 @@ Deno.serve(async (req: Request) => {
 
     const { data: chargeEvents, error: chargeEventError } = await db.schema("private")
       .from("campus_institutional_paystack_events")
-      .select("id")
+      .select("id,provider_subscription_code")
       .eq("event_type", "charge.success")
       .eq("provider_reference", reference)
       .limit(1);
     if (chargeEventError) return json({ error: "Could not match the signed Paystack event." }, 503);
 
-    let subscriptionCode: string | null = null;
-    const since = new Date(paidAt.getTime() - 30 * 60 * 1000).toISOString();
-    const until = new Date(paidAt.getTime() + 30 * 60 * 1000).toISOString();
-    const { data: createEvents, error: createEventError } = await db.schema("private")
-      .from("campus_institutional_paystack_events")
-      .select("provider_subscription_code")
-      .eq("event_type", "subscription.create")
-      .eq("customer_email", email)
-      .eq("amount_kobo", Number(tx.amount))
-      .gte("received_at", since)
-      .lte("received_at", until)
-      .not("provider_subscription_code", "is", null)
-      .limit(3);
-    if (createEventError) return json({ error: "Could not match the Paystack subscription event." }, 503);
-    const possibleCodes = [...new Set((createEvents || []).map((event: any) => event.provider_subscription_code).filter(Boolean))];
-    if (possibleCodes.length === 1) subscriptionCode = String(possibleCodes[0]);
+    // Bind a subscription code only when Paystack included it on the exact
+    // charge.success event with the transaction reference being verified.
+    const subscriptionCode = chargeEvents?.[0]?.provider_subscription_code
+      ? String(chargeEvents[0].provider_subscription_code)
+      : null;
 
     const { data: subscriptionId, error: commitError } = await db.rpc("commit_campus_institutional_paystack_payment", {
       p_invoice_id: invoice.id,
