@@ -1,0 +1,83 @@
+/* CampusShield AI — mobile light/dark theme control for the Staging header. */
+.mobile-theme-toggle { display: none; }
+
+@media (max-width: 650px) {
+  #workspace .topbar { gap: 7px; }
+
+  #workspace .mobile-theme-toggle {
+    display: inline-grid !important;
+    place-items: center;
+    flex: 0 0 40px;
+    width: 40px;
+    min-width: 40px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    border: 1px solid #c8dfd0;
+    border-radius: 13px;
+    background: rgba(255,255,255,.86);
+    color: #176b4b;
+    box-shadow: 0 3px 10px rgba(19,59,42,.07);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #workspace .mobile-theme-toggle svg { width: 20px; height: 20px; }
+  #workspace .mobile-theme-toggle:focus-visible { outline: 3px solid #23825e; outline-offset: 3px; }
+
+  html[data-theme="light"] #workspace .topbar {
+    background: linear-gradient(135deg, #f7fbf8, #eaf4ed);
+    border-bottom-color: #cfe1d6;
+    box-shadow: 0 9px 25px rgba(19,59,42,.08);
+  }
+  html[data-theme="light"] #workspace .mobile-topbar-brand { color: #183b31; }
+  html[data-theme="light"] #workspace .mobile-topbar-mark {
+    border: 1px solid #c8dfd0;
+    background: linear-gradient(145deg, #e0f2e6, #f3faf5);
+    color: #176b4b;
+    box-shadow: inset 0 1px rgba(255,255,255,.9), 0 5px 14px rgba(19,59,42,.08);
+  }
+  html[data-theme="light"] #workspace .mobile-topbar-help,
+  html[data-theme="light"] #workspace .mobile-nav-toggle {
+    border-color: #c8dfd0;
+    background: rgba(255,255,255,.82);
+    color: #176b4b;
+    box-shadow: 0 3px 10px rgba(19,59,42,.07);
+  }
+
+  html[data-theme="dark"] #workspace .topbar {
+    background: rgba(13,31,36,.97) !important;
+    border-bottom-color: #294047 !important;
+    box-shadow: 0 9px 25px rgba(0,0,0,.18);
+  }
+  html[data-theme="dark"] #workspace .mobile-topbar-brand { color: #e5f1ee; }
+  html[data-theme="dark"] #workspace .mobile-topbar-mark {
+    border: 1px solid #315342;
+    background: #183626;
+    color: #b9ebc2;
+  }
+  html[data-theme="dark"] #workspace .mobile-topbar-help,
+  html[data-theme="dark"] #workspace .mobile-nav-toggle,
+  html[data-theme="dark"] #workspace .mobile-theme-toggle {
+    border-color: #355058;
+    background: #19333a;
+    color: #a8f0dc;
+    box-shadow: 0 3px 10px rgba(0,0,0,.18);
+  }
+  html[data-theme="dark"] #workspace .mobile-topbar-help:active,
+  html[data-theme="dark"] #workspace .mobile-nav-toggle:active { background: #23434a; }
+}
+
+@media (max-width: 380px) {
+  #workspace .topbar { gap: 5px; padding-right: 12px; padding-left: 12px; }
+  #workspace .mobile-theme-toggle {
+    flex-basis: 38px;
+    width: 38px;
+    min-width: 38px;
+    height: 40px;
+    min-height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #workspace .mobile-theme-toggle { transition: none !important; }
+}
