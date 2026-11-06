@@ -1210,12 +1210,14 @@
       rings.every(ring => {
         if (!Array.isArray(ring) || ring.length < 4 || ring.length > 2000) return false;
         const first = ring[0], last = ring[ring.length - 1];
-        if (!Array.isArray(first) || !Array.isArray(last) || first[0] !== last[0] || first[1] !== last[1]) return false;
+        if (!Array.isArray(first) || !Array.isArray(last) ||
+            first.length !== last.length ||
+            !first.every((coordinate, index) => coordinate === last[index])) return false;
         return ring.every(point =>
-          Array.isArray(point) && point.length === 2 &&
-          Number.isFinite(Number(point[0])) && Number.isFinite(Number(point[1])) &&
-          Number(point[0]) >= -180 && Number(point[0]) <= 180 &&
-          Number(point[1]) >= -90 && Number(point[1]) <= 90
+          Array.isArray(point) && point.length >= 2 &&
+          point.every(coordinate => typeof coordinate === 'number' && Number.isFinite(coordinate)) &&
+          point[0] >= -180 && point[0] <= 180 &&
+          point[1] >= -90 && point[1] <= 90
         );
       })
     );
