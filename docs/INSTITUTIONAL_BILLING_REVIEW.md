@@ -56,8 +56,8 @@ After a request is marked approved, a trusted platform administrator can issue o
 - Finance confirms the actual quoted subtotal, due date and verified payment instructions before issuing. The Starter and Professional amounts are suggested from the published price list; Enterprise is only a starting quote and must be confirmed.
 - Tax is entered as an explicit amount by finance. The system does not silently assume a VAT rate or calculate a tax amount.
 - Invoice totals are calculated in the database in kobo, with NGN as the currency.
-- The requesting verified campus administrator can see their own invoice history and use **Print invoice / Save PDF** to print or save a PDF from the browser. Trusted platform admins can print from the finance queue.
-- An issued invoice is immutable in this phase. The related request cannot be moved to a different review status after issuance. A correction/void-and-reissue workflow is a separate future phase.
+- The requesting verified campus administrator can see their own invoice history and use **Print invoice / Save PDF** to print or save a PDF from the browser. Trusted platform admins can print from the finance queue. The printable document is currently a **pro forma invoice/payment request**, not a receipt or final statutory tax invoice; CampusShield's registered legal issuer name, address and tax registration details must be configured before final tax invoices are issued.
+- An issued pro forma invoice is immutable in this phase. The related request cannot be moved to a different review status after issuance. A correction/void-and-reissue workflow is a separate future phase.
 
 An invoice means **amount due**, not amount received. The invoice stays issued until a separate verified payment-reconciliation workflow changes the payment state. Issuing an invoice never activates paid campus features.
 
