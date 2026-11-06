@@ -1630,9 +1630,9 @@ import './campus-map-navigation.js';
     const standardRouteTarget = navigation?.resolveRouteTarget(item, features, false) || null;
     const accessibleRouteTarget = navigation?.resolveRouteTarget(item, features, true) || null;
     appendPassportFact(facts, 'Walking route destination',
-      navigation?.describeRouteTarget(item, standardRouteTarget) || 'No published entrance with usable coordinates is recorded.');
+      navigation?.describeRouteTarget(item, standardRouteTarget, false) || 'No published entrance with usable coordinates is recorded.');
     appendPassportFact(facts, 'Accessible route destination',
-      navigation?.describeRouteTarget(item, accessibleRouteTarget) || 'No verified accessible entrance is recorded.');
+      navigation?.describeRouteTarget(item, accessibleRouteTarget, true) || 'No verified accessible entrance is recorded.');
 
     const accessibleButton = $('campus-map-passport-accessible-route');
     accessibleButton.disabled = !accessibleRouteTarget;
@@ -2396,18 +2396,24 @@ import './campus-map-navigation.js';
   async function startWalkingRoute(accessibleOnly = false) {
     if (!selectedFeature) return setStatus('Choose a published campus location first to prepare directions.', 'warning');
     const target = resolveCampusRouteTarget(accessibleOnly);
-    if (!target) return setStatus('No verified accessible entrance is recorded for this building. Contact your campus facilities team for assistance.', 'warning');
+    if (!target) return setStatus(accessibleOnly
+      ? 'No verified accessible entrance with usable coordinates is recorded for this location. Contact your campus facilities team for assistance.'
+      : 'This published location has no usable coordinates or mapped entrance yet.', 'warning');
     if (!navigator.geolocation) return setStatus('Your browser does not support location services.', 'warning');
     const navigation = window.CampusMapNavigation;
-    const routeTargetDescription = navigation?.describeRouteTarget(selectedFeature, target)
+    const routeTargetDescription = navigation?.describeRouteTarget(selectedFeature, target, accessibleOnly)
       || ('Published campus location: ' + (target.name || 'selected location'));
     const routeNote = accessibleOnly
       ? 'The selected entrance is recorded as accessible, but the route path itself is not certified step-free by this map.'
       : 'The route follows available mapped pedestrian data; verify local conditions and signs on campus.';
-    setStatus('Finding your location for campus walking directions…');
+    setStatus('Finding your location for directions to ' + (target.name || 'the selected campus location') + '…');
     navigator.geolocation.getCurrentPosition(async position => {
       try {
-        const start = [position.coords.longitude, position.coords.latitude];
+        const startPosition = { longitude: position.coords.longitude, latitude: position.coords.latitude };
+        if (!window.CampusMapNavigation?.hasValidCoordinates(startPosition)) {
+          throw new Error('Your current location could not be validated');
+        }
+        const start = [startPosition.longitude, startPosition.latitude];
         if (!window.CampusMapNavigation?.hasValidCoordinates(target)) {
           throw new Error('Selected route destination has no usable coordinates');
         }
