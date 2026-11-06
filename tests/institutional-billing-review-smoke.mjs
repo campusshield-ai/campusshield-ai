@@ -6,6 +6,7 @@ const html = read('index.html');
 const app = read('campusshield-app.js');
 const migration = read('supabase/migrations/20261106215716_institutional_billing_review_controls.sql');
 const campusScopeMigration = read('supabase/migrations/20261106220002_institutional_billing_review_campus_scope.sql');
+const universityIndexMigration = read('supabase/migrations/20261106220108_institutional_billing_review_university_index.sql');
 const docs = read('docs/INSTITUTIONAL_BILLING_REVIEW.md');
 
 assert.match(html, /id="platform-admin-institutional-billing"/,
@@ -46,6 +47,8 @@ assert.match(campusScopeMigration, /university\.id = membership\.university_id[\
   'The requested institution must match the user's verified university');
 assert.match(campusScopeMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_requester_created_idx/i,
   'Requester history and requester foreign-key lookups are indexed');
+assert.match(universityIndexMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_university_idx/i,
+  'University foreign-key lookups are indexed');
 assert.match(campusScopeMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_reviewed_by_idx/i,
   'Reviewer foreign-key lookups are indexed');
 assert.match(migration, /NEW\.reviewed_by := auth\.uid\(\)/,
