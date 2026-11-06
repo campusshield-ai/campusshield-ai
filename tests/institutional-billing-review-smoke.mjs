@@ -10,6 +10,9 @@ const universityIndexMigration = read('supabase/migrations/20261106220108_instit
 const invoiceMigration = read('supabase/migrations/20261106221005_institutional_invoice_issuance.sql');
 const invoiceLockMigration = read('supabase/migrations/20261106221257_institutional_invoice_request_status_lock.sql');
 const invoiceIssuerIndexMigration = read('supabase/migrations/20261106221410_institutional_invoice_issuer_index.sql');
+const paymentReconciliationMigration = read('supabase/migrations/20261106225141_institutional_payment_reconciliation.sql');
+const institutionalPaymentAdmin = read('supabase/functions/campus-institutional-payment-admin/index.ts');
+const institutionalPaystackWebhook = read('supabase/functions/campus-institutional-paystack-webhook/index.ts');
 const docs = read('docs/INSTITUTIONAL_BILLING_REVIEW.md');
 
 assert.match(html, /id="platform-admin-institutional-billing"/,
@@ -108,6 +111,42 @@ assert.doesNotMatch(invoiceMigration, /GRANT UPDATE|GRANT DELETE/i,
   'Authenticated users cannot update or delete issued invoices');
 assert.doesNotMatch(invoiceMigration, /SECURITY DEFINER/i,
   'Invoice creation trigger does not introduce a SECURITY DEFINER function');
+assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS public\\.campus_institutional_subscriptions/i,
+  'Verified institutional payments create a dedicated subscription record');
+assert.match(paymentReconciliationMigration, /ALTER TABLE public\\.campus_institutional_invoices[\\s\\S]*ADD COLUMN IF NOT EXISTS paid_reference/i,
+  'Invoices record the verified payment timestamp, reference and finance actor');
+assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS private\\.campus_institutional_paystack_events/i,
+  'Signed Paystack lifecycle events are stored in a private inbox');
+assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS private\\.campus_institutional_payment_audit/i,
+  'Institutional payment verification creates an audit record');
+assert.match(paymentReconciliationMigration, /prevent_institutional_payment_audit_mutation[\\s\\S]*BEFORE UPDATE OR DELETE/i,
+  'Institutional payment audit entries are append-only');
+assert.match(paymentReconciliationMigration, /REVOKE ALL ON FUNCTION public\\.commit_campus_institutional_paystack_payment[\\s\\S]*TO service_role/i,
+  'Only the backend service role can commit verified invoice payment and subscription activation');
+assert.match(paymentReconciliationMigration, /public\\.platform_is_admin\\(\\)[\\s\\S]*campus_memberships/i,
+  'Institutional subscription status is visible only to platform admins or verified campus admins');
+assert.match(institutionalPaystackWebhook, /x-paystack-signature[\\s\\S]*HMAC.*SHA-512/i,
+  'Institutional webhook events require a valid Paystack HMAC SHA-512 signature');
+assert.match(institutionalPaystackWebhook, /sk_test_[\\s\\S]*activated: false/i,
+  'The Staging webhook records test events but never activates subscriptions by itself');
+assert.match(institutionalPaystackWebhook, /invoice\\.payment_failed[\\s\\S]*subscription\\.disable/i,
+  'Recurring payment failures and subscription lifecycle events are captured for audit');
+assert.match(institutionalPaymentAdmin, /platform_is_admin/,
+  'Only trusted platform finance administrators can verify institutional payments');
+assert.match(institutionalPaymentAdmin, /tx\\?\\.status !== "success"[\\s\\S]*tx\\?\\.amount[\\s\\S]*tx\\?\\.currency !== "NGN"[\\s\\S]*tx\\?\\.domain !== "test"/,
+  'Finance verification checks successful test status, exact NGN amount and provider domain');
+assert.match(institutionalPaymentAdmin, /bill_to_email[\\s\\S]*customer\\?\\.email/i,
+  'The verified Paystack customer email must match the invoice bill-to email');
+assert.match(institutionalPaymentAdmin, /commit_campus_institutional_paystack_payment/,
+  'Verified payment, invoice paid state and subscription activation are committed atomically');
+assert.match(app, /campus-institutional-payment-admin/,
+  'The platform finance console calls the protected payment verification function');
+assert.match(app, /Verify & activate/,
+  'The platform finance console exposes a controlled Verify & activate action for eligible invoices');
+assert.match(app, /institutional subscription · '[\\s\\S]*access period ends/,
+  'The verified campus administrator can see their active institutional subscription and expiry');
+assert.match(app, /paid_reference/,
+  'The requester and finance views can display a recorded payment reference');
 assert.match(invoiceIssuerIndexMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_invoices_issued_by_idx/i,
   'Invoice issuer foreign-key lookups are indexed');
 assert.match(invoiceLockMigration, /campus_billing_request_lock_after_invoice/i,
