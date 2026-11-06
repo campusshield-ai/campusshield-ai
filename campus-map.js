@@ -1004,6 +1004,7 @@
     if (!map) return;
     const preferences = mapLayerPreferences;
     const streetMode = mapMode === '2d';
+    const flatBuildingMode = mapMode !== '3d';
     const imageryMode = !streetMode;
     const hasCuratedFootprints = campusBuildings.length > 0;
 
@@ -1018,9 +1019,9 @@
     ['campus-campus-boundary-fill','campus-campus-boundary-verified-line','campus-campus-boundary-candidate-line']
       .forEach(id => setLayerVisibility(id, preferences.boundary));
 
-    setLayerVisibility('campus-curated-building-footprints', preferences.buildings && streetMode);
-    setLayerVisibility('campus-curated-building-verified-outline', preferences.buildings && streetMode);
-    setLayerVisibility('campus-curated-building-candidate-outline', preferences.buildings && streetMode);
+    setLayerVisibility('campus-curated-building-footprints', preferences.buildings && flatBuildingMode);
+    setLayerVisibility('campus-curated-building-verified-outline', preferences.buildings && flatBuildingMode);
+    setLayerVisibility('campus-curated-building-candidate-outline', preferences.buildings && flatBuildingMode);
     setLayerVisibility('campus-curated-building-extrusions', preferences.buildings && mapMode === '3d' && hasCuratedFootprints);
     setLayerVisibility('campus-curated-building-3d-outline', preferences.buildings && mapMode === '3d' && hasCuratedFootprints);
     setLayerVisibility('campus-osm-3d-buildings', preferences.buildings && mapMode === '3d' && !hasCuratedFootprints);
