@@ -1,3 +1,5 @@
+import './campus-map-icons.js';
+
 (() => {
   'use strict';
   const root = document.getElementById('page-campus-map');
@@ -173,7 +175,7 @@
     });
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), 'bottom-left');
-    map.on('load', () => {
+    map.on('load', async () => {
       // Save provider-owned layers before app overlays are added. SAT/3D can hide
       // these layers cleanly while retaining campus pins, routes and road overlays.
       const styleLayers = map.getStyle()?.layers || [];
@@ -185,6 +187,10 @@
       baseStyleRoadLabelLayerIds = styleLayers.filter(layer => layer.type === 'symbol' && isTransportLayer(layer)).map(layer => layer.id);
       baseStyleBuildingLayerIds = styleLayers.filter(layer => /building|building_part/i.test(layer.id + ' ' + String(layer['source-layer'] || ''))).map(layer => layer.id);
       baseStyleLabelLayerIds = styleLayers.filter(layer => layer.type === 'symbol').map(layer => layer.id);
+      const loadedCampusIconTypes = new Set(await window.CampusMapIcons.addToMap(map).catch(error => {
+        console.warn('CampusMap SVG symbols could not be loaded; using circle markers.', error);
+        return [];
+      }));
       map.addSource('campus-features', { type: 'geojson', data: featureCollection([]) });
       map.addLayer({
         id: 'campus-feature-points',
@@ -200,6 +206,27 @@
           'circle-stroke-color': '#ffffff'
         }
       });
+      if (loadedCampusIconTypes.has('location')) {
+        const iconMatchExpression = ['match', ['get', 'feature_type']];
+        window.CampusMapIcons.types.forEach(type => {
+          iconMatchExpression.push(type, loadedCampusIconTypes.has(type)
+            ? 'campus-feature-' + type
+            : 'campus-feature-location');
+        });
+        iconMatchExpression.push('campus-feature-location');
+        map.addLayer({
+          id: 'campus-feature-icons',
+          type: 'symbol',
+          source: 'campus-features',
+          layout: {
+            'icon-image': iconMatchExpression,
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 11, 0.58, 15, 0.82, 18, 0.96],
+            'icon-anchor': 'center',
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true
+          }
+        });
+      }
       map.addLayer({
         id: 'campus-feature-labels',
         type: 'symbol',
@@ -221,6 +248,15 @@
       });
       map.on('mouseenter', 'campus-feature-points', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'campus-feature-points', () => { map.getCanvas().style.cursor = placementMode || profilePlacementMode ? 'crosshair' : ''; });
+      if (map.getLayer('campus-feature-icons')) {
+        map.on('click', 'campus-feature-icons', event => {
+          const point = event.features?.[0]?.properties || {};
+          const item = features.find(feature => feature.id === point.id);
+          if (item) selectFeature(item, false);
+        });
+        map.on('mouseenter', 'campus-feature-icons', () => { map.getCanvas().style.cursor = 'pointer'; });
+        map.on('mouseleave', 'campus-feature-icons', () => { map.getCanvas().style.cursor = placementMode || profilePlacementMode ? 'crosshair' : ''; });
+      }
       map.addSource('campus-drafts', {
         type: 'geojson',
         data: featureCollection([]),
@@ -664,6 +700,15 @@
       });
       map.on('mouseenter', 'campus-feature-points', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'campus-feature-points', () => { map.getCanvas().style.cursor = ''; });
+      if (map.getLayer('campus-feature-icons')) {
+        map.on('click', 'campus-feature-icons', event => {
+          const id = event.features?.[0]?.properties?.id;
+          const feature = features.find(item => item.id === id);
+          if (feature) selectFeature(feature, true);
+        });
+        map.on('mouseenter', 'campus-feature-icons', () => { map.getCanvas().style.cursor = 'pointer'; });
+        map.on('mouseleave', 'campus-feature-icons', () => { map.getCanvas().style.cursor = ''; });
+      }
       // Keep street names legible above raised buildings, while keeping interactive
       // campus pins and verified features above the labels.
       if (map.getLayer('campus-road-labels')) map.moveLayer('campus-road-labels', 'campus-feature-points');
@@ -1018,6 +1063,7 @@
     });
 
     setLayerVisibility('campus-feature-points', preferences.locations);
+    setLayerVisibility('campus-feature-icons', preferences.locations);
     setLayerVisibility('campus-feature-labels', preferences.locations && preferences.labels);
     ['campus-campus-boundary-fill','campus-campus-boundary-verified-line','campus-campus-boundary-candidate-line']
       .forEach(id => setLayerVisibility(id, preferences.boundary));
@@ -1462,9 +1508,7 @@
   }
 
   function iconFor(type) {
-    return ({ security:'🛡️', medical:'✚', library:'📚', hostel:'🏠', cafeteria:'☕',
-      lecture_hall:'🎓', building:'🏢', gate:'🚪', entrance:'↗', parking:'🅿️', sports:'⚽',
-      assembly_point:'📍', accessible_entry:'♿', emergency_point:'✚' })[type] || '📍';
+    return window.CampusMapIcons?.svg(type) || '';
   }
 
   function passportSafeHttps(value) {
