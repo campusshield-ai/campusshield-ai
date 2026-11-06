@@ -65,3 +65,23 @@ test("ShieldMind learning insights retain readable dark-mode colours", async ({ 
   expect(colors.title).not.toBe("rgb(18, 62, 42)");
   expect(colors.metric).not.toBe("rgb(18, 62, 42)");
 });
+
+for (const width of widths) {
+  test(`ShieldMind saved conversation controls fit a ${width}px viewport`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await openShieldMind(page);
+    await page.evaluate(() => {
+      const workspace = document.querySelector("#shieldmind-workspace-grid");
+      if (workspace) workspace.hidden = false;
+    });
+    await expect(page.locator("#shieldmind-history-search")).toBeVisible();
+    await expect(page.locator("#shieldmind-history-list")).toBeVisible();
+    const bounds = await page.locator(".shieldmind-recent-panel").evaluate(panel => {
+      const rect = panel.getBoundingClientRect();
+      return { left: rect.left, right: rect.right, documentWidth: document.documentElement.scrollWidth };
+    });
+    expect(bounds.left).toBeGreaterThanOrEqual(-1);
+    expect(bounds.right).toBeLessThanOrEqual(width + 1);
+    expect(bounds.documentWidth).toBeLessThanOrEqual(width + 1);
+  });
+}
