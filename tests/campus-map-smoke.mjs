@@ -57,6 +57,8 @@ assert.equal(navigation.describeRouteTarget(routeBuilding, mainEntrance), 'Verif
   'Passport route explanation names the verified main entrance');
 assert.equal(navigation.describeRouteTarget(routeBuilding, accessibleEntrance), 'Verified accessible entrance: Accessible Entry',
   'Passport route explanation names the verified accessible entrance');
+assert.equal(navigation.describeRouteTarget(routeBuilding, null, true), 'No verified accessible entrance with usable coordinates is recorded.',
+  'Passport gives a clear reason when no accessible entrance can be routed to');
 assert.equal(navigation.describeRouteTarget(routeBuilding, routeBuilding),
   'Campus location marker: Library (no separate mapped entrance is recorded)',
   'Passport labels the building-marker fallback without implying an entrance exists');
@@ -88,6 +90,12 @@ assert.match(js, /navigation\?\.resolveRouteTarget\(item, features, true\)/,
   'The Campus Passport displays the resolved accessible route destination');
 assert.match(js, /hasValidCoordinates\(target\)/,
   'Route requests validate destination coordinates before calling the foot router');
+assert.match(js, /hasValidCoordinates\(startPosition\)/,
+  'Route requests validate the device GPS origin before calling the foot router');
+assert.match(js, /describeRouteTarget\(item, standardRouteTarget, false\)/,
+  'The Passport explains the selected normal-route destination');
+assert.match(js, /describeRouteTarget\(item, accessibleRouteTarget, true\)/,
+  'The Passport explains when a verified accessible route destination is unavailable');
 assert.match(js, /Destination: ' \+ routeTargetDescription/,
   'Successful route status tells users which published destination was used');
 const expectedCampusIconTypes = [
