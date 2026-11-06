@@ -1,0 +1,36 @@
+name: CampusShield theme checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "campusshield-theme.js"
+      - "campusshield-theme.css"
+      - "tests/campusshield-theme-smoke.mjs"
+      - ".github/workflows/campusshield-theme.yml"
+  push:
+    branches: [feat/mobile-theme-toggle]
+    paths:
+      - "index.html"
+      - "campusshield-theme.js"
+      - "campusshield-theme.css"
+      - "tests/campusshield-theme-smoke.mjs"
+      - ".github/workflows/campusshield-theme.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  theme:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check theme script syntax
+        run: node --check campusshield-theme.js
+      - name: Run theme and mobile layout smoke checks
+        run: node tests/campusshield-theme-smoke.mjs
