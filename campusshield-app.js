@@ -420,7 +420,8 @@
         const subscriptionResult = await backend.client.from('campus_institutional_subscriptions')
           .select('id,plan,status,expires_at,renewal_status,next_payment_at,provider_subscription_code,last_failed_at,cancel_requested_at')
           .eq('university_id', campusContext.university_id)
-          .in('status', ['active', 'past_due'])
+          .order('created_at', { ascending: false })
+          .limit(1)
           .maybeSingle();
         if (subscriptionResult.error) throw subscriptionResult.error;
         activeInstitutionalSubscription = subscriptionResult.data || null;
@@ -441,7 +442,7 @@
         if (activeInstitutionalSubscription.renewal_status === 'not_renewing' || activeInstitutionalSubscription.cancel_requested_at) {
           lifecycle.textContent = 'Recurring renewal has been cancelled. CampusShield will retain the recorded subscription until the paid-through date above; no new renewal is scheduled.';
         } else if (activeInstitutionalSubscription.renewal_status === 'attention') {
-          lifecycle.textContent = 'The latest recurring payment needs attention. Update the payment method with Paystack; the next payment is not assumed successful.';
+          lifecycle.textContent = 'The latest recurring payment needs attention. Access remains recorded only through the paid-through date above. Update the payment method with Paystack; CampusShield does not assume the next payment succeeded.';
         } else if (activeInstitutionalSubscription.next_payment_at) {
           lifecycle.textContent = 'Next scheduled Paystack renewal: ' + new Date(activeInstitutionalSubscription.next_payment_at).toLocaleDateString('en-NG') + '. Renewal status is updated only after provider verification.';
         } else {
@@ -473,7 +474,7 @@
         const title = document.createElement('strong');
         title.textContent = invoice.invoice_number + ' · ' + invoice.bill_to_name;
         const amount = document.createElement('p');
-        amount.textContent = 'Total due: ' + formatNairaFromKobo(invoice.total_kobo);
+        amount.textContent = 'Invoice total: ' + formatNairaFromKobo(invoice.total_kobo);
         const details = document.createElement('p');
         details.textContent = 'Due ' + new Date(invoice.due_date + 'T00:00:00').toLocaleDateString('en-NG')
           + ' · ' + String(invoice.status || 'issued').toUpperCase();
@@ -501,7 +502,7 @@
         const warning = document.createElement('p');
         warning.className = 'muted';
         if (invoice.status === 'paid') {
-          warning.textContent = 'Finance has marked this invoice as paid. No further payment is required for this invoice.';
+          warning.textContent = 'The first invoice payment has been verified. The linked Paystack subscription may continue charging monthly until it is cancelled. Use Manage / cancel recurring payments above to review or stop future debits.';
         } else if (invoice.status === 'void') {
           warning.textContent = 'This invoice has been voided. Do not pay it; contact CampusShield finance for an updated invoice.';
         } else if (paystackUrl) {
