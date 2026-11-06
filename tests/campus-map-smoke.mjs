@@ -267,7 +267,7 @@ assert.equal(discovery.matchesSearch(discoveryFixtures[0], 'sports'), false, 'Se
 assert.equal(discovery.normalize('École CAFÉ'), 'ecole cafe', 'Search normalisation handles accents and letter case');
 const academicCounts = discovery.getTypeCounts(discoveryFixtures, 'academic');
 assert.deepEqual(Array.from(academicCounts, item => [item.type, item.label, item.count]), [
-  ['library','Libraries',1]
+  ['building','Buildings',1], ['library','Libraries',1]
 ], 'Type chips derive counts from the selected broad filter and current campus records');
 assert.equal(discovery.getTypeCounts(discoveryFixtures, 'all').reduce((sum, item) => sum + item.count, 0), discoveryFixtures.length, 'Published facility type counts cover the supplied current-campus records');
 
