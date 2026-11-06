@@ -1631,6 +1631,91 @@ async getCurrentUser() {
     },
 
 
+    async listMyShieldMindConversations(search = "") {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in to view saved ShieldMind conversations.");
+      let query = client.from("shieldmind_conversations")
+        .select("id,title,created_at,updated_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(50);
+      const cleanSearch = String(search || "").trim().slice(0, 120);
+      if (cleanSearch) query = query.ilike("search_text", "%" + cleanSearch.replace(/[%,_]/g, "\\    async askShieldMind(question, history = [], image = null) {") + "%");
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    },
+
+    async loadMyShieldMindConversation(conversationId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!conversationId) throw new Error("Choose a saved conversation.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in to load saved conversations.");
+      const { data, error } = await client.from("shieldmind_conversations")
+        .select("id,title,messages,created_at,updated_at")
+        .eq("id", conversationId)
+        .eq("user_id", user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+
+    async saveMyShieldMindConversation(conversationId, title, messages) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in to save ShieldMind conversations.");
+      const cleanTitle = String(title || "").trim().slice(0, 120);
+      if (!cleanTitle) throw new Error("A conversation title is required.");
+      if (!Array.isArray(messages) || messages.length < 1 || messages.length > 200) {
+        throw new Error("The conversation contains an invalid number of messages.");
+      }
+      const cleanMessages = messages.map(item => {
+        if (!item || !["user", "assistant"].includes(item.role) ||
+            typeof item.content !== "string" || item.content.length > 12000) {
+          throw new Error("The conversation contains an invalid message.");
+        }
+        return { role: item.role, content: item.content };
+      });
+      const payload = {
+        user_id: user.id,
+        title: cleanTitle,
+        messages: cleanMessages,
+        updated_at: new Date().toISOString()
+      };
+      if (conversationId) {
+        const { data, error } = await client.from("shieldmind_conversations")
+          .update(payload)
+          .eq("id", conversationId)
+          .eq("user_id", user.id)
+          .select("id")
+          .single();
+        if (error) throw error;
+        return data.id;
+      }
+      const { data, error } = await client.from("shieldmind_conversations")
+        .insert(payload)
+        .select("id")
+        .single();
+      if (error) throw error;
+      return data.id;
+    },
+
+    async deleteMyShieldMindConversation(conversationId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!conversationId) throw new Error("Choose a saved conversation.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in to delete saved conversations.");
+      const { data, error } = await client.from("shieldmind_conversations")
+        .delete()
+        .eq("id", conversationId)
+        .eq("user_id", user.id)
+        .select("id")
+        .maybeSingle();
+      if (error) throw error;
+      return Boolean(data?.id);
+    },
+
     async askShieldMind(question, history = [], image = null) {
       if (!client) throw new Error("Supabase is not configured.");
       const cleanQuestion = String(question || "").trim();
