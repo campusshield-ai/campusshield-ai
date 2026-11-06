@@ -589,6 +589,9 @@
   font-weight:650;
   white-space:normal!important;
 }
+.campus-map-routing-attribution a{color:#256c58;font-weight:850;text-underline-offset:2px}
+.campus-map-routing-attribution a:hover{text-decoration-thickness:2px}
+html[data-theme="dark"] .campus-map-routing-attribution a{color:#95e2ba}
 .campus-map-legend-context i{
   width:14px!important;
   height:2px!important;
