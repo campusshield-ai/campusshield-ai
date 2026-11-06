@@ -40,8 +40,10 @@
       || accessibleEntrance || selectedFeature;
   }
 
-  function describeRouteTarget(selectedFeature, target) {
-    if (!target) return 'No published entrance with usable coordinates is recorded.';
+  function describeRouteTarget(selectedFeature, target, accessibleOnly) {
+    if (!target) return accessibleOnly
+      ? 'No verified accessible entrance with usable coordinates is recorded.'
+      : 'No published entrance with usable coordinates is recorded.';
     const metadata = target.metadata && typeof target.metadata === 'object' ? target.metadata : {};
     const isAccessible = target.feature_type === 'accessible_entry' || metadata.entry_type === 'accessible';
     const verification = target.verification_status === 'verified' ? 'Verified' : 'Published';
