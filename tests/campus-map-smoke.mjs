@@ -384,4 +384,17 @@ assert.match(js, /official_info_source_url/, 'CampusMap admin drafts surface off
 assert.match(js, /coordinate_source_url/, 'CampusMap admin drafts surface community coordinate candidates separately');
 assert.match(js, /no coordinates · exact on-campus pin required/, 'CampusMap admin drafts explain when an exact pin is still missing');
 
+assert.match(html, /id="campus-map-profile-boundary-file"/, 'Verified campus admins can load a local GeoJSON boundary file');
+assert.match(html, /accept="\.geojson,\.json,application\/geo\+json,application\/json"/, 'Boundary intake accepts GeoJSON files only');
+assert.match(html, /maximum 2 MB/, 'Boundary file intake communicates its size limit');
+assert.match(js, /function loadCampusBoundaryFile\(\)/, 'Boundary GeoJSON is loaded through an explicit guarded handler');
+assert.match(js, /campus-map-profile-boundary-verified'\)\.checked = false/, 'A loaded boundary is always reset to an unverified candidate');
+assert.match(js, /campus-map-profile-boundary-file'\)\?\.addEventListener\('change', loadCampusBoundaryFile\)/, 'Boundary file selection is wired to the safe local parser');
+assert.match(geometrySource, /function extractCampusBoundaryGeometry\(value\)/, 'GeoJSON parser extracts only a single Polygon or MultiPolygon');
+assert.equal(geometry.extractCampusBoundaryGeometry({ type: 'Polygon', coordinates: [] })?.type, 'Polygon', 'Direct Polygon geometry is accepted for later coordinate validation');
+assert.equal(geometry.extractCampusBoundaryGeometry({ type: 'Feature', geometry: { type: 'MultiPolygon', coordinates: [] } })?.type, 'MultiPolygon', 'Single GeoJSON Features can be loaded');
+assert.equal(geometry.extractCampusBoundaryGeometry({ type: 'FeatureCollection', features: [{ geometry: { type: 'Polygon', coordinates: [] } }] })?.type, 'Polygon', 'Single-feature GeoJSON FeatureCollections can be loaded');
+assert.equal(geometry.extractCampusBoundaryGeometry({ type: 'FeatureCollection', features: [{ geometry: { type: 'Polygon', coordinates: [] } }, { geometry: { type: 'Polygon', coordinates: [] } }] }), null, 'Multi-feature collections are rejected until dissolved into one boundary');
+assert.equal(geometry.extractCampusBoundaryGeometry({ type: 'Point', coordinates: [3.7, 6.8] }), null, 'Point GeoJSON cannot be mistaken for a campus boundary');
+
 console.log('CampusMap static smoke checks passed.');
