@@ -5,7 +5,7 @@ create table if not exists public.shieldmind_conversations (
   user_id uuid not null references auth.users(id) on delete cascade,
   title text not null check (char_length(title) between 1 and 120),
   messages jsonb not null default '[]'::jsonb
-    check (jsonb_typeof(messages) = 'array' and jsonb_array_length(messages) <= 200),
+    check (case when jsonb_typeof(messages) = 'array' then jsonb_array_length(messages) <= 200 else false end),
   search_text text generated always as (
     coalesce(title, '') || ' ' || coalesce(messages::text, '')
   ) stored,
