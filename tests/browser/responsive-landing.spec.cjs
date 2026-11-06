@@ -375,11 +375,15 @@ test("Campus Passport and entrance discovery fit the CampusMap experience at sev
 
 test("CampusMap layer controls are keyboard-accessible, persistent, and fit mobile screens", async ({ page }) => {
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
-  await page.evaluate(() => {
-    document.querySelector("#login-screen").hidden = true;
-    document.querySelector("#workspace").hidden = false;
-    document.querySelector("#page-campus-map").classList.add("active");
-  });
+  const revealCampusMap = async () => {
+    await page.evaluate(() => {
+      document.querySelector("#login-screen").hidden = true;
+      document.querySelector("#workspace").hidden = false;
+      document.querySelector("#page-campus-map").classList.add("active");
+    });
+    await page.waitForFunction(() => typeof window.maplibregl?.Map === "function", { timeout: 15000 });
+  };
+  await revealCampusMap();
 
   const toggle = page.locator("#campus-map-layers-toggle");
   const panel = page.locator("#campus-map-layer-panel");
@@ -398,9 +402,12 @@ test("CampusMap layer controls are keyboard-accessible, persistent, and fit mobi
   await expect(panel).toBeHidden();
   await expect(toggle).toBeFocused();
 
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await revealCampusMap();
   await toggle.click();
   await expect(panel).toBeVisible();
-  await expect(roads).not.toBeChecked();
+  const persistedRoads = panel.locator('input[data-map-layer="roads"]');
+  await expect(persistedRoads).not.toBeChecked();
   await page.keyboard.press("Escape");
 
   for (const width of [360, 390, 430, 768, 1024, 1366, 1920]) {
