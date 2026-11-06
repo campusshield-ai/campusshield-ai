@@ -599,3 +599,22 @@
 @media(max-width:600px){
   .campus-map-legend-context{max-width:100%;line-height:1.35}
 }
+
+/* Local GeoJSON boundary intake controls for verified campus administrators. */
+.campus-map-profile-setup input[type="file"] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 8px;
+  border: 1px dashed #b8d3c4;
+  border-radius: 10px;
+  background: #f5faf6;
+  color: #345c48;
+  font: inherit;
+  font-size: 10px;
+}
+html[data-theme="dark"] .campus-map-profile-setup input[type="file"] {
+  border-color: #355b4b;
+  background: #172f27;
+  color: #d9eee0;
+}
