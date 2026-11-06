@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0d3b2e">
+<script src="./campusshield-theme.js"></script>
 <meta name="description" content="CampusShield AI helps students and campus teams access safety reporting, verified campus updates, learning support and student-life resources.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CampusShield AI">
@@ -2548,6 +2549,11 @@ button,input,select,textarea{max-width:100%;min-width:0}
   </button>
   <button type="button" class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="app-sidebar"><span aria-hidden="true">☰</span></button>
   <div class="topbar-title"><small>CampusShield AI</small><strong id="sectionTitle">Overview</strong></div>
+  <button type="button" class="cs-theme-toggle" id="campusshield-theme-toggle" aria-label="Switch to dark mode" title="Switch to dark mode" aria-pressed="false">
+    <svg data-theme-icon="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.3A8.5 8.5 0 0 1 8.7 3.8 8.7 8.7 0 1 0 20.2 15.3Z"/></svg>
+    <svg data-theme-icon="sun" viewBox="0 0 24 24" aria-hidden="true" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+    <span class="cs-theme-toggle-label">Dark mode</span>
+  </button>
   <div class="topbar-actions"><span id="incidentSyncStatus" class="sync-state" role="status" aria-live="polite">Incident data not loaded</span><button class="btn secondary" type="button" id="refresh-incidents" aria-label="Refresh incident data"><span aria-hidden="true">↻</span>Refresh data</button><button class="btn secondary" type="button" id="workspace-install-app" hidden>Install app</button><span class="demo-pill"><span class="status-dot" aria-hidden="true"></span>CAMPUS WORKSPACE</span><button class="btn secondary" type="button" id="signout-button">Sign out</button></div>
 </header>
 <main class="content">
@@ -5411,5 +5417,6 @@ table { max-width: 100%; }
 <link rel="stylesheet" href="./campus-voice-notes.css">
 <script src="./campus-dashboard-upgrade.js" defer></script>
 <script src="./student-creator-tools.js" defer></script>
+<link rel="stylesheet" href="./campusshield-theme.css">
 </body>
 </html>
