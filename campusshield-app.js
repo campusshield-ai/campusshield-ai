@@ -3591,7 +3591,7 @@
           .select('id,requester_id,university_id,institution_name,requested_plan,billing_period,contact_email,status,created_at,response_message,reviewed_at')
           .order('created_at', { ascending: false }).limit(100),
         backend.client.from('campus_institutional_invoices')
-          .select('id,billing_request_id,invoice_number,total_kobo,due_date,status,issued_at')
+          .select('id,billing_request_id,invoice_number,total_kobo,due_date,status,issued_at,plan,billing_period,currency,bill_to_email,paid_at,paid_reference')
           .order('issued_at', { ascending: false }).limit(200)
       ]);
       if (requestResult.error) throw requestResult.error;
@@ -3665,13 +3665,40 @@
           label.textContent = invoice.invoice_number;
           const detail = document.createElement('small');
           detail.textContent = formatNairaFromKobo(invoice.total_kobo) + ' · due '
-            + new Date(invoice.due_date + 'T00:00:00').toLocaleDateString('en-NG');
+            + new Date(invoice.due_date + 'T00:00:00').toLocaleDateString('en-NG')
+            + ' · ' + String(invoice.status || 'issued').toUpperCase();
           const print = document.createElement('button');
           print.type = 'button';
           print.className = 'btn secondary';
           print.textContent = 'Print / Save PDF';
           print.dataset.institutionalInvoiceAdminPrint = invoice.id;
           invoiceCell.append(label, document.createElement('br'), detail, document.createElement('br'), print);
+
+          if (invoice.status === 'paid') {
+            const paid = document.createElement('small');
+            paid.textContent = 'Verified reference: ' + String(invoice.paid_reference || 'recorded') +
+              (invoice.paid_at ? ' · ' + dateText(invoice.paid_at) : '');
+            invoiceCell.append(document.createElement('br'), paid);
+          } else if (invoice.status === 'issued' && institutionalPaystackLinkForInvoice(invoice)) {
+            const reference = document.createElement('input');
+            reference.type = 'text';
+            reference.maxLength = 128;
+            reference.autocomplete = 'off';
+            reference.placeholder = 'Paystack transaction reference';
+            reference.setAttribute('aria-label', 'Paystack transaction reference for ' + invoice.invoice_number);
+            reference.dataset.institutionalInvoiceReference = invoice.id;
+            reference.style.maxWidth = '220px';
+            const verify = document.createElement('button');
+            verify.type = 'button';
+            verify.className = 'btn';
+            verify.textContent = 'Verify & activate';
+            verify.dataset.institutionalInvoiceVerify = invoice.id;
+            invoiceCell.append(document.createElement('br'), reference, document.createElement('br'), verify);
+          } else if (invoice.status === 'issued') {
+            const note = document.createElement('small');
+            note.textContent = 'No fixed monthly Paystack page matches this invoice. Use its approved payment instructions.';
+            invoiceCell.append(document.createElement('br'), note);
+          }
         } else if (item.status === 'approved') {
           const create = document.createElement('button');
           create.type = 'button';
@@ -3833,6 +3860,52 @@
   });
 
   $('platform-admin-billing-requests-table')?.addEventListener('click', async event => {
+    const verifyButton = event.target.closest('[data-institutional-invoice-verify]');
+    if (verifyButton) {
+      const invoiceId = verifyButton.dataset.institutionalInvoiceVerify;
+      const referenceInput = Array.from(document.querySelectorAll('[data-institutional-invoice-reference]'))
+        .find(input => input.dataset.institutionalInvoiceReference === invoiceId);
+      const reference = String(referenceInput?.value || '').trim();
+      if (!reference) {
+        toast('Enter the Paystack transaction reference before verification.');
+        referenceInput?.focus();
+        return;
+      }
+      if (!/^[A-Za-z0-9_-]{4,128}$/.test(reference)) {
+        toast('The Paystack transaction reference format is invalid.');
+        referenceInput?.focus();
+        return;
+      }
+      verifyButton.disabled = true;
+      if (referenceInput) referenceInput.disabled = true;
+      try {
+        const backend = window.CampusShieldBackend;
+        if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+          throw new Error('Trusted platform finance administrator access is required.');
+        }
+        const { data, error } = await backend.client.functions.invoke('campus-institutional-payment-admin', {
+          body: { action: 'verify_invoice_payment', invoice_id: invoiceId, reference }
+        });
+        if (error) {
+          let providerMessage = null;
+          try { providerMessage = (await error.context?.clone?.().json())?.error || null; } catch (_ignored) {}
+          throw new Error(providerMessage || 'Paystack payment could not be verified. No invoice or subscription status was changed.');
+        }
+        if (data?.verified !== true || data?.activated !== true) {
+          throw new Error(data?.error || 'The payment was not verified. No institutional access was activated.');
+        }
+        toast(data.duplicate
+          ? 'This transaction was already reconciled against this invoice.'
+          : 'Paystack payment verified. Institutional subscription activated.');
+        await loadInstitutionalBillingAdminRequests();
+      } catch (error) {
+        toast(error?.message || 'Payment verification failed. No change was made.');
+        verifyButton.disabled = false;
+        if (referenceInput) referenceInput.disabled = false;
+      }
+      return;
+    }
+
     const printButton = event.target.closest('[data-institutional-invoice-admin-print]');
     if (printButton) {
       printButton.disabled = true;
