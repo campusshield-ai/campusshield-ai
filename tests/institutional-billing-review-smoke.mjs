@@ -171,6 +171,16 @@ assert.match(app, /subscription_code: subscriptionCode/,
   'Finance submits the transaction reference and recurring subscription code together');
 assert.match(app, /Manage \/ cancel recurring payments/,
   'Verified campus administrators can manage or cancel recurring billing');
+assert.match(app, /institution-billing/\s*[,)]/,
+  'Institutional Paystack return navigation uses a separate query parameter');
+assert.match(app, /returnedFromInstitutionalPayment[\s\S]*awaiting finance verification/,
+  'Institutional Paystack returns display a pending-verification message without activating access');
+assert.match(app, /else if \(returnedFromPayment\)/,
+  'Personal ShieldMind payment reconciliation remains separate from institutional return handling');
+assert.match(docs, /institution-billing=return/,
+  'The documentation provides the institutional payment return URL');
+assert.match(docs, /Your payment is awaiting CampusShield verification/,
+  'The Paystack success message tells institutions payment is still being verified');
 assert.match(docs, /The three links supplied by the account owner are live payment pages/,
   'The release documentation identifies the supplied pages as live collection links');
 assert.match(docs, /hidden from Staging/,
