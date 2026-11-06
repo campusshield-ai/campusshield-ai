@@ -128,8 +128,8 @@ test("mobile theme switch is visible, updates both modes and persists on phones"
 
     const initial = await page.evaluate(() => ({
       theme: document.documentElement.dataset.theme,
-      header: getComputedStyle(document.querySelector("#workspace .topbar")).backgroundColor,
-      search: getComputedStyle(document.querySelector("#workspace .global-search-input")).color,
+      header: getComputedStyle(document.querySelector("#workspace .topbar")).backgroundImage,
+      searchBackground: getComputedStyle(document.querySelector("#workspace .global-search-input")).backgroundColor,
       width: document.documentElement.scrollWidth,
     }));
     expect(initial.theme).toBe("light");
@@ -139,6 +139,12 @@ test("mobile theme switch is visible, updates both modes and persists on phones"
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await expect(mobileToggle).toHaveAttribute("aria-label", "Switch to light mode");
     await expect.poll(() => page.evaluate(() => localStorage.getItem("campusshield_theme"))).toBe("dark");
+    const darkPalette = await page.evaluate(() => ({
+      header: getComputedStyle(document.querySelector("#workspace .topbar")).backgroundImage,
+      searchBackground: getComputedStyle(document.querySelector("#workspace .global-search-input")).backgroundColor,
+    }));
+    expect(darkPalette.header, `${width}px: dark mode applies its own mobile header palette`).not.toBe(initial.header);
+    expect(darkPalette.searchBackground, `${width}px: dark mode applies its own search surface`).not.toBe(initial.searchBackground);
 
     await mobileToggle.click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
