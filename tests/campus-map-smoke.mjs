@@ -151,6 +151,8 @@ assert.match(js, /function findNearbySafetyFacilities\(\)/, 'Nearby campus safet
 assert.match(js, /rankNearbyFacilities\(features, origin, 6\)/, 'Nearby safety results are ranked from the selected campus published feature set');
 assert.match(js, /getCurrentPosition\(position =>/, 'Nearby safety requests device geolocation only after a user action');
 assert.match(js, /data-nearby-safety-feature-id/, 'Nearby safety results open the existing Campus Passport selection');
+assert.match(js, /function clearNearbySafetyResults\(\)/, 'Students can clear nearby safety results and the local location marker');
+assert.match(js, /nearbySafetyMarker\?\.remove\(\)/, 'Clearing nearby safety removes its device-only map marker');
 assert.match(js, /navigation\?\.resolveRouteTarget\(item, features, false\)/,
   'The Campus Passport displays the resolved standard route destination');
 assert.match(js, /navigation\?\.resolveRouteTarget\(item, features, true\)/,
@@ -451,6 +453,9 @@ assert.match(html, /not saved as a CampusShield or Supabase record/, 'Nearby saf
 assert.match(html, /id="campus-map-results-summary" role="status" aria-live="polite"/, 'Facility result count is announced through a live status');
 assert.match(html, /id="campus-map-clear-filters" hidden/, 'Clear filters is hidden until a filter is active');
 assert.match(passportCss, /campus-map-type-filters/, 'Facility type chips have a responsive style system');
+assert.match(passportCss, /campus-map-nearby-safety/, 'Nearby safety results have a dedicated responsive style system');
+assert.match(passportCss, /html\[data-theme="dark"\] \.campus-map-nearby-safety/, 'Nearby safety results support the dark theme');
+assert.match(passportCss, /@media\(max-width:420px\)[\s\S]*campus-map-nearby-safety-item/, 'Nearby safety result rows adapt to narrow phones');
 assert.match(passportCss, /html\[data-theme="dark"\] \.campus-map-type-filters/, 'Facility type chips are readable in dark mode');
 
 assert.ok(geometry && typeof geometry.osmWayToBuildingCandidate === 'function', 'CampusMap geometry helpers are exported');
