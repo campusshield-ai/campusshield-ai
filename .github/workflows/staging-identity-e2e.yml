@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/fix-registration-confirmation-role
+      - staging/preview
     paths:
       - "tests/e2e/staging-identity-e2e.mjs"
       - ".github/workflows/staging-identity-e2e.yml"
@@ -22,7 +23,7 @@ concurrency:
 jobs:
   authenticated-e2e:
     name: Confirmation, identity upload, review, and cleanup
-    if: github.ref == 'refs/heads/codex/fix-registration-confirmation-role'
+    if: github.ref == 'refs/heads/codex/fix-registration-confirmation-role' || github.ref == 'refs/heads/staging/preview'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
