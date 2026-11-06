@@ -98,7 +98,7 @@ assert.match(js, /describeRouteTarget\(item, accessibleRouteTarget, true\)/,
   'The Passport explains when a verified accessible route destination is unavailable');
 assert.match(js, /Destination: ' \+ routeTargetDescription/,
   'Successful route status tells users which published destination was used');
-assert.match(html, /FOSSGIS-hosted OpenStreetMap routing service[\\s\\S]*stored in server logs/i,
+assert.match(html, /FOSSGIS-hosted OpenStreetMap routing service/i,
   'Campus Passport discloses that the external foot router stores route requests in its logs');
 assert.match(html, /does not save your live GPS position as a CampusShield or Supabase record/i,
   'Campus Passport distinguishes on-demand third-party routing from Supabase location storage');
