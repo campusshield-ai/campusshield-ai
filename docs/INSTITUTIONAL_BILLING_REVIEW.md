@@ -75,32 +75,40 @@ The pricing-card buttons continue to start an institutional billing request, not
 
 Annual invoices are not sent to monthly pages. Enterprise custom quotes and any invoice with a tax/total adjustment are not sent to the fixed ₦500,000 link. They must use the separately approved payment instructions on the invoice.
 
-**These are recurring subscription pages, not one-time invoice checkout pages.** Paystack documents that a subscription page starts a recurring subscription after the customer pays. If its invoice limit is left blank, Paystack continues charging at the set interval until the subscription is cancelled. Institutions must expressly authorise recurring monthly debits; do not describe this as a one-time payment. Before publishing links for live collection, finance must confirm the merchant's Test/Live mode, the plan amount/interval and the recurring/cancellation policy.
+**These are live recurring subscription pages, not one-time invoice checkout pages.** Paystack subscriptions can continue charging monthly until cancelled. The hosted page does not carry the CampusShield invoice ID as metadata, so finance must retain both the transaction reference and the Paystack subscription code and reconcile them against the issued invoice. Returning from Paystack is not proof of payment and never activates access.
 
-The hosted page does not receive the CampusShield invoice ID as metadata. A successful redirect or customer-facing success message is not payment verification. Finance must retain the Paystack transaction/subscription reference and reconcile it against the issued invoice. Leaving the Paystack page does not mark the invoice paid or activate entitlements. A separate signed institutional webhook is available for Staging, but it must be configured in the Paystack Test Mode dashboard; it records events only and does not activate subscriptions.
+The three URLs are deliberately hidden in CampusShield Staging: a real charge must not land in a Test Mode database. The live links are intended for the Production site only after the Production institutional schema, finance verification function and separate Live Mode webhook have been deployed and tested. The existing personal ShieldMind Paystack webhook must remain separate.
 
-## Institutional payment verification and activation
+## Institutional payment verification and recurring lifecycle
 
-Staging now includes a separate institutional Paystack event inbox and finance verification path. It does not reuse ShieldMind's personal subscription tables or webhook processing.
+Staging now contains a separate institutional Paystack event inbox, finance verification path and recurring-subscription lifecycle. These are separate from ShieldMind's personal subscription tables and webhook processing.
 
-- The institutional webhook verifies Paystack's `x-paystack-signature` using HMAC SHA-512 before storing selected event fields in a private event inbox. It captures `charge.success`, subscription create/disable/not-renew events, invoice updates/failures and dispute/refund signals. The webhook is an evidence collector only; it never changes invoice or subscription status.
-- Trusted platform finance administrators can enter the Paystack transaction reference against an issued invoice in **Platform administration → Institutional billing review** and select **Verify & activate**.
-- The backend checks the invoice is issued and monthly, then calls Paystack's server-side Verify Transaction API. It requires a successful test-domain transaction, exact NGN amount, and a customer email matching the invoice bill-to email. A browser redirect or customer success message is not accepted as proof of payment.
-- A single database transaction records the invoice as paid, records the subscription, and appends a finance audit entry with the verifying administrator, transaction reference, amount, currency and Paystack payment date. Repeated references and references already used for another invoice are rejected.
-- The created institutional subscription is readable only by trusted platform administrators and verified active campus administrators for that university. The requester billing page displays the recorded plan and expiry. The platform finance console also shows the latest 50 verified payment audit entries, including invoice, institution, amount, Paystack reference, bill-to email, verification time and reviewer; this list is served by the authenticated finance Edge Function rather than direct browser access to the private schema.
+- The institutional webhook verifies Paystack's `x-paystack-signature` using HMAC SHA-512 and checks that the webhook secret's Test/Live prefix matches its Supabase project. It records the transaction reference, invoice code, subscription code, customer, amount, currency, environment and billing-period data in a private inbox.
+- The first payment is reconciled by trusted platform finance. Finance enters both the transaction reference and `SUB_…` subscription code for an issued invoice. The backend verifies the transaction with Paystack and separately fetches the subscription record. It requires a successful transaction, exact NGN amount and bill-to email, matching Test/Live domain, an active recurring subscription, and a monthly plan with a valid next payment date.
+- The invoice paid state, initial institutional subscription and append-only payment audit entry are committed in one database transaction. Duplicate transaction references and already-linked subscription codes are rejected.
+- For later recurring cycles, the signed `invoice.update` webhook is verified against Paystack's transaction Verify API and linked to the stored subscription code. Only a matched transaction extends the paid-through date and appends a renewal audit record. Duplicate references and invoice codes are idempotently ignored.
+- `invoice.payment_failed` marks renewal attention required. The current paid-through period is retained until expiry; an expired subscription is marked past due rather than silently renewed.
+- `subscription.not_renew` and `subscription.disable` mark the subscription as non-renewing, remove the next payment schedule and retain access only through the recorded paid-through date. Verified campus administrators can request a Paystack-hosted management link to update or cancel recurring billing.
+- Refund and dispute events are retained for finance review; they do not automatically revoke entitlements until a controlled refund/dispute decision workflow is implemented.
+- Trusted platform administrators can inspect the latest 50 payment audit entries through the authenticated finance Edge Function. Browser code cannot query the private audit schema.
 
-**Current limit:** this activation action handles the initial fixed-price monthly payment only: Starter ₦100,000, Professional ₦250,000 and Enterprise base ₦500,000. Annual invoices, custom Enterprise totals and tax-adjusted totals are not eligible for these links. The activation period recorded is one calendar month. Later recurring Paystack charges, failed renewals, cancellations, refunds and disputes are captured as events but do not yet extend or revoke the CampusShield subscription automatically. Do not publish the monthly subscription pages for live collection until the recurring renewal and cancellation workflow is completed and tested. The Paystack page itself can continue charging monthly while CampusShield's current activation period expires.
+**Current release boundary:** this implementation is in Staging only. The three links supplied by the account owner are live payment pages. They are hidden from Staging so a real charge cannot be recorded in a Test Mode database. Production still needs the institutional migration, both separate institutional Edge Functions, and the Live Mode webhook registration before the links are exposed on the Production site. The existing personal ShieldMind Paystack webhook must not be replaced.
 
-For Staging, configure Paystack's **Test Mode** webhook URL as:
+The Production institutional webhook URL to register after the separate Production function is deployed is:
+
+`https://fvgtnujjnvdkhzqqcaqe.supabase.co/functions/v1/campus-institutional-paystack-webhook`
+
+For Staging-only tests, the Test Mode webhook URL is:
 
 `https://hywcpnoqqhxvujnimhxl.supabase.co/functions/v1/campus-institutional-paystack-webhook`
 
-The Staging institutional verification function accepts `sk_test_` only and rejects live-domain transactions. Keep Production and its payment secrets untouched.
+Never register the Test Mode webhook as the Live Mode endpoint or reuse a live secret in Staging.
 
-## Remaining payment work
+Annual invoices, tax-adjusted amounts and custom Enterprise quotes remain excluded from the fixed monthly pages. Bank-transfer receipt review is a separate payment route. Paid university feature entitlements still need to be wired to the subscription status; essential student safety access remains free.
 
-- Implement and test renewal processing from verified recurring Paystack events, using the subscription code and transaction reference.
-- Handle `invoice.payment_failed`, `subscription.not_renew`, `subscription.disable`, refunds and disputes, including grace periods and expiry.
-- Add bank-transfer receipt capture and a separate finance verification route for annual/custom invoices.
-- Add the institutional subscription gates to the paid university-only features; essential student safety access remains free.
-- Test with actual Paystack test transactions and verify the full webhook/retry/audit lifecycle before any live activation.
+## Remaining release work
+
+- Complete a real Paystack Test Mode end-to-end transaction and recurring renewal/cancellation test, including webhook retries and audit idempotency.
+- Configure the Production schema and institutional Edge Functions only through the approved release sequence, then register the separate Live Mode webhook in the Paystack dashboard.
+- Before enabling Production links, verify existing live subscriptions/payments already made through the hosted pages and reconcile any earlier transactions manually; the new webhook cannot recreate missed historical events automatically.
+- Add paid institutional feature gates after subscription status has been confirmed, keeping essential student safety access free.
