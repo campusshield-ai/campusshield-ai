@@ -22,6 +22,10 @@ CampusShield keeps essential student safety access free. University subscription
 
 The public response message is visible only to the requester and trusted platform administrators.
 
+## Campus scope
+
+A billing request is tied to the canonical university ID from the signed-in account's campus membership. The form pre-fills and locks the official university name from that verified campus context. The database independently requires the requester to have a verified profile plus an active, verified membership whose campus role is `admin`, and it verifies that the submitted university ID/name match that membership. Typing another university name cannot redirect the request.
+
 ## Security boundary
 
 - Only verified campus administrators can submit and read their own institutional requests under the existing request policies.
