@@ -2083,6 +2083,10 @@ import './campus-map-discovery.js';
     const draftMatches = isCampusAdmin && term ? adminDrafts.filter(item =>
       matchesCampusFilter(item) && window.CampusMapDiscovery.matchesSearch(item, term)
     ) : [];
+    if (selectedFeature && !matches.some(item => item.id === selectedFeature.id)) {
+      selectedFeature = null;
+      renderCampusPassport(null);
+    }
     updateSource(matches);
     renderFeatures(matches);
     updateDiscoverySummary(matches.length, term, draftMatches.length);
