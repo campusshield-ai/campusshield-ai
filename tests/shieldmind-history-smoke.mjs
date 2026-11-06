@@ -26,7 +26,8 @@ assert.match(backend, /getCurrentUser\(\)/, "history operations resolve the auth
 assert.match(backend, /\.ilike\("content", pattern\)/, "conversation search includes private message content");
 assert.match(backend, /\.order\("created_at", \{ ascending: false \}\)/, "history reads the newest message window from Staging");
 assert.match(backend, /chronologicalRows/, "the newest message window is restored to chronological display order");
-assert.match(backend, /metadata: \{ sequence: overlapLength \+ index \}/, "new messages retain deterministic order when timestamps tie");
+assert.match(backend, /const nextSequence = savedMessages\.reduce\(/, "new message sequence continues from the retained transcript");
+assert.match(backend, /metadata: \{ sequence: nextSequence \+ index \}/, "new messages retain deterministic order when timestamps tie");
 assert.match(backend, /let overlapLength = savedMessages\.length/, "rolling history reconciles the overlap after the 100-message window advances");
 assert.match(backend, /\.not\("id", "in", retainedIdFilter\)/, "older transcript rows are pruned within the conversation and owner scope");
 assert.match(backend, /prefixMatches/, "saving preserves existing history when the stored transcript is still a prefix");
