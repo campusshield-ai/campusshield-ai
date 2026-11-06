@@ -25,6 +25,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./campus-dashboard-upgrade.css">
 <link rel="stylesheet" href="./shieldmind-subscription.css">
+<link rel="stylesheet" href="./shieldmind-learning-insights.css">
 <link rel="stylesheet" href="./campusshield-mobile-theme.css">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
 <link rel="stylesheet" href="./campus-map.css">
@@ -3668,6 +3669,37 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <button type="button" class="shieldmind-quick-action" data-page="student-rewards"><span aria-hidden="true">◷</span>My progress</button>
   </div>
 
+  <section class="panel shieldmind-insights-panel" id="shieldmind-learning-insights" aria-labelledby="shieldmind-insights-title" hidden>
+    <div class="shieldmind-insights-heading">
+      <div>
+        <span class="shieldmind-insights-eyebrow">SHIELDMIND PREMIUM · LEARNING INTELLIGENCE</span>
+        <h2 id="shieldmind-insights-title">Your learning progress</h2>
+        <p>Track recent practice performance and spot the topics that deserve more revision.</p>
+      </div>
+      <button class="btn secondary" type="button" id="shieldmind-insights-refresh">Refresh insights</button>
+    </div>
+    <div class="shieldmind-insights-metrics" aria-label="Recent learning metrics">
+      <div class="shieldmind-insights-metric"><span>Submitted sessions</span><strong id="shieldmind-insights-attempts">—</strong></div>
+      <div class="shieldmind-insights-metric"><span>Average score</span><strong id="shieldmind-insights-average">—</strong></div>
+      <div class="shieldmind-insights-metric"><span>Study days · 7d</span><strong id="shieldmind-insights-days">—</strong></div>
+      <div class="shieldmind-insights-metric"><span>Topics analysed</span><strong id="shieldmind-insights-topics-count">—</strong></div>
+    </div>
+    <div class="shieldmind-insights-body">
+      <section class="shieldmind-insights-topics" aria-labelledby="shieldmind-insights-topics-title">
+        <h3 id="shieldmind-insights-topics-title">Topic performance</h3>
+        <div id="shieldmind-insights-topics"><p class="shieldmind-insights-empty">Your topic performance will appear here.</p></div>
+      </section>
+      <aside class="shieldmind-insights-recommendation" aria-labelledby="shieldmind-insights-recommendation-title">
+        <h3 id="shieldmind-insights-recommendation-title">Suggested next step</h3>
+        <div id="shieldmind-insights-recommendation"><p>Complete a practice session to get a focused revision suggestion.</p></div>
+        <div class="shieldmind-insights-actions" id="shieldmind-insights-actions" hidden>
+          <button class="btn secondary" type="button" data-page="past-questions" id="shieldmind-insights-start">Start a practice session</button>
+        </div>
+      </aside>
+    </div>
+    <p class="shieldmind-insights-status" id="shieldmind-insights-status" role="status" aria-live="polite">Your learning data is private to your account.</p>
+  </section>
+
   <div class="shieldmind-grid shieldmind-workspace-grid" id="shieldmind-workspace-grid" hidden>
     <section class="panel shieldmind-chat-panel" aria-labelledby="shieldmind-chat-title">
       <div class="panel-heading shieldmind-chat-heading">
@@ -4512,6 +4544,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <script type="module" src="./campus-map-loader.js"></script>
 <script src="./campusshield-app.js" defer></script>
 <script src="./campus-voice-notes.js" defer></script>
+<script src="./shieldmind-learning-insights.js" defer></script>
 <script src="./campuspulse-social.js" defer></script>
 <script src="./campus-ideas-impact.js" defer></script>
 <script>

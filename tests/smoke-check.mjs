@@ -21,6 +21,8 @@ const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.j
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
 const shieldmindApp = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
+const learningInsightsScript = await readFile(new URL("../shieldmind-learning-insights.js", import.meta.url), "utf8");
+const learningInsightsCss = await readFile(new URL("../shieldmind-learning-insights.css", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
 const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
@@ -242,6 +244,18 @@ assert.match(html, /data-page="shieldmind"><svg[\s\S]*?Ask the assistant/);
 
 assert.match(html, /id="shieldmind-paid-gate"/, "ShieldMind has a subscription-required access gate");
 assert.match(html, /id="shieldmind-plan-summary"/, "active ShieldMind plans have a visible allowance summary");
+
+assert.match(html, /id="shieldmind-learning-insights"/, "ShieldMind learning progress panel is present");
+assert.match(html, /shieldmind-learning-insights\.js/, "learning insights module is loaded");
+assert.match(html, /shieldmind-learning-insights\.css/, "learning insights styling is loaded");
+assert.match(learningInsightsScript, /function isStagingEnvironment\(\)/, "learning insights stay restricted to the staging project");
+assert.match(learningInsightsScript, /window\.CampusShieldShieldMindAccess/, "learning insights require active paid ShieldMind access");
+assert.match(learningInsightsScript, /from\("practice_attempts"\)/, "learning insights read only submitted practice attempts");
+assert.match(learningInsightsScript, /from\("practice_answers"\)/, "topic summaries use the student's own answer records");
+assert.doesNotMatch(learningInsightsScript, /past_question_answer_keys/, "learning insights never access protected answer keys");
+assert.match(learningInsightsCss, /@media \(max-width: 760px\)/, "learning insights include a mobile layout");
+console.log("PASS ShieldMind private learning insights, paid entitlement and staging-only access checks");
+
 assert.equal((html.match(/id="shieldmind-plan-status"/g) || []).length, 1, "ShieldMind plan status ID is unique");
 assert.match(html, /id="shieldmind-workspace-grid" hidden/, "AI workspace is hidden until entitlement is verified");
 assert.match(html, /class="shieldmind-quick-actions"[^>]*hidden/, "AI quick actions are hidden until entitlement is verified");
