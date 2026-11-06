@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - "index.html"
+      - "help.html"
+      - "campusshield-guide.css"
+      - "campusshield-guide.js"
+      - "tests/campusshield-guide-production-smoke.mjs"
       - "campusshield-i18n.js"
       - "privacy.html"
       - "terms.html"
@@ -47,6 +51,10 @@ jobs:
           node-version: 22
       - name: Run complete smoke suite
         run: node tests/smoke-check.mjs
+      - name: Check in-app guide JavaScript syntax
+        run: node --check campusshield-guide.js
+      - name: Verify Production in-app guide and Help Centre
+        run: node tests/campusshield-guide-production-smoke.mjs
       - name: Check Ideas & Impact JavaScript syntax
         run: node --check campus-ideas-impact.js
       - name: Verify Ideas & Impact security and RLS contracts
