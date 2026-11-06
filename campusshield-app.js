@@ -888,7 +888,7 @@
   }
 
 
-  // Sidebar controls: remember desktop collapse preference, while mobile uses a modal drawer.
+  // Sidebar controls: persisted desktop rail and accessible, animated mobile drawer.
   (() => {
     const app = document.querySelector('.app');
     const sidebar = $('app-sidebar');
@@ -897,33 +897,85 @@
     const backdrop = $('sidebar-backdrop');
     if (!app || !sidebar || !collapseButton || !mobileButton || !backdrop) return;
     const mobile = () => window.matchMedia('(max-width: 650px)').matches;
-    try { if (localStorage.getItem('campusshield-sidebar-collapsed') === 'true' && !mobile()) app.classList.add('sidebar-collapsed'); } catch (_) {}
+    let backdropCloseTimer = null;
+
+    try {
+      if (localStorage.getItem('campusshield-sidebar-collapsed') === 'true' && !mobile()) {
+        app.classList.add('sidebar-collapsed');
+      }
+    } catch (_) {}
+
     const sync = () => {
       const collapsed = app.classList.contains('sidebar-collapsed');
+      const mobileOpen = app.classList.contains('mobile-nav-open');
       collapseButton.setAttribute('aria-expanded', String(!collapsed));
       collapseButton.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
       collapseButton.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
       collapseButton.querySelector('span:first-child').textContent = collapsed ? '›' : '‹';
-      mobileButton.setAttribute('aria-expanded', String(app.classList.contains('mobile-nav-open')));
-      mobileButton.setAttribute('aria-label', app.classList.contains('mobile-nav-open') ? 'Close navigation menu' : 'Open navigation menu');
-      backdrop.hidden = !app.classList.contains('mobile-nav-open');
+      mobileButton.setAttribute('aria-expanded', String(mobileOpen));
+      mobileButton.setAttribute('aria-label', mobileOpen ? 'Close navigation menu' : 'Open navigation menu');
+      mobileButton.setAttribute('aria-controls', 'app-sidebar');
+
+      if (backdropCloseTimer) {
+        window.clearTimeout(backdropCloseTimer);
+        backdropCloseTimer = null;
+      }
+      backdrop.setAttribute('aria-hidden', String(!mobileOpen));
+      if (mobileOpen) {
+        backdrop.hidden = false;
+        document.body.classList.add('campus-nav-locked');
+      } else {
+        document.body.classList.remove('campus-nav-locked');
+        if (!backdrop.hidden) {
+          backdropCloseTimer = window.setTimeout(() => {
+            if (!app.classList.contains('mobile-nav-open')) backdrop.hidden = true;
+          }, 260);
+        }
+      }
     };
-    const closeMobile = () => { app.classList.remove('mobile-nav-open'); sync(); };
+
+    const closeMobile = (restoreFocus = true) => {
+      const wasOpen = app.classList.contains('mobile-nav-open');
+      app.classList.remove('mobile-nav-open');
+      sync();
+      if (wasOpen && restoreFocus && mobileButton.isConnected) mobileButton.focus({ preventScroll: true });
+    };
+
+    const openMobile = () => {
+      app.classList.add('mobile-nav-open');
+      sync();
+      const firstLink = sidebar.querySelector('button[data-page]:not([hidden])');
+      if (firstLink) window.requestAnimationFrame(() => firstLink.focus({ preventScroll: true }));
+    };
+
     collapseButton.addEventListener('click', () => {
       if (mobile()) { closeMobile(); return; }
       app.classList.toggle('sidebar-collapsed');
-      try { localStorage.setItem('campusshield-sidebar-collapsed', String(app.classList.contains('sidebar-collapsed'))); } catch (_) {}
+      try {
+        localStorage.setItem('campusshield-sidebar-collapsed', String(app.classList.contains('sidebar-collapsed')));
+      } catch (_) {}
       sync();
     });
-    mobileButton.addEventListener('click', () => { app.classList.toggle('mobile-nav-open'); sync(); });
-    backdrop.addEventListener('click', closeMobile);
+
+    mobileButton.addEventListener('click', () => {
+      if (app.classList.contains('mobile-nav-open')) closeMobile();
+      else openMobile();
+    });
+    backdrop.addEventListener('click', () => closeMobile());
+
     sidebar.querySelectorAll('button[data-page]').forEach(button => {
       const label = button.textContent.trim().replace(/\s+/g, ' ');
       if (label) { button.title = label; button.setAttribute('aria-label', label); }
       button.addEventListener('click', () => { if (mobile()) closeMobile(); });
     });
-    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeMobile(); });
-    window.addEventListener('resize', () => { if (!mobile()) closeMobile(); sync(); });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && app.classList.contains('mobile-nav-open')) closeMobile();
+    });
+    window.addEventListener('resize', () => {
+      if (!mobile()) closeMobile(false);
+      sync();
+    });
     sync();
   })();
 

@@ -209,3 +209,52 @@
     margin-left: 0 !important;
   }
 }
+
+/* Polished navigation motion: width transitions on desktop, slide/fade drawer on mobile. */
+@media (min-width: 651px) {
+  #workspace.app #app-sidebar {
+    transition: width .28s cubic-bezier(.22,.72,.18,1), min-width .28s cubic-bezier(.22,.72,.18,1), max-width .28s cubic-bezier(.22,.72,.18,1), padding .28s cubic-bezier(.22,.72,.18,1), box-shadow .22s ease;
+    will-change: width;
+  }
+  #workspace.app .main { transition: margin-left .28s cubic-bezier(.22,.72,.18,1); }
+  #workspace.app #app-sidebar .sidebar-toggle-icon { transition: transform .24s ease; }
+  #workspace.app #app-sidebar .nav button { position: relative; transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease; }
+  #workspace.app #app-sidebar .nav button:hover { transform: translateX(2px); }
+  #workspace.app:not(.sidebar-collapsed) #app-sidebar .nav button.active {
+    border-color: #315e49 !important;
+    background: linear-gradient(100deg, #21483a, #183a30) !important;
+    box-shadow: inset 0 1px #ffffff12, 0 4px 14px #061e1624;
+  }
+  #workspace.app:not(.sidebar-collapsed) #app-sidebar .nav button.active::before {
+    content: "" !important; display: block !important; position: absolute;
+    top: 9px; bottom: 9px; left: 0; width: 3px; border-radius: 0 5px 5px 0;
+    background: #7fd98a; box-shadow: 0 0 12px #7fd98a77;
+  }
+}
+@media (max-width: 650px) {
+  #workspace.app #app-sidebar {
+    transform: translate3d(-105%, 0, 0) !important;
+    transition: transform .28s cubic-bezier(.22,.72,.18,1), box-shadow .28s ease !important;
+    will-change: transform; pointer-events: none;
+  }
+  #workspace.app.mobile-nav-open #app-sidebar {
+    transform: translate3d(0, 0, 0) !important;
+    pointer-events: auto; box-shadow: 18px 0 55px #03140f66 !important;
+  }
+  #workspace.app .sidebar-backdrop {
+    display: block !important; opacity: 0; visibility: hidden; pointer-events: none;
+    background: rgba(3, 18, 13, .58); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    transition: opacity .22s ease, visibility 0s linear .22s;
+  }
+  #workspace.app.mobile-nav-open .sidebar-backdrop {
+    opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .22s ease;
+  }
+  #workspace.app .sidebar-backdrop[hidden] { display: none !important; }
+  body.campus-nav-locked { overflow: hidden; overscroll-behavior: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #workspace.app #app-sidebar, #workspace.app .main, #workspace.app .sidebar-backdrop,
+  #workspace.app #app-sidebar .nav button, #workspace.app #app-sidebar .sidebar-toggle-icon {
+    transition: none !important; animation: none !important; will-change: auto !important;
+  }
+}
