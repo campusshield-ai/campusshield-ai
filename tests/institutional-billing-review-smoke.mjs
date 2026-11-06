@@ -64,6 +64,10 @@ assert.match(app, /async function loadInstitutionalBillingInvoices\(\)/,
   'The requester can load their own institutional invoices');
 assert.match(app, /function printInstitutionalInvoice\(invoice\)/,
   'Issued invoices have a printable invoice view that can be saved as PDF');
+assert.match(app, /PRO FORMA · AWAITING PAYMENT/,
+  'The printed document is clearly labelled as a pro forma invoice');
+assert.match(app, /not a receipt or proof of payment/,
+  'The printed pro forma invoice cannot be mistaken for a payment receipt');
 assert.match(app, /from\('campus_institutional_invoices'\)/,
   'The finance queue and requester history use the dedicated invoice table');
 assert.match(app, /amountPattern = \/\^\\d\{1,10\}/,
