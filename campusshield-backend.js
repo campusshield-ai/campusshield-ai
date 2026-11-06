@@ -1677,15 +1677,27 @@ async getCurrentUser() {
         .single();
       if (conversationError) throw conversationError;
       const { data: rows, error } = await client.from("shieldmind_messages")
-        .select("role,content,created_at")
+        .select("id,role,content,metadata,created_at")
         .eq("conversation_id", conversationId)
         .eq("user_id", user.id)
-        .order("created_at", { ascending: true })
+        .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
+      const chronologicalRows = (rows || []).slice().sort((left, right) => {
+        const leftTime = Date.parse(left.created_at || "");
+        const rightTime = Date.parse(right.created_at || "");
+        if (Number.isFinite(leftTime) && Number.isFinite(rightTime) && leftTime !== rightTime) {
+          return leftTime - rightTime;
+        }
+        const leftSequence = Number(left.metadata?.sequence);
+        const rightSequence = Number(right.metadata?.sequence);
+        return Number.isFinite(leftSequence) && Number.isFinite(rightSequence)
+          ? leftSequence - rightSequence
+          : 0;
+      });
       return {
         ...conversation,
-        messages: (rows || []).map(row => ({ role: row.role, content: row.content }))
+        messages: chronologicalRows.map(row => ({ role: row.role, content: row.content }))
       };
     },
 
@@ -1725,25 +1737,67 @@ async getCurrentUser() {
       }
 
       const { data: existing, error: existingError } = await client.from("shieldmind_messages")
-        .select("role,content")
+        .select("id,role,content,metadata,created_at")
         .eq("conversation_id", savedId)
         .eq("user_id", user.id)
-        .order("created_at", { ascending: true })
+        .order("created_at", { ascending: false })
         .limit(100);
       if (existingError) throw existingError;
-      const savedMessages = existing || [];
+      const savedMessages = (existing || []).slice().sort((left, right) => {
+        const leftTime = Date.parse(left.created_at || "");
+        const rightTime = Date.parse(right.created_at || "");
+        if (Number.isFinite(leftTime) && Number.isFinite(rightTime) && leftTime !== rightTime) {
+          return leftTime - rightTime;
+        }
+        const leftSequence = Number(left.metadata?.sequence);
+        const rightSequence = Number(right.metadata?.sequence);
+        return Number.isFinite(leftSequence) && Number.isFinite(rightSequence)
+          ? leftSequence - rightSequence
+          : 0;
+      });
       const prefixMatches = savedMessages.length <= cleanMessages.length &&
         savedMessages.every((row, index) =>
           row.role === cleanMessages[index].role && row.content === cleanMessages[index].content
         );
+      let overlapLength = savedMessages.length;
       if (!prefixMatches) {
-        throw new Error("Saved history differs from this session. Reload the conversation before continuing.");
+        overlapLength = Math.min(savedMessages.length, cleanMessages.length);
+        while (overlapLength > 0) {
+          const retainedTail = savedMessages.slice(-overlapLength);
+          const matches = retainedTail.every((row, index) =>
+            row.role === cleanMessages[index].role && row.content === cleanMessages[index].content
+          );
+          if (matches) break;
+          overlapLength -= 1;
+        }
+        if (!overlapLength) {
+          throw new Error("Saved history differs from this session. Reload the conversation before continuing.");
+        }
       }
-      const additions = cleanMessages.slice(savedMessages.length).map(item => ({
+
+      const retainedMessages = savedMessages.slice(savedMessages.length - overlapLength);
+      if (savedMessages.length) {
+        const retainedIds = retainedMessages.map(row => row.id).filter(Boolean);
+        if (!retainedIds.length) throw new Error("Saved history could not be safely reconciled.");
+        const retainedIdFilter = "(" + retainedIds.join(",") + ")";
+        const { error: trimError } = await client.from("shieldmind_messages")
+          .delete()
+          .eq("conversation_id", savedId)
+          .eq("user_id", user.id)
+          .not("id", "in", retainedIdFilter);
+        if (trimError) throw trimError;
+      }
+
+      const nextSequence = savedMessages.reduce((highest, row, index) => {
+        const sequence = Number(row.metadata?.sequence);
+        return Math.max(highest, Number.isSafeInteger(sequence) && sequence >= 0 ? sequence : index);
+      }, -1) + 1;
+      const additions = cleanMessages.slice(overlapLength).map((item, index) => ({
         conversation_id: savedId,
         user_id: user.id,
         role: item.role,
-        content: item.content
+        content: item.content,
+        metadata: { sequence: nextSequence + index }
       }));
       if (additions.length) {
         const { error } = await client.from("shieldmind_messages").insert(additions);
@@ -1751,7 +1805,7 @@ async getCurrentUser() {
       }
       const now = new Date().toISOString();
       const { error: updateError } = await client.from("shieldmind_conversations")
-        .update({ title: cleanTitle, updated_at: now, last_message_at: now })
+        .update({ updated_at: now, last_message_at: now })
         .eq("id", savedId)
         .eq("user_id", user.id);
       if (updateError) throw updateError;
