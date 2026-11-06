@@ -474,7 +474,7 @@
         } else if (invoice.status === 'void') {
           warning.textContent = 'This invoice has been voided. Do not pay it; contact CampusShield finance for an updated invoice.';
         } else if (paystackUrl) {
-          warning.textContent = 'This Paystack page starts a recurring monthly charge (not a one-time invoice payment). With no invoice limit, Paystack continues charging monthly until the subscription is cancelled. The page does not carry this invoice number. Use it only with institutional authorisation, save the Paystack transaction reference, and wait for CampusShield finance to reconcile the payment. Returning from Paystack does not activate access.';
+          warning.textContent = 'This is a recurring monthly subscription, not a one-time invoice payment. Paystack continues charging monthly until cancelled, and the page does not carry this invoice number. Save the transaction reference and wait for finance to verify it. Staging activates the first month only; automatic renewals and cancellations are not yet synced. Do not use live funds.';
         } else if (invoice.billing_period !== 'monthly') {
           warning.textContent = 'This is an annual invoice. The available Paystack pages are monthly recurring plans, so use the payment instructions on this invoice or contact finance for an annual payment method.';
         } else {
