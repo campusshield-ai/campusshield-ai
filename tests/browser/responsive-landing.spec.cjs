@@ -431,3 +431,71 @@ test("CampusMap layer controls are keyboard-accessible, persistent, and fit mobi
     await page.keyboard.press("Escape");
   }
 });
+
+
+test("CampusMap SVG symbols register in MapLibre and stay crisp in the responsive location list", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    document.querySelector("#login-screen").hidden = true;
+    document.querySelector("#workspace").hidden = false;
+    document.querySelector("#page-campus-map").classList.add("active");
+  });
+  await page.waitForFunction(() => typeof window.CampusMapIcons?.addToMap === "function", { timeout: 20000 });
+
+  const registration = await page.evaluate(async () => {
+    const images = new Map();
+    const mapAdapter = {
+      hasImage: id => images.has(id),
+      addImage: (id, image, options) => images.set(id, {
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        pixelRatio: options.pixelRatio
+      })
+    };
+    const loaded = await window.CampusMapIcons.addToMap(mapAdapter);
+    return {
+      expected: Array.from(window.CampusMapIcons.types).sort(),
+      loaded: loaded.sort(),
+      imageSizes: Array.from(images.values())
+    };
+  });
+  expect(registration.loaded, "every local SVG should decode as a MapLibre-ready image").toEqual(registration.expected);
+  expect(registration.imageSizes).toHaveLength(registration.expected.length);
+  for (const image of registration.imageSizes) {
+    expect(image).toEqual({ width: 64, height: 64, pixelRatio: 2 });
+  }
+
+  await page.evaluate(() => {
+    const fixture = document.createElement("div");
+    fixture.className = "campus-map-feature-list";
+    fixture.dataset.svgFixture = "true";
+    fixture.innerHTML = '<button type="button" class="campus-map-feature"><span class="campus-map-feature-icon" aria-hidden="true">' +
+      window.CampusMapIcons.svg("library") +
+      '</span><span class="campus-map-feature-copy"><strong>Library symbol check</strong><small>Academic</small></span><span aria-hidden="true">›</span></button>';
+    document.querySelector(".campus-map-sidebar").appendChild(fixture);
+  });
+
+  for (const width of [360, 390, 430, 768, 1024, 1366, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await page.evaluate(() => {
+      const fixture = document.querySelector('[data-svg-fixture="true"]');
+      const list = fixture.getBoundingClientRect();
+      const button = fixture.querySelector(".campus-map-feature").getBoundingClientRect();
+      const icon = fixture.querySelector(".campus-map-feature-icon svg").getBoundingClientRect();
+      return {
+        listWidth: list.width,
+        listScrollWidth: fixture.scrollWidth,
+        buttonRight: button.right,
+        listRight: list.right,
+        iconWidth: icon.width,
+        iconHeight: icon.height,
+        documentWidth: document.documentElement.scrollWidth
+      };
+    });
+    expect(metrics.iconWidth, `SVG symbol should remain visible at ${width}px`).toBeGreaterThanOrEqual(30);
+    expect(metrics.iconHeight, `SVG symbol should remain square at ${width}px`).toBeGreaterThanOrEqual(30);
+    expect(metrics.buttonRight, `location card should fit the list at ${width}px`).toBeLessThanOrEqual(metrics.listRight + 1);
+    expect(metrics.listScrollWidth, `location list should not overflow at ${width}px`).toBeLessThanOrEqual(metrics.listWidth + 1);
+    expect(metrics.documentWidth, `SVG list fixture should not cause page overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+  }
+});

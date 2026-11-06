@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const html = read('index.html');
 const js = read('campus-map.js');
+const iconSource = read('campus-map-icons.js');
 const mapConfig = read('campus-map-config.js');
 const mapLoader = read('campus-map-loader.js');
 const geometrySource = read('campus-map-geometry.js');
@@ -12,6 +13,29 @@ const geometryContext = {};
 runInNewContext(geometrySource, geometryContext);
 const geometry = geometryContext.CampusMapGeometry;
 const css = read('campus-map.css');
+const iconContext = { window: {} };
+runInNewContext(iconSource, iconContext);
+const campusMapIcons = iconContext.window.CampusMapIcons;
+assert.ok(campusMapIcons, 'CampusMap exposes its original SVG symbol library');
+const expectedCampusIconTypes = [
+  'security','medical','library','hostel','cafeteria','lecture_hall','building',
+  'gate','entrance','parking','sports','assembly_point','accessible_entry',
+  'emergency_point','location'
+];
+assert.deepEqual(Array.from(campusMapIcons.types), expectedCampusIconTypes, 'SVG symbol library covers all existing campus feature types and a fallback');
+for (const type of expectedCampusIconTypes) {
+  const svg = campusMapIcons.svg(type);
+  assert.match(svg, /<svg[^>]+viewBox="0 0 32 32"/, type + ' icon is a scalable SVG');
+  assert.match(svg, /<circle[^>]+fill="#[0-9a-f]{6}"/i, type + ' icon has a category colour and white outline');
+  assert.doesNotMatch(svg, /<script|<foreignObject|\shref=/i, type + ' icon contains no active or external embedded content');
+}
+assert.match(js, /import '\.\/campus-map-icons\.js'/, 'Map module loads the local SVG symbol library');
+assert.match(js, /id: 'campus-feature-icons'/, 'Map renders category-specific SVG symbols as a separate visual layer');
+assert.match(js, /await window\.CampusMapIcons\.addToMap\(map\)/, 'SVG symbols are registered locally before the map icon layer is created');
+assert.match(js, /setLayerVisibility\('campus-feature-icons', preferences\.locations\)/, 'The campus locations layer toggle controls SVG markers too');
+assert.match(js, /map\.on\('click', 'campus-feature-icons'/, 'SVG marker clicks open the matching Campus Passport');
+assert.match(js, /function iconFor\(type\)\s*\{\s*return window\.CampusMapIcons\?\.svg\(type\)/, 'The location list uses the same SVG symbols as the map');
+assert.match(css, /campus-map-feature-icon svg/, 'SVG location symbols have responsive list styling');
 const coverageCss = read('campus-dashboard-insights.css');
 const passportCss = read('campus-map-passport.css');
 const passportSql = read('supabase/migrations/20261104004500_campus_map_passports_and_verified_entrance_details.sql');
