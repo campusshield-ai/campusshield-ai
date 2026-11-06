@@ -331,6 +331,7 @@
         if (error) throw error;
         status.textContent = 'Request submitted. It is pending review; no payment was taken and no campus subscription has been activated.';
         institutionBillingForm.reset();
+        syncInstitutionalBillingPanel();
         await loadInstitutionalBillingRequests();
       } catch (error) {
         status.textContent = error?.message || 'The request could not be submitted. Please try again.';
