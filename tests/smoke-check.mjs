@@ -242,6 +242,7 @@ assert.match(html, /data-page="shieldmind"><svg[\s\S]*?Ask the assistant/);
 
 assert.match(html, /id="shieldmind-paid-gate"/, "ShieldMind has a subscription-required access gate");
 assert.match(html, /id="shieldmind-plan-summary"/, "active ShieldMind plans have a visible allowance summary");
+assert.equal((html.match(/id="shieldmind-plan-status"/g) || []).length, 1, "ShieldMind plan status ID is unique");
 assert.match(html, /id="shieldmind-workspace-grid" hidden/, "AI workspace is hidden until entitlement is verified");
 assert.match(html, /class="shieldmind-quick-actions"[^>]*hidden/, "AI quick actions are hidden until entitlement is verified");
 assert.match(shieldmindApp, /if \(!window\.CampusShieldShieldMindAccess\?\.active\)/, "chat submit is blocked in the UI without paid entitlement");

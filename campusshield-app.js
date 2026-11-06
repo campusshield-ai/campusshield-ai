@@ -7586,6 +7586,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
 
   async function refreshShieldMindPlan() {
     const status = $('shieldmind-plan-status');
+    const statusSide = $('shieldmind-plan-status-side');
     const gateStatus = $('shieldmind-paid-gate-status');
     const billingStatus = $('billing-ai-status');
     const gate = $('shieldmind-paid-gate');
@@ -7626,6 +7627,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
           Number(subscription?.image_upload_limit || 0).toLocaleString();
       }
       if (status) status.textContent = state.active ? state.plan.toUpperCase() + ' active' : 'No active plan';
+      if (statusSide) statusSide.textContent = state.active
+        ? state.plan.toUpperCase() + ' active until ' + new Date(state.expiresAt).toLocaleDateString() + '.'
+        : (message || 'No active paid ShieldMind plan.');
       if (gateStatus) gateStatus.textContent = state.active
         ? state.plan.toUpperCase() + ' is active. Your ShieldMind workspace is unlocked.'
         : (message || 'Choose a paid 30-day plan to unlock ShieldMind AI responses.');
