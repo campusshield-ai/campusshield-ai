@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const html = read('index.html');
 const app = read('campusshield-app.js');
-const migration = read('supabase/migrations/20261106225000_institutional_billing_review_controls.sql');
+const migration = read('supabase/migrations/20261106215716_institutional_billing_review_controls.sql');
 const docs = read('docs/INSTITUTIONAL_BILLING_REVIEW.md');
 
 assert.match(html, /id="platform-admin-institutional-billing"/,
