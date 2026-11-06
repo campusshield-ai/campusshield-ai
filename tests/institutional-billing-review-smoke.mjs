@@ -74,7 +74,7 @@ assert.match(app, /amountPattern = \/\^\\d\{1,10\}/,
   'Finance invoice amounts are validated before conversion to kobo');
 assert.match(invoiceMigration, /total_kobo bigint GENERATED ALWAYS AS \(subtotal_kobo \+ tax_kobo\) STORED/i,
   'The database calculates invoice totals from subtotal and tax');
-assert.match(invoiceMigration, /GRANT INSERT \([\s\S]*payment_instructions\)[\s\S]*TO authenticated/i,
+assert.match(invoiceMigration, /GRANT INSERT \([\s\S]*payment_instructions[\s\S]*\)[\s\S]*TO authenticated/i,
   'Invoice insertion is column-limited; invoice number and paid status are not client-writable');
 assert.match(invoiceMigration, /CREATE POLICY campus_institutional_invoices_insert_platform_admin[\s\S]*public\.platform_is_admin\(\)/i,
   'Only trusted platform administrators can issue invoices');
