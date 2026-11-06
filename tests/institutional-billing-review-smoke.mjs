@@ -14,6 +14,7 @@ const paymentReconciliationMigration = read('supabase/migrations/20261106225141_
 const subscriptionLifecycleMigration = read('supabase/migrations/20261106232713_institutional_subscription_lifecycle.sql');
 const subscriptionLifecycleIndexMigration = read('supabase/migrations/20261106233030_institutional_subscription_lifecycle_fk_indexes.sql');
 const subscriptionWebhookHardeningMigration = read('supabase/migrations/20261106233337_institutional_subscription_webhook_validation_hardening.sql');
+const subscriptionActorIndexMigration = read('supabase/migrations/20261106233509_institutional_subscription_actor_fk_indexes.sql');
 const institutionalPaymentAdmin = read('supabase/functions/campus-institutional-payment-admin/index.ts');
 const institutionalPaystackWebhook = read('supabase/functions/campus-institutional-paystack-webhook/index.ts');
 const docs = read('docs/INSTITUTIONAL_BILLING_REVIEW.md');
@@ -140,6 +141,8 @@ assert.match(subscriptionLifecycleMigration, /REVOKE ALL ON FUNCTION public\.rec
   'Only the service role can update subscription renewal periods from Paystack events');
 assert.match(subscriptionLifecycleIndexMigration, /campus_institutional_payment_audit_subscription_idx/,
   'Institutional payment audit foreign-key lookups are indexed');
+assert.match(subscriptionActorIndexMigration, /campus_institutional_invoices_paid_by_idx[\s\S]*campus_institutional_subscriptions_activated_by_idx/,
+  'Institutional payer and subscription activator foreign-key lookups are indexed');
 assert.match(subscriptionWebhookHardeningMigration, /p_subscription_code[\s\S]*IS NULL[\s\S]*p_event_id IS NULL[\s\S]*p_amount_kobo IS NULL/,
   'Recurring-payment routines reject missing provider identifiers, event IDs and amounts at the database layer');
 assert.match(subscriptionWebhookHardeningMigration, /p_customer_email[\s\S]*IS NULL[\s\S]*p_provider_domain IS NULL/,
