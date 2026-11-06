@@ -7,6 +7,7 @@ const js = read("../campus-ideas-impact.js");
 const css = read("../campus-ideas-impact.css");
 const html = read("../index.html");
 const sql = read("../supabase/migrations/20261105130000_campus_ideas_impact_mvp.sql");
+const statusContextSql = read("../supabase/migrations/20261105131500_campus_idea_status_context_guard.sql");
 
 new vm.Script(js, { filename: "campus-ideas-impact.js" });
 assert.match(html, /campus-ideas-impact\.css/);
@@ -51,3 +52,9 @@ assert.match(css, /@media\(max-width:680px\)/);
 assert.match(css, /prefers-reduced-motion:reduce/);
 assert.match(css, /data-theme=\"dark\"/);
 console.log("Campus Ideas & Impact smoke checks passed.");
+
+assert.match(statusContextSql, /create or replace function private\.prepare_campus_idea_status_update\(\)/i);
+assert.match(statusContextSql, /new\.reviewer_id := \(select auth\.uid\(\)\)/i);
+assert.match(statusContextSql, /new\.university_id := private\.current_campus_university_id\(\)/i);
+assert.match(statusContextSql, /before insert on public\.campus_idea_status_updates/i);
+assert.match(statusContextSql, /revoke all on function private\.prepare_campus_idea_status_update\(\) from public, anon, authenticated/i);
