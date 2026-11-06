@@ -75,7 +75,7 @@ assert.match(app, /This is a recurring monthly subscription, not a one-time invo
   'The requester is warned that Paystack pages create recurring monthly charges');
 assert.match(app, /Returning from Paystack does not activate access/,
   'Returning from a Paystack page never activates institutional access');
-assert.match(app, /With no invoice limit, Paystack continues charging monthly until the subscription is cancelled/,
+assert.match(app, /Paystack charges monthly until cancelled/,
   'The requester is told that an unlimited Paystack subscription keeps recurring until cancelled');
 assert.match(app, /This is an annual invoice[\s\S]*monthly recurring plans/,
   'Annual invoices cannot use monthly Paystack links');
@@ -125,8 +125,10 @@ assert.match(paymentReconciliationMigration, /REVOKE ALL ON FUNCTION public\\.co
   'Only the backend service role can commit verified invoice payment and subscription activation');
 assert.match(paymentReconciliationMigration, /public\\.platform_is_admin\\(\\)[\\s\\S]*campus_memberships/i,
   'Institutional subscription status is visible only to platform admins or verified campus admins');
-assert.match(institutionalPaystackWebhook, /x-paystack-signature[\\s\\S]*HMAC.*SHA-512/i,
-  'Institutional webhook events require a valid Paystack HMAC SHA-512 signature');
+assert.match(institutionalPaystackWebhook, /x-paystack-signature/,
+  'Institutional webhook reads the Paystack signature header');
+assert.match(institutionalPaystackWebhook, /name: "HMAC", hash: "SHA-512"/,
+  'Institutional webhook verifies Paystack signatures using HMAC SHA-512');
 assert.match(institutionalPaystackWebhook, /sk_test_[\\s\\S]*activated: false/i,
   'The Staging webhook records test events but never activates subscriptions by itself');
 assert.match(institutionalPaystackWebhook, /invoice\\.payment_failed[\\s\\S]*subscription\\.disable/i,
@@ -143,7 +145,7 @@ assert.match(app, /campus-institutional-payment-admin/,
   'The platform finance console calls the protected payment verification function');
 assert.match(app, /Verify & activate/,
   'The platform finance console exposes a controlled Verify & activate action for eligible invoices');
-assert.match(app, /institutional subscription · '[\\s\\S]*access period ends/,
+assert.match(app, /activeInstitutionalSubscription\.plan[\s\S]*access period ends/,
   'The verified campus administrator can see their active institutional subscription and expiry');
 assert.match(app, /paid_reference/,
   'The requester and finance views can display a recorded payment reference');
