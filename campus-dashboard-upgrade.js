@@ -9,16 +9,15 @@
     const next = theme === "dark" ? "dark" : "light";
     root.dataset.theme = next;
     root.style.colorScheme = next;
-    const button = document.getElementById("campus-theme-toggle");
-    if (button) {
+    document.querySelectorAll("#campus-theme-toggle, #campus-mobile-theme-toggle").forEach(button => {
       const dark = next === "dark";
       button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
       button.setAttribute("aria-pressed", String(dark));
       button.title = dark ? "Switch to light mode" : "Switch to dark mode";
       button.innerHTML = dark
-        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg><span class="theme-toggle-label">Light</span>'
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l-1.42-1.42m11.3-11.3 1.42-1.42"/></svg><span class="theme-toggle-label">Light</span>'
         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/></svg><span class="theme-toggle-label">Dark</span>';
-    }
+    });
     try { localStorage.setItem(themeKey, next); } catch { /* Theme still works for this session. */ }
   }
   setTheme(initialTheme);
@@ -32,6 +31,17 @@
   themeButton.id = "campus-theme-toggle";
   themeButton.className = "theme-toggle";
   themeButton.addEventListener("click", () => setTheme(root.dataset.theme === "dark" ? "light" : "dark"));
+
+  // The desktop actions are hidden on phones, so provide a second control
+  // beside the mobile menu. Both controls share one saved theme preference.
+  const mobileThemeButton = document.createElement("button");
+  mobileThemeButton.type = "button";
+  mobileThemeButton.id = "campus-mobile-theme-toggle";
+  mobileThemeButton.className = "theme-toggle mobile-theme-toggle";
+  mobileThemeButton.addEventListener("click", () => setTheme(root.dataset.theme === "dark" ? "light" : "dark"));
+  const mobileMenuButton = header.querySelector(".mobile-nav-toggle");
+  if (mobileMenuButton) header.insertBefore(mobileThemeButton, mobileMenuButton);
+
   const search = document.createElement("div");
   search.className = "global-search";
   search.innerHTML = '<svg class="global-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input class="global-search-input" id="campus-global-search" type="search" autocomplete="off" aria-label="Search campus features and resources" aria-controls="campus-global-search-results" aria-expanded="false" placeholder="Search courses, resources, events, opportunities…"><span class="global-search-kbd" aria-hidden="true">/</span><div class="global-search-results" id="campus-global-search-results" role="listbox" aria-label="Search results" hidden></div>';
