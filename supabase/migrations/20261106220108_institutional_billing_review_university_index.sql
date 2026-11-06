@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_university_idx
+  ON public.campus_institutional_billing_requests(university_id);
