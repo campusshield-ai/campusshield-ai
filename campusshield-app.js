@@ -1091,6 +1091,7 @@
       'student-rewards':'Challenges & Rewards',
       opportunities:'Opportunities & Scholarships',
       shieldmind:'ShieldMind AI',
+      guide:'How to use CampusShield',
       billing:'Subscriptions & Billing',
       'profile-settings':'My Profile & Settings',
       'staff-verification':'Staff verification',
