@@ -1230,7 +1230,7 @@
       input.value = '';
       return setStatus('This GeoJSON file is larger than the 2 MB boundary intake limit. Simplify the boundary geometry and try again.', 'warning');
     }
-    if (!/\\.(geojson|json)$/i.test(file.name) && !['application/geo+json','application/json'].includes(file.type)) {
+    if (!/\.(geojson|json)$/i.test(file.name) && !['application/geo+json','application/json'].includes(file.type)) {
       input.value = '';
       return setStatus('Choose a .geojson or .json file containing one Polygon or MultiPolygon boundary.', 'warning');
     }
