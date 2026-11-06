@@ -1661,18 +1661,19 @@ async getCurrentUser() {
       return data;
     },
 
-    async saveMyShieldMindConversation(conversationId, title, messages) {
+    async saveMyShieldMindConversation(conversationId, title, messages, expectedUserId = null) {
       if (!client) throw new Error("Supabase is not configured.");
       const user = await this.getCurrentUser();
       if (!user) throw new Error("Sign in to save ShieldMind conversations.");
+      if (expectedUserId && user.id !== expectedUserId) throw new Error("Your account changed. Sign in again before saving this conversation.");
       const cleanTitle = String(title || "").trim().slice(0, 120);
       if (!cleanTitle) throw new Error("A conversation title is required.");
-      if (!Array.isArray(messages) || messages.length < 1 || messages.length > 200) {
+      if (!Array.isArray(messages) || messages.length < 1 || messages.length > 100) {
         throw new Error("The conversation contains an invalid number of messages.");
       }
       const cleanMessages = messages.map(item => {
         if (!item || !["user", "assistant"].includes(item.role) ||
-            typeof item.content !== "string" || item.content.length > 12000) {
+            typeof item.content !== "string" || item.content.length > 6000) {
           throw new Error("The conversation contains an invalid message.");
         }
         return { role: item.role, content: item.content };
