@@ -276,7 +276,7 @@ assert.match(js, /getTypeCounts\(features, activeDiscoveryFilter\)/, 'Facility t
 assert.match(js, /matchesType\(item, activeFeatureTypeFilter\)/, 'Broad categories and precise facility type filters are combined');
 assert.match(js, /matchesSearch\(item, term\)/, 'Campus search uses accent-normalised aliases and Passport metadata');
 assert.match(js, /updateSource\(matches\)/, 'Map markers and location cards use the same active discovery filters');
-assert.match(js, /function updateSource\\(items = features\\)/, 'Map source accepts a filtered list rather than always rendering every campus feature');
+assert.match(js, /function updateSource\(items = features\)/, 'Map source accepts a filtered list rather than always rendering every campus feature');
 assert.match(js, /selectedFeature && !matches\.some\(item => item\.id === selectedFeature\.id\)/, 'Filtering clears a Campus Passport selection that is no longer visible');
 assert.match(js, /filterFeatures\(search\?\.value \|\| ''\)/, 'A newly loaded map style restores the active facility filter state');
 assert.match(js, /data-campus-type-filter/, 'Facility type filter clicks are handled by the CampusMap module');
