@@ -4215,7 +4215,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <h3>Request institutional billing</h3>
       <p class="muted">This submits a request for review only. It does not charge your institution or activate any premium access.</p>
       <div class="grid two">
-        <div class="field"><label for="institution-billing-name">Official institution name *</label><input id="institution-billing-name" required maxlength="180" placeholder="University / institution name"></div>
+        <div class="field"><label for="institution-billing-name">Verified university *</label><input id="institution-billing-name" required maxlength="180" readonly aria-describedby="institution-billing-campus-hint" placeholder="Your verified campus will appear here"><small id="institution-billing-campus-hint" class="muted">Locked to the university on your verified campus administrator membership.</small></div>
         <div class="field"><label for="institution-billing-plan">Requested plan *</label><select id="institution-billing-plan" required><option value="university-starter">Starter · University</option><option value="university-professional">Professional · University</option><option value="university-enterprise">Enterprise</option></select></div>
         <div class="field"><label for="institution-billing-period">Preferred billing period *</label><select id="institution-billing-period" required><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div>
         <div class="field"><label for="institution-billing-email">Contact email *</label><input id="institution-billing-email" type="email" required maxlength="254" placeholder="Your institutional contact email"></div>
