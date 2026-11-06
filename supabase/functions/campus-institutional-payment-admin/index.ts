@@ -47,7 +47,62 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Only trusted CampusShield platform finance administrators can reconcile institutional payments." }, 403);
     }
 
+    const db = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
     const body = await req.json().catch(() => null);
+
+    if (body?.action === "list_payment_audit") {
+      const requestedLimit = Number(body?.limit);
+      const limit = Number.isFinite(requestedLimit)
+        ? Math.min(100, Math.max(1, Math.trunc(requestedLimit)))
+        : 50;
+      const { data: auditRows, error: auditError } = await db.schema("private")
+        .from("campus_institutional_payment_audit")
+        .select("id,invoice_id,university_id,verified_by,provider_reference,provider_transaction_id,provider_domain,customer_email,amount_kobo,currency,provider_paid_at,verified_at")
+        .order("verified_at", { ascending: false })
+        .limit(limit);
+      if (auditError) return json({ error: "Could not load the institutional payment audit." }, 503);
+      if (!auditRows?.length) return json({ entries: [] });
+
+      const invoiceIds = [...new Set(auditRows.map((row: any) => row.invoice_id))];
+      const universityIds = [...new Set(auditRows.map((row: any) => row.university_id))];
+      const verifierIds = [...new Set(auditRows.map((row: any) => row.verified_by))];
+      const [invoices, universities, verifiers] = await Promise.all([
+        db.from("campus_institutional_invoices")
+          .select("id,invoice_number,plan,billing_period")
+          .in("id", invoiceIds),
+        db.from("campus_universities")
+          .select("id,name")
+          .in("id", universityIds),
+        db.from("profiles")
+          .select("id,display_name")
+          .in("id", verifierIds),
+      ]);
+      if (invoices.error || universities.error || verifiers.error) {
+        return json({ error: "Could not enrich the institutional payment audit." }, 503);
+      }
+      const invoiceById = new Map((invoices.data || []).map((row: any) => [row.id, row]));
+      const universityById = new Map((universities.data || []).map((row: any) => [row.id, row]));
+      const verifierById = new Map((verifiers.data || []).map((row: any) => [row.id, row]));
+      return json({
+        entries: auditRows.map((row: any) => ({
+          id: row.id,
+          invoice_number: invoiceById.get(row.invoice_id)?.invoice_number || "Invoice unavailable",
+          plan: invoiceById.get(row.invoice_id)?.plan || null,
+          billing_period: invoiceById.get(row.invoice_id)?.billing_period || null,
+          institution_name: universityById.get(row.university_id)?.name || "Institution unavailable",
+          verified_by_name: verifierById.get(row.verified_by)?.display_name || "Platform finance administrator",
+          provider_reference: row.provider_reference,
+          provider_transaction_id: row.provider_transaction_id,
+          provider_domain: row.provider_domain,
+          customer_email: row.customer_email,
+          amount_kobo: row.amount_kobo,
+          currency: row.currency,
+          provider_paid_at: row.provider_paid_at,
+          verified_at: row.verified_at,
+        })),
+      });
+    }
+
     if (body?.action !== "verify_invoice_payment") {
       return json({ error: "Unsupported institutional finance action." }, 400);
     }
@@ -60,7 +115,6 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Enter the Paystack transaction reference from the receipt or dashboard." }, 400);
     }
 
-    const db = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data: invoice, error: invoiceError } = await db.from("campus_institutional_invoices")
       .select("id,invoice_number,university_id,bill_to_email,plan,billing_period,total_kobo,currency,status,issued_at")
       .eq("id", invoiceId).maybeSingle();
