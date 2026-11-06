@@ -1,0 +1,44 @@
+name: Campus chat voice notes checks
+on:
+  pull_request:
+    branches: [main, staging/preview]
+    paths:
+      - "index.html"
+      - "campusshield-app.js"
+      - "campus-voice-notes.js"
+      - "campus-voice-notes.css"
+      - "supabase/migrations/20261105205000_campus_chat_private_voice_notes.sql"
+      - "supabase/migrations/20261106010000_campus_voice_notes_participant_read_hardening.sql"
+      - "supabase/migrations/20261025180000_university_private_messages.sql"
+      - "tests/campus-voice-notes-smoke.mjs"
+      - "campusshield-backend.js"
+      - ".github/workflows/campus-voice-notes.yml"
+  push:
+    branches: [feat/campus-chat-voice-notes]
+    paths:
+      - "index.html"
+      - "campusshield-app.js"
+      - "campus-voice-notes.js"
+      - "campus-voice-notes.css"
+      - "supabase/migrations/20261105205000_campus_chat_private_voice_notes.sql"
+      - "tests/campus-voice-notes-smoke.mjs"
+      - ".github/workflows/campus-voice-notes.yml"
+permissions:
+  contents: read
+jobs:
+  voice-notes:
+    name: Voice-note syntax, privacy and regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          node --check campusshield-app.js
+          node --check campus-voice-notes.js
+      - name: Verify voice-note and access-control contracts
+        run: node tests/campus-voice-notes-smoke.mjs
+      - name: Run full CampusShield smoke suite
+        run: node tests/smoke-check.mjs

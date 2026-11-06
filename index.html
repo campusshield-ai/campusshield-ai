@@ -30,6 +30,7 @@
 <link rel="stylesheet" href="./campus-map.css">
 <link rel="stylesheet" href="./campus-map-passport.css">
 <link rel="stylesheet" href="./campuspulse-social.css">
+<link rel="stylesheet" href="./campus-voice-notes.css">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <title>CampusShield AI | Intelligent Campus Safety</title>
@@ -3238,7 +3239,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
     </div>
     <form id="campus-chat-form" class="campus-chat-compose">
       <label class="visually-hidden" for="campus-chat-input">Write a campus chat message</label>
-      <textarea id="campus-chat-input" maxlength="1200" rows="2" placeholder="Message your campus…" required disabled></textarea>
+      <textarea id="campus-chat-input" maxlength="1200" rows="2" placeholder="Message your campus…" disabled></textarea>
+      <div class="campus-voice-tools" data-voice-composer="campus">
+        <button type="button" class="btn secondary campus-voice-record" id="campus-chat-voice-record" disabled>Record voice note</button>
+        <button type="button" class="btn secondary campus-voice-discard" id="campus-chat-voice-discard" hidden>Discard recording</button>
+        <span class="campus-voice-status" id="campus-chat-voice-status" role="status" aria-live="polite">Optional voice note · up to 90 seconds</span>
+        <audio class="campus-voice-preview" id="campus-chat-voice-preview" controls preload="metadata" hidden></audio>
+      </div>
       <div class="campus-chat-compose-footer"><span>Be respectful. Messages are limited to 1,200 characters.</span><button class="btn" type="submit" id="campus-chat-send" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-7 18-3-7-8-3Z"/><path d="M11 14 21 3"/></svg>Send message</button></div>
     </form>
   </section>
@@ -3311,7 +3318,13 @@ button,input,select,textarea{max-width:100%;min-width:0}
         <div id="campus-dm-thread-messages" class="campus-dm-thread-messages" role="log" aria-label="Private messages" aria-live="polite" aria-relevant="additions text"></div>
         <form id="campus-dm-compose-form" class="campus-dm-compose">
           <label for="campus-dm-compose-input" class="visually-hidden">Write a private message</label>
-          <textarea id="campus-dm-compose-input" rows="2" maxlength="1200" placeholder="Write a private message…" required disabled></textarea>
+          <textarea id="campus-dm-compose-input" rows="2" maxlength="1200" placeholder="Write a private message…" disabled></textarea>
+          <div class="campus-voice-tools" data-voice-composer="direct">
+            <button type="button" class="btn secondary campus-voice-record" id="campus-dm-voice-record" disabled>Record voice note</button>
+            <button type="button" class="btn secondary campus-voice-discard" id="campus-dm-voice-discard" hidden>Discard recording</button>
+            <span class="campus-voice-status" id="campus-dm-voice-status" role="status" aria-live="polite">Private voice note · up to 90 seconds</span>
+            <audio class="campus-voice-preview" id="campus-dm-voice-preview" controls preload="metadata" hidden></audio>
+          </div>
           <div class="campus-dm-compose-footer"><span id="campus-dm-compose-hint">Only visible to this conversation</span><button type="submit" class="btn" id="campus-dm-compose-send" aria-label="Send private message" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-7 18-3-7-8-3Z"/><path d="M11 14 21 3"/></svg>Send</button></div>
         </form>
       </div>
@@ -4498,6 +4511,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
 <script src="./campus-map-geometry.js" defer></script>
 <script type="module" src="./campus-map-loader.js"></script>
 <script src="./campusshield-app.js" defer></script>
+<script src="./campus-voice-notes.js" defer></script>
 <script src="./campuspulse-social.js" defer></script>
 <script src="./campus-ideas-impact.js" defer></script>
 <script>
