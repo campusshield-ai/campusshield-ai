@@ -7889,7 +7889,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if($('shieldmind-image-confirm')) $('shieldmind-image-confirm').checked=false;
       if(currentProfile!==profileAtRequest||currentProfile?.id!==userId){shieldMindHistory=[];$('shieldmind-messages').innerHTML='';resetShieldMindForSession();return;}
       addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'));
-      shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-200);
+      shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-100);
       shieldMindRecentQuestions=[question,...shieldMindRecentQuestions.filter(item=>item!==question)].slice(0,5);
       renderShieldMindRecentQuestions();
       $('shieldmind-status').textContent=result?.mode==='provider'?'Study support · Verify important facts against your course materials.':'Safe response · official campus sources are not connected, so verify important facts with your course materials.';
