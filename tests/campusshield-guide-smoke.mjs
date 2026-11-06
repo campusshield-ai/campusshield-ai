@@ -11,7 +11,7 @@ const help = read("../help.html");
 const offline = read("../offline.html");
 
 new vm.Script(guide, { filename: "campusshield-guide.js" });
-assert.match(index, /id="guide-nav"[\s\S]*?data-page="guide"/);
+assert.match(index, /<button data-page="guide" id="guide-nav">/);
 assert.match(index, /mobile-topbar-help" data-page="guide"/);
 assert.match(index, /id="page-guide"[\s\S]*?aria-labelledby="guide-title"/);
 assert.match(index, /campusshield-guide\.css/);
@@ -58,7 +58,7 @@ for (const token of [
   "does not automatically call"
 ]) assert.ok(help.includes(token), "Missing public Help Centre content: " + token);
 
-assert.match(offline, /does not store reports for offline use/i);
+assert.match(offline, /No incident reports or sign-in details are saved for offline use/i);
 assert.match(help, /Privacy Policy/);
 assert.match(help, /Terms of Use/);
 console.log("CampusShield in-app guide and public Help Centre checks passed.");
