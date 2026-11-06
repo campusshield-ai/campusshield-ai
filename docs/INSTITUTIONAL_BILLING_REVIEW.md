@@ -77,7 +77,7 @@ Annual invoices are not sent to monthly pages. Enterprise custom quotes and any 
 
 **These are recurring subscription pages, not one-time invoice checkout pages.** Paystack documents that a subscription page starts a recurring subscription after the customer pays. If its invoice limit is left blank, Paystack continues charging at the set interval until the subscription is cancelled. Institutions must expressly authorise recurring monthly debits; do not describe this as a one-time payment. Before publishing links for live collection, finance must confirm the merchant's Test/Live mode, the plan amount/interval and the recurring/cancellation policy.
 
-The hosted page does not receive the CampusShield invoice ID as metadata. A successful redirect or customer-facing success message is not payment verification. Finance must retain the Paystack transaction/subscription reference and reconcile it against the issued invoice. This UI does not mark the invoice paid or activate entitlements after the customer leaves Paystack. No institutional checkout webhook is enabled by this link mapping.
+The hosted page does not receive the CampusShield invoice ID as metadata. A successful redirect or customer-facing success message is not payment verification. Finance must retain the Paystack transaction/subscription reference and reconcile it against the issued invoice. Leaving the Paystack page does not mark the invoice paid or activate entitlements. A separate signed institutional webhook is available for Staging, but it must be configured in the Paystack Test Mode dashboard; it records events only and does not activate subscriptions.
 
 ## Institutional payment verification and activation
 
