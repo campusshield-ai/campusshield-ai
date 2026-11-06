@@ -34,7 +34,7 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Staging institutional verification accepts Paystack test payments only." }, 409);
     }
 
-    const token = (req.headers.get("authorization") || "").match(/^Bearer\\s+(.+)$/i)?.[1];
+    const token = (req.headers.get("authorization") || "").match(/^Bearer\s+(.+)$/i)?.[1];
     if (!token) return json({ error: "Sign in with a trusted CampusShield finance account." }, 401);
     const userClient = createClient(url, anon, {
       global: { headers: { Authorization: `Bearer ${token}` } },
