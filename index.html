@@ -4209,6 +4209,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <article class="shieldmind-price premium"><strong>Professional · University</strong><b>₦250,000</b><span>per month</span><small>₦2,500,000 yearly · Expanded analytics, moderation and campus administration</small><button class="btn" type="button" data-billing-plan="university-professional" data-billing-kind="institution">Request institutional billing</button></article>
       <article class="shieldmind-price premium"><strong>Enterprise</strong><b>From ₦500,000</b><span>per month</span><small>From ₦5,000,000 yearly · Multi-campus controls, integrations and support</small><button class="btn" type="button" data-billing-plan="university-enterprise" data-billing-kind="institution">Request institutional billing</button></article>
     </div>
+    <p class="muted">Annual institutional prices shown here equal 10 monthly payments, giving the university the equivalent of two months at no additional charge. An invoice and written agreement are still required; a request or approval does not activate paid features.</p>
     <p class="muted">University subscriptions require an authorized institutional representative. Invoice or bank-transfer payments must be manually reconciled by authorized staff; they do not automatically unlock a university.</p>
     <form id="institutional-billing-form" hidden>
       <h3>Request institutional billing</h3>
@@ -4656,6 +4657,28 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <p id="platform-admin-access-message" class="message" role="status" aria-live="polite">Checking platform administrator access…</p>
   </section>
   <div id="platform-admin-tools" hidden>
+    <section class="panel" id="platform-admin-institutional-billing">
+      <div class="panel-heading">
+        <div><h2>Institutional billing review</h2><p>Review university subscription enquiries and send a clear response to the authorized campus representative.</p></div>
+        <button class="btn secondary" type="button" id="platform-admin-refresh-billing-requests">Refresh billing requests</button>
+      </div>
+      <p id="platform-admin-billing-requests-message" class="message" role="status" aria-live="polite">Loading institutional billing requests…</p>
+      <div class="table-wrap">
+        <table>
+          <caption class="sr-only">Institutional subscription requests awaiting platform finance review</caption>
+          <thead><tr>
+            <th scope="col">Institution</th>
+            <th scope="col">Requested plan</th>
+            <th scope="col">Contact</th>
+            <th scope="col">Request status</th>
+            <th scope="col">Response to institution</th>
+            <th scope="col">Action</th>
+          </tr></thead>
+          <tbody id="platform-admin-billing-requests-table"><tr><td colspan="6">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <p class="muted">Important: changing a request to “approved” approves the enquiry for further procurement only. It does not confirm bank transfer, create a paid subscription, unlock campus features or alter student safety access. Payment reconciliation and subscription activation remain separate controlled steps.</p>
+    </section>
     <section class="panel">
       <div class="panel-heading"><div><h2>University listing requests</h2><p>Approve only after verifying the official institution name and website.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-requests">Refresh requests</button></div>
       <p id="platform-admin-requests-message" class="message" role="status" aria-live="polite">Loading requests…</p>
