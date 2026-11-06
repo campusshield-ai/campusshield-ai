@@ -483,10 +483,10 @@ for (const id of [
 assert.match(html, /data-campus-accessibility/, 'Accessibility details use a constrained feature checklist');
 assert.match(js, /function renderCampusPassport\(item\)/, 'Selected published campus locations render a real Passport panel');
 assert.match(js, /function matchesCampusFilter\(item\)/, 'CampusMap filters are derived from the saved location category');
-assert.match(js, /function resolveCampusRouteTarget\(accessibleOnly = false\)/, 'Walking routes resolve linked entrance records');
-assert.match(js, /feature\.metadata\?\.building_feature_id === selectedFeature\.id/, 'Entrance routes only link to the selected building through the stored building reference');
-assert.match(js, /feature\.metadata\?\.entry_type === 'accessible'/, 'Accessible routing requires a published, linked accessible entrance marker');
-assert.match(js, /No verified accessible entrance is recorded/, 'The app explains when no accessible entrance has been verified instead of guessing');
+assert.match(js, /function resolveCampusRouteTarget\(accessibleOnly = false\)/, 'Walking routes delegate linked entrance resolution');
+assert.match(navigationSource, /feature\.metadata\?\.building_feature_id === selectedFeature\.id/, 'Entrance routes only link to the selected building through the stored building reference');
+assert.match(navigationSource, /feature\.metadata\?\.entry_type === 'accessible'/, 'Accessible routing requires a linked accessible entrance marker');
+assert.match(js, /No verified accessible entrance with usable coordinates is recorded/, 'The app explains when no accessible entrance with coordinates is available instead of guessing');
 assert.match(js, /map\.on\('click', 'campus-feature-points'/, 'Map markers open the matching Campus Passport');
 assert.match(js, /p_metadata: passportMetadata/, 'Structured Passport details are sent through the checked CampusMap write RPC');
 assert.match(js, /function buildPassportMetadata\(\)/, 'Admin Passport fields are validated and converted into metadata');
