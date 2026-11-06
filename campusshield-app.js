@@ -7514,6 +7514,8 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   }
   
   let shieldMindSessionUserId = null, shieldMindHistory = [], shieldMindRecentQuestions = [];
+  let shieldMindConversationId = null;
+  let shieldMindHistorySearchRequest = 0;
   function resetShieldMindForSession() {
     if (!currentProfile) { shieldMindSessionUserId=null; shieldMindHistory=[]; shieldMindRecentQuestions=[]; renderShieldMindRecentQuestions(); return; }
     // Let all signed-in accounts ask general academic questions. The backend independently
@@ -7528,6 +7530,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if ($('shieldmind-messages')) $('shieldmind-messages').innerHTML='<article class="shieldmind-message assistant"><strong>ShieldMind AI</strong><p>Chat ready. Ask a general academic question. Official campus details are only answered when approved campus sources support them.</p></article>';
     }
     if ($('shieldmind-status')) $('shieldmind-status').textContent='Ready for a general academic question.';
+    loadShieldMindConversations();
   }
 
   async function reconcileReturnedPaystackPayment() {
@@ -7703,6 +7706,116 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       list.appendChild(item);
     });
   }
+  async function loadShieldMindConversations(search = '') {
+    const list = $('shieldmind-history-list');
+    const backend = window.CampusShieldBackend;
+    if (!list) return;
+    const requestId = ++shieldMindHistorySearchRequest;
+    if (!currentProfile || !backend?.isConfigured) {
+      list.textContent = 'Sign in to view your saved conversations.';
+      return;
+    }
+    list.textContent = 'Loading saved conversations…';
+    try {
+      const rows = await backend.listMyShieldMindConversations(search);
+      if (requestId !== shieldMindHistorySearchRequest || !currentProfile) return;
+      list.replaceChildren();
+      if (!rows.length) {
+        const empty = document.createElement('p');
+        empty.className = 'shieldmind-recent-empty';
+        empty.textContent = search ? 'No saved conversations match your search.' : 'Your saved conversations will appear here after your first answer.';
+        list.appendChild(empty);
+        return;
+      }
+      rows.forEach(row => {
+        const item = document.createElement('div');
+        item.className = 'shieldmind-history-item';
+        const open = document.createElement('button');
+        open.type = 'button';
+        open.className = 'shieldmind-history-open';
+        open.textContent = row.title || 'Untitled conversation';
+        open.addEventListener('click', () => openShieldMindConversation(row.id));
+        const date = document.createElement('small');
+        date.textContent = row.updated_at ? new Date(row.updated_at).toLocaleString() : '';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'shieldmind-history-delete';
+        remove.textContent = 'Delete';
+        remove.setAttribute('aria-label', 'Delete conversation: ' + (row.title || 'Untitled conversation'));
+        remove.addEventListener('click', () => deleteShieldMindConversation(row.id));
+        item.append(open, date, remove);
+        list.appendChild(item);
+      });
+    } catch (error) {
+      if (requestId !== shieldMindHistorySearchRequest) return;
+      list.textContent = error?.message || 'Saved conversations could not be loaded.';
+    }
+  }
+
+  async function openShieldMindConversation(conversationId) {
+    const backend = window.CampusShieldBackend;
+    const expectedUserId = currentProfile?.id;
+    if (!expectedUserId || !backend?.isConfigured) return;
+    const status = $('shieldmind-status');
+    try {
+      status.textContent = 'Loading your saved conversation…';
+      const row = await backend.loadMyShieldMindConversation(conversationId);
+      if (currentProfile?.id !== expectedUserId) return;
+      if (!Array.isArray(row.messages)) throw new Error('This saved conversation has an invalid format.');
+      const messages = row.messages.filter(item =>
+        item && ['user', 'assistant'].includes(item.role) &&
+        typeof item.content === 'string' && item.content.length <= 12000
+      ).slice(-200);
+      shieldMindConversationId = row.id;
+      shieldMindHistory = messages;
+      shieldMindRecentQuestions = messages.filter(item => item.role === 'user')
+        .map(item => item.content).slice(-5).reverse();
+      renderShieldMindRecentQuestions();
+      $('shieldmind-messages').replaceChildren();
+      messages.forEach(item => addShieldMindMessage(item.role, item.content));
+      status.textContent = 'Saved conversation loaded privately from your account.';
+    } catch (error) {
+      status.textContent = error?.message || 'This conversation could not be loaded.';
+    }
+  }
+
+  async function deleteShieldMindConversation(conversationId) {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !conversationId) return;
+    if (!window.confirm('Delete this saved ShieldMind conversation? This cannot be undone.')) return;
+    try {
+      await backend.deleteMyShieldMindConversation(conversationId);
+      if (shieldMindConversationId === conversationId) {
+        shieldMindConversationId = null;
+        shieldMindHistory = [];
+        $('shieldmind-messages').replaceChildren();
+        addShieldMindMessage('assistant', 'Start a new private conversation whenever you are ready.');
+      }
+      await loadShieldMindConversations($('shieldmind-history-search')?.value || '');
+      $('shieldmind-status').textContent = 'Saved conversation deleted.';
+    } catch (error) {
+      $('shieldmind-status').textContent = error?.message || 'The conversation could not be deleted.';
+    }
+  }
+
+  async function saveShieldMindConversation() {
+    const backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !currentProfile || !shieldMindHistory.length) return;
+    const firstQuestion = shieldMindHistory.find(item => item.role === 'user')?.content || 'ShieldMind conversation';
+    const title = firstQuestion.replace(/\\s+/g, ' ').trim().slice(0, 120) || 'ShieldMind conversation';
+    const expectedUserId = currentProfile.id;
+    const savedId = await backend.saveMyShieldMindConversation(
+      shieldMindConversationId, title, shieldMindHistory.slice(-200)
+    );
+    if (currentProfile?.id !== expectedUserId) return;
+    shieldMindConversationId = savedId;
+    await loadShieldMindConversations($('shieldmind-history-search')?.value || '');
+  }
+
+  $('shieldmind-history-search')?.addEventListener('input', event => {
+    loadShieldMindConversations(event.target.value || '');
+  });
+
   function setShieldMindQuickActionActive(button) {
     const bar=button?.closest('.shieldmind-quick-actions');
     if(!bar) return;
@@ -7728,13 +7841,17 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     renderShieldMindRecentQuestions();
     $('shieldmind-status').textContent='Recent questions cleared for this session.';
   });
-  $('shieldmind-clear').addEventListener('click',()=>{
+  $('shieldmind-clear').addEventListener('click',async()=>{
+    if (shieldMindConversationId) {
+      await deleteShieldMindConversation(shieldMindConversationId);
+      return;
+    }
     shieldMindHistory=[];
     shieldMindRecentQuestions=[];
     renderShieldMindRecentQuestions();
-    $('shieldmind-messages').innerHTML='';
-    addShieldMindMessage('assistant','Chat cleared. Official campus policy answers remain unavailable until approved sources are configured.');
-    $('shieldmind-status').textContent='Chat cleared. This interface does not save your conversation.';
+    $('shieldmind-messages').replaceChildren();
+    addShieldMindMessage('assistant','Start a new private conversation whenever you are ready.');
+    $('shieldmind-status').textContent='This unsaved conversation has been cleared.';
   });
   document.querySelectorAll('[data-shieldmind-prompt]').forEach(button=>button.addEventListener('click',()=>{
     $('shieldmind-question').value=button.dataset.shieldmindPrompt;
@@ -7771,10 +7888,17 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if($('shieldmind-image-confirm')) $('shieldmind-image-confirm').checked=false;
       if(currentProfile!==profileAtRequest||currentProfile?.id!==userId){shieldMindHistory=[];$('shieldmind-messages').innerHTML='';resetShieldMindForSession();return;}
       addShieldMindMessage('assistant',String(result?.answer||'I could not produce an answer.'));
-      shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-8);
+      shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:String(result?.answer||'')});shieldMindHistory=shieldMindHistory.slice(-200);
       shieldMindRecentQuestions=[question,...shieldMindRecentQuestions.filter(item=>item!==question)].slice(0,5);
       renderShieldMindRecentQuestions();
       $('shieldmind-status').textContent=result?.mode==='provider'?'Study support · Verify important facts against your course materials.':'Safe response · official campus sources are not connected, so verify important facts with your course materials.';
+      try {
+        await saveShieldMindConversation();
+        $('shieldmind-status').textContent += ' · Saved privately to your account.';
+      } catch (saveError) {
+        console.warn('ShieldMind history save failed:', saveError?.message || 'Unknown error');
+        $('shieldmind-status').textContent += ' · Answer ready, but chat history could not be saved. Retry after checking your connection.';
+      }
     }catch(error){
       const detail=String(error?.message||'').trim();
       const friendlyMessage=detail&&!/Edge Function returned a non-2xx status code/i.test(detail)
