@@ -1,4 +1,5 @@
 import './campus-map-icons.js';
+import './campus-map-discovery.js';
 
 (() => {
   'use strict';
@@ -35,6 +36,7 @@ import './campus-map-icons.js';
   let incidentsVisible = false;
   let selectedFeature = null;
   let activeDiscoveryFilter = 'all';
+  let activeFeatureTypeFilter = 'all';
   let userMarker = null;
   let campusCenterMarker = null;
   let campusCenterMarkerKind = null;
@@ -1650,12 +1652,12 @@ import './campus-map-icons.js';
   function renderFeatures(items = features) {
     featureList.innerHTML = items.length ? items.map(item => {
       const meta = item.metadata || {};
-      const subline = meta.building_code || (meta.opening_hours ? meta.opening_hours : passportLabel(item.feature_type));
+      const subline = meta.building_code || (meta.opening_hours ? meta.opening_hours : window.CampusMapDiscovery.labelFor(item.feature_type));
       return '<button type="button" class="campus-map-feature" data-feature-id="' + esc(item.id) + '" data-feature-type="' + esc(item.feature_type) + '">' +
         '<span class="campus-map-feature-icon" aria-hidden="true">' + iconFor(item.feature_type) + '</span>' +
         '<span class="campus-map-feature-copy"><strong>' + esc(item.name) + '</strong><small>' + esc(subline) + '</small></span>' +
         '<span aria-hidden="true">›</span></button>';
-    }).join('') : '<p class="campus-map-empty">No verified campus locations match this filter. Published building details appear after an authorised campus review.</p>';
+    }).join('') : '<p class="campus-map-empty">No published campus locations match these filters. Try another category or clear your search.</p>';
     featureList.querySelectorAll('[data-feature-id]').forEach(el => {
       el.classList.toggle('selected', el.dataset.featureId === selectedFeature?.id);
     });
@@ -1679,9 +1681,13 @@ import './campus-map-icons.js';
     renderCampusPassport(null);
     features = allFeatures.filter(item => item.is_published && item.campus_slug === selected && item.latitude != null && item.longitude != null);
     adminDrafts = isCampusAdmin ? allFeatures.filter(item => !item.is_published && item.campus_slug === selected) : [];
+    activeDiscoveryFilter = 'all';
+    activeFeatureTypeFilter = 'all';
+    if (search) search.value = '';
+    syncDiscoveryCategoryControls();
     updateSource();
     updateDraftSource();
-    renderFeatures();
+    filterFeatures('');
     renderAdminDrafts();
     populatePassportParentBuildingOptions();
     renderCampusProfileForm();
@@ -2021,37 +2027,75 @@ import './campus-map-icons.js';
     }
   }
 
+  function syncDiscoveryCategoryControls() {
+    const nav = $('campus-map-discovery-filters');
+    if (!nav) return;
+    nav.querySelectorAll('[data-campus-filter]').forEach(button => {
+      const active = button.dataset.campusFilter === activeDiscoveryFilter;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  function renderFeatureTypeFilters() {
+    const nav = $('campus-map-type-filters');
+    if (!nav) return;
+    const counts = window.CampusMapDiscovery.getTypeCounts(features, activeDiscoveryFilter);
+    if (activeFeatureTypeFilter !== 'all' && !counts.some(item => item.type === activeFeatureTypeFilter)) {
+      activeFeatureTypeFilter = 'all';
+    }
+    const availableCount = counts.reduce((total, item) => total + item.count, 0);
+    nav.hidden = counts.length === 0;
+    if (!counts.length) {
+      nav.replaceChildren();
+      return;
+    }
+    nav.innerHTML = [
+      '<button type="button" data-campus-type-filter="all" aria-pressed="' + (activeFeatureTypeFilter === 'all' ? 'true' : 'false') + '" class="' + (activeFeatureTypeFilter === 'all' ? 'active' : '') + '"><span>All types</span><small>' + availableCount + '</small></button>',
+      ...counts.map(item => '<button type="button" data-campus-type-filter="' + esc(item.type) + '" aria-pressed="' + (activeFeatureTypeFilter === item.type ? 'true' : 'false') + '" class="' + (activeFeatureTypeFilter === item.type ? 'active' : '') + '"><span>' + esc(item.label) + '</span><small>' + item.count + '</small></button>')
+    ].join('');
+  }
+
   function matchesCampusFilter(item) {
-    const type = item.feature_type;
-    if (activeDiscoveryFilter === 'academic') return ['building','lecture_hall','library'].includes(type);
-    if (activeDiscoveryFilter === 'residential') return ['hostel'].includes(type);
-    if (activeDiscoveryFilter === 'services') return ['cafeteria','facility','parking','sports'].includes(type);
-    if (activeDiscoveryFilter === 'access') return ['entrance','accessible_entry'].includes(type)
-      || (Array.isArray(item.metadata?.accessibility_features) && item.metadata.accessibility_features.length > 0);
-    if (activeDiscoveryFilter === 'emergency') return ['security','medical','assembly_point','emergency_point','gate'].includes(type);
-    return true;
+    return window.CampusMapDiscovery.matchesCategory(item, activeDiscoveryFilter)
+      && window.CampusMapDiscovery.matchesType(item, activeFeatureTypeFilter);
+  }
+
+  function updateDiscoverySummary(matchCount, term, draftCount = 0) {
+    const summary = $('campus-map-results-summary');
+    const clearButton = $('campus-map-clear-filters');
+    const hasFilters = activeDiscoveryFilter !== 'all' || activeFeatureTypeFilter !== 'all' || Boolean(term);
+    if (summary) {
+      if (!features.length) summary.textContent = 'No published campus locations are mapped here yet.';
+      else if (matchCount === features.length && !hasFilters) summary.textContent = features.length + ' published campus locations';
+      else if (!matchCount) summary.textContent = 'No published locations match these filters.';
+      else summary.textContent = 'Showing ' + matchCount + ' of ' + features.length + ' published locations';
+      if (isCampusAdmin && draftCount > 0) summary.textContent += ' · ' + draftCount + ' matching private drafts';
+    }
+    if (clearButton) clearButton.hidden = !hasFilters;
   }
 
   function filterFeatures(query) {
-    const term = query.trim().toLocaleLowerCase();
-    const matches = features.filter(item => matchesCampusFilter(item) && (!term ||
-      [item.name, item.feature_type, item.description, item.metadata?.building_code].some(value => String(value || '').toLocaleLowerCase().includes(term))
-    ));
+    const term = String(query || '').trim();
+    renderFeatureTypeFilters();
+    const matches = features.filter(item => matchesCampusFilter(item)
+      && window.CampusMapDiscovery.matchesSearch(item, term));
     const draftMatches = isCampusAdmin && term ? adminDrafts.filter(item =>
-      matchesCampusFilter(item) && [item.name, item.feature_type, item.description, item.campus_name].some(value => String(value || '').toLocaleLowerCase().includes(term))
+      matchesCampusFilter(item) && window.CampusMapDiscovery.matchesSearch(item, term)
     ) : [];
     renderFeatures(matches);
+    updateDiscoverySummary(matches.length, term, draftMatches.length);
     results.hidden = !term;
     if (term) {
       const resultRows = [
-        ...matches.map(item => `<button type="button" class="campus-map-search-result" data-search-feature-id="${esc(item.id)}"><span><strong>${esc(item.name)}</strong><small>${esc(item.feature_type.replaceAll('_',' '))}</small></span><em>Published</em></button>`),
-        ...draftMatches.map(item => `<button type="button" class="campus-map-search-result is-draft" data-search-draft-id="${esc(item.id)}"><span><strong>${esc(item.name)}</strong><small>${esc(item.feature_type.replaceAll('_',' '))} · ${item.latitude == null ? 'coordinates missing' : 'candidate pin'}</small></span><em>Admin draft</em></button>`)
+        ...matches.map(item => `<button type="button" class="campus-map-search-result" data-search-feature-id="${esc(item.id)}"><span><strong>${esc(item.name)}</strong><small>${esc(window.CampusMapDiscovery.labelFor(item.feature_type))}</small></span><em>Published</em></button>`),
+        ...draftMatches.map(item => `<button type="button" class="campus-map-search-result is-draft" data-search-draft-id="${esc(item.id)}"><span><strong>${esc(item.name)}</strong><small>${esc(window.CampusMapDiscovery.labelFor(item.feature_type))} · ${item.latitude == null ? 'coordinates missing' : 'candidate pin'}</small></span><em>Admin draft</em></button>`)
       ];
       results.innerHTML = resultRows.length ? resultRows.join('') : '<p class="campus-map-search-empty">No campus locations match this search.</p>';
     } else {
       results.innerHTML = '';
     }
-    if (matches.length === 1 && draftMatches.length === 0) selectFeature(matches[0], true);
+    if (term && matches.length === 1 && draftMatches.length === 0) selectFeature(matches[0], true);
   }
 
   results?.addEventListener('click', event => {
@@ -2250,12 +2294,25 @@ import './campus-map-icons.js';
     const button = event.target.closest('[data-campus-filter]');
     if (!button) return;
     activeDiscoveryFilter = button.dataset.campusFilter || 'all';
-    $('campus-map-discovery-filters').querySelectorAll('[data-campus-filter]').forEach(item => {
-      const active = item === button;
-      item.classList.toggle('active', active);
-      item.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
+    activeFeatureTypeFilter = 'all';
+    syncDiscoveryCategoryControls();
     filterFeatures(search?.value || '');
+  });
+  $('campus-map-type-filters')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-campus-type-filter]');
+    if (!button) return;
+    activeFeatureTypeFilter = button.dataset.campusTypeFilter || 'all';
+    filterFeatures(search?.value || '');
+  });
+  $('campus-map-clear-filters')?.addEventListener('click', () => {
+    activeDiscoveryFilter = 'all';
+    activeFeatureTypeFilter = 'all';
+    if (search) search.value = '';
+    selectedFeature = null;
+    renderCampusPassport(null);
+    syncDiscoveryCategoryControls();
+    filterFeatures('');
+    $('campus-map-discovery-filters')?.querySelector('[data-campus-filter="all"]')?.focus();
   });
   $('campus-map-passport-entrance-list')?.addEventListener('click', event => {
     const button = event.target.closest('[data-passport-entrance-id]');
