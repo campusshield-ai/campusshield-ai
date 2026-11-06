@@ -499,3 +499,75 @@ test("CampusMap SVG symbols register in MapLibre and stay crisp in the responsiv
     expect(metrics.documentWidth, `SVG list fixture should not cause page overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
   }
 });
+
+
+test("CampusMap facility type filters and live counts stay usable across seven viewport widths", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    document.querySelector("#login-screen").hidden = true;
+    document.querySelector("#workspace").hidden = false;
+    document.querySelector("#page-campus-map").classList.add("active");
+  });
+  await page.waitForFunction(() => typeof window.CampusMapDiscovery?.getTypeCounts === "function", { timeout: 20000 });
+
+  const setup = await page.evaluate(() => {
+    const typeFilters = document.querySelector("#campus-map-type-filters");
+    const summary = document.querySelector("#campus-map-results-summary");
+    const clear = document.querySelector("#campus-map-clear-filters");
+    const syntheticPublishedLocations = window.CampusMapDiscovery.featureTypes.map((item, index) => ({
+      id: "layout-fixture-" + index,
+      feature_type: item.type
+    }));
+    const counts = window.CampusMapDiscovery.getTypeCounts(syntheticPublishedLocations);
+    typeFilters.hidden = false;
+    typeFilters.innerHTML = [
+      '<button type="button" class="active" data-campus-type-filter="all" aria-pressed="true"><span>All types</span><small>' + syntheticPublishedLocations.length + '</small></button>',
+      ...counts.map(item => '<button type="button" data-campus-type-filter="' + item.type + '" aria-pressed="false"><span>' + item.label + '</span><small>' + item.count + '</small></button>')
+    ].join('');
+    summary.textContent = 'Showing ' + syntheticPublishedLocations.length + ' of ' + syntheticPublishedLocations.length + ' published locations';
+    clear.hidden = false;
+    return {
+      buttonCount: typeFilters.querySelectorAll("button").length,
+      resultSummary: summary.textContent,
+      accessibleLabel: typeFilters.getAttribute("aria-label")
+    };
+  });
+  expect(setup.buttonCount).toBeGreaterThanOrEqual(10);
+  expect(setup.resultSummary).toContain("published locations");
+  expect(setup.accessibleLabel).toBe("Filter by facility type");
+  await expect(page.locator("#campus-map-type-filters")).toBeVisible();
+  await expect(page.locator("#campus-map-clear-filters")).toBeVisible();
+
+  for (const width of [360, 390, 430, 768, 1024, 1366, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await page.evaluate(() => {
+      const nav = document.querySelector("#campus-map-type-filters");
+      const rect = nav.getBoundingClientRect();
+      const buttons = Array.from(nav.querySelectorAll("button"));
+      return {
+        viewport: innerWidth,
+        documentWidth: document.documentElement.scrollWidth,
+        navWidth: rect.width,
+        navClientWidth: nav.clientWidth,
+        navScrollWidth: nav.scrollWidth,
+        buttonCount: buttons.length,
+        buttonsWithinNav: buttons.every(button => {
+          const bounds = button.getBoundingClientRect();
+          return bounds.left >= rect.left - 1 && bounds.right <= rect.right + 1;
+        }),
+        allTypesMinHeight: buttons[0]?.getBoundingClientRect().height || 0
+      };
+    });
+    expect(metrics.documentWidth, `facility filter chips must not cause page overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+    expect(metrics.navScrollWidth, `facility filter chips must wrap inside the sidebar at ${width}px`).toBeLessThanOrEqual(metrics.navClientWidth + 1);
+    expect(metrics.buttonCount).toBeGreaterThanOrEqual(10);
+    expect(metrics.buttonsWithinNav).toBe(true);
+    expect(metrics.allTypesMinHeight).toBeGreaterThanOrEqual(26);
+  }
+
+  const firstTypeButton = page.locator("#campus-map-type-filters button").nth(1);
+  await firstTypeButton.focus();
+  await expect(firstTypeButton).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.locator("#campus-map-type-filters button").nth(2)).toBeFocused();
+});
