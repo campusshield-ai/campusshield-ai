@@ -3750,6 +3750,60 @@
       message.textContent = err.message || 'Could not load institutional billing requests.';
     }
   }
+  async function loadInstitutionalBillingPaymentAudit() {
+    const tbody = $('platform-admin-billing-audit-table');
+    const message = $('platform-admin-billing-audit-message');
+    if (!tbody || !message) return;
+    tbody.innerHTML = '<tr><td colspan="7">Loading verified payment records…</td></tr>';
+    message.textContent = 'Loading the append-only institutional payment audit…';
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+        throw new Error('Trusted platform finance administrator access is required.');
+      }
+      const { data, error } = await backend.client.functions.invoke('campus-institutional-payment-admin', {
+        body: { action: 'list_payment_audit', limit: 50 }
+      });
+      if (error) {
+        let providerMessage = null;
+        try { providerMessage = (await error.context?.clone?.().json())?.error || null; } catch (_ignored) {}
+        throw new Error(providerMessage || 'The institutional payment audit could not be loaded.');
+      }
+      const entries = Array.isArray(data?.entries) ? data.entries : [];
+      tbody.replaceChildren();
+      if (!entries.length) {
+        tbody.innerHTML = '<tr><td colspan="7">No institutional Paystack payments have been reconciled yet.</td></tr>';
+        message.textContent = 'No verified institutional payments are recorded.';
+        return;
+      }
+      entries.forEach(entry => {
+        const row = document.createElement('tr');
+        const verifiedAt = document.createElement('td');
+        verifiedAt.textContent = dateText(entry.verified_at);
+        const invoice = document.createElement('td');
+        invoice.textContent = entry.invoice_number || 'Invoice unavailable';
+        const institution = document.createElement('td');
+        institution.textContent = entry.institution_name || 'Institution unavailable';
+        const amount = document.createElement('td');
+        amount.textContent = formatNairaFromKobo(entry.amount_kobo);
+        const reference = document.createElement('td');
+        const referenceCode = document.createElement('code');
+        referenceCode.textContent = entry.provider_reference || 'Not recorded';
+        reference.appendChild(referenceCode);
+        const email = document.createElement('td');
+        email.textContent = entry.customer_email || 'Not recorded';
+        const verifier = document.createElement('td');
+        verifier.textContent = entry.verified_by_name || 'Platform finance administrator';
+        row.append(verifiedAt, invoice, institution, amount, reference, email, verifier);
+        tbody.appendChild(row);
+      });
+      message.textContent = entries.length + ' verified payment audit entr' + (entries.length === 1 ? 'y' : 'ies') + '.';
+    } catch (error) {
+      tbody.innerHTML = '<tr><td colspan="7">Payment audit could not be loaded.</td></tr>';
+      message.textContent = error?.message || 'Could not load institutional payment audit.';
+    }
+  }
+
   async function loadPlatformAdminPage() {
     const accessMessage = $('platform-admin-access-message');
     const accessPanel = $('platform-admin-access-panel');
@@ -3780,7 +3834,8 @@
         loadPlatformUniversityRequests(),
         loadPlatformAdminCandidates(),
         loadPlatformCampusAdminRequests(),
-        loadInstitutionalBillingAdminRequests()
+        loadInstitutionalBillingAdminRequests(),
+        loadInstitutionalBillingPaymentAudit()
       ]);
     } catch (err) {
       accessPanel.hidden = false;
@@ -3881,6 +3936,7 @@
   $('platform-admin-refresh-admin-requests').addEventListener('click', loadPlatformCampusAdminRequests);
 
   $('platform-admin-refresh-billing-requests')?.addEventListener('click', loadInstitutionalBillingAdminRequests);
+  $('platform-admin-refresh-billing-audit')?.addEventListener('click', loadInstitutionalBillingPaymentAudit);
 
   const institutionalInvoiceForm = $('platform-admin-invoice-form');
   $('platform-admin-invoice-cancel')?.addEventListener('click', () => {
@@ -3925,8 +3981,11 @@
         }
         toast(data.duplicate
           ? 'This transaction was already reconciled against this invoice.'
-          : 'Paystack payment verified. Institutional subscription activated.');
-        await loadInstitutionalBillingAdminRequests();
+          : 'Payment verified; the institutional subscription record is active. Paid-feature access gates are still being completed.');
+        await Promise.all([
+          loadInstitutionalBillingAdminRequests(),
+          loadInstitutionalBillingPaymentAudit()
+        ]);
       } catch (error) {
         toast(error?.message || 'Payment verification failed. No change was made.');
         verifyButton.disabled = false;
