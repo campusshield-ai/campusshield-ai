@@ -81,9 +81,12 @@
       item?.description, item?.category, item?.location, item?.campus_name,
       item?.metadata
     ];
-    const searchable = normalize(values.flatMap(value =>
+    const normalizedSearchText = normalize(values.flatMap(value =>
       value && typeof value === 'object' ? metadataValues(value) : [value]
     ).join(' '));
+    // Search both spaced and joined forms so "Wi-Fi" matches "wifi" while
+    // multi-word phrases such as "step free" remain searchable as written.
+    const searchable = normalizedSearchText + ' ' + normalizedSearchText.replaceAll(' ', '');
     return term.split(' ').filter(Boolean).every(token => searchable.includes(token));
   }
 
