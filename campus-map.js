@@ -1,5 +1,6 @@
 import './campus-map-icons.js';
 import './campus-map-discovery.js';
+import './campus-map-navigation.js';
 
 (() => {
   'use strict';
@@ -38,6 +39,7 @@ import './campus-map-discovery.js';
   let activeDiscoveryFilter = 'all';
   let activeFeatureTypeFilter = 'all';
   let userMarker = null;
+  let lastWalkingRouteRequestAt = 0;
   let campusCenterMarker = null;
   let campusCenterMarkerKind = null;
   let placementMarker = null;
@@ -1625,15 +1627,19 @@ import './campus-map-discovery.js';
       entranceList.appendChild(button);
     });
 
-    const accessibleEntrance = item.feature_type === 'accessible_entry'
-      ? item
-      : linkedEntrances.find(entrance => entrance.feature_type === 'accessible_entry'
-        && entrance.metadata?.entry_type === 'accessible');
+    const navigation = window.CampusMapNavigation;
+    const standardRouteTarget = navigation?.resolveRouteTarget(item, features, false) || null;
+    const accessibleRouteTarget = navigation?.resolveRouteTarget(item, features, true) || null;
+    appendPassportFact(facts, 'Walking route destination',
+      navigation?.describeRouteTarget(item, standardRouteTarget, false) || 'No published entrance with usable coordinates is recorded.');
+    appendPassportFact(facts, 'Accessible route destination',
+      navigation?.describeRouteTarget(item, accessibleRouteTarget, true) || 'No verified accessible entrance is recorded.');
+
     const accessibleButton = $('campus-map-passport-accessible-route');
-    accessibleButton.disabled = !accessibleEntrance;
-    accessibleButton.title = accessibleEntrance
-      ? 'Route to this verified accessible entrance.'
-      : 'No verified accessible entrance has been recorded for this building.';
+    accessibleButton.disabled = !accessibleRouteTarget;
+    accessibleButton.title = accessibleRouteTarget
+      ? 'Route to the published accessible entrance. The path itself is not certified step-free.'
+      : 'No verified accessible entrance with usable coordinates has been recorded for this location.';
 
     setPassportLink('campus-map-passport-source', 'View verification source ↗', item.source_url);
     setPassportLink('campus-map-passport-contact', metadata.contact_label || 'Contact / service link ↗', metadata.contact_url);
@@ -2385,45 +2391,49 @@ import './campus-map-discovery.js';
   });
 
   function resolveCampusRouteTarget(accessibleOnly = false) {
-    if (!selectedFeature) return null;
-    if (selectedFeature.feature_type === 'accessible_entry') return selectedFeature;
-    if (selectedFeature.feature_type === 'entrance') {
-      return accessibleOnly && selectedFeature.metadata?.entry_type !== 'accessible' ? null : selectedFeature;
-    }
-    const linked = features.filter(feature =>
-      ['entrance','accessible_entry'].includes(feature.feature_type) &&
-      feature.metadata?.building_feature_id === selectedFeature.id
-    );
-    const accessible = linked.find(feature => feature.feature_type === 'accessible_entry'
-      && feature.metadata?.entry_type === 'accessible');
-    if (accessibleOnly) return accessible || null;
-    return linked.find(feature => feature.feature_type === 'entrance' && feature.metadata?.entry_type === 'main')
-      || linked.find(feature => feature.feature_type === 'entrance')
-      || accessible
-      || selectedFeature;
+    return window.CampusMapNavigation?.resolveRouteTarget(selectedFeature, features, accessibleOnly) || null;
   }
 
   async function startWalkingRoute(accessibleOnly = false) {
     if (!selectedFeature) return setStatus('Choose a published campus location first to prepare directions.', 'warning');
     const target = resolveCampusRouteTarget(accessibleOnly);
-    if (!target) return setStatus('No verified accessible entrance is recorded for this building. Contact your campus facilities team for assistance.', 'warning');
+    if (!target) return setStatus(accessibleOnly
+      ? 'No verified accessible entrance with usable coordinates is recorded for this location. Contact your campus facilities team for assistance.'
+      : 'This published location has no usable coordinates or mapped entrance yet.', 'warning');
     if (!navigator.geolocation) return setStatus('Your browser does not support location services.', 'warning');
-    const usingEntrance = target.id !== selectedFeature.id;
+    const navigation = window.CampusMapNavigation;
+    const routeTargetDescription = navigation?.describeRouteTarget(selectedFeature, target, accessibleOnly)
+      || ('Published campus location: ' + (target.name || 'selected location'));
     const routeNote = accessibleOnly
-      ? 'Route target: verified accessible entrance. The route path itself is not certified step-free by this map.'
-      : usingEntrance ? 'Route target: verified building entrance.' : 'No separate verified entrance is recorded; route ends at the published building marker.';
-    setStatus('Finding your location for campus walking directions…');
+      ? 'The selected entrance is recorded as accessible, but the route path itself is not certified step-free by this map.'
+      : 'The route follows available mapped pedestrian data; verify local conditions and signs on campus.';
+    setStatus('Finding your location for directions to ' + (target.name || 'the selected campus location') + '…');
     navigator.geolocation.getCurrentPosition(async position => {
       try {
-        const start = [position.coords.longitude, position.coords.latitude];
+        const startPosition = { longitude: position.coords.longitude, latitude: position.coords.latitude };
+        if (!window.CampusMapNavigation?.hasValidCoordinates(startPosition)) {
+          throw new Error('Your current location could not be validated');
+        }
+        const start = [startPosition.longitude, startPosition.latitude];
+        if (!window.CampusMapNavigation?.hasValidCoordinates(target)) {
+          throw new Error('Selected route destination has no usable coordinates');
+        }
         const end = [Number(target.longitude), Number(target.latitude)];
+        const routeRequestStartedAt = Date.now();
+        if (routeRequestStartedAt - lastWalkingRouteRequestAt < 1000) {
+          setStatus('Please wait at least one second between walking-route requests.', 'warning');
+          return;
+        }
+        lastWalkingRouteRequestAt = routeRequestStartedAt;
         const url = 'https://routing.openstreetmap.de/routed-foot/route/v1/driving/' +
           start.join(',') + ';' + end.join(',') + '?overview=full&geometries=geojson';
         const response = await fetch(url);
         if (!response.ok) throw new Error('Route service unavailable');
         const payload = await response.json();
         const route = payload.routes?.[0];
-        if (!route) throw new Error('No walking route found');
+        if (!route || !Array.isArray(route.geometry?.coordinates) || route.geometry.coordinates.length < 2) {
+          throw new Error('No usable walking route found');
+        }
         const source = map.getSource('campus-walking-route');
         const geojson = { type: 'Feature', properties: {}, geometry: route.geometry };
         if (source) source.setData(geojson);
@@ -2434,8 +2444,13 @@ import './campus-map-discovery.js';
             paint: { 'line-color': accessibleOnly ? '#17845b' : '#087f75', 'line-width': 5, 'line-opacity': .9 } });
         }
         map.fitBounds(new maplibregl.LngLatBounds(start, end), { padding: 70, maxZoom: 17 });
-        setStatus((accessibleOnly ? 'Accessible-entrance route' : 'Walking route') + ': approximately ' +
-          (route.distance / 1000).toFixed(2) + ' km. ' + routeNote + ' Route estimates depend on available mapped paths.');
+        const distanceKm = Number.isFinite(Number(route.distance)) ? (Number(route.distance) / 1000).toFixed(2) : null;
+        const durationMinutes = Number.isFinite(Number(route.duration)) && Number(route.duration) > 0
+          ? Math.max(1, Math.round(Number(route.duration) / 60)) : null;
+        const routeMetrics = distanceKm ? 'approximately ' + distanceKm + ' km' : 'distance unavailable';
+        const durationNote = durationMinutes ? ' (about ' + durationMinutes + ' min)' : '';
+        setStatus((accessibleOnly ? 'Accessible-entrance route' : 'Walking route') + ': ' +
+          routeMetrics + durationNote + '. Destination: ' + routeTargetDescription + '. ' + routeNote);
       } catch (error) {
         setStatus('Walking directions are unavailable for this route right now. The route service may not have mapped paths here.', 'warning');
       }

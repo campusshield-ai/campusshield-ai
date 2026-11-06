@@ -7,6 +7,10 @@ const html = read('index.html');
 const js = read('campus-map.js');
 const discoverySource = read('campus-map-discovery.js');
 const iconSource = read('campus-map-icons.js');
+const navigationSource = read('campus-map-navigation.js');
+const navigationContext = { window: {} };
+runInNewContext(navigationSource, navigationContext);
+const navigation = navigationContext.window.CampusMapNavigation;
 const mapConfig = read('campus-map-config.js');
 const mapLoader = read('campus-map-loader.js');
 const geometrySource = read('campus-map-geometry.js');
@@ -18,6 +22,94 @@ const iconContext = { window: {} };
 runInNewContext(iconSource, iconContext);
 const campusMapIcons = iconContext.window.CampusMapIcons;
 assert.ok(campusMapIcons, 'CampusMap exposes its original SVG symbol library');
+
+assert.ok(navigation, 'CampusMap exposes a pure route-target resolver for safe direction selection');
+const routeBuilding = {
+  id: 'building-1', name: 'Library', feature_type: 'building',
+  longitude: 3.7, latitude: 6.8, verification_status: 'verified'
+};
+const sideEntrance = {
+  id: 'side-entrance', name: 'Side Entrance', feature_type: 'entrance',
+  longitude: 3.701, latitude: 6.801, verification_status: 'verified',
+  metadata: { building_feature_id: 'building-1', entry_type: 'secondary' }
+};
+const mainEntrance = {
+  id: 'main-entrance', name: 'Main Gate', feature_type: 'entrance',
+  longitude: 3.702, latitude: 6.802, verification_status: 'verified',
+  metadata: { building_feature_id: 'building-1', entry_type: 'main' }
+};
+const accessibleEntrance = {
+  id: 'accessible-entrance', name: 'Accessible Entry', feature_type: 'accessible_entry',
+  longitude: 3.703, latitude: 6.803, verification_status: 'verified',
+  metadata: { building_feature_id: 'building-1', entry_type: 'accessible' }
+};
+assert.equal(navigation.resolveRouteTarget(routeBuilding, [sideEntrance, accessibleEntrance, mainEntrance], false), mainEntrance,
+  'Normal walking directions prefer the linked main entrance over other entrances');
+assert.equal(navigation.resolveRouteTarget(routeBuilding, [sideEntrance, accessibleEntrance], false), sideEntrance,
+  'Normal walking directions use a published linked entrance when no main entrance is recorded');
+assert.equal(navigation.resolveRouteTarget(routeBuilding, [sideEntrance, accessibleEntrance, mainEntrance], true), accessibleEntrance,
+  'Accessible directions resolve only to the linked published accessible entrance');
+assert.equal(navigation.resolveRouteTarget(routeBuilding, [sideEntrance, mainEntrance], true), null,
+  'Accessible directions never silently fall back to an ordinary entrance or building marker');
+assert.equal(navigation.resolveRouteTarget(routeBuilding, [], false), routeBuilding,
+  'A published campus location marker is used only when no separate entrance is recorded');
+assert.equal(navigation.describeRouteTarget(routeBuilding, mainEntrance), 'Verified main entrance: Main Gate',
+  'Passport route explanation names the verified main entrance');
+assert.equal(navigation.describeRouteTarget(routeBuilding, accessibleEntrance), 'Verified accessible entrance: Accessible Entry',
+  'Passport route explanation names the verified accessible entrance');
+assert.equal(navigation.describeRouteTarget(routeBuilding, null, true), 'No verified accessible entrance with usable coordinates is recorded.',
+  'Passport gives a clear reason when no accessible entrance can be routed to');
+assert.equal(navigation.describeRouteTarget(routeBuilding, routeBuilding),
+  'Campus location marker: Library (no separate mapped entrance is recorded)',
+  'Passport labels the building-marker fallback without implying an entrance exists');
+assert.equal(navigation.resolveRouteTarget(sideEntrance, [sideEntrance], true), null,
+  'Accessible routing rejects an ordinary selected entrance');
+assert.equal(navigation.resolveRouteTarget(accessibleEntrance, [accessibleEntrance], true), accessibleEntrance,
+  'An explicitly selected accessible entrance remains a valid accessible route target');
+assert.equal(navigation.hasValidCoordinates({ longitude: '3.7', latitude: '6.8' }), true,
+  'Valid numeric coordinate strings are accepted');
+assert.equal(navigation.hasValidCoordinates({ longitude: '', latitude: '6.8' }), false,
+  'Empty coordinate strings are rejected instead of being coerced to zero');
+assert.equal(navigation.hasValidCoordinates({ longitude: 181, latitude: 6.8 }), false,
+  'Longitude outside the WGS84 range is rejected');
+assert.equal(navigation.hasValidCoordinates({ longitude: 3.7, latitude: null }), false,
+  'Missing coordinate values are rejected');
+assert.equal(navigation.resolveRouteTarget(routeBuilding, [{
+  ...mainEntrance, longitude: 181
+}], false), routeBuilding,
+  'An invalid entrance pin is ignored and the valid selected campus marker remains the fallback');
+assert.equal(navigation.resolveRouteTarget({
+  ...routeBuilding, latitude: 91
+}, [mainEntrance], false), null,
+  'An invalid selected location cannot become a route origin or destination');
+
+assert.match(js, /import '\.\/campus-map-navigation\.js'/, 'CampusMap loads its explicit navigation-target resolver');
+assert.match(js, /navigation\?\.resolveRouteTarget\(item, features, false\)/,
+  'The Campus Passport displays the resolved standard route destination');
+assert.match(js, /navigation\?\.resolveRouteTarget\(item, features, true\)/,
+  'The Campus Passport displays the resolved accessible route destination');
+assert.match(js, /hasValidCoordinates\(target\)/,
+  'Route requests validate destination coordinates before calling the foot router');
+assert.match(js, /hasValidCoordinates\(startPosition\)/,
+  'Route requests validate the device GPS origin before calling the foot router');
+assert.match(js, /routeRequestStartedAt - lastWalkingRouteRequestAt < 1000/,
+  'CampusMap enforces the public walking router one-request-per-second limit');
+assert.match(js, /describeRouteTarget\(item, standardRouteTarget, false\)/,
+  'The Passport explains the selected normal-route destination');
+assert.match(js, /describeRouteTarget\(item, accessibleRouteTarget, true\)/,
+  'The Passport explains when a verified accessible route destination is unavailable');
+assert.match(js, /Destination: ' \+ routeTargetDescription/,
+  'Successful route status tells users which published destination was used');
+assert.match(html, /FOSSGIS-hosted OpenStreetMap routing service/i,
+  'Campus Passport discloses that the external foot router stores route requests in its logs');
+assert.match(html, /stored in server logs/i,
+  'Campus Passport discloses the routing provider server-log retention');
+assert.match(html, /href="https:\/\/routing\.openstreetmap\.de\/about\.html"[^>]*>FOSSGIS<\/a>/,
+  'CampusMap displays the routing provider attribution link');
+assert.match(html, /href="https:\/\/www\.openstreetmap\.org\/fixthemap"[^>]*>Fix the map<\/a>/,
+  'CampusMap displays the OpenStreetMap data feedback link required by the routing provider');
+assert.match(html, /does not save your live GPS position as a CampusShield or Supabase record/i,
+  'Campus Passport distinguishes on-demand third-party routing from Supabase location storage');
 const expectedCampusIconTypes = [
   'security','medical','library','hostel','cafeteria','lecture_hall','building',
   'gate','entrance','parking','sports','assembly_point','accessible_entry',
@@ -395,10 +487,10 @@ for (const id of [
 assert.match(html, /data-campus-accessibility/, 'Accessibility details use a constrained feature checklist');
 assert.match(js, /function renderCampusPassport\(item\)/, 'Selected published campus locations render a real Passport panel');
 assert.match(js, /function matchesCampusFilter\(item\)/, 'CampusMap filters are derived from the saved location category');
-assert.match(js, /function resolveCampusRouteTarget\(accessibleOnly = false\)/, 'Walking routes resolve linked entrance records');
-assert.match(js, /feature\.metadata\?\.building_feature_id === selectedFeature\.id/, 'Entrance routes only link to the selected building through the stored building reference');
-assert.match(js, /feature\.metadata\?\.entry_type === 'accessible'/, 'Accessible routing requires a published, linked accessible entrance marker');
-assert.match(js, /No verified accessible entrance is recorded/, 'The app explains when no accessible entrance has been verified instead of guessing');
+assert.match(js, /function resolveCampusRouteTarget\(accessibleOnly = false\)/, 'Walking routes delegate linked entrance resolution');
+assert.match(navigationSource, /feature\.metadata\?\.building_feature_id === selectedFeature\.id/, 'Entrance routes only link to the selected building through the stored building reference');
+assert.match(navigationSource, /feature\.metadata\?\.entry_type === 'accessible'/, 'Accessible routing requires a linked accessible entrance marker');
+assert.match(js, /No verified accessible entrance with usable coordinates is recorded/, 'The app explains when no accessible entrance with coordinates is available instead of guessing');
 assert.match(js, /map\.on\('click', 'campus-feature-points'/, 'Map markers open the matching Campus Passport');
 assert.match(js, /p_metadata: passportMetadata/, 'Structured Passport details are sent through the checked CampusMap write RPC');
 assert.match(js, /function buildPassportMetadata\(\)/, 'Admin Passport fields are validated and converted into metadata');
