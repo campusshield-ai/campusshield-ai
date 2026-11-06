@@ -39,6 +39,7 @@ import './campus-map-navigation.js';
   let activeDiscoveryFilter = 'all';
   let activeFeatureTypeFilter = 'all';
   let userMarker = null;
+  let lastWalkingRouteRequestAt = 0;
   let campusCenterMarker = null;
   let campusCenterMarkerKind = null;
   let placementMarker = null;
@@ -2418,6 +2419,12 @@ import './campus-map-navigation.js';
           throw new Error('Selected route destination has no usable coordinates');
         }
         const end = [Number(target.longitude), Number(target.latitude)];
+        const routeRequestStartedAt = Date.now();
+        if (routeRequestStartedAt - lastWalkingRouteRequestAt < 1000) {
+          setStatus('Please wait at least one second between walking-route requests.', 'warning');
+          return;
+        }
+        lastWalkingRouteRequestAt = routeRequestStartedAt;
         const url = 'https://routing.openstreetmap.de/routed-foot/route/v1/driving/' +
           start.join(',') + ';' + end.join(',') + '?overview=full&geometries=geojson';
         const response = await fetch(url);
