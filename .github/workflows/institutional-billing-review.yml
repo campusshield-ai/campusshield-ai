@@ -7,6 +7,7 @@ on:
       - "index.html"
       - "campusshield-app.js"
       - "supabase/migrations/*institutional_billing_review*"
+      - "supabase/migrations/*institutional_invoice*"
       - "docs/INSTITUTIONAL_BILLING_REVIEW.md"
       - "tests/institutional-billing-review-smoke.mjs"
       - ".github/workflows/institutional-billing-review.yml"
