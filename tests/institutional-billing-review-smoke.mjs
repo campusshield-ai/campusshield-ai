@@ -111,33 +111,33 @@ assert.doesNotMatch(invoiceMigration, /GRANT UPDATE|GRANT DELETE/i,
   'Authenticated users cannot update or delete issued invoices');
 assert.doesNotMatch(invoiceMigration, /SECURITY DEFINER/i,
   'Invoice creation trigger does not introduce a SECURITY DEFINER function');
-assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS public\\.campus_institutional_subscriptions/i,
+assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS public\.campus_institutional_subscriptions/i,
   'Verified institutional payments create a dedicated subscription record');
-assert.match(paymentReconciliationMigration, /ALTER TABLE public\\.campus_institutional_invoices[\\s\\S]*ADD COLUMN IF NOT EXISTS paid_reference/i,
+assert.match(paymentReconciliationMigration, /ALTER TABLE public\.campus_institutional_invoices[\s\S]*ADD COLUMN IF NOT EXISTS paid_reference/i,
   'Invoices record the verified payment timestamp, reference and finance actor');
-assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS private\\.campus_institutional_paystack_events/i,
+assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS private\.campus_institutional_paystack_events/i,
   'Signed Paystack lifecycle events are stored in a private inbox');
-assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS private\\.campus_institutional_payment_audit/i,
+assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS private\.campus_institutional_payment_audit/i,
   'Institutional payment verification creates an audit record');
-assert.match(paymentReconciliationMigration, /prevent_institutional_payment_audit_mutation[\\s\\S]*BEFORE UPDATE OR DELETE/i,
+assert.match(paymentReconciliationMigration, /prevent_institutional_payment_audit_mutation[\s\S]*BEFORE UPDATE OR DELETE/i,
   'Institutional payment audit entries are append-only');
-assert.match(paymentReconciliationMigration, /REVOKE ALL ON FUNCTION public\\.commit_campus_institutional_paystack_payment[\\s\\S]*TO service_role/i,
+assert.match(paymentReconciliationMigration, /REVOKE ALL ON FUNCTION public\.commit_campus_institutional_paystack_payment[\s\S]*TO service_role/i,
   'Only the backend service role can commit verified invoice payment and subscription activation');
-assert.match(paymentReconciliationMigration, /public\\.platform_is_admin\\(\\)[\\s\\S]*campus_memberships/i,
+assert.match(paymentReconciliationMigration, /public\.platform_is_admin\(\)[\s\S]*campus_memberships/i,
   'Institutional subscription status is visible only to platform admins or verified campus admins');
 assert.match(institutionalPaystackWebhook, /x-paystack-signature/,
   'Institutional webhook reads the Paystack signature header');
 assert.match(institutionalPaystackWebhook, /name: "HMAC", hash: "SHA-512"/,
   'Institutional webhook verifies Paystack signatures using HMAC SHA-512');
-assert.match(institutionalPaystackWebhook, /sk_test_[\\s\\S]*activated: false/i,
+assert.match(institutionalPaystackWebhook, /sk_test_[\s\S]*activated: false/i,
   'The Staging webhook records test events but never activates subscriptions by itself');
-assert.match(institutionalPaystackWebhook, /invoice\\.payment_failed[\\s\\S]*subscription\\.disable/i,
+assert.match(institutionalPaystackWebhook, /invoice\.payment_failed[\s\S]*subscription\.disable/i,
   'Recurring payment failures and subscription lifecycle events are captured for audit');
 assert.match(institutionalPaymentAdmin, /platform_is_admin/,
   'Only trusted platform finance administrators can verify institutional payments');
-assert.match(institutionalPaymentAdmin, /tx\\?\\.status !== "success"[\\s\\S]*tx\\?\\.amount[\\s\\S]*tx\\?\\.currency !== "NGN"[\\s\\S]*tx\\?\\.domain !== "test"/,
+assert.match(institutionalPaymentAdmin, /tx\?\.status !== "success"[\s\S]*tx\?\.amount[\s\S]*tx\?\.currency !== "NGN"[\s\S]*tx\?\.domain !== "test"/,
   'Finance verification checks successful test status, exact NGN amount and provider domain');
-assert.match(institutionalPaymentAdmin, /bill_to_email[\\s\\S]*customer\\?\\.email/i,
+assert.match(institutionalPaymentAdmin, /bill_to_email[\s\S]*customer\?\.email/i,
   'The verified Paystack customer email must match the invoice bill-to email');
 assert.match(institutionalPaymentAdmin, /commit_campus_institutional_paystack_payment/,
   'Verified payment, invoice paid state and subscription activation are committed atomically');
