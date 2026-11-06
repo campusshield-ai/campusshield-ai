@@ -1788,12 +1788,16 @@ async getCurrentUser() {
         if (trimError) throw trimError;
       }
 
+      const nextSequence = savedMessages.reduce((highest, row, index) => {
+        const sequence = Number(row.metadata?.sequence);
+        return Math.max(highest, Number.isSafeInteger(sequence) && sequence >= 0 ? sequence : index);
+      }, -1) + 1;
       const additions = cleanMessages.slice(overlapLength).map((item, index) => ({
         conversation_id: savedId,
         user_id: user.id,
         role: item.role,
         content: item.content,
-        metadata: { sequence: overlapLength + index }
+        metadata: { sequence: nextSequence + index }
       }));
       if (additions.length) {
         const { error } = await client.from("shieldmind_messages").insert(additions);
