@@ -48,6 +48,9 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json().catch(() => null);
+    if (body?.action !== "verify_invoice_payment") {
+      return json({ error: "Unsupported institutional finance action." }, 400);
+    }
     const invoiceId = String(body?.invoice_id || "").trim();
     const reference = String(body?.reference || "").trim();
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(invoiceId)) {
