@@ -257,7 +257,21 @@
   }
 
   function canManageInstitutionalBilling() {
-    return currentProfile?.role === 'admin' && currentProfile?.verification_status === 'verified';
+    return currentProfile?.role === 'admin'
+      && currentProfile?.verification_status === 'verified'
+      && hasVerifiedCampusStaffMembership();
+  }
+
+  function syncInstitutionalBillingPanel() {
+    const panel = $('institutional-billing-panel');
+    const allowed = canManageInstitutionalBilling();
+    if (panel) panel.hidden = !allowed;
+    const institutionField = $('institution-billing-name');
+    if (institutionField) {
+      const verifiedName = String(campusContext?.university_name || '').trim();
+      institutionField.value = allowed ? verifiedName : '';
+      institutionField.readOnly = Boolean(allowed && verifiedName);
+    }
   }
 
   function syncCampusAccessNavigation() {
@@ -307,6 +321,7 @@
         if (userError || !user) throw new Error('Your session could not be verified. Please sign in again.');
         const { error } = await backend.client.from('campus_institutional_billing_requests').insert({
           requester_id: user.id,
+          university_id: campusContext.university_id,
           institution_name: institutionName,
           requested_plan: plan,
           billing_period: period,
@@ -568,8 +583,7 @@
     if ($('quick-campus-alerts')) $('quick-campus-alerts').hidden = !verified;
     if ($('campus-alerts-link')) $('campus-alerts-link').hidden = !verified;
     if ($('campus-alerts-gate')) $('campus-alerts-gate').hidden = verified;
-    const institutionalBillingPanel = $('institutional-billing-panel');
-    if (institutionalBillingPanel) institutionalBillingPanel.hidden = !canManageInstitutionalBilling();
+    syncInstitutionalBillingPanel();
     document.querySelectorAll('[data-page="noticeboard"], [data-page="helpdesk"], [data-page="community"], [data-page="groups"], [data-page="events"], [data-page="marketplace"]').forEach(el => {
       el.hidden = !verified;
     });
@@ -7023,6 +7037,7 @@
       if (workspaceReady) {
         campusContext = await backend.getMyCampusContext();
         syncCampusAccessNavigation();
+        syncInstitutionalBillingPanel();
         const institutionHint = String($('signin-institution')?.value || '').trim();
         const normalizeInstitution = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
         if (authMode === 'signin' && institutionHint && campusContext?.university_name &&
@@ -7632,6 +7647,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
             if (workspaceReady) {
               campusContext = await backend.getMyCampusContext();
               syncCampusAccessNavigation();
+              syncInstitutionalBillingPanel();
               const completedGoogleOAuth = consumeGoogleOAuthHints(profile, campusContext);
               await refreshIncidentsFromSupabase();
               if (!completedGoogleOAuth) {
