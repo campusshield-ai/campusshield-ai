@@ -340,7 +340,7 @@
       const { data: { user }, error: userError } = await backend.client.auth.getUser();
       if (userError || !user) throw new Error('Session could not be verified.');
       const { data, error } = await backend.client.from('campus_institutional_billing_requests')
-        .select('institution_name,requested_plan,billing_period,status,created_at')
+        .select('institution_name,requested_plan,billing_period,status,created_at,response_message,reviewed_at')
         .eq('requester_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -350,14 +350,32 @@
         container.textContent = 'No institutional billing requests submitted yet.';
         return;
       }
+      const statusLabels = {
+        pending: 'Awaiting review',
+        contacted: 'CampusShield has contacted your institution',
+        approved: 'Request approved · invoice and payment still pending',
+        rejected: 'Request not approved'
+      };
       data.forEach(item => {
-        const card = document.createElement('div');
+        const card = document.createElement('article');
         card.className = 'community-post';
         const title = document.createElement('strong');
-        title.textContent = item.institution_name + ' · ' + item.requested_plan.replace(/-/g, ' ');
+        title.textContent = item.institution_name + ' · ' + String(item.requested_plan || '').replace(/-/g, ' ');
         const detail = document.createElement('p');
-        detail.textContent = item.billing_period + ' · ' + item.status + ' · ' + new Date(item.created_at).toLocaleDateString();
-        card.append(title, detail);
+        detail.textContent = item.billing_period + ' billing · Submitted ' + new Date(item.created_at).toLocaleDateString();
+        const status = document.createElement('p');
+        status.className = 'shieldmind-pill';
+        status.textContent = statusLabels[item.status] || 'Status update pending';
+        card.append(title, detail, status);
+        if (item.response_message) {
+          const response = document.createElement('p');
+          response.textContent = 'CampusShield response: ' + item.response_message;
+          card.appendChild(response);
+        }
+        const boundary = document.createElement('p');
+        boundary.className = 'muted';
+        boundary.textContent = 'Request tracking only. Approval does not activate institutional features; a separate invoice and verified payment are required.';
+        card.appendChild(boundary);
         container.appendChild(card);
       });
     } catch (_error) {
@@ -3422,6 +3440,92 @@
     }
   }
 
+  async function loadInstitutionalBillingAdminRequests() {
+    const tbody = $('platform-admin-billing-requests-table');
+    const message = $('platform-admin-billing-requests-message');
+    if (!tbody || !message) return;
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    message.textContent = 'Loading institutional billing requests…';
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+        throw new Error('Trusted platform administrator access is required.');
+      }
+      const { data, error } = await backend.client
+        .from('campus_institutional_billing_requests')
+        .select('id,institution_name,requested_plan,billing_period,contact_email,status,created_at,response_message,reviewed_at')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      tbody.replaceChildren();
+      if (!data?.length) {
+        tbody.innerHTML = '<tr><td colspan="6">No institutional billing requests have been submitted.</td></tr>';
+        message.textContent = 'The institutional billing queue is empty.';
+        return;
+      }
+      const statuses = [
+        ['pending', 'Pending review'],
+        ['contacted', 'Contacted'],
+        ['approved', 'Request approved'],
+        ['rejected', 'Not approved']
+      ];
+      data.forEach(item => {
+        const row = document.createElement('tr');
+        const institutionCell = document.createElement('td');
+        const institution = document.createElement('strong');
+        institution.textContent = item.institution_name || 'Institution name unavailable';
+        const requested = document.createElement('small');
+        requested.textContent = 'Submitted ' + dateText(item.created_at);
+        institutionCell.append(institution, document.createElement('br'), requested);
+
+        const planCell = document.createElement('td');
+        planCell.textContent = String(item.requested_plan || '').replace(/-/g, ' ')
+          + ' · ' + String(item.billing_period || 'monthly');
+
+        const contactCell = document.createElement('td');
+        contactCell.textContent = item.contact_email || 'No contact email';
+
+        const statusCell = document.createElement('td');
+        const statusSelect = document.createElement('select');
+        statusSelect.dataset.institutionBillingReviewStatus = 'true';
+        statusSelect.setAttribute('aria-label', 'Request status for ' + (item.institution_name || 'institution'));
+        statuses.forEach(([value, label]) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = label;
+          statusSelect.appendChild(option);
+        });
+        statusSelect.value = statuses.some(([value]) => value === item.status) ? item.status : 'pending';
+        statusCell.appendChild(statusSelect);
+
+        const responseCell = document.createElement('td');
+        const response = document.createElement('textarea');
+        response.rows = 2;
+        response.maxLength = 1000;
+        response.value = item.response_message || '';
+        response.placeholder = 'Optional message visible to the requesting university';
+        response.dataset.institutionBillingReviewResponse = 'true';
+        response.setAttribute('aria-label', 'Response message for ' + (item.institution_name || 'institution'));
+        responseCell.appendChild(response);
+
+        const actionCell = document.createElement('td');
+        const save = document.createElement('button');
+        save.type = 'button';
+        save.className = 'btn';
+        save.textContent = 'Save review';
+        save.dataset.institutionBillingReviewSave = item.id;
+        actionCell.appendChild(save);
+
+        row.append(institutionCell, planCell, contactCell, statusCell, responseCell, actionCell);
+        tbody.appendChild(row);
+      });
+      message.textContent = data.length + ' request(s). Request approval is not payment confirmation or subscription activation.';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6">Institutional billing requests could not be loaded.</td></tr>';
+      message.textContent = err.message || 'Could not load institutional billing requests.';
+    }
+  }
+
   async function loadPlatformAdminPage() {
     const accessMessage = $('platform-admin-access-message');
     const accessPanel = $('platform-admin-access-panel');
@@ -3448,7 +3552,12 @@
       accessPanel.hidden = true;
       toolsPanel.hidden = false;
       await populatePlatformAdminUniversities();
-      await Promise.all([loadPlatformUniversityRequests(), loadPlatformAdminCandidates(), loadPlatformCampusAdminRequests()]);
+      await Promise.all([
+        loadPlatformUniversityRequests(),
+        loadPlatformAdminCandidates(),
+        loadPlatformCampusAdminRequests(),
+        loadInstitutionalBillingAdminRequests()
+      ]);
     } catch (err) {
       accessPanel.hidden = false;
       toolsPanel.hidden = true;
@@ -3546,6 +3655,50 @@
   });
 
   $('platform-admin-refresh-admin-requests').addEventListener('click', loadPlatformCampusAdminRequests);
+  $('platform-admin-refresh-billing-requests')?.addEventListener('click', loadInstitutionalBillingAdminRequests);
+  $('platform-admin-billing-requests-table')?.addEventListener('click', async event => {
+    const button = event.target.closest('[data-institution-billing-review-save]');
+    if (!button) return;
+    const row = button.closest('tr');
+    const statusField = row?.querySelector('[data-institution-billing-review-status]');
+    const responseField = row?.querySelector('[data-institution-billing-review-response]');
+    const message = $('platform-admin-billing-requests-message');
+    const status = String(statusField?.value || '');
+    const responseMessage = String(responseField?.value || '').trim();
+    if (!['pending', 'contacted', 'approved', 'rejected'].includes(status)) {
+      if (message) message.textContent = 'Choose a valid request status.';
+      return;
+    }
+    if (responseMessage.length > 1000) {
+      if (message) message.textContent = 'The response message must be 1,000 characters or fewer.';
+      return;
+    }
+    if (['approved', 'rejected'].includes(status) && !confirm(
+      status === 'approved'
+        ? 'Mark this billing request as approved for further procurement? This does not confirm payment or activate the university subscription.'
+        : 'Mark this institutional billing request as not approved?'
+    )) return;
+    button.disabled = true;
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+        throw new Error('Trusted platform administrator access is required.');
+      }
+      const { data, error } = await backend.client
+        .from('campus_institutional_billing_requests')
+        .update({ status, response_message: responseMessage || null })
+        .eq('id', button.dataset.institutionBillingReviewSave)
+        .select('id')
+        .maybeSingle();
+      if (error) throw error;
+      if (!data?.id) throw new Error('The request was not updated. Refresh the queue and try again.');
+      await loadInstitutionalBillingAdminRequests();
+      toast('Billing request review saved. No subscription has been activated.');
+    } catch (err) {
+      button.disabled = false;
+      if (message) message.textContent = err.message || 'Could not save the billing request review.';
+    }
+  });
 
   async function loadPlatformAdminCandidates() {
     const tbody = $('platform-admin-candidates-table');
