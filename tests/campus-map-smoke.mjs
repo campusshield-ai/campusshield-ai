@@ -397,11 +397,7 @@ assert.equal(geometry.extractCampusBoundaryGeometry({ type: 'FeatureCollection',
 assert.equal(geometry.extractCampusBoundaryGeometry({ type: 'FeatureCollection', features: [{ geometry: { type: 'Polygon', coordinates: [] } }, { geometry: { type: 'Polygon', coordinates: [] } }] }), null, 'Multi-feature collections are rejected until dissolved into one boundary');
 assert.equal(geometry.extractCampusBoundaryGeometry({ type: 'Point', coordinates: [3.7, 6.8] }), null, 'Point GeoJSON cannot be mistaken for a campus boundary');
 
-const boundaryValidatorMatch = js.match(/function validateCampusBoundaryGeometry\\(geometry\\) \\{[\\s\\S]*?\\n  \\}/);
-assert.ok(boundaryValidatorMatch, 'Campus boundary validator is available for direct regression tests');
-const boundaryValidatorContext = {};
-runInNewContext(`${boundaryValidatorMatch[0]}\\nthis.validateCampusBoundaryGeometry = validateCampusBoundaryGeometry;`, boundaryValidatorContext);
-const validateCampusBoundaryGeometry = boundaryValidatorContext.validateCampusBoundaryGeometry;
+const validateCampusBoundaryGeometry = geometry.validateCampusBoundaryGeometry;
 const valid2dBoundary = { type: 'Polygon', coordinates: [[[3.7, 6.8], [3.71, 6.8], [3.71, 6.81], [3.7, 6.8]]] };
 assert.equal(validateCampusBoundaryGeometry(valid2dBoundary), true, 'Valid two-dimensional boundary coordinates are accepted');
 const valid3dBoundary = { type: 'Polygon', coordinates: [[[3.7, 6.8, 12], [3.71, 6.8, 12], [3.71, 6.81, 12], [3.7, 6.8, 12]]] };
