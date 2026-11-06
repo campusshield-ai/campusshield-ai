@@ -24,7 +24,7 @@ assert.match(app, /!await backend\.isPlatformAdmin\(\)/,
   'The browser rechecks trusted platform-admin authorization before reviewing requests');
 assert.match(app, /\.update\(\{ status, response_message: responseMessage \|\| null \}\)/,
   'The review action changes only request status and the public response');
-assert.match(app, /request approval is not payment confirmation or subscription activation/i,
+assert.match(app, /Only approved requests can receive an invoice; invoice issuance is not payment confirmation/i,
   'The admin queue distinguishes request approval from a paid subscription');
 assert.match(app, /Request approved · invoice and payment still pending/,
   'Requesters are told that an approved enquiry still requires invoice and payment');
