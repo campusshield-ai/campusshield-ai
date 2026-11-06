@@ -44,7 +44,7 @@ assert.match(campusScopeMigration, /ADD COLUMN IF NOT EXISTS university_id uuid/
 assert.match(campusScopeMigration, /membership\.campus_role = 'admin'[\s\S]*membership\.membership_status = 'active'[\s\S]*membership\.verification_status = 'verified'/i,
   'Only an active, verified campus-admin membership can submit an institutional billing request');
 assert.match(campusScopeMigration, /university\.id = membership\.university_id[\s\S]*university\.name\) = lower\(btrim\(campus_institutional_billing_requests\.institution_name\)\)/i,
-  'The requested institution must match the user's verified university');
+  "The requested institution must match the user's verified university");
 assert.match(campusScopeMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_requester_created_idx/i,
   'Requester history and requester foreign-key lookups are indexed');
 assert.match(universityIndexMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_university_idx/i,
