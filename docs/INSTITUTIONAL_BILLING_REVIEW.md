@@ -79,6 +79,28 @@ Annual invoices are not sent to monthly pages. Enterprise custom quotes and any 
 
 The hosted page does not receive the CampusShield invoice ID as metadata. A successful redirect or customer-facing success message is not payment verification. Finance must retain the Paystack transaction/subscription reference and reconcile it against the issued invoice. This UI does not mark the invoice paid or activate entitlements after the customer leaves Paystack. No institutional checkout webhook is enabled by this link mapping.
 
-## Current scope and next phase
+## Institutional payment verification and activation
 
-This phase now includes the request review queue, requester-visible responses, trusted invoice issuance and printable invoice copies, plus invoice-gated links to the three fixed monthly Paystack subscription pages. It does **not** yet accept uploaded bank-transfer receipts, automatically reconcile institutional Paystack transactions, record verified institutional payment events, mark invoices as paid, create or renew university subscriptions, cancel recurring debits, or activate institutional entitlements. Those operations require a separately designed and tested payment-reconciliation and entitlement workflow.
+Staging now includes a separate institutional Paystack event inbox and finance verification path. It does not reuse ShieldMind's personal subscription tables or webhook processing.
+
+- The institutional webhook verifies Paystack's `x-paystack-signature` using HMAC SHA-512 before storing selected event fields in a private event inbox. It captures `charge.success`, subscription create/disable/not-renew events, invoice updates/failures and dispute/refund signals. The webhook is an evidence collector only; it never changes invoice or subscription status.
+- Trusted platform finance administrators can enter the Paystack transaction reference against an issued invoice in **Platform administration → Institutional billing review** and select **Verify & activate**.
+- The backend checks the invoice is issued and monthly, then calls Paystack's server-side Verify Transaction API. It requires a successful test-domain transaction, exact NGN amount, and a customer email matching the invoice bill-to email. A browser redirect or customer success message is not accepted as proof of payment.
+- A single database transaction records the invoice as paid, records the subscription, and appends a finance audit entry with the verifying administrator, transaction reference, amount, currency and Paystack payment date. Repeated references and references already used for another invoice are rejected.
+- The created institutional subscription is readable only by trusted platform administrators and verified active campus administrators for that university. The requester billing page displays the recorded plan and expiry.
+
+**Current limit:** this activation action handles the initial fixed-price monthly payment only: Starter ₦100,000, Professional ₦250,000 and Enterprise base ₦500,000. Annual invoices, custom Enterprise totals and tax-adjusted totals are not eligible for these links. The activation period recorded is one calendar month. Later recurring Paystack charges, failed renewals, cancellations, refunds and disputes are captured as events but do not yet extend or revoke the CampusShield subscription automatically. Do not publish the monthly subscription pages for live collection until the recurring renewal and cancellation workflow is completed and tested. The Paystack page itself can continue charging monthly while CampusShield's current activation period expires.
+
+For Staging, configure Paystack's **Test Mode** webhook URL as:
+
+`https://hywcpnoqqhxvujnimhxl.supabase.co/functions/v1/campus-institutional-paystack-webhook`
+
+The Staging institutional verification function accepts `sk_test_` only and rejects live-domain transactions. Keep Production and its payment secrets untouched.
+
+## Remaining payment work
+
+- Implement and test renewal processing from verified recurring Paystack events, using the subscription code and transaction reference.
+- Handle `invoice.payment_failed`, `subscription.not_renew`, `subscription.disable`, refunds and disputes, including grace periods and expiry.
+- Add bank-transfer receipt capture and a separate finance verification route for annual/custom invoices.
+- Add the institutional subscription gates to the paid university-only features; essential student safety access remains free.
+- Test with actual Paystack test transactions and verify the full webhook/retry/audit lifecycle before any live activation.
