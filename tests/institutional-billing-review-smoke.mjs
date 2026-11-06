@@ -25,6 +25,12 @@ assert.match(app, /Request approved · invoice and payment still pending/,
   'Requesters are told that an approved enquiry still requires invoice and payment');
 assert.match(app, /response_message/,
   'The requester history displays reviewer responses');
+assert.match(migration, /CREATE TABLE IF NOT EXISTS public\\.campus_institutional_billing_requests/i,
+  'The migration safely creates the request table when it is missing');
+assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_select_own[\\s\\S]*public\\.platform_is_admin\\(\\)/i,
+  'The request SELECT policy preserves verified requester and trusted platform-admin access');
+assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_insert_own[\\s\\S]*status = 'pending'/i,
+  'New requests remain pending and must be submitted by the authenticated requester');
 assert.match(migration, /GRANT UPDATE \(status, response_message\)[\s\S]*TO authenticated/i,
   'Authenticated updates are limited to request status and response columns');
 assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_update_platform_admin[\s\S]*USING \(public\.platform_is_admin\(\)\)[\s\S]*WITH CHECK \(public\.platform_is_admin\(\)\)/i,
