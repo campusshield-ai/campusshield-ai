@@ -53,6 +53,23 @@
     return [longitude, latitude];
   }
 
+  // Accept a GeoJSON Polygon/MultiPolygon geometry or one-feature export.
+  // Multi-feature collections are rejected: callers must dissolve campus parcels
+  // into one authoritative campus boundary before importing them.
+  function extractCampusBoundaryGeometry(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    let candidate = value;
+    if (value.type === 'Feature') {
+      candidate = value.geometry;
+    } else if (value.type === 'FeatureCollection') {
+      if (!Array.isArray(value.features) || value.features.length !== 1) return null;
+      candidate = value.features[0]?.geometry;
+    }
+    if (!candidate || !['Polygon', 'MultiPolygon'].includes(candidate.type)
+        || !Array.isArray(candidate.coordinates)) return null;
+    return candidate;
+  }
+
   function osmWayToBuildingCandidate(way) {
     if (!way || typeof way !== 'object' || !/^\d{1,20}$/.test(String(way.id || ''))) return null;
     const tags = way.tags && typeof way.tags === 'object' ? way.tags : {};
@@ -108,10 +125,37 @@
     };
   }
 
+  function validateCampusBoundaryGeometry(geometry) {
+    const polygons = geometry?.type === 'Polygon'
+      ? [geometry.coordinates]
+      : geometry?.type === 'MultiPolygon'
+        ? geometry.coordinates
+        : null;
+    if (!Array.isArray(polygons) || !polygons.length || polygons.length > 200) return false;
+    return polygons.every(rings =>
+      Array.isArray(rings) && rings.length > 0 && rings.length <= 20 &&
+      rings.every(ring => {
+        if (!Array.isArray(ring) || ring.length < 4 || ring.length > 2000) return false;
+        const first = ring[0], last = ring[ring.length - 1];
+        if (!Array.isArray(first) || !Array.isArray(last) ||
+            first.length !== last.length ||
+            !first.every((coordinate, index) => coordinate === last[index])) return false;
+        return ring.every(point =>
+          Array.isArray(point) && point.length >= 2 &&
+          point.every(coordinate => typeof coordinate === 'number' && Number.isFinite(coordinate)) &&
+          point[0] >= -180 && point[0] <= 180 &&
+          point[1] >= -90 && point[1] <= 90
+        );
+      })
+    );
+  }
+
   root.CampusMapGeometry = Object.freeze({
     parseOsmLength,
     parseOsmLevels,
     ringCentroid,
+    extractCampusBoundaryGeometry,
+    validateCampusBoundaryGeometry,
     osmWayToBuildingCandidate
   });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1199,26 +1199,38 @@
   }
 
   function validateCampusBoundaryGeometry(geometry) {
-    const polygons = geometry?.type === 'Polygon'
-      ? [geometry.coordinates]
-      : geometry?.type === 'MultiPolygon'
-        ? geometry.coordinates
-        : null;
-    if (!Array.isArray(polygons) || !polygons.length || polygons.length > 200) return false;
-    return polygons.every(rings =>
-      Array.isArray(rings) && rings.length > 0 && rings.length <= 20 &&
-      rings.every(ring => {
-        if (!Array.isArray(ring) || ring.length < 4 || ring.length > 2000) return false;
-        const first = ring[0], last = ring[ring.length - 1];
-        if (!Array.isArray(first) || !Array.isArray(last) || first[0] !== last[0] || first[1] !== last[1]) return false;
-        return ring.every(point =>
-          Array.isArray(point) && point.length === 2 &&
-          Number.isFinite(Number(point[0])) && Number.isFinite(Number(point[1])) &&
-          Number(point[0]) >= -180 && Number(point[0]) <= 180 &&
-          Number(point[1]) >= -90 && Number(point[1]) <= 90
-        );
-      })
-    );
+    return Boolean(window.CampusMapGeometry?.validateCampusBoundaryGeometry?.(geometry));
+  }
+
+  async function loadCampusBoundaryFile() {
+    if (!isCampusAdmin) return setStatus('Only a verified campus administrator can load campus boundary data.', 'warning');
+    const input = $('campus-map-profile-boundary-file');
+    const file = input?.files?.[0];
+    if (!file) return setStatus('Choose a GeoJSON campus boundary file first.', 'warning');
+    if (file.size > 2 * 1024 * 1024) {
+      input.value = '';
+      return setStatus('This GeoJSON file is larger than the 2 MB boundary intake limit. Simplify the boundary geometry and try again.', 'warning');
+    }
+    if (!/\.(geojson|json)$/i.test(file.name) && !['application/geo+json','application/json'].includes(file.type)) {
+      input.value = '';
+      return setStatus('Choose a .geojson or .json file containing one Polygon or MultiPolygon boundary.', 'warning');
+    }
+    try {
+      const parsed = JSON.parse(await file.text());
+      const geometry = window.CampusMapGeometry?.extractCampusBoundaryGeometry(parsed);
+      if (!geometry || !validateCampusBoundaryGeometry(geometry)) {
+        throw new Error('The file must contain one valid Polygon or MultiPolygon boundary with closed rings and valid longitude/latitude coordinates. Dissolve multiple features into one boundary before loading.');
+      }
+      $('campus-map-profile-boundary').value = JSON.stringify(geometry, null, 2);
+      // Importing a file never verifies it. A campus administrator must compare
+      // the exact boundary against the cited approved plan or survey separately.
+      $('campus-map-profile-boundary-verified').checked = false;
+      setStatus(file.name + ' loaded locally as an unpublished boundary candidate. Add its HTTPS evidence source, review it against the approved university plan, then save the campus profile.', 'warning');
+    } catch (error) {
+      setStatus(error.message || 'Could not read this GeoJSON boundary file.', 'error');
+    } finally {
+      input.value = '';
+    }
   }
 
   async function saveCampusProfile() {
@@ -1928,6 +1940,7 @@
     incidentPins = [];
     loadIncidentPins().catch(error => console.warn('Incident pins unavailable.', error));
   });
+  $('campus-map-profile-boundary-file')?.addEventListener('change', loadCampusBoundaryFile);
   $('campus-map-profile-form')?.addEventListener('submit', event => {
     event.preventDefault();
     saveCampusProfile();
