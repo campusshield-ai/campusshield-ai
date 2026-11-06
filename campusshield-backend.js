@@ -1635,16 +1635,34 @@ async getCurrentUser() {
       if (!client) throw new Error("Supabase is not configured.");
       const user = await this.getCurrentUser();
       if (!user) throw new Error("Sign in to view saved ShieldMind conversations.");
+      const cleanSearch = String(search || "").trim().slice(0, 120);
       let query = client.from("shieldmind_conversations")
-        .select("id,title,created_at,updated_at")
+        .select("id,title,created_at,updated_at,last_message_at")
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false })
         .limit(50);
-      const cleanSearch = String(search || "").trim().slice(0, 120);
-      if (cleanSearch) query = query.ilike("search_text", "%" + cleanSearch + "%");
+      if (!cleanSearch) {
+        const { data, error } = await query;
+        if (error) throw error;
+        return data || [];
+      }
+      const pattern = "%" + cleanSearch + "%";
+      const [titles, messages] = await Promise.all([
+        client.from("shieldmind_conversations").select("id")
+          .eq("user_id", user.id).ilike("title", pattern).limit(50),
+        client.from("shieldmind_messages").select("conversation_id")
+          .eq("user_id", user.id).ilike("content", pattern).limit(5000)
+      ]);
+      if (titles.error) throw titles.error;
+      if (messages.error) throw messages.error;
+      const ids = new Set([
+        ...(titles.data || []).map(row => row.id),
+        ...(messages.data || []).map(row => row.conversation_id)
+      ]);
+      if (!ids.size) return [];
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      return (data || []).filter(row => ids.has(row.id));
     },
 
     async loadMyShieldMindConversation(conversationId) {
@@ -1652,13 +1670,23 @@ async getCurrentUser() {
       if (!conversationId) throw new Error("Choose a saved conversation.");
       const user = await this.getCurrentUser();
       if (!user) throw new Error("Sign in to load saved conversations.");
-      const { data, error } = await client.from("shieldmind_conversations")
-        .select("id,title,messages,created_at,updated_at")
+      const { data: conversation, error: conversationError } = await client.from("shieldmind_conversations")
+        .select("id,title,created_at,updated_at,last_message_at")
         .eq("id", conversationId)
         .eq("user_id", user.id)
         .single();
+      if (conversationError) throw conversationError;
+      const { data: rows, error } = await client.from("shieldmind_messages")
+        .select("role,content,created_at")
+        .eq("conversation_id", conversationId)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(100);
       if (error) throw error;
-      return data;
+      return {
+        ...conversation,
+        messages: (rows || []).map(row => ({ role: row.role, content: row.content }))
+      };
     },
 
     async saveMyShieldMindConversation(conversationId, title, messages, expectedUserId = null) {
@@ -1666,7 +1694,7 @@ async getCurrentUser() {
       const user = await this.getCurrentUser();
       if (!user) throw new Error("Sign in to save ShieldMind conversations.");
       if (expectedUserId && user.id !== expectedUserId) throw new Error("Your account changed. Sign in again before saving this conversation.");
-      const cleanTitle = String(title || "").trim().slice(0, 120);
+      const cleanTitle = String(title || "").trim().slice(0, 100);
       if (!cleanTitle) throw new Error("A conversation title is required.");
       if (!Array.isArray(messages) || messages.length < 1 || messages.length > 100) {
         throw new Error("The conversation contains an invalid number of messages.");
@@ -1678,28 +1706,56 @@ async getCurrentUser() {
         }
         return { role: item.role, content: item.content };
       });
-      const payload = {
-        user_id: user.id,
-        title: cleanTitle,
-        messages: cleanMessages,
-        updated_at: new Date().toISOString()
-      };
-      if (conversationId) {
+      let savedId = conversationId;
+      if (savedId) {
         const { data, error } = await client.from("shieldmind_conversations")
-          .update(payload)
-          .eq("id", conversationId)
+          .select("id")
+          .eq("id", savedId)
           .eq("user_id", user.id)
+          .single();
+        if (error) throw error;
+        if (!data?.id) throw new Error("This conversation is not available to your account.");
+      } else {
+        const { data, error } = await client.from("shieldmind_conversations")
+          .insert({ user_id: user.id, title: cleanTitle })
           .select("id")
           .single();
         if (error) throw error;
-        return data.id;
+        savedId = data.id;
       }
-      const { data, error } = await client.from("shieldmind_conversations")
-        .insert(payload)
-        .select("id")
-        .single();
-      if (error) throw error;
-      return data.id;
+
+      const { data: existing, error: existingError } = await client.from("shieldmind_messages")
+        .select("role,content")
+        .eq("conversation_id", savedId)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(100);
+      if (existingError) throw existingError;
+      const savedMessages = existing || [];
+      const prefixMatches = savedMessages.length <= cleanMessages.length &&
+        savedMessages.every((row, index) =>
+          row.role === cleanMessages[index].role && row.content === cleanMessages[index].content
+        );
+      if (!prefixMatches) {
+        throw new Error("Saved history differs from this session. Reload the conversation before continuing.");
+      }
+      const additions = cleanMessages.slice(savedMessages.length).map(item => ({
+        conversation_id: savedId,
+        user_id: user.id,
+        role: item.role,
+        content: item.content
+      }));
+      if (additions.length) {
+        const { error } = await client.from("shieldmind_messages").insert(additions);
+        if (error) throw error;
+      }
+      const now = new Date().toISOString();
+      const { error: updateError } = await client.from("shieldmind_conversations")
+        .update({ title: cleanTitle, updated_at: now, last_message_at: now })
+        .eq("id", savedId)
+        .eq("user_id", user.id);
+      if (updateError) throw updateError;
+      return savedId;
     },
 
     async deleteMyShieldMindConversation(conversationId) {
