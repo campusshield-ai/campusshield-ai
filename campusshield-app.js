@@ -3539,22 +3539,28 @@
     const tbody = $('platform-admin-billing-requests-table');
     const message = $('platform-admin-billing-requests-message');
     if (!tbody || !message) return;
-    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
-    message.textContent = 'Loading institutional billing requests…';
+    tbody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
+    message.textContent = 'Loading institutional billing requests and invoices…';
     try {
       const backend = window.CampusShieldBackend;
       if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
         throw new Error('Trusted platform administrator access is required.');
       }
-      const { data, error } = await backend.client
-        .from('campus_institutional_billing_requests')
-        .select('id,institution_name,requested_plan,billing_period,contact_email,status,created_at,response_message,reviewed_at')
-        .order('created_at', { ascending: false })
-        .limit(100);
-      if (error) throw error;
+      const [requestResult, invoiceResult] = await Promise.all([
+        backend.client.from('campus_institutional_billing_requests')
+          .select('id,requester_id,university_id,institution_name,requested_plan,billing_period,contact_email,status,created_at,response_message,reviewed_at')
+          .order('created_at', { ascending: false }).limit(100),
+        backend.client.from('campus_institutional_invoices')
+          .select('id,billing_request_id,invoice_number,total_kobo,due_date,status,issued_at')
+          .order('issued_at', { ascending: false }).limit(200)
+      ]);
+      if (requestResult.error) throw requestResult.error;
+      if (invoiceResult.error) throw invoiceResult.error;
+      const requests = requestResult.data || [];
+      const invoiceByRequest = new Map((invoiceResult.data || []).map(invoice => [invoice.billing_request_id, invoice]));
       tbody.replaceChildren();
-      if (!data?.length) {
-        tbody.innerHTML = '<tr><td colspan="6">No institutional billing requests have been submitted.</td></tr>';
+      if (!requests.length) {
+        tbody.innerHTML = '<tr><td colspan="7">No institutional billing requests have been submitted.</td></tr>';
         message.textContent = 'The institutional billing queue is empty.';
         return;
       }
@@ -3564,7 +3570,7 @@
         ['approved', 'Request approved'],
         ['rejected', 'Not approved']
       ];
-      data.forEach(item => {
+      requests.forEach(item => {
         const row = document.createElement('tr');
         const institutionCell = document.createElement('td');
         const institution = document.createElement('strong');
@@ -3603,24 +3609,50 @@
         response.setAttribute('aria-label', 'Response message for ' + (item.institution_name || 'institution'));
         responseCell.appendChild(response);
 
-        const actionCell = document.createElement('td');
+        const reviewCell = document.createElement('td');
         const save = document.createElement('button');
         save.type = 'button';
         save.className = 'btn';
         save.textContent = 'Save review';
         save.dataset.institutionBillingReviewSave = item.id;
-        actionCell.appendChild(save);
+        reviewCell.appendChild(save);
 
-        row.append(institutionCell, planCell, contactCell, statusCell, responseCell, actionCell);
+        const invoiceCell = document.createElement('td');
+        const invoice = invoiceByRequest.get(item.id);
+        if (invoice) {
+          const label = document.createElement('strong');
+          label.textContent = invoice.invoice_number;
+          const detail = document.createElement('small');
+          detail.textContent = formatNairaFromKobo(invoice.total_kobo) + ' · due '
+            + new Date(invoice.due_date + 'T00:00:00').toLocaleDateString('en-NG');
+          const print = document.createElement('button');
+          print.type = 'button';
+          print.className = 'btn secondary';
+          print.textContent = 'Print / Save PDF';
+          print.dataset.institutionalInvoiceAdminPrint = invoice.id;
+          invoiceCell.append(label, document.createElement('br'), detail, document.createElement('br'), print);
+        } else if (item.status === 'approved') {
+          const create = document.createElement('button');
+          create.type = 'button';
+          create.className = 'btn';
+          create.textContent = 'Create invoice';
+          create.dataset.institutionalInvoiceCreate = item.id;
+          create.dataset.invoiceInstitution = item.institution_name || '';
+          create.dataset.invoicePlan = item.requested_plan || '';
+          create.dataset.invoicePeriod = item.billing_period || 'monthly';
+          invoiceCell.appendChild(create);
+        } else {
+          invoiceCell.textContent = 'Available after approval';
+        }
+        row.append(institutionCell, planCell, contactCell, statusCell, responseCell, reviewCell, invoiceCell);
         tbody.appendChild(row);
       });
-      message.textContent = data.length + ' request(s). Request approval is not payment confirmation or subscription activation.';
+      message.textContent = requests.length + ' request(s). Only approved requests can receive an invoice; invoice issuance is not payment confirmation.';
     } catch (err) {
-      tbody.innerHTML = '<tr><td colspan="6">Institutional billing requests could not be loaded.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7">Institutional billing requests could not be loaded.</td></tr>';
       message.textContent = err.message || 'Could not load institutional billing requests.';
     }
   }
-
   async function loadPlatformAdminPage() {
     const accessMessage = $('platform-admin-access-message');
     const accessPanel = $('platform-admin-access-panel');
