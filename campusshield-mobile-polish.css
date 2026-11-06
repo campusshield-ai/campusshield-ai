@@ -729,3 +729,110 @@ html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources>strong,html
 html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources small{color:#a6bca9}
 html[data-theme="dark"] #page-shieldmind .shieldmind-copy-answer{border-color:#365a43;background:#183626;color:#b9ebc2}
 @media(max-width:600px){#page-shieldmind .shieldmind-message-sources{padding:9px}#page-shieldmind .shieldmind-copy-answer{min-height:36px}}
+
+.mobile-theme-toggle { display: none; }
+
+/* Mobile theme control: keep the theme switch reachable when desktop actions
+   are hidden, and let the mobile header itself follow the selected theme. */
+@media (max-width: 650px) {
+  #workspace .topbar {
+    grid-template-columns: minmax(0, 1fr) 42px 46px !important;
+    grid-template-areas:
+      "brand theme menu"
+      "search search search" !important;
+  }
+
+  #workspace .mobile-theme-toggle {
+    grid-area: theme;
+    display: inline-grid !important;
+    place-items: center;
+    justify-self: end;
+    align-self: center;
+    flex: 0 0 42px;
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    border: 1px solid rgba(169, 226, 190, .28);
+    border-radius: 13px;
+    background: rgba(237, 255, 244, .1);
+    color: #eaffef;
+    box-shadow: inset 0 1px rgba(255,255,255,.09), 0 5px 14px rgba(0,0,0,.1);
+  }
+
+  #workspace .mobile-theme-toggle svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  html[data-theme="light"] #workspace .topbar {
+    background:
+      radial-gradient(ellipse at 84% 0%, rgba(34, 139, 91, .08), transparent 42%),
+      linear-gradient(135deg, #f7fbf8, #eaf4ed);
+    border-bottom-color: #cfe1d6;
+    box-shadow: 0 9px 25px rgba(19, 59, 42, .08);
+  }
+
+  html[data-theme="light"] #workspace .mobile-topbar-brand {
+    color: #183b31;
+  }
+
+  html[data-theme="light"] #workspace .mobile-topbar-mark {
+    border-color: #c8dfd0;
+    background: linear-gradient(145deg, #e0f2e6, #f3faf5);
+    color: #176b4b !important;
+    box-shadow: inset 0 1px rgba(255,255,255,.9), 0 5px 14px rgba(19,59,42,.08);
+  }
+
+  html[data-theme="light"] #workspace .mobile-theme-toggle,
+  html[data-theme="light"] #workspace .mobile-nav-toggle {
+    border-color: #c8dfd0;
+    background: rgba(255,255,255,.82);
+    color: #176b4b;
+    box-shadow: 0 3px 10px rgba(19,59,42,.07);
+  }
+
+  html[data-theme="light"] #workspace .mobile-theme-toggle:focus-visible,
+  html[data-theme="light"] #workspace .mobile-nav-toggle:focus-visible {
+    outline-color: #23825e;
+  }
+
+  html[data-theme="light"] #workspace .global-search-input {
+    border-color: #c9ddd0;
+    background: rgba(255,255,255,.9);
+    color: #173a31;
+    box-shadow: inset 0 1px rgba(255,255,255,.95), 0 3px 10px rgba(19,59,42,.04);
+  }
+
+  html[data-theme="light"] #workspace .global-search-input::placeholder {
+    color: #698478;
+  }
+
+  html[data-theme="light"] #workspace .global-search-input:focus {
+    border-color: #23825e;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(35,130,94,.13);
+  }
+
+  html[data-theme="light"] #workspace .global-search-icon {
+    color: #347b5c;
+  }
+}
+
+@media (max-width: 360px) {
+  #workspace .topbar {
+    grid-template-columns: minmax(0, 1fr) 40px 44px !important;
+    gap: 9px 9px;
+    padding-right: 11px;
+    padding-left: 11px;
+  }
+
+  #workspace .mobile-theme-toggle {
+    flex-basis: 40px;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+  }
+}

@@ -107,3 +107,51 @@ test("phone quick actions render as a two-column bento grid with readable safety
     expect(metrics.note.right, `${width}px: safety note remains visible`).toBeLessThanOrEqual(width + 1);
   }
 });
+
+test("mobile theme switch is visible, updates both modes and persists on phones", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  const mobileToggle = page.locator("#campus-mobile-theme-toggle");
+  await mobileToggle.waitFor({ state: "attached" });
+
+  await page.evaluate(() => {
+    const login = document.querySelector("#login-screen");
+    const workspace = document.querySelector("#workspace");
+    if (login) login.style.display = "none";
+    if (workspace) workspace.hidden = false;
+    localStorage.removeItem("campusshield_theme");
+  });
+
+  for (const width of phoneWidths) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect(mobileToggle).toBeVisible();
+    await expect(mobileToggle).toHaveAttribute("aria-label", "Switch to dark mode");
+
+    const initial = await page.evaluate(() => ({
+      theme: document.documentElement.dataset.theme,
+      header: getComputedStyle(document.querySelector("#workspace .topbar")).backgroundImage,
+      searchBackground: getComputedStyle(document.querySelector("#workspace .global-search-input")).backgroundColor,
+      width: document.documentElement.scrollWidth,
+    }));
+    expect(initial.theme).toBe("light");
+    expect(initial.width, `${width}px: theme control creates no horizontal overflow`).toBeLessThanOrEqual(width + 1);
+
+    await mobileToggle.click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(mobileToggle).toHaveAttribute("aria-label", "Switch to light mode");
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("campusshield_theme"))).toBe("dark");
+    const darkPalette = await page.evaluate(() => ({
+      header: getComputedStyle(document.querySelector("#workspace .topbar")).backgroundImage,
+      searchBackground: getComputedStyle(document.querySelector("#workspace .global-search-input")).backgroundColor,
+    }));
+    expect(darkPalette.header, `${width}px: dark mode applies its own mobile header palette`).not.toBe(initial.header);
+    expect(darkPalette.searchBackground, `${width}px: dark mode applies its own search surface`).not.toBe(initial.searchBackground);
+
+    await mobileToggle.click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await expect(mobileToggle).toHaveAttribute("aria-label", "Switch to dark mode");
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("campusshield_theme"))).toBe("light");
+  }
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+});
