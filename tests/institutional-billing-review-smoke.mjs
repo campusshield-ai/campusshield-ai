@@ -5,6 +5,7 @@ const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8'
 const html = read('index.html');
 const app = read('campusshield-app.js');
 const migration = read('supabase/migrations/20261106215716_institutional_billing_review_controls.sql');
+const campusScopeMigration = read('supabase/migrations/20261106220002_institutional_billing_review_campus_scope.sql');
 const docs = read('docs/INSTITUTIONAL_BILLING_REVIEW.md');
 
 assert.match(html, /id="platform-admin-institutional-billing"/,
@@ -37,6 +38,16 @@ assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_upd
   'Only trusted platform admins can update institutional billing requests');
 assert.match(migration, /NEW\.reviewed_at := pg_catalog\.now\(\)/,
   'The database records the review timestamp');
+assert.match(campusScopeMigration, /ADD COLUMN IF NOT EXISTS university_id uuid/i,
+  'Each new billing request is linked to its canonical university');
+assert.match(campusScopeMigration, /membership\.campus_role = 'admin'[\\s\\S]*membership\.membership_status = 'active'[\\s\\S]*membership\.verification_status = 'verified'/i,
+  'Only an active, verified campus-admin membership can submit an institutional billing request');
+assert.match(campusScopeMigration, /university\.id = membership\.university_id[\\s\\S]*university\.name\) = lower\(btrim\(campus_institutional_billing_requests\.institution_name\)\)/i,
+  'The requested institution must match the user's verified university');
+assert.match(campusScopeMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_requester_created_idx/i,
+  'Requester history and requester foreign-key lookups are indexed');
+assert.match(campusScopeMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_reviewed_by_idx/i,
+  'Reviewer foreign-key lookups are indexed');
 assert.match(migration, /NEW\.reviewed_by := auth\.uid\(\)/,
   'The database records the authenticated reviewer');
 assert.doesNotMatch(migration, /SECURITY DEFINER/i,
