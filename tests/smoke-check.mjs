@@ -637,6 +637,23 @@ assert.match(shieldmindFunction, /ShieldMind provider returned a non-success res
 assert.match(shieldmindFunction, /ShieldMind request failed unexpectedly/,"unexpected runtime failures are visible without logging prompts or secrets");
 assert.doesNotMatch(shieldmindFunction, /console\.(?:log|warn|error)\([^\n]*(?:question|providerKey|Authorization|apiKey)/i,"diagnostics do not log prompt text or provider credentials");
 assert.match(shieldmindFunction, /your ShieldMind account limit has not been reached/i);
+
+const shieldmindPaidGate = shieldmindFunction.indexOf("// ShieldMind is a paid AI service.");
+const shieldmindCampusContext = shieldmindFunction.indexOf('client.rpc("get_my_campus_context")');
+assert.ok(shieldmindPaidGate >= 0 && shieldmindPaidGate < shieldmindCampusContext,
+  "paid entitlement is checked before campus-source context is read");
+assert.match(shieldmindFunction, /from\("shieldmind_subscriptions"\)/,
+  "ShieldMind checks the caller-scoped subscription record");
+assert.match(shieldmindFunction, /subscription.status === "active"/,
+  "only active ShieldMind subscriptions unlock AI");
+assert.match(shieldmindFunction, /Date.parse\(subscription.expires_at\) > Date.now\(\)/,
+  "expired ShieldMind subscriptions cannot unlock AI");
+assert.match(shieldmindFunction, /code: "SUBSCRIPTION_REQUIRED"/,
+  "unpaid ShieldMind requests receive an explicit subscription-required response");
+assert.match(shieldmindFunction, /}, 402\)/,
+  "unpaid ShieldMind requests are rejected with HTTP 402");
+console.log("PASS ShieldMind AI requires an active, unexpired paid subscription server-side");
+
 console.log("PASS ShieldMind surfaces safe provider rate-limit and billing errors");
 
 
