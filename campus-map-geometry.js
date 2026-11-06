@@ -53,6 +53,23 @@
     return [longitude, latitude];
   }
 
+  // Accept a GeoJSON Polygon/MultiPolygon geometry or one-feature export.
+  // Multi-feature collections are rejected: callers must dissolve campus parcels
+  // into one authoritative campus boundary before importing them.
+  function extractCampusBoundaryGeometry(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    let candidate = value;
+    if (value.type === 'Feature') {
+      candidate = value.geometry;
+    } else if (value.type === 'FeatureCollection') {
+      if (!Array.isArray(value.features) || value.features.length !== 1) return null;
+      candidate = value.features[0]?.geometry;
+    }
+    if (!candidate || !['Polygon', 'MultiPolygon'].includes(candidate.type)
+        || !Array.isArray(candidate.coordinates)) return null;
+    return candidate;
+  }
+
   function osmWayToBuildingCandidate(way) {
     if (!way || typeof way !== 'object' || !/^\d{1,20}$/.test(String(way.id || ''))) return null;
     const tags = way.tags && typeof way.tags === 'object' ? way.tags : {};
@@ -112,6 +129,7 @@
     parseOsmLength,
     parseOsmLevels,
     ringCentroid,
+    extractCampusBoundaryGeometry,
     osmWayToBuildingCandidate
   });
 })(typeof window !== 'undefined' ? window : globalThis);
