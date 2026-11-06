@@ -13,7 +13,7 @@ concurrency:
 jobs:
   staging-preflight:
     name: Staging-only safety preflight and regression checks
-    if: github.ref == 'refs/heads/codex/fix-registration-confirmation-role'
+    if: github.ref == 'refs/heads/codex/fix-registration-confirmation-role' || github.ref == 'refs/heads/staging/preview'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
