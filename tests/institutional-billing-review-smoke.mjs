@@ -149,6 +149,18 @@ assert.match(app, /activeInstitutionalSubscription\.plan[\s\S]*access period end
   'The verified campus administrator can see their active institutional subscription and expiry');
 assert.match(app, /paid_reference/,
   'The requester and finance views can display a recorded payment reference');
+assert.match(institutionalPaymentAdmin, /body\?\.action === "list_payment_audit"/,
+  'The payment audit is exposed only through the trusted finance Edge Function');
+assert.match(institutionalPaymentAdmin, /campus_institutional_payment_audit[\s\S]*verified_at/,
+  'The finance-only audit action reads the append-only payment audit in verification order');
+assert.match(app, /async function loadInstitutionalBillingPaymentAudit\(\)/,
+  'The platform finance console loads the verified payment audit');
+assert.match(app, /action: 'list_payment_audit'/,
+  'The browser requests payment audit data through the protected finance function');
+assert.match(html, /id="platform-admin-billing-audit-table"/,
+  'Platform finance has a dedicated verified institutional payment audit table');
+assert.match(html, /id="platform-admin-refresh-billing-audit"/,
+  'Platform finance can refresh the verified institutional payment audit');
 assert.match(invoiceIssuerIndexMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_invoices_issued_by_idx/i,
   'Invoice issuer foreign-key lookups are indexed');
 assert.match(invoiceLockMigration, /campus_billing_request_lock_after_invoice/i,
