@@ -411,4 +411,23 @@ assert.equal(validateCampusBoundaryGeometry(invalidStringBoundary), false, 'GeoJ
 const invalidElevationClosure = { type: 'Polygon', coordinates: [[[3.7, 6.8, 1], [3.71, 6.8, 1], [3.71, 6.81, 1], [3.7, 6.8, 2]]] };
 assert.equal(validateCampusBoundaryGeometry(invalidElevationClosure), false, 'A closed 3D ring must match every coordinate dimension at its endpoints');
 
+
+assert.match(html, /id="campus-map-layers-toggle"/, 'CampusMap exposes an accessible layer control button');
+assert.match(html, /aria-controls="campus-map-layer-panel"/, 'Layer control button identifies its expandable panel');
+assert.match(html, /id="campus-map-layer-panel"[^>]*hidden/, 'Layer panel is collapsed by default');
+for (const layer of ['locations','boundary','buildings','roads','labels','drafts']) {
+  assert.match(html, new RegExp('data-map-layer="' + layer + '"'), 'CampusMap exposes the ' + layer + ' visibility toggle');
+}
+assert.match(html, /id="campus-map-layer-drafts-option"[^>]*hidden/, 'Admin-only draft pin control is hidden by default');
+assert.match(css, /campus-map-layer-panel/, 'CampusMap layer panel has a dedicated style system');
+assert.match(css, /campus-map-stage\.has-layer-panel \.campus-map-legend/, 'The map legend yields space while the layer panel is open');
+assert.match(css, /html\[data-theme="dark"\] \.campus-map-layer-panel/, 'Map layer controls support the dark theme');
+assert.match(js, /MAP_LAYER_STORAGE_KEY/, 'Layer preferences are persisted locally');
+assert.match(js, /function applyMapLayerPreferences\(\)/, 'Layer visibility is centralised in one map preference function');
+assert.match(js, /baseStyleRoadLayerIds/, 'Street basemap road layers are independently controllable');
+assert.match(js, /baseStyleLabelLayerIds/, 'Basemap labels are independently controllable');
+assert.match(js, /key === 'drafts' && !isCampusAdmin/, 'Admin draft pins remain restricted to verified campus admins');
+assert.match(js, /event\.key === 'Escape'/, 'Layer panel supports Escape-key dismissal');
+assert.match(js, /setMapLayerPanelOpen\(false\)/, 'Layer panel can close without changing map data');
+
 console.log('CampusMap static smoke checks passed.');
