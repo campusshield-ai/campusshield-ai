@@ -4696,7 +4696,27 @@ button,input,select,textarea{max-width:100%;min-width:0}
           <tbody id="platform-admin-billing-requests-table"><tr><td colspan="7">Loading…</td></tr></tbody>
         </table>
       </div>
-      <p class="muted">Important: changing a request to “approved” approves the enquiry for further procurement only. It does not confirm bank transfer, create a paid subscription, unlock campus features or alter student safety access. Payment reconciliation and subscription activation remain separate controlled steps.</p>
+      <div class="panel-heading" style="margin-top:24px">
+        <div><h3>Verified payment audit trail</h3><p>Recent institutional payments verified by trusted CampusShield finance administrators.</p></div>
+        <button class="btn secondary" type="button" id="platform-admin-refresh-billing-audit">Refresh payment audit</button>
+      </div>
+      <p id="platform-admin-billing-audit-message" class="message" role="status" aria-live="polite">Loading verified institutional payments…</p>
+      <div class="table-wrap">
+        <table>
+          <caption class="sr-only">Append-only audit trail of verified institutional payments</caption>
+          <thead><tr>
+            <th scope="col">Verified</th>
+            <th scope="col">Invoice</th>
+            <th scope="col">Institution</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Paystack reference</th>
+            <th scope="col">Bill-to email</th>
+            <th scope="col">Verified by</th>
+          </tr></thead>
+          <tbody id="platform-admin-billing-audit-table"><tr><td colspan="7">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <p class="muted">A Paystack redirect alone never marks an invoice paid. Only the trusted finance verification action records payment. Automatic recurring renewals and paid-feature access gates remain separate work; essential student safety access remains free.</p>
     </section>
     <section class="panel">
       <div class="panel-heading"><div><h2>University listing requests</h2><p>Approve only after verifying the official institution name and website.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-requests">Refresh requests</button></div>
