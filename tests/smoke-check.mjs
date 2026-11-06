@@ -20,6 +20,7 @@ const responsiveCss = responsiveCssStart >= 0 && responsiveCssEnd > responsiveCs
 const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.js", import.meta.url), "utf8");
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
+const shieldmindApp = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
 const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
@@ -238,6 +239,15 @@ assert.match(html, /createSignedUrl\(String\(avatarPath\), 3600\)/, "private ava
 assert.match(html, /profileAvatarRenderTokens/, "avatar rendering guards against stale asynchronous image responses");
 assert.match(html, /data-page="report"><svg[\s\S]*?Report an incident/);
 assert.match(html, /data-page="shieldmind"><svg[\s\S]*?Ask the assistant/);
+
+assert.match(html, /id="shieldmind-paid-gate"/, "ShieldMind has a subscription-required access gate");
+assert.match(html, /id="shieldmind-plan-summary"/, "active ShieldMind plans have a visible allowance summary");
+assert.match(html, /id="shieldmind-workspace-grid" hidden/, "AI workspace is hidden until entitlement is verified");
+assert.match(html, /class="shieldmind-quick-actions"[^>]*hidden/, "AI quick actions are hidden until entitlement is verified");
+assert.match(shieldmindApp, /if \(!window\.CampusShieldShieldMindAccess\?\.active\)/, "chat submit is blocked in the UI without paid entitlement");
+assert.match(shieldmindApp, /select\('plan,status,expires_at,image_upload_limit'\)/, "plan summary reads server-stored image allowance");
+assert.match(shieldmindApp, /We could not verify your subscription\. AI access stays locked/, "subscription lookup failures fail closed");
+console.log("PASS ShieldMind paid gate, plan summary and fail-closed UI checks");
 assert.match(html, /Emergency guidance/);
 assert.match(html, /Campus service contacts/);
 assert.match(html, /\.campus-dashboard-hero\{[\s\S]*?background:[\s\S]*?linear-gradient/);

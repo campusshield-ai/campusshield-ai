@@ -24,6 +24,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./campus-dashboard-upgrade.css">
+<link rel="stylesheet" href="./shieldmind-subscription.css">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
 <link rel="stylesheet" href="./campus-map.css">
 <link rel="stylesheet" href="./campus-map-passport.css">
@@ -3591,8 +3592,26 @@ button,input,select,textarea{max-width:100%;min-width:0}
       <span class="shieldmind-mark" aria-hidden="true">✦</span>
       <div><span class="campus-hub-eyebrow">CAMPUSSHIELD AI · LEARNING ASSISTANT</span><h1>ShieldMind AI</h1><p>Your campus learning companion</p></div>
     </div>
-    <span class="shieldmind-workspace-badge"><span aria-hidden="true">●</span> AI assistant</span>
+    <span class="shieldmind-workspace-badge" id="shieldmind-plan-status" role="status" aria-live="polite">Checking your plan…</span>
   </div>
+  <section class="shieldmind-plan-summary" id="shieldmind-plan-summary" aria-label="Your ShieldMind subscription allowances" hidden>
+    <div class="shieldmind-plan-summary-tier">
+      <span class="shieldmind-plan-summary-label">YOUR ACTIVE PLAN</span>
+      <strong id="shieldmind-plan-summary-name">—</strong>
+      <small id="shieldmind-plan-summary-expiry">Checking expiry…</small>
+    </div>
+    <div class="shieldmind-plan-summary-metric">
+      <span class="shieldmind-plan-summary-label">AI REQUEST ALLOWANCE</span>
+      <strong id="shieldmind-plan-summary-requests">—</strong>
+      <small>Requests per minute / day</small>
+    </div>
+    <div class="shieldmind-plan-summary-metric">
+      <span class="shieldmind-plan-summary-label">STUDY IMAGE ALLOWANCE</span>
+      <strong id="shieldmind-plan-summary-images">—</strong>
+      <small>Uploads per 30-day term</small>
+    </div>
+    <button type="button" class="btn secondary" data-page="billing">Manage plan</button>
+  </section>
 
   <div class="shieldmind-hero shieldmind-hero-compact">
     <div class="shieldmind-hero-copy">
@@ -3605,9 +3624,28 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <div class="shieldmind-hero-art" aria-hidden="true"><span>✦</span><span>AI</span><span>＋</span></div>
   </div>
 
-  <div class="notice-inline shieldmind-access-notice" id="shieldmind-access-notice" role="status" aria-live="polite">AI requests require a verified account and university membership. Student accounts also need approved identity verification.</div>
+  <div class="notice-inline shieldmind-access-notice" id="shieldmind-access-notice" role="status" aria-live="polite">ShieldMind AI responses and generated study material require an active paid plan. Official campus-source answers also require verified university access.</div>
+  <section class="shieldmind-paid-gate" id="shieldmind-paid-gate" aria-labelledby="shieldmind-paid-gate-title" hidden>
+    <div class="shieldmind-paid-gate-copy">
+      <span class="shieldmind-paid-eyebrow">✦ SHIELDMIND PREMIUM · SUBSCRIPTION REQUIRED</span>
+      <h2 id="shieldmind-paid-gate-title">Make every study session count.</h2>
+      <p>Unlock your private AI learning workspace with a prepaid 30-day plan. Your subscription is checked securely before AI requests are processed.</p>
+      <ul class="shieldmind-paid-benefits">
+        <li>Step-by-step academic tutor and explanations</li>
+        <li>Lecture-note summaries, quizzes and revision support</li>
+        <li>Study-image explanations within your plan allowance</li>
+        <li>Source-aware campus help when verified sources are available</li>
+      </ul>
+      <div class="shieldmind-paid-actions">
+        <button class="btn" type="button" data-page="billing">View plans &amp; subscriptions</button>
+        <span>Essential campus safety and incident reporting remain free.</span>
+      </div>
+    </div>
+    <div class="shieldmind-paid-mark" aria-hidden="true">✦</div>
+    <p id="shieldmind-paid-gate-status" class="message" role="status" aria-live="polite">Checking your subscription…</p>
+  </section>
 
-  <div class="shieldmind-quick-actions" aria-label="ShieldMind quick actions">
+  <div class="shieldmind-quick-actions" aria-label="ShieldMind quick actions" hidden>
     <button type="button" class="shieldmind-quick-action is-active" data-shieldmind-focus-chat><span aria-hidden="true">⌕</span>Ask anything</button>
     <button type="button" class="shieldmind-quick-action" data-shieldmind-scroll-tools><span aria-hidden="true">▤</span>Study tools</button>
     <button type="button" class="shieldmind-quick-action" data-shieldmind-prompt="Help me find official campus information. Ask me which university and topic, and clearly distinguish approved source material from information that is not verified."><span aria-hidden="true">⌂</span>Campus info</button>
@@ -3616,7 +3654,7 @@ button,input,select,textarea{max-width:100%;min-width:0}
     <button type="button" class="shieldmind-quick-action" data-page="student-rewards"><span aria-hidden="true">◷</span>My progress</button>
   </div>
 
-  <div class="shieldmind-grid shieldmind-workspace-grid">
+  <div class="shieldmind-grid shieldmind-workspace-grid" id="shieldmind-workspace-grid" hidden>
     <section class="panel shieldmind-chat-panel" aria-labelledby="shieldmind-chat-title">
       <div class="panel-heading shieldmind-chat-heading">
         <div><h2 id="shieldmind-chat-title">Ask ShieldMind</h2><p>Ask a question, explore a topic or work through your notes.</p></div>

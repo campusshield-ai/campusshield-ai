@@ -7586,30 +7586,83 @@ $('resend-confirmation-button').addEventListener('click', async () => {
 
   async function refreshShieldMindPlan() {
     const status = $('shieldmind-plan-status');
-    if (!status) return;
+    const gateStatus = $('shieldmind-paid-gate-status');
+    const billingStatus = $('billing-ai-status');
+    const gate = $('shieldmind-paid-gate');
+    const workspace = $('shieldmind-workspace-grid');
+    const quickActions = document.querySelector('#page-shieldmind .shieldmind-quick-actions');
+    const summary = $('shieldmind-plan-summary');
+
+    const applyAccess = (active, subscription = null, message = '') => {
+      const state = {
+        active: Boolean(active),
+        plan: active ? String(subscription?.plan || '') : null,
+        expiresAt: active ? subscription?.expires_at || null : null,
+        checkedAt: new Date().toISOString(),
+      };
+      window.CampusShieldShieldMindAccess = state;
+      if (gate) gate.hidden = state.active;
+      if (workspace) workspace.hidden = !state.active;
+      if (quickActions) quickActions.hidden = !state.active;
+
+      const caps = {
+        starter: { minute: 10, day: 250 },
+        plus: { minute: 15, day: 700 },
+        pro: { minute: 25, day: 1500 },
+        ultra: { minute: 35, day: 2500 },
+        max: { minute: 50, day: 4000 },
+        premium: { minute: 10, day: 250 },
+      };
+      const planCaps = state.active ? caps[state.plan] : null;
+      if (summary) summary.hidden = !planCaps;
+      if (planCaps) {
+        $('shieldmind-plan-summary-name').textContent = state.plan.toUpperCase();
+        $('shieldmind-plan-summary-expiry').textContent = state.expiresAt
+          ? 'Active until ' + new Date(state.expiresAt).toLocaleDateString()
+          : 'Active subscription';
+        $('shieldmind-plan-summary-requests').textContent =
+          planCaps.minute.toLocaleString() + ' / ' + planCaps.day.toLocaleString();
+        $('shieldmind-plan-summary-images').textContent =
+          Number(subscription?.image_upload_limit || 0).toLocaleString();
+      }
+      if (status) status.textContent = state.active ? state.plan.toUpperCase() + ' active' : 'No active plan';
+      if (gateStatus) gateStatus.textContent = state.active
+        ? state.plan.toUpperCase() + ' is active. Your ShieldMind workspace is unlocked.'
+        : (message || 'Choose a paid 30-day plan to unlock ShieldMind AI responses.');
+      if (billingStatus) billingStatus.textContent = state.active
+        ? state.plan.toUpperCase() + ' active until ' + new Date(state.expiresAt).toLocaleDateString() + '.'
+        : (message || 'Current plan: Free. Paid access activates only after Paystack payment is independently verified.');
+      document.dispatchEvent(new CustomEvent('campusshield:shieldmind-access', { detail: state }));
+      return state.active;
+    };
+
     const backend = window.CampusShieldBackend;
-    if (!currentProfile || !backend?.isConfigured) { status.textContent='Sign in to view your plan. ShieldMind and subscription information are available to every signed-in user.'; return; }
-    status.textContent='Checking your plan…';
+    if (!currentProfile || !backend?.isConfigured) {
+      return applyAccess(false, null, 'Sign in and purchase a ShieldMind plan to unlock AI responses.');
+    }
+    if (status) status.textContent = 'Checking your plan…';
+    if (gateStatus) gateStatus.textContent = 'Verifying your subscription securely…';
     try {
-      const {data:{user},error:userError}=await backend.client.auth.getUser();
-      if (userError || !user) { status.textContent='Sign in to view or upgrade your plan.'; return; }
-      const {data,error}=await backend.client.from('shieldmind_subscriptions')
-        .select('plan,status,expires_at').eq('user_id',user.id).maybeSingle();
+      const { data: { user }, error: userError } = await backend.client.auth.getUser();
+      if (userError || !user) {
+        return applyAccess(false, null, 'Sign in and purchase a ShieldMind plan to unlock AI responses.');
+      }
+      const { data, error } = await backend.client.from('shieldmind_subscriptions')
+        .select('plan,status,expires_at,image_upload_limit').eq('user_id', user.id).maybeSingle();
       if (error) throw error;
-      const active=Boolean(data && ['starter','plus','pro','ultra','max','premium'].includes(data.plan) &&
-        data.status==='active' && data.expires_at && new Date(data.expires_at).getTime()>Date.now());
-      document.querySelectorAll('[data-billing-plan]').forEach(button=>{ button.disabled=false; });
-      status.textContent=active
-        ? data.plan.toUpperCase()+' active until '+new Date(data.expires_at).toLocaleDateString()+'. Your tier limits are enabled.'
-        : 'You are on ShieldMind Free. Visit Subscriptions & billing to compare paid plans. Payment must be confirmed by the server before Premium activates.';
-      const billingStatus=$('billing-ai-status');
-      if(billingStatus) billingStatus.textContent=active
-        ? data.plan.toUpperCase()+' active until '+new Date(data.expires_at).toLocaleDateString()+'.'
-        : 'Current plan: Free. Paid access activates only after Paystack payment is independently verified.';
-    } catch (_error) {
-      status.textContent='Plan status could not be loaded. Your AI can still be used within Free-tier server limits.';
-      const billingStatus=$('billing-ai-status');
-      if(billingStatus) billingStatus.textContent='Plan status is temporarily unavailable. Paid access cannot be granted without a verified server-side payment.';
+      const active = Boolean(
+        data &&
+        ['starter','plus','pro','ultra','max','premium'].includes(data.plan) &&
+        data.status === 'active' &&
+        data.expires_at &&
+        new Date(data.expires_at).getTime() > Date.now()
+      );
+      return applyAccess(active, active ? data : null, active
+        ? ''
+        : 'Your ShieldMind plan is not active. Choose Starter, Plus, Pro, Ultra or Max to continue.');
+    } catch (error) {
+      console.warn('ShieldMind subscription verification failed:', error?.message || 'Unknown error');
+      return applyAccess(false, null, 'We could not verify your subscription. AI access stays locked until payment status can be checked.');
     }
   }
   function addShieldMindMessage(role,message) {
@@ -7687,7 +7740,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     if(quick) $('shieldmind-question').scrollIntoView({behavior:'smooth',block:'center'});
   }));
   $('shieldmind-form').addEventListener('submit',async event=>{
-    event.preventDefault(); const question=String($('shieldmind-question').value||'').trim(),backend=window.CampusShieldBackend,imageFile=$('shieldmind-image')?.files?.[0]||null;
+    event.preventDefault();
+    if (!window.CampusShieldShieldMindAccess?.active) { $('shieldmind-status').textContent='An active paid ShieldMind plan is required. Open Subscriptions & billing to continue.'; return; }
+    const question=String($('shieldmind-question').value||'').trim(),backend=window.CampusShieldBackend,imageFile=$('shieldmind-image')?.files?.[0]||null;
     const allowed=Boolean(currentProfile);
     if(!question||question.length>1200)return;
     if (!backend?.isConfigured) { $('shieldmind-status').textContent='ShieldMind backend is unavailable. Please try again later.'; return; }
