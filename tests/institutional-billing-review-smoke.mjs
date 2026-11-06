@@ -72,6 +72,8 @@ assert.match(app, /This Paystack page starts a recurring monthly charge \(not a 
   'The requester is warned that Paystack pages create recurring monthly charges');
 assert.match(app, /Returning from Paystack does not activate access/,
   'Returning from a Paystack page never activates institutional access');
+assert.match(app, /With no invoice limit, Paystack continues charging monthly until the subscription is cancelled/,
+  'The requester is told that an unlimited Paystack subscription keeps recurring until cancelled');
 assert.match(app, /This is an annual invoice[\s\S]*monthly recurring plans/,
   'Annual invoices cannot use monthly Paystack links');
 assert.match(app, /custom Enterprise invoice totals are kept off the fixed-price Enterprise link|custom Enterprise quote/,
