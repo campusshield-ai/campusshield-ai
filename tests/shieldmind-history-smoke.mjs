@@ -30,6 +30,7 @@ assert.match(backend, /metadata: \{ sequence: overlapLength \+ index \}/, "new m
 assert.match(backend, /let overlapLength = savedMessages\.length/, "rolling history reconciles the overlap after the 100-message window advances");
 assert.match(backend, /\.not\("id", "in", retainedIdFilter\)/, "older transcript rows are pruned within the conversation and owner scope");
 assert.match(backend, /prefixMatches/, "saving preserves existing history when the stored transcript is still a prefix");
+assert.match(backend, /\.update\(\{ updated_at: now, last_message_at: now \}\)/, "subsequent saves preserve the original conversation title");
 assert.match(backend, /expectedUserId && user\.id !== expectedUserId/, "saving rejects account switches");
 assert.match(backend, /conversation_id: savedId/, "new messages are linked to their private conversation");
 assert.match(app, /saveShieldMindConversation\(\)/, "successful ShieldMind answers trigger persistence");
