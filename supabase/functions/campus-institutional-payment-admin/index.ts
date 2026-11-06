@@ -54,11 +54,6 @@ Deno.serve(async (req: Request) => {
     });
     const { data: { user }, error: authError } = await userClient.auth.getUser(token);
     if (authError || !user?.id || !user.email) return json({ error: "Your signed-in session could not be verified." }, 401);
-    const { data: isPlatformAdmin, error: adminError } = await userClient.rpc("platform_is_admin");
-    if (adminError || isPlatformAdmin !== true) {
-      return json({ error: "Only trusted CampusShield platform finance administrators can reconcile institutional payments." }, 403);
-    }
-
     const db = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
     const body = await req.json().catch(() => null);
 
@@ -101,6 +96,11 @@ Deno.serve(async (req: Request) => {
         return json({ error: "Paystack could not create the subscription management link. Try again or contact finance." }, 503);
       }
       return json({ link: manageLink, expires_at: subscription.expires_at, renewal_status: subscription.renewal_status });
+    }
+
+    const { data: isPlatformAdmin, error: adminError } = await userClient.rpc("platform_is_admin");
+    if (adminError || isPlatformAdmin !== true) {
+      return json({ error: "Only trusted CampusShield platform finance administrators can reconcile institutional payments." }, 403);
     }
 
     if (body?.action === "list_payment_audit") {
