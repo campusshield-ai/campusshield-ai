@@ -355,11 +355,17 @@
     'university-enterprise': { amountKobo: 50000000, url: 'https://paystack.shop/pay/p1h6s3mgcj' }
   });
 
-  function institutionalPaystackLinkForInvoice(invoice) {
+  function institutionalInvoiceMatchesFixedPaystackPlan(invoice) {
     const page = institutionalPaystackMonthlyLinks[String(invoice?.plan || '')];
-    if (!page || invoice?.status !== 'issued' || invoice?.billing_period !== 'monthly' ||
-        invoice?.currency !== 'NGN' || Number(invoice?.total_kobo) !== page.amountKobo) return null;
-    return page.url;
+    return Boolean(page && invoice?.status === 'issued' && invoice?.billing_period === 'monthly' &&
+      invoice?.currency === 'NGN' && Number(invoice?.total_kobo) === page.amountKobo);
+  }
+
+  function institutionalPaystackLinkForInvoice(invoice) {
+    // The supplied hosted pages are live recurring subscriptions. Never render
+    // them from a Staging preview whose verification secret/domain is Test Mode.
+    if (!isProductionSupabaseEnvironment() || !institutionalInvoiceMatchesFixedPaystackPlan(invoice)) return null;
+    return institutionalPaystackMonthlyLinks[String(invoice.plan)].url;
   }
 
   function printInstitutionalInvoice(invoice) {
@@ -412,7 +418,7 @@
       let activeInstitutionalSubscription = null;
       if (campusContext?.university_id) {
         const subscriptionResult = await backend.client.from('campus_institutional_subscriptions')
-          .select('plan,status,expires_at,renewal_status')
+          .select('id,plan,status,expires_at,renewal_status,next_payment_at,provider_subscription_code,last_failed_at,cancel_requested_at')
           .eq('university_id', campusContext.university_id)
           .in('status', ['active', 'past_due'])
           .maybeSingle();
@@ -422,11 +428,36 @@
       if (activeInstitutionalSubscription) {
         const summary = document.createElement('p');
         summary.className = 'shieldmind-pill';
+        const expiryLabel = activeInstitutionalSubscription.expires_at
+          ? new Date(activeInstitutionalSubscription.expires_at).toLocaleDateString('en-NG')
+          : 'not available';
         summary.textContent = String(activeInstitutionalSubscription.plan || '').replace(/-/g, ' ')
           + ' subscription · ' + String(activeInstitutionalSubscription.status || 'active').toUpperCase()
-          + ' · access period ends ' + new Date(activeInstitutionalSubscription.expires_at).toLocaleDateString('en-NG')
-          + (activeInstitutionalSubscription.renewal_status === 'not_renewing' ? ' · not renewing' : '');
+          + ' · current paid-through date ' + expiryLabel;
         container.appendChild(summary);
+
+        const lifecycle = document.createElement('p');
+        lifecycle.className = 'muted';
+        if (activeInstitutionalSubscription.renewal_status === 'not_renewing' || activeInstitutionalSubscription.cancel_requested_at) {
+          lifecycle.textContent = 'Recurring renewal has been cancelled. CampusShield will retain the recorded subscription until the paid-through date above; no new renewal is scheduled.';
+        } else if (activeInstitutionalSubscription.renewal_status === 'attention') {
+          lifecycle.textContent = 'The latest recurring payment needs attention. Update the payment method with Paystack; the next payment is not assumed successful.';
+        } else if (activeInstitutionalSubscription.next_payment_at) {
+          lifecycle.textContent = 'Next scheduled Paystack renewal: ' + new Date(activeInstitutionalSubscription.next_payment_at).toLocaleDateString('en-NG') + '. Renewal status is updated only after provider verification.';
+        } else {
+          lifecycle.textContent = 'Subscription renewal status is being confirmed with Paystack.';
+        }
+        container.appendChild(lifecycle);
+
+        if (activeInstitutionalSubscription.provider_subscription_code &&
+            ['active', 'past_due'].includes(activeInstitutionalSubscription.status)) {
+          const manage = document.createElement('button');
+          manage.type = 'button';
+          manage.className = 'btn secondary';
+          manage.textContent = 'Manage / cancel recurring payments';
+          manage.dataset.institutionalSubscriptionManage = activeInstitutionalSubscription.id;
+          container.appendChild(manage);
+        }
       }
       if (!data?.length) {
         const empty = document.createElement('p');
@@ -474,7 +505,9 @@
         } else if (invoice.status === 'void') {
           warning.textContent = 'This invoice has been voided. Do not pay it; contact CampusShield finance for an updated invoice.';
         } else if (paystackUrl) {
-          warning.textContent = 'This is a recurring monthly subscription, not a one-time invoice payment. Paystack charges monthly until cancelled; the page does not carry this invoice number. Save the transaction reference and wait for finance to verify it. Returning from Paystack does not activate access. Staging activates only the first month; automatic renewals and cancellations are not yet synced. Do not use live funds.';
+          warning.textContent = 'This is a live recurring monthly subscription, not a one-time invoice payment. Paystack may charge monthly until cancelled. The page does not carry this invoice number. Save the transaction reference and subscription code, then wait for CampusShield finance to verify the invoice and recurring subscription. Returning from Paystack does not activate access.';
+        } else if (isStagingSupabaseEnvironment() && institutionalInvoiceMatchesFixedPaystackPlan(invoice)) {
+          warning.textContent = 'The supplied Paystack pages are live payment links. Live collection is disabled in this Staging preview to prevent a real charge from being recorded in the Test Mode database. Do not pay from this preview; use the Production site only after its institutional webhook and payment reconciliation have been released.';
         } else if (invoice.billing_period !== 'monthly') {
           warning.textContent = 'This is an annual invoice. The available Paystack pages are monthly recurring plans, so use the payment instructions on this invoice or contact finance for an annual payment method.';
         } else {
@@ -795,6 +828,15 @@
     try {
       const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
       return new URL(String(config.url || "")).hostname === "hywcpnoqqhxvujnimhxl.supabase.co";
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function isProductionSupabaseEnvironment() {
+    try {
+      const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
+      return new URL(String(config.url || "")).hostname === "fvgtnujjnvdkhzqqcaqe.supabase.co";
     } catch (_error) {
       return false;
     }
@@ -3708,21 +3750,36 @@
             paid.textContent = 'Verified reference: ' + String(invoice.paid_reference || 'recorded') +
               (invoice.paid_at ? ' · ' + dateText(invoice.paid_at) : '');
             invoiceCell.append(document.createElement('br'), paid);
-          } else if (invoice.status === 'issued' && institutionalPaystackLinkForInvoice(invoice)) {
-            const reference = document.createElement('input');
-            reference.type = 'text';
-            reference.maxLength = 128;
-            reference.autocomplete = 'off';
-            reference.placeholder = 'Paystack transaction reference';
-            reference.setAttribute('aria-label', 'Paystack transaction reference for ' + invoice.invoice_number);
-            reference.dataset.institutionalInvoiceReference = invoice.id;
-            reference.style.maxWidth = '220px';
-            const verify = document.createElement('button');
-            verify.type = 'button';
-            verify.className = 'btn';
-            verify.textContent = 'Verify & activate';
-            verify.dataset.institutionalInvoiceVerify = invoice.id;
-            invoiceCell.append(document.createElement('br'), reference, document.createElement('br'), verify);
+          } else if (invoice.status === 'issued' && institutionalInvoiceMatchesFixedPaystackPlan(invoice)) {
+            if (isProductionSupabaseEnvironment()) {
+              const reference = document.createElement('input');
+              reference.type = 'text';
+              reference.maxLength = 128;
+              reference.autocomplete = 'off';
+              reference.placeholder = 'Paystack transaction reference';
+              reference.setAttribute('aria-label', 'Paystack transaction reference for ' + invoice.invoice_number);
+              reference.dataset.institutionalInvoiceReference = invoice.id;
+              reference.style.maxWidth = '220px';
+              const subscriptionCode = document.createElement('input');
+              subscriptionCode.type = 'text';
+              subscriptionCode.maxLength = 128;
+              subscriptionCode.autocomplete = 'off';
+              subscriptionCode.placeholder = 'Paystack subscription code (SUB_…)';
+              subscriptionCode.setAttribute('aria-label', 'Paystack subscription code for ' + invoice.invoice_number);
+              subscriptionCode.dataset.institutionalInvoiceSubscriptionCode = invoice.id;
+              subscriptionCode.style.maxWidth = '220px';
+              const verify = document.createElement('button');
+              verify.type = 'button';
+              verify.className = 'btn';
+              verify.textContent = 'Verify & activate';
+              verify.dataset.institutionalInvoiceVerify = invoice.id;
+              invoiceCell.append(document.createElement('br'), reference, document.createElement('br'),
+                subscriptionCode, document.createElement('br'), verify);
+            } else {
+              const note = document.createElement('small');
+              note.textContent = 'The provided Paystack pages are live. Do not take a live payment from Staging; Production payment verification is a separate release step.';
+              invoiceCell.append(document.createElement('br'), note);
+            }
           } else if (invoice.status === 'issued') {
             const note = document.createElement('small');
             note.textContent = 'No fixed monthly Paystack page matches this invoice. Use its approved payment instructions.';
@@ -3944,13 +4001,46 @@
     institutionalInvoiceForm.reset();
   });
 
+  $('institutional-billing-invoices')?.addEventListener('click', async event => {
+    const button = event.target.closest('[data-institutional-subscription-manage]');
+    if (!button) return;
+    const subscriptionId = button.dataset.institutionalSubscriptionManage;
+    const manageWindow = window.open('', '_blank', 'noopener,noreferrer');
+    if (!manageWindow) {
+      toast('Allow pop-ups to open Paystack subscription management.');
+      return;
+    }
+    button.disabled = true;
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured) throw new Error('Supabase is not configured.');
+      const { data, error } = await backend.client.functions.invoke('campus-institutional-payment-admin', {
+        body: { action: 'get_subscription_management_link', subscription_id: subscriptionId }
+      });
+      if (error || !data?.link || !/^https:\/\/paystack\.com\/manage\/subscriptions\//i.test(data.link)) {
+        let providerMessage = null;
+        try { providerMessage = (await error?.context?.clone?.().json())?.error || null; } catch (_ignored) {}
+        throw new Error(providerMessage || data?.error || 'Paystack could not open the subscription management page.');
+      }
+      manageWindow.location.replace(data.link);
+    } catch (error) {
+      try { manageWindow.close(); } catch (_ignored) {}
+      toast(error?.message || 'Could not open subscription management.');
+    } finally {
+      button.disabled = false;
+    }
+  });
+
   $('platform-admin-billing-requests-table')?.addEventListener('click', async event => {
     const verifyButton = event.target.closest('[data-institutional-invoice-verify]');
     if (verifyButton) {
       const invoiceId = verifyButton.dataset.institutionalInvoiceVerify;
       const referenceInput = Array.from(document.querySelectorAll('[data-institutional-invoice-reference]'))
         .find(input => input.dataset.institutionalInvoiceReference === invoiceId);
+      const subscriptionInput = Array.from(document.querySelectorAll('[data-institutional-invoice-subscription-code]'))
+        .find(input => input.dataset.institutionalInvoiceSubscriptionCode === invoiceId);
       const reference = String(referenceInput?.value || '').trim();
+      const subscriptionCode = String(subscriptionInput?.value || '').trim();
       if (!reference) {
         toast('Enter the Paystack transaction reference before verification.');
         referenceInput?.focus();
@@ -3961,15 +4051,21 @@
         referenceInput?.focus();
         return;
       }
+      if (!/^SUB_[A-Za-z0-9_-]{6,120}$/.test(subscriptionCode)) {
+        toast('Enter the recurring Paystack subscription code (SUB_…).');
+        subscriptionInput?.focus();
+        return;
+      }
       verifyButton.disabled = true;
       if (referenceInput) referenceInput.disabled = true;
+      if (subscriptionInput) subscriptionInput.disabled = true;
       try {
         const backend = window.CampusShieldBackend;
         if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
           throw new Error('Trusted platform finance administrator access is required.');
         }
         const { data, error } = await backend.client.functions.invoke('campus-institutional-payment-admin', {
-          body: { action: 'verify_invoice_payment', invoice_id: invoiceId, reference }
+          body: { action: 'verify_invoice_payment', invoice_id: invoiceId, reference, subscription_code: subscriptionCode }
         });
         if (error) {
           let providerMessage = null;
@@ -3990,6 +4086,7 @@
         toast(error?.message || 'Payment verification failed. No change was made.');
         verifyButton.disabled = false;
         if (referenceInput) referenceInput.disabled = false;
+        if (subscriptionInput) subscriptionInput.disabled = false;
       }
       return;
     }
