@@ -61,6 +61,24 @@ After a request is marked approved, a trusted platform administrator can issue o
 
 An invoice means **amount due**, not amount received. The invoice stays issued until a separate verified payment-reconciliation workflow changes the payment state. Issuing an invoice never activates paid campus features.
 
+## Institutional Paystack payment-page links
+
+The account owner supplied three hosted Paystack subscription-page URLs:
+
+| Plan | Fixed monthly page amount | Payment page |
+|---|---:|---|
+| Starter University | ₦100,000 | https://paystack.shop/pay/gqjub0yz1y |
+| Professional University | ₦250,000 | https://paystack.shop/pay/8u81ku5v94 |
+| Enterprise University (base only) | ₦500,000 | https://paystack.shop/pay/p1h6s3mgcj |
+
+The pricing-card buttons continue to start an institutional billing request, not an immediate public checkout. After finance approves the request and issues an invoice, the requester sees a Paystack action only when all of these match: the invoice is still `issued`, its currency is NGN, its term is monthly, its plan is one of the three fixed tiers, and its total (including tax) equals that exact page amount.
+
+Annual invoices are not sent to monthly pages. Enterprise custom quotes and any invoice with a tax/total adjustment are not sent to the fixed ₦500,000 link. They must use the separately approved payment instructions on the invoice.
+
+**These are recurring subscription pages, not one-time invoice checkout pages.** Paystack documents that a subscription page starts a recurring subscription after the customer pays. If its invoice limit is left blank, Paystack continues charging at the set interval until the subscription is cancelled. Institutions must expressly authorise recurring monthly debits; do not describe this as a one-time payment. Before publishing links for live collection, finance must confirm the merchant's Test/Live mode, the plan amount/interval and the recurring/cancellation policy.
+
+The hosted page does not receive the CampusShield invoice ID as metadata. A successful redirect or customer-facing success message is not payment verification. Finance must retain the Paystack transaction/subscription reference and reconcile it against the issued invoice. This UI does not mark the invoice paid or activate entitlements after the customer leaves Paystack. No institutional checkout webhook is enabled by this link mapping.
+
 ## Current scope and next phase
 
-This phase now includes the request review queue, requester-visible responses, trusted invoice issuance and printable invoice copies. It does **not** yet accept uploaded bank-transfer receipts, reconcile bank transfers, initiate institutional Paystack checkout, verify payment callbacks/webhooks, mark invoices as paid, create or renew university subscriptions, or activate institutional entitlements. Those operations require a separately designed and tested payment-reconciliation and entitlement workflow.
+This phase now includes the request review queue, requester-visible responses, trusted invoice issuance and printable invoice copies, plus invoice-gated links to the three fixed monthly Paystack subscription pages. It does **not** yet accept uploaded bank-transfer receipts, automatically reconcile institutional Paystack transactions, record verified institutional payment events, mark invoices as paid, create or renew university subscriptions, cancel recurring debits, or activate institutional entitlements. Those operations require a separately designed and tested payment-reconciliation and entitlement workflow.
