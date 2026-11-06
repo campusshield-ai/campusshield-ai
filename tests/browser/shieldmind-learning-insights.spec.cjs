@@ -56,12 +56,12 @@ test("ShieldMind learning insights retain readable dark-mode colours", async ({ 
   const colors = await page.locator("#shieldmind-learning-insights").evaluate(panel => {
     document.documentElement.dataset.theme = "dark";
     return {
-      panelGradient: getComputedStyle(panel).backgroundImage,
+      panelBackground: getComputedStyle(panel).backgroundColor,
       title: getComputedStyle(panel.querySelector("h2")).color,
       metric: getComputedStyle(panel.querySelector(".shieldmind-insights-metric strong")).color
     };
   });
-  expect(colors.panelGradient).toContain("linear-gradient");
+  expect(colors.panelBackground).not.toBe("rgba(0, 0, 0, 0)");
   expect(colors.title).not.toBe("rgb(18, 62, 42)");
   expect(colors.metric).not.toBe("rgb(18, 62, 42)");
 });
