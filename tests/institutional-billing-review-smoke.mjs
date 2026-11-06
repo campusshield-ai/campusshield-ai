@@ -23,7 +23,7 @@ assert.match(html, /id="platform-admin-institutional-billing"/,
   'Trusted platform administration includes an institutional billing review panel');
 assert.match(html, /id="platform-admin-billing-requests-table"/,
   'Platform billing review exposes an accessible request table');
-assert.match(html, /does not confirm bank transfer[\s\S]*student safety access remains separate|does not confirm bank transfer/i,
+assert.match(html, /does not confirm payment or activate a subscription/i,
   'Billing review UI makes clear that approval is not payment or campus activation');
 assert.match(app, /async function loadInstitutionalBillingAdminRequests\(\)/,
   'Only the platform administration flow loads the global billing queue');
