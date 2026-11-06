@@ -26,11 +26,11 @@ assert.match(app, /Request approved · invoice and payment still pending/,
   'Requesters are told that an approved enquiry still requires invoice and payment');
 assert.match(app, /response_message/,
   'The requester history displays reviewer responses');
-assert.match(migration, /CREATE TABLE IF NOT EXISTS public\\.campus_institutional_billing_requests/i,
+assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.campus_institutional_billing_requests/i,
   'The migration safely creates the request table when it is missing');
-assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_select_own[\\s\\S]*public\\.platform_is_admin\\(\\)/i,
+assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_select_own[\s\S]*public\.platform_is_admin\(\)/i,
   'The request SELECT policy preserves verified requester and trusted platform-admin access');
-assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_insert_own[\\s\\S]*status = 'pending'/i,
+assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_insert_own[\s\S]*status = 'pending'/i,
   'New requests remain pending and must be submitted by the authenticated requester');
 assert.match(migration, /GRANT UPDATE \(status, response_message\)[\s\S]*TO authenticated/i,
   'Authenticated updates are limited to request status and response columns');
@@ -40,9 +40,9 @@ assert.match(migration, /NEW\.reviewed_at := pg_catalog\.now\(\)/,
   'The database records the review timestamp');
 assert.match(campusScopeMigration, /ADD COLUMN IF NOT EXISTS university_id uuid/i,
   'Each new billing request is linked to its canonical university');
-assert.match(campusScopeMigration, /membership\.campus_role = 'admin'[\\s\\S]*membership\.membership_status = 'active'[\\s\\S]*membership\.verification_status = 'verified'/i,
+assert.match(campusScopeMigration, /membership\.campus_role = 'admin'[\s\S]*membership\.membership_status = 'active'[\s\S]*membership\.verification_status = 'verified'/i,
   'Only an active, verified campus-admin membership can submit an institutional billing request');
-assert.match(campusScopeMigration, /university\.id = membership\.university_id[\\s\\S]*university\.name\) = lower\(btrim\(campus_institutional_billing_requests\.institution_name\)\)/i,
+assert.match(campusScopeMigration, /university\.id = membership\.university_id[\s\S]*university\.name\) = lower\(btrim\(campus_institutional_billing_requests\.institution_name\)\)/i,
   'The requested institution must match the user's verified university');
 assert.match(campusScopeMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_requester_created_idx/i,
   'Requester history and requester foreign-key lookups are indexed');
