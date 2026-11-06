@@ -11,6 +11,10 @@ const navigationSource = read('campus-map-navigation.js');
 const navigationContext = { window: {} };
 runInNewContext(navigationSource, navigationContext);
 const navigation = navigationContext.window.CampusMapNavigation;
+const safetySource = read('campus-map-safety.js');
+const safetyContext = { window: {} };
+runInNewContext(safetySource, safetyContext);
+const safety = safetyContext.window.CampusMapSafety;
 const mapConfig = read('campus-map-config.js');
 const mapLoader = read('campus-map-loader.js');
 const geometrySource = read('campus-map-geometry.js');
@@ -22,6 +26,64 @@ const iconContext = { window: {} };
 runInNewContext(iconSource, iconContext);
 const campusMapIcons = iconContext.window.CampusMapIcons;
 assert.ok(campusMapIcons, 'CampusMap exposes its original SVG symbol library');
+
+
+assert.ok(safety, 'CampusMap exposes a pure nearby-safety distance and ranking helper');
+const safetyOrigin = { longitude: 0, latitude: 0 };
+const nearestMedical = {
+  id: 'medical-near', name: 'Campus Clinic', feature_type: 'medical',
+  longitude: 0.001, latitude: 0, is_published: true
+};
+const nearbySecurity = {
+  id: 'security-next', name: 'North Security Post', feature_type: 'security',
+  longitude: 0.01, latitude: 0, is_published: true
+};
+const farGate = {
+  id: 'gate-far', name: 'Main Gate', feature_type: 'gate',
+  longitude: 0.02, latitude: 0, is_published: true
+};
+const unpublishedSecurity = {
+  id: 'security-draft', name: 'Private draft post', feature_type: 'security',
+  longitude: 0.0001, latitude: 0, is_published: false
+};
+const unrelatedFacility = {
+  id: 'library', name: 'Library', feature_type: 'library',
+  longitude: 0.0002, latitude: 0, is_published: true
+};
+const nearbyRanked = safety.rankNearbyFacilities(
+  [farGate, unpublishedSecurity, nearbySecurity, nearestMedical, unrelatedFacility],
+  safetyOrigin
+);
+assert.deepEqual(Array.from(nearbyRanked, result => result.feature.id),
+  ['medical-near','security-next','gate-far'],
+  'Nearby safety results rank published medical, security and gate records by distance');
+assert.ok(Math.abs(nearbyRanked[0].distance_meters - 111.2) < 1.5,
+  'Nearby safety uses a spherical distance estimate in metres');
+assert.equal(safety.rankNearbyFacilities([nearestMedical, nearbySecurity, farGate], safetyOrigin, 2).length, 2,
+  'Nearby safety results respect the configured result limit');
+assert.deepEqual(Array.from(safety.rankNearbyFacilities([unpublishedSecurity], safetyOrigin), result => result.feature.id), [],
+  'Unpublished safety drafts are never included in student nearby results');
+assert.deepEqual(Array.from(safety.rankNearbyFacilities([unrelatedFacility], safetyOrigin), result => result.feature.id), [],
+  'Non-safety campus facilities are excluded from the nearby safety results');
+assert.deepEqual(Array.from(safety.rankNearbyFacilities([{
+  id: 'assembly', name: 'Assembly Area', feature_type: 'assembly_point',
+  longitude: 0, latitude: 0, is_published: true
+}, {
+  id: 'emergency', name: 'Emergency Point', feature_type: 'emergency_point',
+  longitude: 0, latitude: 0, is_published: true
+}], safetyOrigin), result => result.feature.feature_type),
+  ['assembly_point','emergency_point'],
+  'Published assembly points and emergency points are included in nearby safety results');
+assert.deepEqual(Array.from(safety.rankNearbyFacilities([nearestMedical], {
+  longitude: 181, latitude: 0
+}), result => result.feature.id), [],
+  'Invalid device coordinates are rejected before distance ranking');
+assert.equal(safety.distanceMeters(safetyOrigin, { longitude: '', latitude: 0 }), null,
+  'Empty facility coordinates cannot be treated as a real campus location');
+assert.equal(safety.validCoordinates({ longitude: 3.7, latitude: 6.8 }), true,
+  'Valid campus GPS coordinates are accepted');
+assert.equal(safety.validCoordinates({ longitude: 3.7, latitude: 91 }), false,
+  'Out-of-range GPS coordinates are rejected');
 
 assert.ok(navigation, 'CampusMap exposes a pure route-target resolver for safe direction selection');
 const routeBuilding = {
@@ -84,6 +146,11 @@ assert.equal(navigation.resolveRouteTarget({
   'An invalid selected location cannot become a route origin or destination');
 
 assert.match(js, /import '\.\/campus-map-navigation\.js'/, 'CampusMap loads its explicit navigation-target resolver');
+assert.match(js, /import '\.\/campus-map-safety\.js'/, 'CampusMap loads the nearby safety facility ranking helper');
+assert.match(js, /function findNearbySafetyFacilities\(\)/, 'Nearby campus safety search is explicitly user-triggered');
+assert.match(js, /rankNearbyFacilities\(features, origin, 6\)/, 'Nearby safety results are ranked from the selected campus published feature set');
+assert.match(js, /getCurrentPosition\(position =>/, 'Nearby safety requests device geolocation only after a user action');
+assert.match(js, /data-nearby-safety-feature-id/, 'Nearby safety results open the existing Campus Passport selection');
 assert.match(js, /navigation\?\.resolveRouteTarget\(item, features, false\)/,
   'The Campus Passport displays the resolved standard route destination');
 assert.match(js, /navigation\?\.resolveRouteTarget\(item, features, true\)/,
@@ -377,6 +444,10 @@ assert.match(js, /campus-map-clear-filters/, 'Students can clear category, type 
 assert.match(js, /isCampusAdmin && term \? adminDrafts\.filter/, 'Search results for private draft records remain admin-only');
 assert.match(js, /item\.is_published && item\.campus_slug === selected && item\.latitude != null && item\.longitude != null/, 'Type counts only use published mapped locations for the selected campus');
 assert.match(html, /id="campus-map-type-filters"[^>]*aria-label="Filter by facility type"/, 'Facility type filters have an accessible navigation label');
+assert.match(html, /id="campus-map-nearby-safety"/, 'CampusMap exposes an explicit nearby-safety action');
+assert.match(html, /id="campus-map-nearby-safety-panel"[^>]*hidden/, 'Nearby safety results are hidden until location search is requested');
+assert.match(html, /Distances are straight-line estimates, not walking distances/, 'Nearby safety distances are not misrepresented as routable walking distances');
+assert.match(html, /not saved as a CampusShield or Supabase record/, 'Nearby safety GPS privacy is disclosed in the interface');
 assert.match(html, /id="campus-map-results-summary" role="status" aria-live="polite"/, 'Facility result count is announced through a live status');
 assert.match(html, /id="campus-map-clear-filters" hidden/, 'Clear filters is hidden until a filter is active');
 assert.match(passportCss, /campus-map-type-filters/, 'Facility type chips have a responsive style system');
