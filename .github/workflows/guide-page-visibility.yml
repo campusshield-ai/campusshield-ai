@@ -1,0 +1,32 @@
+name: CampusShield guide page visibility regression
+
+on:
+  push:
+    branches: [staging/preview]
+    paths:
+      - "campusshield-guide.css"
+      - "tests/smoke-check.mjs"
+      - ".github/workflows/guide-page-visibility.yml"
+  pull_request:
+    branches: [staging/preview, main]
+    paths:
+      - "campusshield-guide.css"
+      - "tests/smoke-check.mjs"
+      - ".github/workflows/guide-page-visibility.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guide-page-visibility:
+    name: Verify guide appears only when selected
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run full application smoke suite
+        run: node tests/smoke-check.mjs
