@@ -11,7 +11,17 @@ const help = read("../help.html");
 const offline = read("../offline.html");
 
 new vm.Script(guide, { filename: "campusshield-guide.js" });
-assert.match(index, /<button data-page="guide" id="guide-nav">/);
+assert.match(index, /<button data-page="guide" id="guide-nav" title="How to use CampusShield" aria-label="How to use CampusShield"/);
+const guideSectionIndex = index.indexOf('<div class="nav-section-label">GETTING STARTED</div>');
+const guideButtonIndex = index.indexOf('<button data-page="guide" id="guide-nav"');
+const safetySectionIndex = index.indexOf('<div class="nav-section-label">SAFETY & RESPONSE</div>');
+const supportSectionIndex = index.indexOf('<div class="nav-section-label">INSIGHTS & SUPPORT</div>');
+assert.ok(guideSectionIndex >= 0 && guideSectionIndex < guideButtonIndex && guideButtonIndex < safetySectionIndex,
+  "The guide must live in its own Getting Started section above the feature groups");
+assert.ok(guideButtonIndex < supportSectionIndex,
+  "The guide must not be nested under Insights & Support");
+assert.match(app, /button\.dataset\.page === 'guide'[\s\S]*?button\.hidden = false/,
+  "The guide remains visible regardless of a user's campus verification or role");
 assert.match(index, /mobile-topbar-help" data-page="guide"/);
 assert.match(index, /id="page-guide"[\s\S]*?aria-labelledby="guide-title"/);
 assert.match(index, /campusshield-guide\.css/);
