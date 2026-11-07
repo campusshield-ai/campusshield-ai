@@ -1,0 +1,26 @@
+name: CampusShield guide sidebar navigation checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "campusshield-app.js"
+      - "tests/guide-sidebar-navigation-smoke.mjs"
+      - ".github/workflows/guide-sidebar-navigation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  guide-sidebar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate application JavaScript
+        run: node --check campusshield-app.js
+      - name: Verify standalone guide navigation
+        run: node tests/guide-sidebar-navigation-smoke.mjs

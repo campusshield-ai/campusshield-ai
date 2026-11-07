@@ -200,6 +200,11 @@
     const state = studentIdentitySubmission?.status || null;
     document.querySelectorAll('.nav button[data-page]').forEach(button => {
       if (button.id === 'platform-admin-nav') return;
+      if (button.dataset.page === 'guide') {
+        // The quick-start guide is a first-class destination for every signed-in account.
+        button.hidden = false;
+        return;
+      }
       if (button.dataset.page === 'shieldmind' || button.dataset.page === 'billing') {
         // General AI and subscription information is discoverable to all signed-in users.
         // Sensitive operations and payment activation are still enforced server-side.
