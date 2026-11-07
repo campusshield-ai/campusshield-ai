@@ -257,7 +257,21 @@
   }
 
   function canManageInstitutionalBilling() {
-    return currentProfile?.role === 'admin' && currentProfile?.verification_status === 'verified';
+    return currentProfile?.role === 'admin'
+      && currentProfile?.verification_status === 'verified'
+      && hasVerifiedCampusStaffMembership();
+  }
+
+  function syncInstitutionalBillingPanel() {
+    const panel = $('institutional-billing-panel');
+    const allowed = canManageInstitutionalBilling();
+    if (panel) panel.hidden = !allowed;
+    const institutionField = $('institution-billing-name');
+    if (institutionField) {
+      const verifiedName = String(campusContext?.university_name || '').trim();
+      institutionField.value = allowed ? verifiedName : '';
+      institutionField.readOnly = Boolean(allowed && verifiedName);
+    }
   }
 
   function syncCampusAccessNavigation() {
@@ -307,6 +321,7 @@
         if (userError || !user) throw new Error('Your session could not be verified. Please sign in again.');
         const { error } = await backend.client.from('campus_institutional_billing_requests').insert({
           requester_id: user.id,
+          university_id: campusContext.university_id,
           institution_name: institutionName,
           requested_plan: plan,
           billing_period: period,
@@ -316,6 +331,7 @@
         if (error) throw error;
         status.textContent = 'Request submitted. It is pending review; no payment was taken and no campus subscription has been activated.';
         institutionBillingForm.reset();
+        syncInstitutionalBillingPanel();
         await loadInstitutionalBillingRequests();
       } catch (error) {
         status.textContent = error?.message || 'The request could not be submitted. Please try again.';
@@ -324,11 +340,195 @@
       }
     });
   }
+  function formatNairaFromKobo(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return 'Amount unavailable';
+    return '₦' + (amount / 100).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  // Public Paystack subscription pages are intentionally exposed only beside an issued invoice
+  // whose plan, monthly term and total amount exactly match the fixed recurring page price.
+  // These pages do not carry the invoice ID as metadata; finance must still reconcile the payment.
+  const institutionalPaystackMonthlyLinks = Object.freeze({
+    'university-starter': { amountKobo: 10000000, url: 'https://paystack.shop/pay/gqjub0yz1y' },
+    'university-professional': { amountKobo: 25000000, url: 'https://paystack.shop/pay/8u81ku5v94' },
+    'university-enterprise': { amountKobo: 50000000, url: 'https://paystack.shop/pay/p1h6s3mgcj' }
+  });
+
+  function institutionalInvoiceMatchesFixedPaystackPlan(invoice) {
+    const page = institutionalPaystackMonthlyLinks[String(invoice?.plan || '')];
+    return Boolean(page && invoice?.status === 'issued' && invoice?.billing_period === 'monthly' &&
+      invoice?.currency === 'NGN' && Number(invoice?.total_kobo) === page.amountKobo);
+  }
+
+  function institutionalPaystackLinkForInvoice(invoice) {
+    // The supplied hosted pages are live recurring subscriptions. Never render
+    // them from a Staging preview whose verification secret/domain is Test Mode.
+    if (!isProductionSupabaseEnvironment() || !institutionalInvoiceMatchesFixedPaystackPlan(invoice)) return null;
+    return institutionalPaystackMonthlyLinks[String(invoice.plan)].url;
+  }
+
+  function printInstitutionalInvoice(invoice) {
+    const printWindow = window.open('', '_blank', 'width=900,height=1000');
+    if (!printWindow) throw new Error('Allow pop-ups for CampusShield to print this invoice.');
+    printWindow.opener = null;
+    const issuedDate = invoice.issued_at ? new Date(invoice.issued_at).toLocaleDateString('en-NG') : 'Not available';
+    const dueDate = invoice.due_date ? new Date(invoice.due_date + 'T00:00:00').toLocaleDateString('en-NG') : 'Not available';
+    const paidDate = invoice.paid_at ? new Date(invoice.paid_at).toLocaleString('en-NG') : null;
+    const paymentRecord = invoice.status === 'paid'
+      ? `<p>Payment verified: ${esc(paidDate || 'Date not available')}</p><p>Paystack reference: ${esc(invoice.paid_reference || 'Not recorded')}</p>`
+      : '';
+    const invoiceHtml = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CampusShield invoice ${esc(invoice.invoice_number)}</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#142b36}*{box-sizing:border-box}body{margin:0;padding:36px;background:#f3f6f5}main{max-width:820px;margin:auto;background:#fff;padding:44px;border:1px solid #dce5e3}header{display:flex;justify-content:space-between;gap:24px;border-bottom:3px solid #147d68;padding-bottom:22px}h1{font-size:29px;margin:0 0 6px;color:#0b3d39}h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:#547069}p{line-height:1.5;margin:6px 0}.number{text-align:right}.number strong{font-size:18px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px 0}table{width:100%;border-collapse:collapse;margin:20px 0}th,td{text-align:left;padding:14px 12px;border-bottom:1px solid #e3ebe8}th{background:#f3f7f5;color:#466158}.totals{margin-left:auto;width:min(100%,360px)}.totals p{display:flex;justify-content:space-between;padding:6px 0}.grand{font-size:20px;font-weight:700;border-top:2px solid #147d68;margin-top:10px;padding-top:14px!important}.instructions{background:#f4f8f6;padding:18px;margin-top:28px;white-space:pre-wrap}footer{margin-top:38px;border-top:1px solid #dce5e3;padding-top:18px;color:#647b73;font-size:12px}.status{display:inline-block;padding:6px 10px;background:#e8f4ee;border-radius:4px;color:#17614e;font-weight:700}@media print{body{background:#fff;padding:0}main{border:0;padding:0;max-width:none}@page{size:A4;margin:16mm}}@media(max-width:600px){body{padding:12px}main{padding:22px}header{display:block}.number{text-align:left;margin-top:18px}}
+</style></head><body><main>
+<header><div><h1>CampusShield AI</h1><p>Institutional subscription pro forma invoice</p><p>Institutional billing</p></div><div class="number"><h2>Invoice</h2><strong>${esc(invoice.invoice_number)}</strong><p><span class="status">${esc(invoice.status === 'paid' ? 'PAID' : invoice.status === 'void' ? 'VOID' : 'PRO FORMA · AWAITING PAYMENT')}</span></p></div></header>
+<section class="meta"><div><h2>Bill to</h2><p><strong>${esc(invoice.bill_to_name)}</strong></p><p>${esc(invoice.bill_to_email)}</p></div><div><h2>Invoice details</h2><p>Issued: ${esc(issuedDate)}</p><p>Due: ${esc(dueDate)}</p><p>Currency: NGN</p>${paymentRecord}</div></section>
+<table><thead><tr><th>Description</th><th>Billing period</th><th>Amount</th></tr></thead><tbody><tr><td>${esc(invoice.description)}</td><td>${esc(invoice.billing_period)}</td><td>${esc(formatNairaFromKobo(invoice.subtotal_kobo))}</td></tr></tbody></table>
+<section class="totals"><p><span>Subtotal</span><strong>${esc(formatNairaFromKobo(invoice.subtotal_kobo))}</strong></p><p><span>Tax</span><strong>${esc(formatNairaFromKobo(invoice.tax_kobo))}</strong></p><p class="grand"><span>Total due</span><strong>${esc(formatNairaFromKobo(invoice.total_kobo))}</strong></p></section>
+<section class="instructions"><h2>Payment instructions</h2>${esc(invoice.payment_instructions)}</section>
+<footer><p>${invoice.status === 'paid'
+  ? 'CampusShield has recorded a verified payment for this invoice and displays the payment date and Paystack reference above. This document remains the original pro forma invoice, not a separate payment receipt or final statutory tax invoice. Keep the transaction reference for your records.'
+  : 'This pro forma invoice is a request for payment only, not a receipt or proof of payment. It is not a final statutory tax invoice. Payment is recognised only after CampusShield verifies the transaction or reconciles the transfer. Issuing this document does not activate a subscription.'}</p><p>Essential student safety access remains free. · CampusShield AI · Institutional Billing</p></footer>
+</main></body></html>`;
+    printWindow.document.open();
+    printWindow.document.write(invoiceHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  }
+
+  async function loadInstitutionalBillingInvoices() {
+    const container = $('institutional-billing-invoices');
+    if (!container) return;
+    container.replaceChildren();
+    if (!canManageInstitutionalBilling()) return;
+    const backend = window.CampusShieldBackend;
+    if (!currentProfile || !backend?.isConfigured) {
+      container.textContent = 'Sign in to view university invoices.';
+      return;
+    }
+    try {
+      const { data: { user }, error: userError } = await backend.client.auth.getUser();
+      if (userError || !user) throw new Error('Session could not be verified.');
+      const { data, error } = await backend.client.from('campus_institutional_invoices')
+        .select('id,invoice_number,bill_to_name,bill_to_email,description,subtotal_kobo,tax_kobo,total_kobo,currency,due_date,payment_instructions,status,issued_at,billing_period,plan,paid_at,paid_reference')
+        .eq('requester_id', user.id).order('issued_at', { ascending: false }).limit(25);
+      if (error) throw error;
+      let activeInstitutionalSubscription = null;
+      if (campusContext?.university_id) {
+        const subscriptionResult = await backend.client.from('campus_institutional_subscriptions')
+          .select('id,plan,status,expires_at,renewal_status,next_payment_at,provider_subscription_code,last_failed_at,cancel_requested_at')
+          .eq('university_id', campusContext.university_id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (subscriptionResult.error) throw subscriptionResult.error;
+        activeInstitutionalSubscription = subscriptionResult.data || null;
+      }
+      if (activeInstitutionalSubscription) {
+        const summary = document.createElement('p');
+        summary.className = 'shieldmind-pill';
+        const expiryLabel = activeInstitutionalSubscription.expires_at
+          ? new Date(activeInstitutionalSubscription.expires_at).toLocaleDateString('en-NG')
+          : 'not available';
+        summary.textContent = String(activeInstitutionalSubscription.plan || '').replace(/-/g, ' ')
+          + ' subscription · ' + String(activeInstitutionalSubscription.status || 'active').toUpperCase()
+          + ' · current paid-through date ' + expiryLabel;
+        container.appendChild(summary);
+
+        const lifecycle = document.createElement('p');
+        lifecycle.className = 'muted';
+        if (activeInstitutionalSubscription.renewal_status === 'not_renewing' || activeInstitutionalSubscription.cancel_requested_at) {
+          lifecycle.textContent = 'Recurring renewal has been cancelled. CampusShield will retain the recorded subscription until the paid-through date above; no new renewal is scheduled.';
+        } else if (activeInstitutionalSubscription.renewal_status === 'attention') {
+          lifecycle.textContent = 'The latest recurring payment needs attention. Access remains recorded only through the paid-through date above. Update the payment method with Paystack; CampusShield does not assume the next payment succeeded.';
+        } else if (activeInstitutionalSubscription.next_payment_at) {
+          lifecycle.textContent = 'Next scheduled Paystack renewal: ' + new Date(activeInstitutionalSubscription.next_payment_at).toLocaleDateString('en-NG') + '. Renewal status is updated only after provider verification.';
+        } else {
+          lifecycle.textContent = 'Subscription renewal status is being confirmed with Paystack.';
+        }
+        container.appendChild(lifecycle);
+
+        if (activeInstitutionalSubscription.provider_subscription_code &&
+            ['active', 'past_due'].includes(activeInstitutionalSubscription.status)) {
+          const manage = document.createElement('button');
+          manage.type = 'button';
+          manage.className = 'btn secondary';
+          manage.textContent = 'Manage / cancel recurring payments';
+          manage.dataset.institutionalSubscriptionManage = activeInstitutionalSubscription.id;
+          container.appendChild(manage);
+        }
+      }
+      if (!data?.length) {
+        const empty = document.createElement('p');
+        empty.textContent = activeInstitutionalSubscription
+          ? 'Your institutional subscription is recorded above. No invoice history is available.'
+          : 'No invoices have been issued to your university yet.';
+        container.appendChild(empty);
+        return;
+      }
+      data.forEach(invoice => {
+        const card = document.createElement('article');
+        card.className = 'community-post';
+        const title = document.createElement('strong');
+        title.textContent = invoice.invoice_number + ' · ' + invoice.bill_to_name;
+        const amount = document.createElement('p');
+        amount.textContent = 'Invoice total: ' + formatNairaFromKobo(invoice.total_kobo);
+        const details = document.createElement('p');
+        details.textContent = 'Due ' + new Date(invoice.due_date + 'T00:00:00').toLocaleDateString('en-NG')
+          + ' · ' + String(invoice.status || 'issued').toUpperCase();
+        const action = document.createElement('button');
+        action.type = 'button';
+        action.className = 'btn secondary';
+        action.textContent = 'Print invoice / Save PDF';
+        action.addEventListener('click', () => {
+          try { printInstitutionalInvoice(invoice); }
+          catch (error) { toast(error.message || 'Could not open the invoice for printing.'); }
+        });
+        card.append(title, amount, details, action);
+
+        const paystackUrl = institutionalPaystackLinkForInvoice(invoice);
+        if (paystackUrl) {
+          const paystackAction = document.createElement('a');
+          paystackAction.className = 'btn';
+          paystackAction.href = paystackUrl;
+          paystackAction.target = '_blank';
+          paystackAction.rel = 'noopener noreferrer';
+          paystackAction.textContent = 'Start monthly Paystack subscription';
+          card.appendChild(paystackAction);
+        }
+
+        const warning = document.createElement('p');
+        warning.className = 'muted';
+        if (invoice.status === 'paid') {
+          warning.textContent = 'The first invoice payment has been verified. The linked Paystack subscription may continue charging monthly until it is cancelled. Use Manage / cancel recurring payments above to review or stop future debits.';
+        } else if (invoice.status === 'void') {
+          warning.textContent = 'This invoice has been voided. Do not pay it; contact CampusShield finance for an updated invoice.';
+        } else if (paystackUrl) {
+          warning.textContent = 'This is a live recurring monthly subscription, not a one-time invoice payment. Paystack may charge monthly until cancelled. The page does not carry this invoice number. Save the transaction reference and subscription code, then wait for CampusShield finance to verify the invoice and recurring subscription. Returning from Paystack does not activate access.';
+        } else if (isStagingSupabaseEnvironment() && institutionalInvoiceMatchesFixedPaystackPlan(invoice)) {
+          warning.textContent = 'The supplied Paystack pages are live payment links. Live collection is disabled in this Staging preview to prevent a real charge from being recorded in the Test Mode database. Do not pay from this preview; use the Production site only after its institutional webhook and payment reconciliation have been released.';
+        } else if (invoice.billing_period !== 'monthly') {
+          warning.textContent = 'This is an annual invoice. The available Paystack pages are monthly recurring plans, so use the payment instructions on this invoice or contact finance for an annual payment method.';
+        } else {
+          warning.textContent = 'This invoice does not exactly match a fixed monthly Paystack page price (including any tax or custom Enterprise quote). Use the payment instructions on the invoice or contact finance for a matching payment method.';
+        }
+        card.appendChild(warning);
+        container.appendChild(card);
+      });
+    } catch (error) {
+      container.textContent = error?.message || 'University invoices could not be loaded.';
+    }
+  }
+
   async function loadInstitutionalBillingRequests() {
     const container = $('institutional-billing-requests');
     if (!container) return;
     if (!canManageInstitutionalBilling()) {
       container.replaceChildren();
+      const invoiceContainer = $('institutional-billing-invoices');
+      if (invoiceContainer) invoiceContainer.replaceChildren();
       return;
     }
     const backend = window.CampusShieldBackend;
@@ -340,26 +540,43 @@
       const { data: { user }, error: userError } = await backend.client.auth.getUser();
       if (userError || !user) throw new Error('Session could not be verified.');
       const { data, error } = await backend.client.from('campus_institutional_billing_requests')
-        .select('institution_name,requested_plan,billing_period,status,created_at')
-        .eq('requester_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .select('institution_name,requested_plan,billing_period,status,created_at,response_message,reviewed_at')
+        .eq('requester_id', user.id).order('created_at', { ascending: false }).limit(10);
       if (error) throw error;
       container.replaceChildren();
       if (!data?.length) {
         container.textContent = 'No institutional billing requests submitted yet.';
-        return;
+      } else {
+        const statusLabels = {
+          pending: 'Awaiting review',
+          contacted: 'CampusShield has contacted your institution',
+          approved: 'Request approved · invoice and payment still pending',
+          rejected: 'Request not approved'
+        };
+        data.forEach(item => {
+          const card = document.createElement('article');
+          card.className = 'community-post';
+          const title = document.createElement('strong');
+          title.textContent = item.institution_name + ' · ' + String(item.requested_plan || '').replace(/-/g, ' ');
+          const detail = document.createElement('p');
+          detail.textContent = item.billing_period + ' billing · Submitted ' + new Date(item.created_at).toLocaleDateString();
+          const status = document.createElement('p');
+          status.className = 'shieldmind-pill';
+          status.textContent = statusLabels[item.status] || 'Status update pending';
+          card.append(title, detail, status);
+          if (item.response_message) {
+            const response = document.createElement('p');
+            response.textContent = 'CampusShield response: ' + item.response_message;
+            card.appendChild(response);
+          }
+          const boundary = document.createElement('p');
+          boundary.className = 'muted';
+          boundary.textContent = 'Request tracking only. Approval does not activate institutional features; an issued invoice and verified payment are required.';
+          card.appendChild(boundary);
+          container.appendChild(card);
+        });
       }
-      data.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'community-post';
-        const title = document.createElement('strong');
-        title.textContent = item.institution_name + ' · ' + item.requested_plan.replace(/-/g, ' ');
-        const detail = document.createElement('p');
-        detail.textContent = item.billing_period + ' · ' + item.status + ' · ' + new Date(item.created_at).toLocaleDateString();
-        card.append(title, detail);
-        container.appendChild(card);
-      });
+      await loadInstitutionalBillingInvoices();
     } catch (_error) {
       container.textContent = 'Requests could not be loaded right now.';
     }
@@ -550,8 +767,7 @@
     if ($('quick-campus-alerts')) $('quick-campus-alerts').hidden = !verified;
     if ($('campus-alerts-link')) $('campus-alerts-link').hidden = !verified;
     if ($('campus-alerts-gate')) $('campus-alerts-gate').hidden = verified;
-    const institutionalBillingPanel = $('institutional-billing-panel');
-    if (institutionalBillingPanel) institutionalBillingPanel.hidden = !canManageInstitutionalBilling();
+    syncInstitutionalBillingPanel();
     document.querySelectorAll('[data-page="noticeboard"], [data-page="helpdesk"], [data-page="community"], [data-page="groups"], [data-page="events"], [data-page="marketplace"]').forEach(el => {
       el.hidden = !verified;
     });
@@ -579,11 +795,23 @@
     const canPublishOfficial = verified && ['admin', 'security', 'teacher'].includes(currentProfile.role);
     $('community-announcement-option').disabled = !canPublishOfficial;
     syncIdentityNavigation();
-    const returnedFromPayment = new URLSearchParams(window.location.search).get('billing') === 'return';
-    navigate(returnedFromPayment ? 'billing' : 'dashboard');
+    const returnParams = new URLSearchParams(window.location.search);
+    const returnedFromInstitutionalPayment = returnParams.get('institution-billing') === 'return';
+    const returnedFromPayment = returnParams.get('billing') === 'return';
+    navigate(returnedFromInstitutionalPayment || returnedFromPayment ? 'billing' : 'dashboard');
     $('billing-reconcile-button').onclick = reconcileReturnedPaystackPayment;
-    if (returnedFromPayment) {
-      const returnParams = new URLSearchParams(window.location.search);
+    if (returnedFromInstitutionalPayment) {
+      const returnedReference = returnParams.get('reference') || returnParams.get('trxref');
+      $('billing-reconcile-button').hidden = true;
+      $('billing-payment-message').textContent = returnedReference
+        ? 'Paystack returned transaction reference ' + returnedReference +
+          '. The institutional payment is awaiting finance verification against the invoice and recurring subscription. Keep the SUB_… subscription code and do not pay again while verification is pending.'
+        : 'Paystack returned to CampusShield. This redirect is not proof of payment. Keep your transaction reference and SUB_… subscription code for finance verification. Do not pay again while verification is pending.';
+      loadInstitutionalBillingRequests();
+      const cleanUrl = new URL(window.location.href);
+      ['institution-billing', 'reference', 'trxref'].forEach(key => cleanUrl.searchParams.delete(key));
+      window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+    } else if (returnedFromPayment) {
       const returnedReference = returnParams.get('reference') || returnParams.get('trxref');
       $('billing-reconcile-button').hidden = !returnedReference;
       if (returnedReference) {
@@ -613,6 +841,15 @@
     try {
       const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
       return new URL(String(config.url || "")).hostname === "hywcpnoqqhxvujnimhxl.supabase.co";
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function isProductionSupabaseEnvironment() {
+    try {
+      const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
+      return new URL(String(config.url || "")).hostname === "fvgtnujjnvdkhzqqcaqe.supabase.co";
     } catch (_error) {
       return false;
     }
@@ -3422,6 +3659,221 @@
     }
   }
 
+  async function loadInstitutionalBillingAdminRequests() {
+    const tbody = $('platform-admin-billing-requests-table');
+    const message = $('platform-admin-billing-requests-message');
+    if (!tbody || !message) return;
+    tbody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
+    message.textContent = 'Loading institutional billing requests and invoices…';
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+        throw new Error('Trusted platform administrator access is required.');
+      }
+      const [requestResult, invoiceResult] = await Promise.all([
+        backend.client.from('campus_institutional_billing_requests')
+          .select('id,requester_id,university_id,institution_name,requested_plan,billing_period,contact_email,status,created_at,response_message,reviewed_at')
+          .order('created_at', { ascending: false }).limit(100),
+        backend.client.from('campus_institutional_invoices')
+          .select('id,billing_request_id,invoice_number,total_kobo,due_date,status,issued_at,plan,billing_period,currency,bill_to_email,paid_at,paid_reference')
+          .order('issued_at', { ascending: false }).limit(200)
+      ]);
+      if (requestResult.error) throw requestResult.error;
+      if (invoiceResult.error) throw invoiceResult.error;
+      const requests = requestResult.data || [];
+      const invoiceByRequest = new Map((invoiceResult.data || []).map(invoice => [invoice.billing_request_id, invoice]));
+      tbody.replaceChildren();
+      if (!requests.length) {
+        tbody.innerHTML = '<tr><td colspan="7">No institutional billing requests have been submitted.</td></tr>';
+        message.textContent = 'The institutional billing queue is empty.';
+        return;
+      }
+      const statuses = [
+        ['pending', 'Pending review'],
+        ['contacted', 'Contacted'],
+        ['approved', 'Request approved'],
+        ['rejected', 'Not approved']
+      ];
+      requests.forEach(item => {
+        const row = document.createElement('tr');
+        const institutionCell = document.createElement('td');
+        const institution = document.createElement('strong');
+        institution.textContent = item.institution_name || 'Institution name unavailable';
+        const requested = document.createElement('small');
+        requested.textContent = 'Submitted ' + dateText(item.created_at);
+        institutionCell.append(institution, document.createElement('br'), requested);
+
+        const planCell = document.createElement('td');
+        planCell.textContent = String(item.requested_plan || '').replace(/-/g, ' ')
+          + ' · ' + String(item.billing_period || 'monthly');
+
+        const contactCell = document.createElement('td');
+        contactCell.textContent = item.contact_email || 'No contact email';
+
+        const statusCell = document.createElement('td');
+        const statusSelect = document.createElement('select');
+        statusSelect.dataset.institutionBillingReviewStatus = 'true';
+        statusSelect.setAttribute('aria-label', 'Request status for ' + (item.institution_name || 'institution'));
+        statuses.forEach(([value, label]) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = label;
+          statusSelect.appendChild(option);
+        });
+        statusSelect.value = statuses.some(([value]) => value === item.status) ? item.status : 'pending';
+        statusCell.appendChild(statusSelect);
+
+        const responseCell = document.createElement('td');
+        const response = document.createElement('textarea');
+        response.rows = 2;
+        response.maxLength = 1000;
+        response.value = item.response_message || '';
+        response.placeholder = 'Optional message visible to the requesting university';
+        response.dataset.institutionBillingReviewResponse = 'true';
+        response.setAttribute('aria-label', 'Response message for ' + (item.institution_name || 'institution'));
+        responseCell.appendChild(response);
+
+        const reviewCell = document.createElement('td');
+        const save = document.createElement('button');
+        save.type = 'button';
+        save.className = 'btn';
+        save.textContent = 'Save review';
+        save.dataset.institutionBillingReviewSave = item.id;
+        reviewCell.appendChild(save);
+
+        const invoiceCell = document.createElement('td');
+        const invoice = invoiceByRequest.get(item.id);
+        statusSelect.disabled = Boolean(invoice);
+        if (invoice) {
+          const label = document.createElement('strong');
+          label.textContent = invoice.invoice_number;
+          const detail = document.createElement('small');
+          detail.textContent = formatNairaFromKobo(invoice.total_kobo) + ' · due '
+            + new Date(invoice.due_date + 'T00:00:00').toLocaleDateString('en-NG')
+            + ' · ' + String(invoice.status || 'issued').toUpperCase();
+          const print = document.createElement('button');
+          print.type = 'button';
+          print.className = 'btn secondary';
+          print.textContent = 'Print / Save PDF';
+          print.dataset.institutionalInvoiceAdminPrint = invoice.id;
+          invoiceCell.append(label, document.createElement('br'), detail, document.createElement('br'), print);
+
+          if (invoice.status === 'paid') {
+            const paid = document.createElement('small');
+            paid.textContent = 'Verified reference: ' + String(invoice.paid_reference || 'recorded') +
+              (invoice.paid_at ? ' · ' + dateText(invoice.paid_at) : '');
+            invoiceCell.append(document.createElement('br'), paid);
+          } else if (invoice.status === 'issued' && institutionalInvoiceMatchesFixedPaystackPlan(invoice)) {
+            if (isProductionSupabaseEnvironment()) {
+              const reference = document.createElement('input');
+              reference.type = 'text';
+              reference.maxLength = 128;
+              reference.autocomplete = 'off';
+              reference.placeholder = 'Paystack transaction reference';
+              reference.setAttribute('aria-label', 'Paystack transaction reference for ' + invoice.invoice_number);
+              reference.dataset.institutionalInvoiceReference = invoice.id;
+              reference.style.maxWidth = '220px';
+              const subscriptionCode = document.createElement('input');
+              subscriptionCode.type = 'text';
+              subscriptionCode.maxLength = 128;
+              subscriptionCode.autocomplete = 'off';
+              subscriptionCode.placeholder = 'Paystack subscription code (SUB_…)';
+              subscriptionCode.setAttribute('aria-label', 'Paystack subscription code for ' + invoice.invoice_number);
+              subscriptionCode.dataset.institutionalInvoiceSubscriptionCode = invoice.id;
+              subscriptionCode.style.maxWidth = '220px';
+              const verify = document.createElement('button');
+              verify.type = 'button';
+              verify.className = 'btn';
+              verify.textContent = 'Verify & activate';
+              verify.dataset.institutionalInvoiceVerify = invoice.id;
+              invoiceCell.append(document.createElement('br'), reference, document.createElement('br'),
+                subscriptionCode, document.createElement('br'), verify);
+            } else {
+              const note = document.createElement('small');
+              note.textContent = 'The provided Paystack pages are live. Do not take a live payment from Staging; Production payment verification is a separate release step.';
+              invoiceCell.append(document.createElement('br'), note);
+            }
+          } else if (invoice.status === 'issued') {
+            const note = document.createElement('small');
+            note.textContent = 'No fixed monthly Paystack page matches this invoice. Use its approved payment instructions.';
+            invoiceCell.append(document.createElement('br'), note);
+          }
+        } else if (item.status === 'approved') {
+          const create = document.createElement('button');
+          create.type = 'button';
+          create.className = 'btn';
+          create.textContent = 'Create invoice';
+          create.dataset.institutionalInvoiceCreate = item.id;
+          create.dataset.invoiceInstitution = item.institution_name || '';
+          create.dataset.invoicePlan = item.requested_plan || '';
+          create.dataset.invoicePeriod = item.billing_period || 'monthly';
+          invoiceCell.appendChild(create);
+        } else {
+          invoiceCell.textContent = 'Available after approval';
+        }
+        row.append(institutionCell, planCell, contactCell, statusCell, responseCell, reviewCell, invoiceCell);
+        tbody.appendChild(row);
+      });
+      message.textContent = requests.length + ' request(s). Only approved requests can receive an invoice; invoice issuance is not payment confirmation.';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="7">Institutional billing requests could not be loaded.</td></tr>';
+      message.textContent = err.message || 'Could not load institutional billing requests.';
+    }
+  }
+  async function loadInstitutionalBillingPaymentAudit() {
+    const tbody = $('platform-admin-billing-audit-table');
+    const message = $('platform-admin-billing-audit-message');
+    if (!tbody || !message) return;
+    tbody.innerHTML = '<tr><td colspan="7">Loading verified payment records…</td></tr>';
+    message.textContent = 'Loading the append-only institutional payment audit…';
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+        throw new Error('Trusted platform finance administrator access is required.');
+      }
+      const { data, error } = await backend.client.functions.invoke('campus-institutional-payment-admin', {
+        body: { action: 'list_payment_audit', limit: 50 }
+      });
+      if (error) {
+        let providerMessage = null;
+        try { providerMessage = (await error.context?.clone?.().json())?.error || null; } catch (_ignored) {}
+        throw new Error(providerMessage || 'The institutional payment audit could not be loaded.');
+      }
+      const entries = Array.isArray(data?.entries) ? data.entries : [];
+      tbody.replaceChildren();
+      if (!entries.length) {
+        tbody.innerHTML = '<tr><td colspan="7">No institutional Paystack payments have been reconciled yet.</td></tr>';
+        message.textContent = 'No verified institutional payments are recorded.';
+        return;
+      }
+      entries.forEach(entry => {
+        const row = document.createElement('tr');
+        const verifiedAt = document.createElement('td');
+        verifiedAt.textContent = dateText(entry.verified_at);
+        const invoice = document.createElement('td');
+        invoice.textContent = entry.invoice_number || 'Invoice unavailable';
+        const institution = document.createElement('td');
+        institution.textContent = entry.institution_name || 'Institution unavailable';
+        const amount = document.createElement('td');
+        amount.textContent = formatNairaFromKobo(entry.amount_kobo);
+        const reference = document.createElement('td');
+        const referenceCode = document.createElement('code');
+        referenceCode.textContent = entry.provider_reference || 'Not recorded';
+        reference.appendChild(referenceCode);
+        const email = document.createElement('td');
+        email.textContent = entry.customer_email || 'Not recorded';
+        const verifier = document.createElement('td');
+        verifier.textContent = entry.verified_by_name || 'Platform finance administrator';
+        row.append(verifiedAt, invoice, institution, amount, reference, email, verifier);
+        tbody.appendChild(row);
+      });
+      message.textContent = entries.length + ' verified payment audit entr' + (entries.length === 1 ? 'y' : 'ies') + '.';
+    } catch (error) {
+      tbody.innerHTML = '<tr><td colspan="7">Payment audit could not be loaded.</td></tr>';
+      message.textContent = error?.message || 'Could not load institutional payment audit.';
+    }
+  }
+
   async function loadPlatformAdminPage() {
     const accessMessage = $('platform-admin-access-message');
     const accessPanel = $('platform-admin-access-panel');
@@ -3448,7 +3900,13 @@
       accessPanel.hidden = true;
       toolsPanel.hidden = false;
       await populatePlatformAdminUniversities();
-      await Promise.all([loadPlatformUniversityRequests(), loadPlatformAdminCandidates(), loadPlatformCampusAdminRequests()]);
+      await Promise.all([
+        loadPlatformUniversityRequests(),
+        loadPlatformAdminCandidates(),
+        loadPlatformCampusAdminRequests(),
+        loadInstitutionalBillingAdminRequests(),
+        loadInstitutionalBillingPaymentAudit()
+      ]);
     } catch (err) {
       accessPanel.hidden = false;
       toolsPanel.hidden = true;
@@ -3546,6 +4004,266 @@
   });
 
   $('platform-admin-refresh-admin-requests').addEventListener('click', loadPlatformCampusAdminRequests);
+
+  $('platform-admin-refresh-billing-requests')?.addEventListener('click', loadInstitutionalBillingAdminRequests);
+  $('platform-admin-refresh-billing-audit')?.addEventListener('click', loadInstitutionalBillingPaymentAudit);
+
+  const institutionalInvoiceForm = $('platform-admin-invoice-form');
+  $('platform-admin-invoice-cancel')?.addEventListener('click', () => {
+    institutionalInvoiceForm.hidden = true;
+    institutionalInvoiceForm.reset();
+  });
+
+  $('institutional-billing-invoices')?.addEventListener('click', async event => {
+    const button = event.target.closest('[data-institutional-subscription-manage]');
+    if (!button) return;
+    const subscriptionId = button.dataset.institutionalSubscriptionManage;
+    const manageWindow = window.open('', '_blank');
+    if (!manageWindow) {
+      toast('Allow pop-ups to open Paystack subscription management.');
+      return;
+    }
+    manageWindow.opener = null;
+    button.disabled = true;
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured) throw new Error('Supabase is not configured.');
+      const { data, error } = await backend.client.functions.invoke('campus-institutional-payment-admin', {
+        body: { action: 'get_subscription_management_link', subscription_id: subscriptionId }
+      });
+      if (error || !data?.link || !/^https:\/\/paystack\.com\/manage\/subscriptions\//i.test(data.link)) {
+        let providerMessage = null;
+        try { providerMessage = (await error?.context?.clone?.().json())?.error || null; } catch (_ignored) {}
+        throw new Error(providerMessage || data?.error || 'Paystack could not open the subscription management page.');
+      }
+      manageWindow.location.replace(data.link);
+    } catch (error) {
+      try { manageWindow.close(); } catch (_ignored) {}
+      toast(error?.message || 'Could not open subscription management.');
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $('platform-admin-billing-requests-table')?.addEventListener('click', async event => {
+    const verifyButton = event.target.closest('[data-institutional-invoice-verify]');
+    if (verifyButton) {
+      const invoiceId = verifyButton.dataset.institutionalInvoiceVerify;
+      const referenceInput = Array.from(document.querySelectorAll('[data-institutional-invoice-reference]'))
+        .find(input => input.dataset.institutionalInvoiceReference === invoiceId);
+      const subscriptionInput = Array.from(document.querySelectorAll('[data-institutional-invoice-subscription-code]'))
+        .find(input => input.dataset.institutionalInvoiceSubscriptionCode === invoiceId);
+      const reference = String(referenceInput?.value || '').trim();
+      const subscriptionCode = String(subscriptionInput?.value || '').trim();
+      if (!reference) {
+        toast('Enter the Paystack transaction reference before verification.');
+        referenceInput?.focus();
+        return;
+      }
+      if (!/^[A-Za-z0-9_-]{4,128}$/.test(reference)) {
+        toast('The Paystack transaction reference format is invalid.');
+        referenceInput?.focus();
+        return;
+      }
+      if (!/^SUB_[A-Za-z0-9_-]{6,120}$/.test(subscriptionCode)) {
+        toast('Enter the recurring Paystack subscription code (SUB_…).');
+        subscriptionInput?.focus();
+        return;
+      }
+      verifyButton.disabled = true;
+      if (referenceInput) referenceInput.disabled = true;
+      if (subscriptionInput) subscriptionInput.disabled = true;
+      try {
+        const backend = window.CampusShieldBackend;
+        if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+          throw new Error('Trusted platform finance administrator access is required.');
+        }
+        const { data, error } = await backend.client.functions.invoke('campus-institutional-payment-admin', {
+          body: { action: 'verify_invoice_payment', invoice_id: invoiceId, reference, subscription_code: subscriptionCode }
+        });
+        if (error) {
+          let providerMessage = null;
+          try { providerMessage = (await error.context?.clone?.().json())?.error || null; } catch (_ignored) {}
+          throw new Error(providerMessage || 'Paystack payment could not be verified. No invoice or subscription status was changed.');
+        }
+        if (data?.verified !== true || data?.activated !== true) {
+          throw new Error(data?.error || 'The payment was not verified. No institutional access was activated.');
+        }
+        toast(data.duplicate
+          ? 'This transaction was already reconciled against this invoice.'
+          : 'Payment verified; the institutional subscription record is active. Paid-feature access gates are still being completed.');
+        await Promise.all([
+          loadInstitutionalBillingAdminRequests(),
+          loadInstitutionalBillingPaymentAudit()
+        ]);
+      } catch (error) {
+        toast(error?.message || 'Payment verification failed. No change was made.');
+        verifyButton.disabled = false;
+        if (referenceInput) referenceInput.disabled = false;
+        if (subscriptionInput) subscriptionInput.disabled = false;
+      }
+      return;
+    }
+
+    const printButton = event.target.closest('[data-institutional-invoice-admin-print]');
+    if (printButton) {
+      printButton.disabled = true;
+      try {
+        const backend = window.CampusShieldBackend;
+        if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+          throw new Error('Trusted platform administrator access is required.');
+        }
+        const { data, error } = await backend.client.from('campus_institutional_invoices')
+          .select('invoice_number,bill_to_name,bill_to_email,description,billing_period,subtotal_kobo,tax_kobo,total_kobo,currency,due_date,payment_instructions,status,issued_at,paid_at,paid_reference')
+          .eq('id', printButton.dataset.institutionalInvoiceAdminPrint)
+          .single();
+        if (error) throw error;
+        printInstitutionalInvoice(data);
+      } catch (error) {
+        toast(error?.message || 'Could not open the invoice for printing.');
+      } finally {
+        printButton.disabled = false;
+      }
+      return;
+    }
+
+    const createButton = event.target.closest('[data-institutional-invoice-create]');
+    if (!createButton) return;
+    const plan = createButton.dataset.invoicePlan;
+    const period = createButton.dataset.invoicePeriod || 'monthly';
+    const monthlyPrices = {
+      'university-starter': 100000,
+      'university-professional': 250000,
+      'university-enterprise': 500000
+    };
+    const suggestedAmount = (monthlyPrices[plan] || 0) * (period === 'yearly' ? 10 : 1);
+    $('platform-admin-invoice-request-id').value = createButton.dataset.institutionalInvoiceCreate;
+    $('platform-admin-invoice-context').textContent =
+      createButton.dataset.invoiceInstitution + ' · ' + String(plan || '').replace(/-/g, ' ')
+      + ' · ' + period + ' billing. Verify the final agreed quote before issuing.';
+    $('platform-admin-invoice-subtotal').value = suggestedAmount ? suggestedAmount.toFixed(2) : '';
+    $('platform-admin-invoice-tax').value = '0';
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 14);
+    $('platform-admin-invoice-due-date').value = [
+      dueDate.getFullYear(),
+      String(dueDate.getMonth() + 1).padStart(2, '0'),
+      String(dueDate.getDate()).padStart(2, '0')
+    ].join('-');
+    $('platform-admin-invoice-instructions').value = '';
+    institutionalInvoiceForm.hidden = false;
+    institutionalInvoiceForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('platform-admin-invoice-subtotal').focus({ preventScroll: true });
+  });
+
+  institutionalInvoiceForm?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const message = $('platform-admin-billing-requests-message');
+    const submit = $('platform-admin-invoice-submit');
+    const requestId = String($('platform-admin-invoice-request-id').value || '');
+    const subtotalText = String($('platform-admin-invoice-subtotal').value || '').trim();
+    const taxText = String($('platform-admin-invoice-tax').value || '0').trim();
+    const dueDate = String($('platform-admin-invoice-due-date').value || '');
+    const paymentInstructions = String($('platform-admin-invoice-instructions').value || '').trim();
+    const amountPattern = /^\d{1,10}(?:\.\d{1,2})?$/;
+    if (!requestId || !amountPattern.test(subtotalText) || !amountPattern.test(taxText)) {
+      message.textContent = 'Enter a valid invoice subtotal and tax amount with up to two decimal places.';
+      return;
+    }
+    const subtotalKobo = Math.round(Number(subtotalText) * 100);
+    const taxKobo = Math.round(Number(taxText) * 100);
+    if (!Number.isSafeInteger(subtotalKobo) || subtotalKobo <= 0
+        || !Number.isSafeInteger(taxKobo) || taxKobo < 0) {
+      message.textContent = 'The invoice amounts are outside the allowed range.';
+      return;
+    }
+    const today = new Date();
+    const localToday = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0')
+    ].join('-');
+    if (!dueDate || dueDate < localToday) {
+      message.textContent = 'Choose a due date that is today or later.';
+      return;
+    }
+    if (paymentInstructions.length < 8 || paymentInstructions.length > 2000) {
+      message.textContent = 'Enter verified payment instructions between 8 and 2,000 characters.';
+      return;
+    }
+    if (!confirm('Issue this immutable NGN invoice? Check the amount, tax, due date and payment instructions. Issuing it does not mark it as paid or activate a subscription.')) return;
+    submit.disabled = true;
+    message.textContent = 'Issuing the invoice securely…';
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+        throw new Error('Trusted platform administrator access is required.');
+      }
+      const { data, error } = await backend.client.from('campus_institutional_invoices')
+        .insert({
+          billing_request_id: requestId,
+          subtotal_kobo: subtotalKobo,
+          tax_kobo: taxKobo,
+          due_date: dueDate,
+          payment_instructions: paymentInstructions
+        })
+        .select('invoice_number,total_kobo')
+        .single();
+      if (error) throw error;
+      institutionalInvoiceForm.hidden = true;
+      institutionalInvoiceForm.reset();
+      await loadInstitutionalBillingAdminRequests();
+      toast('Invoice ' + data.invoice_number + ' issued for ' + formatNairaFromKobo(data.total_kobo) + '. Awaiting verified payment.');
+    } catch (error) {
+      message.textContent = error?.message || 'The invoice could not be issued. Refresh the queue and check whether one already exists.';
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  $('platform-admin-billing-requests-table')?.addEventListener('click', async event => {
+    const button = event.target.closest('[data-institution-billing-review-save]');
+    if (!button) return;
+    const row = button.closest('tr');
+    const statusField = row?.querySelector('[data-institution-billing-review-status]');
+    const responseField = row?.querySelector('[data-institution-billing-review-response]');
+    const message = $('platform-admin-billing-requests-message');
+    const status = String(statusField?.value || '');
+    const responseMessage = String(responseField?.value || '').trim();
+    if (!['pending', 'contacted', 'approved', 'rejected'].includes(status)) {
+      if (message) message.textContent = 'Choose a valid request status.';
+      return;
+    }
+    if (responseMessage.length > 1000) {
+      if (message) message.textContent = 'The response message must be 1,000 characters or fewer.';
+      return;
+    }
+    if (['approved', 'rejected'].includes(status) && !confirm(
+      status === 'approved'
+        ? 'Mark this billing request as approved for further procurement? This does not confirm payment or activate the university subscription.'
+        : 'Mark this institutional billing request as not approved?'
+    )) return;
+    button.disabled = true;
+    try {
+      const backend = window.CampusShieldBackend;
+      if (!backend?.isConfigured || !await backend.isPlatformAdmin()) {
+        throw new Error('Trusted platform administrator access is required.');
+      }
+      const { data, error } = await backend.client
+        .from('campus_institutional_billing_requests')
+        .update({ status, response_message: responseMessage || null })
+        .eq('id', button.dataset.institutionBillingReviewSave)
+        .select('id')
+        .maybeSingle();
+      if (error) throw error;
+      if (!data?.id) throw new Error('The request was not updated. Refresh the queue and try again.');
+      await loadInstitutionalBillingAdminRequests();
+      toast('Billing request review saved. No subscription has been activated.');
+    } catch (err) {
+      button.disabled = false;
+      if (message) message.textContent = err.message || 'Could not save the billing request review.';
+    }
+  });
 
   async function loadPlatformAdminCandidates() {
     const tbody = $('platform-admin-candidates-table');
@@ -6870,6 +7588,7 @@
       if (workspaceReady) {
         campusContext = await backend.getMyCampusContext();
         syncCampusAccessNavigation();
+        syncInstitutionalBillingPanel();
         const institutionHint = String($('signin-institution')?.value || '').trim();
         const normalizeInstitution = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
         if (authMode === 'signin' && institutionHint && campusContext?.university_name &&
@@ -7479,6 +8198,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
             if (workspaceReady) {
               campusContext = await backend.getMyCampusContext();
               syncCampusAccessNavigation();
+              syncInstitutionalBillingPanel();
               const completedGoogleOAuth = consumeGoogleOAuthHints(profile, campusContext);
               await refreshIncidentsFromSupabase();
               if (!completedGoogleOAuth) {
