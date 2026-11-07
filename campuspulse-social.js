@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
-  const state = { api:null, client:null, user:null, campus:null, profile:null, events:[], allEvents:[], groups:[], pendingTab:null };
+  const state = { api:null, client:null, user:null, campus:null, profile:null, events:[], allEvents:[], groups:[], qnaPosts:[], qnaComments:[], pendingTab:null };
   const rootId = "campuspulse-social-suite";
 
   const el = (tag, cls, text) => {
@@ -45,7 +45,7 @@
     shell.innerHTML=[
       "<div class='campuspulse-social-heading'><div><span class='campuspulse-social-kicker'>CAMPUSPULSE · MORE TOGETHER</span><h2>Find your people. Make campus memories.</h2><p>Join activities, meet collaborators, find event buddies and help others settle into campus life.</p></div><span class='campuspulse-social-live'>Campus community</span></div>",
       "<div class='campuspulse-social-tabs' role='tablist' aria-label='CampusPulse activities'>",
-      "<button type='button' role='tab' aria-selected='true' data-cps-tab='missions'>Missions</button><button type='button' role='tab' aria-selected='false' data-cps-tab='collab'>Collab Finder</button><button type='button' role='tab' aria-selected='false' data-cps-tab='buddies'>Event Buddies</button><button type='button' role='tab' aria-selected='false' data-cps-tab='clubs'>Club Hubs</button><button type='button' role='tab' aria-selected='false' data-cps-tab='mentorship'>Mentorship</button><button type='button' role='tab' aria-selected='false' data-cps-tab='memories'>Memories</button><button type='button' role='tab' aria-selected='false' data-cps-tab='connections'>Connections</button></div>",
+      "<button type='button' role='tab' aria-selected='true' data-cps-tab='missions'>Missions</button><button type='button' role='tab' aria-selected='false' data-cps-tab='collab'>Collab Finder</button><button type='button' role='tab' aria-selected='false' data-cps-tab='buddies'>Event Buddies</button><button type='button' role='tab' aria-selected='false' data-cps-tab='clubs'>Club Hubs</button><button type='button' role='tab' aria-selected='false' data-cps-tab='mentorship'>Mentorship</button><button type='button' role='tab' aria-selected='false' data-cps-tab='memories'>Memories</button><button type='button' role='tab' aria-selected='false' data-cps-tab='connections'>Connections</button><button type='button' role='tab' aria-selected='false' data-cps-tab='qna'>Campus Q&amp;A</button><button type='button' role='tab' aria-selected='false' data-cps-tab='stories'>Stories</button><button type='button' role='tab' aria-selected='false' data-cps-tab='confessions'>Confessions</button></div>",
       "<div class='campuspulse-social-panel' data-cps-panel='missions'><div class='campuspulse-social-panel-head'><div><h3>Campus Missions</h3><p>Weekly actions reuse the existing Challenges and Rewards progress system.</p></div><button type='button' class='btn secondary' data-page='student-rewards'>Open rewards</button></div><p id='cps-missions-status' class='message' role='status'>Loading missions…</p><div id='cps-missions-list' class='campuspulse-social-grid'></div></div>",
       "<div class='campuspulse-social-panel' data-cps-panel='collab' hidden><div class='campuspulse-social-panel-head'><div><h3>Collab Finder</h3><p>Find study partners, project teammates, research collaborators and creative partners at your university.</p></div></div><form id='cps-collab-form' class='campuspulse-social-form'><div class='field'><label for='cps-collab-title'>What are you working on? *</label><input id='cps-collab-title' required minlength='3' maxlength='120' placeholder='e.g. Build a student budgeting app'></div><div class='field'><label for='cps-collab-category'>Category</label><select id='cps-collab-category'><option value='study'>Study partner</option><option value='project'>Project</option><option value='hackathon'>Hackathon</option><option value='research'>Research</option><option value='career'>Career / portfolio</option><option value='creative'>Creative collaboration</option><option value='other'>Other</option></select></div><div class='field'><label for='cps-collab-description'>Details *</label><textarea id='cps-collab-description' required minlength='10' maxlength='1200' rows='3'></textarea></div><div class='field'><label for='cps-collab-skills'>Skills or interests (comma separated)</label><input id='cps-collab-skills' maxlength='250' placeholder='e.g. Python, design, writing'></div><div class='field'><label for='cps-collab-availability'>Availability</label><input id='cps-collab-availability' maxlength='120' placeholder='e.g. Weekday evenings'></div><div class='field'><label for='cps-collab-slots'>People needed</label><select id='cps-collab-slots'><option value='1'>1 person</option><option value='2' selected>2 people</option><option value='3'>3 people</option><option value='4'>4 people</option><option value='5'>5 people</option></select></div><button class='btn' type='submit' id='cps-collab-submit'>Post collaboration</button><p id='cps-collab-status' class='message' role='status'></p></form><div class='campuspulse-social-feed-head'><h3>Open collaborations</h3><button type='button' class='btn secondary' data-cps-refresh='collab'>Refresh</button></div><div id='cps-collab-list' class='campuspulse-social-grid'></div></div>",
       "<div class='campuspulse-social-panel' data-cps-panel='buddies' hidden><div class='campuspulse-social-panel-head'><div><h3>Event Buddies</h3><p>Find verified students who would like to attend a published campus event together.</p></div></div><form id='cps-buddy-form' class='campuspulse-social-form'><div class='field'><label for='cps-buddy-event'>Upcoming event *</label><select id='cps-buddy-event' required><option value=''>Loading events…</option></select></div><div class='field'><label for='cps-buddy-note'>Your note *</label><textarea id='cps-buddy-note' required minlength='5' maxlength='500' rows='2'></textarea></div><div class='field'><label for='cps-buddy-count'>Extra buddies</label><select id='cps-buddy-count'><option value='1'>1</option><option value='2'>2</option><option value='3'>3</option><option value='4'>4</option></select></div><button class='btn' type='submit'>Find an event buddy</button><p id='cps-buddy-status' class='message' role='status'></p></form><div class='campuspulse-social-feed-head'><h3>People looking for event buddies</h3><button type='button' class='btn secondary' data-cps-refresh='buddies'>Refresh</button></div><div id='cps-buddy-list' class='campuspulse-social-grid'></div></div>",
@@ -53,6 +53,9 @@
       "<div class='campuspulse-social-panel' data-cps-panel='mentorship' hidden><div class='campuspulse-social-panel-head'><div><h3>Peer Mentorship</h3><p>Volunteer to guide students with study routines, campus life or career preparation. This is peer support, not professional counselling or official university advice.</p></div></div><form id='cps-mentor-form' class='campuspulse-social-form'><div class='field'><label for='cps-mentor-headline'>What can you help with? *</label><input id='cps-mentor-headline' required minlength='5' maxlength='120'></div><div class='field'><label for='cps-mentor-bio'>A little about your experience *</label><textarea id='cps-mentor-bio' required minlength='20' maxlength='1000' rows='3'></textarea></div><div class='field'><label for='cps-mentor-topics'>Topics (comma separated)</label><input id='cps-mentor-topics' maxlength='250'></div><div class='field'><label for='cps-mentor-availability'>Availability</label><input id='cps-mentor-availability' maxlength='120'></div><button class='btn' type='submit'>Save volunteer profile</button><button class='btn secondary' type='button' id='cps-mentor-pause'>Pause my profile</button><p id='cps-mentor-status' class='message' role='status'></p></form><div class='campuspulse-social-feed-head'><h3>Volunteer mentors</h3><button type='button' class='btn secondary' data-cps-refresh='mentorship'>Refresh</button></div><div id='cps-mentor-list' class='campuspulse-social-grid'></div></div>",
       "<div class='campuspulse-social-panel' data-cps-panel='memories' hidden><div class='campuspulse-social-panel-head'><div><h3>Campus Memories</h3><p>Save a favourite campus moment. Text-only for now; photos and video remain disabled until the media scanner is configured.</p></div></div><form id='cps-memory-form' class='campuspulse-social-form'><div class='field'><label for='cps-memory-title'>Memory title *</label><input id='cps-memory-title' required minlength='3' maxlength='120'></div><div class='field'><label for='cps-memory-event'>Link to a past or current event (optional)</label><select id='cps-memory-event'><option value=''>No event link</option></select></div><div class='field'><label for='cps-memory-text'>Your memory *</label><textarea id='cps-memory-text' required minlength='20' maxlength='1200' rows='3'></textarea></div><button class='btn' type='submit'>Submit memory for review</button><p id='cps-memory-status' class='message' role='status'></p></form><div class='campuspulse-social-feed-head'><h3>Campus memories</h3><button type='button' class='btn secondary' data-cps-refresh='memories'>Refresh</button></div><div id='cps-memory-list' class='campuspulse-social-grid'></div></div>",
       "<div class='campuspulse-social-panel' data-cps-panel='connections' hidden><div class='campuspulse-social-panel-head'><div><h3>Connection requests</h3><p>Accept or decline requests before starting a private conversation. Email and private identity details are never shown.</p></div><button type='button' class='btn secondary' data-cps-refresh='connections'>Refresh</button></div><div id='cps-connections-list' class='campuspulse-social-grid'></div><div id='cps-social-reports-panel' hidden><div class='campuspulse-social-feed-head'><h3>CampusPulse reports</h3><button type='button' class='btn secondary' data-cps-refresh='reports'>Refresh</button></div><div id='cps-social-reports-list' class='campuspulse-social-grid'></div></div></div>",
+      "<div class='campuspulse-social-panel' data-cps-panel='qna' hidden><div class='campuspulse-social-panel-head'><div><h3>Campus Q&amp;A</h3><p>Ask campus and study questions, share clear answers, and find helpful discussions from verified members of your university.</p></div><button type='button' class='btn secondary' data-cps-refresh='qna'>Refresh</button></div><form id='cps-qna-form' class='campuspulse-social-form'><div class='field'><label for='cps-qna-title'>Your question *</label><input id='cps-qna-title' required minlength='5' maxlength='140' placeholder='e.g. Which resources helped you prepare for CSC 201?'></div><div class='field'><label for='cps-qna-body'>Add helpful context *</label><textarea id='cps-qna-body' required minlength='10' maxlength='1600' rows='3' placeholder='Explain what you need help with. Do not include private student information or active assessment answers.'></textarea></div><button class='btn' type='submit' id='cps-qna-submit'>Ask the campus</button><p id='cps-qna-form-status' class='message' role='status'></p></form><div class='campuspulse-social-qna-tools'><div class='field'><label for='cps-qna-search'>Search questions</label><input id='cps-qna-search' type='search' maxlength='100' placeholder='Search topics, course codes or keywords'></div><div class='field'><label for='cps-qna-filter'>Show</label><select id='cps-qna-filter'><option value='all'>All questions</option><option value='unanswered'>Unanswered</option><option value='answered'>Answered</option></select></div></div><p id='cps-qna-status' class='message' role='status'>Loading questions…</p><div id='cps-qna-list' class='campuspulse-social-grid'></div></div>",
+      "<div class='campuspulse-social-panel' data-cps-panel='stories' hidden><div class='campuspulse-social-panel-head'><div><h3>Campus Stories</h3><p>Share a short, useful moment from campus. Stories appear for 24 hours after approval by authorised campus staff.</p></div><button type='button' class='btn secondary' data-cps-refresh='stories'>Refresh</button></div><form id='cps-story-form' class='campuspulse-social-form'><div class='field'><label for='cps-story-body'>Your story *</label><textarea id='cps-story-body' required minlength='1' maxlength='500' rows='3' placeholder='Share a campus moment, quick tip or positive update…'></textarea><p class='campuspulse-social-muted'>Text only for now. Story photos and videos remain unavailable until the staging malware scanner is configured and verified.</p></div><button class='btn' type='submit' id='cps-story-submit'>Submit story for review</button><p id='cps-story-form-status' class='message' role='status'></p></form><p id='cps-story-status' class='message' role='status'>Loading published stories…</p><div id='cps-story-list' class='campuspulse-social-grid'></div><section id='cps-story-moderation-panel' class='campuspulse-social-moderation' hidden><div class='campuspulse-social-feed-head'><div><h3>Stories awaiting review</h3><p class='campuspulse-social-muted'>Review stories for your university only.</p></div><button type='button' class='btn secondary' data-cps-refresh='story-moderation'>Refresh queue</button></div><div id='cps-story-moderation-list' class='campuspulse-social-grid'></div><p id='cps-story-moderation-status' class='message' role='status'></p></section></div>",
+      "<div class='campuspulse-social-panel' data-cps-panel='confessions' hidden><div class='campuspulse-social-panel-head'><div><h3>Anonymous Confessions</h3><p>Share a campus-life thought without showing your identity to other students. All submissions are reviewed before publication.</p></div><button type='button' class='btn secondary' data-cps-refresh='confessions'>Refresh</button></div><div class='campuspulse-social-safety'>Confessions are not a private counselling service or an emergency channel. Do not include names, contact details, room numbers, identifying accusations or private records. For immediate danger, use incident reporting and contact campus security directly.</div><form id='cps-confession-form' class='campuspulse-social-form'><div class='field'><label for='cps-confession-category'>Topic *</label><select id='cps-confession-category' required><option value='campus_life'>Campus life</option><option value='friendship'>Friendship</option><option value='relationships'>Relationships</option><option value='academic_stress'>Academic stress</option><option value='general'>General</option></select></div><div class='field'><label for='cps-confession-body'>Your confession *</label><textarea id='cps-confession-body' required minlength='10' maxlength='1200' rows='4' placeholder='Share your thoughts without identifying yourself or another person…'></textarea><p class='campuspulse-social-muted'>Anonymous to other students. You may submit up to three confessions in 24 hours.</p></div><button class='btn' type='submit' id='cps-confession-submit'>Submit anonymously for review</button><p id='cps-confession-form-status' class='message' role='status'></p></form><p id='cps-confession-status' class='message' role='status'>Loading published confessions…</p><div id='cps-confession-list' class='campuspulse-social-grid'></div><section id='cps-confession-moderation-panel' class='campuspulse-social-moderation' hidden><div class='campuspulse-social-feed-head'><div><h3>Confessions awaiting review</h3><p class='campuspulse-social-muted'>Author identities are not displayed in this moderation queue.</p></div><button type='button' class='btn secondary' data-cps-refresh='confession-moderation'>Refresh queue</button></div><div id='cps-confession-moderation-list' class='campuspulse-social-grid'></div><p id='cps-confession-moderation-status' class='message' role='status'></p></section></div>",
       "<p id='cps-global-status' class='message' role='status' aria-live='polite'>Loading campus features…</p><p class='campuspulse-social-safety'>Campus-only features for verified members. Do not publish phone numbers, email addresses, room numbers, private student details or exact live locations. For immediate danger, contact campus security or local emergency services directly.</p>"
     ].join("");
     anchor.insertAdjacentElement("afterend",shell);
@@ -86,6 +89,9 @@
     if(name==="mentorship")loadMentors();
     if(name==="memories"){loadEvents();loadMemories();}
     if(name==="connections"){loadConnections();loadReports();}
+    if(name==="qna")loadQna();
+    if(name==="stories")loadStories();
+    if(name==="confessions")loadConfessions();
   }
 
   async function loadAll() {
@@ -93,12 +99,184 @@
       await prepare();
       status("cps-global-status","Connected to "+(state.campus.university_name||"your university")+".");
       await loadEvents();
-      await Promise.allSettled([loadMissions(),loadCollabs(),loadBuddies(),loadClubs(),loadMentors(),loadMemories(),loadConnections()]);
+      await Promise.allSettled([loadMissions(),loadCollabs(),loadBuddies(),loadClubs(),loadMentors(),loadMemories(),loadConnections(),loadQna(),loadStories(),loadConfessions()]);
       if(state.pendingTab){const tab=state.pendingTab;state.pendingTab=null;setTab(tab);}
       const staff=["admin","security","teacher"].includes(state.profile.role)&&state.campus.verification_status==="verified";
       $("cps-social-reports-panel").hidden=!staff;
       if(staff)await loadReports();
     } catch(error){status("cps-global-status",error?.message||"CampusPulse social tools are unavailable.",true);}
+  }
+
+
+  function renderQna() {
+    const feed=$("cps-qna-list");if(!feed)return;
+    const term=($("cps-qna-search")?.value||"").trim().toLowerCase();
+    const mode=$("cps-qna-filter")?.value||"all";
+    const comments=state.qnaComments||[];
+    const rows=(state.qnaPosts||[]).filter(post=>{
+      const answers=comments.filter(comment=>comment.post_id===post.id);
+      const matches=!term||[post.title,post.body].some(value=>String(value||"").toLowerCase().includes(term));
+      return matches&&(mode==="all"||(mode==="answered"&&answers.length>0)||(mode==="unanswered"&&answers.length===0));
+    });
+    feed.replaceChildren();
+    if(!rows.length){empty(feed,term?"No questions match your search.":mode==="unanswered"?"No unanswered questions right now.":"No questions yet. Be the first to ask your campus.");return;}
+    rows.forEach(post=>{
+      const answers=comments.filter(comment=>comment.post_id===post.id);
+      const item=card(post.title,post.body);
+      item.append(el("p","campuspulse-social-meta","@"+(post.author_username||"campus member")+" · "+dateText(post.created_at)+" · "+answers.length+" answer(s)"));
+      const answersBox=el("div","campuspulse-social-qna-answers");
+      answers.slice(0,6).forEach(answer=>{
+        const answerCard=el("article","campuspulse-social-qna-answer");
+        answerCard.append(el("p","campuspulse-social-meta","@"+(answer.author_username||"campus member")+" · "+dateText(answer.created_at)));
+        answerCard.append(el("p","campuspulse-social-card-copy",answer.body));
+        answersBox.append(answerCard);
+      });
+      if(!answers.length)answersBox.append(el("p","campuspulse-social-muted","No answers yet. Share a helpful answer to get the conversation started."));
+      if(answers.length>6)answersBox.append(el("p","campuspulse-social-muted",(answers.length-6)+" more answer(s)"));
+      item.append(answersBox);
+      const form=el("form","campuspulse-social-qna-compose");form.dataset.cpsQnaAnswer=post.id;
+      const input=el("textarea");input.name="answer";input.required=true;input.minLength=3;input.maxLength=1200;input.rows=2;
+      input.placeholder="Write a helpful answer…";input.setAttribute("aria-label","Answer this question");
+      const submit=btn("Post answer",{},"btn");submit.type="submit";
+      form.append(input,submit);item.append(form);feed.append(item);
+    });
+  }
+
+  async function loadQna() {
+    const feed=$("cps-qna-list");if(!feed||!state.api)return;
+    status("cps-qna-status","Loading campus questions…");
+    try {
+      const posts=await state.api.listCommunityPosts();
+      state.qnaPosts=(posts||[]).filter(post=>post.post_type==="question");
+      const ids=state.qnaPosts.map(post=>post.id).filter(Boolean);
+      state.qnaComments=ids.length?await state.api.listCommunityComments(ids):[];
+      renderQna();
+      status("cps-qna-status",state.qnaPosts.length+" question(s) from your university.");
+    } catch(error) {empty(feed,"Questions are temporarily unavailable. Refresh to try again.");status("cps-qna-status",error?.message||"Could not load campus questions.",true);}
+  }
+
+  async function submitQna(event) {
+    event.preventDefault();const button=$("cps-qna-submit");button.disabled=true;
+    try {
+      await state.api.createCommunityPost({postType:"question",title:$("cps-qna-title").value.trim(),body:$("cps-qna-body").value.trim()});
+      $("cps-qna-form").reset();status("cps-qna-form-status","Question submitted for campus review.");await loadQna();
+    } catch(error) {status("cps-qna-form-status",error?.message||"Could not submit your question.",true);}
+    finally {button.disabled=false;}
+  }
+
+  async function submitQnaAnswer(event,form) {
+    event.preventDefault();const button=form.querySelector("button[type='submit']"),input=form.querySelector("textarea[name='answer']");
+    button.disabled=true;
+    try {
+      await state.api.createCommunityComment(form.dataset.cpsQnaAnswer,input.value.trim());
+      input.value="";status("cps-qna-status","Your answer has been submitted.");await loadQna();
+    } catch(error) {status("cps-qna-status",error?.message||"Could not post your answer.",true);}
+    finally {button.disabled=false;}
+  }
+
+  async function loadStories() {
+    const feed=$("cps-story-list"),queue=$("cps-story-moderation-list");if(!feed||!state.client)return;
+    try {
+      const result=await state.client.rpc("list_campus_stories");if(result.error)throw result.error;
+      const rows=result.data||[];feed.replaceChildren();
+      if(!rows.length)empty(feed,"No active stories yet. Submit a short campus moment to appear after review.");
+      rows.forEach(row=>{
+        const item=card("@"+row.author_username,row.body);
+        item.append(el("p","campuspulse-social-meta","Expires "+dateText(row.expires_at)));
+        if(row.is_mine)item.append(el("p","campuspulse-social-muted","Your story"));
+        feed.append(item);
+      });
+      status("cps-story-status",rows.length+" active story/stories. Each story expires 24 hours after approval.");
+      const staff=["admin","security","teacher"].includes(state.profile?.role)&&state.campus?.verification_status==="verified";
+      $("cps-story-moderation-panel").hidden=!staff;
+      if(staff&&queue) {
+        const pending=await state.client.rpc("list_campus_story_moderation");if(pending.error)throw pending.error;
+        queue.replaceChildren();
+        if(!pending.data?.length)empty(queue,"No stories are waiting for review.");
+        (pending.data||[]).forEach(row=>{
+          const item=card("@"+row.author_username,row.body);
+          item.append(el("p","campuspulse-social-meta","Submitted "+dateText(row.created_at)));
+          item.append(btn("Approve for 24 hours",{"data-cps-story-moderate":"publish","data-story-id":row.story_id},"btn"));
+          item.append(btn("Reject",{"data-cps-story-moderate":"reject","data-story-id":row.story_id},"btn secondary"));
+          queue.append(item);
+        });
+        status("cps-story-moderation-status",(pending.data||[]).length+" pending story/stories.");
+      }
+    } catch(error) {empty(feed,"Stories are temporarily unavailable. Refresh to try again.");status("cps-story-status",error?.message||"Could not load stories.",true);}
+  }
+
+  async function submitStory(event) {
+    event.preventDefault();const button=$("cps-story-submit");button.disabled=true;
+    try {
+      const result=await state.client.rpc("create_campus_story",{p_body:$("cps-story-body").value.trim()});
+      if(result.error)throw result.error;
+      if(!result.data)throw new Error("The story was not accepted by CampusShield.");
+      $("cps-story-form").reset();status("cps-story-form-status","Story submitted. Its 24-hour period starts after campus approval.");await loadStories();
+    } catch(error) {status("cps-story-form-status",error?.message||"Could not submit your story.",true);}
+    finally {button.disabled=false;}
+  }
+
+  async function loadConfessions() {
+    const feed=$("cps-confession-list"),queue=$("cps-confession-moderation-list");if(!feed||!state.client)return;
+    try {
+      const result=await state.client.rpc("list_campus_confessions");if(result.error)throw result.error;
+      const rows=result.data||[];feed.replaceChildren();
+      if(!rows.length)empty(feed,"No published confessions yet. Submissions stay hidden until approved.");
+      rows.forEach(row=>{
+        const item=card("Anonymous · "+String(row.category||"general").replaceAll("_"," "),row.body);
+        item.append(el("p","campuspulse-social-meta",dateText(row.created_at)));
+        item.append(btn("Report",{"data-cps-confession-report":row.confession_id},"btn secondary"));
+        feed.append(item);
+      });
+      status("cps-confession-status",rows.length+" published confession(s). Authors are not shown to other students.");
+      const staff=["admin","security","teacher"].includes(state.profile?.role)&&state.campus?.verification_status==="verified";
+      $("cps-confession-moderation-panel").hidden=!staff;
+      if(staff&&queue) {
+        const pending=await state.client.rpc("list_campus_confession_moderation");if(pending.error)throw pending.error;
+        queue.replaceChildren();
+        if(!pending.data?.length)empty(queue,"No confessions are waiting for review.");
+        (pending.data||[]).forEach(row=>{
+          const item=card("Anonymous · "+String(row.category||"general").replaceAll("_"," "),row.body);
+          item.append(el("p","campuspulse-social-meta","Submitted "+dateText(row.created_at)+" · "+Number(row.report_count||0)+" pending report(s)"));
+          item.append(btn("Approve",{"data-cps-confession-moderate":"publish","data-confession-id":row.confession_id},"btn"));
+          item.append(btn("Reject",{"data-cps-confession-moderate":"reject","data-confession-id":row.confession_id},"btn secondary"));
+          item.append(btn("Hide",{"data-cps-confession-moderate":"hide","data-confession-id":row.confession_id},"btn secondary"));
+          queue.append(item);
+        });
+        status("cps-confession-moderation-status",(pending.data||[]).length+" pending confession(s).");
+      }
+    } catch(error) {empty(feed,"Confessions are temporarily unavailable. Refresh to try again.");status("cps-confession-status",error?.message||"Could not load confessions.",true);}
+  }
+
+  async function submitConfession(event) {
+    event.preventDefault();const button=$("cps-confession-submit");button.disabled=true;
+    try {
+      const result=await state.client.rpc("create_campus_confession",{p_category:$("cps-confession-category").value,p_body:$("cps-confession-body").value.trim()});
+      if(result.error)throw result.error;
+      $("cps-confession-form").reset();status("cps-confession-form-status","Your confession was submitted anonymously for campus review.");await loadConfessions();
+    } catch(error) {status("cps-confession-form-status",error?.message||"Could not submit your confession.",true);}
+    finally {button.disabled=false;}
+  }
+
+  async function reportConfession(id) {
+    const reasons=["harassment","threats","personal_information","self_harm_concern","spam","other"];
+    const reason=window.prompt("Choose a reason: "+reasons.join(", "),"other");if(reason===null)return;
+    const chosen=reason.trim().toLowerCase();if(!reasons.includes(chosen))throw new Error("Choose one of the listed report reasons.");
+    const details=window.prompt("Optional details for campus moderators (500 characters maximum):","");if(details===null)return;
+    if(details.length>500)throw new Error("Report details must be 500 characters or fewer.");
+    const result=await state.client.rpc("report_campus_confession",{p_confession_id:id,p_reason:chosen,p_details:details.trim()||null});
+    if(result.error)throw result.error;status("cps-confession-status","Your report was sent to authorised campus moderators.");
+  }
+
+  async function moderateStory(id,decision) {
+    const result=await state.client.rpc("moderate_campus_story",{p_story_id:id,p_decision:decision});
+    if(result.error)throw result.error;
+    status("cps-story-moderation-status",decision==="publish"?"Story approved. Its 24-hour period has started.":"Story rejected.");await loadStories();
+  }
+
+  async function moderateConfession(id,decision) {
+    const result=await state.client.rpc("moderate_campus_confession",{p_confession_id:id,p_decision:decision});
+    if(result.error)throw result.error;status("cps-confession-moderation-status","Confession moderation decision saved.");await loadConfessions();
   }
 
   async function loadMissions() {
@@ -309,11 +487,17 @@
     $("cps-mentor-form").addEventListener("submit",(e)=>{e.preventDefault();saveMentor(true);});
     $("cps-mentor-pause").addEventListener("click",()=>saveMentor(false));
     $("cps-memory-form").addEventListener("submit",submitMemory);
+    $("cps-qna-form").addEventListener("submit",submitQna);
+    $("cps-story-form").addEventListener("submit",submitStory);
+    $("cps-confession-form").addEventListener("submit",submitConfession);
+    $("cps-qna-search").addEventListener("input",renderQna);
+    $("cps-qna-filter").addEventListener("change",renderQna);
+    document.addEventListener("submit",(event)=>{const form=event.target.closest("[data-cps-qna-answer]");if(form)void submitQnaAnswer(event,form);});
     document.addEventListener("click",async(event)=>{
       const refresh=event.target.closest("[data-cps-refresh]");
-      const b=event.target.closest("[data-cps-connect],[data-cps-report],[data-cps-close-collab],[data-cps-close-buddy],[data-cps-club-action],[data-cps-connection-action],[data-cps-message-user],[data-cps-publish-memory],[data-cps-pause-mentor],[data-cps-report-status]");
+      const b=event.target.closest("[data-cps-connect],[data-cps-report],[data-cps-close-collab],[data-cps-close-buddy],[data-cps-club-action],[data-cps-connection-action],[data-cps-message-user],[data-cps-publish-memory],[data-cps-pause-mentor],[data-cps-report-status],[data-cps-story-moderate],[data-cps-confession-moderate],[data-cps-confession-report]");
       try {
-        if(refresh){const k=refresh.dataset.cpsRefresh;if(k==="collab")await loadCollabs();if(k==="buddies"){await loadEvents();await loadBuddies();}if(k==="clubs")await loadClubs();if(k==="mentorship")await loadMentors();if(k==="memories")await loadMemories();if(k==="connections")await loadConnections();if(k==="reports")await loadReports();return;}
+        if(refresh){const k=refresh.dataset.cpsRefresh;if(k==="collab")await loadCollabs();if(k==="buddies"){await loadEvents();await loadBuddies();}if(k==="clubs")await loadClubs();if(k==="mentorship")await loadMentors();if(k==="memories")await loadMemories();if(k==="connections")await loadConnections();if(k==="reports")await loadReports();if(k==="qna")await loadQna();if(k==="stories")await loadStories();if(k==="confessions")await loadConfessions();if(k==="story-moderation")await loadStories();if(k==="confession-moderation")await loadConfessions();return;}
         if(!b)return;b.disabled=true;
         if(b.hasAttribute("data-cps-connect"))await sendConnect(b.dataset.sourceType,b.dataset.sourceId);
         else if(b.hasAttribute("data-cps-report"))await reportItem(b.dataset.targetType,b.dataset.targetId);
@@ -325,6 +509,9 @@
         else if(b.hasAttribute("data-cps-publish-memory")){const r=await state.client.from("campus_memories").update({status:"published"}).eq("id",b.dataset.cpsPublishMemory);if(r.error)throw r.error;await loadMemories();}
         else if(b.hasAttribute("data-cps-pause-mentor")){const r=await state.client.from("campus_mentorship_profiles").update({is_active:false}).eq("id",b.dataset.cpsPauseMentor);if(r.error)throw r.error;await loadMentors();}
         else if(b.hasAttribute("data-cps-report-status")){const r=await state.client.from("campus_social_feature_reports").update({status:b.dataset.cpsReportStatus}).eq("id",b.dataset.reportId);if(r.error)throw r.error;await loadReports();}
+        else if(b.hasAttribute("data-cps-story-moderate"))await moderateStory(b.dataset.storyId,b.dataset.cpsStoryModerate);
+        else if(b.hasAttribute("data-cps-confession-moderate"))await moderateConfession(b.dataset.confessionId,b.dataset.cpsConfessionModerate);
+        else if(b.hasAttribute("data-cps-confession-report"))await reportConfession(b.dataset.cpsConfessionReport);
       }catch(error){status("cps-global-status",error?.message||"CampusPulse action failed.",true);}finally{if(b)b.disabled=false;}
     });
     document.addEventListener("click",(event)=>{const nav=event.target.closest("[data-page='community']");if(nav)window.setTimeout(loadAll,80);});
