@@ -28,7 +28,7 @@ Vercel uses minimatch branch patterns. When a branch matches more than one rule,
 4. Open a pull request from `staging/preview` into `main`. Require the agreed Staging checks to pass before merging.
 5. Merge into `main` to create the Production deployment.
 
-Vercel documents that a commit SHA already deployed is reused rather than creating another deployment for the same SHA. This can avoid a duplicate build when the Staging commit is later used for the Production release.
+Plan for one Vercel deployment on `staging/preview` and a separate Production deployment on `main` for each release. Do not rely on cross-environment commit reuse to reduce the deployment count.
 
 ## Important project-setting distinction
 
