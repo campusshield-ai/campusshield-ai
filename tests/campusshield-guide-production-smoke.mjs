@@ -22,7 +22,7 @@ assert.ok(guideNavIndex < supportNavIndex,
   "The guide must not be hidden inside Insights & Support.");
 assert.match(app, /button\.dataset\.page === 'guide'[\s\S]*?button\.hidden = false/,
   "The guide navigation must remain visible to every signed-in account role.");
-assert.match(index, /mobile-topbar-help" data-page="guide"/);
+assert.doesNotMatch(index, /mobile-topbar-help/, "The mobile top bar must not duplicate the dedicated sidebar guide link");
 assert.match(index, /id="page-guide"[^>]*aria-labelledby="guide-title"/);
 assert.match(index, /campusshield-guide\.css/);
 assert.match(index, /campusshield-guide\.js/);
