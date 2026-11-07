@@ -258,3 +258,111 @@
     transition: none !important; animation: none !important; will-change: auto !important;
   }
 }
+
+
+/* Keep the Getting Started guide pinned above the independently scrollable feature navigation. */
+#workspace #app-sidebar {
+  display:flex !important;
+  flex-direction:column !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+}
+#workspace #app-sidebar .sidebar-guide-access {
+  display:flex !important;
+  flex:0 0 auto !important;
+  flex-direction:column !important;
+  gap:4px;
+  width:100%;
+  min-width:0;
+  padding:0 0 9px;
+  border-bottom:1px solid #ffffff17;
+}
+#workspace #app-sidebar .sidebar-guide-access .nav-section-label {
+  display:block !important;
+  flex:0 0 auto;
+  width:100%;
+  padding:4px 11px 5px !important;
+  color:#8fb29d !important;
+  font-size:9px !important;
+  font-weight:850 !important;
+  letter-spacing:.18em !important;
+  line-height:1.4 !important;
+}
+#workspace #app-sidebar .sidebar-guide-access #guide-nav {
+  display:flex !important;
+  flex:0 0 auto !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:11px !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:46px !important;
+  padding:11px 13px !important;
+  border:1px solid #ffffff16 !important;
+  border-radius:13px !important;
+  background:#ffffff09 !important;
+  color:#e8f2ec !important;
+  font-size:13px !important;
+  font-weight:750 !important;
+  line-height:1.35 !important;
+  text-align:left !important;
+  white-space:normal !important;
+}
+#workspace #app-sidebar .sidebar-guide-access #guide-nav:hover,
+#workspace #app-sidebar .sidebar-guide-access #guide-nav:focus-visible {
+  border-color:#7fd98a70 !important;
+  background:#7fd98a16 !important;
+  color:#ffffff !important;
+}
+#workspace #app-sidebar .sidebar-guide-access #guide-nav:focus-visible {
+  outline:2px solid #7fd98a !important;
+  outline-offset:2px;
+}
+#workspace #app-sidebar .sidebar-guide-access #guide-nav .nav-icon {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex:0 0 20px !important;
+  width:20px !important;
+  height:20px !important;
+  color:#7fd98a !important;
+}
+#workspace #app-sidebar .nav {
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+}
+@media (min-width:651px) {
+  #workspace.app.sidebar-collapsed #app-sidebar .sidebar-guide-access .nav-section-label {
+    display:none !important;
+  }
+  #workspace.app.sidebar-collapsed #app-sidebar .sidebar-guide-access #guide-nav {
+    justify-content:center !important;
+    gap:0 !important;
+    min-height:42px !important;
+    padding:10px 5px !important;
+    font-size:0 !important;
+    line-height:0 !important;
+  }
+  #workspace.app.sidebar-collapsed #app-sidebar .sidebar-guide-access #guide-nav .nav-icon {
+    flex:0 0 22px !important;
+    width:22px !important;
+    height:22px !important;
+  }
+}
+@media (max-width:650px) {
+  #workspace.app #app-sidebar .sidebar-guide-access .nav-section-label {
+    display:block !important;
+  }
+  #workspace.app.sidebar-collapsed #app-sidebar .sidebar-guide-access #guide-nav {
+    justify-content:flex-start !important;
+    gap:11px !important;
+    min-height:46px !important;
+    padding:11px 12px !important;
+    font-size:13px !important;
+    line-height:1.35 !important;
+  }
+}

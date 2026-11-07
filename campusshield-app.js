@@ -199,7 +199,7 @@
     const setup = $('student-identity-setup-button');
     const note = $('student-identity-setup-status');
     const state = studentIdentitySubmission?.status || null;
-    document.querySelectorAll('.nav button[data-page]').forEach(button => {
+    document.querySelectorAll('.nav button[data-page], .sidebar-guide-access button[data-page]').forEach(button => {
       if (button.id === 'platform-admin-nav') return;
       if (button.dataset.page === 'guide') {
         // The quick-start guide is a first-class navigation destination for every account role.
