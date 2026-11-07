@@ -7,6 +7,7 @@ const html = htmlMarkup + "\n" + appScript;
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
 const visualRefreshCss = await readFile(new URL("../campusshield-visual-refresh.css", import.meta.url), "utf8");
 const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", import.meta.url), "utf8");
+const guidePageCss = await readFile(new URL("../campusshield-guide.css", import.meta.url), "utf8");
 const creatorToolsJs = await readFile(new URL("../student-creator-tools.js", import.meta.url), "utf8");
 const brandLockupCss = await readFile(new URL("../campusshield-brand-lockup.css", import.meta.url), "utf8");
 const campusShieldLogo = await readFile(new URL("../assets/campusshield-logo.svg", import.meta.url), "utf8");
@@ -983,4 +984,11 @@ assert.match(learningInsightsScript, /textContent = String\(value \?\? ""\)/, "s
 assert.match(learningInsightsCss, /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/, "learning metrics use a desktop grid");
 assert.match(learningInsightsCss, /@media \(max-width: 760px\)/, "learning insights collapse for tablet and phone widths");
 assert.match(learningInsightsCss, /html\[data-theme="dark"\]/, "learning insights support dark mode");
+const guideBaseRule = guidePageCss.match(/\.campus-guide-page\{([^}]*)\}/)?.[1] || "";
+assert.doesNotMatch(guideBaseRule, /(?:^|;)display\s*:/, "The guide layout must not force itself visible outside the active page state");
+assert.match(guidePageCss, /\.page\.campus-guide-page\{display:none\}/, "The guide page must be hidden when not selected");
+assert.match(guidePageCss, /\.page\.campus-guide-page\.active\{display:grid\}/, "The guide page must use its grid layout only when selected");
+assert.match(htmlMarkup, /<section class="page active" id="page-dashboard">/, "Dashboard remains the default active page");
+assert.match(htmlMarkup, /<section class="page campus-guide-page" id="page-guide"/, "The guide remains a separate page destination, not dashboard content");
+
 console.log("PASS ShieldMind paid-state learning intelligence, private practice analytics, safe topic rendering, and responsive styling");
