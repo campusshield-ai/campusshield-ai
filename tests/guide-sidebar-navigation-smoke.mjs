@@ -12,6 +12,8 @@ const support = index.indexOf('<div class="nav-section-label">INSIGHTS & SUPPORT
 
 assert.ok(gettingStarted >= 0 && gettingStarted < guideButton && guideButton < safety,
   "How to use CampusShield must have a standalone Getting Started section above all feature groups");
+assert.match(index, /<div class="nav-section-label">GETTING STARTED<\/div>\s*<button data-page="guide" id="guide-nav"[^>]*>[\s\S]*?How to use CampusShield<\/button>/,
+  "The standalone Getting Started item must visibly read How to use CampusShield");
 assert.ok(guideButton < support,
   "The guide must not be buried inside Insights & Support");
 assert.doesNotMatch(index, /mobile-topbar-help/,
