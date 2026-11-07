@@ -14,7 +14,7 @@ assert.ok(gettingStarted >= 0 && gettingStarted < guideButton && guideButton < s
   "How to use CampusShield must have a standalone Getting Started section above all feature groups");
 assert.ok(guideButton < support,
   "The guide must not be buried inside Insights & Support");
-assert.equal((index.match(/id="guide-nav"/g) || []).length, 1,
+assert.doesNotMatch(index, /mobile-topbar-help/,\n  "The guide must only appear in its dedicated sidebar section, not as a duplicate top-bar shortcut");\nassert.equal((index.match(/id="guide-nav"/g) || []).length, 1,
   "There must be exactly one guide navigation entry");
 assert.match(index, /id="page-guide"[\s\S]*?How CampusShield Works/,
   "The dedicated How CampusShield Works page must remain available");
