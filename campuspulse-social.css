@@ -50,3 +50,19 @@
 @media(prefers-reduced-motion:reduce) {
  .campuspulse-social-suite * {scroll-behavior:auto!important;transition:none!important;animation:none!important;}
 }
+/* CampusPulse expansion: searchable answers, text-only stories and anonymous confessions. */
+.campuspulse-social-qna-tools{display:grid;grid-template-columns:minmax(0,2fr) minmax(170px,1fr);gap:12px;margin:14px 0}
+.campuspulse-social-qna-tools .field{margin:0;min-width:0}
+.campuspulse-social-qna-answers{display:grid;gap:8px;margin:12px 0}
+.campuspulse-social-qna-answer{min-width:0;border-left:3px solid #9bc9aa;border-radius:0 10px 10px 0;background:#f5faf6;padding:10px 12px}
+.campuspulse-social-qna-answer .campuspulse-social-meta{margin-top:0}
+.campuspulse-social-qna-answer .campuspulse-social-card-copy{margin-bottom:0}
+.campuspulse-social-qna-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:9px;margin-top:12px}
+.campuspulse-social-qna-compose textarea{width:100%;min-width:0;border:1px solid #d5e1d8;border-radius:10px;padding:10px 12px;font:inherit;resize:vertical;background:#fff}
+.campuspulse-social-moderation{margin-top:20px;padding:14px;border:1px solid #dce7df;border-radius:15px;background:#f8fbf8}
+.campuspulse-social-moderation[hidden]{display:none!important}
+.campuspulse-social-moderation .campuspulse-social-feed-head{margin-top:0}
+#campuspulse-social-suite [data-cps-panel='stories'] .campuspulse-social-form .field,
+#campuspulse-social-suite [data-cps-panel='confessions'] .campuspulse-social-form .field{grid-column:1/-1}
+#campuspulse-social-suite [data-cps-panel='stories'] .campuspulse-social-safety{margin-top:0}
+@media(max-width:720px){.campuspulse-social-qna-tools{grid-template-columns:minmax(0,1fr)}.campuspulse-social-qna-compose{grid-template-columns:minmax(0,1fr)}.campuspulse-social-qna-compose button{justify-self:start}}

@@ -77,3 +77,24 @@ assert.doesNotMatch(privilegeHardening, /grant[^;]*\breferences\b|grant[^;]*\btr
   "Authenticated users must not receive REFERENCES or TRIGGER privileges on CampusPulse social tables");
 
 console.log("CampusPulse social feature smoke checks passed.");
+
+for (const feature of ["qna", "stories", "confessions"]) {
+  assert.ok(js.includes("data-cps-tab='" + feature + "'"), "Missing CampusPulse feature tab: " + feature);
+  assert.ok(js.includes("data-cps-panel='" + feature + "'"), "Missing CampusPulse feature panel: " + feature);
+}
+assert.match(js, /listCommunityPosts\(\)/, "Q&A must reuse the existing posts API");
+assert.match(js, /createCommunityPost\(\{postType:"question"/, "Q&A must create questions through the moderated post API");
+assert.match(js, /listCommunityComments\(ids\)/, "Q&A must reuse the existing comments API");
+assert.match(js, /createCommunityComment\(/, "Q&A must submit answers through the existing comment API");
+assert.match(js, /client\.rpc\("list_campus_stories"\)/, "Stories must use the protected list RPC");
+assert.match(js, /client\.rpc\("create_campus_story"/, "Stories must use the protected create RPC");
+assert.match(js, /client\.rpc\("list_campus_story_moderation"/, "Story moderation must use the protected RPC");
+assert.match(js, /client\.rpc\("moderate_campus_story"/, "Story moderation must use the protected RPC");
+assert.match(js, /client\.rpc\("list_campus_confessions"\)/, "Confessions must use the anonymous list RPC");
+assert.match(js, /client\.rpc\("create_campus_confession"/, "Confessions must use the protected create RPC");
+assert.match(js, /client\.rpc\("report_campus_confession"/, "Confessions must support protected reporting");
+assert.match(js, /client\.rpc\("list_campus_confession_moderation"/, "Confession moderation must use the protected RPC");
+assert.match(js, /client\.rpc\("moderate_campus_confession"/, "Confession decisions must use the protected RPC");
+assert.doesNotMatch(js, /\.from\(["']campus_stories["']\)|\.from\(["']campus_confessions["']\)/, "Story/confession table access must remain RPC-only");
+assert.doesNotMatch(js, /campus-story-media-upload|storage\.from|\.upload\(/, "Do not bypass malware scanning for story media");
+assert.match(css, /campuspulse-social-qna-compose/, "Q&A answer composer must be responsive");
