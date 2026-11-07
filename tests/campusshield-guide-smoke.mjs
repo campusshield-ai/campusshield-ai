@@ -12,16 +12,24 @@ const offline = read("../offline.html");
 
 new vm.Script(guide, { filename: "campusshield-guide.js" });
 assert.match(index, /<button data-page="guide" id="guide-nav" title="How to use CampusShield" aria-label="How to use CampusShield"/);
+const guideAccessIndex = index.indexOf('<div class="sidebar-guide-access" id="sidebar-guide-access">');
 const guideSectionIndex = index.indexOf('<div class="nav-section-label">GETTING STARTED</div>');
 const guideButtonIndex = index.indexOf('<button data-page="guide" id="guide-nav"');
+const navStartIndex = index.indexOf('<nav class="nav">');
 const safetySectionIndex = index.indexOf('<div class="nav-section-label">SAFETY & RESPONSE</div>');
 const supportSectionIndex = index.indexOf('<div class="nav-section-label">INSIGHTS & SUPPORT</div>');
-assert.ok(guideSectionIndex >= 0 && guideSectionIndex < guideButtonIndex && guideButtonIndex < safetySectionIndex,
-  "The guide must live in its own Getting Started section above the feature groups");
-assert.match(index, /<div class="nav-section-label">GETTING STARTED<\/div>\s*<button data-page="guide" id="guide-nav"[^>]*>[\s\S]*?How to use CampusShield<\/button>/,
-  "The standalone Getting Started item must visibly read How to use CampusShield");
-assert.ok(guideButtonIndex < supportSectionIndex,
-  "The guide must not be nested under Insights & Support");
+assert.ok(guideAccessIndex >= 0 && guideAccessIndex < navStartIndex,
+  "The Getting Started guide must be outside the independently scrollable feature navigation");
+assert.ok(guideAccessIndex < guideSectionIndex && guideSectionIndex < guideButtonIndex && guideButtonIndex < navStartIndex,
+  "The pinned block must contain its Getting Started label and guide link before the feature navigation");
+assert.match(index, /<div class="sidebar-guide-access" id="sidebar-guide-access">\s*<div class="nav-section-label">GETTING STARTED<\/div>\s*<button data-page="guide" id="guide-nav"[^>]*>[\s\S]*?How to use CampusShield<\/button>\s*<\/div>\s*<nav class="nav">\s*<div class="nav-section-label">SAFETY & RESPONSE<\/div>/,
+  "The pinned Getting Started block must appear immediately before the scrollable feature menu");
+assert.ok(safetySectionIndex > navStartIndex && supportSectionIndex > safetySectionIndex,
+  "Feature sections must remain inside the scrollable navigation");
+assert.equal((index.match(/id="guide-nav"/g) || []).length, 1,
+  "There must be exactly one guide navigation button");
+assert.doesNotMatch(index.slice(navStartIndex, supportSectionIndex), /id="guide-nav"/,
+  "The guide must not be nested inside the scrollable feature list");
 assert.match(app, /button\.dataset\.page === 'guide'[\s\S]*?button\.hidden = false/,
   "The guide remains visible regardless of a user's campus verification or role");
 assert.doesNotMatch(index, /mobile-topbar-help/, "The mobile top bar must not duplicate the dedicated sidebar guide link");
