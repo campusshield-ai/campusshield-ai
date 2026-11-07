@@ -18,6 +18,8 @@ const safetySectionIndex = index.indexOf('<div class="nav-section-label">SAFETY 
 const supportSectionIndex = index.indexOf('<div class="nav-section-label">INSIGHTS & SUPPORT</div>');
 assert.ok(guideSectionIndex >= 0 && guideSectionIndex < guideButtonIndex && guideButtonIndex < safetySectionIndex,
   "The guide must live in its own Getting Started section above the feature groups");
+assert.match(index, /<div class="nav-section-label">GETTING STARTED<\/div>\s*<button data-page="guide" id="guide-nav"[^>]*>[\s\S]*?How to use CampusShield<\/button>/,
+  "The standalone Getting Started item must visibly read How to use CampusShield");
 assert.ok(guideButtonIndex < supportSectionIndex,
   "The guide must not be nested under Insights & Support");
 assert.match(app, /button\.dataset\.page === 'guide'[\s\S]*?button\.hidden = false/,
