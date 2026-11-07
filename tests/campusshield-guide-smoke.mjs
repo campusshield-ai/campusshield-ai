@@ -22,7 +22,12 @@ assert.ok(guideButtonIndex < supportSectionIndex,
   "The guide must not be nested under Insights & Support");
 assert.match(app, /button\.dataset\.page === 'guide'[\s\S]*?button\.hidden = false/,
   "The guide remains visible regardless of a user's campus verification or role");
-assert.match(index, /mobile-topbar-help" data-page="guide"/);
+assert.equal((index.match(/id="guide-nav"/g) || []).length, 1,
+  "The sidebar must contain exactly one guide navigation entry");
+assert.equal((index.match(/data-page="guide"/g) || []).length, 1,
+  "The guide must only be linked from its standalone sidebar destination");
+assert.doesNotMatch(index, /mobile-topbar-help|data-page="guide"[^>]*class="[^"]*topbar/,
+  "The mobile header must not duplicate the standalone sidebar guide entry");
 assert.match(index, /id="page-guide"[\s\S]*?aria-labelledby="guide-title"/);
 assert.match(index, /campusshield-guide\.css/);
 assert.match(index, /campusshield-guide\.js/);
