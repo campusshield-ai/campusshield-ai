@@ -213,6 +213,16 @@ assert.match(institutionalPaymentAdmin, /providerSubscription\?\.status !== "act
   'Finance verifies the exact recurring subscription is active and monthly');
 assert.match(institutionalPaymentAdmin, /subscription_code: subscriptionCode/,
   'Finance records the exact recurring subscription code on first activation');
+assert.ok(institutionalPaymentAdmin.includes('const matchedChargeEvent = chargeEvents?.[0] || null;'),
+  'The matched signed charge event is retained without shadowing the finance-entered subscription code');
+assert.ok(institutionalPaymentAdmin.includes('webhookSubscriptionCode !== subscriptionCode'),
+  'A signed charge event with a conflicting subscription code is rejected');
+assert.ok(institutionalPaymentAdmin.includes('p_subscription_code: subscriptionCode,'),
+  'The Paystack API-verified subscription code is persisted even if webhook delivery is delayed');
+assert.ok(institutionalPaymentAdmin.includes('p_event_id: matchedChargeEvent?.id || null,'),
+  'The payment commit records the matching signed event when it is available');
+assert.doesNotMatch(institutionalPaymentAdmin, /const subscriptionCode = chargeEvents/,
+  'Webhook data cannot replace or erase the finance-verified subscription code');
 assert.match(institutionalPaymentAdmin, /get_subscription_management_link/,
   'Verified active campus administrators can request a hosted recurring-subscription management link');
 assert.match(institutionalPaymentAdmin, /profile\?\.role !== "admin"[\s\S]*campus\.membership_status !== "active"/,
