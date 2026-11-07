@@ -265,12 +265,18 @@ Deno.serve(async (req: Request) => {
       .limit(1);
     if (chargeEventError) return json({ error: "Could not match the signed Paystack event." }, 503);
 
-    // Bind a subscription code only when Paystack included it on the exact
-    // charge.success event with the transaction reference being verified.
-    const subscriptionCode = chargeEvents?.[0]?.provider_subscription_code
-      ? String(chargeEvents[0].provider_subscription_code)
-      : null;
+    const matchedChargeEvent = chargeEvents?.[0] || null;
+    const webhookSubscriptionCode = String(matchedChargeEvent?.provider_subscription_code || "").trim();
+    if (webhookSubscriptionCode && webhookSubscriptionCode !== subscriptionCode) {
+      return json({
+        verified: true,
+        activated: false,
+        error: "Paystack's signed charge event subscription code does not match the verified subscription. Finance must reconcile this payment before activation.",
+      }, 409);
+    }
 
+    // The submitted subscription code has already been verified against Paystack's
+    // subscription API above. Persist it even when webhook delivery is delayed.
     const { data: subscriptionId, error: commitError } = await db.rpc("commit_campus_institutional_paystack_payment", {
       p_invoice_id: invoice.id,
       p_actor_user_id: user.id,
@@ -285,7 +291,7 @@ Deno.serve(async (req: Request) => {
       p_next_payment_at: providerNextPayment.toISOString(),
       p_provider_plan_code: String(providerSubscription?.plan?.plan_code || "") || null,
       p_provider_customer_code: String(providerSubscription?.customer?.customer_code || "") || null,
-      p_event_id: chargeEvents?.[0]?.id || null,
+      p_event_id: matchedChargeEvent?.id || null,
     });
     if (commitError || !subscriptionId) {
       console.error("Institutional payment database commit failed.", { code: commitError?.code || "unknown" });
