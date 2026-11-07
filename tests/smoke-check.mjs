@@ -124,7 +124,11 @@ assert.match(i18nScript, /"pt"/, "Portuguese is available");
 assert.match(i18nScript, /"sw"/, "Swahili is available");
 assert.match(i18nScript, /"ar"/, "Arabic is available");
 assert.match(i18nScript, /"zh"/, "Simplified Chinese is available");
-assert.match(privacyPage, /registered legal entity name/, "privacy page discloses that the legal entity name is not verified");
+assert.match(privacyPage, /CAC\) approved reservation of the proposed company name/, "privacy page reports the CAC-approved proposed company-name reservation");
+assert.match(privacyPage, /not a Certificate of Incorporation/, "privacy page distinguishes name reservation from incorporation");
+assert.match(privacyPage, /availability code is not an RC number/, "privacy page does not mislabel the name-reservation code as a company RC number");
+assert.match(privacyPage, /not a statement that a Data Protection Officer \(DPO\) or statutory data-protection contact has been appointed/, "privacy page does not invent a statutory data-protection contact");
+assert.doesNotMatch(privacyPage, /project materials available for this deployment do not confirm/i, "privacy page removes the obsolete pre-reservation disclaimer");
 assert.match(privacyPage, /Nigeria Data Protection Act 2023/, "privacy policy references applicable Nigerian data-protection law without claiming compliance");
 assert.ok(privacyPage.includes("https://ndpc.gov.ng/ndp-act-2023/"), "privacy policy links to the official NDPC Act resource");
 assert.ok(html.includes('class="app-legal-footer"') && html.includes('href="./privacy.html">Privacy Policy</a>'), "signed-in workspace footer links to the canonical Privacy Policy page");
@@ -137,7 +141,10 @@ assert.match(privacyPage, /GitHub Pages and Vercel/, "privacy page identifies ho
 assert.match(privacyPage, /Supabase/, "privacy page identifies the database/auth/storage provider");
 assert.match(privacyPage, /OpenAI/, "privacy page identifies the configured ShieldMind AI provider");
 assert.match(privacyPage, /Paystack/, "privacy page identifies the optional payment provider");
-assert.match(termsPage, /public-facing project name should not be treated as proof of company registration/, "terms page does not falsely assert a registered legal entity");
+assert.match(termsPage, /CAC\) approved the reservation of the proposed company name/, "terms page reports the approved proposed company-name reservation");
+assert.match(termsPage, /reservation of a proposed name only; it is not company incorporation/, "terms page distinguishes name reservation from incorporation");
+assert.match(termsPage, /service operator's legal identity, registered address and applicable jurisdiction must still be verified/, "terms page keeps outstanding operator details explicit");
+assert.doesNotMatch(termsPage, /project materials available here do not confirm/i, "terms page removes the obsolete pre-reservation disclaimer");
 
 assert.match(html, /id="signup-verification-guidance"/, "signup explains role-specific identity verification");
 assert.match(html, /This upload step is for student accounts|Make verification simple: enter your matric number/, "student identity upload is clearly student-specific");
