@@ -9,6 +9,7 @@ const experienceRefreshCss = await readFile(new URL("../campusshield-experience-
 const interactionLayerCss = await readFile(new URL("../campusshield-interaction-layer.css", import.meta.url), "utf8");
 const dashboardInsightsCss = await readFile(new URL("../campus-dashboard-insights.css", import.meta.url), "utf8");
 const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", import.meta.url), "utf8");
+const guideCss = await readFile(new URL("../campusshield-guide.css", import.meta.url), "utf8");
 const creatorToolsJs = await readFile(new URL("../student-creator-tools.js", import.meta.url), "utf8");
 const featuresPage = await readFile(new URL("../features.html", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
@@ -983,4 +984,11 @@ assert.match(creatorToolsCss, /html\[data-theme="dark"\]/, "Creator & Tools Hub 
 assert.match(creatorToolsCss, /prefers-reduced-motion:reduce/, "Creator & Tools Hub respects reduced-motion");
 assert.doesNotMatch(creatorToolsJs, /createClient\(|supabase\.from\(|rpc\(|fetch\(/i, "Creator & Tools Hub has no backend calls or external data fetching");
 assert.doesNotMatch(creatorToolsCss, /createClient\(|supabase\.from\(|rpc\(/i, "Creator & Tools Hub stylesheet remains presentation-only");
+const guideBaseRule = guideCss.match(/\.campus-guide-page\{([^}]*)\}/)?.[1] || "";
+assert.doesNotMatch(guideBaseRule, /(?:^|;)display\s*:/, "The guide layout must not force itself visible outside the active page state");
+assert.match(guideCss, /\.page\.campus-guide-page\{display:none\}/, "The guide page must be hidden when not selected");
+assert.match(guideCss, /\.page\.campus-guide-page\.active\{display:grid\}/, "The guide page must use its grid layout only when selected");
+assert.match(htmlMarkup, /<section class="page active" id="page-dashboard">/, "Dashboard remains the default active page");
+assert.match(htmlMarkup, /<section class="page campus-guide-page" id="page-guide"/, "The guide remains a separate page destination, not dashboard content");
+
 console.log("PASS searchable Creator & Tools Hub, official project links, licensing/privacy labels, campus learning shortcuts, and backend isolation");
