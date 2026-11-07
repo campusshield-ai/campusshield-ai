@@ -18,6 +18,10 @@ assert.doesNotMatch(index, /mobile-topbar-help/,
   "The guide must only appear in its dedicated sidebar section, not as a duplicate top-bar shortcut");
 assert.equal((index.match(/id="guide-nav"/g) || []).length, 1,
   "There must be exactly one guide navigation entry");
+assert.equal((index.match(/data-page="guide"/g) || []).length, 1,
+  "The guide must be accessible only from its dedicated sidebar destination");
+assert.doesNotMatch(index, /mobile-topbar-help|data-page="guide"[^>]*class="[^"]*topbar/,
+  "The mobile header must not duplicate the standalone sidebar guide entry");
 assert.match(index, /id="page-guide"[\s\S]*?How CampusShield Works/,
   "The dedicated How CampusShield Works page must remain available");
 assert.match(index, /id="guide-search-input"/,
