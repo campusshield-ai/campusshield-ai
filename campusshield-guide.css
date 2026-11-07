@@ -1,5 +1,7 @@
 /* CampusShield in-app guide */
-.campus-guide-page{--guide-ink:#15364a;--guide-muted:#63798a;--guide-line:#dce9e9;--guide-soft:#f3f9f8;--guide-teal:#0a8f7b;--guide-deep:#06223a;display:grid;gap:18px}
+.campus-guide-page{--guide-ink:#15364a;--guide-muted:#63798a;--guide-line:#dce9e9;--guide-soft:#f3f9f8;--guide-teal:#0a8f7b;--guide-deep:#06223a;gap:18px}
+.page.campus-guide-page{display:none}
+.page.campus-guide-page.active{display:grid}
 .campus-guide-page .guide-hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;align-items:center;gap:18px;overflow:hidden;padding:clamp(22px,4vw,38px);border:1px solid #cce4df;border-radius:22px;background:radial-gradient(circle at 95% 10%,#d2f4e9 0,transparent 34%),linear-gradient(135deg,#f8fdfb,#eef7f7);color:var(--guide-ink)}
 .campus-guide-page .guide-eyebrow{margin:0 0 7px;color:var(--guide-teal);font-size:.68rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
 .campus-guide-page .guide-hero h1{margin:0 0 10px;color:#0b2e43;font-size:clamp(1.8rem,4.5vw,3rem);line-height:1.08;letter-spacing:-.045em}
