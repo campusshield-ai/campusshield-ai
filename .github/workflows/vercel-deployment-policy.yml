@@ -1,0 +1,33 @@
+name: Vercel deployment policy checks
+
+on:
+  pull_request:
+    branches: [main, staging/preview]
+    paths:
+      - "vercel.json"
+      - "tests/vercel-deployment-policy-smoke.mjs"
+      - ".github/workflows/vercel-deployment-policy.yml"
+      - "docs/VERCEL_DEPLOYMENT_POLICY.md"
+  push:
+    branches: [main, staging/preview]
+    paths:
+      - "vercel.json"
+      - "tests/vercel-deployment-policy-smoke.mjs"
+      - ".github/workflows/vercel-deployment-policy.yml"
+      - "docs/VERCEL_DEPLOYMENT_POLICY.md"
+
+permissions:
+  contents: read
+
+jobs:
+  deployment-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate Vercel configuration JSON
+        run: node -e "JSON.parse(require('node:fs').readFileSync('vercel.json', 'utf8'))"
+      - name: Verify deployment branch allowlist
+        run: node tests/vercel-deployment-policy-smoke.mjs
