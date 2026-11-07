@@ -36,6 +36,10 @@ The current Vercel project has no custom environment configured. Therefore, the 
 
 The Vercel project must keep `main` selected under **Settings → Environments → Production → Branch Tracking**. If a separately labelled Staging environment is required later, create that environment in Vercel and associate it with `staging/preview`; do not change the Production branch.
 
+## Existing feature-branch migration
+
+The branch rule is read from the `vercel.json` present in the commit being deployed. A long-lived feature branch whose current head predates this policy may not contain the allowlist yet. Before pushing more commits to such a branch, rebase it on or merge the updated release base (`staging/preview` for Staging work, or `main` for Production work) so it inherits this `vercel.json`. Do not push old feature branches repeatedly just to refresh previews. GitHub Actions pull-request checks continue to run independently of Vercel Preview deployments.
+
 ## Scope and safety
 
 This policy only controls which Git branches trigger automatic Vercel deployments. It does not change application code, Supabase, environment variables, Paystack, domain aliases, deployment targets, student access, or data. It does not delete existing deployments.
