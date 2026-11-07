@@ -510,15 +510,23 @@ test("CampusMap facility type filters and live counts stay usable across seven v
     // Disable MapLibre before activating CampusMap so its async style callback cannot
     // re-render the synthetic fixture while viewport measurements are being taken.
     window.maplibregl = undefined;
+    // This layout test must not depend on a signed-in campus or remote Supabase data.
+    // The map module's public refresh method is called explicitly below.
+    window.CampusShieldBackend = { isConfigured: false, client: null };
     document.querySelector("#page-campus-map").classList.add("active");
   });
-  await page.waitForFunction(() => typeof window.CampusMapDiscovery?.getTypeCounts === "function", { timeout: 20000 });
-  // Let CampusMap's own async campus-data initialization settle before installing
-  // synthetic layout data, otherwise its first empty-data render can clear this fixture.
-  await page.waitForFunction(() => {
-    const status = document.querySelector("#campus-map-status")?.textContent || "";
-    return /CampusShield Supabase is not configured|Your account is not linked to a university yet|Join your university space|verified campus locations loaded|This campus has no verified map pins yet|Campus map data could not be loaded/.test(status);
-  }, { timeout: 20000 });
+  await page.waitForFunction(() =>
+    typeof window.CampusMapDiscovery?.getTypeCounts === "function"
+      && typeof window.CampusShieldCampusMap?.refresh === "function",
+    { timeout: 20000 }
+  );
+  // Explicitly settle CampusMap's own initializer in a deterministic no-network state.
+  // This avoids waiting for auth, campus membership, or a remote Supabase response.
+  const initialStatus = await page.evaluate(async () => {
+    await window.CampusShieldCampusMap.refresh();
+    return document.querySelector("#campus-map-status")?.textContent || "";
+  });
+  expect(initialStatus).toContain("CampusShield Supabase is not configured");
 
   const setup = await page.evaluate(() => {
     const typeFilters = document.querySelector("#campus-map-type-filters");
