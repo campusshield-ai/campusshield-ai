@@ -32,6 +32,10 @@ assert.doesNotMatch(index.slice(navStartIndex, supportSectionIndex), /id="guide-
   "The guide must not be nested inside the scrollable feature list");
 assert.match(app, /button\.dataset\.page === 'guide'[\s\S]*?button\.hidden = false/,
   "The guide remains visible regardless of a user's campus verification or role");
+assert.match(app, /querySelectorAll\('\.nav button\[data-page\], \.sidebar-guide-access button\[data-page\]'\)/,
+  "Role-based navigation synchronization must include the pinned guide outside the scrollable menu");
+assert.match(app, /e\.target\.closest\('\[data-page\]'\)/,
+  "The pinned guide continues to use the shared delegated page-navigation handler");
 assert.doesNotMatch(index, /mobile-topbar-help/, "The mobile top bar must not duplicate the dedicated sidebar guide link");
 assert.match(index, /id="page-guide"[\s\S]*?aria-labelledby="guide-title"/);
 assert.match(index, /campusshield-guide\.css/);
