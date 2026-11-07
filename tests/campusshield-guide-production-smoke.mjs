@@ -12,16 +12,24 @@ const offline = read("../offline.html");
 
 new vm.Script(guide, { filename: "campusshield-guide.js" });
 assert.match(index, /<button data-page="guide" id="guide-nav" title="How to use CampusShield" aria-label="How to use CampusShield"/);
+const guideAccessIndex = index.indexOf('<div class="sidebar-guide-access" id="sidebar-guide-access">');
 const gettingStartedIndex = index.indexOf('<div class="nav-section-label">GETTING STARTED</div>');
 const guideNavIndex = index.indexOf('<button data-page="guide" id="guide-nav"');
+const navStartIndex = index.indexOf('<nav class="nav">');
 const safetyNavIndex = index.indexOf('<div class="nav-section-label">SAFETY & RESPONSE</div>');
 const supportNavIndex = index.indexOf('<div class="nav-section-label">INSIGHTS & SUPPORT</div>');
-assert.ok(gettingStartedIndex >= 0 && gettingStartedIndex < guideNavIndex && guideNavIndex < safetyNavIndex,
-  "The guide must have its own Getting Started section above the feature groups.");
-assert.ok(guideNavIndex < supportNavIndex,
-  "The guide must not be hidden inside Insights & Support.");
+assert.ok(guideAccessIndex >= 0 && guideAccessIndex < navStartIndex,
+  "The guide must be outside the independently scrollable feature navigation.");
+assert.ok(guideAccessIndex < gettingStartedIndex && gettingStartedIndex < guideNavIndex && guideNavIndex < navStartIndex,
+  "The Getting Started label and guide link must be pinned above the feature menu.");
+assert.ok(safetyNavIndex > navStartIndex && supportNavIndex > safetyNavIndex,
+  "The rest of the feature navigation must remain inside the scrollable menu.");
+assert.equal((index.match(/id="guide-nav"/g) || []).length, 1,
+  "Production must have exactly one guide navigation entry.");
 assert.match(app, /button\.dataset\.page === 'guide'[\s\S]*?button\.hidden = false/,
   "The guide navigation must remain visible to every signed-in account role.");
+assert.match(app, /querySelectorAll\('\.nav button\[data-page\], \.sidebar-guide-access button\[data-page\]'\)/,
+  "Role visibility synchronization must include the pinned guide.");
 assert.doesNotMatch(index, /mobile-topbar-help/, "The mobile top bar must not duplicate the dedicated sidebar guide link");
 assert.match(index, /id="page-guide"[^>]*aria-labelledby="guide-title"/);
 assert.match(index, /campusshield-guide\.css/);
