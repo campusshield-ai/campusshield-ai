@@ -7,10 +7,16 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#F5F8F7",
-  "theme_color": "#0B2832",
+  "background_color": "#F4F7FA",
+  "theme_color": "#0B1F33",
   "prefer_related_applications": false,
   "icons": [
+    {
+      "src": "./icons/campusshield.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "./icons/campusshield-192.png",
       "sizes": "192x192",
