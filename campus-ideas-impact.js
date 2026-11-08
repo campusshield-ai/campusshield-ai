@@ -702,6 +702,15 @@
       input.addEventListener("input",update);
       update();
     });
+    $("#cii-form").addEventListener("reset",()=>{
+      window.setTimeout(()=>{
+        ["#cii-problem","#cii-solution","#cii-impact"].forEach((selector)=>{
+          const input = $(selector);
+          const count = $(selector + "-count");
+          if (input && count) count.textContent = "0 / " + Number(input.maxLength).toLocaleString();
+        });
+      },0);
+    });
     root.addEventListener("submit",(event)=>{
       const form = event.target.closest("[data-idea-comment-form]");
       if (form) submitComment(event);
