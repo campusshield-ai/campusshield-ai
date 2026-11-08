@@ -23,7 +23,7 @@ assert.match(deny, /USING \(false\)/);
 assert.match(deny, /WITH CHECK \(false\)/);
 assert.match(controls, /p_late_after_minutes >= p_window_minutes/);
 assert.match(controls, /Only an enrolled, verified student can view their attendance/);
-assert.match(roleControls, /private\\.is_verified_campus_admin_for_classroom/);
+assert.match(roleControls, /is_verified_campus_admin_for_classroom/);
 assert.match(roleControls, /campus_class_attendance_select_authorized/);
 assert.match(roleControls, /campus_class_attendance_audit_select_teacher/);
 
