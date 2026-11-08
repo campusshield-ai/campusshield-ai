@@ -491,6 +491,28 @@ exception when unique_violation then
 end;
 $$;
 
+create or replace function public.request_campus_alumni_intro_by_username(p_username text,p_note text)
+returns uuid
+language plpgsql security invoker set search_path = ''
+as $
+declare v_alumni_user uuid; v_request uuid;
+begin
+  if p_username is null or char_length(btrim(p_username)) not between 3 and 20 then
+    raise exception 'Choose a valid alumni username.' using errcode='22023';
+  end if;
+  select a.user_id into v_alumni_user
+  from public.campus_alumni_profiles a
+  join public.community_profiles cp on cp.user_id=a.user_id
+  where lower(cp.username)=lower(btrim(p_username)) and a.status='verified'
+  limit 1;
+  if v_alumni_user is null then
+    raise exception 'This verified alumni profile is no longer available.' using errcode='P0002';
+  end if;
+  v_request := public.request_campus_alumni_intro(v_alumni_user,p_note);
+  return v_request;
+end;
+$;
+
 create or replace function public.list_my_campus_alumni_intro_requests()
 returns table(id uuid,username text,university_name text,note text,status text,direction text,created_at timestamptz)
 language plpgsql stable security definer set search_path = ''
@@ -540,6 +562,7 @@ revoke all on function public.list_campus_alumni_directory(text,text) from publi
 revoke all on function public.list_campus_alumni_review_queue() from public,anon,authenticated;
 revoke all on function public.review_campus_alumni_profile(uuid,text,text) from public,anon,authenticated;
 revoke all on function public.request_campus_alumni_intro(uuid,text) from public,anon,authenticated;
+revoke all on function public.request_campus_alumni_intro_by_username(text,text) from public,anon,authenticated;
 revoke all on function public.list_my_campus_alumni_intro_requests() from public,anon,authenticated;
 revoke all on function public.respond_to_campus_alumni_intro(uuid,text) from public,anon,authenticated;
 
@@ -556,6 +579,7 @@ grant execute on function public.list_campus_alumni_directory(text,text) to auth
 grant execute on function public.list_campus_alumni_review_queue() to authenticated;
 grant execute on function public.review_campus_alumni_profile(uuid,text,text) to authenticated;
 grant execute on function public.request_campus_alumni_intro(uuid,text) to authenticated;
+grant execute on function public.request_campus_alumni_intro_by_username(text,text) to authenticated;
 grant execute on function public.list_my_campus_alumni_intro_requests() to authenticated;
 grant execute on function public.respond_to_campus_alumni_intro(uuid,text) to authenticated;
 
