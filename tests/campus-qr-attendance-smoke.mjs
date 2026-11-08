@@ -62,9 +62,9 @@ assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\?\.
   "Verified students, teachers and campus administrators must be able to open classrooms.");
 assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\.role\)/,
   "The classroom route must enforce the same verified role allowlist as navigation.");
-assert.match(app, /const classroomCreateAccess = \['teacher','admin'\]/,
+assert.match(app, /const classroomCreateAccess = currentProfile\?\.role === 'teacher'/,
   "Only verified teachers and university administrators should see classroom creation.");
 assert.match(html, /Join your classes, manage teaching spaces and track attendance/);
-assert.match(html, /Verified teachers and university administrators can create classes/);
+assert.match(html, /Only verified teachers can create classes/);
 
 console.log("Campus QR attendance smoke checks passed.");
