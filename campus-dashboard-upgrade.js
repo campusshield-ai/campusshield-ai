@@ -289,4 +289,128 @@
     });
     if (quicklinks.querySelector("button")) shortcutHost.append(quicklinks);
   }
+
+  // My Day reuses only the signed-in user's existing private timetable snapshot.
+  const myDayPanel = document.createElement("section");
+  myDayPanel.id = "campus-my-day";
+  myDayPanel.className = "campus-my-day-panel";
+  myDayPanel.setAttribute("aria-labelledby", "campus-my-day-title");
+  const myDayHeader = document.createElement("div");
+  myDayHeader.className = "campus-my-day-header";
+  const myDayHeading = document.createElement("div");
+  const myDayTitle = document.createElement("h2");
+  myDayTitle.id = "campus-my-day-title";
+  myDayTitle.textContent = "My Day";
+  const myDayDate = document.createElement("p");
+  myDayDate.id = "campus-my-day-date";
+  myDayDate.className = "campus-my-day-date";
+  myDayHeading.append(myDayTitle, myDayDate);
+  const myDayOpen = document.createElement("button");
+  myDayOpen.type = "button";
+  myDayOpen.className = "campus-my-day-open";
+  myDayOpen.dataset.page = "timetable";
+  myDayOpen.textContent = "Open timetable";
+  myDayOpen.setAttribute("aria-label", "Open my full timetable");
+  myDayHeader.append(myDayHeading, myDayOpen);
+  const myDaySummary = document.createElement("p");
+  myDaySummary.id = "campus-my-day-summary";
+  myDaySummary.className = "campus-my-day-summary";
+  myDaySummary.setAttribute("aria-live", "polite");
+  const myDayFeed = document.createElement("ol");
+  myDayFeed.id = "campus-my-day-feed";
+  myDayFeed.className = "campus-my-day-feed";
+  myDayFeed.setAttribute("aria-label", "Today's classes, tasks and campus events");
+  myDayPanel.append(myDayHeader, myDaySummary, myDayFeed);
+  if (shortcutHost) shortcutHost.insertAdjacentElement("afterend", myDayPanel);
+  else if (dashboardHero) dashboardHero.insertAdjacentElement("afterend", myDayPanel);
+
+  let myDayLoading = false;
+  function renderMyDay() {
+    myDayDate.textContent = new Date().toLocaleDateString([], {
+      weekday: "long", month: "long", day: "numeric"
+    });
+    const snapshot = window.CampusShieldTimetable?.getTodaySnapshot?.();
+    myDayFeed.replaceChildren();
+    if (!snapshot?.loaded) {
+      myDaySummary.textContent = myDayLoading
+        ? "Syncing your private timetable…"
+        : "Your personal schedule is private to your account.";
+      const empty = document.createElement("li");
+      empty.className = "campus-my-day-empty";
+      empty.textContent = myDayLoading
+        ? "Your classes, tasks and campus events will appear here."
+        : "Sign in to sync your day, or open your timetable to refresh it.";
+      myDayFeed.append(empty);
+      return;
+    }
+
+    const items = Array.isArray(snapshot.items) ? snapshot.items : [];
+    const classes = items.filter(item => item.kind === "class").length;
+    const events = items.filter(item => item.kind === "event").length;
+    const tasks = items.length - classes - events;
+    const countLabel = (count, name) => count + " " + name + (count === 1 ? "" : "s");
+    myDaySummary.textContent = [
+      countLabel(classes, "class"),
+      countLabel(tasks, "task"),
+      countLabel(events, "campus event")
+    ].join(" · ");
+
+    if (!items.length) {
+      const empty = document.createElement("li");
+      empty.className = "campus-my-day-empty";
+      empty.textContent = "Nothing scheduled for today. Add a class, task or reminder to your private timetable.";
+      myDayFeed.append(empty);
+      return;
+    }
+
+    const formatTime = value => {
+      const date = new Date(value);
+      return Number.isFinite(date.getTime())
+        ? date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+        : "Time not set";
+    };
+    items.slice(0, 6).forEach(item => {
+      const row = document.createElement("li");
+      row.className = "campus-my-day-item" + (item.completed ? " is-complete" : "");
+      const time = document.createElement("time");
+      time.className = "campus-my-day-time";
+      time.dateTime = item.startsAt || "";
+      time.textContent = formatTime(item.startsAt);
+      const copy = document.createElement("div");
+      copy.className = "campus-my-day-copy";
+      const title = document.createElement("strong");
+      title.textContent = String(item.title || "Scheduled item");
+      const meta = document.createElement("span");
+      meta.className = "campus-my-day-meta";
+      meta.textContent = [item.label || "Task", item.courseCode, item.location]
+        .map(value => String(value || "").trim()).filter(Boolean).join(" · ");
+      copy.append(title, meta);
+      const state = document.createElement("span");
+      state.className = "campus-my-day-kind";
+      state.textContent = item.completed ? "Completed" : (item.label || "Planned");
+      row.append(time, copy, state);
+      myDayFeed.append(row);
+    });
+    if (items.length > 6) {
+      const more = document.createElement("li");
+      more.className = "campus-my-day-more";
+      more.textContent = (items.length - 6) + " more item(s) in your timetable.";
+      myDayFeed.append(more);
+    }
+  }
+
+  window.addEventListener("campusshield:timetable-loading", () => {
+    myDayLoading = true;
+    renderMyDay();
+  });
+  window.addEventListener("campusshield:timetable-updated", () => {
+    myDayLoading = false;
+    renderMyDay();
+  });
+  window.addEventListener("campusshield:profile-cleared", () => {
+    myDayLoading = false;
+    renderMyDay();
+  });
+  renderMyDay();
+
 })();
