@@ -1,0 +1,52 @@
+name: Unified campus usability
+
+on:
+  pull_request:
+    branches: [main, "staging/preview"]
+    paths:
+      - "index.html"
+      - "campus-dashboard-upgrade.js"
+      - "campus-dashboard-upgrade.css"
+      - "campus-discovery-ui.js"
+      - "campusshield-app.js"
+      - "tests/discovery-ui-smoke.mjs"
+      - "tests/browser/unified-campus-search.spec.cjs"
+      - ".github/workflows/unified-campus-usability.yml"
+  push:
+    branches: [main, "staging/preview"]
+    paths:
+      - "index.html"
+      - "campus-dashboard-upgrade.js"
+      - "campus-dashboard-upgrade.css"
+      - "campus-discovery-ui.js"
+      - "campusshield-app.js"
+      - "tests/discovery-ui-smoke.mjs"
+      - "tests/browser/unified-campus-search.spec.cjs"
+
+permissions:
+  contents: read
+
+jobs:
+  campus-usability:
+    name: Campus search, discovery and responsive smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate JavaScript syntax
+        run: |
+          node --check campus-dashboard-upgrade.js
+          node --check campus-discovery-ui.js
+          node --check campusshield-app.js
+      - name: Verify campus discovery integration
+        run: node tests/discovery-ui-smoke.mjs
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock @playwright/test@1.64.1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test search, discovery navigation and mobile layout
+        env:
+          CI: "true"
+        run: npx playwright test tests/browser/unified-campus-search.spec.cjs --config=playwright.config.cjs

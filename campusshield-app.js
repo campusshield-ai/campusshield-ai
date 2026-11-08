@@ -5530,7 +5530,7 @@
     feed.innerHTML=rows.length?rows.map(item=>{
       const categoryLabel=String(item.category||'other').replaceAll('_',' ');
       const price=item.price_ngn==null?'Price not listed':'₦'+Number(item.price_ngn).toLocaleString('en-NG');
-      return '<article class="community-post campus-marketplace-card">'+
+      return '<article class="community-post campus-marketplace-card campus-live-marketplace-card" data-category="'+esc(item.category||'other')+'" data-status="'+esc(item.status||'published')+'" data-price="'+(item.price_ngn==null?'':Number(item.price_ngn))+'" data-created-at="'+esc(item.created_at||'')+'">'+
         '<div class="community-meta"><span class="tag open">'+esc(categoryLabel)+'</span><span>·</span><strong>'+(item.status==='sold'?'Sold':'Available')+'</strong></div>'+
         '<h3 class="community-post-title">'+esc(item.title||'Campus listing')+'</h3>'+
         '<p class="community-post-body">'+esc(item.description||'')+'</p>'+
@@ -6073,7 +6073,7 @@
     const status = String(item.status || 'published');
     const statusTag = status === 'published' ? 'Published' : status.charAt(0).toUpperCase() + status.slice(1);
     return `
-      <article class="panel">
+      <article class="panel campus-live-opportunity-card" data-category="${escapeHubHtml(item.category||'other')}" data-deadline="${escapeHubHtml(item.deadline||'')}" data-created-at="${escapeHubHtml(item.created_at||'')}">
         <div class="panel-heading"><div><h3>${escapeHubHtml(item.title)}</h3><p class="muted">${escapeHubHtml(categoryLabel)} · ${escapeHubHtml(providerLabel)}</p></div><span class="tag ${status === 'published' ? 'resolved' : 'open'}">${escapeHubHtml(statusTag)}</span></div>
         <p>${escapeHubHtml(item.description)}</p>
         ${item.eligibility ? `<p><strong>Eligibility:</strong> ${escapeHubHtml(item.eligibility)}</p>` : ''}
