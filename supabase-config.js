@@ -6,8 +6,7 @@
  */
 (() => {
   const productionHosts = new Set([
-    "campusshield-ai.github.io",
-    "campusshield-ai-staging-preview.vercel.app"
+    "campusshield-ai.github.io"
   ]);
   const isProductionHost = productionHosts.has(String(window.location.hostname || "").toLowerCase());
 
