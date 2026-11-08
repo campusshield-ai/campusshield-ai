@@ -26,7 +26,7 @@ create policy campus_member_blocks_deny_direct_access on public.campus_member_bl
 create or replace function private.is_campus_member_blocked(p_other_user_id uuid, p_university_id uuid)
 returns boolean
 language sql stable security definer set search_path = ''
-as $
+as $$
   select case
     when (select auth.uid()) is null then true
     else exists (
@@ -38,7 +38,7 @@ as $
         )
     )
   end;
-$;
+$$;
 revoke all on function private.is_campus_member_blocked(uuid,uuid) from public, anon, authenticated;
 
 create table if not exists public.campus_network_posts (
@@ -251,7 +251,7 @@ returns table(
   commitment text,visibility text,status text,created_at timestamptz,expires_at timestamptz
 )
 language plpgsql stable security definer set search_path = ''
-as $
+as $$
 declare v_user uuid := (select auth.uid()); v_university uuid := (select private.current_campus_university_id());
 begin
   if v_user is null or v_university is null
@@ -268,7 +268,7 @@ begin
     and (p_post_type is null or n.post_type=p_post_type)
   order by n.created_at desc limit 100;
 end;
-$;
+$$;
 
 create or replace function public.apply_to_campus_network_post(p_post_id uuid,p_note text)
 returns uuid
