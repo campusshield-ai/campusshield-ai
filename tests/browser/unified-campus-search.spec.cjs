@@ -56,7 +56,7 @@ test("unified search finds campus spaces and currently rendered campus content",
   await search.fill("Physics 101 revision workbook");
   await expect(results).toContainText("Physics 101 revision workbook");
   await page.evaluate(() => {
-    const nav = document.querySelector('.nav [data-page="marketplace"]');
+    const nav = document.querySelector('[data-page="marketplace"]');
     nav?.addEventListener("click", () => {
       document.documentElement.dataset.marketplaceSearchActivated = "true";
     }, {capture:true, once:true});
