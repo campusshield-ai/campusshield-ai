@@ -91,7 +91,7 @@
     ];
     const matches = [];
     sources.forEach(source => {
-      if (!visibleDestination({page:source.page})) return;
+      // A feed may live inside an inactive page; the server-scoped feed is the access boundary.
       document.querySelectorAll(source.selector).forEach(element => {
         if (element.hidden) return;
         const body = String(element.innerText || element.textContent || "").replace(/\s+/g, " ").trim();
