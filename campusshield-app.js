@@ -131,6 +131,11 @@
   let currentProfile = null;
   let communityProfile = null;
   let campusContext = null;
+  let campusMarketplaceRows = [];
+  let campusMarketplaceOwnRows = [];
+  let campusOpportunityRows = [];
+  let campusOpportunitySavedIds = new Set();
+  const campusNetworkState = { volunteers: [], startups: [], alumni: [], applications: [] };
 
   // Push notification destinations are an allowlist, not arbitrary page names.
   const notificationDestinationPages = new Set(['timetable', 'campus-messages', 'noticeboard', 'profile-settings']);
@@ -1095,6 +1100,7 @@
       'creator-tools':'Creator & Tools Hub',
       'student-rewards':'Challenges & Rewards',
       opportunities:'Opportunities & Scholarships',
+      'campus-network':'Campus Network',
       shieldmind:'ShieldMind AI',
       guide:'How to use CampusShield',
       billing:'Subscriptions & Billing',
@@ -1108,6 +1114,9 @@
     if (page === 'student-rewards') window.CampusShieldStudentRewards?.load({ force: true });
     if (page === 'past-questions') window.PastQuestionPractice?.load(currentProfile);
     if (page === 'analytics') renderAnalytics();
+    if (page === 'marketplace') loadCampusMarketplacePage();
+    if (page === 'opportunities') loadCampusOpportunitiesPage();
+    if (page === 'campus-network') loadCampusNetworkPage();
   }
 
   function consumeGoogleOAuthHints(profile, context) {
@@ -5407,44 +5416,91 @@
     }
   }
 
-  async function loadCampusMarketplacePage() {
-    const backend = window.CampusShieldBackend;
-    const status = $('campus-marketplace-status');
-    if (!currentProfile || !backend?.isConfigured) return;
-    status.textContent = 'Loading your campus marketplace…';
-    try {
-      campusContext = await backend.getMyCampusContext();
-      if (!campusContext?.university_id) {
-        status.textContent = 'Choose your university on the Campus community page first.';
-        $('campus-marketplace-feed').innerHTML = '';
-        return;
+
+  function renderCampusMarketplaceDiscovery() {
+    const feed=$('campus-marketplace-feed'),ownFeed=$('campus-marketplace-my-listings');
+    if(!feed)return;
+    const query=String($('campus-marketplace-search')?.value||'').trim().toLowerCase();
+    const category=$('campus-marketplace-category-filter')?.value||'all';
+    const availability=$('campus-marketplace-status-filter')?.value||'available';
+    const sort=$('campus-marketplace-sort')?.value||'newest';
+    let rows=(campusMarketplaceRows||[]).filter(item=>{
+      const text=[item.title,item.description,item.seller_username,item.contact_instructions].map(v=>String(v||'').toLowerCase()).join(' ');
+      return (!query||text.includes(query))&&(category==='all'||item.category===category)&&
+        (availability==='all'||(availability==='sold'?item.status==='sold':item.status==='published'));
+    });
+    rows.sort((a,b)=>{
+      if(sort==='price-low'||sort==='price-high'){
+        const av=a.price_ngn==null?Number.POSITIVE_INFINITY:Number(a.price_ngn);
+        const bv=b.price_ngn==null?Number.POSITIVE_INFINITY:Number(b.price_ngn);
+        return sort==='price-low'?av-bv:bv-av;
       }
-      const [listings, ownListingResult] = await Promise.all([
-        backend.listCampusMarketplaceListings(),
-        backend.client.rpc("list_my_campus_marketplace_listings")
-      ]);
-      if (ownListingResult.error) throw ownListingResult.error;
-      const ownListingIds = new Set((ownListingResult.data || []).map(function(row) { return row.listing_id; }));
-      $('campus-marketplace-feed').innerHTML = listings.length ? listings.map(function(listing) {
-        const isMine = ownListingIds.has(listing.id);
-        return '<article class="community-post">' +
-          '<div class="community-meta"><span class="tag open">' + esc(listing.category.replaceAll('_',' ')) + '</span><span>·</span><strong>' + (listing.status === 'sold' ? 'Sold' : 'Available') + '</strong></div>' +
-          '<h3 class="community-post-title">' + esc(listing.title) + '</h3>' +
-          '<p class="community-post-body">' + esc(listing.description) + '</p>' +
-          '<p><strong>' + (listing.price_ngn == null ? 'Price not listed' : '₦' + Number(listing.price_ngn).toLocaleString('en-NG')) + '</strong></p>' +
-          '<p class="community-meta">Seller: @' + esc(listing.seller_username || 'campus member') + ' · ' + esc(dateText(listing.created_at)) + '</p>' +
-          (listing.contact_instructions ? '<p class="community-meta">Contact: ' + esc(listing.contact_instructions) + '</p>' : '') +
-          '<div class="actions">' +
-          (listing.status === 'published' ? '<button type="button" class="btn secondary" data-marketplace-report="' + esc(listing.id) + '">Report listing</button>' : '') +
-          (isMine && listing.status === 'published' ? '<button type="button" class="btn secondary" data-marketplace-sold="' + esc(listing.id) + '">Mark as sold</button>' : '') +
-          '</div></article>';
-      }).join('') : '<div class="community-empty"><strong>No approved listings yet.</strong><p>List a textbook, item or service for review by your university moderators.</p></div>';
-      status.textContent = listings.length + ' listing(s) in your university marketplace.';
-      if (canModerateCommunity()) await loadCampusContentModeration();
-    } catch (err) {
-      status.textContent = err.message || 'Could not load the campus marketplace.';
-      $('campus-marketplace-feed').innerHTML = '<div class="community-empty">The marketplace is temporarily unavailable.</div>';
+      return new Date(b.created_at||0).getTime()-new Date(a.created_at||0).getTime();
+    });
+    feed.innerHTML=rows.length?rows.map(item=>{
+      const categoryLabel=String(item.category||'other').replaceAll('_',' ');
+      const price=item.price_ngn==null?'Price not listed':'₦'+Number(item.price_ngn).toLocaleString('en-NG');
+      return '<article class="community-post campus-marketplace-card">'+
+        '<div class="community-meta"><span class="tag open">'+esc(categoryLabel)+'</span><span>·</span><strong>'+(item.status==='sold'?'Sold':'Available')+'</strong></div>'+
+        '<h3 class="community-post-title">'+esc(item.title||'Campus listing')+'</h3>'+
+        '<p class="community-post-body">'+esc(item.description||'')+'</p>'+
+        '<p class="campus-marketplace-price"><strong>'+price+'</strong></p>'+
+        '<p class="community-meta">Seller: @'+esc(item.seller_username||'campus member')+' · '+esc(dateText(item.created_at))+'</p>'+
+        (item.contact_instructions?'<p class="community-meta">Contact instructions: '+esc(item.contact_instructions)+'</p>':'')+
+        '<div class="actions">'+(item.status==='published'?'<button type="button" class="btn secondary" data-marketplace-report="'+esc(item.id)+'">Report listing</button>':'')+'</div></article>';
+    }).join(''):'<div class="community-empty"><strong>No matching listings.</strong><p>Try another category or search term, or change the availability filter.</p></div>';
+    const results=$('campus-marketplace-results');
+    if(results)results.textContent=rows.length+' listing(s) match your filters · '+(campusMarketplaceRows||[]).length+' approved listing(s) in this campus.';
+    if(ownFeed){
+      const own=campusMarketplaceOwnRows||[];
+      $('campus-my-listings-status').textContent=own.length?own.length+' of your listing(s).':'You have not submitted a listing yet.';
+      ownFeed.innerHTML=own.length?own.map(item=>{
+        const status=String(item.status||'pending');
+        const label=status==='published'?'Available':status==='sold'?'Sold':status.charAt(0).toUpperCase()+status.slice(1);
+        const tagClass=status==='published'?'resolved':status==='sold'?'open':'pending';
+        return '<article class="campus-network-card"><div class="campus-network-card-head"><h4>'+esc(item.title||'Your listing')+'</h4><span class="tag '+tagClass+'">'+esc(label)+'</span></div><p>'+esc(item.description||'')+'</p><p class="muted">'+esc(String(item.category||'other').replaceAll('_',' '))+' · '+(item.price_ngn==null?'Price not listed':'₦'+Number(item.price_ngn).toLocaleString('en-NG'))+'</p>'+
+          (status==='pending'?'<p class="muted">Waiting for authorised campus review. It will appear in the public marketplace after approval.</p>':'')+
+          (status==='published'?'<button type="button" class="btn secondary" data-marketplace-sold="'+esc(item.id)+'">Mark as sold</button>':'')+'</article>';
+      }).join(''):'<div class="community-empty">Your pending, published and sold listings will appear here.</div>';
     }
+  }
+
+  function renderCampusOpportunitiesDiscovery() {
+    const feed=$('campus-opportunities-feed');if(!feed)return;
+    const query=String($('campus-opportunities-search')?.value||'').trim().toLowerCase();
+    const category=$('campus-opportunities-category-filter')?.value||'all';
+    const sort=$('campus-opportunities-sort')?.value||'deadline';
+    let rows=(campusOpportunityRows||[]).filter(item=>{
+      const text=[item.title,item.description,item.provider_name,item.eligibility,item.category].map(v=>String(v||'').toLowerCase()).join(' ');
+      return (!query||text.includes(query))&&(category==='all'||item.category===category);
+    });
+    rows.sort((a,b)=>{
+      if(sort==='alphabetical')return String(a.title||'').localeCompare(String(b.title||''));
+      if(sort==='newest')return new Date(b.created_at||0).getTime()-new Date(a.created_at||0).getTime();
+      const ad=a.deadline?new Date(a.deadline).getTime():Number.POSITIVE_INFINITY;
+      const bd=b.deadline?new Date(b.deadline).getTime():Number.POSITIVE_INFINITY;
+      return ad-bd;
+    });
+    feed.innerHTML=rows.length?rows.map(item=>renderOpportunityCard(item,false,false,campusOpportunitySavedIds.has(item.id))).join(''):
+      '<div class="community-empty"><strong>No matching opportunities.</strong><p>Try another search or category. You can also submit a verified source for campus review.</p></div>';
+    const results=$('campus-opportunities-results');
+    if(results)results.textContent=rows.length+' matching opportunity(ies) · '+(campusOpportunityRows||[]).length+' published in your university.';
+  }
+
+  async function loadCampusMarketplacePage() {
+    const backend=window.CampusShieldBackend,status=$('campus-marketplace-status');
+    if(!currentProfile||!backend?.isConfigured)return;
+    status.textContent='Loading your campus marketplace…';
+    try {
+      campusContext=await backend.getMyCampusContext();
+      if(!campusContext?.university_id){status.textContent='Choose your university on the Campus community page first.';$('campus-marketplace-feed').innerHTML='<div class="community-empty">Choose your university to browse campus listings.</div>';return;}
+      const [listings,ownRows]=await Promise.all([backend.listCampusMarketplaceListings(),backend.listMyCampusMarketplaceListings()]);
+      campusMarketplaceRows=Array.isArray(listings)?listings:[];
+      campusMarketplaceOwnRows=Array.isArray(ownRows)?ownRows:[];
+      renderCampusMarketplaceDiscovery();
+      status.textContent=campusMarketplaceRows.length+' approved listing(s) in your university marketplace.';
+      if(canModerateCommunity())await loadCampusContentModeration();
+    }catch(err){status.textContent=err.message||'Could not load the campus marketplace.';$('campus-marketplace-feed').innerHTML='<div class="community-empty">The marketplace is temporarily unavailable. Refresh to try again.</div>';$('campus-my-listings-status').textContent='Your submissions could not be loaded.';}
   }
 
   async function loadCampusClassroomsPage() {
@@ -5711,11 +5767,13 @@
   function renderOpportunityCard(item, ownerActions = false, reviewActions = false, isSaved = false) {
     const sourceUrl = safeHttpUrl(item.source_url);
     const contactUrl = safeHttpUrl(item.contact_url);
+    const categoryLabel=String(item.category||'other').replaceAll('_',' ');
+    const providerLabel=String(item.provider_name||'Community provider');
     const status = String(item.status || 'published');
     const statusTag = status === 'published' ? 'Published' : status.charAt(0).toUpperCase() + status.slice(1);
     return `
       <article class="panel">
-        <div class="panel-heading"><div><h3>${escapeHubHtml(item.title)}</h3><p class="muted">${escapeHubHtml(item.category.replaceAll('_',' '))} · ${escapeHubHtml(item.provider_name)}</p></div><span class="tag ${status === 'published' ? 'resolved' : 'open'}">${escapeHubHtml(statusTag)}</span></div>
+        <div class="panel-heading"><div><h3>${escapeHubHtml(item.title)}</h3><p class="muted">${escapeHubHtml(categoryLabel)} · ${escapeHubHtml(providerLabel)}</p></div><span class="tag ${status === 'published' ? 'resolved' : 'open'}">${escapeHubHtml(statusTag)}</span></div>
         <p>${escapeHubHtml(item.description)}</p>
         ${item.eligibility ? `<p><strong>Eligibility:</strong> ${escapeHubHtml(item.eligibility)}</p>` : ''}
         <p class="muted">Deadline: ${escapeHubHtml(formatHubDate(item.deadline))}</p>
@@ -5759,8 +5817,10 @@
       const savedIds = new Set(bookmarks.map(item => item.opportunity_id));
       const published = allRows.filter(item => item.status === 'published' && (!item.deadline || new Date(item.deadline).getTime() > Date.now()));
       const pending = allRows.filter(item => item.status === 'pending');
+      campusOpportunityRows=published;
+      campusOpportunitySavedIds=savedIds;
       status.textContent = published.length ? published.length + ' published opportunity(ies).' : 'No published opportunities yet.';
-      feed.innerHTML = published.length ? published.map(item => renderOpportunityCard(item, false, false, savedIds.has(item.id))).join('') : '<div class="community-empty">No approved opportunities yet. Check back after campus review.</div>';
+      renderCampusOpportunitiesDiscovery();
       myStatus.textContent = myRows.length ? myRows.length + ' submission(s) created by your account.' : 'You have not submitted an opportunity yet.';
       myFeed.innerHTML = myRows.length ? myRows.map(item => renderOpportunityCard(item, true)).join('') : '<div class="community-empty">Your drafts and submissions will appear here.</div>';
       if (staffAccess) {
@@ -5770,7 +5830,8 @@
     } catch (err) {
       status.textContent = err.message || 'Could not load opportunities.';
       myStatus.textContent = 'Could not load your submissions.';
-      feed.innerHTML = '<div class="community-empty">Opportunity data could not be loaded. Confirm the campus-life database migration has been applied.</div>';
+      feed.innerHTML = '<div class="community-empty">Opportunity data could not be loaded. Refresh or contact your campus administrator if the problem continues.</div>';
+      $('campus-opportunities-results').textContent='';
       myFeed.innerHTML = '<div class="community-empty">Your submissions could not be loaded.</div>';
     }
   }
@@ -6465,6 +6526,8 @@
   $('refresh-campus-classrooms').addEventListener('click', loadCampusClassroomsPage);
   $('refresh-campus-opportunities').addEventListener('click', loadCampusOpportunitiesPage);
   $('refresh-my-opportunities').addEventListener('click', loadCampusOpportunitiesPage);
+  ['campus-marketplace-search','campus-marketplace-category-filter','campus-marketplace-status-filter','campus-marketplace-sort'].forEach(id=>$(id).addEventListener(id.endsWith('search')?'input':'change',renderCampusMarketplaceDiscovery));
+  ['campus-opportunities-search','campus-opportunities-category-filter','campus-opportunities-sort'].forEach(id=>$(id).addEventListener(id.endsWith('search')?'input':'change',renderCampusOpportunitiesDiscovery));
 
   $('campusGroupForm').addEventListener('submit', async function(event) {
     event.preventDefault();
