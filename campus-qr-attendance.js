@@ -108,7 +108,7 @@
     panel.dataset.classroomId = classroomId;
     panel.innerHTML = `
       <div class="panel-heading">
-        <div><h3>Class attendance</h3><p class="campus-attendance-muted">Create a time-limited check-in session, display its rotating QR code and monitor the enrolled class roster.</p></div>
+        <div><h3>Class attendance</h3><p class="campus-attendance-muted">Create a time-limited check-in session, display its rotating QR code and monitor the enrolled class roster.</p><p class="campus-attendance-muted">Verified lecturers manage attendance for classrooms they teach. Verified campus administrators can supervise attendance across their active, verified university. Supabase rechecks these permissions for every action.</p></div>
         <span class="campus-attendance-status" data-status="present">${activeCount} open</span>
       </div>
       <form id="campus-attendance-create-form">
