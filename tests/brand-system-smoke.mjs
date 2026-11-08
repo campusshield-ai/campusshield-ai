@@ -27,8 +27,9 @@ for (const token of [
 assert.match(brand, /html\[data-theme="dark"\]/, "A matching dark-mode palette is defined");
 assert.ok(brand.includes("#login-screen .login-intro"), "The sign-in hero receives the shared palette");
 assert.ok(brand.includes("#workspace #page-dashboard .campus-dashboard-hero"), "The dashboard hero receives the shared palette");
-assert.ok(brand.includes("#workspace #page-shieldmind .shieldmind-insights-panel") &&
-  brand.includes("background:linear-gradient(145deg,#112C43,#0D243A);"),
+assert.ok(brand.includes('html[data-theme="dark"] #page-shieldmind .shieldmind-insights-panel') &&
+  brand.includes("background:linear-gradient(145deg,#112C43,#0D243A);") &&
+  brand.includes("#page-shieldmind .shieldmind-insights-eyebrow"),
   "ShieldMind learning insights retain a dedicated dark-mode gradient");
 assert.match(brand, /prefers-reduced-motion:\s*reduce/, "Reduced-motion preferences are respected");
 assert.match(brand, /campus-map-nearby-safety/, "CampusMap components share the brand system");
