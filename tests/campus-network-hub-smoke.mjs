@@ -89,7 +89,7 @@ assert.match(migration, /create table if not exists public\.campus_member_blocks
 assert.match(migration, /alter table public\.campus_member_blocks enable row level security/);
 assert.match(migration, /create policy campus_member_blocks_deny_direct_access/);
 assert.match(migration, /create or replace function private\.is_campus_member_blocked/);
-assert.match(migration, /revoke all on function private\.is_campus_member_blocked\\(uuid,uuid\\)/);
+assert.match(migration, /revoke all on function private\.is_campus_member_blocked\(uuid,uuid\)/);
 
 // Database: four private tables, RLS, direct-access-deny policies and explicit RPC grants.
 for (const table of [
