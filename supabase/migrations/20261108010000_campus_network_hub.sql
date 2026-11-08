@@ -500,9 +500,12 @@ $$;
 create or replace function public.request_campus_alumni_intro_by_username(p_username text,p_note text)
 returns uuid
 language plpgsql security definer set search_path = ''
-as $
+as $$
 declare v_alumni_user uuid; v_request uuid;
 begin
+  if (select auth.uid()) is null then
+    raise exception 'Sign in to request an alumni introduction.' using errcode='42501';
+  end if;
   if p_username is null or char_length(btrim(p_username)) not between 3 and 20 then
     raise exception 'Choose a valid alumni username.' using errcode='22023';
   end if;
@@ -517,7 +520,7 @@ begin
   v_request := public.request_campus_alumni_intro(v_alumni_user,p_note);
   return v_request;
 end;
-$;
+$$;
 
 create or replace function public.list_my_campus_alumni_intro_requests()
 returns table(id uuid,username text,university_name text,note text,status text,direction text,created_at timestamptz)
