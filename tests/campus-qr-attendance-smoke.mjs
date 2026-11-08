@@ -42,9 +42,9 @@ assert.match(attendance, /sessionStorage.removeItem/);
 assert.match(attendance, /replaceState/);
 assert.match(attendance, /safe.replace/);
 assert.doesNotMatch(attendance, /getCurrentPosition|FaceDetector|face-api|face recognition/i);
-assert.doesNotMatch(attendance, /{s*onces*:s*trues*}/,
+assert.ok(!attendance.includes("{ once: true }") && !attendance.includes("{once:true}"),
   "Attendance handlers must remain usable after their first action.");
-assert.match(css, /.campus-attendance-form-grid/);
-assert.match(css, /@media(max-width:760px)/);
+assert.ok(css.includes(".campus-attendance-form-grid"));
+assert.ok(css.includes("@media(max-width:760px)"));
 assert.match(qrVendor, /Licensed under the MIT license/);
 console.log("Campus QR attendance smoke checks passed.");
