@@ -33,9 +33,9 @@ assert.doesNotMatch(
   "A broad verified-account policy must never be recreated on private bookmarks",
 );
 
-assert.match(grantsMigration, /revoke all on table public\\.campus_opportunity_bookmarks\\s+from public, anon, authenticated/i);
-assert.match(grantsMigration, /grant select, insert, delete\\s+on table public\\.campus_opportunity_bookmarks\\s+to authenticated/i);
-assert.match(grantsMigration, /grant all\\s+on table public\\.campus_opportunity_bookmarks\\s+to service_role/i);
-assert.doesNotMatch(grantsMigration, /grant\\s+(?:all|update)\\s+on table public\\.campus_opportunity_bookmarks\\s+to authenticated/i);
+assert.match(grantsMigration, /revoke all on table public\.campus_opportunity_bookmarks\s+from public, anon, authenticated/i);
+assert.match(grantsMigration, /grant select, insert, delete\s+on table public\.campus_opportunity_bookmarks\s+to authenticated/i);
+assert.match(grantsMigration, /grant all\s+on table public\.campus_opportunity_bookmarks\s+to service_role/i);
+assert.doesNotMatch(grantsMigration, /grant\s+(?:all|update)\s+on table public\.campus_opportunity_bookmarks\s+to authenticated/i);
 
 console.log("PASS opportunity bookmark RLS, least-privilege grants, and flexible PWA orientation");
