@@ -89,6 +89,15 @@ assert.doesNotMatch(migration, /^as $/m, "PL/pgSQL functions must use paired dol
 assert.equal((migration.match(/^as $$/gm) || []).length, (migration.match(/^$;$/gm) || []).length,
   "Each PL/pgSQL function must open and close its dollar-quoted body");
 
+// Production must have the block lookup used by discovery and intro privacy checks.
+assert.match(migration, /and not private\.is_campus_member_blocked\(n\.user_id,v_university\)/);
+assert.match(migration, /if private\.is_campus_member_blocked\(v_post\.user_id,v_university\) then/);
+assert.match(migration, /and not private\.is_campus_member_blocked\(a\.user_id,v_university\)/);
+assert.match(migration, /if private\.is_campus_member_blocked\(v_profile\.user_id,v_university\) then/);
+assert.match(migration, /create table if not exists public\.campus_member_blocks/);
+assert.match(migration, /create policy campus_member_blocks_deny_direct_access/);
+assert.match(migration, /create or replace function private\.is_campus_member_blocked/);
+assert.match(migration, /auth\.uid\(\)\) is null then true/);
 // Database: four private tables, RLS, direct-access-deny policies and explicit RPC grants.
 for (const table of [
   "campus_network_posts", "campus_network_applications",
