@@ -172,7 +172,7 @@ html[data-theme="dark"] body{background:var(--cs-canvas);color:var(--cs-ink)}
 html[data-theme="dark"] #workspace .topbar,html[data-theme="dark"] #workspace .mobile-bottom-nav{border-color:#27464C;background:#0D252DF2;color:#E6F4F0}
 html[data-theme="dark"] #workspace .topbar-title strong,html[data-theme="dark"] #workspace .page>.heading h1,html[data-theme="dark"] #workspace .panel-heading h2,html[data-theme="dark"] #workspace .stat-num{color:#E6F4F0}
 html[data-theme="dark"] #workspace .page>.heading p,html[data-theme="dark"] #workspace .stat-label,html[data-theme="dark"] #workspace .stat-note{color:#A5BFBC}
-html[data-theme="dark"] #workspace .panel,html[data-theme="dark"] #workspace .stat,html[data-theme="dark"] #workspace .settings-card,html[data-theme="dark"] #workspace .campus-dashboard-card,html[data-theme="dark"] #workspace .campus-dashboard-metric,html[data-theme="dark"] #workspace .campus-feature,html[data-theme="dark"] #workspace .student-shortcut-card,html[data-theme="dark"] #workspace .global-search-results{border-color:#27464C;background:#102D35;color:#E6F4F0}
+html[data-theme="dark"] #workspace .panel,html[data-theme="dark"] #workspace .stat,html[data-theme="dark"] #workspace .settings-card,html[data-theme="dark"] #workspace .campus-dashboard-card,html[data-theme="dark"] #workspace .campus-dashboard-metric,html[data-theme="dark"] #workspace .campus-feature,html[data-theme="dark"] #workspace .student-shortcut-card,html[data-theme="dark"] #workspace .global-search-results{border-color:#27464C;background-color:#102D35;color:#E6F4F0}
 html[data-theme="dark"] #workspace .btn.secondary{border-color:#31565C;background:#17383F;color:#D8ECE8}
 html[data-theme="dark"] #workspace .field input,html[data-theme="dark"] #workspace .field select,html[data-theme="dark"] #workspace .field textarea,html[data-theme="dark"] #workspace input,html[data-theme="dark"] #workspace select,html[data-theme="dark"] #workspace textarea{border-color:#31565C;background:#0D252D;color:#E6F4F0}
 html[data-theme="dark"] #workspace .quick-action-bar{border-color:#27464C;background:#102D35F0}
@@ -209,10 +209,4 @@ html[data-theme="dark"] #workspace .campus-map-nearby-safety-distance{color:#81E
 }
 #workspace #page-dashboard .campus-dashboard-hero::after{
   background:linear-gradient(90deg,transparent 0%,rgba(129,229,208,.03) 24%,rgba(129,229,208,.19) 42%,rgba(231,255,248,.4) 49%,rgba(129,229,208,.16) 56%,transparent 100%) !important
-}
-
-/* Keep feature-owned dark gradients intact over the generic workspace panel surface. */
-html[data-theme="dark"] #workspace #page-shieldmind .shieldmind-insights-panel {
-  border-color: #315943;
-  background: linear-gradient(145deg, #112a20, #10251d);
 }
