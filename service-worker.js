@@ -1,4 +1,4 @@
-const CACHE_NAME = "campusshield-offline-v5";
+const CACHE_NAME = "campusshield-offline-v6";
 const BRAND_STYLESHEET_URL = "./campusshield-brand-system.css";
 const OFFLINE_URL = "./offline.html";
 
