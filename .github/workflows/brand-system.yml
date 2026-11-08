@@ -1,0 +1,41 @@
+name: CampusShield Atlantic Emerald brand system
+on:
+  pull_request:
+    branches: [staging/preview, main]
+    paths:
+      - "campusshield-brand-system.css"
+      - "index.html"
+      - "about.html"
+      - "features.html"
+      - "help.html"
+      - "privacy.html"
+      - "terms.html"
+      - "contact.html"
+      - "offline.html"
+      - "student-life-preview.html"
+      - "manifest.webmanifest"
+      - "icons/campusshield.svg"
+      - "assets/campusshield-logo.svg"
+      - "tests/brand-system-smoke.mjs"
+      - ".github/workflows/brand-system.yml"
+  push:
+    branches: [staging/preview]
+    paths:
+      - "campusshield-brand-system.css"
+      - "index.html"
+      - "manifest.webmanifest"
+      - "tests/brand-system-smoke.mjs"
+      - ".github/workflows/brand-system.yml"
+permissions:
+  contents: read
+jobs:
+  brand-system:
+    name: Brand palette, PWA metadata and page coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify Atlantic Emerald brand system
+        run: node tests/brand-system-smoke.mjs
