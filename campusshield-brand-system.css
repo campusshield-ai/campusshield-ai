@@ -127,15 +127,15 @@ body>header.top .brand{color:#fff}
 body>header.top .brand strong,body>header.top .mark{color:var(--cs-seafoam)}
 body>header.top .mark{border-color:var(--cs-seafoam);background:#81E5D017}
 body>header.top h1{color:#fff}
-body:not(#workspace) .button{border-color:#C9DEDA;color:#234B50;background:#fff}
-body:not(#workspace) .button.primary,body:not(#workspace) .primary{border-color:#08757B;background:linear-gradient(135deg,#08757B,#0A7E83);color:#fff}
-body:not(#workspace) .button.primary:hover,body:not(#workspace) .primary:hover{background:#075E66}
-body:not(#workspace) article,body:not(#workspace) .section,body:not(#workspace) .card{border-color:var(--cs-line)}
-body:not(#workspace) .lead,body:not(#workspace) .muted,body:not(#workspace) .fine{color:var(--cs-muted)}
-body:not(#workspace) .eyebrow{color:var(--cs-primary-strong)}
-body:not(#workspace) .toc{border-color:var(--cs-line);background:#F5F8F7F0}
-body:not(#workspace) .toc a{color:#234B50;background:#fff}
-body:not(#workspace) .notice{border-left-color:#D5A13D}
+body:not(:has(#workspace)) .button{border-color:#C9DEDA;color:#234B50;background:#fff}
+body:not(:has(#workspace)) .button.primary,body:not(:has(#workspace)) .primary{border-color:#08757B;background:linear-gradient(135deg,#08757B,#0A7E83);color:#fff}
+body:not(:has(#workspace)) .button.primary:hover,body:not(:has(#workspace)) .primary:hover{background:#075E66}
+body:not(:has(#workspace)) article,body:not(:has(#workspace)) .section,body:not(:has(#workspace)) .card{border-color:var(--cs-line)}
+body:not(:has(#workspace)) .lead,body:not(:has(#workspace)) .muted,body:not(:has(#workspace)) .fine{color:var(--cs-muted)}
+body:not(:has(#workspace)) .eyebrow{color:var(--cs-primary-strong)}
+body:not(:has(#workspace)) .toc{border-color:var(--cs-line);background:#F5F8F7F0}
+body:not(:has(#workspace)) .toc a{color:#234B50;background:#fff}
+body:not(:has(#workspace)) .notice{border-left-color:#D5A13D}
 
 /* Student-life preview shell. */
 .shell .side{background:linear-gradient(168deg,#071F28,#0B3540 58%,#0B2832)}
