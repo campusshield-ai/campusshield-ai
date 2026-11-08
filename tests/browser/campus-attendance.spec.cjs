@@ -137,6 +137,11 @@ test("verified enrolled students can check in with a QR payload; invalid and dup
 test("student scanner offers a paste-code fallback when built-in QR camera support is unavailable", async ({ page }) => {
   await bootAttendance(page, { can_access: true, can_manage: false });
   await page.evaluate(() => {
+    Object.defineProperty(window, "isSecureContext", { configurable: true, value: true });
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia: async () => { throw new Error("Camera access is not required in this test."); } }
+    });
     window.BarcodeDetector = undefined;
     window.CampusShieldAttendance.mount("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "student");
   });
