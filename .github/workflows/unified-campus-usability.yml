@@ -23,6 +23,14 @@ on:
     branches: [main, "staging/preview"]
     paths:
       - "index.html"
+      - "campus-qr-attendance.js"
+      - "campus-qr-attendance.css"
+      - "vendor/qrcode.js"
+      - "campusshield-backend.js"
+      - "campusshield-app.js"
+      - "tests/campus-qr-attendance-smoke.mjs"
+      - "tests/browser/campus-qr-attendance.spec.cjs"
+      - ".github/workflows/unified-campus-usability.yml"
       - "campus-dashboard-upgrade.js"
       - "campus-timetable.js"
       - "campus-dashboard-upgrade.css"
