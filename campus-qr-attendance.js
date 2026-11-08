@@ -102,6 +102,7 @@
 
   function renderManagerPanel(panel, classroomId, capabilities, sessions) {
     const activeCount = sessions.filter(isSessionOpen).length;
+    panel.dataset.classroomId = classroomId;
     panel.innerHTML = `
       <div class="panel-heading">
         <div><h3>Class attendance</h3><p class="campus-attendance-muted">Create a time-limited check-in session, display its rotating QR code and monitor the enrolled class roster.</p></div>
@@ -154,7 +155,9 @@
       }
     });
 
-    panel.addEventListener("click", async function handler(event) {
+    if (panel.dataset.managerHandlerBound !== "1") {
+      panel.dataset.managerHandlerBound = "1";
+      panel.addEventListener("click", async function handler(event) {
       const showQr = event.target.closest("[data-attendance-show-qr]");
       const showRoster = event.target.closest("[data-attendance-roster]");
       const close = event.target.closest("[data-attendance-close]");
@@ -162,7 +165,7 @@
       if (!showQr && !showRoster && !close && !exportButton) return;
 
       if (showQr) {
-        await displayQr(showQr.dataset.attendanceShowQr, showQr.dataset.sessionTitle || "Class attendance", classroomId);
+        await displayQr(showQr.dataset.attendanceShowQr, showQr.dataset.sessionTitle || "Class attendance", panel.dataset.classroomId);
       } else if (showRoster) {
         await showRosterForSession(showRoster.dataset.attendanceRoster);
       } else if (close) {
@@ -170,7 +173,7 @@
         close.disabled = true;
         try {
           await backend().closeCampusClassAttendanceSession(close.dataset.attendanceClose);
-          await renderAttendancePanel(classroomId);
+          await renderAttendancePanel(panel.dataset.classroomId);
           setPanelMessage($("campus-attendance-panel"), "Attendance is closed. The QR token has been invalidated.", "success");
         } catch (error) {
           close.disabled = false;
@@ -179,7 +182,8 @@
       } else if (exportButton) {
         exportRosterCsv(exportButton.dataset.attendanceExport);
       }
-    }, { once: true });
+      });
+    }
   }
 
   async function displayQr(sessionId, title, classroomId) {
@@ -298,6 +302,7 @@
   }
 
   function renderStudentPanel(panel, classroomId, capabilities, records) {
+    panel.dataset.classroomId = classroomId;
     panel.innerHTML = `
       <div class="panel-heading"><div><h3>My class attendance</h3><p class="campus-attendance-muted">Your personal attendance record for ${escapeHtml(capabilities.classroom_title || "this class")}.</p></div></div>
       <p class="campus-attendance-muted">Scan the temporary QR displayed by your lecturer. Check-in is available only to verified students already enrolled in this classroom.</p>
@@ -319,17 +324,20 @@
         <button class="btn secondary" type="button" data-attendance-stop-scan>Stop camera</button>
       </div>`;
 
-    panel.addEventListener("click", async function handler(event) {
+    if (panel.dataset.studentHandlerBound !== "1") {
+      panel.dataset.studentHandlerBound = "1";
+      panel.addEventListener("click", async function handler(event) {
       if (event.target.closest("[data-attendance-start-scan]")) {
-        await startScanner(classroomId, panel);
+        await startScanner(panel.dataset.classroomId, panel);
       } else if (event.target.closest("[data-attendance-stop-scan]")) {
         stopScanner();
         const scanner = $("campus-attendance-scanner");
         if (scanner) scanner.hidden = true;
       } else if (event.target.closest("[data-attendance-refresh-student]")) {
-        await renderAttendancePanel(classroomId);
+        await renderAttendancePanel(panel.dataset.classroomId);
       }
-    }, { once: true });
+      });
+    }
   }
 
   async function startScanner(classroomId, panel) {
@@ -365,7 +373,7 @@
               if (credentials) {
                 stopScanner();
                 scanner.hidden = true;
-                await completeCheckIn(credentials.sessionId, credentials.token, classroomId, message);
+                await completeCheckIn(credentials.sessionId, credentials.token, classroomId, message).catch(() => {});
                 return;
               }
             }
