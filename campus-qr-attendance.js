@@ -419,8 +419,8 @@
       const when = formatTime(result.marked_at);
       const already = Boolean(result.already_recorded);
       const message = already
-        ? "You were already checked in for " + result.session_title + " at " + when + ". No duplicate record was created."
-        : "Attendance recorded for " + result.session_title + " (" + result.status + ") at " + when + ".";
+        ? "Your QR check-in was already recorded for " + result.session_title + " at " + when + ". No duplicate record was created."
+        : "QR check-in recorded for " + result.session_title + " (" + result.status + ") at " + when + ".";
       if (target) {
         target.hidden = false;
         target.textContent = message;
@@ -529,6 +529,9 @@
     clearQrTimers();
     stopScanner();
     currentQrSession = null;
+    renderSequence += 1;
+    const panel = $("campus-attendance-panel");
+    if (panel) panel.innerHTML = '<p class="campus-attendance-muted">Sign in to view this classroom attendance panel.</p>';
     const message = $("campus-attendance-deep-link-message");
     if (message) { message.hidden = true; message.textContent = ""; }
   });
