@@ -67,3 +67,41 @@ html[data-theme="dark"] .campus-guide-page .guide-filter-row button.is-active{bo
 html[data-theme="dark"] .campus-guide-page .guide-card-safety{border-color:#725a35;background:#302b20}
 html[data-theme="dark"] .campus-guide-page .guide-card summary{color:#91e6cf}
 html[data-theme="dark"] .campus-guide-page .guide-results,html[data-theme="dark"] .campus-guide-page .guide-no-results{color:#adc4c8}
+
+
+/* Interactive guided walkthrough */
+.campus-guide-page .guide-walkthrough-panel{padding:clamp(18px,3vw,26px);border:1px solid var(--guide-line);border-radius:18px;background:linear-gradient(145deg,#f8fcfb,#eff8f5);box-shadow:0 10px 28px #173b4608}
+.campus-guide-page .guide-walkthrough-tag{flex:0 0 auto;padding:7px 10px;border:1px solid #c8e7dc;border-radius:999px;background:#eaf8f2;color:#087663;font-size:.67rem;font-weight:850}
+.campus-guide-page .guide-walkthrough-layout{display:grid;grid-template-columns:minmax(225px,.82fr) minmax(0,1.18fr);gap:14px;align-items:stretch}
+.campus-guide-page .guide-walkthrough-choices{display:grid;align-content:start;gap:7px;min-width:0}
+.campus-guide-page .guide-journey-choice{display:grid;grid-template-columns:34px minmax(0,1fr) 18px;align-items:center;gap:10px;width:100%;min-height:61px;padding:10px;border:1px solid #dce9e6;border-radius:12px;background:#fff;color:var(--guide-ink);text-align:left;cursor:pointer}
+.campus-guide-page .guide-journey-choice:hover{border-color:#9ed5c7;background:#f7fcfa}
+.campus-guide-page .guide-journey-choice.is-active{border-color:#138875;background:#eaf7f2;box-shadow:0 0 0 2px #13887518}
+.campus-guide-page .guide-journey-number{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#e8f4ef;color:#087966;font-size:.68rem;font-weight:900}
+.campus-guide-page .guide-journey-copy{display:grid;gap:3px;min-width:0}
+.campus-guide-page .guide-journey-copy strong{color:#1b4052;font-size:.78rem;line-height:1.35}
+.campus-guide-page .guide-journey-copy small{color:#687e87;font-size:.66rem;line-height:1.4}
+.campus-guide-page .guide-journey-arrow{color:#178775;font-size:1rem;font-weight:900}
+.campus-guide-page .guide-walkthrough-stage{display:flex;flex-direction:column;min-width:0;padding:clamp(16px,2.4vw,23px);border:1px solid #cfe5de;border-radius:15px;background:#fff}
+.campus-guide-page .guide-walkthrough-stage-top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#167a6b;font-size:.65rem;font-weight:900;letter-spacing:.07em}
+.campus-guide-page .guide-walkthrough-completion{color:#72858d;letter-spacing:0}
+.campus-guide-page .guide-walkthrough-progress{height:6px;margin:11px 0 18px;overflow:hidden;border-radius:999px;background:#e6efeb}
+.campus-guide-page .guide-walkthrough-progress span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#0b7b6c,#55c69e);transition:width .2s ease}
+.campus-guide-page .guide-walkthrough-kicker{margin:0 0 6px;color:#178675;font-size:.65rem;font-weight:900;letter-spacing:.12em}
+.campus-guide-page .guide-walkthrough-stage h3{margin:0 0 8px;color:#153b4c;font-size:1.25rem;line-height:1.3;letter-spacing:-.025em}
+.campus-guide-page .guide-walkthrough-description{margin:0;color:#5e7481;font-size:.82rem;line-height:1.7}
+.campus-guide-page .guide-walkthrough-note{min-height:35px;margin:12px 0 0;padding:9px 10px;border-radius:9px;background:#f3f8f6;color:#617983;font-size:.7rem;line-height:1.55}
+.campus-guide-page .guide-walkthrough-step-actions,.campus-guide-page .guide-walkthrough-nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.campus-guide-page .guide-walkthrough-step-actions .btn,.campus-guide-page .guide-walkthrough-nav .btn{min-height:38px;padding:8px 11px;font-size:.71rem}
+.campus-guide-page .guide-walkthrough-nav{justify-content:space-between;margin-top:auto;padding-top:14px;border-top:1px solid #e8efec}
+.campus-guide-page .guide-walkthrough-nav button:disabled{cursor:not-allowed;opacity:.45}
+.campus-guide-page .guide-journey-choice:focus-visible,.campus-guide-page .guide-walkthrough-stage button:focus-visible{outline:3px solid #22a98f;outline-offset:3px}
+html[data-theme="dark"] .campus-guide-page .guide-walkthrough-panel,html[data-theme="dark"] .campus-guide-page .guide-walkthrough-stage{border-color:#294b54;background:#102b37;color:#dcece9}
+html[data-theme="dark"] .campus-guide-page .guide-journey-choice{border-color:#31515a;background:#0c222c;color:#e4f5f0}
+html[data-theme="dark"] .campus-guide-page .guide-journey-choice.is-active{border-color:#58c9ad;background:#173d3d}
+html[data-theme="dark"] .campus-guide-page .guide-journey-copy strong,html[data-theme="dark"] .campus-guide-page .guide-walkthrough-stage h3{color:#e4f5f0}
+html[data-theme="dark"] .campus-guide-page .guide-journey-copy small,html[data-theme="dark"] .campus-guide-page .guide-walkthrough-description,html[data-theme="dark"] .campus-guide-page .guide-walkthrough-completion{color:#adc4c8}
+html[data-theme="dark"] .campus-guide-page .guide-walkthrough-note{background:#0c222c;color:#adc4c8}
+@media(max-width:760px){.campus-guide-page .guide-walkthrough-layout{grid-template-columns:minmax(0,1fr)}.campus-guide-page .guide-walkthrough-choices{grid-template-columns:repeat(2,minmax(0,1fr))}.campus-guide-page .guide-journey-choice{grid-template-columns:29px minmax(0,1fr);min-height:70px;padding:9px}.campus-guide-page .guide-journey-number{width:28px;height:28px}.campus-guide-page .guide-journey-arrow{display:none}}
+@media(max-width:480px){.campus-guide-page .guide-walkthrough-panel{padding:14px}.campus-guide-page .guide-walkthrough-choices{grid-template-columns:minmax(0,1fr)}.campus-guide-page .guide-journey-choice{min-height:57px;grid-template-columns:32px minmax(0,1fr) 16px}.campus-guide-page .guide-journey-number{width:30px;height:30px}.campus-guide-page .guide-journey-arrow{display:block}.campus-guide-page .guide-walkthrough-stage{padding:14px}.campus-guide-page .guide-walkthrough-step-actions{display:grid;grid-template-columns:minmax(0,1fr)}.campus-guide-page .guide-walkthrough-step-actions .btn{width:100%}}
+@media(prefers-reduced-motion:reduce){.campus-guide-page .guide-walkthrough-progress span{transition:none}}
