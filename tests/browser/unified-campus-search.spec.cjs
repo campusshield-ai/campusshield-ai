@@ -68,3 +68,45 @@ test("unified search finds campus spaces and currently rendered campus content",
   await expect(page.locator("html")).toHaveAttribute("data-marketplace-search-activated", "true");
   await expect(results).toBeHidden();
 });
+
+
+test("My Day renders a private timetable snapshot and remains usable on mobile", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    const workspace = document.getElementById("workspace");
+    if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
+    const login = document.getElementById("login-screen");
+    if (login) { login.hidden = true; login.style.display = "none"; }
+    const now = new Date();
+    const later = new Date(now.getTime() + 60 * 60 * 1000);
+    window.CampusShieldTimetable = {
+      getTodaySnapshot: () => ({
+        date: now.toISOString().slice(0, 10),
+        loaded: true,
+        items: [
+          { id: "class-1", title: "Applied Mathematics", kind: "class", label: "Class", courseCode: "MTH 201", location: "Lecture Hall A", startsAt: now.toISOString(), endsAt: later.toISOString(), completed: false },
+          { id: "task-1", title: "Submit lab report", kind: "assignment", label: "Assignment", courseCode: "CSC 204", location: "", startsAt: later.toISOString(), endsAt: null, completed: false },
+          { id: "event-1", title: "Faculty seminar", kind: "event", label: "Campus event", courseCode: "", location: "Main Auditorium", startsAt: new Date(later.getTime() + 60 * 60 * 1000).toISOString(), endsAt: null, completed: false }
+        ]
+      })
+    };
+    window.dispatchEvent(new Event("campusshield:timetable-updated"));
+  });
+  const panel = page.locator("#campus-my-day");
+  await expect(panel).toBeVisible();
+  await expect(panel).toContainText("Applied Mathematics");
+  await expect(panel).toContainText("MTH 201");
+  await expect(panel).toContainText("Submit lab report");
+  await expect(panel).toContainText("Faculty seminar");
+  await expect(page.locator("#campus-my-day-summary")).toContainText("1 class");
+  await expect(page.locator("#campus-my-day-summary")).toContainText("1 task");
+  await expect(page.locator("#campus-my-day-summary")).toContainText("1 campus event");
+  await expect(panel.locator("[data-page='timetable']")).toHaveText("Open timetable");
+  await page.setViewportSize({ width: 390, height: 844 });
+  const box = await panel.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(391);
+  const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(391);
+});
