@@ -7,8 +7,10 @@ test("guided walkthrough switches journeys, tracks progress and opens the select
     if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
     const login = document.getElementById("login-screen");
     if (login) { login.hidden = true; login.style.display = "none"; }
+    // This UI-only fixture does not impersonate an authenticated user. Reveal
+    // the guide section directly so the app's real sign-in guard stays intact.
+    document.getElementById("page-guide")?.classList.add("active");
   });
-  await page.locator("#guide-nav").click();
   const guide = page.locator("#page-guide");
   await expect(guide).toBeVisible();
   await expect(guide.locator("#guide-walkthrough")).toBeVisible();
@@ -61,9 +63,9 @@ test("walkthrough destinations are hidden instead of linking to features absent 
     if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
     const login = document.getElementById("login-screen");
     if (login) { login.hidden = true; login.style.display = "none"; }
+    document.getElementById("page-guide")?.classList.add("active");
     document.querySelectorAll('[data-page="campus-map"]').forEach(element => element.remove());
   });
-  await page.locator("#guide-nav").click();
   await page.locator('[data-guide-journey="map"]').click();
   await expect(page.locator("#guide-walkthrough-open")).toBeHidden();
   await expect(page.locator("#guide-walkthrough-note")).toContainText("not available in the current build");
