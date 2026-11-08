@@ -84,6 +84,11 @@ assert.match(app, /p_scope:scope/);
 assert.match(app, /page === 'campus-network'\) loadCampusNetworkPage/);
 assert.match(app, /'campus-network':'Campus Network'/);
 
+// SQL quote integrity: every PL/pgSQL body must have matching paired dollar delimiters.
+assert.doesNotMatch(migration, /^as $/m, "PL/pgSQL functions must use paired dollar-quote delimiters");
+assert.equal((migration.match(/^as $$/gm) || []).length, (migration.match(/^$;$/gm) || []).length,
+  "Each PL/pgSQL function must open and close its dollar-quoted body");
+
 // Database: four private tables, RLS, direct-access-deny policies and explicit RPC grants.
 for (const table of [
   "campus_network_posts", "campus_network_applications",
