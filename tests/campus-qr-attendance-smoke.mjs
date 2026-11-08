@@ -47,4 +47,12 @@ assert.ok(!attendance.includes("{ once: true }") && !attendance.includes("{once:
 assert.ok(css.includes(".campus-attendance-form-grid"));
 assert.ok(css.includes("@media(max-width:760px)"));
 assert.match(qrVendor, /Licensed under the MIT license/);
+
+assert.match(app, /\['teacher','admin','student'\]/,
+  "Verified students, teachers and campus administrators must be able to open Classrooms & Attendance.");
+assert.match(app, /const classroomCreateAccess = \['teacher','admin'\]/,
+  "Only verified teachers and campus administrators should see classroom creation.");
+assert.match(html, /Classrooms &amp; Attendance/);
+assert.match(html, /Verified teachers and university administrators can create classes/);
+
 console.log("Campus QR attendance smoke checks passed.");
