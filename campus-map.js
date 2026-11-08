@@ -1,6 +1,7 @@
 import './campus-map-icons.js';
 import './campus-map-discovery.js';
 import './campus-map-navigation.js';
+import './campus-map-safety.js';
 
 (() => {
   'use strict';
@@ -39,6 +40,8 @@ import './campus-map-navigation.js';
   let activeDiscoveryFilter = 'all';
   let activeFeatureTypeFilter = 'all';
   let userMarker = null;
+  let nearbySafetyMarker = null;
+  let nearbySafetyResults = [];
   let lastWalkingRouteRequestAt = 0;
   let campusCenterMarker = null;
   let campusCenterMarkerKind = null;
@@ -1655,6 +1658,141 @@ import './campus-map-navigation.js';
     }
   }
 
+  function formatNearbySafetyDistance(meters) {
+    if (!Number.isFinite(meters) || meters < 0) return 'Distance unavailable';
+    return meters < 1000
+      ? Math.round(meters) + ' m straight-line'
+      : (meters / 1000).toFixed(2) + ' km straight-line';
+  }
+
+  function clearNearbySafetyResults() {
+    nearbySafetyResults = [];
+    const panel = $('campus-map-nearby-safety-panel');
+    const list = $('campus-map-nearby-safety-list');
+    const message = $('campus-map-nearby-safety-status');
+    if (panel) panel.hidden = true;
+    if (list) list.replaceChildren();
+    if (message) message.textContent = 'Use your location to find the closest published campus safety facilities.';
+    nearbySafetyMarker?.remove();
+    nearbySafetyMarker = null;
+    const button = $('campus-map-nearby-safety');
+    if (button) {
+      button.disabled = false;
+      button.textContent = '◎ Find nearby safety';
+    }
+  }
+
+  function renderNearbySafetyResults(ranked, eligibleCount) {
+    const panel = $('campus-map-nearby-safety-panel');
+    const list = $('campus-map-nearby-safety-list');
+    const message = $('campus-map-nearby-safety-status');
+    if (!panel || !list || !message) return;
+    panel.hidden = false;
+    list.replaceChildren();
+    if (!ranked.length) {
+      message.textContent = eligibleCount
+        ? 'No mapped safety facilities with usable coordinates are available for this campus.'
+        : 'No published security, medical, gate, or emergency assembly locations are mapped for this campus yet.';
+      return;
+    }
+    message.textContent = 'Showing ' + ranked.length + ' nearest of ' + eligibleCount
+      + ' published safety facilities. Distances are straight-line estimates, not walking distances.';
+    const fragment = document.createDocumentFragment();
+    ranked.forEach((result, index) => {
+      const feature = result.feature;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'campus-map-nearby-safety-item';
+      button.dataset.nearbySafetyFeatureId = String(feature.id);
+      button.setAttribute('aria-label', 'Show ' + (feature.name || 'safety facility') + ', '
+        + formatNearbySafetyDistance(result.distance_meters));
+      const rank = document.createElement('span');
+      rank.className = 'campus-map-nearby-safety-rank';
+      rank.textContent = String(index + 1);
+      const copy = document.createElement('span');
+      copy.className = 'campus-map-nearby-safety-copy';
+      const name = document.createElement('strong');
+      name.textContent = feature.name || 'Campus safety facility';
+      const type = document.createElement('small');
+      type.textContent = window.CampusMapSafety.types[feature.feature_type] || 'Safety facility';
+      copy.append(name, type);
+      const distance = document.createElement('span');
+      distance.className = 'campus-map-nearby-safety-distance';
+      distance.textContent = formatNearbySafetyDistance(result.distance_meters);
+      button.append(rank, copy, distance);
+      fragment.appendChild(button);
+    });
+    list.appendChild(fragment);
+  }
+
+  function findNearbySafetyFacilities() {
+    const button = $('campus-map-nearby-safety');
+    const panel = $('campus-map-nearby-safety-panel');
+    const message = $('campus-map-nearby-safety-status');
+    if (!navigator.geolocation) {
+      if (panel) panel.hidden = false;
+      if (message) message.textContent = 'Location services are unavailable in this browser. You can still use the Emergency filter to browse mapped campus points.';
+      return;
+    }
+    const requestedCampus = $('campus-map-campus-select')?.value || 'main-campus';
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Finding nearby safety…';
+    }
+    if (panel) panel.hidden = false;
+    if (message) message.textContent = 'Requesting your location on this device…';
+    navigator.geolocation.getCurrentPosition(position => {
+      if (( $('campus-map-campus-select')?.value || 'main-campus') !== requestedCampus) {
+        clearNearbySafetyResults();
+        setStatus('Campus changed while location was being checked. Select Find nearby safety again.', 'warning');
+        return;
+      }
+      const origin = {
+        longitude: position.coords.longitude,
+        latitude: position.coords.latitude
+      };
+      if (!window.CampusMapSafety?.validCoordinates(origin)) {
+        if (button) {
+          button.disabled = false;
+          button.textContent = '◎ Find nearby safety';
+        }
+        if (message) message.textContent = 'Your browser returned coordinates that could not be validated.';
+        return;
+      }
+      const eligibleCount = features.filter(feature => feature.is_published === true
+        && Object.prototype.hasOwnProperty.call(window.CampusMapSafety.types, feature.feature_type)
+        && window.CampusMapSafety.validCoordinates(feature)).length;
+      nearbySafetyResults = window.CampusMapSafety.rankNearbyFacilities(features, origin, 6);
+      renderNearbySafetyResults(nearbySafetyResults, eligibleCount);
+      if (map) {
+        const coords = [origin.longitude, origin.latitude];
+        if (!nearbySafetyMarker) {
+          nearbySafetyMarker = new maplibregl.Marker({ color: '#087f75' }).setLngLat(coords).addTo(map);
+        } else {
+          nearbySafetyMarker.setLngLat(coords);
+        }
+      }
+      if (button) {
+        button.disabled = false;
+        button.textContent = '↻ Refresh nearby safety';
+      }
+      setStatus('Nearby safety results calculated on this device. Your GPS location is not saved to CampusShield or Supabase.');
+    }, error => {
+      if (button) {
+        button.disabled = false;
+        button.textContent = '◎ Find nearby safety';
+      }
+      if (panel) panel.hidden = false;
+      if (message) {
+        message.textContent = error?.code === 1
+          ? 'Location permission was denied. Allow location access to calculate nearby safety facilities.'
+          : error?.code === 3
+            ? 'Location lookup timed out. Check your device location settings and try again.'
+            : 'Your current location is unavailable. You can still browse the published campus safety locations.';
+      }
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+  }
+
   function renderFeatures(items = features) {
     featureList.innerHTML = items.length ? items.map(item => {
       const meta = item.metadata || {};
@@ -1681,6 +1819,7 @@ import './campus-map-navigation.js';
   }
 
   function currentCampusFeatures() {
+    clearNearbySafetyResults();
     const selected = $('campus-map-campus-select')?.value || 'main-campus';
     activeCampusProfile = campusProfiles.find(item => item.campus_slug === selected) || null;
     selectedFeature = null;
@@ -2298,6 +2437,15 @@ import './campus-map-navigation.js';
     if ($('report-latitude')) $('report-latitude').value = '';
     if ($('report-longitude')) $('report-longitude').value = '';
     if ($('report-location-status')) $('report-location-status').textContent = 'Optional: attach your GPS location to help authorized campus responders find the place.';
+  });
+
+  $('campus-map-nearby-safety')?.addEventListener('click', findNearbySafetyFacilities);
+  $('campus-map-nearby-safety-clear')?.addEventListener('click', clearNearbySafetyResults);
+  $('campus-map-nearby-safety-list')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-nearby-safety-feature-id]');
+    if (!button) return;
+    const item = features.find(feature => String(feature.id) === button.dataset.nearbySafetyFeatureId);
+    if (item) selectFeature(item, true);
   });
 
   search?.addEventListener('input', () => filterFeatures(search.value));
