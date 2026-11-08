@@ -4,9 +4,9 @@ const path = require("node:path");
 const UUID_SESSION = "11111111-1111-4111-8111-111111111111";
 const TOKEN = "a".repeat(64);
 
-async function bootAttendance(page, capability, rpcOverrides = {}) {
+async function bootAttendance(page, capability) {
   await page.setContent('<main><section class="panel campus-attendance-panel" data-campus-attendance></section></main>');
-  await page.evaluate(({ capability, rpcOverrides }) => {
+  await page.evaluate(({ capability }) => {
     window.__attendanceCalls = [];
     window.confirm = () => true;
     window.qrcode = function () {
@@ -21,10 +21,6 @@ async function bootAttendance(page, capability, rpcOverrides = {}) {
       client: {
         async rpc(name, args) {
           window.__attendanceCalls.push({ name, args });
-          if (Object.prototype.hasOwnProperty.call(rpcOverrides, name)) {
-            const value = await rpcOverrides[name](args);
-            return { data: value, error: null };
-          }
           if (name === "get_campus_class_attendance_capabilities") {
             return { data: capability, error: null };
           }
@@ -56,7 +52,7 @@ async function bootAttendance(page, capability, rpcOverrides = {}) {
               attendance_id: "attendance-row",
               status: "present",
               marked_at: new Date().toISOString(),
-              already_recorded: false,
+              already_recorded: Boolean(window.__alreadyRecorded),
               session_title: "CSC 301 — Monday lecture",
               classroom_title: "CSC 301"
             }], error: null };
@@ -65,11 +61,13 @@ async function bootAttendance(page, capability, rpcOverrides = {}) {
         }
       }
     };
-  }, { capability, rpcOverrides });
+  }, { capability });
+  await page.addStyleTag({ path: path.resolve(__dirname, "../../campus-attendance.css") });
   await page.addScriptTag({ path: path.resolve(__dirname, "../../campus-attendance.js") });
 }
 
 test("verified class staff can create sessions, rotate QR codes and review or correct the roster", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await bootAttendance(page, { can_access: true, can_manage: true });
   await page.evaluate(() => window.CampusShieldAttendance.mount("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "teacher"));
 
@@ -106,21 +104,8 @@ test("verified class staff can create sessions, rotate QR codes and review or co
 });
 
 test("verified enrolled students can check in with a QR payload; invalid and duplicate scans are handled safely", async ({ page }) => {
-  let alreadyRecorded = false;
-  await bootAttendance(
-    page,
-    { can_access: true, can_manage: false },
-    {
-      check_in_campus_class_attendance: async () => [{
-        attendance_id: "attendance-row",
-        status: "present",
-        marked_at: new Date().toISOString(),
-        already_recorded: alreadyRecorded,
-        session_title: "CSC 301 — Monday lecture",
-        classroom_title: "CSC 301"
-      }]
-    }
-  );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await bootAttendance(page, { can_access: true, can_manage: false });
   await page.evaluate(() => window.CampusShieldAttendance.mount("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "student"));
   const panel = page.locator("[data-campus-attendance]");
   await expect(panel).toContainText("Check in to this class");
@@ -137,7 +122,7 @@ test("verified enrolled students can check in with a QR payload; invalid and dup
   await expect(panel.locator("[data-attendance-student-status]")).toContainText("Check-in recorded");
   expect(await page.evaluate(() => window.__attendanceCalls.filter(call => call.name === "check_in_campus_class_attendance").length)).toBe(1);
 
-  alreadyRecorded = true;
+  await page.evaluate(() => { window.__alreadyRecorded = true; });
   await input.fill(payload);
   await panel.getByRole("button", { name: "Submit check-in" }).click();
   await expect(panel.locator("[data-attendance-student-status]")).toContainText("already checked in");
@@ -152,7 +137,7 @@ test("verified enrolled students can check in with a QR payload; invalid and dup
 test("student scanner offers a paste-code fallback when built-in QR camera support is unavailable", async ({ page }) => {
   await bootAttendance(page, { can_access: true, can_manage: false });
   await page.evaluate(() => {
-    delete window.BarcodeDetector;
+    window.BarcodeDetector = undefined;
     window.CampusShieldAttendance.mount("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "student");
   });
   const panel = page.locator("[data-campus-attendance]");
