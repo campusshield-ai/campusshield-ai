@@ -300,7 +300,7 @@ assert.doesNotThrow(() => new Function(config), "Supabase config parses");
 
 assert.match(config, /window\.CAMPUSSHIELD_SUPABASE_CONFIG\s*=/);
 assert.match(config, /https:\/\/fvgtnujjnvdkhzqqcaqe\.supabase\.co/);
-assert.match(config, /campusshield-ai-staging-preview\.vercel\.app/, "stable Vercel production hostname is explicitly recognized");
+assert.doesNotMatch(config, /campusshield-ai-staging-preview\.vercel\.app/, "staging hostname must not be in the production host allowlist");
 assert.match(config, /campusshield-ai\.github\.io/, "GitHub Pages production hostname remains recognized");
 
 function configuredSupabaseProject(hostname) {
@@ -309,8 +309,14 @@ function configuredSupabaseProject(hostname) {
   return new URL(fakeWindow.CAMPUSSHIELD_SUPABASE_CONFIG.url).hostname;
 }
 assert.equal(configuredSupabaseProject("campusshield-ai.github.io"), "fvgtnujjnvdkhzqqcaqe.supabase.co");
-assert.equal(configuredSupabaseProject("campusshield-ai-staging-preview.vercel.app"), "fvgtnujjnvdkhzqqcaqe.supabase.co");
+assert.equal(configuredSupabaseProject("campusshield-ai-staging-preview.vercel.app"), "hywcpnoqqhxvujnimhxl.supabase.co", "the stable Vercel staging hostname must use Staging");
 assert.equal(configuredSupabaseProject("campusshield-ai-staging-preview-7cvp4w3qe.vercel.app"), "hywcpnoqqhxvujnimhxl.supabase.co", "unique Vercel previews remain isolated on Staging");
+// Production's legacy identity table intentionally has no university_id column.
+// The admin identity review UI only needs the institution label stored on the record.
+const studentIdentityRead = appScript.match(/\.from\('student_identity_verifications'\)\s*\.select\('([^']+)'\)/);
+assert.ok(studentIdentityRead, "student identity review query remains present");
+assert.ok(studentIdentityRead[1].split(',').map((field) => field.trim()).includes("institution_name"), "student identity review reads the submitted institution");
+assert.ok(!studentIdentityRead[1].split(',').map((field) => field.trim()).includes("university_id"), "student identity review does not request a column absent from Production");
 assert.equal(configuredSupabaseProject("localhost"), "hywcpnoqqhxvujnimhxl.supabase.co", "local development remains isolated on Staging");
 
 const supabasePrimarySdkTag = htmlMarkup.indexOf('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>');

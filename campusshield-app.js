@@ -4139,7 +4139,7 @@
       if (studentIds.length) {
         const {data:identityRows, error:identityError} = await backend.client
           .from('student_identity_verifications')
-          .select('user_id, institution_name, student_number, university_id, status, rejection_reason, object_path')
+          .select('user_id, institution_name, student_number, status, rejection_reason, object_path')
           .in('user_id', studentIds);
         if (identityError) throw identityError;
         identityByUser = new Map((identityRows || []).map(identity => [identity.user_id, identity]));
