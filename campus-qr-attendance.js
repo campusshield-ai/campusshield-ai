@@ -215,8 +215,10 @@
         const token = await backend().issueCampusClassAttendanceQrToken(sessionId);
         if (!token || !token.qr_token || !token.expires_at) throw new Error("The QR service did not return a valid token.");
         const url = new URL(window.location.href);
-        url.searchParams.set("attendance_session", sessionId);
-        url.searchParams.set("attendance_token", token.qr_token);
+        url.hash = new URLSearchParams({
+          attendance_session: sessionId,
+          attendance_token: token.qr_token
+        }).toString();
         const qr = window.qrcode(0, "M");
         qr.addData(url.toString());
         qr.make();
@@ -395,8 +397,9 @@
     try {
       const url = new URL(rawValue, window.location.href);
       if (url.origin !== window.location.origin) return null;
-      const sessionId = url.searchParams.get("attendance_session");
-      const token = url.searchParams.get("attendance_token");
+      const qrParams = new URLSearchParams(url.hash.replace(/^#/, ""));
+      const sessionId = qrParams.get("attendance_session");
+      const token = qrParams.get("attendance_token");
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sessionId || "")) return null;
       if (!/^[0-9a-f]{64}$/.test(token || "")) return null;
       return { sessionId, token };
@@ -440,16 +443,20 @@
 
   function captureAttendanceDeepLink() {
     const originalUrl = new URL(window.location.href);
-    const sessionId = originalUrl.searchParams.get("attendance_session");
-    const token = originalUrl.searchParams.get("attendance_token");
+    const qrParams = new URLSearchParams(originalUrl.hash.replace(/^#/, ""));
+    const sessionId = qrParams.get("attendance_session");
+    const token = qrParams.get("attendance_token");
     if (!sessionId && !token) return;
-    originalUrl.searchParams.delete("attendance_session");
-    originalUrl.searchParams.delete("attendance_token");
+    qrParams.delete("attendance_session");
+    qrParams.delete("attendance_token");
+    originalUrl.hash = qrParams.toString();
     window.history.replaceState(window.history.state, "", originalUrl.pathname + originalUrl.search + originalUrl.hash);
     const credentials = parseAttendanceQr((() => {
       const rebuilt = new URL(window.location.href);
-      rebuilt.searchParams.set("attendance_session", sessionId || "");
-      rebuilt.searchParams.set("attendance_token", token || "");
+      rebuilt.hash = new URLSearchParams({
+        attendance_session: sessionId || "",
+        attendance_token: token || ""
+      }).toString();
       return rebuilt.toString();
     })());
     pendingAttendanceLink = credentials || { invalid: true };
