@@ -90,6 +90,10 @@ assert.equal((migration.match(/^as $$/gm) || []).length, (migration.match(/^$;$/
   "Each PL/pgSQL function must open and close its dollar-quoted body");
 
 // Production must have the block lookup used by discovery and intro privacy checks.
+assert.match(migration, /and not private\.is_campus_member_blocked\(n\.user_id,v_university\)/);
+assert.match(migration, /if private\.is_campus_member_blocked\(v_post\.user_id,v_university\) then/);
+assert.match(migration, /and not private\.is_campus_member_blocked\(a\.user_id,v_university\)/);
+assert.match(migration, /if private\.is_campus_member_blocked\(v_profile\.user_id,v_university\) then/);
 assert.match(migration, /create table if not exists public\.campus_member_blocks/);
 assert.match(migration, /create policy campus_member_blocks_deny_direct_access/);
 assert.match(migration, /create or replace function private\.is_campus_member_blocked/);
