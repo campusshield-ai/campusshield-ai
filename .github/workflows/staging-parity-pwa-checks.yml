@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - staging/preview
+      - fix/staging-opportunity-bookmark-rls-pwa-20261108
 
 permissions:
   contents: read
