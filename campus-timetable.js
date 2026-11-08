@@ -18,6 +18,7 @@
   let selectedDate = new Date();
   let weekStart = startOfWeek(new Date());
   let loading = false;
+  let loadSequence = 0;
   let reminderTimer = null;
   const notifiedReminderKeys = new Set();
   const CALENDAR_EXPORT_DAYS = 90;
@@ -217,6 +218,10 @@
   }
 
   function clearPrivateTimetable() {
+    loadSequence += 1;
+    loading = false;
+    const refreshButton = byId("campus-timetable-refresh");
+    if (refreshButton) refreshButton.disabled = false;
     timetableItems = [];
     publishedCourses = [];
     campusEvents = [];
@@ -421,6 +426,8 @@
 
   async function load(options = {}) {
     if (loading) return;
+    const requestId = ++loadSequence;
+    const isCurrentRequest = () => requestId === loadSequence;
     loading = true;
     timetableLoaded = false;
     notifyDashboard("campusshield:timetable-loading");
@@ -429,17 +436,25 @@
     status("Loading your private timetable…");
     try {
       const api = backend();
-      campusContext = await api.getMyCampusContext();
+      const nextCampusContext = await api.getMyCampusContext();
+      if (!isCurrentRequest()) return;
       const items = await api.listMyTimetableItems();
-      timetableItems = Array.isArray(items) ? items : [];
-      publishedCourses = [];
-      campusEvents = [];
+      if (!isCurrentRequest()) return;
 
-      if (campusContext?.university_id) {
-        try { publishedCourses = await api.listCampusCourses(); } catch (_) { publishedCourses = []; }
-        try { campusEvents = await api.listCampusEvents(); } catch (_) { campusEvents = []; }
+      let nextPublishedCourses = [];
+      let nextCampusEvents = [];
+      if (nextCampusContext?.university_id) {
+        try { nextPublishedCourses = await api.listCampusCourses(); } catch (_) { nextPublishedCourses = []; }
+        if (!isCurrentRequest()) return;
+        try { nextCampusEvents = await api.listCampusEvents(); } catch (_) { nextCampusEvents = []; }
+        if (!isCurrentRequest()) return;
       }
 
+      // Apply fetched account data only when this request still belongs to the active profile.
+      campusContext = nextCampusContext;
+      timetableItems = Array.isArray(items) ? items : [];
+      publishedCourses = Array.isArray(nextPublishedCourses) ? nextPublishedCourses : [];
+      campusEvents = Array.isArray(nextCampusEvents) ? nextCampusEvents : [];
       setCourseOptions();
       timetableLoaded = true;
       renderAll();
@@ -450,6 +465,7 @@
       notifyDashboard();
       if (options.keepMessage && byId("campus-timetable-form-status")) formStatus(options.keepMessage);
     } catch (error) {
+      if (!isCurrentRequest()) return;
       timetableItems = [];
       publishedCourses = [];
       campusEvents = [];
@@ -462,8 +478,10 @@
         byId("campus-timetable-day-feed").innerHTML = '<div class="campus-timetable-empty"><strong>Timetable unavailable</strong><p>Sign in with an account eligible to use the private planner, then refresh this page.</p></div>';
       }
     } finally {
-      loading = false;
-      if (refreshButton) refreshButton.disabled = false;
+      if (isCurrentRequest()) {
+        loading = false;
+        if (refreshButton) refreshButton.disabled = false;
+      }
     }
   }
 
