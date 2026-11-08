@@ -5106,7 +5106,7 @@
       });
       $('campus-groups-feed').innerHTML = visibleGroups.length ? visibleGroups.map(function(group) {
         const isJoined = memberIds.has(group.id);
-        return '<article class="community-post">' +
+        return '<article class="community-post campus-live-marketplace-card" data-category="' + esc(listing.category || 'other') + '" data-status="' + esc(listing.status || 'published') + '" data-price="' + (listing.price_ngn == null ? '' : Number(listing.price_ngn)) + '" data-created-at="' + esc(listing.created_at || '') + '">' +
           '<div class="community-meta"><span class="tag open">' + esc(group.group_type.replaceAll('_',' ')) + '</span><span>·</span><strong>' + esc(group.course_id ? 'Course community' : (group.privacy === 'request_to_join' ? 'Request to join' : 'Campus group')) + '</strong></div>' +
           '<h3 class="community-post-title">' + esc(group.name) + '</h3>' +
           '<p class="community-post-body">' + esc(group.description || 'Campus group') + '</p>' +
@@ -5467,7 +5467,7 @@
     const status = String(item.status || 'published');
     const statusTag = status === 'published' ? 'Published' : status.charAt(0).toUpperCase() + status.slice(1);
     return `
-      <article class="panel">
+      <article class="panel campus-live-opportunity-card" data-category="${escapeHubHtml(item.category || 'other')}" data-deadline="${escapeHubHtml(item.deadline || '')}" data-created-at="${escapeHubHtml(item.created_at || '')}">
         <div class="panel-heading"><div><h3>${escapeHubHtml(item.title)}</h3><p class="muted">${escapeHubHtml(item.category.replaceAll('_',' '))} · ${escapeHubHtml(item.provider_name)}</p></div><span class="tag ${status === 'published' ? 'resolved' : 'open'}">${escapeHubHtml(statusTag)}</span></div>
         <p>${escapeHubHtml(item.description)}</p>
         ${item.eligibility ? `<p><strong>Eligibility:</strong> ${escapeHubHtml(item.eligibility)}</p>` : ''}

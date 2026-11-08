@@ -55,3 +55,23 @@ html[data-theme="dark"] .theme-toggle{background:#19333a;color:#a8f0dc;border-co
 @media(prefers-reduced-motion:reduce){.student-shortcut-card,.global-search-input{transition:none}}
 
 /* Final responsive overrides live at the end of index.html to win against legacy inline styles. */
+
+
+/* Dashboard shortcuts and compact campus discovery filters. */
+.campus-dashboard-quicklinks{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:16px 0 0;padding:13px 15px;border:1px solid var(--cs-border,#e2eae6);border-radius:15px;background:var(--cs-surface-soft,#f4f8f6)}
+.campus-dashboard-quicklinks-label{margin-right:4px;color:var(--cs-muted,#71828a);font-size:9px;font-weight:900;letter-spacing:.12em}
+.campus-dashboard-quicklink{min-height:38px;padding:8px 13px;border:1px solid var(--cs-border,#dce9e4);border-radius:10px;background:var(--cs-surface,#fff);color:var(--cs-text,#17313a);font-size:11px;font-weight:800}
+.campus-dashboard-quicklink:hover{border-color:#74cbb4;color:#126b59}
+.campus-dashboard-quicklink:focus-visible{outline:3px solid #61cdb5;outline-offset:3px}
+.campus-live-discovery-toolbar{display:grid;grid-template-columns:minmax(170px,2fr) repeat(3,minmax(120px,1fr));gap:12px;align-items:end;margin:14px 0 8px;padding:14px;border:1px solid var(--cs-border,#e2eae6);border-radius:15px;background:var(--cs-surface-soft,#f4f8f6)}
+.campus-live-discovery-toolbar .field{min-width:0;margin:0}
+.campus-live-discovery-toolbar label{display:block;margin-bottom:6px;color:var(--cs-text,#17313a);font-size:11px;font-weight:800}
+.campus-live-discovery-toolbar input,.campus-live-discovery-toolbar select{width:100%;min-height:40px;padding:9px 11px;border:1px solid var(--cs-border,#dce5e1);border-radius:9px;background:var(--cs-surface,#fff);color:var(--cs-text,#17313a);font:inherit;font-size:12px}
+.campus-live-discovery-clear{min-height:40px;padding:8px 12px;border:1px solid var(--cs-border,#dce5e1);border-radius:9px;background:var(--cs-surface,#fff);color:var(--cs-text,#17313a);font-size:11px;font-weight:800}
+.campus-live-discovery-results{margin:0 0 12px;color:var(--cs-muted,#71828a);font-size:11px}
+.campus-live-discovery-feed{display:flex;flex-direction:column;gap:12px;min-width:0}
+@media(max-width:760px){.campus-live-discovery-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.campus-dashboard-quicklinks{gap:7px;padding:11px}.campus-dashboard-quicklinks-label{flex-basis:100%}.campus-dashboard-quicklink{flex:1 1 calc(50% - 7px);min-width:0}.campus-live-discovery-toolbar{grid-template-columns:minmax(0,1fr);padding:11px;gap:9px}}
+html[data-theme="dark"] .campus-dashboard-quicklinks,html[data-theme="dark"] .campus-live-discovery-toolbar{background:var(--cs-surface-soft,#172f35);border-color:var(--cs-border,#294047)}
+html[data-theme="dark"] .campus-dashboard-quicklink,html[data-theme="dark"] .campus-live-discovery-clear,html[data-theme="dark"] .campus-live-discovery-toolbar input,html[data-theme="dark"] .campus-live-discovery-toolbar select{background:var(--cs-surface,#11262c);border-color:var(--cs-border,#294047);color:var(--cs-text,#e5f1ee)}
+@media(prefers-reduced-motion:reduce){.campus-dashboard-quicklink{transition:none}}
