@@ -1,0 +1,34 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+
+const read = path => readFileSync(new URL(path, import.meta.url), "utf8");
+const html = read("../index.html");
+const dashboard = read("../campus-dashboard-upgrade.js");
+const discovery = read("../campus-discovery-ui.js");
+const app = read("../campusshield-app.js");
+
+new vm.Script(dashboard, { filename: "campus-dashboard-upgrade.js" });
+new vm.Script(discovery, { filename: "campus-discovery-ui.js" });
+new vm.Script(app, { filename: "campusshield-app.js" });
+
+assert.match(html, /campus-discovery-ui\.js/);
+assert.match(dashboard, /getLiveCampusMatches/);
+assert.match(dashboard, /campus-marketplace-feed article/);
+assert.match(dashboard, /campus-opportunities-feed article/);
+assert.match(dashboard, /campus-volunteer-feed article/);
+assert.match(dashboard, /Alumni Connect/);
+assert.match(dashboard, /campus-dashboard-quicklinks/);
+
+for (const id of [
+  "campus-marketplace-search", "campus-marketplace-category-filter",
+  "campus-marketplace-status-filter", "campus-marketplace-sort",
+  "campus-marketplace-results", "campus-opportunities-search",
+  "campus-opportunities-category-filter", "campus-opportunities-sort",
+  "campus-opportunities-results"
+]) assert.ok(discovery.includes(id), "Missing discovery control: " + id);
+
+assert.match(app, /campus-live-marketplace-card/);
+assert.match(app, /campus-live-opportunity-card/);
+assert.match(discovery, /No new data requests are made/);
+console.log("Campus discovery usability smoke checks passed.");
