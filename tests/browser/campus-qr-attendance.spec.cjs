@@ -111,6 +111,8 @@ test("QR deep link removes the temporary credential from browser history after c
   await page.goto("/index.html?attendance_session=" + sessionId + "&attendance_token=" + token, {
     waitUntil: "domcontentloaded"
   });
+  await expect(page).not.toHaveURL(/attendance_token=/);
+  await expect(page).not.toHaveURL(/attendance_session=/);
   await page.evaluate(() => {
     document.getElementById("workspace").hidden = false;
     document.getElementById("workspace").style.display = "block";
