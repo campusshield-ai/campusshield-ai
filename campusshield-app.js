@@ -7993,6 +7993,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
 
       const {error} = await backend.client.auth.signOut();
       if (error) throw error;
+      window.dispatchEvent(new CustomEvent('campusshield:session-signed-out'));
       $('auth-password').value = '';
       currentProfile = null;
       showLogin('You have signed out.');
