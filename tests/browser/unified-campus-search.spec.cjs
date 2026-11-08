@@ -68,3 +68,76 @@ test("unified search finds campus spaces and currently rendered campus content",
   await expect(page.locator("html")).toHaveAttribute("data-marketplace-search-activated", "true");
   await expect(results).toBeHidden();
 });
+
+
+test("My Day renders the real private timetable snapshot, clears on sign-out and fits mobile", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    const workspace = document.getElementById("workspace");
+    if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
+    const login = document.getElementById("login-screen");
+    if (login) { login.hidden = true; login.style.display = "none"; }
+
+    const todayAt = hour => new Date(
+      new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), hour, 0, 0
+    ).toISOString();
+    window.CampusShieldBackend = {
+      isConfigured: true,
+      getMyCampusContext: async () => ({ university_id: "university-fixture" }),
+      listMyTimetableItems: async () => [
+        { id: "class-1", title: "Applied Mathematics", kind: "class", course_code: "MTH 201", location: "Lecture Hall A", starts_at: todayAt(9), ends_at: todayAt(10), completed: false },
+        { id: "task-1", title: "Submit lab report", kind: "assignment", course_code: "CSC 204", starts_at: todayAt(10), ends_at: null, completed: false }
+      ],
+      listCampusCourses: async () => [],
+      listCampusEvents: async () => [
+        { id: "event-1", title: "Faculty seminar", starts_at: todayAt(11), location: "Main Auditorium" }
+      ]
+    };
+    window.dispatchEvent(new CustomEvent("campusshield:profile-ready", {
+      detail: { role: "student" }
+    }));
+  });
+
+  const panel = page.locator("#campus-my-day");
+  await expect(panel).toBeVisible();
+  await expect(panel).toContainText("Applied Mathematics");
+  await expect(panel).toContainText("MTH 201");
+  await expect(panel).toContainText("Submit lab report");
+  await expect(panel).toContainText("Faculty seminar");
+  await expect(page.locator("#campus-my-day-summary")).toContainText("1 class");
+  await expect(page.locator("#campus-my-day-summary")).toContainText("1 task");
+  await expect(page.locator("#campus-my-day-summary")).toContainText("1 campus event");
+  await expect(panel.locator("[data-page='timetable']")).toHaveText("Open timetable");
+
+  await page.evaluate(() => window.dispatchEvent(new Event("campusshield:profile-cleared")));
+  await expect(panel).not.toContainText("Applied Mathematics");
+  await expect(panel).toContainText("Sign in to sync your day");
+
+  await page.evaluate(() => {
+    window.CampusShieldBackend.listMyTimetableItems = () => new Promise(resolve => {
+      window.__resolveStaleTimetable = resolve;
+    });
+    window.__staleTimetableLoad = window.CampusShieldTimetable.load();
+  });
+  await page.waitForFunction(() => typeof window.__resolveStaleTimetable === "function");
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("campusshield:profile-cleared"));
+    window.__resolveStaleTimetable([
+      { id: "stale-1", title: "Previous account private class", kind: "class", course_code: "OLD 100", starts_at: new Date().toISOString() }
+    ]);
+  });
+  await page.evaluate(async () => { await window.__staleTimetableLoad; });
+  const clearedSnapshot = await page.evaluate(() => window.CampusShieldTimetable.getTodaySnapshot());
+  expect(clearedSnapshot.loaded).toBe(false);
+  expect(clearedSnapshot.items).toHaveLength(0);
+  await expect(panel).not.toContainText("Previous account private class");
+  await expect(panel).toContainText("Sign in to sync your day");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const box = await panel.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(391);
+  const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(391);
+});

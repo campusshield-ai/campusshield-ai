@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - "index.html"
+      - "campus-dashboard-upgrade.js"
+      - "campus-dashboard-upgrade.css"
+      - "campus-timetable.js"
       - "help.html"
       - "campusshield-guide.css"
       - "campusshield-guide.js"
