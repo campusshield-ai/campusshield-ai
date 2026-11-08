@@ -47,7 +47,7 @@ a{color:var(--cs-primary-strong)}
 /* Main workspace, sidebar and mobile navigation. */
 #workspace .sidebar,#workspace #app-sidebar,.sidebar{
   background:linear-gradient(168deg,#071827 0%,#153A54 56%,#0B1F33 100%);
-  color:#E2E8F0;box-shadow:12px 0 36px rgba(7,31,40,.14)
+  color:#E2E8F0;box-shadow:12px 0 36px rgba(7,24,39,.14)
 }
 #workspace .brand-mark{background:var(--cs-seafoam);color:var(--cs-night)}
 #workspace .brand-copy strong{color:var(--cs-seafoam)}
@@ -191,32 +191,86 @@ html[data-theme="dark"] #workspace .campus-map-nearby-safety-distance{color:#14B
 /* Priority overrides for legacy hero treatments that used !important. */
 #login-screen .login-intro{
   background:
-    radial-gradient(circle at 82% 14%,rgba(129,229,208,.2),transparent 36%),
-    radial-gradient(circle at 15% 92%,rgba(10,126,131,.2),transparent 38%),
+    radial-gradient(circle at 82% 14%,rgba(20,184,166,.2),transparent 36%),
+    radial-gradient(circle at 15% 92%,rgba(15,118,110,.2),transparent 38%),
     linear-gradient(145deg,#071827 0%,#153A54 70%,#164E63 100%) !important;
 }
 #login-screen .login-brand span,#login-screen .login-points span{color:#14B8A6}
 #login-screen .eyebrow{color:#CCFBF1}
-#login-screen .login-feature-card{border-color:rgba(129,229,208,.34);background:linear-gradient(145deg,rgba(11,53,64,.9),rgba(7,31,40,.94)) !important}
+#login-screen .login-feature-card{border-color:rgba(20,184,166,.34);background:linear-gradient(145deg,rgba(21,58,84,.9),rgba(7,24,39,.94)) !important}
 #login-screen .auth-panel{border-color:#E2E8F0}
 #login-screen .auth-tabs button[aria-pressed="true"]{border-color:#B9DED6;background:linear-gradient(135deg,#FFFFFF,#CCFBF1);color:#134E4A}
 #workspace #page-dashboard .campus-dashboard-hero{
-  border-color:rgba(129,229,208,.3) !important;
-  background:radial-gradient(ellipse at 82% 10%,rgba(129,229,208,.2),transparent 36%),radial-gradient(ellipse at 8% 100%,rgba(10,126,131,.24),transparent 38%),linear-gradient(125deg,#071827 0%,#153A54 56%,#164E63 100%) !important;
-  box-shadow:0 24px 54px rgba(7,31,40,.2),inset 0 1px rgba(255,255,255,.08) !important;
+  border-color:rgba(20,184,166,.3) !important;
+  background:radial-gradient(ellipse at 82% 10%,rgba(20,184,166,.2),transparent 36%),radial-gradient(ellipse at 8% 100%,rgba(15,118,110,.24),transparent 38%),linear-gradient(125deg,#071827 0%,#153A54 56%,#164E63 100%) !important;
+  box-shadow:0 24px 54px rgba(7,24,39,.2),inset 0 1px rgba(255,255,255,.08) !important;
 }
 #workspace #page-dashboard .campus-dashboard-hero .hero-eyebrow{color:#CCFBF1 !important}
-#workspace #page-dashboard .campus-dashboard-hero .hero-eyebrow::before{background:#14B8A6 !important;box-shadow:0 0 18px rgba(129,229,208,.42) !important}
+#workspace #page-dashboard .campus-dashboard-hero .hero-eyebrow::before{background:#14B8A6 !important;box-shadow:0 0 18px rgba(20,184,166,.42) !important}
 #workspace #page-dashboard .campus-dashboard-hero .hero-actions .btn:not(.secondary){
-  border-color:#14B8A6 !important;background:linear-gradient(115deg,#14B8A6,#99F6E4) !important;color:#071827 !important;box-shadow:0 10px 24px rgba(129,229,208,.2) !important
+  border-color:#14B8A6 !important;background:linear-gradient(115deg,#14B8A6,#99F6E4) !important;color:#071827 !important;box-shadow:0 10px 24px rgba(20,184,166,.2) !important
 }
 #workspace #page-dashboard .campus-dashboard-hero::after{
-  background:linear-gradient(90deg,transparent 0%,rgba(129,229,208,.03) 24%,rgba(129,229,208,.19) 42%,rgba(231,255,248,.4) 49%,rgba(129,229,208,.16) 56%,transparent 100%) !important
+  background:linear-gradient(90deg,transparent 0%,rgba(20,184,166,.03) 24%,rgba(20,184,166,.19) 42%,rgba(231,255,248,.4) 49%,rgba(20,184,166,.16) 56%,transparent 100%) !important
 }
 
 
 /* Preserve ShieldMind's purpose-built dark-mode card gradient in the shared theme. */
-html[data-theme="dark"] #workspace #page-shieldmind .shieldmind-insights-panel {
-  border-color:#31536B;
+/* ShieldMind learning-insights module: use the same navy/teal identity. */
+#page-shieldmind .shieldmind-insights-panel {
+  border-color:#E2E8F0;
+  background:linear-gradient(145deg,#FFFFFF,#F0FDFA);
+  box-shadow:0 10px 28px rgba(11,31,51,.07);
+}
+#page-shieldmind .shieldmind-insights-eyebrow { color:#0F766E; }
+#page-shieldmind .shieldmind-insights-heading h2,
+#page-shieldmind .shieldmind-insights-metric strong { color:#142536; }
+#page-shieldmind .shieldmind-insights-heading p,
+#page-shieldmind .shieldmind-insights-metric span,
+#page-shieldmind .shieldmind-insights-topic-detail,
+#page-shieldmind .shieldmind-insights-empty,
+#page-shieldmind .shieldmind-insights-status { color:#64748B; }
+#page-shieldmind .shieldmind-insights-metric,
+#page-shieldmind .shieldmind-insights-topics,
+#page-shieldmind .shieldmind-insights-recommendation {
+  border-color:#E2E8F0;
+  background:rgba(255,255,255,.9);
+}
+#page-shieldmind .shieldmind-insights-topics h3,
+#page-shieldmind .shieldmind-insights-recommendation h3,
+#page-shieldmind .shieldmind-insights-topic-name,
+#page-shieldmind .shieldmind-insights-topic-score { color:#164E63; }
+#page-shieldmind .shieldmind-insights-progress { background:#CCFBF1; }
+#page-shieldmind .shieldmind-insights-progress span { background:linear-gradient(90deg,#0F766E,#14B8A6); }
+#page-shieldmind .shieldmind-insights-recommendation {
+  background:linear-gradient(145deg,#ECFEFF,#CCFBF1);
+}
+#page-shieldmind .shieldmind-insights-recommendation strong { color:#134E4A; }
+#page-shieldmind .shieldmind-insights-recommendation p { color:#475569; }
+#page-shieldmind .shieldmind-insights-status[data-state="error"] { color:#B91C1C; }
+
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-panel {
+  border-color:#2B475C;
   background:linear-gradient(145deg,#112C43,#0D243A);
+}
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-heading h2,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-metric strong,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topic-name,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topic-score,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-recommendation strong { color:#E2E8F0; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-heading p,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-metric span,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topic-detail,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-recommendation p,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-empty,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-status { color:#94A3B8; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-metric,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topics,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-recommendation {
+  border-color:#2B475C;
+  background:rgba(11,31,51,.88);
+}
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-progress { background:#123A48; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-recommendation {
+  background:linear-gradient(145deg,#123A48,#102B46);
 }
