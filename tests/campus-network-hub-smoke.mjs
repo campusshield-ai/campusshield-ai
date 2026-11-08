@@ -74,7 +74,7 @@ assert.doesNotMatch(app, /\.from\(["']campus_(network_posts|network_applications
   "Campus Network private tables must not be queried directly from the browser");
 assert.match(app, /campusNetworkVerified/);
 assert.match(app, /visibility==='network'/);
-assert.match(app, /p_visibility:\$\(['"]campus-(?:volunteer|startup)-visibility['"]\)\.value/);
+assert.match(app, /p_visibility:\$\(prefix\+'-visibility'\)\.value/);
 assert.match(app, /p_scope:scope/);
 assert.match(app, /page === 'campus-network'\) loadCampusNetworkPage/);
 assert.match(app, /'campus-network':'Campus Network'/);
@@ -91,6 +91,13 @@ for (const table of [
 assert.match(migration, /revoke all on table[\s\S]*from anon, authenticated/);
 assert.match(migration, /grant execute on function public\.list_campus_network_posts/);
 assert.match(migration, /grant execute on function public\.list_campus_alumni_directory/);
+assert.match(app, /list_my_campus_network_posts/);
+assert.match(app, /function renderCampusNetworkMyPosts/);
+assert.match(migration, /create or replace function public\.list_my_campus_network_posts/);
+assert.match(migration, /grant execute on function public\.list_my_campus_network_posts/);
+for (const id of ["campus-volunteer-my-posts", "campus-startup-my-posts"]) {
+  assert.match(html, new RegExp('id="' + id + '"'), "Missing own-post tracker: " + id);
+}
 assert.match(migration, /owner_profile\.verification_status='verified'/);
 assert.match(migration, /cm\.membership_status='active' and cm\.verification_status='verified'/);
 assert.match(migration, /p_scope='network' and n\.visibility='network'/);
