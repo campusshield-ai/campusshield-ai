@@ -5530,7 +5530,7 @@
     feed.innerHTML=rows.length?rows.map(item=>{
       const categoryLabel=String(item.category||'other').replaceAll('_',' ');
       const price=item.price_ngn==null?'Price not listed':'₦'+Number(item.price_ngn).toLocaleString('en-NG');
-      return '<article class="community-post campus-marketplace-card" data-category="'+esc(item.category||'other')+'" data-status="'+esc(item.status||'published')+'" data-price="'+(item.price_ngn==null?'':Number(item.price_ngn))+'" data-created-at="'+esc(item.created_at||'')+'">'+
+      return '<article class="community-post campus-marketplace-card campus-live-marketplace-card" data-category="'+esc(item.category||'other')+'" data-status="'+esc(item.status||'published')+'" data-price="'+(item.price_ngn==null?'':Number(item.price_ngn))+'" data-created-at="'+esc(item.created_at||'')+'">'+
         '<div class="community-meta"><span class="tag open">'+esc(categoryLabel)+'</span><span>·</span><strong>'+(item.status==='sold'?'Sold':'Available')+'</strong></div>'+
         '<h3 class="community-post-title">'+esc(item.title||'Campus listing')+'</h3>'+
         '<p class="community-post-body">'+esc(item.description||'')+'</p>'+
