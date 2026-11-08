@@ -5598,7 +5598,7 @@
   async function loadCampusClassroomsPage() {
     const status = $('campus-classrooms-status');
     const feed = $('campus-classrooms-feed');
-    const classroomCreateAccess = ['teacher','admin'].includes(currentProfile?.role) && hasVerifiedCampusStaffMembership();
+    const classroomCreateAccess = currentProfile?.role === 'teacher' && hasVerifiedCampusStaffMembership();
     $('classroom-create-panel').hidden = !classroomCreateAccess;
     $('classroom-join-panel').hidden = !isStudentAccount();
     if (!hasVerifiedCampusStaffMembership()) {
