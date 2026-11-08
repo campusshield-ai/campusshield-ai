@@ -227,7 +227,7 @@ begin
       where siv.user_id=n.user_id and siv.confirmed_fraud=true
         and siv.fraud_lock_at is not null and now()>=siv.fraud_lock_at
     )
-    and (n.university_id<>v_university or not private.is_campus_member_blocked(n.user_id,v_university))
+    and not private.is_campus_member_blocked(n.user_id,v_university)
     and (v_query='' or n.title ilike '%'||v_query||'%' or n.description ilike '%'||v_query||'%'
          or n.category ilike '%'||v_query||'%' or array_to_string(n.skills,' ') ilike '%'||v_query||'%')
   order by n.created_at desc
@@ -284,8 +284,7 @@ begin
   if v_post.visibility='campus' and v_post.university_id<>v_university then
     raise exception 'This post is limited to its own university.' using errcode='42501';
   end if;
-  if v_post.university_id=v_university
-     and private.is_campus_member_blocked(v_post.user_id,v_university) then
+  if private.is_campus_member_blocked(v_post.user_id,v_university) then
     raise exception 'This connection is unavailable.' using errcode='42501';
   end if;
   insert into public.campus_network_applications(post_id,university_id,applicant_id,note)
@@ -468,6 +467,7 @@ begin
     and exists(select 1 from public.campus_memberships cm
       where cm.user_id=a.user_id and cm.university_id=a.university_id
         and cm.membership_status='active' and cm.verification_status='verified')
+    and not private.is_campus_member_blocked(a.user_id,v_university)
     and (v_query='' or a.headline ilike '%'||v_query||'%' or a.programme ilike '%'||v_query||'%'
          or a.bio ilike '%'||v_query||'%' or coalesce(cp.username,'') ilike '%'||v_query||'%'
          or array_to_string(a.skills,' ') ilike '%'||v_query||'%')
@@ -539,7 +539,7 @@ begin
     raise exception 'This alumni profile is not available in your network.' using errcode='42501';
   end if;
   if v_profile.user_id=v_user then raise exception 'You cannot request an introduction to yourself.' using errcode='22023'; end if;
-  if v_profile.university_id=v_university and private.is_campus_member_blocked(v_profile.user_id,v_university) then
+  if private.is_campus_member_blocked(v_profile.user_id,v_university) then
     raise exception 'This connection is unavailable.' using errcode='42501';
   end if;
   insert into public.campus_alumni_intro_requests(alumni_user_id,alumni_university_id,requester_id,note)
