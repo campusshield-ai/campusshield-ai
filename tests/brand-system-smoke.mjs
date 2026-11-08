@@ -41,18 +41,18 @@ assert.equal(manifest.background_color, "#F4F7FA", "PWA canvas matches the websi
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
   icon.type === "image/svg+xml"), "PWA uses the scalable branded SVG icon");
 
-assert.match(serviceWorker, /campusshield-offline-v3/, "Offline cache version is incremented");
+assert.match(serviceWorker, /campusshield-offline-v4/, "Offline cache version is incremented");
 assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
   serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)"),
   "Offline fallback and shared brand stylesheet are both cached");
 
-assert.ok(iconGenerator.includes("const background = [11, 31, 51, 255];") &&
-  iconGenerator.includes("const shieldColor = [20, 184, 166, 255];"),
-  "The PWA icon generator uses the new navy and teal colours");
+assert.ok(iconGenerator.includes("const background = [21, 128, 61, 255];") &&
+  iconGenerator.includes("const shieldColor = [255, 255, 255, 255];"),
+  "The PWA icon generator uses the green and white logo colours");
 
 for (const asset of ["icons/campusshield.svg","assets/campusshield-logo.svg"]) {
   const svg = read(asset);
-  assert.ok(svg.includes("#0B1F33") && svg.includes("#14B8A6"), asset + " matches the official palette");
+  assert.ok(svg.includes("#15803D") && svg.includes("#FFFFFF"), asset + " uses the official green logo treatment");
 }
 
 for (const [path,width,height] of [
@@ -71,4 +71,4 @@ assert.ok(read("index.html").indexOf("campusshield-brand-system.css") >
   read("index.html").indexOf("campusshield-guide.css"),
   "The shared brand override loads after existing workspace styles");
 
-console.log("CampusShield Midnight Navy + Premium Teal brand-system checks passed.");
+console.log("CampusShield Midnight Navy + Premium Teal and green-logo checks passed.");
