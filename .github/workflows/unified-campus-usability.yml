@@ -6,6 +6,7 @@ on:
     paths:
       - "index.html"
       - "campus-dashboard-upgrade.js"
+      - "campus-timetable.js"
       - "campus-dashboard-upgrade.css"
       - "campus-discovery-ui.js"
       - "campusshield-app.js"
@@ -17,6 +18,7 @@ on:
     paths:
       - "index.html"
       - "campus-dashboard-upgrade.js"
+      - "campus-timetable.js"
       - "campus-dashboard-upgrade.css"
       - "campus-discovery-ui.js"
       - "campusshield-app.js"
@@ -38,6 +40,7 @@ jobs:
       - name: Validate JavaScript syntax
         run: |
           node --check campus-dashboard-upgrade.js
+          node --check campus-timetable.js
           node --check campus-discovery-ui.js
           node --check campusshield-app.js
       - name: Verify campus discovery integration
