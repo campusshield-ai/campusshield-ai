@@ -287,8 +287,11 @@
     try {
       const roster = asRows(await backend().listCampusClassAttendanceRoster(sessionId));
       const quote = value => {
-        const text = String(value == null ? "" : value).replace(/[\\r\\n]+/g, " ");
-        const safe = /^[\\t ]*[=+\\-@]/.test(text) ? "'" + text : text;
+        const text = String(value == null ? "" : value)
+          .replaceAll(String.fromCharCode(13), " ")
+          .replaceAll(String.fromCharCode(10), " ");
+        const first = text.trimStart().charAt(0);
+        const safe = ["=", "+", "-", "@"].includes(first) ? "'" + text : text;
         return '"' + safe.replace(/"/g, '""') + '"';
       };
       const csv = [
