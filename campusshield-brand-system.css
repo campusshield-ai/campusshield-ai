@@ -12,7 +12,7 @@
   --cs-seafoam-soft:#CCFBF1;
   --cs-lime:#14B8A6;
   --cs-ink:#142536;
-  --cs-muted:#64748B;
+  --cs-muted:#475569;
   --cs-canvas:#F4F7FA;
   --cs-card:#FFFFFF;
   --cs-line:#E2E8F0;
@@ -229,7 +229,7 @@ html[data-theme="dark"] #workspace .campus-map-nearby-safety-distance{color:#14B
 #page-shieldmind .shieldmind-insights-metric span,
 #page-shieldmind .shieldmind-insights-topic-detail,
 #page-shieldmind .shieldmind-insights-empty,
-#page-shieldmind .shieldmind-insights-status { color:#64748B; }
+#page-shieldmind .shieldmind-insights-status { color:#475569; }
 #page-shieldmind .shieldmind-insights-metric,
 #page-shieldmind .shieldmind-insights-topics,
 #page-shieldmind .shieldmind-insights-recommendation {
@@ -251,7 +251,8 @@ html[data-theme="dark"] #workspace .campus-map-nearby-safety-distance{color:#14B
 
 html[data-theme="dark"] #page-shieldmind .shieldmind-insights-panel {
   border-color:#2B475C;
-  background:linear-gradient(145deg,#112C43,#0D243A);
+  background-color:#102B46;
+  background-image:linear-gradient(145deg,#112C43,#0D243A);
 }
 html[data-theme="dark"] #page-shieldmind .shieldmind-insights-heading h2,
 html[data-theme="dark"] #page-shieldmind .shieldmind-insights-metric strong,
