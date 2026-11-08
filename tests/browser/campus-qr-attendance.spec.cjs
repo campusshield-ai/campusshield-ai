@@ -83,6 +83,7 @@ test("verified staff can create sessions, rotate QR, inspect roster and close ch
   await expect.poll(() => page.evaluate(() => window.__attendanceState.manualUpdates.length)).toBe(1);
   expect(await page.evaluate(() => window.__attendanceState.manualUpdates[0].status)).toBe("late");
   expect(await page.evaluate(() => window.__attendanceState.manualUpdates[0].reason)).toBe("Lecturer verified the late arrival.");
+  await expect(panel).toContainText("Attendance updated. Your reason is saved in the audit history.");
 
   page.on("dialog", dialog => dialog.accept());
   await panel.getByRole("button", { name: "Close check-in" }).click();
