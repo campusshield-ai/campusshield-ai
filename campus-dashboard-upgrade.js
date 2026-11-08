@@ -93,7 +93,7 @@
       if (!visibleDestination({page:source.page})) return;
       document.querySelectorAll(source.selector).forEach(element => {
         if (element.hidden || element.closest("[hidden]")) return;
-        const body = String(element.innerText || element.textContent || "").replace(/\\s+/g, " ").trim();
+        const body = String(element.innerText || element.textContent || "").replace(/\s+/g, " ").trim();
         if (!body || !body.toLocaleLowerCase().includes(query)) return;
         const heading = element.querySelector("h2,h3,h4,[data-search-title]");
         const title = String(heading?.textContent || body).trim().slice(0, 90);
