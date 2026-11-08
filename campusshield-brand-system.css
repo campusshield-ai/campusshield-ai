@@ -184,3 +184,29 @@ html[data-theme="dark"] #workspace .campus-map-nearby-safety{border-color:#31565
 html[data-theme="dark"] #workspace .campus-map-nearby-safety-heading strong,html[data-theme="dark"] #workspace .campus-map-nearby-safety-copy strong{color:#DDF4EE}
 html[data-theme="dark"] #workspace .campus-map-nearby-safety-distance{color:#81E5D0}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+
+/* Priority overrides for legacy hero treatments that used !important. */
+#login-screen .login-intro{
+  background:
+    radial-gradient(circle at 82% 14%,rgba(129,229,208,.2),transparent 36%),
+    radial-gradient(circle at 15% 92%,rgba(10,126,131,.2),transparent 38%),
+    linear-gradient(145deg,#071F28 0%,#0B3540 70%,#0B4650 100%) !important;
+}
+#login-screen .login-brand span,#login-screen .login-points span{color:#81E5D0}
+#login-screen .eyebrow{color:#B8F5E7}
+#login-screen .login-feature-card{border-color:rgba(129,229,208,.34);background:linear-gradient(145deg,rgba(11,53,64,.9),rgba(7,31,40,.94)) !important}
+#login-screen .auth-panel{border-color:#DCE9E6}
+#login-screen .auth-tabs button[aria-pressed="true"]{border-color:#B9DED6;background:linear-gradient(135deg,#FFFFFF,#E8F8F3);color:#174A4E}
+#workspace #page-dashboard .campus-dashboard-hero{
+  border-color:rgba(129,229,208,.3) !important;
+  background:radial-gradient(ellipse at 82% 10%,rgba(129,229,208,.2),transparent 36%),radial-gradient(ellipse at 8% 100%,rgba(10,126,131,.24),transparent 38%),linear-gradient(125deg,#071F28 0%,#0B3540 56%,#0B4A52 100%) !important;
+  box-shadow:0 24px 54px rgba(7,31,40,.2),inset 0 1px rgba(255,255,255,.08) !important;
+}
+#workspace #page-dashboard .campus-dashboard-hero .hero-eyebrow{color:#B8F5E7 !important}
+#workspace #page-dashboard .campus-dashboard-hero .hero-eyebrow::before{background:#81E5D0 !important;box-shadow:0 0 18px rgba(129,229,208,.42) !important}
+#workspace #page-dashboard .campus-dashboard-hero .hero-actions .btn:not(.secondary){
+  border-color:#81E5D0 !important;background:linear-gradient(115deg,#81E5D0,#A4EFDF) !important;color:#071F28 !important;box-shadow:0 10px 24px rgba(129,229,208,.2) !important
+}
+#workspace #page-dashboard .campus-dashboard-hero::after{
+  background:linear-gradient(90deg,transparent 0%,rgba(129,229,208,.03) 24%,rgba(129,229,208,.19) 42%,rgba(231,255,248,.4) 49%,rgba(129,229,208,.16) 56%,transparent 100%) !important
+}

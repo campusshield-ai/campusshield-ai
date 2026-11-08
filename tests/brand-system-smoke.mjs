@@ -18,6 +18,8 @@ assert.ok(brand.includes("--cs-primary:#0A7E83"), "The ocean-teal action colour 
 assert.ok(brand.includes("--cs-seafoam:#81E5D0"), "The seafoam accent is defined");
 assert.ok(brand.includes("--cs-lime:#D9EF78"), "The restrained lime highlight is defined");
 assert.match(brand, /html\[data-theme="dark"\]/, "A corresponding dark-mode palette is defined");
+assert.match(brand, /#login-screen \\.login-intro/, "The sign-in hero receives the Atlantic Emerald treatment");
+assert.match(brand, /#workspace #page-dashboard \\.campus-dashboard-hero/, "Legacy dashboard hero colours are explicitly overridden");
 assert.match(brand, /prefers-reduced-motion:\s*reduce/, "Reduced-motion preferences are respected");
 assert.match(brand, /campus-map-nearby-safety/, "CampusMap nearby-safety components share the new palette");
 assert.match(brand, /mobile-bottom-nav/, "Mobile navigation shares the new palette");
