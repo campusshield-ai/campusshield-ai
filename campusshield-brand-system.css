@@ -275,3 +275,9 @@ html[data-theme="dark"] #page-shieldmind .shieldmind-insights-progress { backgro
 html[data-theme="dark"] #page-shieldmind .shieldmind-insights-recommendation {
   background:linear-gradient(145deg,#123A48,#102B46);
 }
+
+/* CampusShield logo lockup uses a clear, accessible green identity. */
+:root{--cs-logo-green:#15803D;--cs-logo-green-bright:#22C55E;--cs-logo-white:#FFFFFF}
+#workspace .brand-mark,.shell .logo{background:#15803D;color:#FFFFFF}
+#workspace .brand-copy strong{color:#22C55E}
+#login-screen .login-brand span{color:#22C55E}
