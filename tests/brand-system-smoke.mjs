@@ -17,6 +17,7 @@ assert.ok(brand.includes("--cs-night:#071F28"), "The midnight blue-green foundat
 assert.ok(brand.includes("--cs-primary:#0A7E83"), "The ocean-teal action colour is defined");
 assert.ok(brand.includes("--cs-seafoam:#81E5D0"), "The seafoam accent is defined");
 assert.ok(brand.includes("--cs-lime:#D9EF78"), "The restrained lime highlight is defined");
+assert.ok(brand.includes("border-color:#27464C;background-color:#102D35;color:#E6F4F0"), "Generic dark panel colour preserves component-specific background gradients");
 assert.match(brand, /html\[data-theme="dark"\]/, "A corresponding dark-mode palette is defined");
 assert.ok(brand.includes("#login-screen .login-intro"), "The sign-in hero receives the Atlantic Emerald treatment");
 assert.ok(brand.includes("#workspace #page-dashboard .campus-dashboard-hero"), "Legacy dashboard hero colours are explicitly overridden");
