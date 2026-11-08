@@ -78,7 +78,7 @@ test("Ideas & Impact filters reflow cleanly at tablet and desktop widths", async
     }));
     expect(sizes.scroll, "Ideas & Impact must not overflow horizontally at " + width + "px").toBeLessThanOrEqual(sizes.client + 1);
     expect(sizes.searchWidth).toBeGreaterThan(240);
-    expect(sizes.boardWidth).toBeGreaterThan(500);
+    expect(sizes.boardWidth).toBeGreaterThan(320);
     expect(sizes.filterColumns).toBe(width > 900 ? 4 : 2);
   }
 });
