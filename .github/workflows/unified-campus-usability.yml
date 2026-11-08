@@ -23,6 +23,7 @@ on:
       - "supabase/migrations/20261108120238_campus_class_attendance_session_controls.sql"
       - "supabase/migrations/20261108130235_campus_attendance_admin_and_teacher_controls.sql"
       - "supabase/migrations/20261108131000_campus_attendance_manual_adjustments_with_reason.sql"
+      - "supabase/migrations/20261108131500_restrict_legacy_attendance_mark_rpc.sql"
       - "tests/campus-qr-attendance-migrations-smoke.mjs"
       - ".github/workflows/unified-campus-usability.yml"
   push:
@@ -41,6 +42,7 @@ on:
       - "supabase/migrations/20261108120238_campus_class_attendance_session_controls.sql"
       - "supabase/migrations/20261108130235_campus_attendance_admin_and_teacher_controls.sql"
       - "supabase/migrations/20261108131000_campus_attendance_manual_adjustments_with_reason.sql"
+      - "supabase/migrations/20261108131500_restrict_legacy_attendance_mark_rpc.sql"
       - "tests/campus-qr-attendance-migrations-smoke.mjs"
       - ".github/workflows/unified-campus-usability.yml"
       - "campus-dashboard-upgrade.js"
