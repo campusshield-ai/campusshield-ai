@@ -5,6 +5,12 @@ on:
     branches:
       - codex/fix-registration-confirmation-role
     paths:
+      - "campusshield-brand-system.css"
+      - "assets/campusshield-logo.svg"
+      - "icons/campusshield.svg"
+      - "icons/*.png"
+      - "manifest.webmanifest"
+      - "service-worker.js"
       - "index.html"
       - "campusshield-i18n.js"
       - "privacy.html"
@@ -16,6 +22,12 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "campusshield-brand-system.css"
+      - "assets/campusshield-logo.svg"
+      - "icons/campusshield.svg"
+      - "icons/*.png"
+      - "manifest.webmanifest"
+      - "service-worker.js"
       - "index.html"
       - "campusshield-i18n.js"
       - "privacy.html"

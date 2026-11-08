@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const output = join(root, "icons");
-const background = [13, 59, 46, 255];
-const shieldColor = [127, 217, 138, 255];
+const background = [21, 128, 61, 255];
+const shieldColor = [255, 255, 255, 255];
 const checkColor = shieldColor;
 const shieldOuter = [[256,92],[374,134],[374,232],[366,282],[344,338],[256,420],[168,338],[146,282],[138,232],[138,134]];
 const shieldInner = [[256,124],[344,155],[344,231],[337,273],[318,319],[256,378],[194,319],[175,273],[168,231],[168,155]];
