@@ -135,7 +135,7 @@
   let campusMarketplaceOwnRows = [];
   let campusOpportunityRows = [];
   let campusOpportunitySavedIds = new Set();
-  const campusNetworkState = { volunteers: [], startups: [], alumni: [], applications: [] };
+  const campusNetworkState = { volunteers: [], startups: [], alumni: [], applications: [], myVolunteers: [], myStartups: [] };
 
   // Push notification destinations are an allowlist, not arbitrary page names.
   const notificationDestinationPages = new Set(['timetable', 'campus-messages', 'noticeboard', 'profile-settings']);
@@ -5798,6 +5798,24 @@
     }
   }
 
+
+  function renderCampusNetworkMyPosts(type) {
+    const key=type==='volunteer'?'myVolunteers':'myStartups';
+    const feed=$(type==='volunteer'?'campus-volunteer-my-posts':'campus-startup-my-posts');
+    if(!feed)return;
+    const rows=campusNetworkState[key]||[];
+    feed.innerHTML=rows.length?rows.map(row=>{
+      const status=String(row.status||'pending');
+      const statusLabel=status==='pending'?'Awaiting campus review':status==='published'?'Published':status==='closed'?'Closed':status==='rejected'?'Rejected':status;
+      const visibility=row.visibility==='network'?'Cross-university opt-in':'My university only';
+      return '<article class="campus-network-card campus-network-own-post"><div class="campus-network-card-head"><div><h4>'+escapeHubHtml(row.title)+'</h4><p class="campus-network-meta">'+escapeHubHtml(String(row.category||'other').replaceAll('_',' '))+' · '+escapeHubHtml(visibility)+'</p></div><span class="campus-network-status" data-status="'+escapeHubHtml(status)+'">'+escapeHubHtml(statusLabel)+'</span></div>'+
+        '<p>'+escapeHubHtml(row.description)+'</p><p class="campus-network-meta">Submitted '+escapeHubHtml(dateText(row.created_at))+'</p>'+
+        (status==='pending'?'<p class="campus-network-pending-note">This post is private until campus staff approve it.</p>':'')+
+        (['pending','published'].includes(status)?'<button type="button" class="btn secondary" data-network-close-post="'+escapeHubHtml(row.id)+'">Close post</button>':'')+
+      '</article>';
+    }).join(''):'<div class="community-empty">You have not posted here yet. Your submissions and review status will appear in this section.</div>';
+  }
+
   function renderCampusNetworkPosts(type) {
     const key=type==='volunteer'?'volunteers':'startups';
     const feed=$(type==='volunteer'?'campus-volunteer-feed':'campus-startup-feed');
@@ -5831,10 +5849,16 @@
     const statusId=type==='volunteer'?'campus-volunteer-status':'campus-startup-status';
     $(statusId).textContent='Loading '+(type==='volunteer'?'volunteer':'startup')+' opportunities…';
     try {
-      const result=await window.CampusShieldBackend.client.rpc('list_campus_network_posts',{p_post_type:type,p_scope:scope,p_query:null});
-      if(result.error)throw result.error;
-      campusNetworkState[key]=result.data||[];
+      const [publicResult,ownResult]=await Promise.all([
+        window.CampusShieldBackend.client.rpc('list_campus_network_posts',{p_post_type:type,p_scope:scope,p_query:null}),
+        window.CampusShieldBackend.client.rpc('list_my_campus_network_posts',{p_post_type:type})
+      ]);
+      if(publicResult.error)throw publicResult.error;
+      if(ownResult.error)throw ownResult.error;
+      campusNetworkState[key]=publicResult.data||[];
+      campusNetworkState[type==='volunteer'?'myVolunteers':'myStartups']=ownResult.data||[];
       renderCampusNetworkPosts(type);
+      renderCampusNetworkMyPosts(type);
     } catch(error) {
       $(type==='volunteer'?'campus-volunteer-feed':'campus-startup-feed').innerHTML='<div class="community-empty">This section could not load. Refresh to try again.</div>';
       $(statusId).textContent=error?.message||'Campus Network posts are unavailable.';
