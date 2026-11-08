@@ -6,10 +6,10 @@ const core = read("../supabase/migrations/20261108115155_campus_class_qr_attenda
 const deny = read("../supabase/migrations/20261108115319_deny_direct_access_to_private_attendance_qr_tokens.sql");
 const controls = read("../supabase/migrations/20261108120238_campus_class_attendance_session_controls.sql");
 const roleControls = read("../supabase/migrations/20261108130235_campus_attendance_admin_and_teacher_controls.sql");
-const manualAdjustments = read("../supabase/migrations/20261108131000_campus_attendance_manual_adjustments_with_reason.sql");
-const legacyRpcLock = read("../supabase/migrations/20261108131500_restrict_legacy_attendance_mark_rpc.sql");
-const teacherAdminOnly = read("../supabase/migrations/20261108132000_restrict_attendance_controls_to_verified_teachers_and_admins.sql");
-const invokerWrapper = read("../supabase/migrations/20261108132500_wrap_manual_attendance_rpc_as_invoker.sql");
+const manualAdjustments = read("../supabase/migrations/20261108131050_campus_attendance_manual_adjustments_with_reason.sql");
+const legacyRpcLock = read("../supabase/migrations/20261108131234_restrict_legacy_attendance_mark_rpc.sql");
+const teacherAdminOnly = read("../supabase/migrations/20261108131346_restrict_attendance_controls_to_verified_teachers_and_admins.sql");
+const invokerWrapper = read("../supabase/migrations/20261108131736_wrap_manual_attendance_rpc_as_invoker.sql");
 const migrations = [core, deny, controls, roleControls, manualAdjustments, legacyRpcLock, teacherAdminOnly, invokerWrapper];
 const combined = migrations.join("\n");
 
