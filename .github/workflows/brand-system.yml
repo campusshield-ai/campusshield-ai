@@ -1,4 +1,4 @@
-name: CampusShield Atlantic Emerald brand system
+name: CampusShield Midnight Navy + Premium Teal brand system
 on:
   pull_request:
     branches: [staging/preview, main]
@@ -14,9 +14,13 @@ on:
       - "offline.html"
       - "student-life-preview.html"
       - "manifest.webmanifest"
+      - "service-worker.js"
       - "icons/campusshield.svg"
       - "assets/campusshield-logo.svg"
+      - "scripts/generate-pwa-icons.mjs"
       - "tests/brand-system-smoke.mjs"
+      - "tests/browser/shieldmind-learning-insights.spec.cjs"
+      - "playwright.config.cjs"
       - ".github/workflows/brand-system.yml"
   push:
     branches: [staging/preview]
@@ -24,6 +28,10 @@ on:
       - "campusshield-brand-system.css"
       - "index.html"
       - "manifest.webmanifest"
+      - "service-worker.js"
+      - "icons/campusshield.svg"
+      - "assets/campusshield-logo.svg"
+      - "scripts/generate-pwa-icons.mjs"
       - "tests/brand-system-smoke.mjs"
       - ".github/workflows/brand-system.yml"
 permissions:
@@ -37,7 +45,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Verify Atlantic Emerald brand system
+      - name: Verify Midnight Navy + Premium Teal brand system
         run: node tests/brand-system-smoke.mjs
       - name: Install Playwright browser-test dependency
         run: npm install --no-save --no-package-lock @playwright/test@1.64.1
