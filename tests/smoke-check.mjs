@@ -388,8 +388,9 @@ assert.match(html, /el\.id === 'events-services-nav' && \['noticeboard','helpdes
 assert.match(html, /id="nav-admin-heading" hidden/);
 assert.match(html, /function syncNavSectionHeadings\(\)/);
 assert.match(html, /!canManageIncidents\(\)/);
-assert.match(html, /\['teacher','security','admin'\]\.includes\(currentProfile\?\.role\)/);
-assert.match(html, /Teacher Classroom requires a verified campus staff account/);
+assert.match(appScript, /button\.hidden = !\(verified && hasVerifiedCampusStaffMembership\(\) && \['student','teacher'\]\.includes\(currentProfile\?\.role\)\)/);
+assert.match(appScript, /\(!verified \|\| !hasVerifiedCampusStaffMembership\(\) \|\| !\['student','teacher'\]\.includes\(currentProfile\.role\)\)/);
+assert.match(appScript, /Classrooms require a verified account and active verified university membership/);
 assert.doesNotMatch(html, /Campus Map &amp; Lost and Found/i);
 assert.match(html, /data-page="groups">Explore groups<\/button>/);
 assert.match(html, /data-page="noticeboard">Noticeboard<\/button>/);
