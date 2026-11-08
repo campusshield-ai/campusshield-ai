@@ -2,6 +2,45 @@
 -- All public reads and writes are routed through security-definer RPCs. No direct table access is granted.
 begin;
 
+-- Preserve existing peer-block privacy when the Campus Network alumni-introduction RPCs run.
+-- Production does not yet contain this staging-only prerequisite, so create it here as a
+-- private RPC-only table rather than allowing the feature migration to fail on a missing function.
+create table if not exists public.campus_member_blocks (
+  blocker_id uuid not null references public.profiles(id) on delete cascade,
+  blocked_id uuid not null references public.profiles(id) on delete cascade,
+  university_id uuid not null references public.campus_universities(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  constraint campus_member_blocks_pkey primary key (blocker_id, blocked_id, university_id),
+  constraint campus_member_blocks_not_self check (blocker_id <> blocked_id)
+);
+create index if not exists campus_member_blocks_blocked_idx
+  on public.campus_member_blocks(blocked_id, university_id);
+create index if not exists campus_member_blocks_university_idx
+  on public.campus_member_blocks(university_id, blocker_id, blocked_id);
+alter table public.campus_member_blocks enable row level security;
+revoke all on table public.campus_member_blocks from anon, authenticated;
+drop policy if exists campus_member_blocks_deny_direct_access on public.campus_member_blocks;
+create policy campus_member_blocks_deny_direct_access on public.campus_member_blocks
+  for all to public using (false) with check (false);
+
+create or replace function private.is_campus_member_blocked(p_other_user_id uuid, p_university_id uuid)
+returns boolean
+language sql stable security definer set search_path = ''
+as $
+  select case
+    when (select auth.uid()) is null then true
+    else exists (
+      select 1 from public.campus_member_blocks b
+      where b.university_id = p_university_id
+        and (
+          (b.blocker_id = (select auth.uid()) and b.blocked_id = p_other_user_id)
+          or (b.blocker_id = p_other_user_id and b.blocked_id = (select auth.uid()))
+        )
+    )
+  end;
+$;
+revoke all on function private.is_campus_member_blocked(uuid,uuid) from public, anon, authenticated;
+
 create table if not exists public.campus_network_posts (
   id uuid primary key default gen_random_uuid(),
   university_id uuid not null references public.campus_universities(id) on delete cascade,
