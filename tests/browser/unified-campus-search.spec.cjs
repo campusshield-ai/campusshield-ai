@@ -113,6 +113,25 @@ test("My Day renders the real private timetable snapshot, clears on sign-out and
   await expect(panel).not.toContainText("Applied Mathematics");
   await expect(panel).toContainText("Sign in to sync your day");
 
+  await page.evaluate(() => {
+    window.CampusShieldBackend.listMyTimetableItems = () => new Promise(resolve => {
+      window.__resolveStaleTimetable = resolve;
+    });
+    window.__staleTimetableLoad = window.CampusShieldTimetable.load();
+  });
+  await page.waitForFunction(() => typeof window.__resolveStaleTimetable === "function");
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("campusshield:profile-cleared"));
+    window.__resolveStaleTimetable([
+      { id: "stale-1", title: "Previous account private class", kind: "class", course_code: "OLD 100", starts_at: new Date().toISOString() }
+    ]);
+  });
+  await page.evaluate(async () => { await window.__staleTimetableLoad; });
+  const clearedSnapshot = await page.evaluate(() => window.CampusShieldTimetable.getTodaySnapshot());
+  expect(clearedSnapshot.loaded).toBe(false);
+  await expect(panel).not.toContainText("Previous account private class");
+  await expect(panel).toContainText("Sign in to sync your day");
+
   await page.setViewportSize({ width: 390, height: 844 });
   const box = await panel.boundingBox();
   expect(box).not.toBeNull();
