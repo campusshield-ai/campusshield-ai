@@ -12,6 +12,10 @@ on:
       - "campusshield-app.js"
       - "tests/discovery-ui-smoke.mjs"
       - "tests/browser/unified-campus-search.spec.cjs"
+      - "supabase/migrations/20261108115155_campus_class_qr_attendance.sql"
+      - "supabase/migrations/20261108115319_deny_direct_access_to_private_attendance_qr_tokens.sql"
+      - "supabase/migrations/20261108120238_campus_class_attendance_session_controls.sql"
+      - "tests/campus-qr-attendance-migrations-smoke.mjs"
       - ".github/workflows/unified-campus-usability.yml"
   push:
     branches: [main, "staging/preview"]
@@ -24,6 +28,10 @@ on:
       - "campusshield-app.js"
       - "tests/discovery-ui-smoke.mjs"
       - "tests/browser/unified-campus-search.spec.cjs"
+      - "supabase/migrations/20261108115155_campus_class_qr_attendance.sql"
+      - "supabase/migrations/20261108115319_deny_direct_access_to_private_attendance_qr_tokens.sql"
+      - "supabase/migrations/20261108120238_campus_class_attendance_session_controls.sql"
+      - "tests/campus-qr-attendance-migrations-smoke.mjs"
 
 permissions:
   contents: read
@@ -45,6 +53,8 @@ jobs:
           node --check campusshield-app.js
       - name: Verify campus discovery integration
         run: node tests/discovery-ui-smoke.mjs
+      - name: Verify QR attendance migration source
+        run: node tests/campus-qr-attendance-migrations-smoke.mjs
       - name: Install Playwright
         run: npm install --no-save --no-package-lock @playwright/test@1.64.1
       - name: Install Chromium
