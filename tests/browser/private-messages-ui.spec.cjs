@@ -61,7 +61,6 @@ test("Inbox filters and search remain available without exposing conversations b
   const buttons = page.locator("[data-campus-dm-filter]");
   await expect(buttons).toHaveCount(3);
   await expect(page.locator("#campus-dm-conversation-search")).toBeDisabled();
-  await expect(buttons).toHaveJSProperty("length", 3);
   const ariaStates = await buttons.evaluateAll((items) => items.map((item) => item.getAttribute("aria-pressed")));
   expect(ariaStates).toEqual(["true", "false", "false"]);
 });
