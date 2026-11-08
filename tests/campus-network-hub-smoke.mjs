@@ -84,6 +84,14 @@ assert.match(app, /p_scope:scope/);
 assert.match(app, /page === 'campus-network'\) loadCampusNetworkPage/);
 assert.match(app, /'campus-network':'Campus Network'/);
 
+// Guard PostgreSQL dollar-quoted function bodies; Node syntax checks cannot validate SQL.
+const sqlFunctionOpens = (migration.match(/\bas \$\$/g) || []).length;
+const sqlFunctionCloses = (migration.match(/^\$\$;$/gm) || []).length;
+assert.ok(sqlFunctionOpens > 0, "Campus Network migration must define SQL function bodies");
+assert.equal(sqlFunctionOpens, sqlFunctionCloses, "SQL function body delimiters must be balanced");
+assert.doesNotMatch(migration, /\bas \$(?!\$)/, "SQL function bodies must use paired dollar delimiters");
+assert.doesNotMatch(migration, /^\$;$/m, "SQL function body terminators must use paired dollar delimiters");
+
 // The alumni introduction workflow also depends on the reciprocal peer-block guard.
 assert.match(migration, /create table if not exists public\.campus_member_blocks/);
 assert.match(migration, /alter table public\.campus_member_blocks enable row level security/);
