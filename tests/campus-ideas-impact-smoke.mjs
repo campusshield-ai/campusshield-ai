@@ -58,18 +58,18 @@ assert.ok(js.indexOf('<section class="cii-board"') < js.indexOf('<details class=
 assert.match(js, /id="cii-compose-details"/, "The proposal form is collapsible by default");
 assert.match(js, /id="cii-clear-filters"/, "The board provides a clear filters action");
 assert.match(js, /id="cii-results-count"/, "The board announces how many ideas are currently shown");
-assert.match(js, /function clearFilters\\(\\)/, "Clear filters resets the search and all selectors");
+assert.match(js, /function clearFilters\(\)/, "Clear filters resets the search and all selectors");
 assert.match(js, /cii-problem-count/, "The problem statement has a live character counter");
 assert.match(js, /cii-solution-count/, "The proposed solution has a live character counter");
 assert.match(js, /cii-impact-count/, "The expected impact has a live character counter");
-assert.match(js, /create\\("details","cii-idea-details"\\)/, "Idea descriptions are tucked into accessible detail disclosures");
-assert.match(js, /select\\("id,user_id,university_id,creator_username/, "Idea rows include campus scope for staff-only campus moderation controls");
+assert.match(js, /create\("details","cii-idea-details"\)/, "Idea descriptions are tucked into accessible detail disclosures");
+assert.match(js, /select\("id,user_id,university_id,creator_username/, "Idea rows include campus scope for staff-only campus moderation controls");
 assert.match(js, /aria-pressed/, "Support state is exposed to assistive technology");
-assert.match(css, /\\.cii-filter-row\\{[\\s\\S]*?grid-template-columns:repeat\\(3,minmax\\(0,1fr\\)\\)/, "Desktop filter controls use a readable three-column layout");
-assert.match(css, /\\.cii-compose>summary/, "The proposal panel has a clear disclosure header");
-assert.match(css, /\\.cii-idea-details>summary/, "Idea details have an accessible disclosure row");
-assert.match(css, /@media\\(max-width:420px\\)/, "Filters simplify further on narrow phones");
-assert.match(css, /\\.cii-loading-mark/, "Loading state has a dedicated visual indicator");
+assert.match(css, /\.cii-filter-row\{[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, "Desktop filter controls use a readable three-column layout");
+assert.match(css, /\.cii-compose>summary/, "The proposal panel has a clear disclosure header");
+assert.match(css, /\.cii-idea-details>summary/, "Idea details have an accessible disclosure row");
+assert.match(css, /@media\(max-width:420px\)/, "Filters simplify further on narrow phones");
+assert.match(css, /\.cii-loading-mark/, "Loading state has a dedicated visual indicator");
 assert.match(js, /This proposal is visible only to its author and moderators at the originating university/,
   "Pending proposals remain private until campus approval");
 
