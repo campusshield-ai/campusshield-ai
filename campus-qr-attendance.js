@@ -208,10 +208,10 @@
     let refreshInFlight = false;
     const refresh = async () => {
       if (refreshInFlight || !currentQrSession || currentQrSession.sessionId !== sessionId) return;
-      refreshInFlight = true;
       const slot = display.querySelector("[data-attendance-qr-image]");
       const countdown = display.querySelector("[data-attendance-countdown]");
       if (!slot || !countdown) return;
+      refreshInFlight = true;
       countdown.textContent = "Refreshing secure QR…";
       try {
         const token = await backend().issueCampusClassAttendanceQrToken(sessionId);
