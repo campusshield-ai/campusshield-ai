@@ -42,6 +42,24 @@ assert.match(index, /campusshield-guide\.css/);
 assert.match(index, /campusshield-guide\.js/);
 assert.match(app, /guide:'How to use CampusShield'/);
 
+assert.match(index, /id="guide-walkthrough"[^>]*aria-labelledby="guide-walkthrough-title"/,
+  "The in-app guide contains an accessible interactive walkthrough area");
+for (const journey of ["setup","safety","discover","study","map","mobile"]) {
+  assert.ok(index.includes('data-guide-journey="' + journey + '"'), "Missing guided walkthrough: " + journey);
+}
+for (const id of ["guide-walkthrough-step-count","guide-walkthrough-completion","guide-walkthrough-progress","guide-walkthrough-step-title","guide-walkthrough-step-description","guide-walkthrough-open","guide-walkthrough-complete","guide-walkthrough-previous","guide-walkthrough-next"]) {
+  assert.ok(index.includes('id="' + id + '"'), "Missing guided walkthrough control: " + id);
+}
+assert.match(index, /id="guide-install-details"/, "The mobile walkthrough links to the actual install instructions");
+assert.match(guide, /const journeys = \[/, "The guide defines supported task walkthroughs");
+assert.match(guide, /function renderWalkthrough\(/, "The guide renders the selected walkthrough step");
+assert.match(guide, /completedByJourney/, "Completion progress is kept separately for each journey");
+assert.match(guide, /availablePage\(step\.page\)/, "Walkthrough links are shown only when the destination exists");
+assert.match(guide, /guide-install-details/, "The mobile walkthrough opens the real installation instructions");
+assert.match(css, /guide-walkthrough-layout/, "Guided walkthrough layout styling is loaded");
+assert.match(css, /@media\(max-width:480px\)/, "Guided walkthrough controls reflow on narrow phones");
+
+
 for (const token of [
   "Your first four steps",
   "Report an incident",
