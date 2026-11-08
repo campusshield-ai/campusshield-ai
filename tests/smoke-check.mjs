@@ -68,6 +68,16 @@ const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf
 const contactPage = await readFile(new URL("../contact.html", import.meta.url), "utf8");
 const inlineScripts = [...htmlMarkup.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
+
+assert.match(htmlMarkup, /<link rel="canonical" href="https:\/\/campusshield-ai\.github\.io\/campusshield-ai\/">/,
+  "the public homepage declares the official GitHub Pages canonical URL");
+assert.match(htmlMarkup, /<meta property="og:url" content="https:\/\/campusshield-ai\.github\.io\/campusshield-ai\/">/,
+  "Open Graph shares use the public canonical homepage");
+assert.equal((htmlMarkup.match(/https:\/\/campusshield-ai\.github\.io\/campusshield-ai\/icons\/campusshield-512\.png/g) || []).length, 2,
+  "Open Graph and Twitter cards use the publicly hosted CampusShield image");
+assert.doesNotMatch(htmlMarkup, /(?:og:image|twitter:image)[^>]*campusshield-ai-staging-preview\.vercel\.app/i,
+  "social image metadata does not point to the staging-named Vercel host");
+
 assert.ok(html.includes('href="./campus-dashboard-upgrade.css"'), "dashboard upgrade stylesheet is loaded");
 assert.ok(html.includes('src="./campus-dashboard-upgrade.js" defer'), "dashboard upgrade behavior is loaded after the workspace markup");
 assert.match(dashboardUpgradeCss, /data-theme="dark"/, "dashboard supports an explicit dark theme");
