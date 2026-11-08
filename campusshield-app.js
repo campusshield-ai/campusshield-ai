@@ -222,7 +222,7 @@
         return;
       }
       if (button.dataset.page === 'classroom') {
-        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['student','teacher'].includes(currentProfile?.role));
+        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['student','teacher','admin'].includes(currentProfile?.role));
         return;
       }
       if (button.dataset.page === 'opportunities') {
@@ -1053,7 +1053,7 @@
       toast('Only verified administrators can access account approvals.');
     }
     if (page === 'classroom' &&
-        (!verified || !hasVerifiedCampusStaffMembership() || !['student','teacher'].includes(currentProfile.role))) {
+        (!verified || !hasVerifiedCampusStaffMembership() || !['student','teacher','admin'].includes(currentProfile.role))) {
       page = 'dashboard';
       toast('Classrooms require a verified account and active verified university membership.');
     }
@@ -5598,8 +5598,8 @@
   async function loadCampusClassroomsPage() {
     const status = $('campus-classrooms-status');
     const feed = $('campus-classrooms-feed');
-    const teacherAccess = currentProfile?.role === 'teacher' && hasVerifiedCampusStaffMembership();
-    $('classroom-create-panel').hidden = !teacherAccess;
+    const classroomCreateAccess = ['teacher','admin'].includes(currentProfile?.role) && hasVerifiedCampusStaffMembership();
+    $('classroom-create-panel').hidden = !classroomCreateAccess;
     $('classroom-join-panel').hidden = !isStudentAccount();
     if (!hasVerifiedCampusStaffMembership()) {
       status.textContent = 'A verified account and active verified campus membership are required.';
