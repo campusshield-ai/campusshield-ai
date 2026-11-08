@@ -41,7 +41,7 @@ assert.equal(manifest.background_color, "#F4F7FA", "PWA canvas matches the websi
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
   icon.type === "image/svg+xml"), "PWA uses the scalable branded SVG icon");
 
-assert.match(serviceWorker, /campusshield-offline-v3/, "Offline cache version is incremented");
+assert.match(serviceWorker, /campusshield-offline-v4/, "Offline cache version is incremented");
 assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
   serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)"),
   "Offline fallback and shared brand stylesheet are both cached");
