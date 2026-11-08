@@ -212,7 +212,7 @@ returns table(
   commitment text,visibility text,status text,created_at timestamptz,expires_at timestamptz
 )
 language plpgsql stable security definer set search_path = ''
-as $
+as $$
 declare v_user uuid := (select auth.uid()); v_university uuid := (select private.current_campus_university_id());
 begin
   if v_user is null or v_university is null
@@ -229,7 +229,7 @@ begin
     and (p_post_type is null or n.post_type=p_post_type)
   order by n.created_at desc limit 100;
 end;
-$;
+$$;
 
 create or replace function public.apply_to_campus_network_post(p_post_id uuid,p_note text)
 returns uuid
