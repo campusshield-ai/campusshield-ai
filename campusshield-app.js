@@ -6834,15 +6834,16 @@
     const report=event.target.closest('[data-marketplace-report]');
     if(sold){sold.disabled=true;try{await window.CampusShieldBackend.markCampusListingSold(sold.dataset.marketplaceSold);toast('Listing marked as sold.');await loadCampusMarketplacePage();}catch(error){toast(error.message||'Could not update this listing.');sold.disabled=false;}return;}
     if(report){
-      const reason=window.prompt('Why are you reporting this listing? Choose scam, misleading, unsafe, harassment or other.','other');
+      const reasons=['scam_suspicion','spam','unsafe_item','misleading_listing','harassment','other'];
+      const reason=window.prompt('Choose a reporting reason: scam_suspicion (suspected scam), spam, unsafe_item, misleading_listing, harassment or other.','other');
       if(reason===null)return;
-      const allowed=['scam','misleading','unsafe','harassment','other'];
-      if(!allowed.includes(reason.trim().toLowerCase())){toast('Choose scam, misleading, unsafe, harassment or other.');return;}
+      const chosen=reason.trim().toLowerCase();
+      if(!reasons.includes(chosen)){toast('Choose one of the listed reporting reasons.');return;}
       const details=window.prompt('Optional details for campus moderators (500 characters max).','');
       if(details===null)return;
       if(details.length>500){toast('Report details must be 500 characters or fewer.');return;}
       report.disabled=true;
-      try{await window.CampusShieldBackend.reportCampusListing(report.dataset.marketplaceReport,reason.trim().toLowerCase(),details.trim());toast('Listing report sent to campus moderators.');}
+      try{await window.CampusShieldBackend.reportCampusListing(report.dataset.marketplaceReport,chosen,details.trim());toast('Listing report sent to campus moderators.');}
       catch(error){toast(error.message||'Could not report this listing.');report.disabled=false;}
     }
   });
