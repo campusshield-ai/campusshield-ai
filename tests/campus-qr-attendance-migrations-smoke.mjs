@@ -6,7 +6,8 @@ const core = read("../supabase/migrations/20261108115155_campus_class_qr_attenda
 const deny = read("../supabase/migrations/20261108115319_deny_direct_access_to_private_attendance_qr_tokens.sql");
 const controls = read("../supabase/migrations/20261108120238_campus_class_attendance_session_controls.sql");
 const roleControls = read("../supabase/migrations/20261108130235_campus_attendance_admin_and_teacher_controls.sql");
-const migrations = [core, deny, controls, roleControls];
+const manualAdjustments = read("../supabase/migrations/20261108131000_campus_attendance_manual_adjustments_with_reason.sql");
+const migrations = [core, deny, controls, roleControls, manualAdjustments];
 const combined = migrations.join("\n");
 
 assert.match(core, /ADD COLUMN IF NOT EXISTS attendance_window_ends_at/);
@@ -26,6 +27,10 @@ assert.match(controls, /Only an enrolled, verified student can view their attend
 assert.match(roleControls, /is_verified_campus_admin_for_classroom/);
 assert.match(roleControls, /campus_class_attendance_select_authorized/);
 assert.match(roleControls, /campus_class_attendance_audit_select_teacher/);
+assert.match(manualAdjustments, /ADD COLUMN IF NOT EXISTS change_reason/);
+assert.match(manualAdjustments, /set_campus_class_attendance_status/);
+assert.match(manualAdjustments, /set_config/);
+assert.match(manualAdjustments, /GRANT EXECUTE/);
 
 assert.doesNotMatch(combined, /\(undefined\)/i, "Function ACLs must use concrete PostgreSQL signatures.");
 for (const sql of migrations) {
