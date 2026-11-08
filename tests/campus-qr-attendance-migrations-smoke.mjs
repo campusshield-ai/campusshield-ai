@@ -7,7 +7,8 @@ const deny = read("../supabase/migrations/20261108115319_deny_direct_access_to_p
 const controls = read("../supabase/migrations/20261108120238_campus_class_attendance_session_controls.sql");
 const roleControls = read("../supabase/migrations/20261108130235_campus_attendance_admin_and_teacher_controls.sql");
 const manualAdjustments = read("../supabase/migrations/20261108131000_campus_attendance_manual_adjustments_with_reason.sql");
-const migrations = [core, deny, controls, roleControls, manualAdjustments];
+const legacyRpcLock = read("../supabase/migrations/20261108131500_restrict_legacy_attendance_mark_rpc.sql");
+const migrations = [core, deny, controls, roleControls, manualAdjustments, legacyRpcLock];
 const combined = migrations.join("\n");
 
 assert.match(core, /ADD COLUMN IF NOT EXISTS attendance_window_ends_at/);
@@ -31,6 +32,7 @@ assert.match(manualAdjustments, /ADD COLUMN IF NOT EXISTS change_reason/);
 assert.match(manualAdjustments, /set_campus_class_attendance_status/);
 assert.match(manualAdjustments, /set_config/);
 assert.match(manualAdjustments, /GRANT EXECUTE/);
+assert.match(legacyRpcLock, /REVOKE ALL ON FUNCTION public\.mark_campus_class_attendance/);
 
 assert.doesNotMatch(combined, /\(undefined\)/i, "Function ACLs must use concrete PostgreSQL signatures.");
 for (const sql of migrations) {
