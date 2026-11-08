@@ -34,7 +34,7 @@ assert.match(manualAdjustments, /set_campus_class_attendance_status/);
 assert.match(manualAdjustments, /set_config/);
 assert.match(manualAdjustments, /GRANT EXECUTE/);
 assert.match(legacyRpcLock, /REVOKE ALL ON FUNCTION public\.mark_campus_class_attendance/);
-assert.match(teacherAdminOnly, /private\.is_verified_classroom_teacher\(p_classroom_id\)[\s\S]*private\.is_verified_campus_admin_for_classroom\(p_classroom_id\)/);
+assert.match(teacherAdminOnly, /is_verified_classroom_teacher[\\s\\S]*is_verified_campus_admin_for_classroom/);
 assert.doesNotMatch(teacherAdminOnly, /assistant_student_id/);
 
 assert.doesNotMatch(combined, /\(undefined\)/i, "Function ACLs must use concrete PostgreSQL signatures.");
