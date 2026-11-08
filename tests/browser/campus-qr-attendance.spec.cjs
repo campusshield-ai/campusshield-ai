@@ -61,6 +61,8 @@ test("verified staff can create sessions, rotate QR, inspect roster and close ch
 
   const panel = page.locator("#campus-attendance-panel");
   await expect(panel).toContainText("Class attendance");
+  await expect(panel).toContainText("Verified lecturers manage attendance for classrooms they teach.");
+  await expect(panel).toContainText("Verified campus administrators can supervise attendance across their active, verified university.");
   await page.locator("#campus-attendance-title").fill("CSC 201 · Week 4");
   await page.locator("#campus-attendance-window").selectOption("60");
   await page.locator("#campus-attendance-late").selectOption("15");
