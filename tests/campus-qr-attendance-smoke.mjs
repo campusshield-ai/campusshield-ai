@@ -62,9 +62,9 @@ assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\?\.
   "Verified students, teachers and campus administrators must be able to open classrooms.");
 assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\.role\)/,
   "The classroom route must enforce the same verified role allowlist as navigation.");
-assert.match(app, /const classroomCreateAccess = currentProfile\\?\\.role === 'teacher'/,
+assert.match(app, /const classroomCreateAccess = currentProfile\?\.role === 'teacher'/,
   "Classroom creation stays limited to verified teachers; administrators supervise existing university classrooms.");
-assert.match(app, /const isCampusAdmin = currentProfile\\?\\.role === 'admin' && hasCampusMembership/);
+assert.match(app, /const isCampusAdmin = currentProfile\?\.role === 'admin' && hasCampusMembership/);
 assert.match(app, /University classrooms/);
 assert.match(attendance, /Verified lecturers manage attendance for classrooms they teach/);
 assert.match(attendance, /Verified campus administrators can supervise attendance across their active, verified university/);
