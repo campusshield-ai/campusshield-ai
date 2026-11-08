@@ -83,79 +83,48 @@
     section.id = ROOT_ID;
     section.setAttribute("aria-labelledby", "cii-title");
     section.innerHTML = `
+
       <div class="cii-hero">
         <div class="cii-hero-copy">
           <span class="cii-kicker">CAMPUSPULSE · STUDENT-LED CHANGE</span>
           <h2 id="cii-title">Ideas &amp; Impact</h2>
-          <p>Good ideas deserve a path to action. Share solutions to improve education, communities and the wider world — then help turn them into measurable progress.</p>
+          <p>Discover approved ideas from across CampusShield, support promising solutions and follow the progress they make.</p>
+          <div class="cii-hero-trust">
+            <span><span class="cii-trust-dot" aria-hidden="true"></span>Explore ideas when signed in</span>
+            <span>Verified campus members can contribute</span>
+          </div>
         </div>
-        <div class="cii-hero-mark" aria-hidden="true">✦</div>
+        <button type="button" class="btn cii-hero-cta" id="cii-start-idea"><span aria-hidden="true">＋</span> Share an idea</button>
       </div>
-      <div class="cii-principles">
-        <span><strong>01</strong> Describe the problem</span>
-        <span><strong>02</strong> Propose a solution</span>
-        <span><strong>03</strong> Build support and track progress</span>
+
+      <div class="cii-principles" aria-label="How Ideas and Impact works">
+        <div class="cii-step"><span>01</span><div><strong>Spot a challenge</strong><small>Explain what needs to improve</small></div></div>
+        <div class="cii-step"><span>02</span><div><strong>Suggest a solution</strong><small>Make the next step practical</small></div></div>
+        <div class="cii-step"><span>03</span><div><strong>Build momentum</strong><small>Get support and track progress</small></div></div>
       </div>
-      <div class="cii-privacy-note"><strong>Open CampusShield idea board.</strong> Every signed-in member can explore approved ideas from every participating university. Verified campus members can propose, support and discuss ideas. New proposals remain private to their author and the originating university moderators until approved.</div>
-      <div class="cii-layout">
-        <section class="cii-compose" aria-labelledby="cii-compose-title">
-          <div class="cii-section-heading">
-            <div><span class="cii-eyebrow">YOUR NEXT BIG IDEA</span><h3 id="cii-compose-title">Propose an improvement</h3><p>Be specific, constructive and practical.</p></div>
+
+      <div class="cii-privacy-note" role="note">
+        <strong>How visibility works</strong>
+        <span>Signed-in members can explore approved ideas across CampusShield. Verified campus members with a CampusPulse username can submit, support and comment. New proposals stay private to their author and university moderators until approved.</span>
+      </div>
+
+      <section class="cii-board" aria-labelledby="cii-board-title">
+        <div class="cii-section-heading cii-board-heading">
+          <div>
+            <span class="cii-eyebrow">FROM IDEAS TO ACTION</span>
+            <h3 id="cii-board-title">Explore student ideas</h3>
+            <p>Find a solution worth supporting or join a constructive discussion.</p>
           </div>
-          <form id="cii-form">
-            <div class="field">
-              <label for="cii-title-input">Idea title *</label>
-              <input id="cii-title-input" name="title" required minlength="5" maxlength="120" placeholder="e.g. Create a student-led campus recycling hub">
-            </div>
-            <div class="cii-form-row">
-              <div class="field">
-                <label for="cii-category">Category *</label>
-                <select id="cii-category" name="category" required>
-                  <option value="campus_facilities">Campus facilities</option>
-                  <option value="learning_research">Learning &amp; research</option>
-                  <option value="student_wellbeing">Student wellbeing</option>
-                  <option value="environment">Environment</option>
-                  <option value="technology_innovation">Technology &amp; innovation</option>
-                  <option value="community_world">Community &amp; world</option>
-                  <option value="accessibility">Accessibility &amp; inclusion</option>
-                  <option value="safety">Campus safety</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="cii-scope">Intended impact *</label>
-                <select id="cii-scope" name="impact_scope" required>
-                  <option value="campus">Our campus</option>
-                  <option value="local_community">Local community</option>
-                  <option value="national">Nigeria</option>
-                  <option value="global">Global</option>
-                </select>
-              </div>
-            </div>
-            <div class="field">
-              <label for="cii-problem">What problem should be solved? *</label>
-              <textarea id="cii-problem" name="problem_statement" required minlength="20" maxlength="1800" rows="3" placeholder="Explain who is affected and why this matters. Do not include names or private incident details."></textarea>
-            </div>
-            <div class="field">
-              <label for="cii-solution">What is your proposed solution? *</label>
-              <textarea id="cii-solution" name="proposed_solution" required minlength="20" maxlength="1800" rows="3" placeholder="Describe the steps, resources or people needed to make it happen."></textarea>
-            </div>
-            <div class="field">
-              <label for="cii-impact">What positive impact could it create? *</label>
-              <textarea id="cii-impact" name="expected_impact" required minlength="10" maxlength="800" rows="2" placeholder="Describe the expected benefit and how success could be measured."></textarea>
-            </div>
-            <button class="btn cii-submit" type="submit" id="cii-submit">Submit idea for review</button>
-            <p class="cii-form-status" id="cii-form-status" role="status" aria-live="polite">Student ideas are reviewed by verified campus staff before they appear to other students.</p>
-          </form>
-        </section>
-        <section class="cii-board" aria-labelledby="cii-board-title">
-          <div class="cii-section-heading cii-board-heading">
-            <div><span class="cii-eyebrow">FROM IDEAS TO ACTION</span><h3 id="cii-board-title">Explore student ideas</h3><p>Support good proposals, join the discussion and follow their progress.</p></div>
-            <button type="button" class="btn secondary" id="cii-refresh">Refresh</button>
-          </div>
-          <div class="cii-filters">
+          <button type="button" class="btn secondary cii-refresh" id="cii-refresh" aria-label="Refresh ideas">↻ <span>Refresh</span></button>
+        </div>
+
+        <div class="cii-filters" aria-label="Search and filter ideas">
+          <div class="cii-search-field">
             <label class="cii-search-label" for="cii-search">Search ideas</label>
-            <input id="cii-search" type="search" placeholder="Search a problem or solution">
-            <div class="cii-filter-row">
+            <input id="cii-search" type="search" autocomplete="off" placeholder="Search titles, problems or solutions">
+          </div>
+          <div class="cii-filter-row">
+            <div class="cii-filter-control">
               <label for="cii-category-filter">Category</label>
               <select id="cii-category-filter">
                 <option value="all">All categories</option>
@@ -168,9 +137,11 @@
                 <option value="accessibility">Accessibility &amp; inclusion</option>
                 <option value="safety">Campus safety</option>
               </select>
+            </div>
+            <div class="cii-filter-control">
               <label for="cii-status-filter">Progress</label>
               <select id="cii-status-filter">
-                <option value="all">All visible ideas</option>
+                <option value="all">All ideas I can view</option>
                 <option value="published">Open for support</option>
                 <option value="planned">Planned</option>
                 <option value="in_progress">In progress</option>
@@ -178,16 +149,94 @@
                 <option value="pending">Awaiting review</option>
                 <option value="declined">Not selected</option>
               </select>
-              <label for="cii-sort">Sort</label>
-              <select id="cii-sort"><option value="newest">Newest</option><option value="support">Most supported</option></select>
             </div>
+            <div class="cii-filter-control">
+              <label for="cii-sort">Sort by</label>
+              <select id="cii-sort"><option value="newest">Newest first</option><option value="support">Most supported</option></select>
+            </div>
+            <button type="button" class="btn secondary cii-clear-filters" id="cii-clear-filters" hidden>Clear filters</button>
           </div>
+        </div>
+
+        <div class="cii-board-meta">
           <p class="cii-board-status" id="cii-status" role="status" aria-live="polite">Sign in to explore approved ideas from across CampusShield.</p>
-          <div class="cii-stats" id="cii-stats" hidden></div>
-          <div class="cii-feed" id="cii-feed"><div class="cii-empty"><strong>Make the first move.</strong><p>Share a clear idea that could make student life, education or the wider community better.</p></div></div>
-        </section>
-      </div>
+          <p class="cii-results-count" id="cii-results-count" aria-live="polite">Loading ideas…</p>
+        </div>
+        <div class="cii-stats" id="cii-stats" hidden></div>
+        <div class="cii-feed" id="cii-feed">
+          <div class="cii-empty cii-loading" role="status"><span class="cii-loading-mark" aria-hidden="true"></span><strong>Loading ideas</strong><p>Finding the latest approved proposals across CampusShield.</p></div>
+        </div>
+      </section>
+
+      <details class="cii-compose" id="cii-compose-details">
+        <summary class="cii-compose-summary">
+          <span class="cii-compose-mark" aria-hidden="true">＋</span>
+          <span class="cii-compose-copy">
+            <span class="cii-eyebrow">YOUR NEXT BIG IDEA</span>
+            <strong>Have an improvement in mind?</strong>
+            <small>Share the challenge, your proposed solution and the impact it could make.</small>
+          </span>
+          <span class="cii-compose-action">Start a proposal <span aria-hidden="true">↗</span></span>
+        </summary>
+        <div class="cii-compose-body">
+          <div class="cii-section-heading">
+            <div><span class="cii-eyebrow">PROPOSE AN IMPROVEMENT</span><h3 id="cii-compose-title">Turn your idea into a clear proposal</h3><p>Be specific, constructive and realistic. You can describe a small first step.</p></div>
+          </div>
+          <form id="cii-form">
+            <div class="field">
+              <label for="cii-title-input">Idea title <span aria-hidden="true">*</span></label>
+              <input id="cii-title-input" name="title" required minlength="5" maxlength="120" placeholder="e.g. Create a student-led campus recycling hub">
+              <div class="cii-field-meta"><span>Use a short, clear title.</span><span>5–120 characters</span></div>
+            </div>
+            <div class="cii-form-row">
+              <div class="field">
+                <label for="cii-category">Category <span aria-hidden="true">*</span></label>
+                <select id="cii-category" name="category" required>
+                  <option value="campus_facilities">Campus facilities</option>
+                  <option value="learning_research">Learning &amp; research</option>
+                  <option value="student_wellbeing">Student wellbeing</option>
+                  <option value="environment">Environment</option>
+                  <option value="technology_innovation">Technology &amp; innovation</option>
+                  <option value="community_world">Community &amp; world</option>
+                  <option value="accessibility">Accessibility &amp; inclusion</option>
+                  <option value="safety">Campus safety</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="cii-scope">Where could it make an impact? <span aria-hidden="true">*</span></label>
+                <select id="cii-scope" name="impact_scope" required>
+                  <option value="campus">Our campus</option>
+                  <option value="local_community">Local community</option>
+                  <option value="national">Nigeria</option>
+                  <option value="global">Global</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="cii-problem">What needs to improve? <span aria-hidden="true">*</span></label>
+              <textarea id="cii-problem" name="problem_statement" required minlength="20" maxlength="1800" rows="3" placeholder="Who is affected, where does it happen, and why does it matter? Do not include names or private incident details."></textarea>
+              <div class="cii-field-meta"><span>Explain the challenge, not a personal accusation.</span><span id="cii-problem-count">0 / 1,800</span></div>
+            </div>
+            <div class="field">
+              <label for="cii-solution">What would you change? <span aria-hidden="true">*</span></label>
+              <textarea id="cii-solution" name="proposed_solution" required minlength="20" maxlength="1800" rows="3" placeholder="Describe practical steps, people or resources that could help make it happen."></textarea>
+              <div class="cii-field-meta"><span>A small, achievable first step is a good start.</span><span id="cii-solution-count">0 / 1,800</span></div>
+            </div>
+            <div class="field">
+              <label for="cii-impact">How will we know it worked? <span aria-hidden="true">*</span></label>
+              <textarea id="cii-impact" name="expected_impact" required minlength="10" maxlength="800" rows="2" placeholder="Describe the expected benefit and one way progress or success could be measured."></textarea>
+              <div class="cii-field-meta"><span>Think about a visible result or useful measure.</span><span id="cii-impact-count">0 / 800</span></div>
+            </div>
+            <div class="cii-submit-row">
+              <button class="btn cii-submit" type="submit" id="cii-submit">Submit for campus review <span aria-hidden="true">→</span></button>
+              <p class="cii-form-status" id="cii-form-status" role="status" aria-live="polite">Your proposal stays private to you and moderators at your university until it is approved.</p>
+            </div>
+          </form>
+        </div>
+      </details>
+
       <p class="cii-footer">Keep proposals respectful and solution-focused. Do not include private student information, personal accusations or sensitive incident evidence. Use private incident reporting for safety concerns that need immediate attention.</p>
+
     `;
     welcome.insertAdjacentElement("afterend", section);
     wire();
@@ -237,7 +286,7 @@
       });
       $("#cii-form-status").textContent = state.canContribute
         ? "Your proposal stays private to you and moderators at your university until approved. Once published, it is visible across CampusShield."
-        : "You can explore approved ideas across CampusShield. Verify your campus membership and create a CampusPulse username to contribute.";
+        : "You can browse approved ideas. To submit, support or comment, verify your campus membership and create a CampusPulse username.";
     }
   }
 
@@ -255,14 +304,24 @@
     if (state.loading) return;
     state.loading = true;
     const feed = $("#cii-feed");
-    if (feed) {
-      feed.replaceChildren(create("p","cii-empty","Loading approved ideas across CampusShield…"));
+    const refresh = $("#cii-refresh");
+    const stats = $("#cii-stats");
+    const resultsCount = $("#cii-results-count");
+    if (refresh) {
+      refresh.disabled = true;
+      refresh.querySelector("span").textContent = "Refreshing";
     }
+    if (stats) stats.hidden = true;
+    if (resultsCount) resultsCount.textContent = "Loading ideas…";
+    if (feed) {
+      feed.replaceChildren(create("div","cii-empty cii-loading",
+        "Loading the latest approved ideas across CampusShield…"));
+    }
+    setStatus("Loading approved ideas across CampusShield…");
     try {
       await prepare({ requireVerifiedCampus: false });
       let request = state.client.from("campus_ideas")
-        .select("id,user_id,creator_username,title,category,impact_scope,problem_statement,proposed_solution,expected_impact,status,support_count,created_at,updated_at")
-;
+        .select("id,user_id,university_id,creator_username,title,category,impact_scope,problem_statement,proposed_solution,expected_impact,status,support_count,created_at,updated_at");
       if (state.category !== "all") request = request.eq("category", state.category);
       if (state.status !== "all") request = request.eq("status", state.status);
       request = state.sort === "support"
@@ -277,7 +336,9 @@
         state.updates = [];
         state.supported = new Set();
         render();
-        setStatus("No ideas match these filters yet. Submit the first proposal and start the conversation.");
+        setStatus(state.status === "all" && state.category === "all"
+          ? "No approved ideas have been published yet. Be the first to share a constructive proposal."
+          : "No ideas match these filters yet. Try clearing a filter or changing your search.");
         return;
       }
       const [commentsResult, updatesResult, supportsResult] = await Promise.all([
@@ -298,23 +359,36 @@
       state.supported = new Set((supportsResult.data || []).map((row) => row.idea_id));
       render();
       const totalSupport = state.ideas.reduce((total, idea) => total + Number(idea.support_count || 0), 0);
-      const stats = $("#cii-stats");
       if (stats) {
         stats.hidden = false;
         stats.replaceChildren(
-          create("span","","" + state.ideas.length + (state.ideas.length === 1 ? " idea" : " ideas")),
-          create("span","","" + totalSupport + (totalSupport === 1 ? " support" : " supports")),
+          create("span","","" + state.ideas.length + (state.ideas.length === 1 ? " idea in this view" : " ideas in this view")),
+          create("span","","" + totalSupport + (totalSupport === 1 ? " support on these ideas" : " supports on these ideas")),
           create("span","","Across CampusShield")
         );
       }
-      setStatus("Showing " + state.ideas.length + " approved idea" + (state.ideas.length === 1 ? "" : "s") + " across CampusShield. Verified members can support, comment and submit proposals.");
+      setStatus("Showing ideas you can access across CampusShield. Verified campus members can support, comment and submit proposals.");
     } catch (error) {
+      state.ideas = [];
+      state.comments = [];
+      state.updates = [];
+      state.supported = new Set();
       if (feed) {
-        feed.replaceChildren(create("div","cii-empty","Ideas & Impact is unavailable for this account right now."));
+        const empty = create("div","cii-empty cii-error-state");
+        empty.append(
+          create("strong","","We couldn’t load the idea board"),
+          create("p","",error?.message || "Check your connection and try refreshing.")
+        );
+        feed.replaceChildren(empty);
       }
+      if (resultsCount) resultsCount.textContent = "Ideas unavailable";
       setStatus(error?.message || "Could not load student ideas.", true);
     } finally {
       state.loading = false;
+      if (refresh) {
+        refresh.disabled = false;
+        refresh.querySelector("span").textContent = "Refresh";
+      }
     }
   }
 
@@ -326,16 +400,60 @@
       const text = [idea.title,idea.problem_statement,idea.proposed_solution,idea.expected_impact,CATEGORY_LABELS[idea.category]].join(" ").toLocaleLowerCase();
       return !search || text.includes(search);
     });
+    const filtersActive = !!search || state.category !== "all" || state.status !== "all" || state.sort !== "newest";
+    const clearButton = $("#cii-clear-filters");
+    if (clearButton) clearButton.hidden = !filtersActive;
+    const resultsCount = $("#cii-results-count");
+    if (resultsCount) {
+      resultsCount.textContent = visible.length === state.ideas.length
+        ? visible.length + (visible.length === 1 ? " idea shown" : " ideas shown")
+        : visible.length + " of " + state.ideas.length + " loaded ideas match";
+    }
     feed.replaceChildren();
     if (!visible.length) {
       const empty = create("div","cii-empty");
-      empty.append(create("strong","","No matching ideas"),create("p","","Try another category or search term, or submit a new proposal."));
+      if (!state.ideas.length) {
+        empty.append(
+          create("strong","","No ideas to show yet"),
+          create("p","",filtersActive
+            ? "There are no ideas for this selection. Clear the filters to see more."
+            : "No approved proposals have been published yet. Share a practical idea to start the conversation.")
+        );
+      } else {
+        empty.append(
+          create("strong","","No matching ideas"),
+          create("p","","Try a different search term or clear one or more filters.")
+        );
+      }
+      if (filtersActive) {
+        const clear = create("button","btn secondary cii-empty-clear","Clear filters");
+        clear.type = "button";
+        clear.addEventListener("click",clearFilters);
+        empty.append(clear);
+      }
       feed.append(empty);
       return;
     }
     const commentsByIdea = groupBy(state.comments, "idea_id");
     const updatesByIdea = groupBy(state.updates, "idea_id");
     visible.forEach((idea) => feed.append(renderIdea(idea, commentsByIdea[idea.id] || [], updatesByIdea[idea.id] || [])));
+  }
+
+  function clearFilters() {
+    const search = $("#cii-search");
+    const category = $("#cii-category-filter");
+    const status = $("#cii-status-filter");
+    const sort = $("#cii-sort");
+    if (search) search.value = "";
+    if (category) category.value = "all";
+    if (status) status.value = "all";
+    if (sort) sort.value = "newest";
+    state.category = "all";
+    state.status = "all";
+    state.sort = "newest";
+    const clearButton = $("#cii-clear-filters");
+    if (clearButton) clearButton.hidden = true;
+    loadIdeas();
   }
 
   function renderIdea(idea, comments, updates) {
@@ -349,7 +467,24 @@
     );
     const badge = create("span","cii-status cii-status-" + idea.status,STATUS_LABELS[idea.status] || idea.status);
     head.append(titleWrap,badge);
-    card.append(head,makeSection("The problem",idea.problem_statement),makeSection("Proposed solution",idea.proposed_solution),makeSection("Expected impact",idea.expected_impact));
+    card.append(head);
+
+    const details = create("details","cii-idea-details");
+    const detailsSummary = create("summary","cii-idea-details-summary");
+    detailsSummary.append(
+      create("span","","Read the problem, solution and expected impact"),
+      create("span","cii-details-action","View details ＋")
+    );
+    details.append(detailsSummary,
+      makeSection("The problem",idea.problem_statement),
+      makeSection("Proposed solution",idea.proposed_solution),
+      makeSection("Expected impact",idea.expected_impact)
+    );
+    details.addEventListener("toggle",() => {
+      const action = details.querySelector(".cii-details-action");
+      if (action) action.textContent = details.open ? "Hide details −" : "View details ＋";
+    });
+    card.append(details);
 
     const latestUpdate = updates[0];
     if (latestUpdate?.note) {
@@ -359,12 +494,21 @@
     }
 
     const actionRow = create("div","cii-idea-actions");
+    const isSupported = state.supported.has(idea.id);
     const canSupport = state.canContribute && PUBLIC_STATUSES.includes(idea.status) && idea.user_id !== state.user?.id;
-    const support = create("button",state.supported.has(idea.id) ? "btn cii-support is-supported" : "btn cii-support",
-      (state.supported.has(idea.id) ? "Supported" : "Support idea") + " · " + Number(idea.support_count || 0));
+    const support = create("button",isSupported ? "btn cii-support is-supported" : "btn cii-support",
+      (isSupported ? "Supported" : "Support idea") + " · " + Number(idea.support_count || 0));
     support.type = "button";
     support.dataset.ideaSupport = idea.id;
     support.disabled = !canSupport;
+    support.setAttribute("aria-pressed",String(isSupported));
+    support.title = !state.canContribute
+      ? "Verify your campus membership and create a CampusPulse username to support ideas."
+      : idea.user_id === state.user?.id
+        ? "You cannot support your own proposal."
+        : PUBLIC_STATUSES.includes(idea.status)
+          ? (isSupported ? "Remove your support from this idea." : "Show support for this idea.")
+          : "This idea is not open for support.";
     actionRow.append(support,create("span","cii-meta",comments.length + (comments.length === 1 ? " comment" : " comments")));
     card.append(actionRow);
 
@@ -383,9 +527,12 @@
       if (state.canContribute) {
         const form = create("form","cii-comment-form");
         form.dataset.ideaCommentForm = idea.id;
-        const input = create("textarea",""); input.required = true; input.minLength = 3; input.maxLength = 700; input.rows = 2;
+        const input = create("textarea","");
+        input.required = true; input.minLength = 3; input.maxLength = 700; input.rows = 2;
         input.placeholder = "Add a helpful comment or offer to contribute…";
-        const submit = create("button","btn secondary","Post comment"); submit.type = "submit";
+        input.setAttribute("aria-label","Comment on " + idea.title);
+        const submit = create("button","btn secondary","Post comment");
+        submit.type = "submit";
         form.append(input,submit);
         discussion.append(form);
       } else {
@@ -415,6 +562,7 @@
         allowed.forEach((status) => select.add(new Option(STATUS_LABELS[status],status)));
         const note = create("input","");
         note.type = "text"; note.maxLength = 700; note.placeholder = "Optional update for students";
+        note.setAttribute("aria-label","Optional progress update for " + idea.title);
         note.dataset.ideaReviewNote = idea.id;
         const action = create("button","btn secondary","Update status");
         action.type = "button"; action.dataset.ideaReview = idea.id;
@@ -534,6 +682,37 @@
     $("#cii-category-filter").addEventListener("change",(event)=>{state.category=event.target.value;loadIdeas();});
     $("#cii-status-filter").addEventListener("change",(event)=>{state.status=event.target.value;loadIdeas();});
     $("#cii-sort").addEventListener("change",(event)=>{state.sort=event.target.value;loadIdeas();});
+    $("#cii-clear-filters").addEventListener("click",clearFilters);
+    $("#cii-start-idea").addEventListener("click",()=>{
+      const panel = $("#cii-compose-details");
+      if (!panel) return;
+      panel.open = true;
+      window.setTimeout(()=>{
+        $("#cii-title-input")?.focus({preventScroll:true});
+        panel.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",block:"start"});
+      },0);
+    });
+    [
+      ["#cii-problem","#cii-problem-count",1800],
+      ["#cii-solution","#cii-solution-count",1800],
+      ["#cii-impact","#cii-impact-count",800]
+    ].forEach(([inputSelector,countSelector,limit])=>{
+      const input = $(inputSelector);
+      const count = $(countSelector);
+      if (!input || !count) return;
+      const update = ()=>{count.textContent = input.value.length.toLocaleString() + " / " + Number(limit).toLocaleString();};
+      input.addEventListener("input",update);
+      update();
+    });
+    $("#cii-form").addEventListener("reset",()=>{
+      window.setTimeout(()=>{
+        ["#cii-problem","#cii-solution","#cii-impact"].forEach((selector)=>{
+          const input = $(selector);
+          const count = $(selector + "-count");
+          if (input && count) count.textContent = "0 / " + Number(input.maxLength).toLocaleString();
+        });
+      },0);
+    });
     root.addEventListener("submit",(event)=>{
       const form = event.target.closest("[data-idea-comment-form]");
       if (form) submitComment(event);
