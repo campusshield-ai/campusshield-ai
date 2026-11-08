@@ -47,7 +47,7 @@ assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
   "Offline fallback and shared brand stylesheet are both cached");
 
 assert.ok(iconGenerator.includes("const background = [21, 128, 61, 255];") &&
-  iconGenerator.includes("const shieldColor = [255, 255, 255, 255];),
+  iconGenerator.includes("const shieldColor = [255, 255, 255, 255];"),
   "The PWA icon generator uses the green and white logo colours");
 
 for (const asset of ["icons/campusshield.svg","assets/campusshield-logo.svg"]) {
