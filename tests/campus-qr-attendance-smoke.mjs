@@ -55,9 +55,9 @@ assert.ok(css.includes(".campus-attendance-form-grid"));
 assert.ok(css.includes("@media(max-width:760px)"));
 assert.match(qrVendor, /Licensed under the MIT license/);
 
-assert.match(app, /\['student','teacher','admin','admin'\]\.includes\(currentProfile\?\.role\)/,
+assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\?\.role\)/,
   "Verified students, teachers and campus administrators must be able to open classrooms.");
-assert.match(app, /\['student','teacher','admin','admin'\]\.includes\(currentProfile\.role\)/,
+assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\.role\)/,
   "The classroom route must enforce the same verified role allowlist as navigation.");
 assert.match(app, /const classroomCreateAccess = \['teacher','admin'\]/,
   "Only verified teachers and university administrators should see classroom creation.");
