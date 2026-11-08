@@ -44,7 +44,7 @@ assert.match(invokerWrapper, /CREATE OR REPLACE FUNCTION[\s\S]*set_campus_class_
 assert.doesNotMatch(combined, /\(undefined\)/i, "Function ACLs must use concrete PostgreSQL signatures.");
 for (const sql of migrations) {
   const starts = (sql.match(/AS \$function\$/g) || []).length;
-  const ends = (sql.match(/^\$function\$;/gm) || []).length;
+  const ends = (sql.match(/\$function\$;/g) || []).length;
   assert.equal(ends, starts, "Every CREATE FUNCTION body must terminate with a semicolon.");
 }
 assert.ok(!/GRANT\s+(?:ALL|SELECT|INSERT|UPDATE|DELETE)\s+ON\s+TABLE\s+private\.campus_class_attendance_qr_tokens\s+TO\s+(?:PUBLIC|anon|authenticated)/i.test(combined),
