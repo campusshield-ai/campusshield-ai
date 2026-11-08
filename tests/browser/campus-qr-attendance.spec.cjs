@@ -24,7 +24,7 @@ async function prepareWorkspace(page) {
 test("verified staff can create sessions, rotate QR, inspect roster and close check-in repeatedly", async ({ page }) => {
   await prepareWorkspace(page);
   await page.evaluate(({ classId, sessionId, qrToken }) => {
-    const state = { created: 0, closed: false, qrIssued: 0, rosterLoads: 0 };
+    const state = { created: 0, closed: false, qrIssued: 0, rosterLoads: 0, manualUpdates: [] };
     const session = () => ({
       session_id: sessionId,
       title: "CSC 201 · Week 4",
@@ -50,6 +50,10 @@ test("verified staff can create sessions, rotate QR, inspect roster and close ch
       listCampusClassAttendanceRoster: async () => {
         state.rosterLoads += 1;
         return [{ student_id: "33333333-3333-4333-8333-333333333333", display_name: "Test Student", status: "present", marked_at: new Date().toISOString(), attendance_method: "qr" }];
+      },
+      setCampusClassAttendanceStatus: async (sessionId, studentId, status, reason) => {
+        state.manualUpdates.push({ sessionId, studentId, status, reason });
+        return "55555555-5555-4555-8555-555555555555";
       }
     };
     window.dispatchEvent(new CustomEvent("campusshield:classroom-detail-loaded", { detail: { classroomId: classId } }));
@@ -72,6 +76,13 @@ test("verified staff can create sessions, rotate QR, inspect roster and close ch
   await panel.getByRole("button", { name: "View register" }).click();
   await expect(panel.locator("#campus-attendance-register")).toContainText("Test Student");
   await expect.poll(() => page.evaluate(() => window.__attendanceState.rosterLoads)).toBe(1);
+  const correctionRow = panel.locator('[data-attendance-save="33333333-3333-4333-8333-333333333333"]');
+  await correctionRow.locator("[data-attendance-status-select]").selectOption("late");
+  await correctionRow.locator("[data-attendance-reason]").fill("Lecturer verified the late arrival.");
+  await correctionRow.getByRole("button", { name: "Save change" }).click();
+  await expect.poll(() => page.evaluate(() => window.__attendanceState.manualUpdates.length)).toBe(1);
+  expect(await page.evaluate(() => window.__attendanceState.manualUpdates[0].status)).toBe("late");
+  expect(await page.evaluate(() => window.__attendanceState.manualUpdates[0].reason)).toBe("Lecturer verified the late arrival.");
 
   page.on("dialog", dialog => dialog.accept());
   await panel.getByRole("button", { name: "Close check-in" }).click();
