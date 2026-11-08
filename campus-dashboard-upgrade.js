@@ -224,7 +224,14 @@
     window.addEventListener("campusshield:profile-ready", event => applyRole(event.detail?.role));
   }
   // Feature shortcuts are built from pages that actually exist in this release.
-  const shortcutHost = document.getElementById("student-shortcuts");
+  let shortcutHost = document.getElementById("student-shortcuts");
+  const dashboardHero = document.querySelector("#page-dashboard .campus-dashboard-hero");
+  if (!shortcutHost && dashboardHero) {
+    shortcutHost = document.createElement("div");
+    shortcutHost.id = "student-shortcuts";
+    shortcutHost.className = "campus-dashboard-shortcuts-host";
+    dashboardHero.insertAdjacentElement("afterend", shortcutHost);
+  }
   if (shortcutHost && !document.getElementById("campus-dashboard-quicklinks")) {
     const quicklinks = document.createElement("nav");
     quicklinks.id = "campus-dashboard-quicklinks";
