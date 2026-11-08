@@ -35,7 +35,11 @@ test("unified search finds campus spaces and currently rendered campus content",
   await page.evaluate(() => {
     const feed = document.getElementById("campus-marketplace-feed");
     const card = document.createElement("article");
-    card.className = "community-post campus-marketplace-card";
+    card.className = "community-post campus-marketplace-card campus-live-marketplace-card";
+    card.dataset.status = "published";
+    card.dataset.category = "books";
+    card.dataset.price = "1500";
+    card.dataset.createdAt = "2026-11-08T00:00:00Z";
     const heading = document.createElement("h3");
     heading.textContent = "Physics 101 revision workbook";
     const description = document.createElement("p");
