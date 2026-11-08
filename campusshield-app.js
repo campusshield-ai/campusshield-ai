@@ -612,6 +612,7 @@
   function showLogin(message) {
     const workspace = $('workspace');
     if (workspace) delete workspace.dataset.accountRole;
+    window.dispatchEvent(new Event('campusshield:profile-cleared'));
     window.dispatchEvent(new CustomEvent('campusshield:profile-ready', { detail: { role: '' } }));
     $('workspace').hidden = true;
     $('login-screen').hidden = false;
