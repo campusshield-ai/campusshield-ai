@@ -22,6 +22,11 @@ const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.j
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
 const shieldmindApp = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
+
+const studentIdentityRead = shieldmindApp.match(/\.from\('student_identity_verifications'\)\s*\.select\('([^']+)'\)/);
+assert.ok(studentIdentityRead, "student identity review query remains present");
+assert.ok(studentIdentityRead[1].split(',').map((field) => field.trim()).includes("institution_name"), "student identity review reads the submitted institution");
+assert.ok(!studentIdentityRead[1].split(',').map((field) => field.trim()).includes("university_id"), "admin identity review does not request the legacy-production-missing university_id column");
 const learningInsightsScript = await readFile(new URL("../shieldmind-learning-insights.js", import.meta.url), "utf8");
 const learningInsightsCss = await readFile(new URL("../shieldmind-learning-insights.css", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
