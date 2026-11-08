@@ -210,3 +210,9 @@ html[data-theme="dark"] #workspace .campus-map-nearby-safety-distance{color:#81E
 #workspace #page-dashboard .campus-dashboard-hero::after{
   background:linear-gradient(90deg,transparent 0%,rgba(129,229,208,.03) 24%,rgba(129,229,208,.19) 42%,rgba(231,255,248,.4) 49%,rgba(129,229,208,.16) 56%,transparent 100%) !important
 }
+
+/* Keep feature-owned dark gradients intact over the generic workspace panel surface. */
+html[data-theme="dark"] #workspace #page-shieldmind .shieldmind-insights-panel {
+  border-color: #315943;
+  background: linear-gradient(145deg, #112a20, #10251d);
+}
