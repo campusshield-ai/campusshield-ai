@@ -224,3 +224,125 @@ html[data-theme="dark"] .campus-map-type-filters button.active small{background:
 @media(prefers-reduced-motion:reduce){
   .campus-map-type-filters button,.campus-map-discovery-summary button{transition:none!important}
 }
+
+
+/* On-demand nearest published campus safety facilities. */
+.campus-map-nearby-safety{
+  margin:10px 0 13px;
+  padding:12px;
+  border:1px solid #d8e8de;
+  border-radius:13px;
+  background:linear-gradient(145deg,#f6fbf7,#edf7f1);
+}
+.campus-map-nearby-safety[hidden]{display:none!important}
+.campus-map-nearby-safety-heading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:6px;
+}
+.campus-map-nearby-safety-heading strong{
+  color:#204d3e;
+  font-size:10px;
+  font-weight:900;
+}
+.campus-map-nearby-safety-heading button{
+  min-height:27px;
+  padding:4px 8px;
+  border:1px solid #d1e3d8;
+  border-radius:8px;
+  background:#fff;
+  color:#547568;
+  font-size:8px;
+  font-weight:850;
+}
+#campus-map-nearby-safety-status{
+  margin:0 0 8px;
+  color:#6d8277;
+  font-size:9px;
+  line-height:1.5;
+}
+.campus-map-nearby-safety-list{display:grid;gap:6px}
+.campus-map-nearby-safety-item{
+  display:grid;
+  grid-template-columns:23px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-width:0;
+  min-height:48px;
+  padding:7px 8px;
+  border:1px solid #dcebe1;
+  border-radius:10px;
+  background:#fff;
+  color:#285546;
+  text-align:left;
+}
+.campus-map-nearby-safety-item:hover{
+  border-color:#80bda0;
+  background:#f8fcf9;
+}
+.campus-map-nearby-safety-rank{
+  display:grid;
+  place-items:center;
+  width:22px;
+  height:22px;
+  border-radius:8px;
+  background:#e5f3e9;
+  color:#277354;
+  font-size:9px;
+  font-weight:900;
+}
+.campus-map-nearby-safety-copy{display:grid;gap:2px;min-width:0}
+.campus-map-nearby-safety-copy strong{
+  color:#264e40;
+  font-size:9px;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+.campus-map-nearby-safety-copy small{
+  color:#7b9084;
+  font-size:8px;
+}
+.campus-map-nearby-safety-distance{
+  color:#2e765b;
+  font-size:8px;
+  font-weight:850;
+  text-align:right;
+  white-space:nowrap;
+}
+.campus-map-nearby-safety-note{
+  display:block;
+  margin-top:9px;
+  color:#7a8d82;
+  font-size:8px;
+  line-height:1.5;
+}
+html[data-theme="dark"] .campus-map-nearby-safety{
+  border-color:#315548;
+  background:linear-gradient(145deg,#183b31,#142f29);
+}
+html[data-theme="dark"] .campus-map-nearby-safety-heading strong,
+html[data-theme="dark"] .campus-map-nearby-safety-copy strong{color:#d6eee0}
+html[data-theme="dark"] .campus-map-nearby-safety-heading button,
+html[data-theme="dark"] .campus-map-nearby-safety-item{
+  border-color:#315648;
+  background:#193a31;
+  color:#d2e9dc;
+}
+html[data-theme="dark"] .campus-map-nearby-safety-heading button{color:#b5d8c4}
+html[data-theme="dark"] .campus-map-nearby-safety-item:hover{border-color:#5b9c7c;background:#21483b}
+html[data-theme="dark"] .campus-map-nearby-safety-rank{background:#285643;color:#c9f0d8}
+html[data-theme="dark"] .campus-map-nearby-safety-copy small,
+html[data-theme="dark"] #campus-map-nearby-safety-status,
+html[data-theme="dark"] .campus-map-nearby-safety-note{color:#a7c4b2}
+html[data-theme="dark"] .campus-map-nearby-safety-distance{color:#9be0b8}
+@media(max-width:420px){
+  .campus-map-nearby-safety{padding:10px}
+  .campus-map-nearby-safety-item{grid-template-columns:22px minmax(0,1fr);gap:7px}
+  .campus-map-nearby-safety-distance{grid-column:2;text-align:left;white-space:normal}
+}
+@media(prefers-reduced-motion:reduce){
+  .campus-map-nearby-safety-item{transition:none!important}
+}
