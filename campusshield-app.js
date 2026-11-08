@@ -5431,8 +5431,9 @@
     });
     rows.sort((a,b)=>{
       if(sort==='price-low'||sort==='price-high'){
-        const av=a.price_ngn==null?Number.POSITIVE_INFINITY:Number(a.price_ngn);
-        const bv=b.price_ngn==null?Number.POSITIVE_INFINITY:Number(b.price_ngn);
+        const missing = sort==='price-low'?Number.POSITIVE_INFINITY:Number.NEGATIVE_INFINITY;
+        const av=a.price_ngn==null?missing:Number(a.price_ngn);
+        const bv=b.price_ngn==null?missing:Number(b.price_ngn);
         return sort==='price-low'?av-bv:bv-av;
       }
       return new Date(b.created_at||0).getTime()-new Date(a.created_at||0).getTime();
