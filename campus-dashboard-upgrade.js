@@ -71,9 +71,8 @@
     {title:"Profile & settings", description:"Manage your profile and preferences", page:"profile-settings", keywords:"account settings personal"}
   ];
   function visibleDestination(item) {
-    const nav = document.querySelector('.nav [data-page="' + item.page + '"]');
-    const page = document.getElementById("page-" + item.page);
-    return Boolean(nav || page || item.page === "dashboard");
+    // Offer a destination only when this build actually includes its page.
+    return Boolean(document.getElementById("page-" + item.page));
   }
 
   // Index only campus content already rendered for this signed-in account.
