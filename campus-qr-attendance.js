@@ -115,7 +115,7 @@
           <div class="field"><label for="campus-attendance-late">Mark late after</label><select id="campus-attendance-late"><option value="10">10 minutes</option><option value="15" selected>15 minutes</option><option value="20">20 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option></select></div>
           <div class="field"><button class="btn" type="submit">Create attendance session</button></div>
         </div>
-        <p class="campus-attendance-muted">Students must be enrolled, verified members of this university. A QR code expires after 45 seconds and refreshes automatically. Re-scanning never creates a duplicate check-in.</p>
+        <p class="campus-attendance-muted">Students must be enrolled, verified members of this university. A QR code expires after 45 seconds and refreshes automatically. Re-scanning never creates a duplicate check-in. QR check-in records the account and scan time; it does not independently prove physical presence, so lecturers should supervise the session.</p>
         <p class="message campus-attendance-message" data-attendance-message role="status" aria-live="polite"></p>
       </form>
       <div class="campus-attendance-sessions" data-attendance-sessions>
@@ -305,7 +305,7 @@
     panel.dataset.classroomId = classroomId;
     panel.innerHTML = `
       <div class="panel-heading"><div><h3>My class attendance</h3><p class="campus-attendance-muted">Your personal attendance record for ${escapeHtml(capabilities.classroom_title || "this class")}.</p></div></div>
-      <p class="campus-attendance-muted">Scan the temporary QR displayed by your lecturer. Check-in is available only to verified students already enrolled in this classroom.</p>
+      <p class="campus-attendance-muted">Scan the temporary QR displayed by your lecturer. Check-in is available only to verified students already enrolled in this classroom. CampusShield does not use a selfie or continuous location tracking for this check-in.</p>
       <div class="campus-attendance-sessions">
         ${records.length ? records.map(record => `
           <article class="campus-attendance-session">
@@ -414,6 +414,7 @@
         ? "You were already checked in for " + result.session_title + " at " + when + ". No duplicate record was created."
         : "Attendance recorded for " + result.session_title + " (" + result.status + ") at " + when + ".";
       if (target) {
+        target.hidden = false;
         target.textContent = message;
         target.classList.add("campus-attendance-receipt");
       }
@@ -481,6 +482,9 @@
     if (document.hidden) {
       clearQrTimers();
       stopScanner();
+    } else if (currentQrSession) {
+      const session = currentQrSession;
+      void displayQr(session.sessionId, session.title, session.classroomId);
     }
   });
 })();
