@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 const read = path => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const brand = read("campusshield-brand-system.css");
+const serviceWorker = read("service-worker.js");
 const manifest = JSON.parse(read("manifest.webmanifest"));
 const pages = [
   "index.html","about.html","features.html","help.html","privacy.html",
@@ -26,6 +27,9 @@ assert.match(brand, /prefers-reduced-motion:\s*reduce/, "Reduced-motion preferen
 assert.match(brand, /campus-map-nearby-safety/, "CampusMap nearby-safety components share the new palette");
 assert.match(brand, /mobile-bottom-nav/, "Mobile navigation shares the new palette");
 assert.equal(manifest.theme_color, "#0B2832", "The PWA theme colour matches the site");
+assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" && icon.type === "image/svg+xml"), "The PWA exposes the updated scalable SVG mark");
+assert.match(serviceWorker, /campusshield-offline-v3/, "The offline cache version is incremented for the updated fallback");
+assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") && serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)"), "The offline screen and shared stylesheet are both cached");
 assert.equal(manifest.background_color, "#F5F8F7", "The PWA canvas matches the site");
 for (const asset of ["icons/campusshield.svg","assets/campusshield-logo.svg"]) {
   const svg = read(asset);

@@ -1,10 +1,11 @@
-const CACHE_NAME = "campusshield-offline-v2";
+const CACHE_NAME = "campusshield-offline-v3";
+const BRAND_STYLESHEET_URL = "./campusshield-brand-system.css";
 const OFFLINE_URL = "./offline.html";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.add(OFFLINE_URL))
+      .then((cache) => Promise.all([cache.add(OFFLINE_URL), cache.add(BRAND_STYLESHEET_URL)]))
       .then(() => self.skipWaiting())
   );
 });
