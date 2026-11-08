@@ -130,10 +130,13 @@ begin
      or char_length(btrim(coalesce(p_commitment,''))) > 120 then
     raise exception 'Check the title, description and time commitment.' using errcode='22023';
   end if;
-  select coalesce(array_agg(left(btrim(s),40)), '{}'::text[]) into v_skills
-  from pg_catalog.unnest(coalesce(p_skills,'{}'::text[])) as s
-  where char_length(btrim(s)) between 1 and 40
-  limit 12;
+  select coalesce(array_agg(left(btrim(clean.skill),40)), '{}'::text[]) into v_skills
+  from (
+    select distinct skill
+    from pg_catalog.unnest(coalesce(p_skills,'{}'::text[])) as input(skill)
+    where char_length(btrim(skill)) between 1 and 40
+    limit 12
+  ) clean;
   insert into public.campus_network_posts(
     university_id,user_id,post_type,category,title,description,skills,commitment,visibility
   ) values (
@@ -356,10 +359,13 @@ begin
      or char_length(btrim(coalesce(p_bio,''))) not between 30 and 1200 then
     raise exception 'Check your programme, graduation year, headline and biography.' using errcode='22023';
   end if;
-  select coalesce(array_agg(left(btrim(s),40)), '{}'::text[]) into v_skills
-  from pg_catalog.unnest(coalesce(p_skills,'{}'::text[])) as s
-  where char_length(btrim(s)) between 1 and 40
-  limit 12;
+  select coalesce(array_agg(left(btrim(clean.skill),40)), '{}'::text[]) into v_skills
+  from (
+    select distinct skill
+    from pg_catalog.unnest(coalesce(p_skills,'{}'::text[])) as input(skill)
+    where char_length(btrim(skill)) between 1 and 40
+    limit 12
+  ) clean;
   insert into public.campus_alumni_profiles(
     user_id,university_id,programme,graduation_year,headline,bio,skills,visibility,status,reviewed_by,reviewed_at,review_note
   ) values (
@@ -493,7 +499,7 @@ $$;
 
 create or replace function public.request_campus_alumni_intro_by_username(p_username text,p_note text)
 returns uuid
-language plpgsql security invoker set search_path = ''
+language plpgsql security definer set search_path = ''
 as $
 declare v_alumni_user uuid; v_request uuid;
 begin
