@@ -2594,6 +2594,7 @@
   let campusDirectSubscriptionId = null;
   let campusDirectLoadGeneration = 0;
   let campusDirectMessageReports = [];
+  let campusDirectInboxFilter = "all";
 
   function stopCampusDirectMessageRealtime() {
     const backend = window.CampusShieldBackend;
@@ -2657,19 +2658,84 @@
   function renderCampusDirectConversations() {
     const list = $("campus-dm-conversations");
     if (!list) return;
+
+    const searchInput = $("campus-dm-conversation-search");
+    const query = String(searchInput?.value || "").trim().toLocaleLowerCase();
+    const counts = {
+      all: campusDirectConversations.length,
+      requests: campusDirectConversations.filter(function(item) { return item.status === "pending"; }).length,
+      accepted: campusDirectConversations.filter(function(item) { return item.status === "accepted"; }).length
+    };
+
+    document.querySelectorAll("[data-campus-dm-filter]").forEach(function(button) {
+      const filter = button.dataset.campusDmFilter;
+      button.setAttribute("aria-pressed", String(filter === campusDirectInboxFilter));
+      const count = button.querySelector("[data-campus-dm-filter-count]");
+      if (count && Object.prototype.hasOwnProperty.call(counts, filter)) {
+        count.textContent = String(counts[filter]);
+      }
+    });
+
+    const clearSearch = $("campus-dm-clear-inbox-search");
+    if (clearSearch) clearSearch.hidden = !query;
+
+    const visible = campusDirectConversations.filter(function(conversation) {
+      const isRequest = conversation.status === "pending";
+      if (campusDirectInboxFilter === "requests" && !isRequest) return false;
+      if (campusDirectInboxFilter === "accepted" && conversation.status !== "accepted") return false;
+      if (!query) return true;
+      const searchable = [
+        conversation.other_username,
+        conversation.latest_message_preview,
+        campusDirectStatusLabel(conversation)
+      ].join(" ").toLocaleLowerCase();
+      return searchable.includes(query);
+    });
+
     list.replaceChildren();
     if (!campusDirectConversations.length) {
       const empty = document.createElement("div");
-      empty.className = "campus-chat-empty";
+      empty.className = "campus-chat-empty campus-dm-empty-state";
       const title = document.createElement("strong");
       title.textContent = "No conversations yet";
       const copy = document.createElement("p");
-      copy.textContent = "Find a campus username above to send a first message.";
+      copy.textContent = "Find a verified campus username above to send a message request. Your inbox will appear here.";
       empty.append(title, copy);
       list.appendChild(empty);
       return;
     }
-    campusDirectConversations.forEach(function(conversation) {
+
+    if (!visible.length) {
+      const empty = document.createElement("div");
+      empty.className = "campus-chat-empty campus-dm-empty-state";
+      const title = document.createElement("strong");
+      title.textContent = query ? "No matching conversations" : (
+        campusDirectInboxFilter === "requests" ? "No message requests" : "No accepted conversations yet"
+      );
+      const copy = document.createElement("p");
+      copy.textContent = query
+        ? "Try another username or clear your search."
+        : campusDirectInboxFilter === "requests"
+          ? "New message requests will appear here."
+          : "Accepted private conversations will appear here.";
+      empty.append(title, copy);
+      if (query) {
+        const clear = document.createElement("button");
+        clear.type = "button";
+        clear.className = "campus-dm-empty-clear";
+        clear.textContent = "Clear search";
+        clear.addEventListener("click", function() {
+          if (searchInput) searchInput.value = "";
+          renderCampusDirectConversations();
+          searchInput?.focus();
+        });
+        empty.appendChild(clear);
+      }
+      list.appendChild(empty);
+      return;
+    }
+
+    visible.forEach(function(conversation) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "campus-dm-conversation" + (conversation.conversation_id === campusDirectActiveId ? " active" : "");
@@ -2697,6 +2763,7 @@
       list.appendChild(button);
     });
   }
+
 
   function renderCampusDirectThreadEmpty() {
     $("campus-dm-thread-empty").hidden = false;
@@ -2854,7 +2921,7 @@
     if (!(options && options.preserveScroll)) list.scrollTop = list.scrollHeight;
   }
 
-  async function loadCampusDirectMessageReports() {
+  async function refreshCampusDirectMessageReports() {
     const panel = $("campus-dm-moderation");
     const list = $("campus-dm-report-queue");
     const status = $("campus-dm-report-queue-status");
@@ -2893,7 +2960,7 @@
           hide.disabled = true;
           try {
             await window.CampusShieldBackend.resolveCampusDirectMessageReport(report.report_id,"hide");
-            await loadCampusDirectMessageReports();
+            await refreshCampusDirectMessageReports();
             if (campusDirectActiveId === report.conversation_id) await refreshCampusDirectMessages({quiet:true});
             toast("Message hidden and report reviewed.");
           } catch (error) { toast(error?.message || "Could not hide this message."); hide.disabled = false; }
@@ -2906,7 +2973,7 @@
           dismiss.disabled = true;
           try {
             await window.CampusShieldBackend.resolveCampusDirectMessageReport(report.report_id,"dismiss");
-            await loadCampusDirectMessageReports();
+            await refreshCampusDirectMessageReports();
             toast("Report dismissed.");
           } catch (error) { toast(error?.message || "Could not dismiss this report."); dismiss.disabled = false; }
         });
@@ -2927,6 +2994,11 @@
     campusDirectActiveConversation = null;
     campusDirectSelectedRecipient = null;
     campusDirectMessageReports = [];
+    campusDirectInboxFilter = "all";
+    const inboxSearch = $("campus-dm-conversation-search");
+    if (inboxSearch) { inboxSearch.value = ""; inboxSearch.disabled = true; }
+    document.querySelectorAll("[data-campus-dm-filter]").forEach(function(button) { button.disabled = true; });
+    if ($("campus-dm-clear-inbox-search")) $("campus-dm-clear-inbox-search").hidden = true;
     $("campus-dm-search").value = "";
     $("campus-dm-introduction").value = "";
     $("campus-dm-search-results").replaceChildren();
@@ -2977,6 +3049,8 @@
       }
       $("campus-dm-search-button").disabled = false;
       $("campus-dm-request-send").disabled = false;
+      $("campus-dm-conversation-search").disabled = false;
+      document.querySelectorAll("[data-campus-dm-filter]").forEach(function(button) { button.disabled = false; });
       const profile = await backend.getMyCommunityProfile();
       communityProfile = profile;
       await refreshCampusDirectConversations();
@@ -3219,7 +3293,22 @@
       if (campusDirectActiveId) return refreshCampusDirectMessages();
     }).catch(function(error) { $("campus-dm-inbox-status").textContent = error?.message || "Could not refresh your inbox."; });
   });
-  $("campus-dm-refresh-reports")?.addEventListener("click", loadCampusDirectMessageReports);
+
+  $("campus-dm-conversation-search")?.addEventListener("input", renderCampusDirectConversations);
+  $("campus-dm-clear-inbox-search")?.addEventListener("click", function() {
+    const search = $("campus-dm-conversation-search");
+    if (search) search.value = "";
+    renderCampusDirectConversations();
+    search?.focus();
+  });
+  document.querySelectorAll("[data-campus-dm-filter]").forEach(function(button) {
+    button.addEventListener("click", function() {
+      campusDirectInboxFilter = ["all","requests","accepted"].includes(button.dataset.campusDmFilter)
+        ? button.dataset.campusDmFilter : "all";
+      renderCampusDirectConversations();
+    });
+  });
+  $("campus-dm-refresh-reports")?.addEventListener("click", refreshCampusDirectMessageReports);
   $("campus-dm-report-cancel")?.addEventListener("click", function() { $("campus-dm-report-dialog")?.close(); });
   $("campus-dm-report-form")?.addEventListener("submit", async function(event) {
     event.preventDefault();
@@ -3237,7 +3326,7 @@
       );
       $("campus-dm-report-dialog")?.close();
       toast("Private message reported to authorized campus staff.");
-      if (canModerateCampusChat()) await loadCampusDirectMessageReports();
+      if (canModerateCampusChat()) await refreshCampusDirectMessageReports();
     } catch (error) {
       if (status) status.textContent = error?.message || "Could not submit this report.";
     } finally {
