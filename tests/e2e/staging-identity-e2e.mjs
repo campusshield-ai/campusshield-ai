@@ -25,6 +25,7 @@ const emailPrefix = `campusshieldaitechnologies+campusshield-e2e-${runId}`;
 const createdUsers = new Map();
 const uploadedPaths = new Set();
 const cleanupErrors = [];
+const createdNetworkBlocks = [];
 
 const admin = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
@@ -134,6 +135,14 @@ async function cleanup() {
   for (const objectPath of uploadedPaths) {
     const result = await admin.storage.from(IDENTITY_BUCKET).remove([objectPath]);
     if (result.error) cleanupErrors.push("private identity file cleanup failed");
+  }
+
+  for (const block of createdNetworkBlocks) {
+    const result = await admin.from("campus_member_blocks").delete()
+      .eq("blocker_id", block.blocker_id)
+      .eq("blocked_id", block.blocked_id)
+      .eq("university_id", block.university_id);
+    if (result.error) cleanupErrors.push("campus member-block cleanup failed");
   }
 
   for (const [userId, metadata] of createdUsers) {
@@ -358,6 +367,29 @@ async function run() {
     assert.ok(networkIds.has(networkPost.data), "Cross-university discovery includes the opted-in network post");
     assert.ok(!networkIds.has(campusOnlyPost.data), "Cross-university discovery hides campus-only posts");
 
+    // Verify blocks apply to posts even when their visibility is cross-university.
+    const peerBlock = { blocker_id: peer.id, blocked_id: student.id, university_id: peerUniversity.id };
+    const peerBlockInsert = await admin.from("campus_member_blocks").insert(peerBlock);
+    mustSucceed(peerBlockInsert.error, "Create a synthetic cross-university member block");
+    createdNetworkBlocks.push(peerBlock);
+    const blockedNetworkFeed = await peer.client.rpc("list_campus_network_posts", {
+      p_post_type: "volunteer",
+      p_scope: "network",
+      p_query: runId.slice(0, 8),
+    });
+    mustSucceed(blockedNetworkFeed.error, "Read network discovery while the author is blocked");
+    assert.ok(!(blockedNetworkFeed.data || []).some(row => row.id === networkPost.data),
+      "A blocked author must be hidden from cross-university post discovery");
+    const blockedApply = await peer.client.rpc("apply_to_campus_network_post", {
+      p_post_id: networkPost.data,
+      p_note: "Synthetic request while blocked.",
+    });
+    assert.ok(blockedApply.error, "A blocked member cannot apply to the author's network post");
+    const peerBlockDelete = await admin.from("campus_member_blocks").delete()
+      .eq("blocker_id", peer.id).eq("blocked_id", student.id).eq("university_id", peerUniversity.id);
+    mustSucceed(peerBlockDelete.error, "Remove the synthetic member block after its assertions");
+    createdNetworkBlocks.length = 0;
+
     const directTableRead = await peer.client.from("campus_network_posts").select("id").limit(1);
     assert.ok(directTableRead.error, "Authenticated clients must not read the RPC-only Campus Network table directly");
 
@@ -402,6 +434,28 @@ async function run() {
       p_note: null,
     });
     mustSucceed(verifyAlumni.error, "Verify the synthetic alumni profile with the university staff JWT");
+
+    // Verified alumni discovery and introduction requests must also respect blocks.
+    const alumniBlockRow = { blocker_id: peer.id, blocked_id: student.id, university_id: peerUniversity.id };
+    const alumniBlockInsert = await admin.from("campus_member_blocks").insert(alumniBlockRow);
+    mustSucceed(alumniBlockInsert.error, "Create a synthetic block for the verified alumni profile");
+    createdNetworkBlocks.push(alumniBlockRow);
+    const blockedAlumniDirectory = await peer.client.rpc("list_campus_alumni_directory", {
+      p_scope: "network",
+      p_query: networkUsername,
+    });
+    mustSucceed(blockedAlumniDirectory.error, "Search Alumni Connect while the alumnus is blocked");
+    assert.ok(!(blockedAlumniDirectory.data || []).some(row => row.username === networkUsername),
+      "Blocked alumni profiles must be excluded from cross-university discovery");
+    const blockedIntro = await peer.client.rpc("request_campus_alumni_intro_by_username", {
+      p_username: networkUsername,
+      p_note: "Synthetic request while blocked.",
+    });
+    assert.ok(blockedIntro.error, "A blocked alumnus cannot receive a cross-university introduction request");
+    const alumniBlockDelete = await admin.from("campus_member_blocks").delete()
+      .eq("blocker_id", peer.id).eq("blocked_id", student.id).eq("university_id", peerUniversity.id);
+    mustSucceed(alumniBlockDelete.error, "Remove the synthetic alumni block after its assertions");
+    createdNetworkBlocks.length = 0;
 
     const alumniDirectory = await peer.client.rpc("list_campus_alumni_directory", {
       p_scope: "network",
