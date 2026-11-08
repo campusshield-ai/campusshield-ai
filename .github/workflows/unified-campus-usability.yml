@@ -10,6 +10,7 @@ on:
       - "campus-dashboard-upgrade.css"
       - "campus-discovery-ui.js"
       - "campusshield-app.js"
+      - "campusshield-backend.js"
       - "tests/discovery-ui-smoke.mjs"
       - "tests/browser/unified-campus-search.spec.cjs"
       - "campus-qr-attendance.js"
@@ -17,7 +18,6 @@ on:
       - "vendor/qrcode.js"
       - "tests/campus-qr-attendance-smoke.mjs"
       - "tests/browser/campus-qr-attendance.spec.cjs"
-      - ".github/workflows/unified-campus-usability.yml"
       - ".github/workflows/unified-campus-usability.yml"
   push:
     branches: [main, "staging/preview"]
