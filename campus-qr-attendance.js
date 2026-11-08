@@ -10,6 +10,8 @@
   let scanLoopTimer = null;
   let renderSequence = 0;
   let currentQrSession = null;
+  let pendingAttendanceLink = null;
+  let hasAuthenticatedProfile = false;
 
   function escapeHtml(value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, (ch) => ({
@@ -436,21 +438,28 @@
     target.dataset.kind = kind || "info";
   }
 
-  async function handleAttendanceDeepLink() {
-    const url = new URL(window.location.href);
-    const sessionId = url.searchParams.get("attendance_session");
-    const token = url.searchParams.get("attendance_token");
+  function captureAttendanceDeepLink() {
+    const originalUrl = new URL(window.location.href);
+    const sessionId = originalUrl.searchParams.get("attendance_session");
+    const token = originalUrl.searchParams.get("attendance_token");
     if (!sessionId && !token) return;
-    url.searchParams.delete("attendance_session");
-    url.searchParams.delete("attendance_token");
-    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+    originalUrl.searchParams.delete("attendance_session");
+    originalUrl.searchParams.delete("attendance_token");
+    window.history.replaceState(window.history.state, "", originalUrl.pathname + originalUrl.search + originalUrl.hash);
     const credentials = parseAttendanceQr((() => {
       const rebuilt = new URL(window.location.href);
       rebuilt.searchParams.set("attendance_session", sessionId || "");
       rebuilt.searchParams.set("attendance_token", token || "");
       return rebuilt.toString();
     })());
-    if (!credentials) {
+    pendingAttendanceLink = credentials || { invalid: true };
+  }
+
+  async function handleAttendanceDeepLink() {
+    if (!pendingAttendanceLink) return;
+    const credentials = pendingAttendanceLink;
+    pendingAttendanceLink = null;
+    if (credentials.invalid) {
       showDeepLinkMessage("This attendance link is invalid. Scan the lecturer's latest QR code.", "error");
       return;
     }
@@ -461,16 +470,23 @@
     }
   }
 
+  captureAttendanceDeepLink();
+
   window.addEventListener("campusshield:classroom-detail-loaded", (event) => {
     const classroomId = event.detail && event.detail.classroomId;
     if (classroomId) renderAttendancePanel(classroomId);
   });
 
-  window.addEventListener("campusshield:profile-ready", () => {
+  window.addEventListener("campusshield:profile-ready", (event) => {
+    const role = event.detail && String(event.detail.role || "").toLowerCase();
+    if (!role) return;
+    hasAuthenticatedProfile = true;
     void handleAttendanceDeepLink();
   });
 
   window.addEventListener("campusshield:profile-cleared", () => {
+    if (hasAuthenticatedProfile) pendingAttendanceLink = null;
+    hasAuthenticatedProfile = false;
     clearQrTimers();
     stopScanner();
     currentQrSession = null;
