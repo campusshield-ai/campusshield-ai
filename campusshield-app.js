@@ -597,10 +597,14 @@
       loadInstitutionalBillingRequests();
     }
     refreshPlatformAdminAccess();
+    window.dispatchEvent(new CustomEvent('campusshield:profile-ready', {
+      detail: { role: currentProfile.role }
+    }));
     return true;
   }
 
   function showLogin(message) {
+    window.dispatchEvent(new Event('campusshield:profile-cleared'));
     $('workspace').hidden = true;
     $('login-screen').hidden = false;
     setAuthMode('signin');
