@@ -7,6 +7,12 @@ on:
       - "feat/**"
       - "staging/preview"
     paths:
+      - "campusshield-brand-system.css"
+      - "assets/campusshield-logo.svg"
+      - "icons/campusshield.svg"
+      - "icons/*.png"
+      - "manifest.webmanifest"
+      - "service-worker.js"
       - "index.html"
       - "campusshield-app.js"
       - "campusshield-backend.js"
@@ -26,6 +32,12 @@ on:
   pull_request:
     branches: [main, "staging/preview"]
     paths:
+      - "campusshield-brand-system.css"
+      - "assets/campusshield-logo.svg"
+      - "icons/campusshield.svg"
+      - "icons/*.png"
+      - "manifest.webmanifest"
+      - "service-worker.js"
       - "index.html"
       - "campusshield-app.js"
       - "campusshield-backend.js"
