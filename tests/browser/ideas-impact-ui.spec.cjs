@@ -57,12 +57,12 @@ test("Ideas & Impact filters can be cleared and remain usable on narrow screens"
   const sizes = await root.evaluate((el) => ({
     client: el.clientWidth,
     scroll: el.scrollWidth,
-    filters: getComputedStyle(el.querySelector(".cii-filter-row")).gridTemplateColumns,
+    filterRows: new Set([...el.querySelectorAll(".cii-filter-control")].map((item) => Math.round(item.getBoundingClientRect().top))).size,
     search: el.querySelector("#cii-search").getBoundingClientRect().width
   }));
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client + 1);
   expect(sizes.search).toBeGreaterThan(200);
-  expect(sizes.filters.split(" ").length).toBe(1);
+  expect(sizes.filterRows).toBe(3);
 });
 
 test("Ideas & Impact filters reflow cleanly at tablet and desktop widths", async ({ page }) => {
