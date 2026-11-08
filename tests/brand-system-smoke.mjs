@@ -40,8 +40,10 @@ assert.equal(manifest.theme_color, "#0B1F33", "PWA theme colour matches the webs
 assert.equal(manifest.background_color, "#F4F7FA", "PWA canvas matches the website");
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
   icon.type === "image/svg+xml"), "PWA uses the scalable branded SVG icon");
+assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskable-512.png" &&
+  icon.purpose === "maskable"), "PWA uses the dedicated safe-area maskable icon");
 
-assert.match(serviceWorker, /campusshield-offline-v4/, "Offline cache version is incremented");
+assert.match(serviceWorker, /campusshield-offline-v5/, "Offline cache version is incremented");
 assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
   serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)"),
   "Offline fallback and shared brand stylesheet are both cached");
