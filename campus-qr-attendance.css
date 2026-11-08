@@ -39,3 +39,7 @@ html[data-theme="dark"] .campus-attendance-qr-shell{background:#fff;color:#173b2
   .campus-attendance-roster{min-width:520px}
 }
 @media(prefers-reduced-motion:reduce){.campus-attendance-panel *{scroll-behavior:auto!important;transition:none!important}}
+
+.campus-attendance-edit-controls{display:grid;gap:6px;min-width:190px}
+.campus-attendance-edit-controls select,.campus-attendance-edit-controls input{width:100%;min-width:0;min-height:36px;border:1px solid var(--attendance-line,#dce8e2);border-radius:8px;padding:7px 9px;background:#fff;color:var(--attendance-ink,#173b32);font:inherit;font-size:11px}
+.campus-attendance-edit-controls .btn{min-height:34px;width:100%;padding:7px 10px}

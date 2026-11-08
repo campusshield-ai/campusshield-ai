@@ -164,8 +164,9 @@
       const showQr = event.target.closest("[data-attendance-show-qr]");
       const showRoster = event.target.closest("[data-attendance-roster]");
       const close = event.target.closest("[data-attendance-close]");
+      const saveAttendance = event.target.closest("[data-attendance-save]");
       const exportButton = event.target.closest("[data-attendance-export]");
-      if (!showQr && !showRoster && !close && !exportButton) return;
+      if (!showQr && !showRoster && !close && !saveAttendance && !exportButton) return;
 
       if (showQr) {
         await displayQr(showQr.dataset.attendanceShowQr, showQr.dataset.sessionTitle || "Class attendance", panel.dataset.classroomId);
@@ -181,6 +182,22 @@
         } catch (error) {
           close.disabled = false;
           setPanelMessage(panel, error.message || "Could not close attendance.", "error");
+        }
+      } else if (saveAttendance) {
+        const row = saveAttendance.closest("tr");
+        const status = row?.querySelector("[data-attendance-status-select]")?.value || "";
+        const reason = row?.querySelector("[data-attendance-reason]")?.value.trim() || "";
+        const sessionId = saveAttendance.dataset.attendanceSession;
+        if (!status) { setPanelMessage(panel, "Choose present, late or absent before saving.", "error"); return; }
+        if (reason.length < 5) { setPanelMessage(panel, "Add a reason of at least 5 characters for the audit history.", "error"); return; }
+        saveAttendance.disabled = true;
+        try {
+          await backend().setCampusClassAttendanceStatus(sessionId, saveAttendance.dataset.attendanceSave, status, reason);
+          await showRosterForSession(sessionId);
+          setPanelMessage(panel, "Attendance updated. Your reason is saved in the audit history.", "success");
+        } catch (error) {
+          saveAttendance.disabled = false;
+          setPanelMessage(panel, error.message || "Could not update this attendance record.", "error");
         }
       } else if (exportButton) {
         exportRosterCsv(exportButton.dataset.attendanceExport);
@@ -260,22 +277,37 @@
     target.innerHTML = '<p class="campus-attendance-muted" role="status">Loading the class register…</p>';
     try {
       const roster = asRows(await backend().listCampusClassAttendanceRoster(sessionId));
-      const rows = roster.map(student => `
-        <tr>
-          <td>${escapeHtml(student.display_name || "Student")}</td>
-          <td>${statusBadge(student.status || "not recorded")}</td>
-          <td>${escapeHtml(formatTime(student.marked_at))}</td>
-          <td>${escapeHtml(student.attendance_method || "—")}</td>
-        </tr>`).join("");
+      const rows = roster.map(student => {
+        const currentStatus = String(student.status || "").toLowerCase();
+        const options = ["present", "late", "absent"].map(value =>
+          '<option value="' + value + '"' + (currentStatus === value ? " selected" : "") + '>' +
+          value.charAt(0).toUpperCase() + value.slice(1) + '</option>'
+        ).join("");
+        return [
+          "<tr>",
+          "<td>" + escapeHtml(student.display_name || "Student") + "</td>",
+          "<td>" + statusBadge(student.status || "not recorded") + "</td>",
+          "<td>" + escapeHtml(formatTime(student.marked_at)) + "</td>",
+          "<td>" + escapeHtml(student.attendance_method || "—") + "</td>",
+          '<td><div class="campus-attendance-edit-controls">' +
+            '<select data-attendance-status-select aria-label="Attendance status for ' + escapeHtml(student.display_name || "student") + '">' +
+              '<option value="" disabled ' + (currentStatus ? "" : "selected") + '>Choose status</option>' + options +
+            '</select>' +
+            '<input type="text" data-attendance-reason minlength="5" maxlength="250" required aria-label="Reason for attendance change" placeholder="Reason for change">' +
+            '<button class="btn secondary" type="button" data-attendance-save="' + escapeHtml(student.student_id) + '" data-attendance-session="' + escapeHtml(sessionId) + '">Save change</button>' +
+          "</div></td>",
+          "</tr>"
+        ].join("");
+      }).join("");
       target.innerHTML = `
         <div class="campus-attendance-session" style="margin-top:14px">
-          <div><h4>Class attendance register</h4><p>${roster.filter(row => row.status).length} of ${roster.length} enrolled students checked in.</p></div>
+          <div><h4>Class attendance register</h4><p>${roster.filter(row => row.status).length} of ${roster.length} enrolled students checked in.</p><p class="campus-attendance-muted">Manual corrections require a reason and are saved to the audit history.</p></div>
           <button class="btn secondary" type="button" data-attendance-export="${escapeHtml(sessionId)}">Export CSV</button>
         </div>
         <div class="campus-attendance-roster-wrap">
           <table class="campus-attendance-roster">
-            <thead><tr><th>Student</th><th>Status</th><th>Check-in time</th><th>Method</th></tr></thead>
-            <tbody>${rows || '<tr><td colspan="4">No enrolled students in this class yet.</td></tr>'}</tbody>
+            <thead><tr><th>Student</th><th>Status</th><th>Check-in time</th><th>Method</th><th>Manage</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="5">No enrolled students in this class yet.</td></tr>'}</tbody>
           </table>
         </div>`;
     } catch (error) {

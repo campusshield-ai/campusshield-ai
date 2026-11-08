@@ -32,6 +32,9 @@ assert.match(backend, /create_campus_class_attendance_session/);
 assert.match(backend, /issue_campus_class_attendance_qr_token/);
 assert.match(backend, /check_in_campus_class_attendance/);
 assert.match(backend, /get_my_campus_class_attendance/);
+assert.match(backend, /set_campus_class_attendance_status/);
+assert.match(attendance, /data-attendance-save/);
+assert.match(attendance, /data-attendance-reason/);
 assert.match(attendance, /campusshield:classroom-detail-loaded/);
 assert.match(attendance, /campusshield:profile-ready/);
 assert.match(attendance, /campusshield:profile-cleared/);
@@ -39,8 +42,8 @@ assert.match(app, /campusshield:session-signed-out/);
 assert.match(attendance, /campusshield:session-signed-out/);
 assert.match(attendance, /sessionStorage\.removeItem\(pendingDeepLinkStorageKey\)/);
 assert.match(attendance, /pendingDeepLinkInMemory = null/);
-assert.match(app, /\['student','teacher'\]\.includes\(currentProfile\?\.role\)/);
-assert.match(app, /\['student','teacher'\]\.includes\(currentProfile\.role\)/);
+assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\?\.role\)/);
+assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\.role\)/);
 
 assert.match(attendance, /BarcodeDetector/);
 assert.match(attendance, /getUserMedia/);
@@ -54,4 +57,14 @@ assert.ok(!attendance.includes("{ once: true }") && !attendance.includes("{once:
 assert.ok(css.includes(".campus-attendance-form-grid"));
 assert.ok(css.includes("@media(max-width:760px)"));
 assert.match(qrVendor, /Licensed under the MIT license/);
+
+assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\?\.role\)/,
+  "Verified students, teachers and campus administrators must be able to open classrooms.");
+assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\.role\)/,
+  "The classroom route must enforce the same verified role allowlist as navigation.");
+assert.match(app, /const classroomCreateAccess = currentProfile\?\.role === 'teacher'/,
+  "Only verified teachers and university administrators should see classroom creation.");
+assert.match(html, /Join your classes, manage teaching spaces and track attendance/);
+assert.match(html, /Only verified teachers can create classes/);
+
 console.log("Campus QR attendance smoke checks passed.");
