@@ -28,7 +28,14 @@ for (const id of [
   "campus-opportunities-results"
 ]) assert.ok(discovery.includes(id), "Missing discovery control: " + id);
 
-assert.match(app, /campus-live-marketplace-card/);
+const groupRendererStart = app.indexOf("$('campus-groups-feed').innerHTML = visibleGroups");
+const marketRendererStart = app.indexOf("$('campus-marketplace-feed').innerHTML = listings");
+assert.ok(groupRendererStart >= 0 && marketRendererStart > groupRendererStart, "Expected campus group and marketplace renderers");
+const groupRenderer = app.slice(groupRendererStart, marketRendererStart);
+const marketplaceRenderer = app.slice(marketRendererStart, app.indexOf("async function loadCampusClassroomsPage", marketRendererStart));
+assert.doesNotMatch(groupRenderer, /listing\\./, "Campus group renderer must not reference Marketplace listing records");
+assert.doesNotMatch(groupRenderer, /campus-live-marketplace-card/, "Campus group cards must not carry Marketplace-only metadata");
+assert.match(marketplaceRenderer, /campus-live-marketplace-card/, "Marketplace cards need discovery metadata");
 assert.match(app, /campus-live-opportunity-card/);
 assert.match(discovery, /filter only cards already rendered/);
 console.log("Campus discovery usability smoke checks passed.");

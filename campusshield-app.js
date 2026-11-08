@@ -5106,7 +5106,7 @@
       });
       $('campus-groups-feed').innerHTML = visibleGroups.length ? visibleGroups.map(function(group) {
         const isJoined = memberIds.has(group.id);
-        return '<article class="community-post campus-live-marketplace-card" data-category="' + esc(listing.category || 'other') + '" data-status="' + esc(listing.status || 'published') + '" data-price="' + (listing.price_ngn == null ? '' : Number(listing.price_ngn)) + '" data-created-at="' + esc(listing.created_at || '') + '">' +
+        return '<article class="community-post">' +
           '<div class="community-meta"><span class="tag open">' + esc(group.group_type.replaceAll('_',' ')) + '</span><span>·</span><strong>' + esc(group.course_id ? 'Course community' : (group.privacy === 'request_to_join' ? 'Request to join' : 'Campus group')) + '</strong></div>' +
           '<h3 class="community-post-title">' + esc(group.name) + '</h3>' +
           '<p class="community-post-body">' + esc(group.description || 'Campus group') + '</p>' +
@@ -5180,7 +5180,7 @@
       const ownListingIds = new Set((ownListingResult.data || []).map(function(row) { return row.listing_id; }));
       $('campus-marketplace-feed').innerHTML = listings.length ? listings.map(function(listing) {
         const isMine = ownListingIds.has(listing.id);
-        return '<article class="community-post">' +
+        return '<article class="community-post campus-live-marketplace-card" data-category="' + esc(listing.category || 'other') + '" data-status="' + esc(listing.status || 'published') + '" data-price="' + (listing.price_ngn == null ? '' : Number(listing.price_ngn)) + '" data-created-at="' + esc(listing.created_at || '') + '">' +
           '<div class="community-meta"><span class="tag open">' + esc(listing.category.replaceAll('_',' ')) + '</span><span>·</span><strong>' + (listing.status === 'sold' ? 'Sold' : 'Available') + '</strong></div>' +
           '<h3 class="community-post-title">' + esc(listing.title) + '</h3>' +
           '<p class="community-post-body">' + esc(listing.description) + '</p>' +
