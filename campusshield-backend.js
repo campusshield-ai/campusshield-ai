@@ -1189,6 +1189,17 @@ async getCurrentUser() {
       return data || [];
     },
 
+    async setCampusClassAttendanceStatus(sessionId, studentId, status, reason) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("set_campus_class_attendance_status", {
+        p_session_id: sessionId,
+        p_student_id: studentId,
+        p_status: String(status || ""),
+        p_reason: String(reason || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
     async checkInCampusClassAttendance(sessionId, qrToken) {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("check_in_campus_class_attendance", {
