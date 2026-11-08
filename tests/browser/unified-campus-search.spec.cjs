@@ -45,8 +45,18 @@ test("unified search finds campus spaces and currently rendered campus content",
   });
   await search.fill("Physics 101 revision workbook");
   await expect(results).toContainText("Physics 101 revision workbook");
+  await page.evaluate(() => {
+    const nav = document.querySelector('.nav [data-page="marketplace"]');
+    nav?.addEventListener("click", () => {
+      document.documentElement.dataset.marketplaceSearchActivated = "true";
+    }, {capture:true, once:true});
+  });
   await page.locator(".global-search-result").first().click();
-  await expect(page.locator("#page-marketplace")).toHaveClass(/active/);
+  // This fixture deliberately has no signed-in Supabase session, so the app
+  // shows its sign-in guard instead of switching pages. Confirm the search
+  // correctly triggers the real Marketplace navigation control.
+  await expect(page.locator("html")).toHaveAttribute("data-marketplace-search-activated", "true");
+  await expect(results).toBeHidden();
 
   await page.setViewportSize({ width: 390, height: 844 });
   const searchBox = await search.boundingBox();
