@@ -108,7 +108,7 @@ test("student sees their own register and browser scan fallback", async ({ page 
 test("QR deep link removes the temporary credential from browser history after check-in", async ({ page }) => {
   const sessionId = "22222222-2222-4222-8222-222222222222";
   const token = "b".repeat(64);
-  await page.goto("/index.html?attendance_session=" + sessionId + "&attendance_token=" + token, {
+  await page.goto("/index.html#attendance_session=" + sessionId + "&attendance_token=" + token, {
     waitUntil: "domcontentloaded"
   });
   await expect(page).not.toHaveURL(/attendance_token=/);
