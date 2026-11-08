@@ -129,6 +129,7 @@ test("My Day renders the real private timetable snapshot, clears on sign-out and
   await page.evaluate(async () => { await window.__staleTimetableLoad; });
   const clearedSnapshot = await page.evaluate(() => window.CampusShieldTimetable.getTodaySnapshot());
   expect(clearedSnapshot.loaded).toBe(false);
+  expect(clearedSnapshot.items).toHaveLength(0);
   await expect(panel).not.toContainText("Previous account private class");
   await expect(panel).toContainText("Sign in to sync your day");
 
