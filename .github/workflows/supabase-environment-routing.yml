@@ -1,0 +1,30 @@
+name: Supabase environment routing checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase-config.js"
+      - "tests/supabase-environment-routing-smoke.mjs"
+      - ".github/workflows/supabase-environment-routing.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase-config.js"
+      - "tests/supabase-environment-routing-smoke.mjs"
+      - ".github/workflows/supabase-environment-routing.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  routing:
+    name: Verify production and staging Supabase host routing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test environment host routing
+        run: node tests/supabase-environment-routing-smoke.mjs
