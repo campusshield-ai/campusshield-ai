@@ -9,6 +9,8 @@ test("lecturer can create a class attendance session and display a rotating QR",
     document.getElementById("login-screen").style.display = "none";
     document.querySelectorAll(".page").forEach(section => section.classList.toggle("active", section.id === "page-classroom"));
     document.querySelector("#page-classroom").style.display = "block";
+    document.getElementById("classroom-detail-panel").hidden = false;
+    document.getElementById("classroom-detail-content").innerHTML = '<section class="panel" id="campus-attendance-panel"></section>';
 
     window.__attendanceSessions = [];
     const classroomId = "11111111-1111-4111-8111-111111111111";
@@ -77,6 +79,8 @@ test("student sees their own register and browser scan fallback", async ({ page 
     document.getElementById("login-screen").style.display = "none";
     document.querySelectorAll(".page").forEach(section => section.classList.toggle("active", section.id === "page-classroom"));
     document.querySelector("#page-classroom").style.display = "block";
+    document.getElementById("classroom-detail-panel").hidden = false;
+    document.getElementById("classroom-detail-content").innerHTML = '<section class="panel" id="campus-attendance-panel"></section>';
     window.CampusShieldBackend = {
       getCampusClassAttendanceCapabilities: async () => ({
         can_access: true, can_manage: false,
