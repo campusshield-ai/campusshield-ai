@@ -451,6 +451,8 @@
     state.category = "all";
     state.status = "all";
     state.sort = "newest";
+    const clearButton = $("#cii-clear-filters");
+    if (clearButton) clearButton.hidden = true;
     loadIdeas();
   }
 
