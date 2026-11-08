@@ -28,7 +28,9 @@ test("guided walkthrough switches journeys, tracks progress and opens the select
   await expect(guide.locator("#guide-walkthrough-step-title")).toHaveText("Submit a clear report");
   await expect(guide.locator("#guide-walkthrough-step-count")).toHaveText("STEP 2 OF 3");
   await page.evaluate(() => {
-    document.querySelector("#guide-walkthrough-open").addEventListener("click", () => {
+    document.querySelector("#guide-walkthrough-open").addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       document.documentElement.dataset.walkthroughActionTriggered = "true";
     }, { capture: true, once: true });
   });
