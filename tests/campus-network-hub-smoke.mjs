@@ -38,6 +38,11 @@ assert.match(backend, /async listMyCampusMarketplaceListings\(\)/);
 assert.match(backend, /eq\("seller_id", user\.id\)/);
 assert.match(app, /data-marketplace-sold/);
 assert.match(app, /data-marketplace-report/);
+assert.match(app, /scam_suspicion/);
+assert.match(app, /unsafe_item/);
+assert.match(app, /misleading_listing/);
+assert.match(app, /reportCampusListing\(report\.dataset\.marketplaceReport,chosen/);
+
 
 // Opportunity Hub is searchable, filterable and sortable without replacing its moderated flow.
 for (const id of [
