@@ -76,10 +76,11 @@ test("verified staff can create sessions, rotate QR, inspect roster and close ch
   await panel.getByRole("button", { name: "View register" }).click();
   await expect(panel.locator("#campus-attendance-register")).toContainText("Test Student");
   await expect.poll(() => page.evaluate(() => window.__attendanceState.rosterLoads)).toBe(1);
-  const correctionRow = panel.locator('[data-attendance-save="33333333-3333-4333-8333-333333333333"]');
+  const correctionButton = panel.locator('[data-attendance-save="33333333-3333-4333-8333-333333333333"]');
+  const correctionRow = correctionButton.locator("xpath=ancestor::tr");
   await correctionRow.locator("[data-attendance-status-select]").selectOption("late");
   await correctionRow.locator("[data-attendance-reason]").fill("Lecturer verified the late arrival.");
-  await correctionRow.getByRole("button", { name: "Save change" }).click();
+  await correctionButton.click();
   await expect.poll(() => page.evaluate(() => window.__attendanceState.manualUpdates.length)).toBe(1);
   expect(await page.evaluate(() => window.__attendanceState.manualUpdates[0].status)).toBe("late");
   expect(await page.evaluate(() => window.__attendanceState.manualUpdates[0].reason)).toBe("Lecturer verified the late arrival.");
