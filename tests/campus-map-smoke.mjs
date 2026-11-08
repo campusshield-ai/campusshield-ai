@@ -11,6 +11,37 @@ const navigationSource = read('campus-map-navigation.js');
 const navigationContext = { window: {} };
 runInNewContext(navigationSource, navigationContext);
 const navigation = navigationContext.window.CampusMapNavigation;
+const safetySource = read('campus-map-safety.js');
+const safetyContext = { window: {} };
+runInNewContext(safetySource,safetyContext);
+const safety = safetyContext.window.CampusMapSafety;
+assert.ok(safety,'CampusMap exposes a pure nearby-safety distance and ranking helper');
+const safetyOrigin = {longitude:0,latitude:0};
+const nearestMedical = {id:'medical-near',name:'Campus Clinic',feature_type:'medical',longitude:0.001,latitude:0,is_published:true};
+const nearbySecurity = {id:'security-next',name:'North Security Post',feature_type:'security',longitude:0.01,latitude:0,is_published:true};
+const farGate = {id:'gate-far',name:'Main Gate',feature_type:'gate',longitude:0.02,latitude:0,is_published:true};
+const unpublishedSecurity = {id:'security-draft',name:'Private draft post',feature_type:'security',longitude:0.0001,latitude:0,is_published:false};
+const unrelatedFacility = {id:'library',name:'Library',feature_type:'library',longitude:0.0002,latitude:0,is_published:true};
+const nearbyRanked = safety.rankNearbyFacilities([farGate,unpublishedSecurity,nearbySecurity,nearestMedical,unrelatedFacility],safetyOrigin);
+assert.deepEqual(Array.from(nearbyRanked,result=>result.feature.id),['medical-near','security-next','gate-far'],
+  'Nearby results rank only published safety facilities by straight-line distance');
+assert.ok(Math.abs(nearbyRanked[0].distance_meters-111.2)<1.5,'Haversine distance is reported in metres');
+assert.equal(safety.rankNearbyFacilities([nearestMedical,nearbySecurity,farGate],safetyOrigin,2).length,2,
+  'Nearby safety results respect the result limit');
+assert.equal(safety.rankNearbyFacilities([unpublishedSecurity],safetyOrigin).length,0,'Unpublished drafts are excluded');
+assert.equal(safety.rankNearbyFacilities([unrelatedFacility],safetyOrigin).length,0,'Non-safety facility types are excluded');
+assert.deepEqual(Array.from(safety.rankNearbyFacilities([
+  {id:'assembly',name:'Assembly Area',feature_type:'assembly_point',longitude:0,latitude:0,is_published:true},
+  {id:'emergency',name:'Emergency Point',feature_type:'emergency_point',longitude:0,latitude:0,is_published:true}
+],safetyOrigin),result=>result.feature.feature_type),['assembly_point','emergency_point'],
+  'Published assembly points and emergency points are included');
+assert.equal(safety.rankNearbyFacilities([nearestMedical],{longitude:181,latitude:0}).length,0,
+  'Invalid device coordinates are rejected');
+assert.equal(safety.distanceMeters(safetyOrigin,{longitude:'',latitude:0}),null,
+  'Empty coordinates are not coerced to zero');
+assert.equal(safety.validCoordinates({longitude:3.7,latitude:6.8}),true,'Valid coordinates are accepted');
+assert.equal(safety.validCoordinates({longitude:3.7,latitude:91}),false,'Out-of-range coordinates are rejected');
+
 const mapConfig = read('campus-map-config.js');
 const mapLoader = read('campus-map-loader.js');
 const geometrySource = read('campus-map-geometry.js');
@@ -84,6 +115,21 @@ assert.equal(navigation.resolveRouteTarget({
   'An invalid selected location cannot become a route origin or destination');
 
 assert.match(js, /import '\.\/campus-map-navigation\.js'/, 'CampusMap loads its explicit navigation-target resolver');
+
+assert.match(js,/import '\.\/campus-map-safety\.js'/,'Map module loads the nearby-safety helper');
+assert.match(js,/window\.CampusMapSafety\.rankNearbyFacilities\(features,origin,6\)/,'Finder ranks the selected campus published feature set');
+assert.match(js,/getCurrentPosition\(position =>/,'GPS is requested after an explicit user action');
+assert.match(js,/data-nearby-safety-feature-id/,'Nearby results open the matching Campus Passport');
+assert.match(js,/function clearNearbySafetyResults\(\)/,'Users can clear nearby results and the local marker');
+assert.match(js,/nearbySafetyMarker\?\.remove\(\)/,'Clearing results removes the device-only map marker');
+assert.match(js,/nearbySafetyRequestId/,'Clearing or changing campuses invalidates pending GPS callbacks');
+assert.match(js,/if \(requestId !== nearbySafetyRequestId\) return;/,'Stale GPS callbacks cannot repopulate cleared results');
+assert.match(html,/id="campus-map-nearby-safety"/,'CampusMap exposes the nearby-safety action');
+assert.match(html,/id="campus-map-nearby-safety-panel"[^>]*hidden/,'Results remain hidden until the location action is used');
+assert.match(html,/Distances are straight-line estimates, not walking distances/,'Distance labels are not misrepresented as walking routes');
+assert.match(html,/not saved to CampusShield or Supabase/,'GPS privacy is disclosed in the interface');
+assert.match(read('campus-map-passport.css'),/campus-map-nearby-safety/,'Nearby results have responsive dedicated styles');
+
 assert.match(js, /navigation\?\.resolveRouteTarget\(item, features, false\)/,
   'The Campus Passport displays the resolved standard route destination');
 assert.match(js, /navigation\?\.resolveRouteTarget\(item, features, true\)/,

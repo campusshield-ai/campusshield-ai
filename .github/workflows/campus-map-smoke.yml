@@ -6,6 +6,7 @@ on:
     paths:
       - "index.html"
       - "campus-map.js"
+      - "campus-map-safety.js"
       - "campus-map-discovery.js"
       - "campus-map-loader.js"
       - "campus-map-config.js"
@@ -32,6 +33,7 @@ jobs:
         run: |
           node --check campus-map-config.js
           node --check campus-map.js
+          node --check campus-map-safety.js
           node --check campus-map-discovery.js
           node --input-type=module --check < campus-map-loader.js
           node --check campusshield-backend.js
