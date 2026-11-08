@@ -1,0 +1,34 @@
+name: CampusShield Staging parity and PWA checks
+
+on:
+  pull_request:
+    branches:
+      - staging/preview
+  push:
+    branches:
+      - staging/preview
+
+permissions:
+  contents: read
+
+jobs:
+  staging-readiness:
+    name: Staging readiness regression checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run the complete smoke suite
+        run: node tests/smoke-check.mjs
+      - name: Check saved-opportunity privacy and PWA orientation
+        run: node tests/campusshield-staging-readiness-smoke.mjs
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find . -path './.git' -prune -o -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -print0)
