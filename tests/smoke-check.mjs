@@ -613,6 +613,26 @@ assert.match(pushDispatchFunction, /Only a recently sent message can trigger a b
 assert.match(backend, /async sendCampusDirectMessage\(conversationId, body\)[\s\S]*?this\.callPushFunction\("delivery", \{ action: "message", message_id: data \}\)/, "direct-message push is attempted only after a successful staging message write");
 assert.match(backend, /if \(isStaging && typeof data === "string"/, "production direct messages do not call staging push functions");
 assert.match(pushDispatchFunction, /genericMessages/, "push payloads use generic notification copy rather than private message content");
+
+assert.equal((appScript.match(/async function refreshCampusDirectMessageReports\(\)/g) || []).length, 1,
+  "the private-message moderation refresh function has one real declaration");
+assert.doesNotMatch(appScript, /\bloadCampusDirectMessageReports\s*\(/,
+  "no call site references the obsolete, undefined moderation loader name");
+assert.match(appScript, /await refreshCampusDirectMessageReports\(\)/,
+  "opening the inbox refreshes the report queue through the declared function");
+assert.match(htmlMarkup, /id="campus-dm-conversation-search"/,
+  "the inbox has a dedicated conversation search field");
+assert.match(htmlMarkup, /data-campus-dm-filter="requests"/,
+  "the inbox exposes a message-request filter");
+assert.match(htmlMarkup, /data-campus-dm-filter="accepted"/,
+  "the inbox exposes an accepted-conversation filter");
+assert.match(appScript, /campusDirectInboxFilter/,
+  "inbox filters operate on conversations already returned for the signed-in member");
+assert.match(appScript, /campusDirectConversations\.filter/,
+  "inbox search and status filters only narrow the authenticated member's conversation list");
+assert.match(appScript, /const verifiedAccess = currentProfile\.verification_status === "verified"/,
+  "private-message discovery retains its verified-campus access gate");
+
 assert.match(campusPushMigration, /enable row level security/i);
 assert.match(campusPushMigration, /using \(false\) with check \(false\)/i, "push tables deny direct client access");
 assert.match(campusPushMigration, /revoke all on table public\.campus_push_subscriptions from anon, authenticated/i);
