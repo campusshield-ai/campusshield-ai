@@ -126,7 +126,7 @@ test("QR deep link removes the temporary credential from browser history after c
         classroom_title: "Engineering 101"
       })
     };
-    window.dispatchEvent(new Event("campusshield:profile-ready"));
+    window.dispatchEvent(new CustomEvent("campusshield:profile-ready", { detail: { role: "student" } }));
   });
 
   const receipt = page.locator("#campus-attendance-deep-link-message");
