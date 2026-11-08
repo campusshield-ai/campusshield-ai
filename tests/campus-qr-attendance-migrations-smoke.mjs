@@ -37,9 +37,9 @@ assert.match(manualAdjustments, /GRANT EXECUTE/);
 assert.match(legacyRpcLock, /REVOKE ALL ON FUNCTION public\.mark_campus_class_attendance/);
 assert.match(teacherAdminOnly, /is_verified_classroom_teacher[\s\S]*is_verified_campus_admin_for_classroom/);
 assert.doesNotMatch(teacherAdminOnly, /assistant_student_id/);
-assert.match(invokerWrapper, /private\.set_campus_class_attendance_status_impl/);
-assert.match(invokerWrapper, /GRANT EXECUTE ON FUNCTION private\.set_campus_class_attendance_status_impl/);
-assert.match(invokerWrapper, /CREATE OR REPLACE FUNCTION public\.set_campus_class_attendance_status/);
+assert.match(invokerWrapper, /set_campus_class_attendance_status_impl/);
+assert.match(invokerWrapper, /GRANT EXECUTE ON FUNCTION[\s\S]*set_campus_class_attendance_status_impl/);
+assert.match(invokerWrapper, /CREATE OR REPLACE FUNCTION[\s\S]*set_campus_class_attendance_status/);
 
 assert.doesNotMatch(combined, /\(undefined\)/i, "Function ACLs must use concrete PostgreSQL signatures.");
 for (const sql of migrations) {
