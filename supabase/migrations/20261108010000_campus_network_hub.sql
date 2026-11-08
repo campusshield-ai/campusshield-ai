@@ -206,6 +206,31 @@ begin
 end;
 $$;
 
+create or replace function public.list_my_campus_network_posts(p_post_type text default null)
+returns table(
+  id uuid,post_type text,category text,title text,description text,skills text[],
+  commitment text,visibility text,status text,created_at timestamptz,expires_at timestamptz
+)
+language plpgsql stable security definer set search_path = ''
+as $
+declare v_user uuid := (select auth.uid()); v_university uuid := (select private.current_campus_university_id());
+begin
+  if v_user is null or v_university is null
+     or not coalesce((select private.current_user_has_verified_campus_access()),false) then
+    raise exception 'Verified campus membership is required to view your Campus Network posts.' using errcode='42501';
+  end if;
+  if p_post_type is not null and p_post_type not in ('volunteer','startup') then
+    raise exception 'Choose a valid Campus Network post type.' using errcode='22023';
+  end if;
+  return query
+  select n.id,n.post_type,n.category,n.title,n.description,n.skills,n.commitment,n.visibility,n.status,n.created_at,n.expires_at
+  from public.campus_network_posts n
+  where n.user_id=v_user and n.university_id=v_university
+    and (p_post_type is null or n.post_type=p_post_type)
+  order by n.created_at desc limit 100;
+end;
+$;
+
 create or replace function public.apply_to_campus_network_post(p_post_id uuid,p_note text)
 returns uuid
 language plpgsql security definer set search_path = ''
@@ -560,6 +585,7 @@ $$;
 -- No anonymous or direct authenticated table access. Only the narrowly scoped RPCs below are exposed.
 revoke all on function public.create_campus_network_post(text,text,text,text,text[],text,text) from public,anon,authenticated;
 revoke all on function public.list_campus_network_posts(text,text,text) from public,anon,authenticated;
+revoke all on function public.list_my_campus_network_posts(text) from public,anon,authenticated;
 revoke all on function public.apply_to_campus_network_post(uuid,text) from public,anon,authenticated;
 revoke all on function public.list_my_campus_network_applications() from public,anon,authenticated;
 revoke all on function public.list_campus_network_post_applications(uuid) from public,anon,authenticated;
@@ -577,6 +603,7 @@ revoke all on function public.respond_to_campus_alumni_intro(uuid,text) from pub
 
 grant execute on function public.create_campus_network_post(text,text,text,text,text[],text,text) to authenticated;
 grant execute on function public.list_campus_network_posts(text,text,text) to authenticated;
+grant execute on function public.list_my_campus_network_posts(text) to authenticated;
 grant execute on function public.apply_to_campus_network_post(uuid,text) to authenticated;
 grant execute on function public.list_my_campus_network_applications() to authenticated;
 grant execute on function public.list_campus_network_post_applications(uuid) to authenticated;
