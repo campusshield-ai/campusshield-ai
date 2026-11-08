@@ -68,6 +68,16 @@ const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf
 const contactPage = await readFile(new URL("../contact.html", import.meta.url), "utf8");
 const inlineScripts = [...htmlMarkup.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
 
+
+assert.match(htmlMarkup, /<link rel="canonical" href="https:\/\/campusshield-ai\.github\.io\/campusshield-ai\/">/,
+  "the public homepage declares the official GitHub Pages canonical URL");
+assert.match(htmlMarkup, /<meta property="og:url" content="https:\/\/campusshield-ai\.github\.io\/campusshield-ai\/">/,
+  "Open Graph shares use the public canonical homepage");
+assert.equal((htmlMarkup.match(/https:\/\/campusshield-ai\.github\.io\/campusshield-ai\/icons\/campusshield-512\.png/g) || []).length, 2,
+  "Open Graph and Twitter cards use the publicly hosted CampusShield image");
+assert.doesNotMatch(htmlMarkup, /(?:og:image|twitter:image)[^>]*campusshield-ai-staging-preview\.vercel\.app/i,
+  "social image metadata does not point to the staging-named Vercel host");
+
 assert.ok(html.includes('href="./campus-dashboard-upgrade.css"'), "dashboard upgrade stylesheet is loaded");
 assert.ok(html.includes('src="./campus-dashboard-upgrade.js" defer'), "dashboard upgrade behavior is loaded after the workspace markup");
 assert.match(dashboardUpgradeCss, /data-theme="dark"/, "dashboard supports an explicit dark theme");
@@ -85,7 +95,7 @@ assert.ok(brandLockupCss.includes("#app-sidebar .brand-wordmark strong") && bran
 assert.ok(brandLockupCss.includes(".app.sidebar-collapsed #app-sidebar .brand-copy") && brandLockupCss.includes("display: none !important"), "collapsed desktop sidebar keeps the icon-only state");
 assert.ok(campusShieldLogo.includes('viewBox="0 0 128 128"'), "the brand uses the square shield logo asset");
 assert.match(htmlMarkup, /<meta property="og:title" content="CampusShield AI \\| Intelligent Campus Safety">/, "landing page defines a social-share title");
-assert.ok(htmlMarkup.includes('<meta property="og:image" content="https://campusshield-ai-staging-preview.vercel.app/icons/campusshield-512.png">'), "landing page uses the verified CampusShield share image");
+assert.ok(htmlMarkup.includes('<meta property="og:image" content="https://campusshield-ai.github.io/campusshield-ai/icons/campusshield-512.png">'), "landing page uses the public CampusShield share image");
 assert.match(htmlMarkup, /<meta name="twitter:card" content="summary">/, "landing page defines a Twitter summary card");
 assert.doesNotMatch(htmlMarkup, /No open incidents right now/i, "dashboard never claims there are no incidents before account-scoped data is loaded");
 assert.match(htmlMarkup, /Incident totals and updates reflect records your signed-in account is permitted to view/, "dashboard explains that incident summaries are account-scoped");
