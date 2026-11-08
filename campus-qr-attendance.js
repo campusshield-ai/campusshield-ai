@@ -358,7 +358,7 @@
     const message = $("campus-attendance-student-message");
     if (!scanner || !video || !note) return;
     scanner.hidden = false;
-    if (!("BarcodeDetector" in window)) {
+    if (typeof window.BarcodeDetector !== "function") {
       note.textContent = "This browser does not support in-page QR scanning. Open your phone's Camera app, point it at the lecturer's displayed QR and tap the CampusShield link. The check-in will complete after you sign in. Use a supported Chrome browser for scanning inside the app.";
       return;
     }
