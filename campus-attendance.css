@@ -1,0 +1,53 @@
+.campus-attendance-panel{border:1px solid var(--line);border-radius:16px;padding:18px;margin:18px 0;background:var(--card)}
+.campus-attendance-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
+.campus-attendance-heading h3{margin:2px 0 4px;font-size:19px}
+.campus-attendance-heading p{margin:0;color:var(--muted);font-size:13px}
+.campus-attendance-eyebrow{font-size:10px;letter-spacing:1.3px;font-weight:850;color:var(--green,#187b61)}
+.campus-attendance-trust-tag{flex:none;border-radius:999px;padding:6px 10px;background:#e8f7f1;color:#17664f;font-size:10px;font-weight:850}
+.campus-attendance-notice{margin:12px 0 16px;padding:12px 14px;border:1px solid #e6d9b6;border-radius:11px;background:#fff9e9;color:#745419;font-size:12px;line-height:1.55}
+.campus-attendance-create-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px;margin:10px 0}
+.campus-attendance-create-form .field{margin:0}
+.campus-attendance-create-form .btn{min-height:43px}
+.campus-attendance-session{margin:12px 0;padding:15px;border:1px solid var(--line);border-radius:13px;background:var(--card)}
+.campus-attendance-session-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.campus-attendance-session-head h4{margin:0 0 3px;font-size:15px}
+.campus-attendance-session-head p,.campus-attendance-session-expiry{margin:0;color:var(--muted);font-size:11px}
+.campus-attendance-state{padding:5px 9px;border-radius:999px;font-size:10px;font-weight:850}
+.campus-attendance-state.is-open{background:#e8f7f1;color:#17664f}
+.campus-attendance-state.is-closed{background:#eef1f3;color:#65747b}
+.campus-attendance-counts{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0 5px;color:var(--muted);font-size:11px}
+.campus-attendance-counts strong{color:var(--ink);font-size:16px;margin-right:4px}
+.campus-attendance-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.campus-attendance-qr{display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;align-items:center;margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.campus-attendance-qr-image-wrap{display:grid;place-items:center;min-height:190px;padding:10px;border-radius:10px;background:#fff}
+.campus-attendance-qr img{display:block;width:100%;max-width:180px;height:auto;image-rendering:pixelated}
+.campus-attendance-qr p{font-size:12px}
+.campus-attendance-countdown{font-weight:800;color:var(--green,#187b61)}
+.campus-attendance-roster{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.campus-attendance-roster-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(215px,300px);gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.campus-attendance-student{display:grid;gap:2px;min-width:0}
+.campus-attendance-student strong{font-size:13px;overflow-wrap:anywhere}
+.campus-attendance-student small{color:var(--muted);font-size:10px}
+.campus-attendance-roster-edit{display:flex;gap:7px}
+.campus-attendance-roster-edit select{min-width:0;flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:12px}
+.campus-attendance-roster-edit .btn{padding:8px 10px}
+.campus-attendance-scanner{margin:10px 0}
+.campus-attendance-scanner video{display:block;width:100%;max-width:480px;max-height:340px;object-fit:cover;border-radius:12px;background:#0d1720}
+.campus-attendance-checkin-form{max-width:640px}
+.campus-attendance-checkin-form textarea{min-height:82px}
+.campus-attendance-panel .message.is-error{color:#b3263b}
+@media(max-width:650px){
+ .campus-attendance-panel{padding:13px}
+ .campus-attendance-heading{display:grid}
+ .campus-attendance-create-form{grid-template-columns:1fr}
+ .campus-attendance-create-form .btn{width:100%}
+ .campus-attendance-qr{grid-template-columns:1fr}
+ .campus-attendance-qr-image-wrap{min-height:160px}
+ .campus-attendance-qr img{max-width:160px}
+ .campus-attendance-roster-row{grid-template-columns:1fr}
+ .campus-attendance-roster-edit{max-width:100%}
+}
+html[data-theme="dark"] .campus-attendance-trust-tag{background:#123b32;color:#a9f0d8}
+html[data-theme="dark"] .campus-attendance-notice{background:#302918;border-color:#5d4b25;color:#f1dca5}
+html[data-theme="dark"] .campus-attendance-qr{background:#0f2027}
+html[data-theme="dark"] .campus-attendance-qr-image-wrap{background:#fff}
