@@ -2890,6 +2890,34 @@ body.dark .campus-dm-thread-empty p,
     </div>
   </section>
 
+
+  <section class="guide-walkthrough-panel" id="guide-walkthrough" aria-labelledby="guide-walkthrough-title">
+    <div class="guide-section-heading">
+      <div><p class="guide-eyebrow">LEARN BY DOING</p><h2 id="guide-walkthrough-title">Take a guided walkthrough</h2><p>Choose what you want to do. CampusShield will take you through the steps and link you to the right workspace tools.</p></div>
+      <span class="guide-walkthrough-tag">Interactive guide</span>
+    </div>
+    <div class="guide-walkthrough-layout">
+      <div class="guide-walkthrough-choices" role="group" aria-label="Choose a CampusShield walkthrough">
+        <button type="button" class="guide-journey-choice is-active" data-guide-journey="setup" aria-pressed="true"><span class="guide-journey-number">01</span><span class="guide-journey-copy"><strong>Set up my account</strong><small>Profile, university and access</small></span><span class="guide-journey-arrow" aria-hidden="true">→</span></button>
+        <button type="button" class="guide-journey-choice" data-guide-journey="safety" aria-pressed="false"><span class="guide-journey-number">02</span><span class="guide-journey-copy"><strong>Report a safety concern</strong><small>Submit and follow up privately</small></span><span class="guide-journey-arrow" aria-hidden="true">→</span></button>
+        <button type="button" class="guide-journey-choice" data-guide-journey="discover" aria-pressed="false"><span class="guide-journey-number">03</span><span class="guide-journey-copy"><strong>Find campus opportunities</strong><small>Marketplace, opportunities and people</small></span><span class="guide-journey-arrow" aria-hidden="true">→</span></button>
+        <button type="button" class="guide-journey-choice" data-guide-journey="study" aria-pressed="false"><span class="guide-journey-number">04</span><span class="guide-journey-copy"><strong>Plan my study day</strong><small>Timetable, courses and ShieldMind</small></span><span class="guide-journey-arrow" aria-hidden="true">→</span></button>
+        <button type="button" class="guide-journey-choice" data-guide-journey="map" aria-pressed="false"><span class="guide-journey-number">05</span><span class="guide-journey-copy"><strong>Explore my campus</strong><small>CampusMap, places and map layers</small></span><span class="guide-journey-arrow" aria-hidden="true">→</span></button>
+        <button type="button" class="guide-journey-choice" data-guide-journey="mobile" aria-pressed="false"><span class="guide-journey-number">06</span><span class="guide-journey-copy"><strong>Use CampusShield on my phone</strong><small>Install and keep the app updated</small></span><span class="guide-journey-arrow" aria-hidden="true">→</span></button>
+      </div>
+      <div class="guide-walkthrough-stage">
+        <div class="guide-walkthrough-stage-top"><span class="guide-walkthrough-step-count" id="guide-walkthrough-step-count">STEP 1 OF 3</span><span class="guide-walkthrough-completion" id="guide-walkthrough-completion">0 OF 3 COMPLETED</span></div>
+        <div class="guide-walkthrough-progress" role="progressbar" aria-label="Walkthrough completion" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" id="guide-walkthrough-progress"><span id="guide-walkthrough-progress-fill"></span></div>
+        <p class="guide-walkthrough-kicker" id="guide-walkthrough-kicker">YOUR FIRST STEPS</p>
+        <h3 id="guide-walkthrough-step-title">Complete your profile</h3>
+        <p class="guide-walkthrough-description" id="guide-walkthrough-step-description">Add the details you want CampusShield to use in your workspace. Keep your email and account information accurate.</p>
+        <p class="guide-walkthrough-note" id="guide-walkthrough-note" role="status" aria-live="polite">Your progress stays in this browser session; no walkthrough activity is sent to the server.</p>
+        <div class="guide-walkthrough-step-actions"><button class="btn secondary" type="button" id="guide-walkthrough-open">Open profile settings</button><button class="btn guide-primary" type="button" id="guide-walkthrough-complete" aria-pressed="false">Mark step complete</button></div>
+        <div class="guide-walkthrough-nav"><button class="btn secondary" type="button" id="guide-walkthrough-previous" disabled>← Back</button><button class="btn secondary" type="button" id="guide-walkthrough-next">Next step →</button></div>
+      </div>
+    </div>
+  </section>
+
   <section class="guide-discovery" aria-labelledby="guide-discovery-title">
     <div class="guide-section-heading"><div><p class="guide-eyebrow">FIND YOUR WAY</p><h2 id="guide-discovery-title">Explore the features</h2><p>Search for a feature or filter the guide by what you want to do.</p></div></div>
     <label class="guide-search">
@@ -2975,7 +3003,7 @@ body.dark .campus-dm-thread-empty p,
         <div class="guide-card-top"><span class="guide-card-icon" aria-hidden="true">▣</span><span class="guide-card-label">Website & mobile app</span></div>
         <h3>Install CampusShield on your phone</h3>
         <p>Use the responsive website or install the app experience on a supported device.</p>
-        <details><summary>How do I install or update the app?</summary><ol><li>Open CampusShield in a supported browser on your phone or computer.</li><li>When the <strong>Install app</strong> button appears, select it and follow the browser prompt.</li><li>On mobile, you may also find <strong>Add to Home Screen</strong> or <strong>Install app</strong> in the browser menu.</li><li>Open CampusShield from the new home-screen icon and sign in.</li><li>To update, reconnect to the internet and reload the app so the browser can fetch the latest website version.</li></ol><p>The installable app is a convenient app-like version of the website. Signing in, loading campus data, submitting reports, chatting and using live features require an internet connection. The offline page is only a connection fallback; it does not store reports for later submission.</p></details>
+        <details id="guide-install-details"><summary>How do I install or update the app?</summary><ol><li>Open CampusShield in a supported browser on your phone or computer.</li><li>When the <strong>Install app</strong> button appears, select it and follow the browser prompt.</li><li>On mobile, you may also find <strong>Add to Home Screen</strong> or <strong>Install app</strong> in the browser menu.</li><li>Open CampusShield from the new home-screen icon and sign in.</li><li>To update, reconnect to the internet and reload the app so the browser can fetch the latest website version.</li></ol><p>The installable app is a convenient app-like version of the website. Signing in, loading campus data, submitting reports, chatting and using live features require an internet connection. The offline page is only a connection fallback; it does not store reports for later submission.</p></details>
       </article>
 
       <article class="guide-card" data-guide-card data-guide-topic="staff">
