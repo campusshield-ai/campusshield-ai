@@ -961,6 +961,17 @@ async getCurrentUser() {
       return data || [];
     },
 
+    async listMyCampusMarketplaceListings() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in to view your marketplace listings.");
+      const { data, error } = await client.from("campus_marketplace_listings")
+        .select("id,university_id,category,title,description,price_ngn,status,created_at,updated_at")
+        .eq("seller_id", user.id).order("created_at", { ascending: false }).limit(50);
+      if (error) throw error;
+      return data || [];
+    },
+
     async createCampusMarketplaceListing(input) {
       if (!client) throw new Error("Supabase is not configured.");
       const user = await this.getCurrentUser();
