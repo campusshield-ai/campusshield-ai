@@ -88,13 +88,13 @@ test("verified staff can create sessions, rotate QR, inspect roster and close ch
 test("student scan controls are explicit and QR deep links are scrubbed from the address bar", async ({ page }) => {
   await prepareWorkspace(page);
   await page.evaluate(({ classId }) => {
+    window.BarcodeDetector = undefined;
     let cameraCalls = 0;
     window.__cameraCalls = () => cameraCalls;
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      const original = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+    if (navigator.mediaDevices) {
       Object.defineProperty(navigator.mediaDevices, "getUserMedia", {
         configurable: true,
-        value: async (...args) => { cameraCalls += 1; return original(...args); }
+        value: async () => { cameraCalls += 1; throw new Error("Unexpected camera access in unsupported-browser test"); }
       });
     }
     window.CampusShieldBackend = {
@@ -120,7 +120,8 @@ test("student scan controls are explicit and QR deep links are scrubbed from the
   expect(await page.evaluate(() => window.__cameraCalls())).toBe(0);
   await panel.getByRole("button", { name: "Scan lecturer QR code" }).click();
   await expect(panel.locator("#campus-attendance-scanner")).toBeVisible();
-  expect(await page.evaluate(() => window.__cameraCalls())).toBeLessThanOrEqual(1);
+  await expect(panel.locator("[data-scan-support]")).toContainText("does not support in-page QR scanning");
+  expect(await page.evaluate(() => window.__cameraCalls())).toBe(0);
 });
 
 test("attendance QR deep-link token is removed from the address bar before account interaction", async ({ page }) => {
@@ -139,6 +140,6 @@ test("attendance QR deep-link token is removed from the address bar before accou
     };
     window.dispatchEvent(new Event("campusshield:profile-ready"));
   });
-  await expect(page.locator("#campus-attendance-deep-link-message")).toContainText("Attendance recorded");
+  await expect(page.locator("#campus-attendance-deep-link-message")).toContainText("QR check-in recorded");
   await expect.poll(() => page.evaluate(() => !sessionStorage.getItem("campusshield:attendance:pending:v1"))).toBe(true);
 });
