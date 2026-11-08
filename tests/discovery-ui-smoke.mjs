@@ -30,5 +30,5 @@ for (const id of [
 
 assert.match(app, /campus-live-marketplace-card/);
 assert.match(app, /campus-live-opportunity-card/);
-assert.match(discovery, /No new data requests are made/);
+assert.match(discovery, /filter only cards already rendered/);
 console.log("Campus discovery usability smoke checks passed.");
