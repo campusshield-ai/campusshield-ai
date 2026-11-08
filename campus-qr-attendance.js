@@ -205,8 +205,10 @@
     const hide = display.querySelector("[data-attendance-hide-qr]");
     hide.addEventListener("click", () => { clearQrTimers(); display.replaceChildren(); currentQrSession = null; });
 
+    let refreshInFlight = false;
     const refresh = async () => {
-      if (!currentQrSession || currentQrSession.sessionId !== sessionId) return;
+      if (refreshInFlight || !currentQrSession || currentQrSession.sessionId !== sessionId) return;
+      refreshInFlight = true;
       const slot = display.querySelector("[data-attendance-qr-image]");
       const countdown = display.querySelector("[data-attendance-countdown]");
       if (!slot || !countdown) return;
@@ -238,6 +240,8 @@
         activeCountdownTimer = setInterval(renderCountdown, 1000);
       } catch (error) {
         slot.textContent = error.message || "Could not refresh QR code.";
+      } finally {
+        refreshInFlight = false;
       }
     };
 
