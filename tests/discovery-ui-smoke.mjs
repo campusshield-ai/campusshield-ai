@@ -24,6 +24,8 @@ assert.match(dashboard, /campus-dashboard-quicklinks/);
 assert.match(dashboard, /campus-my-day/);
 assert.match(dashboard, /campusshield:timetable-updated/);
 assert.match(timetable, /function getTodaySnapshot/);
+assert.match(timetable, /let loadSequence = 0/);
+assert.match(timetable, /if \(!isCurrentRequest\(\)\) return/);
 assert.match(timetable, /occurrenceForItem\(item, day\)/);
 assert.match(timetable, /campusshield:timetable-updated/);
 assert.match(app, /campusshield:profile-ready/);
