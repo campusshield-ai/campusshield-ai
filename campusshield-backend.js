@@ -1131,7 +1131,10 @@ async getCurrentUser() {
       const { data, error } = await client.rpc("create_campus_class_attendance_session", {
         p_classroom_id: classroomId,
         p_title: String(title || "").trim(),
-        p_session_date: new Date().toISOString().slice(0, 10),
+        p_session_date: (() => {
+          const today = new Date();
+          return [today.getFullYear(), String(today.getMonth() + 1).padStart(2, "0"), String(today.getDate()).padStart(2, "0")].join("-");
+        })(),
         p_window_minutes: Number(windowMinutes),
         p_late_after_minutes: Number(lateAfterMinutes)
       });
