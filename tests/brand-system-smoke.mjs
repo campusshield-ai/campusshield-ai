@@ -20,7 +20,7 @@ for (const page of pages) {
 
 for (const token of [
   "--cs-navy:#0B1F33","--cs-primary:#0F766E","--cs-seafoam:#14B8A6",
-  "--cs-seafoam-soft:#CCFBF1","--cs-ink:#142536","--cs-muted:#64748B",
+  "--cs-seafoam-soft:#CCFBF1","--cs-ink:#142536","--cs-muted:#475569",
   "--cs-canvas:#F4F7FA","--cs-line:#E2E8F0"
 ]) assert.ok(brand.includes(token), "Brand token exists: " + token);
 
@@ -28,7 +28,8 @@ assert.match(brand, /html\[data-theme="dark"\]/, "A matching dark-mode palette i
 assert.ok(brand.includes("#login-screen .login-intro"), "The sign-in hero receives the shared palette");
 assert.ok(brand.includes("#workspace #page-dashboard .campus-dashboard-hero"), "The dashboard hero receives the shared palette");
 assert.ok(brand.includes('html[data-theme="dark"] #page-shieldmind .shieldmind-insights-panel') &&
-  brand.includes("background:linear-gradient(145deg,#112C43,#0D243A);") &&
+  brand.includes("background-color:#102B46;") &&
+  brand.includes("background-image:linear-gradient(145deg,#112C43,#0D243A);") &&
   brand.includes("#page-shieldmind .shieldmind-insights-eyebrow"),
   "ShieldMind learning insights retain a dedicated dark-mode gradient");
 assert.match(brand, /prefers-reduced-motion:\s*reduce/, "Reduced-motion preferences are respected");
