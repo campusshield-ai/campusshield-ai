@@ -5646,6 +5646,9 @@
         <section class="panel"><h3>Learning links</h3>
           ${materials.length ? materials.map(item => { const url = safeHttpUrl(item.resource_url); return `<article class="panel"><h4>${escapeHubHtml(item.title)}</h4><p>${escapeHubHtml(item.description || '')}</p>${url ? `<p><a href="${escapeHubHtml(url)}" target="_blank" rel="noopener noreferrer">Open learning resource</a></p>` : '<p class="muted">This link is not valid and cannot be opened.</p>'}<p class="muted">${escapeHubHtml(formatHubDate(item.created_at))}</p></article>`; }).join('') : '<p class="muted">No learning links have been shared yet.</p>'}
         </section>
+        <section class="panel campus-attendance-panel" id="campus-attendance-panel">
+          <div class="campus-attendance-loading" role="status">Loading secure attendance tools…</div>
+        </section>
         ${teacherAccess ? `
           <section class="panel"><div class="panel-heading"><div><h3>Teacher tools</h3><p class="muted">These actions are checked again by Supabase.</p></div><button type="button" class="btn secondary" data-classroom-code="${escapeHubHtml(classroomId)}">Show join code</button></div>
             <p id="classroom-join-code-output" class="message" role="status" aria-live="polite"></p>
@@ -5662,6 +5665,9 @@
             </form>
           </section>` : ''}
       `;
+      window.dispatchEvent(new CustomEvent('campusshield:classroom-detail-loaded', {
+        detail: { classroomId }
+      }));
     } catch (err) {
       content.innerHTML = '<div class="community-empty">Private class content could not be loaded.</div>';
       status.textContent = err.message || 'Could not open this classroom.';
