@@ -43,6 +43,12 @@ test("unified search finds campus spaces and currently rendered campus content",
     card.append(heading, description);
     feed.replaceChildren(card);
   });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const searchBox = await search.boundingBox();
+  expect(searchBox).not.toBeNull();
+  expect(searchBox.x).toBeGreaterThanOrEqual(0);
+  expect(searchBox.x + searchBox.width).toBeLessThanOrEqual(391);
+
   await search.fill("Physics 101 revision workbook");
   await expect(results).toContainText("Physics 101 revision workbook");
   await page.evaluate(() => {
@@ -57,10 +63,4 @@ test("unified search finds campus spaces and currently rendered campus content",
   // correctly triggers the real Marketplace navigation control.
   await expect(page.locator("html")).toHaveAttribute("data-marketplace-search-activated", "true");
   await expect(results).toBeHidden();
-
-  await page.setViewportSize({ width: 390, height: 844 });
-  const searchBox = await search.boundingBox();
-  expect(searchBox).not.toBeNull();
-  expect(searchBox.x).toBeGreaterThanOrEqual(0);
-  expect(searchBox.x + searchBox.width).toBeLessThanOrEqual(391);
 });
