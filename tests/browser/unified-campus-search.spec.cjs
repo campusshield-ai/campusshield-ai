@@ -12,6 +12,8 @@ test("unified search finds campus spaces and currently rendered campus content",
   const search = page.locator("#campus-global-search");
   const results = page.locator("#campus-global-search-results");
   await expect(search).toBeVisible();
+  await expect(page.locator("#campus-marketplace-search")).toHaveCount(1);
+  await expect(page.locator("#campus-opportunities-search")).toHaveCount(1);
 
   await search.fill("Marketplace");
   await expect(results).toContainText("Marketplace");
