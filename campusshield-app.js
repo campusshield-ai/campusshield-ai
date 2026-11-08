@@ -5598,27 +5598,48 @@
   async function loadCampusClassroomsPage() {
     const status = $('campus-classrooms-status');
     const feed = $('campus-classrooms-feed');
-    const classroomCreateAccess = currentProfile?.role === 'teacher' && hasVerifiedCampusStaffMembership();
+    const hasCampusMembership = hasVerifiedCampusStaffMembership();
+    const isCampusAdmin = currentProfile?.role === 'admin' && hasCampusMembership;
+    const classroomCreateAccess = currentProfile?.role === 'teacher' && hasCampusMembership;
     $('classroom-create-panel').hidden = !classroomCreateAccess;
     $('classroom-join-panel').hidden = !isStudentAccount();
-    if (!hasVerifiedCampusStaffMembership()) {
+
+    const heading = $('campus-classrooms-heading');
+    const description = $('campus-classrooms-description');
+    if (heading) heading.textContent = isCampusAdmin ? 'University classrooms' : 'Your classrooms';
+    if (description) description.textContent = isCampusAdmin
+      ? 'All classrooms in your active, verified university are listed here. Open any class to supervise its attendance register and review corrections.'
+      : 'Only classes your account is authorized to access are shown.';
+
+    if (!hasCampusMembership) {
       status.textContent = 'A verified account and active verified campus membership are required.';
       feed.innerHTML = '<div class="community-empty">Classrooms are unavailable until your campus membership is verified.</div>';
       return;
     }
-    status.textContent = 'Loading your authorized classrooms…';
+
+    status.textContent = isCampusAdmin
+      ? 'Loading classrooms across your verified university…'
+      : 'Loading your authorized classrooms…';
     try {
       const rows = await window.CampusShieldBackend.listCampusClassrooms();
-      status.textContent = rows.length ? rows.length + ' classroom(s) available to your account.' : 'No classrooms are available yet.';
+      status.textContent = rows.length
+        ? (isCampusAdmin
+          ? rows.length + ' university classroom(s) available for attendance oversight.'
+          : rows.length + ' classroom(s) available to your account.')
+        : (isCampusAdmin
+          ? 'No classrooms are available in your verified university yet.'
+          : 'No classrooms are available yet.');
       feed.innerHTML = rows.length ? rows.map(row => `
         <article class="panel">
           <div class="panel-heading"><div><h3>${escapeHubHtml(row.name)}</h3><p class="muted">${escapeHubHtml(row.subject)}</p></div><button class="btn secondary" type="button" data-classroom-open="${escapeHubHtml(row.id)}">Open classroom</button></div>
           <p>${escapeHubHtml(row.description || 'No class description provided.')}</p>
           <p class="muted">Created ${escapeHubHtml(formatHubDate(row.created_at))}</p>
-        </article>`).join('') : '<div class="community-empty">No classes yet. A verified teacher can create one, or a student can join using a teacher-provided code.</div>';
+        </article>`).join('') : (isCampusAdmin
+          ? '<div class="community-empty">No classrooms have been created for this university yet. Verified lecturers can create classrooms; administrators can then supervise attendance across them.</div>'
+          : '<div class="community-empty">No classes yet. A verified teacher can create one, or a student can join using a teacher-provided code.</div>');
     } catch (err) {
       status.textContent = err.message || 'Could not load classrooms.';
-      feed.innerHTML = '<div class="community-empty">Classroom data could not be loaded. Check the staging migration and campus access.</div>';
+      feed.innerHTML = '<div class="community-empty">Classroom data could not be loaded. Check your campus access and refresh.</div>';
     }
   }
 
