@@ -35,6 +35,13 @@ assert.match(backend, /get_my_campus_class_attendance/);
 assert.match(attendance, /campusshield:classroom-detail-loaded/);
 assert.match(attendance, /campusshield:profile-ready/);
 assert.match(attendance, /campusshield:profile-cleared/);
+assert.match(app, /campusshield:session-signed-out/);
+assert.match(attendance, /campusshield:session-signed-out/);
+assert.match(attendance, /sessionStorage\.removeItem\(pendingDeepLinkStorageKey\)/);
+assert.match(attendance, /pendingDeepLinkInMemory = null/);
+assert.match(app, /\['student','teacher'\]\.includes\(currentProfile\?\.role\)/);
+assert.match(app, /\['student','teacher'\]\.includes\(currentProfile\.role\)/);
+
 assert.match(attendance, /BarcodeDetector/);
 assert.match(attendance, /getUserMedia/);
 assert.match(attendance, /pendingDeepLinkStorageKey/);
