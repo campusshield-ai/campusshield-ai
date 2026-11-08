@@ -1429,6 +1429,82 @@ button,input,select,textarea{max-width:100%;min-width:0}
 @media(max-width:650px){.campus-dm-layout{gap:12px}.campus-dm-thread{min-height:430px}.campus-dm-thread-header{padding:13px}.campus-dm-request-banner{padding:12px}.campus-dm-thread-messages{min-height:250px;max-height:52vh;padding:12px 10px}.campus-dm-message{max-width:94%;padding:10px 11px}.campus-dm-compose{padding:11px}.campus-dm-compose-footer .btn{min-height:44px}.campus-dm-new{padding:14px}.campus-dm-thread-empty{min-height:350px}}
 
 
+
+/* Private Messages — clearer inbox discovery and modern conversation workspace */
+.campus-dm-layout{grid-template-columns:minmax(300px,370px) minmax(0,1fr);align-items:stretch;gap:18px}
+.campus-dm-rail{display:flex;flex-direction:column;min-width:0;max-height:min(78vh,820px);border:1px solid #dce9e1;border-radius:18px;background:#fff}
+.campus-dm-new{padding:17px;border-bottom:1px solid #e3ece7;background:linear-gradient(145deg,#f7fcf8,#edf7f1)}
+.campus-dm-section-title{margin-bottom:14px}
+.campus-dm-section-title h2{font-size:15px}
+.campus-dm-section-title p{font-size:11px}
+.campus-dm-new label{font-size:11px}
+.campus-dm-new .field input,.campus-dm-new .field textarea{min-height:44px;border-radius:12px;font-size:13px}
+.campus-dm-new>form>.btn,.campus-dm-request-form .btn{min-height:43px;border-radius:11px;font-size:12px}
+.campus-dm-inbox-title{align-items:center;padding:16px 15px 8px}
+.campus-dm-inbox-title>div{display:grid;gap:3px;min-width:0}
+.campus-dm-inbox-title h2{font-size:15px}
+.campus-dm-inbox-title p{margin:0;color:#7a8f84;font-size:10px;line-height:1.4}
+.campus-dm-inbox-title .btn{min-height:36px;padding:7px 11px;border-radius:10px;font-size:11px}
+.campus-dm-inbox-tools{display:flex;align-items:center;gap:7px;padding:9px 14px 7px}
+.campus-dm-inbox-tools input{width:100%;min-width:0;min-height:40px;padding:9px 11px;border:1px solid #dce8e0;border-radius:11px;background:#fbfdfb;color:#183d32;font-size:12px}
+.campus-dm-inbox-tools input:focus-visible{outline:3px solid #79e0c430;border-color:#78b99a}
+.campus-dm-inbox-tools button{flex:0 0 auto;min-height:38px;padding:7px 9px;border:1px solid #dce8e0;border-radius:9px;background:#fff;color:#4e7865;font-size:10px;font-weight:800}
+.campus-dm-inbox-tools button[hidden]{display:none!important}
+.campus-dm-filter-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:2px 14px 8px}
+.campus-dm-filter-tabs button{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:34px;padding:6px 7px;border:1px solid transparent;border-radius:9px;background:#f5f8f5;color:#6c8074;font-size:10px;font-weight:800}
+.campus-dm-filter-tabs button[aria-pressed="true"]{border-color:#cce4d3;background:#eaf6ed;color:#236c49}
+.campus-dm-filter-tabs button span{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#e7eee8;color:#63796a;font-size:9px;font-variant-numeric:tabular-nums}
+.campus-dm-filter-tabs button[aria-pressed="true"] span{background:#d3ebd9;color:#216a46}
+.campus-dm-filter-tabs button:disabled{opacity:.55;cursor:not-allowed}
+#campus-dm-inbox-status{margin:3px 14px 5px;color:#6d8175;font-size:10px;line-height:1.5}
+.campus-dm-conversations{flex:1;min-height:140px;max-height:42vh;overflow-y:auto;overscroll-behavior:contain;padding:5px 9px 12px}
+.campus-dm-conversation{min-height:66px;padding:10px;border-radius:13px}
+.campus-dm-conversation.active{box-shadow:inset 3px 0 #3c9c69}
+.campus-dm-conversation-copy strong{font-size:12px}
+.campus-dm-conversation-copy small{font-size:10px}
+.campus-dm-status{font-size:8px}
+.campus-dm-empty-state{margin:6px;padding:18px 12px}
+.campus-dm-empty-clear{min-height:32px;margin-top:9px;padding:6px 10px;border:1px solid #d5e8db;border-radius:9px;background:#fff;color:#397452;font-size:10px;font-weight:800}
+.campus-dm-thread{min-width:0;min-height:min(70vh,680px);border:1px solid #dce9e1;border-radius:18px;background:#fff}
+.campus-dm-thread-header{position:relative;padding:16px 19px;background:linear-gradient(110deg,#f7fbf8,#fff)}
+.campus-dm-avatar{width:42px;height:42px;flex-basis:42px;border-radius:14px}
+.campus-dm-thread-contact strong{font-size:14px}
+.campus-dm-thread-contact span{font-size:10px}
+.campus-dm-thread-empty{min-height:460px;gap:2px;padding:32px 22px}
+.campus-dm-thread-empty-icon{width:68px;height:68px;border-radius:22px;box-shadow:0 8px 22px #17654f12}
+.campus-dm-thread-empty h2{font-size:18px}
+.campus-dm-thread-empty p{font-size:12px}
+.campus-dm-thread-messages{flex:1;min-height:280px;max-height:62vh;padding:18px;background:linear-gradient(180deg,#f9fcfa,#f6faf7)}
+.campus-dm-message{max-width:min(82%,560px);padding:12px 14px;border-radius:6px 16px 16px}
+.campus-dm-message.is-mine{border-radius:16px 6px 16px 16px}
+.campus-dm-message-body{font-size:13px}
+.campus-dm-compose{padding:14px 17px 16px;background:#fff}
+.campus-dm-compose textarea{min-height:76px;border-radius:13px;font-size:13px}
+.campus-dm-compose-footer .btn{min-height:42px;padding:9px 15px;border-radius:11px;font-size:12px}
+.campus-dm-request-banner{padding:14px 18px}
+.campus-dm-request-actions .btn{min-height:38px;border-radius:10px;font-size:11px}
+.campus-dm-block-button{min-height:36px;border-radius:10px}
+.campus-dm-layout button:focus-visible,.campus-dm-layout input:focus-visible,.campus-dm-layout textarea:focus-visible{outline:3px solid #79e0c455;outline-offset:2px}
+@media(max-width:900px){.campus-dm-layout{grid-template-columns:minmax(0,1fr);gap:14px}.campus-dm-rail{max-height:none}.campus-dm-conversations{max-height:340px}.campus-dm-thread{min-height:520px}.campus-dm-thread-messages{max-height:55vh;min-height:280px}}
+@media(max-width:650px){.campus-dm-layout{gap:12px}.campus-dm-rail,.campus-dm-thread{border-radius:15px}.campus-dm-new{padding:14px}.campus-dm-inbox-title{padding:14px 13px 7px}.campus-dm-inbox-tools{padding:8px 12px 6px}.campus-dm-filter-tabs{padding:2px 12px 8px}.campus-dm-thread{min-height:470px}.campus-dm-thread-empty{min-height:340px}.campus-dm-thread-header{padding:13px}.campus-dm-request-banner{padding:12px}.campus-dm-thread-messages{min-height:260px;max-height:52vh;padding:12px 10px}.campus-dm-message{max-width:94%;padding:10px 11px}.campus-dm-compose{padding:11px}.campus-dm-compose-footer .btn{min-height:44px}}
+@media(prefers-reduced-motion:reduce){.campus-dm-layout *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+body.dark .campus-dm-rail,body.dark .campus-dm-thread,body.dark .campus-dm-compose,[data-theme="dark"] .campus-dm-rail,[data-theme="dark"] .campus-dm-thread,[data-theme="dark"] .campus-dm-compose{background:#1b3025;border-color:#3d5947}
+body.dark .campus-dm-new,body.dark .campus-dm-thread-header,[data-theme="dark"] .campus-dm-new,[data-theme="dark"] .campus-dm-thread-header{background:#203a2b;border-color:#405c49}
+body.dark .campus-dm-inbox-title h2,body.dark .campus-dm-thread-contact strong,body.dark .campus-dm-thread-empty h2,[data-theme="dark"] .campus-dm-inbox-title h2,[data-theme="dark"] .campus-dm-thread-contact strong,[data-theme="dark"] .campus-dm-thread-empty h2{color:#e0efe4}
+body.dark .campus-dm-inbox-title p,body.dark #campus-dm-inbox-status,[data-theme="dark"] .campus-dm-inbox-title p,[data-theme="dark"] #campus-dm-inbox-status{color:#b6cbb9}
+body.dark .campus-dm-inbox-tools input,[data-theme="dark"] .campus-dm-inbox-tools input{background:#17291f;border-color:#45604c;color:#e1ede4}
+body.dark .campus-dm-filter-tabs button,[data-theme="dark"] .campus-dm-filter-tabs button{background:#253c2d;color:#c0d3c3}
+body.dark .campus-dm-filter-tabs button[aria-pressed="true"],[data-theme="dark"] .campus-dm-filter-tabs button[aria-pressed="true"]{background:#31553c;border-color:#527b5c;color:#e1f0e4}
+body.dark .campus-dm-conversation,[data-theme="dark"] .campus-dm-conversation{color:#dceadf}
+body.dark .campus-dm-conversation:hover,body.dark .campus-dm-conversation.active,[data-theme="dark"] .campus-dm-conversation:hover,[data-theme="dark"] .campus-dm-conversation.active{background:#294432;border-color:#4a7053}
+body.dark .campus-dm-conversation-copy small,[data-theme="dark"] .campus-dm-conversation-copy small{color:#b3c8b7}
+body.dark .campus-dm-thread-messages,[data-theme="dark"] .campus-dm-thread-messages{background:#182b21}
+body.dark .campus-dm-message,[data-theme="dark"] .campus-dm-message{background:#263d2f;border-color:#425e49}
+body.dark .campus-dm-message.is-mine,[data-theme="dark"] .campus-dm-message.is-mine{background:#31533b;border-color:#52765a}
+body.dark .campus-dm-message-body,[data-theme="dark"] .campus-dm-message-body{color:#e0eee3}
+body.dark .campus-dm-compose textarea,[data-theme="dark"] .campus-dm-compose textarea{background:#17291f;border-color:#48624e;color:#e1ede4}
+body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty p{color:#b6cbb9}
+
 /* My Timetable and course-community connections */
 .campus-timetable-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 16px}
 .campus-timetable-summary-item{display:flex;align-items:center;gap:12px;min-width:0;padding:14px;border:1px solid #dfeae4;border-radius:16px;background:linear-gradient(135deg,#fbfdfb,#eff7f2)}
@@ -3066,7 +3142,20 @@ button,input,select,textarea{max-width:100%;min-width:0}
           <button class="btn" type="submit" id="campus-dm-request-send">Send message request</button>
         </form>
       </section>
-      <div class="campus-dm-inbox-title"><h2>Inbox</h2><button type="button" class="btn secondary" id="campus-dm-refresh">Refresh</button></div>
+      <div class="campus-dm-inbox-title">
+        <div><h2>Inbox</h2><p>Your message requests and private conversations</p></div>
+        <button type="button" class="btn secondary" id="campus-dm-refresh">↻ <span>Refresh</span></button>
+      </div>
+      <div class="campus-dm-inbox-tools">
+        <label class="visually-hidden" for="campus-dm-conversation-search">Search your inbox</label>
+        <input id="campus-dm-conversation-search" type="search" placeholder="Search by campus username or message" autocomplete="off" disabled>
+        <button type="button" id="campus-dm-clear-inbox-search" hidden>Clear</button>
+      </div>
+      <div class="campus-dm-filter-tabs" role="group" aria-label="Filter private conversations">
+        <button type="button" data-campus-dm-filter="all" aria-pressed="true" disabled>All <span data-campus-dm-filter-count="all">0</span></button>
+        <button type="button" data-campus-dm-filter="requests" aria-pressed="false" disabled>Requests <span data-campus-dm-filter-count="requests">0</span></button>
+        <button type="button" data-campus-dm-filter="accepted" aria-pressed="false" disabled>Accepted <span data-campus-dm-filter-count="accepted">0</span></button>
+      </div>
       <p id="campus-dm-inbox-status" class="message" role="status" aria-live="polite"></p>
       <div id="campus-dm-conversations" class="campus-dm-conversations">
         <div class="campus-chat-empty"><strong>Your inbox is ready</strong><p>Message requests and conversations will appear here.</p></div>
