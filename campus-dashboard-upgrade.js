@@ -59,7 +59,12 @@
     {title:"Courses", description:"Your courses and learning resources", page:"courses", keywords:"course lecture learning resources"},
     {title:"CampusPulse", description:"Campus community and Lost & Found", page:"community", keywords:"lost found posts student social"},
     {title:"Upcoming Events", description:"Campus events and activities", page:"events", keywords:"calendar activities"},
-    {title:"Opportunity Hub", description:"Explore opportunities and services", page:"opportunities", keywords:"jobs internships scholarship career"},
+    {title:"Marketplace", description:"Find textbooks, electronics and student services from your campus", page:"marketplace", keywords:"buy sell books textbooks electronics accommodation services"},
+    {title:"Campus Network", description:"Connect with verified volunteers, startup teams and alumni", page:"campus-network", keywords:"university wide connections cross university volunteers startups alumni network"},
+    {title:"CampusVolunteers", description:"Find ways to volunteer and support campus projects", page:"campus-network", keywords:"volunteer causes service community impact"},
+    {title:"Startup Corner", description:"Find co-founders and collaborators across participating campuses", page:"campus-network", keywords:"startup founder team collaboration entrepreneurship"},
+    {title:"Alumni Connect", description:"Discover verified alumni who opted into networking", page:"campus-network", keywords:"alumni mentor graduate networking career"},
+    {title:"Opportunity Hub", description:"Explore scholarships, internships, grants and services", page:"opportunities", keywords:"jobs internships scholarship career grants mentorship hackathon"},
     {title:"Campus services & contacts", description:"Find university support contacts", page:"campus-contacts", keywords:"help clinic security contact support"},
     {title:"Verified campus noticeboard", description:"Updates from verified campus staff", page:"noticeboard", keywords:"announcements alerts notices"},
     {title:"My timetable", description:"Review your classes and schedule", page:"timetable", keywords:"schedule classes calendar"},
@@ -69,6 +74,34 @@
     const nav = document.querySelector('.nav [data-page="' + item.page + '"]');
     const page = document.getElementById("page-" + item.page);
     return Boolean(nav || page || item.page === "dashboard");
+  }
+
+  // Index only campus content already rendered for this signed-in account.
+  function getLiveCampusMatches(query) {
+    if (!query || query.length < 2) return [];
+    const sources = [
+      {selector:"#campus-marketplace-feed article", page:"marketplace", label:"Marketplace"},
+      {selector:"#campus-opportunities-feed article", page:"opportunities", label:"Opportunity Hub"},
+      {selector:"#campus-volunteer-feed article", page:"campus-network", label:"CampusVolunteers"},
+      {selector:"#campus-startup-feed article", page:"campus-network", label:"Startup Corner"},
+      {selector:"#campus-alumni-feed article", page:"campus-network", label:"Alumni Connect"},
+      {selector:"#campus-events-feed article", page:"events", label:"Campus events"},
+      {selector:"#community-feed article, #campus-community-feed article, #campuspulse-feed article", page:"community", label:"CampusPulse"}
+    ];
+    const matches = [];
+    sources.forEach(source => {
+      if (!visibleDestination({page:source.page})) return;
+      document.querySelectorAll(source.selector).forEach(element => {
+        if (element.hidden || element.closest("[hidden]")) return;
+        const body = String(element.innerText || element.textContent || "").replace(/\\s+/g, " ").trim();
+        if (!body || !body.toLocaleLowerCase().includes(query)) return;
+        const heading = element.querySelector("h2,h3,h4,[data-search-title]");
+        const title = String(heading?.textContent || body).trim().slice(0, 90);
+        matches.push({title, description:source.label + " · " + body.slice(0, 150),
+          page:source.page, keywords:body, element, isContent:true});
+      });
+    });
+    return matches.slice(0, 5);
   }
   function closeResults() {
     results.hidden = true;
@@ -90,8 +123,9 @@
   }
   function renderResults(query) {
     const q = query.trim().toLocaleLowerCase();
-    const matches = destinations.filter(item => visibleDestination(item) &&
-      (!q || (item.title + " " + item.description + " " + item.keywords).toLocaleLowerCase().includes(q))).slice(0, 7);
+    const destinationMatches = destinations.filter(item => visibleDestination(item) &&
+      (!q || (item.title + " " + item.description + " " + item.keywords).toLocaleLowerCase().includes(q))).slice(0, 6);
+    const matches = [...destinationMatches, ...getLiveCampusMatches(q)].slice(0, 10);
     results.replaceChildren();
     const heading = document.createElement("div");
     heading.className = "global-search-heading";
@@ -111,7 +145,7 @@
         const icon = document.createElement("span");
         icon.className = "global-search-result-icon";
         icon.setAttribute("aria-hidden", "true");
-        icon.textContent = ({dashboard:"⌂",report:"＋",shieldmind:"✧","past-questions":"▤",courses:"▦",community:"◎",events:"▣",opportunities:"↗","campus-contacts":"☎",noticeboard:"◉",timetable:"▦","profile-settings":"◌"})[item.page] || "↗";
+        icon.textContent = ({dashboard:"⌂",report:"＋",shieldmind:"✧","past-questions":"▤",courses:"▦",community:"◎",events:"▣",marketplace:"▣",opportunities:"↗","campus-network":"◎","campus-contacts":"☎",noticeboard:"◉",timetable:"▦","profile-settings":"◌"})[item.page] || "↗";
         const copy = document.createElement("span");
         const title = document.createElement("strong");
         title.textContent = item.title;
@@ -119,7 +153,12 @@
         detail.textContent = item.description;
         copy.append(title, detail);
         button.append(icon, copy);
-        button.addEventListener("click", () => openDestination(item));
+        button.addEventListener("click", () => {
+          openDestination(item);
+          if (item.element) window.setTimeout(() => {
+            if (item.element.isConnected) item.element.scrollIntoView({behavior:"smooth", block:"center"});
+          }, 100);
+        });
         results.append(button);
       });
     }
@@ -183,5 +222,31 @@
     };
     applyRole(document.getElementById("workspace")?.dataset.accountRole || "");
     window.addEventListener("campusshield:profile-ready", event => applyRole(event.detail?.role));
+  }
+  // Feature shortcuts are built from pages that actually exist in this release.
+  const shortcutHost = document.getElementById("student-shortcuts");
+  if (shortcutHost && !document.getElementById("campus-dashboard-quicklinks")) {
+    const quicklinks = document.createElement("nav");
+    quicklinks.id = "campus-dashboard-quicklinks";
+    quicklinks.className = "campus-dashboard-quicklinks";
+    quicklinks.setAttribute("aria-label", "Your campus shortcuts");
+    const label = document.createElement("span");
+    label.className = "campus-dashboard-quicklinks-label";
+    label.textContent = "OPEN A CAMPUS SPACE";
+    quicklinks.append(label);
+    [
+      {title:"Marketplace", page:"marketplace"},
+      {title:"Opportunity Hub", page:"opportunities"},
+      {title:"Campus Network", page:"campus-network"}
+    ].filter(visibleDestination).forEach(item => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "campus-dashboard-quicklink";
+      button.dataset.page = item.page;
+      button.setAttribute("aria-label", "Open " + item.title);
+      button.textContent = item.title;
+      quicklinks.append(button);
+    });
+    if (quicklinks.querySelector("button")) shortcutHost.append(quicklinks);
   }
 })();
