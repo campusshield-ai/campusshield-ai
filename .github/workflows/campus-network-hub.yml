@@ -5,6 +5,8 @@ on:
     branches: [staging/preview]
     paths:
       - "index.html"
+      - "tests/e2e/staging-identity-e2e.mjs"
+      - ".github/workflows/staging-identity-e2e.yml"
       - "campusshield-app.js"
       - "campusshield-backend.js"
       - "campusshield-visual-refresh.css"
