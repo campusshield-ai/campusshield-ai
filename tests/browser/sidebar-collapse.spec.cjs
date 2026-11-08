@@ -44,6 +44,13 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
     await expect(page.locator("#app-sidebar .sidebar-status")).toBeHidden();
     await expect(page.locator("#sidebar-collapse-toggle .sidebar-toggle-label")).toBeHidden();
 
+    // The rail and workspace offset animate together. Wait for both layout
+    // values to settle before asserting the final geometry to avoid reading
+    // the main margin midway through its transition.
+    await expect.poll(() => page.locator("#workspace .main").evaluate((el) =>
+      Math.round(parseFloat(getComputedStyle(el).marginLeft))
+    )).toBe(expectedWidth);
+
     const metrics = await page.evaluate(() => {
       const sidebar = document.querySelector("#app-sidebar");
       const main = document.querySelector("#workspace .main");
@@ -52,7 +59,7 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
         sidebarWidth: box.width,
         sidebarScrollWidth: sidebar.scrollWidth,
         sidebarClientWidth: sidebar.clientWidth,
-        mainMarginLeft: parseFloat(getComputedStyle(main).marginLeft),
+        mainMarginLeft: Math.round(parseFloat(getComputedStyle(main).marginLeft)),
         iconDisplay: getComputedStyle(sidebar.querySelector(".nav button .nav-icon")).display,
         iconWidth: sidebar.querySelector(".nav button .nav-icon").getBoundingClientRect().width,
         toggleIconDisplay: getComputedStyle(document.querySelector("#sidebar-collapse-toggle .sidebar-toggle-icon")).display,

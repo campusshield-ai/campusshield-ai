@@ -1,0 +1,42 @@
+name: CampusShield public accessibility checks
+
+on:
+  pull_request:
+    branches: [main, staging/preview]
+    paths:
+      - "index.html"
+      - "about.html"
+      - "features.html"
+      - "help.html"
+      - "privacy.html"
+      - "terms.html"
+      - "contact.html"
+      - "tests/browser/public-accessibility.spec.cjs"
+      - ".github/workflows/public-accessibility.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-public-accessibility
+  cancel-in-progress: true
+
+jobs:
+  accessibility:
+    name: WCAG 2.1 A/AA public-page scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser and accessibility test dependencies
+        run: npm install --no-save --no-package-lock @playwright/test@1.64.1 @axe-core/playwright
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Audit all public pages
+        run: npx playwright test --config=playwright.config.cjs tests/browser/public-accessibility.spec.cjs
