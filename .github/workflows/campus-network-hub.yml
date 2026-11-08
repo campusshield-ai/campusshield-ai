@@ -5,11 +5,15 @@ on:
     branches: [staging/preview]
     paths:
       - "index.html"
+      - "tests/e2e/staging-identity-e2e.mjs"
+      - ".github/workflows/staging-identity-e2e.yml"
       - "campusshield-app.js"
       - "campusshield-backend.js"
       - "campusshield-visual-refresh.css"
       - "supabase/migrations/20261108010000_campus_network_hub.sql"
       - "tests/campus-network-hub-smoke.mjs"
+      - "tests/e2e/staging-identity-e2e.mjs"
+      - ".github/workflows/staging-identity-e2e.yml"
       - ".github/workflows/campus-network-hub.yml"
   push:
     branches: [staging/preview]
@@ -40,5 +44,7 @@ jobs:
         run: node --check campusshield-backend.js
       - name: Check Campus Network and discovery contracts
         run: node tests/campus-network-hub-smoke.mjs
+      - name: Check staging authenticated E2E syntax
+        run: node --check tests/e2e/staging-identity-e2e.mjs
       - name: Run full CampusShield smoke suite
         run: node tests/smoke-check.mjs

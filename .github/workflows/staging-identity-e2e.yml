@@ -7,6 +7,7 @@ on:
       - staging/preview
     paths:
       - "tests/e2e/staging-identity-e2e.mjs"
+      - "supabase/migrations/20261108010000_campus_network_hub.sql"
       - ".github/workflows/staging-identity-e2e.yml"
       - "supabase-config.js"
       - "supabase/migrations/20261027052000_fix_student_identity_uuid_path_regex.sql"

@@ -42,13 +42,13 @@ function strongSyntheticPassword() {
   return `Cs-E2E!-${randomBytes(24).toString("base64url")}-9aA`;
 }
 
-async function generateAndConfirmSyntheticUser(role, university) {
-  const email = `${emailPrefix}-${role}@gmail.com`;
+async function generateAndConfirmSyntheticUser(role, university, accountTag = role) {
+  const email = `${emailPrefix}-${accountTag}@gmail.com`;
   const password = strongSyntheticPassword();
   const baseRequestedRole = role === "admin" ? "teacher" : "student";
   const displayName = role === "admin"
-    ? "CampusShield Synthetic E2E Reviewer"
-    : "CampusShield Synthetic E2E Student";
+    ? `CampusShield Synthetic E2E Reviewer ${accountTag}`
+    : `CampusShield Synthetic E2E Student ${accountTag}`;
 
   // generateLink returns a token but does not send an email. This lets CI exercise
   // the actual Supabase confirmation-token verification path without emailing a
@@ -141,6 +141,8 @@ async function cleanup() {
     if (scanDelete.error) cleanupErrors.push("identity scan-record cleanup failed");
     const identityDelete = await admin.from("student_identity_verifications").delete().eq("user_id", userId);
     if (identityDelete.error) cleanupErrors.push("identity-record cleanup failed");
+    const communityProfileDelete = await admin.from("community_profiles").delete().eq("user_id", userId);
+    if (communityProfileDelete.error) cleanupErrors.push("community-profile cleanup failed");
     const membershipDelete = await admin.from("campus_memberships").delete().eq("user_id", userId);
     if (membershipDelete.error) cleanupErrors.push("membership cleanup failed");
     const profileDelete = await admin.from("profiles").delete().eq("id", userId);
@@ -159,21 +161,22 @@ async function cleanup() {
 async function run() {
   let student;
   let reviewer;
+  let peer;
   try {
     const universityResult = await admin
       .from("campus_universities")
       .select("id,name")
       .eq("is_active", true)
       .order("name", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    mustSucceed(universityResult.error, "Find an active staging university for the synthetic test");
-    assert.ok(universityResult.data?.id && universityResult.data?.name,
-      "Staging must contain at least one active university; no real university rows are changed");
+      .limit(2);
+    mustSucceed(universityResult.error, "Find two active staging universities for the synthetic test");
+    assert.ok(Array.isArray(universityResult.data) && universityResult.data.length >= 2,
+      "Staging must contain two active universities to test cross-campus isolation; no real university rows are changed");
 
-    const university = universityResult.data;
-    reviewer = await generateAndConfirmSyntheticUser("admin", university);
-    student = await generateAndConfirmSyntheticUser("student", university);
+    const [university, peerUniversity] = universityResult.data;
+    reviewer = await generateAndConfirmSyntheticUser("admin", university, "campus-reviewer");
+    student = await generateAndConfirmSyntheticUser("student", university, "verified-student");
+    peer = await generateAndConfirmSyntheticUser("admin", peerUniversity, "network-peer-admin");
 
     // The unauthenticated caller must not be allowed to set a requested role.
     const anonymousRoleAttempt = await anonymous().rpc("save_my_requested_role", {
@@ -278,6 +281,161 @@ async function run() {
     assert.equal(verifiedProfile.data.role, "student");
     assert.equal(verifiedProfile.data.requested_role, "student");
     assert.equal(verifiedProfile.data.verification_status, "verified");
+
+    // Campus Network authenticated role, moderation and cross-university privacy checks.
+    const studentMembership = await admin.from("campus_memberships")
+      .select("membership_status,verification_status,campus_role")
+      .eq("user_id", student.id)
+      .eq("university_id", university.id)
+      .single();
+    mustSucceed(studentMembership.error, "Read the verified student's campus membership");
+    assert.equal(studentMembership.data.membership_status, "active");
+    assert.equal(studentMembership.data.verification_status, "verified");
+    assert.equal(studentMembership.data.campus_role, "student");
+
+    const peerMembership = await admin.from("campus_memberships")
+      .select("membership_status,verification_status,campus_role")
+      .eq("user_id", peer.id)
+      .eq("university_id", peerUniversity.id)
+      .single();
+    mustSucceed(peerMembership.error, "Read the second-university synthetic staff membership");
+    assert.equal(peerMembership.data.membership_status, "active");
+    assert.equal(peerMembership.data.verification_status, "verified");
+
+    const networkUsername = `e2e${runId.slice(0, 12)}`;
+    const usernameWrite = await admin.from("community_profiles").upsert({
+      user_id: student.id,
+      username: networkUsername,
+    }, { onConflict: "user_id" });
+    mustSucceed(usernameWrite.error, "Assign a temporary public username to the synthetic alumni test account");
+
+    const campusOnlyPost = await student.client.rpc("create_campus_network_post", {
+      p_post_type: "volunteer",
+      p_category: "education",
+      p_title: `E2E campus-only volunteer ${runId.slice(0, 8)}`,
+      p_description: "Synthetic staging test post for a campus-only volunteer opportunity. No real people or contact details.",
+      p_skills: ["tutoring"],
+      p_commitment: "Synthetic test only",
+      p_visibility: "campus",
+    });
+    mustSucceed(campusOnlyPost.error, "Create campus-only volunteer post with a verified student JWT");
+
+    const networkPost = await student.client.rpc("create_campus_network_post", {
+      p_post_type: "volunteer",
+      p_category: "education",
+      p_title: `E2E network volunteer ${runId.slice(0, 8)}`,
+      p_description: "Synthetic staging test post for an opt-in cross-university volunteer opportunity. No real data.",
+      p_skills: ["mentoring"],
+      p_commitment: "Synthetic test only",
+      p_visibility: "network",
+    });
+    mustSucceed(networkPost.error, "Create opt-in cross-university volunteer post with a verified student JWT");
+
+    for (const postId of [campusOnlyPost.data, networkPost.data]) {
+      const publish = await reviewer.client.rpc("review_campus_network_post", {
+        p_post_id: postId,
+        p_decision: "publish",
+      });
+      mustSucceed(publish.error, "Publish a synthetic post with the verified campus staff JWT");
+    }
+
+    const peerCampusFeed = await peer.client.rpc("list_campus_network_posts", {
+      p_post_type: "volunteer",
+      p_scope: "campus",
+      p_query: null,
+    });
+    mustSucceed(peerCampusFeed.error, "Read the peer university's own campus feed");
+    assert.ok(!(peerCampusFeed.data || []).some(row => [campusOnlyPost.data, networkPost.data].includes(row.id)),
+      "A different university's posts must not appear in campus-only discovery");
+
+    const peerNetworkFeed = await peer.client.rpc("list_campus_network_posts", {
+      p_post_type: "volunteer",
+      p_scope: "network",
+      p_query: runId.slice(0, 8),
+    });
+    mustSucceed(peerNetworkFeed.error, "Read explicitly network-visible posts with a verified second-university JWT");
+    const networkIds = new Set((peerNetworkFeed.data || []).map(row => row.id));
+    assert.ok(networkIds.has(networkPost.data), "Cross-university discovery includes the opted-in network post");
+    assert.ok(!networkIds.has(campusOnlyPost.data), "Cross-university discovery hides campus-only posts");
+
+    const directTableRead = await peer.client.from("campus_network_posts").select("id").limit(1);
+    assert.ok(directTableRead.error, "Authenticated clients must not read the RPC-only Campus Network table directly");
+
+    const deniedApplication = await peer.client.rpc("apply_to_campus_network_post", {
+      p_post_id: campusOnlyPost.data,
+      p_note: "Synthetic request from a different university.",
+    });
+    assert.ok(deniedApplication.error, "A different university cannot apply to a campus-only post");
+
+    const application = await peer.client.rpc("apply_to_campus_network_post", {
+      p_post_id: networkPost.data,
+      p_note: "Synthetic cross-university application for staging validation.",
+    });
+    mustSucceed(application.error, "Apply to an explicitly network-visible post with a verified peer JWT");
+
+    const ownerApplications = await student.client.rpc("list_campus_network_post_applications", {
+      p_post_id: networkPost.data,
+    });
+    mustSucceed(ownerApplications.error, "Read applications for the student's own network post");
+    assert.ok((ownerApplications.data || []).some(row => row.id === application.data),
+      "Only the post owner can see the submitted application through the owner RPC");
+
+    const acceptApplication = await student.client.rpc("respond_to_campus_network_application", {
+      p_application_id: application.data,
+      p_decision: "accepted",
+    });
+    mustSucceed(acceptApplication.error, "Accept the cross-university application with the post owner's JWT");
+
+    const alumniSubmission = await student.client.rpc("submit_campus_alumni_profile", {
+      p_programme: "Synthetic E2E Programme",
+      p_graduation_year: 2024,
+      p_headline: "Synthetic mentor for staging verification",
+      p_bio: "This is a synthetic alumni profile used only to validate the CampusShield staging introduction workflow.",
+      p_skills: ["mentoring", "career guidance"],
+      p_visibility: "network",
+    });
+    mustSucceed(alumniSubmission.error, "Submit an opt-in alumni profile with the verified student's JWT");
+
+    const verifyAlumni = await reviewer.client.rpc("review_campus_alumni_profile", {
+      p_user_id: student.id,
+      p_decision: "verify",
+      p_note: null,
+    });
+    mustSucceed(verifyAlumni.error, "Verify the synthetic alumni profile with the university staff JWT");
+
+    const alumniDirectory = await peer.client.rpc("list_campus_alumni_directory", {
+      p_scope: "network",
+      p_query: networkUsername,
+    });
+    mustSucceed(alumniDirectory.error, "Read the network alumni directory with a verified second-university JWT");
+    assert.ok((alumniDirectory.data || []).some(row => row.username === networkUsername),
+      "Verified opt-in alumni profiles must be discoverable across universities");
+
+    const introRequest = await peer.client.rpc("request_campus_alumni_intro_by_username", {
+      p_username: networkUsername,
+      p_note: "Synthetic cross-university request for career mentoring.",
+    });
+    mustSucceed(introRequest.error, "Request an introduction to a network-visible alumnus");
+
+    const alumniInbox = await student.client.rpc("list_my_campus_alumni_intro_requests");
+    mustSucceed(alumniInbox.error, "Read the alumni introduction inbox with the alumnus JWT");
+    const receivedIntro = (alumniInbox.data || []).find(row => row.direction === "received" && row.status === "pending");
+    assert.ok(receivedIntro?.id, "The alumnus must see the incoming introduction request");
+
+    const acceptIntro = await student.client.rpc("respond_to_campus_alumni_intro", {
+      p_request_id: receivedIntro.id,
+      p_decision: "accepted",
+    });
+    mustSucceed(acceptIntro.error, "Accept the introduction request with the alumni JWT");
+
+    const requesterStatus = await peer.client.rpc("list_my_campus_alumni_intro_requests");
+    mustSucceed(requesterStatus.error, "Read sent introduction status with the requester JWT");
+    assert.ok((requesterStatus.data || []).some(row => row.direction === "sent" && row.status === "accepted"),
+      "The requester must see the accepted introduction status");
+
+    console.log("PASS: verified student and campus staff JWTs created, moderated and discovered Campus Network posts.");
+    console.log("PASS: cross-university discovery exposed only opted-in posts; campus-only posts and direct table reads were denied.");
+    console.log("PASS: owner-only application review, verified alumni discovery and cross-university introduction acceptance succeeded.");
 
     console.log("PASS: staging confirmation-token verification completed without sending email.");
     console.log("PASS: anonymous role update denied; authenticated student role update accepted.");
