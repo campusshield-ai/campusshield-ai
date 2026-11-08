@@ -479,3 +479,41 @@ html[data-theme="dark"] .campus-network-intro-form textarea {border-color:#31534
 html[data-theme="dark"] .campus-network-my-posts {border-color:#315342;background:#122d20}
 html[data-theme="dark"] .campus-network-own-post {background:#173b2a}
 html[data-theme="dark"] .campus-network-pending-note {background:#40351e;color:#f4d99d}
+
+
+/* University-controlled QR attendance */
+.campus-attendance-panel { border:1px solid var(--border,#dce8df); background:var(--panel,#fff); }
+.campus-attendance-panel h3 { margin:0 0 6px; }
+.campus-attendance-muted { color:var(--muted,#66766d); font-size:.86rem; line-height:1.55; }
+.campus-attendance-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.campus-attendance-form-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; align-items:end; }
+.campus-attendance-sessions { display:grid; gap:10px; margin-top:14px; }
+.campus-attendance-session { display:flex; gap:12px; align-items:center; justify-content:space-between; padding:13px; border:1px solid var(--border,#dce8df); border-radius:13px; background:var(--surface,#f8fbf8); }
+.campus-attendance-session h4 { margin:0 0 4px; font-size:.94rem; }
+.campus-attendance-session p { margin:0; font-size:.8rem; color:var(--muted,#66766d); }
+.campus-attendance-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.campus-attendance-qr-shell { display:grid; justify-items:center; gap:12px; padding:18px; margin-top:14px; border:1px solid var(--border,#dce8df); border-radius:16px; background:#fff; color:#173b2a; }
+.campus-attendance-qr-shell svg { display:block; width:min(100%,310px); height:auto; aspect-ratio:1; }
+.campus-attendance-countdown { font-variant-numeric:tabular-nums; font-weight:800; color:#176b4c; }
+.campus-attendance-roster { width:100%; border-collapse:collapse; font-size:.84rem; }
+.campus-attendance-roster th,.campus-attendance-roster td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--border,#e2ebe4); }
+.campus-attendance-status { display:inline-flex; align-items:center; padding:4px 8px; border-radius:999px; background:#eef2ef; color:#4a5e51; font-weight:750; font-size:.74rem; text-transform:capitalize; }
+.campus-attendance-status[data-status="present"] { background:#e8f7ee; color:#1a6941; }
+.campus-attendance-status[data-status="late"] { background:#fff3dc; color:#805719; }
+.campus-attendance-status[data-status="absent"] { background:#fcebea; color:#9b3330; }
+.campus-attendance-receipt { border:1px solid #b6dfc5; border-radius:13px; background:#f0faf3; padding:13px; color:#21573a; }
+.campus-attendance-receipt strong { display:block; margin-bottom:3px; }
+.campus-attendance-scanner { display:grid; gap:10px; }
+.campus-attendance-scanner video { width:100%; max-height:360px; background:#101a14; border-radius:14px; object-fit:cover; }
+.campus-attendance-message { min-height:1.4em; }
+html[data-theme="dark"] .campus-attendance-panel { background:#132c20; border-color:#315342; }
+html[data-theme="dark"] .campus-attendance-session { background:#173b2a; border-color:#315342; }
+html[data-theme="dark"] .campus-attendance-session p,.dark .campus-attendance-session p { color:#bfd0c4; }
+@media (max-width:700px) {
+  .campus-attendance-grid,.campus-attendance-form-grid { grid-template-columns:1fr; }
+  .campus-attendance-session { align-items:flex-start; flex-direction:column; }
+  .campus-attendance-session .campus-attendance-actions { width:100%; }
+  .campus-attendance-actions .btn { flex:1 1 auto; }
+  .campus-attendance-roster { min-width:520px; }
+  .campus-attendance-roster-wrap { overflow-x:auto; }
+}

@@ -1116,6 +1116,87 @@ async getCurrentUser() {
       return data;
     },
 
+    // QR attendance API: session authorization and QR expiry are enforced by PostgreSQL.
+    async getCampusClassAttendanceCapabilities(classroomId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("get_campus_class_attendance_capabilities", {
+        p_classroom_id: classroomId
+      });
+      if (error) throw error;
+      return Array.isArray(data) ? data[0] || null : data;
+    },
+
+    async createCampusClassAttendanceSession(classroomId, title, windowMinutes = 120, lateAfterMinutes = 15) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_campus_class_attendance_session", {
+        p_classroom_id: classroomId,
+        p_title: String(title || "").trim(),
+        p_session_date: (() => {
+          const today = new Date();
+          return [today.getFullYear(), String(today.getMonth() + 1).padStart(2, "0"), String(today.getDate()).padStart(2, "0")].join("-");
+        })(),
+        p_window_minutes: Number(windowMinutes),
+        p_late_after_minutes: Number(lateAfterMinutes)
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusClassAttendanceSessions(classroomId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_class_attendance_sessions", {
+        p_classroom_id: classroomId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async issueCampusClassAttendanceQrToken(sessionId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("issue_campus_class_attendance_qr_token", {
+        p_session_id: sessionId
+      });
+      if (error) throw error;
+      return Array.isArray(data) ? data[0] || null : data;
+    },
+
+    async closeCampusClassAttendanceSession(sessionId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("close_campus_class_attendance_session", {
+        p_session_id: sessionId
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async listCampusClassAttendanceRoster(sessionId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_class_attendance_roster", {
+        p_session_id: sessionId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async getMyCampusClassAttendance(classroomId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("get_my_campus_class_attendance", {
+        p_classroom_id: classroomId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async checkInCampusClassAttendance(sessionId, qrToken) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("check_in_campus_class_attendance", {
+        p_session_id: sessionId,
+        p_qr_token: String(qrToken || "")
+      });
+      if (error) throw error;
+      return Array.isArray(data) ? data[0] || null : data;
+    },
+
     // Opportunity Hub API: direct reads are limited to safe columns by PostgreSQL grants/RLS.
     async listCampusOpportunities() {
       if (!client) throw new Error("Supabase is not configured.");
