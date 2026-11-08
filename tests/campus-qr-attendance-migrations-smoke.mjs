@@ -8,7 +8,8 @@ const controls = read("../supabase/migrations/20261108120238_campus_class_attend
 const roleControls = read("../supabase/migrations/20261108130235_campus_attendance_admin_and_teacher_controls.sql");
 const manualAdjustments = read("../supabase/migrations/20261108131000_campus_attendance_manual_adjustments_with_reason.sql");
 const legacyRpcLock = read("../supabase/migrations/20261108131500_restrict_legacy_attendance_mark_rpc.sql");
-const migrations = [core, deny, controls, roleControls, manualAdjustments, legacyRpcLock];
+const teacherAdminOnly = read("../supabase/migrations/20261108132000_restrict_attendance_controls_to_verified_teachers_and_admins.sql");
+const migrations = [core, deny, controls, roleControls, manualAdjustments, legacyRpcLock, teacherAdminOnly];
 const combined = migrations.join("\n");
 
 assert.match(core, /ADD COLUMN IF NOT EXISTS attendance_window_ends_at/);
@@ -33,6 +34,8 @@ assert.match(manualAdjustments, /set_campus_class_attendance_status/);
 assert.match(manualAdjustments, /set_config/);
 assert.match(manualAdjustments, /GRANT EXECUTE/);
 assert.match(legacyRpcLock, /REVOKE ALL ON FUNCTION public\.mark_campus_class_attendance/);
+assert.match(teacherAdminOnly, /private\.is_verified_classroom_teacher\(p_classroom_id\)[\s\S]*private\.is_verified_campus_admin_for_classroom\(p_classroom_id\)/);
+assert.doesNotMatch(teacherAdminOnly, /assistant_student_id/);
 
 assert.doesNotMatch(combined, /\(undefined\)/i, "Function ACLs must use concrete PostgreSQL signatures.");
 for (const sql of migrations) {
