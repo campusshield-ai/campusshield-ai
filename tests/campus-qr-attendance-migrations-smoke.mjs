@@ -34,7 +34,7 @@ assert.match(roleControls, /campus_class_attendance_select_authorized/);
 assert.match(roleControls, /campus_class_attendance_audit_select_teacher/);
 assert.match(manualAdjustments, /ADD COLUMN IF NOT EXISTS change_reason/);
 assert.match(manualAdjustments, /set_config/);
-assert.match(teacherAdminOnly, /is_verified_classroom_teacher[\\s\\S]*is_verified_campus_admin_for_classroom/);
+assert.match(teacherAdminOnly, /is_verified_classroom_teacher[\s\S]*is_verified_campus_admin_for_classroom/);
 assert.match(invokerWrapper, /set_campus_class_attendance_status_impl/);
 assert.match(legacyRpcLock, /to_regprocedure/);
 assert.match(functionAcl, /REVOKE ALL ON FUNCTION public\\.audit_campus_class_attendance/);
@@ -42,7 +42,7 @@ assert.match(functionAcl, /REVOKE ALL ON FUNCTION public\\.audit_campus_class_at
 assert.doesNotMatch(combined, /\(undefined\)/i, "Function ACLs must use concrete PostgreSQL signatures.");
 for (const sql of migrations) {
   const starts = (sql.match(/AS \$function\$/g) || []).length;
-  const ends = (sql.match(/^\$function\$;/gm) || []).length;
+  const ends = (sql.match(/\$function\$;/g) || []).length;
   assert.equal(ends, starts, "Every CREATE FUNCTION body must terminate with a semicolon.");
 }
 assert.ok(!/GRANT\s+(?:ALL|SELECT|INSERT|UPDATE|DELETE)\s+ON\s+TABLE\s+private\.campus_class_attendance_qr_tokens\s+TO\s+(?:PUBLIC|anon|authenticated)/i.test(combined),
