@@ -539,6 +539,14 @@
     if (message) { message.hidden = true; message.textContent = ""; }
   });
 
+  // Clear a captured QR credential only after an actual Supabase sign-out.
+  // The ordinary sign-in screen also emits profile-cleared during page boot,
+  // so using a separate event preserves first-time QR sign-in.
+  window.addEventListener("campusshield:session-signed-out", () => {
+    pendingDeepLinkInMemory = null;
+    try { sessionStorage.removeItem(pendingDeepLinkStorageKey); } catch (_) {}
+  });
+
   document.addEventListener("click", (event) => {
     const closeDetail = event.target.closest("#close-classroom-detail");
     const pageButton = event.target.closest("[data-page]");

@@ -222,7 +222,7 @@
         return;
       }
       if (button.dataset.page === 'classroom') {
-        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['teacher','security','admin'].includes(currentProfile?.role));
+        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['student','teacher'].includes(currentProfile?.role));
         return;
       }
       if (button.dataset.page === 'opportunities') {
@@ -875,6 +875,7 @@
       if (event === 'SIGNED_IN') authSessionVersion += 1;
 
       if (event === 'SIGNED_OUT') {
+        window.dispatchEvent(new Event('campusshield:session-signed-out'));
         authSessionVersion += 1;
         currentProfile = null;
         if (typeof resetShieldMindForSession === 'function') resetShieldMindForSession();
@@ -1052,9 +1053,9 @@
       toast('Only verified administrators can access account approvals.');
     }
     if (page === 'classroom' &&
-        (!verified || !hasVerifiedCampusStaffMembership() || !['teacher','security','admin'].includes(currentProfile.role))) {
+        (!verified || !hasVerifiedCampusStaffMembership() || !['student','teacher'].includes(currentProfile.role))) {
       page = 'dashboard';
-      toast('Teacher Classroom requires a verified campus staff account.');
+      toast('Classrooms require a verified account and active verified university membership.');
     }
     if (page === 'opportunities' && (!verified || !hasVerifiedCampusStaffMembership())) {
       page = 'dashboard';
