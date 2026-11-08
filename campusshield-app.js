@@ -1118,9 +1118,6 @@
     if (page === 'marketplace') loadCampusMarketplacePage();
     if (page === 'opportunities') loadCampusOpportunitiesPage();
     if (page === 'campus-network') loadCampusNetworkPage();
-    if (page === 'marketplace') loadCampusMarketplacePage();
-    if (page === 'opportunities') loadCampusOpportunitiesPage();
-    if (page === 'campus-network') loadCampusNetworkPage();
   }
 
   function consumeGoogleOAuthHints(profile, context) {
@@ -3299,7 +3296,6 @@
     if (button.dataset.page === 'groups') loadCampusGroupsPage();
     if (button.dataset.page === 'timetable') window.CampusShieldTimetable?.load();
     if (button.dataset.page === 'events') loadCampusEventsPage();
-    if (button.dataset.page === 'marketplace') loadCampusMarketplacePage();
     if (button.dataset.page === 'dashboard') loadCampusDashboardInsights();
     if (button.dataset.academicFocus === 'planner') {
       const planner = document.querySelector('#page-shieldmind .shieldmind-planner-panel');
