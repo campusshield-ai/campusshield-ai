@@ -14,36 +14,37 @@ const pages = [
 
 for (const page of pages) {
   const html = read(page);
-  assert.ok(html.includes('href="./campusshield-brand-system.css"'), page + " loads the shared Midnight Navy + Premium Teal theme");
-  assert.match(html, /<meta name="theme-color" content="#0B1F33">/i, page + " exposes the matching browser theme colour");
+  assert.ok(html.includes('href="./campusshield-brand-system.css"'), page + " loads the shared Forest Green + Emerald theme");
+  assert.match(html, /<meta name="theme-color" content="#0B2E1B">/i, page + " exposes the matching browser theme colour");
 }
 
 for (const token of [
-  "--cs-navy:#0B1F33","--cs-primary:#0F766E","--cs-seafoam:#14B8A6",
-  "--cs-seafoam-soft:#CCFBF1","--cs-ink:#142536","--cs-muted:#475569",
-  "--cs-canvas:#F4F7FA","--cs-line:#E2E8F0"
+  "--cs-navy:#0B2E1B","--cs-primary:#15803D","--cs-seafoam:#22C55E",
+  "--cs-seafoam-soft:#DCFCE7","--cs-ink:#173325","--cs-muted:#53695B",
+  "--cs-canvas:#F5F9F5","--cs-line:#DCE9DE"
 ]) assert.ok(brand.includes(token), "Brand token exists: " + token);
 
 assert.match(brand, /html\[data-theme="dark"\]/, "A matching dark-mode palette is defined");
 assert.ok(brand.includes("#login-screen .login-intro"), "The sign-in hero receives the shared palette");
 assert.ok(brand.includes("#workspace #page-dashboard .campus-dashboard-hero"), "The dashboard hero receives the shared palette");
+assert.ok(brand.includes("linear-gradient(125deg,#071E13 0%,#10462A 55%,#17613A 100%)"), "The dashboard hero uses a forest-green gradient, not a blue gradient");
 assert.ok(brand.includes('html[data-theme="dark"] #page-shieldmind .shieldmind-insights-panel') &&
-  brand.includes("background-color:#102B46;") &&
-  brand.includes("background-image:linear-gradient(145deg,#112C43,#0D243A);") &&
+  brand.includes("background-color:#123522;") &&
+  brand.includes("background-image:linear-gradient(145deg,#173D28,#0D2F1D)") &&
   brand.includes("#page-shieldmind .shieldmind-insights-eyebrow"),
   "ShieldMind learning insights retain a dedicated dark-mode gradient");
 assert.match(brand, /prefers-reduced-motion:\s*reduce/, "Reduced-motion preferences are respected");
 assert.match(brand, /campus-map-nearby-safety/, "CampusMap components share the brand system");
 assert.match(brand, /mobile-bottom-nav/, "Mobile navigation shares the brand system");
 
-assert.equal(manifest.theme_color, "#0B1F33", "PWA theme colour matches the website");
-assert.equal(manifest.background_color, "#F4F7FA", "PWA canvas matches the website");
+assert.equal(manifest.theme_color, "#0B2E1B", "PWA theme colour matches the website");
+assert.equal(manifest.background_color, "#F5F9F5", "PWA canvas matches the website");
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
   icon.type === "image/svg+xml"), "PWA uses the scalable branded SVG icon");
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskable-512.png" &&
   icon.purpose === "maskable"), "PWA uses the dedicated safe-area maskable icon");
 
-assert.match(serviceWorker, /campusshield-offline-v5/, "Offline cache version is incremented");
+assert.match(serviceWorker, /campusshield-offline-v6/, "Offline cache version is incremented");
 assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
   serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)"),
   "Offline fallback and shared brand stylesheet are both cached");
@@ -73,4 +74,4 @@ assert.ok(read("index.html").indexOf("campusshield-brand-system.css") >
   read("index.html").indexOf("campusshield-guide.css"),
   "The shared brand override loads after existing workspace styles");
 
-console.log("CampusShield Midnight Navy + Premium Teal and green-logo checks passed.");
+console.log("CampusShield Forest Green + Emerald and green-logo checks passed.");
