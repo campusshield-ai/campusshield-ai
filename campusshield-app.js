@@ -5662,6 +5662,9 @@
             </form>
           </section>` : ''}
       `;
+      window.dispatchEvent(new CustomEvent('campusshield:classroom-detail-loaded', {
+        detail: { classroomId }
+      }));
     } catch (err) {
       content.innerHTML = '<div class="community-empty">Private class content could not be loaded.</div>';
       status.textContent = err.message || 'Could not open this classroom.';
