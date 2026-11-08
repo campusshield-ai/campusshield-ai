@@ -131,3 +131,30 @@ html[data-theme="dark"] .campus-discovery-utility button:hover{background:#21463
 html[data-theme="dark"] .campus-dashboard-quicklinks,html[data-theme="dark"] .campus-live-discovery-toolbar{background:var(--cs-surface-soft,#172f35);border-color:var(--cs-border,#294047)}
 html[data-theme="dark"] .campus-dashboard-quicklink,html[data-theme="dark"] .campus-live-discovery-clear,html[data-theme="dark"] .campus-live-discovery-toolbar input,html[data-theme="dark"] .campus-live-discovery-toolbar select{background:var(--cs-surface,#11262c);border-color:var(--cs-border,#294047);color:var(--cs-text,#e5f1ee)}
 @media(prefers-reduced-motion:reduce){.campus-dashboard-quicklink{transition:none}}
+
+
+/* My Day: compact agenda sourced from the signed-in user's private timetable. */
+.campus-my-day-panel{margin:0 0 20px;padding:20px;border:1px solid var(--cs-border,#e2eae6);border-radius:18px;background:var(--cs-surface,#fff);box-shadow:var(--shadow-soft,0 7px 22px rgba(18,49,58,.045));color:var(--cs-text,#17313a)}
+.campus-my-day-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.campus-my-day-header h2{margin:0;color:var(--cs-text,#17313a);font-size:20px;letter-spacing:-.035em}
+.campus-my-day-date{margin:4px 0 0;color:var(--cs-muted,#71828a);font-size:12px}
+.campus-my-day-open{flex:0 0 auto;min-height:38px;padding:8px 13px;border:1px solid var(--cs-border,#dce9e4);border-radius:10px;background:var(--cs-surface-soft,#f4f8f6);color:var(--cs-text,#17313a);font-size:11px;font-weight:800}
+.campus-my-day-open:hover{border-color:#74cbb4;color:#126b59}
+.campus-my-day-summary{margin:14px 0 10px;color:var(--cs-muted,#71828a);font-size:11px;font-weight:750}
+.campus-my-day-feed{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.campus-my-day-item{display:grid;grid-template-columns:78px minmax(0,1fr) auto;align-items:center;gap:12px;min-width:0;padding:11px 12px;border:1px solid var(--cs-border,#e2eae6);border-radius:12px;background:var(--cs-surface-soft,#f7faf8)}
+.campus-my-day-time{color:var(--cs-text,#17313a);font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}
+.campus-my-day-copy{display:grid;min-width:0;gap:3px}
+.campus-my-day-copy strong{overflow-wrap:anywhere;color:var(--cs-text,#17313a);font-size:12px}
+.campus-my-day-meta{overflow-wrap:anywhere;color:var(--cs-muted,#71828a);font-size:10px}
+.campus-my-day-kind{justify-self:end;padding:5px 8px;border-radius:999px;background:#e2f4ec;color:#1b725b;font-size:9px;font-weight:850;white-space:nowrap}
+.campus-my-day-item.is-complete .campus-my-day-copy strong{text-decoration:line-through;opacity:.7}
+.campus-my-day-item.is-complete .campus-my-day-kind{background:#edf1ef;color:#66746f}
+.campus-my-day-empty,.campus-my-day-more{padding:13px;border:1px dashed var(--cs-border,#dce9e4);border-radius:11px;color:var(--cs-muted,#71828a);font-size:11px}
+.campus-my-day-more{text-align:center;border:0;padding-bottom:0}
+html[data-theme="dark"] .campus-my-day-panel{background:var(--cs-surface,#11262c);border-color:var(--cs-border,#294047);color:var(--cs-text,#e5f1ee)}
+html[data-theme="dark"] .campus-my-day-header h2,html[data-theme="dark"] .campus-my-day-time,html[data-theme="dark"] .campus-my-day-copy strong{color:var(--cs-text,#e5f1ee)}
+html[data-theme="dark"] .campus-my-day-item{background:var(--cs-surface-soft,#172f35);border-color:var(--cs-border,#294047)}
+html[data-theme="dark"] .campus-my-day-open{background:var(--cs-surface-soft,#172f35);border-color:var(--cs-border,#294047);color:var(--cs-text,#e5f1ee)}
+html[data-theme="dark"] .campus-my-day-kind{background:#1d403b;color:#a5ead6}
+@media(max-width:600px){.campus-my-day-panel{padding:15px;border-radius:15px}.campus-my-day-header{align-items:flex-start}.campus-my-day-header h2{font-size:18px}.campus-my-day-open{min-height:36px;padding:7px 10px}.campus-my-day-item{grid-template-columns:64px minmax(0,1fr);gap:7px 10px;padding:10px}.campus-my-day-kind{grid-column:2;justify-self:start}}

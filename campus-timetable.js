@@ -11,6 +11,7 @@
     reminder: "Reminder"
   };
   let timetableItems = [];
+  let timetableLoaded = false;
   let publishedCourses = [];
   let campusEvents = [];
   let campusContext = null;
@@ -162,6 +163,72 @@
     const start = new Date(event.starts_at);
     if (Number.isNaN(start.getTime()) || dateKey(start) !== dateKey(date)) return null;
     return { type: "event", event, start, end: event.ends_at ? new Date(event.ends_at) : null, recurring: false, sourceId: event.id };
+  }
+
+  function safeIsoDate(value) {
+    const date = value instanceof Date ? value : (value ? new Date(value) : null);
+    return date && Number.isFinite(date.getTime()) ? date.toISOString() : null;
+  }
+
+  // Read-only dashboard projection of this account's private planner and published campus events.
+  function getTodaySnapshot(referenceDate = new Date()) {
+    const reference = referenceDate instanceof Date && Number.isFinite(referenceDate.getTime()) ? referenceDate : new Date();
+    const day = startOfDay(reference);
+    const items = [];
+    timetableItems.forEach((item) => {
+      const occurrence = occurrenceForItem(item, day);
+      if (!occurrence || !safeIsoDate(occurrence.start)) return;
+      const kind = String(item.kind || "reminder").toLowerCase();
+      items.push({
+        id: String(item.id || ""),
+        title: String(item.title || "Timetable item"),
+        kind,
+        label: kindLabels[kind] || "Task",
+        courseCode: String(item.course_code || ""),
+        location: String(item.location || ""),
+        startsAt: safeIsoDate(occurrence.start),
+        endsAt: safeIsoDate(occurrence.end),
+        completed: Boolean(item.completed),
+        source: "planner"
+      });
+    });
+    campusEvents.forEach((event) => {
+      const occurrence = eventForDate(event, day);
+      if (!occurrence || !safeIsoDate(occurrence.start)) return;
+      items.push({
+        id: String(event.id || ""),
+        title: String(event.title || "Campus event"),
+        kind: "event",
+        label: "Campus event",
+        courseCode: "",
+        location: String(event.location || ""),
+        startsAt: safeIsoDate(occurrence.start),
+        endsAt: safeIsoDate(occurrence.end),
+        completed: false,
+        source: "campus-event"
+      });
+    });
+    items.sort((left, right) => Date.parse(left.startsAt) - Date.parse(right.startsAt));
+    return { date: dateKey(day), loaded: timetableLoaded, items };
+  }
+
+  function notifyDashboard(eventName = "campusshield:timetable-updated") {
+    window.dispatchEvent(new Event(eventName));
+  }
+
+  function clearPrivateTimetable() {
+    timetableItems = [];
+    publishedCourses = [];
+    campusEvents = [];
+    campusContext = null;
+    timetableLoaded = false;
+    if (reminderTimer) {
+      window.clearInterval(reminderTimer);
+      reminderTimer = null;
+    }
+    setCourseOptions();
+    renderAll();
+    notifyDashboard();
   }
 
   function setWeek(newStart, newSelected) {
@@ -355,6 +422,8 @@
   async function load(options = {}) {
     if (loading) return;
     loading = true;
+    timetableLoaded = false;
+    notifyDashboard("campusshield:timetable-loading");
     const refreshButton = byId("campus-timetable-refresh");
     if (refreshButton) refreshButton.disabled = true;
     status("Loading your private timetable…");
@@ -372,18 +441,22 @@
       }
 
       setCourseOptions();
+      timetableLoaded = true;
       renderAll();
       status(campusContext?.university_id
         ? "Your private timetable is synced. Course links and campus events are scoped to your selected university."
         : "Your private timetable is synced. Choose your university in CampusPulse to link courses or view campus events.");
       startReminderChecks();
+      notifyDashboard();
       if (options.keepMessage && byId("campus-timetable-form-status")) formStatus(options.keepMessage);
     } catch (error) {
       timetableItems = [];
       publishedCourses = [];
       campusEvents = [];
+      timetableLoaded = false;
       setCourseOptions();
       renderAll();
+      notifyDashboard();
       status(error?.message || "Could not load your timetable.", true);
       if (byId("campus-timetable-day-feed")) {
         byId("campus-timetable-day-feed").innerHTML = '<div class="campus-timetable-empty"><strong>Timetable unavailable</strong><p>Sign in with an account eligible to use the private planner, then refresh this page.</p></div>';
@@ -723,17 +796,22 @@
     byId("campus-timetable-notifications")?.addEventListener("click", enableNotifications);
     byId("campus-timetable-day-feed")?.addEventListener("click", onItemAction);
     byId("campus-timetable-unscheduled-feed")?.addEventListener("click", onItemAction);
+    window.addEventListener("campusshield:profile-ready", (event) => {
+      if (!event.detail?.role) return;
+      load();
+    });
+    window.addEventListener("campusshield:profile-cleared", () => {
+      clearPrivateTimetable();
+    });
     window.addEventListener("campusshield:session-changed", () => {
-      timetableItems = [];
-      publishedCourses = [];
-      campusEvents = [];
+      clearPrivateTimetable();
       load();
     });
     updateRepeatVisibility();
     renderCalendar();
   }
 
-  window.CampusShieldTimetable = { load };
+  window.CampusShieldTimetable = { load, getTodaySnapshot };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init, { once: true });
   } else {
