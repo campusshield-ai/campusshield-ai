@@ -10,12 +10,25 @@ on:
       - "campus-dashboard-upgrade.css"
       - "campus-discovery-ui.js"
       - "campusshield-app.js"
+      - "campusshield-backend.js"
+      - "campus-qr-attendance.js"
+      - "campus-qr-attendance.css"
+      - "vendor/qrcode.js"
       - "tests/discovery-ui-smoke.mjs"
       - "tests/browser/unified-campus-search.spec.cjs"
+      - "tests/campus-qr-attendance-smoke.mjs"
+      - "tests/browser/campus-qr-attendance.spec.cjs"
+      - "tests/campus-qr-attendance-migrations-smoke.mjs"
       - "supabase/migrations/20261108115155_campus_class_qr_attendance.sql"
       - "supabase/migrations/20261108115319_deny_direct_access_to_private_attendance_qr_tokens.sql"
       - "supabase/migrations/20261108120238_campus_class_attendance_session_controls.sql"
-      - "tests/campus-qr-attendance-migrations-smoke.mjs"
+      - "supabase/migrations/20261108132905_campus_attendance_verified_university_admin_helper.sql"
+      - "supabase/migrations/20261108132924_campus_attendance_admin_and_teacher_controls.sql"
+      - "supabase/migrations/20261108132926_campus_attendance_manual_adjustments_with_reason.sql"
+      - "supabase/migrations/20261108132927_restrict_attendance_controls_to_verified_teachers_and_admins.sql"
+      - "supabase/migrations/20261108132929_wrap_manual_attendance_rpc_as_invoker.sql"
+      - "supabase/migrations/20261108132930_restrict_legacy_attendance_mark_rpc.sql"
+      - "supabase/migrations/20261108133000_attendance_helper_and_trigger_function_acl.sql"
       - ".github/workflows/unified-campus-usability.yml"
   push:
     branches: [main, "staging/preview"]
@@ -26,12 +39,26 @@ on:
       - "campus-dashboard-upgrade.css"
       - "campus-discovery-ui.js"
       - "campusshield-app.js"
+      - "campusshield-backend.js"
+      - "campus-qr-attendance.js"
+      - "campus-qr-attendance.css"
+      - "vendor/qrcode.js"
       - "tests/discovery-ui-smoke.mjs"
       - "tests/browser/unified-campus-search.spec.cjs"
+      - "tests/campus-qr-attendance-smoke.mjs"
+      - "tests/browser/campus-qr-attendance.spec.cjs"
+      - "tests/campus-qr-attendance-migrations-smoke.mjs"
       - "supabase/migrations/20261108115155_campus_class_qr_attendance.sql"
       - "supabase/migrations/20261108115319_deny_direct_access_to_private_attendance_qr_tokens.sql"
       - "supabase/migrations/20261108120238_campus_class_attendance_session_controls.sql"
-      - "tests/campus-qr-attendance-migrations-smoke.mjs"
+      - "supabase/migrations/20261108132905_campus_attendance_verified_university_admin_helper.sql"
+      - "supabase/migrations/20261108132924_campus_attendance_admin_and_teacher_controls.sql"
+      - "supabase/migrations/20261108132926_campus_attendance_manual_adjustments_with_reason.sql"
+      - "supabase/migrations/20261108132927_restrict_attendance_controls_to_verified_teachers_and_admins.sql"
+      - "supabase/migrations/20261108132929_wrap_manual_attendance_rpc_as_invoker.sql"
+      - "supabase/migrations/20261108132930_restrict_legacy_attendance_mark_rpc.sql"
+      - "supabase/migrations/20261108133000_attendance_helper_and_trigger_function_acl.sql"
+      - ".github/workflows/unified-campus-usability.yml"
 
 permissions:
   contents: read
@@ -51,8 +78,12 @@ jobs:
           node --check campus-timetable.js
           node --check campus-discovery-ui.js
           node --check campusshield-app.js
+          node --check campus-qr-attendance.js
+          node --check vendor/qrcode.js
       - name: Verify campus discovery integration
         run: node tests/discovery-ui-smoke.mjs
+      - name: Verify QR attendance access, privacy and UI integration
+        run: node tests/campus-qr-attendance-smoke.mjs
       - name: Verify QR attendance migration source
         run: node tests/campus-qr-attendance-migrations-smoke.mjs
       - name: Install Playwright
@@ -62,4 +93,4 @@ jobs:
       - name: Test search, discovery navigation and mobile layout
         env:
           CI: "true"
-        run: npx playwright test tests/browser/unified-campus-search.spec.cjs --config=playwright.config.cjs
+        run: npx playwright test tests/browser/unified-campus-search.spec.cjs tests/browser/campus-qr-attendance.spec.cjs --config=playwright.config.cjs

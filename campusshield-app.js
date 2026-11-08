@@ -216,7 +216,7 @@
         return;
       }
       if (button.dataset.page === 'classroom') {
-        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['teacher','security','admin'].includes(currentProfile?.role));
+        button.hidden = !(verified && hasVerifiedCampusStaffMembership() && ['student','teacher','admin'].includes(currentProfile?.role));
         return;
       }
       if (button.dataset.page === 'opportunities') {
@@ -1043,9 +1043,9 @@
       toast('Only verified administrators can access account approvals.');
     }
     if (page === 'classroom' &&
-        (!verified || !hasVerifiedCampusStaffMembership() || !['teacher','security','admin'].includes(currentProfile.role))) {
+        (!verified || !hasVerifiedCampusStaffMembership() || !['student','teacher','admin'].includes(currentProfile.role))) {
       page = 'dashboard';
-      toast('Teacher Classroom requires a verified campus staff account.');
+      toast('Classrooms & Attendance requires a verified campus account with an active university membership.');
     }
     if (page === 'opportunities' && (!verified || !hasVerifiedCampusStaffMembership())) {
       page = 'dashboard';
@@ -5207,8 +5207,8 @@
   async function loadCampusClassroomsPage() {
     const status = $('campus-classrooms-status');
     const feed = $('campus-classrooms-feed');
-    const teacherAccess = currentProfile?.role === 'teacher' && hasVerifiedCampusStaffMembership();
-    $('classroom-create-panel').hidden = !teacherAccess;
+    const classroomCreateAccess = currentProfile?.role === 'teacher' && hasVerifiedCampusStaffMembership();
+    $('classroom-create-panel').hidden = !classroomCreateAccess;
     $('classroom-join-panel').hidden = !isStudentAccount();
     if (!hasVerifiedCampusStaffMembership()) {
       status.textContent = 'A verified account and active verified campus membership are required.';
@@ -5272,6 +5272,7 @@
             </form>
           </section>` : ''}
       `;
+      window.dispatchEvent(new CustomEvent('campusshield:classroom-detail-loaded', { detail: { classroomId } }));
     } catch (err) {
       content.innerHTML = '<div class="community-empty">Private class content could not be loaded.</div>';
       status.textContent = err.message || 'Could not open this classroom.';
@@ -7992,6 +7993,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
 
       const {error} = await backend.client.auth.signOut();
       if (error) throw error;
+      window.dispatchEvent(new CustomEvent('campusshield:session-signed-out'));
       $('auth-password').value = '';
       currentProfile = null;
       showLogin('You have signed out.');

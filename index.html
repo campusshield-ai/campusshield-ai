@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#0d3b2e">
 <meta name="description" content="CampusShield AI helps students and campus teams access safety reporting, verified campus updates, learning support and student-life resources.">
 <meta property="og:type" content="website">
@@ -2274,6 +2275,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   }
 </style>
 <link rel="stylesheet" href="./campusshield-mobile-polish.css">
+<link rel="stylesheet" href="./campus-qr-attendance.css">
 </head>
 <body>
 
@@ -4199,8 +4201,9 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 </section>
 
 <section class="page" id="page-classroom">
-  <div class="heading"><h1>Teacher Classroom</h1><p>Private course spaces for verified teachers and students at the same university.</p></div>
+  <div class="heading"><h1>Classrooms &amp; Attendance</h1><p>Join your classes, manage teaching spaces and track attendance with permissions set by your university.</p></div>
   <div class="notice-inline"><strong>Private by design.</strong> Only verified campus members who own or have joined a class can read its announcements and learning links. Do not post student IDs, passwords, or private records.</div>
+  <p id="campus-attendance-deep-link-message" class="message campus-attendance-message" role="status" aria-live="polite" hidden></p>
   <section class="panel" id="classroom-create-panel" hidden>
     <div class="panel-heading"><div><h2>Create a classroom</h2><p>Only verified teachers can create classes.</p></div></div>
     <form id="campusClassroomCreateForm">
@@ -4227,6 +4230,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   <section class="panel" id="classroom-detail-panel" hidden>
     <div class="panel-heading"><div><h2 id="classroom-detail-title">Classroom</h2><p id="classroom-detail-subtitle" class="muted"></p></div><button class="btn secondary" type="button" id="close-classroom-detail">Close</button></div>
     <div id="classroom-detail-content"></div>
+    <section class="panel campus-attendance-panel" id="campus-attendance-panel" aria-label="Class attendance"><div class="community-empty" role="status">Secure attendance tools load when you open an authorized classroom.</div></section>
     <p id="classroom-detail-message" class="message" role="status" aria-live="polite"></p>
   </section>
 </section>
@@ -4549,6 +4553,8 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
 <script src="./supabase-config.js" defer></script>
 <script src="./campusshield-backend.js" defer></script>
+<script src="./vendor/qrcode.js" defer></script>
+<script src="./campus-qr-attendance.js" defer></script>
 <script src="./campus-service-directory.js" defer></script>
 <script src="./shieldmind-planner.js" defer></script>
 <script src="./shieldmind-learning-insights.js" defer></script>
