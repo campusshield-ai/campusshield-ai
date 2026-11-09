@@ -1,5 +1,5 @@
 /* CampusShield in-app guide */
-.campus-guide-page{--guide-ink:#173325;--guide-muted:#53695B;--guide-line:#DCE9DE;--guide-soft:#F5F9F5;--guide-teal:#0a8f7b;--guide-deep:#06223a;gap:18px}
+.campus-guide-page{--guide-ink:#173325;--guide-muted:#53695B;--guide-line:#DCE9DE;--guide-soft:#F5F9F5;--guide-teal:#0a8f7b;--guide-deep:#071E13;gap:18px}
 .page.campus-guide-page{display:none}
 .page.campus-guide-page.active{display:grid}
 .campus-guide-page .guide-hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;align-items:center;gap:18px;overflow:hidden;padding:clamp(22px,4vw,38px);border:1px solid #cce4df;border-radius:22px;background:radial-gradient(circle at 95% 10%,#d2f4e9 0,transparent 34%),linear-gradient(135deg,#f8fdfb,#eef7f7);color:var(--guide-ink)}
@@ -39,7 +39,7 @@
 .campus-guide-page .guide-card-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .campus-guide-page .guide-card-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:11px;background:#e8f6f1;color:#087966;font-size:1rem;font-weight:900}
 .campus-guide-page .guide-card-label{color:#19806f;font-size:.65rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
-.campus-guide-page .guide-card h3{margin:0 0 5px;color:#1b4052;font-size:.98rem;line-height:1.35}
+.campus-guide-page .guide-card h3{margin:0 0 5px;color:#173325;font-size:.98rem;line-height:1.35}
 .campus-guide-page .guide-card>p{margin:0;color:#53695B;font-size:.78rem;line-height:1.55}
 .campus-guide-page .guide-card details{margin-top:12px;padding-top:10px;border-top:1px solid #e8eeee}
 .campus-guide-page .guide-card summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px;color:#087966;font-size:.75rem;font-weight:850;cursor:pointer;list-style:none}
@@ -79,7 +79,7 @@ html[data-theme="dark"] .campus-guide-page .guide-results,html[data-theme="dark"
 .campus-guide-page .guide-journey-choice.is-active{border-color:#138875;background:#eaf7f2;box-shadow:0 0 0 2px #13887518}
 .campus-guide-page .guide-journey-number{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#e8f4ef;color:#087966;font-size:.68rem;font-weight:900}
 .campus-guide-page .guide-journey-copy{display:grid;gap:3px;min-width:0}
-.campus-guide-page .guide-journey-copy strong{color:#1b4052;font-size:.78rem;line-height:1.35}
+.campus-guide-page .guide-journey-copy strong{color:#173325;font-size:.78rem;line-height:1.35}
 .campus-guide-page .guide-journey-copy small{color:#687E70;font-size:.66rem;line-height:1.4}
 .campus-guide-page .guide-journey-arrow{color:#178775;font-size:1rem;font-weight:900}
 .campus-guide-page .guide-walkthrough-stage{display:flex;flex-direction:column;min-width:0;padding:clamp(16px,2.4vw,23px);border:1px solid #cfe5de;border-radius:15px;background:#fff}
