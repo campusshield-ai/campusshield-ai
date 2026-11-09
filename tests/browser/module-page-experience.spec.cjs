@@ -84,35 +84,95 @@ test("module headings and first-level cards retain readable forest-green dark th
   const heading = page.locator("#page-courses > .heading");
   const panel = page.locator("#page-courses > .panel").first();
   const colors = await page.evaluate(() => {
-    const heading = getComputedStyle(document.querySelector("#page-courses > .heading h1")).color;
-    const canvas = getComputedStyle(document.body).backgroundColor;
-    const panel = getComputedStyle(document.querySelector("#page-courses > .panel")).backgroundColor;
-    const rgb = value => {
-      // Computed CSS rgb()/rgba() values expose their red, green and blue channels
-      // before any alpha channel. Use all three channels for WCAG luminance.
-      const match = value.match(/[0-9.]+/g);
-      if (!match || match.length < 3) return null;
-      const channels = match.slice(0, 3).map(Number);
-      if (channels.some(channel => !Number.isFinite(channel) || channel < 0 || channel > 255)) return null;
-      return channels.map(channel => {
-        const normalized = channel / 255;
-        return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+    const headingColor = getComputedStyle(document.querySelector("#page-courses > .heading h1")).color;
+    const canvasColor = getComputedStyle(document.body).backgroundColor;
+    const panelColor = getComputedStyle(document.querySelector("#page-courses > .panel")).backgroundColor;
+
+    const parseHexColor = value => {
+      if (!value || !value.startsWith("#")) return null;
+      const hex = value.slice(1);
+      if (![3, 4, 6, 8].includes(hex.length)) return null;
+      const normalized = hex.length <= 4
+        ? [...hex].map(char => char + char).join("")
+        : hex;
+      const channels = [0, 2, 4, 6].map(index => {
+        const component = normalized.slice(index, index + 2);
+        return component ? Number.parseInt(component, 16) / 255 : 0;
       });
+      return channels.length >= 3 ? [channels[0], channels[1], channels[2], channels[3] ?? 1] : null;
     };
-    const luminance = value => {
-      const channels = rgb(value);
-      return channels ? 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2] : null;
+
+    const parseRgbColor = value => {
+      const match = value.match(/^rgba?\(\s*([0-9.]+%?)\s*,\s*([0-9.]+%?)\s*,\s*([0-9.]+%?)(?:\s*,\s*([0-9.]+%?))?\s*\)$/i);
+      if (!match) return null;
+
+      const toLinearChannel = (component, isPercent) => {
+        const value = Number.parseFloat(component);
+        if (!Number.isFinite(value)) return null;
+        const normalized = isPercent ? value / 100 : value / 255;
+        return normalized > 1 ? null : normalized;
+      };
+
+      const [r, g, b, alphaText] = match.slice(1);
+      const red = toLinearChannel(r, r.endsWith("%"));
+      const green = toLinearChannel(g, g.endsWith("%"));
+      const blue = toLinearChannel(b, b.endsWith("%"));
+      if ([red, green, blue].some(channel => channel === null)) return null;
+
+      const alpha = alphaText === undefined
+        ? 1
+        : Number.parseFloat(alphaText) / (alphaText.endsWith("%") ? 100 : 1);
+
+      if (!Number.isFinite(alpha) || alpha < 0 || alpha > 1) return null;
+
+      return [red, green, blue, alpha];
     };
-    const headingLuminance = luminance(heading);
-    const canvasLuminance = luminance(canvas);
-    const contrast = headingLuminance === null || canvasLuminance === null
-      ? 0
-      : (Math.max(headingLuminance, canvasLuminance) + 0.05) / (Math.min(headingLuminance, canvasLuminance) + 0.05);
-    return { heading, canvas, panel, contrast };
+
+    const parseColor = value => {
+      if (!value || typeof value !== "string") return null;
+      const trimmed = value.trim();
+      if (trimmed.startsWith("#")) return parseHexColor(trimmed);
+      return parseRgbColor(trimmed);
+    };
+
+    const luminance = color => {
+      if (!Array.isArray(color) || color.length < 3) return null;
+      const [r, g, b] = color;
+      const channels = [r, g, b].map(channel => {
+        const normalized = channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+        return normalized;
+      });
+      return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+    };
+
+    const contrastRatio = (foreground, background) => {
+      const foregroundLum = luminance(foreground);
+      const backgroundLum = luminance(background);
+      if (foregroundLum === null || backgroundLum === null) return null;
+      return (Math.max(foregroundLum, backgroundLum) + 0.05) / (Math.min(foregroundLum, backgroundLum) + 0.05);
+    };
+
+    const headingRgb = parseColor(headingColor);
+    const canvasRgb = parseColor(canvasColor);
+    const panelRgb = parseColor(panelColor);
+
+    const contrast = headingRgb && canvasRgb ? contrastRatio(headingRgb, canvasRgb) : null;
+
+    return {
+      headingColor,
+      canvasColor,
+      panelColor,
+      contrast,
+      panelRgb,
+      headingRgb,
+      canvasRgb
+    };
   });
 
+  expect(colors.contrast).not.toBeNull();
+  expect(Number.isFinite(colors.contrast)).toBe(true);
   expect(colors.contrast).toBeGreaterThanOrEqual(4.5);
-  expect(colors.panel).toBe("rgb(18, 53, 34)");
+  expect(colors.panelColor).toBe("rgb(18, 53, 34)");
   await expect(heading).toBeVisible();
   await expect(panel).toBeVisible();
 });
