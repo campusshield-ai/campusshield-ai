@@ -6,8 +6,13 @@ const readBinary = path => readFileSync(new URL("../" + path, import.meta.url));
 const brand = read("campusshield-brand-system.css");
 const guide = read("campusshield-guide.css");
 const serviceWorker = read("service-worker.js");
+const lovableUxCss = read("campusshield-lovable-ux.css");
+const lovableUxScript = read("campusshield-lovable-ux.js");
 const iconGenerator = read("scripts/generate-pwa-icons.mjs");
 const manifest = JSON.parse(read("manifest.webmanifest"));
+const htmlMarkup = read("index.html");
+const appScript = read("campusshield-app.js");
+const dashboardUpgradeJs = read("campus-dashboard-upgrade.js");
 const pages = [
   "index.html","about.html","features.html","help.html","privacy.html",
   "terms.html","contact.html","offline.html","student-life-preview.html"
@@ -18,6 +23,7 @@ for (const page of pages) {
   assert.ok(html.includes('href="./campusshield-brand-system.css"'), page + " loads the shared Forest Green + Emerald theme");
   assert.match(html, /<meta name="theme-color" content="#0B2E1B">/i, page + " exposes the matching browser theme colour");
 }
+
 
 const offlinePage = read("offline.html");
 assert.ok(offlinePage.includes('id="check-connection"') && offlinePage.includes('id="connection-status"'),
@@ -78,6 +84,19 @@ assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskabl
   icon.purpose === "maskable"), "PWA uses the dedicated safe-area maskable icon");
 
 assert.match(serviceWorker, /campusshield-offline-v8/, "Offline cache version is incremented");
+assert.ok(htmlMarkup.includes('href="./campusshield-lovable-ux.css?v=20261109-1"'), "Lovable-inspired tablet and focus styles are loaded");
+assert.ok(htmlMarkup.includes('src="./campusshield-lovable-ux.js" defer'), "Accessible active navigation integration is loaded");
+assert.match(lovableUxCss, /min-width:\s*651px/,"tablet rail starts at 651px");
+assert.match(lovableUxCss, /max-width:\s*1023px/,"tablet rail ends at 1023px");
+assert.match(lovableUxScript, /aria-current/,"primary and mobile navigation announce the active page");
+assert.doesNotThrow(() => new Function(lovableUxScript), "Lovable UX integration script parses");
+assert.match(dashboardUpgradeJs, /role="combobox"/,"campus search exposes the combobox pattern");
+assert.match(dashboardUpgradeJs, /ArrowUp/,"campus search supports upward keyboard navigation");
+assert.match(dashboardUpgradeJs, /aria-activedescendant/,"campus search announces the active suggestion");
+assert.match(appScript, /tablet-compact/,"tablet compact navigation is implemented");
+assert.match(appScript, /drawerFocusable/,"mobile drawer traps keyboard focus");
+assert.match(appScript, /aria-modal/,"mobile drawer is exposed as a modal navigation dialog");
+assert.match(htmlMarkup, /report-emergency-note/,"incident form keeps the real emergency limitation notice");
 const dashboardHtml = read("index.html");
 const dashboardPolish = read("campusshield-dashboard-polish-v3.css");
 assert.ok(dashboardHtml.includes('href="./campusshield-dashboard-polish-v3.css?v=20261109-1"'),

@@ -1,0 +1,275 @@
+/*
+ * Lovable-inspired CampusShield UX integration.
+ * Adapts the prototype's best interaction patterns to the existing production UI.
+ * Forest-green brand, current routes and current backend behaviour are preserved.
+ */
+
+/* Automatic compact navigation rail for portrait and landscape tablets. */
+#workspace.app.tablet-compact #app-sidebar {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  width: 82px !important;
+  min-width: 82px !important;
+  max-width: 82px !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  padding: 18px 11px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+  z-index: 30;
+}
+#workspace.app.tablet-compact .main {
+  margin-left: 82px !important;
+  min-width: 0 !important;
+}
+#workspace.app.tablet-compact #app-sidebar .brand {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0 !important;
+  padding: 4px 0 15px !important;
+}
+#workspace.app.tablet-compact #app-sidebar .brand-copy,
+#workspace.app.tablet-compact #app-sidebar > .nav-label,
+#workspace.app.tablet-compact #app-sidebar .nav .nav-section-label,
+#workspace.app.tablet-compact #app-sidebar .sidebar-status,
+#workspace.app.tablet-compact #app-sidebar .sidebar-guide-access .nav-section-label {
+  display: none !important;
+}
+#workspace.app.tablet-compact #app-sidebar .brand-logo {
+  display: block !important;
+  width: 44px !important;
+  height: 44px !important;
+  flex: 0 0 44px !important;
+}
+#workspace.app.tablet-compact #app-sidebar .sidebar-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  width: 100% !important;
+  min-height: 38px !important;
+  margin: 0 0 12px !important;
+  padding: 5px !important;
+  flex: 0 0 auto !important;
+}
+#workspace.app.tablet-compact #app-sidebar .sidebar-toggle-label {
+  display: none !important;
+}
+#workspace.app.tablet-compact #app-sidebar .sidebar-toggle-icon {
+  font-size: 22px !important;
+  line-height: 1 !important;
+}
+#workspace.app.tablet-compact #app-sidebar .nav {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 7px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: 4px 0 10px !important;
+}
+#workspace.app.tablet-compact #app-sidebar .nav button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 44px !important;
+  flex: 0 0 auto !important;
+  padding: 10px 5px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+}
+#workspace.app.tablet-compact #app-sidebar .nav button .nav-icon,
+#workspace.app.tablet-compact #app-sidebar .sidebar-guide-access #guide-nav .nav-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+#workspace.app.tablet-compact #app-sidebar .nav button .nav-icon svg,
+#workspace.app.tablet-compact #app-sidebar .sidebar-guide-access #guide-nav .nav-icon svg {
+  display: block !important;
+  width: 19px !important;
+  height: 19px !important;
+}
+#workspace.app.tablet-compact #app-sidebar .sidebar-guide-access #guide-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  min-height: 44px !important;
+  padding: 10px 5px !important;
+  overflow: hidden !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+}
+#workspace.app.tablet-compact #app-sidebar .nav button[hidden] {
+  display: none !important;
+}
+
+@media (min-width: 651px) and (max-width: 900px) {
+  #workspace.app.tablet-compact #app-sidebar {
+    width: 74px !important;
+    min-width: 74px !important;
+    max-width: 74px !important;
+    padding: 18px 9px !important;
+  }
+  #workspace.app.tablet-compact .main { margin-left: 74px !important; }
+}
+@media (min-width: 651px) and (max-width: 1023px) {
+  #workspace .topbar {
+    height: auto !important;
+    min-height: 66px;
+    flex-wrap: wrap !important;
+    gap: 8px 12px;
+    padding: 9px 16px !important;
+  }
+  #workspace .topbar-title { min-width: 100px; }
+  #workspace .topbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    min-width: 0;
+  }
+  #workspace #incidentSyncStatus {
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+  }
+  #workspace .global-search {
+    order: 3;
+    flex: 1 0 100%;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
+  }
+  #workspace .content { padding: clamp(14px, 2vw, 22px) !important; }
+  #workspace .stats { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  #workspace .quick-action-buttons { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #workspace #student-shortcuts .campus-home-bento-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 11px !important;
+  }
+  #workspace #student-shortcuts .campus-home-map,
+  #workspace #student-shortcuts .campus-home-ai {
+    grid-column: span 2 !important;
+    grid-row: auto !important;
+    min-height: 210px !important;
+  }
+  #workspace #student-shortcuts .campus-home-pulse,
+  #workspace #student-shortcuts .campus-home-academics {
+    grid-column: span 1 !important;
+    min-height: 158px !important;
+  }
+  #workspace #student-shortcuts .campus-home-safety {
+    grid-column: span 2 !important;
+    min-height: 148px !important;
+  }
+  #workspace .campus-dashboard-quicklinks { gap: 8px; }
+}
+@media (min-width: 901px) and (max-width: 1023px) {
+  #workspace.app.tablet-compact #app-sidebar { width: 82px !important; }
+  #workspace.app.tablet-compact .main { margin-left: 82px !important; }
+}
+@media (max-width: 650px) {
+  #workspace .mobile-sidebar-close {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    min-height: 42px;
+    margin: 0 0 10px;
+    padding: 9px 12px;
+    border: 1px solid #ffffff24;
+    border-radius: 11px;
+    background: #ffffff0d;
+    color: #eff8f0;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: left;
+  }
+  #workspace .mobile-sidebar-close span:first-child {
+    font-size: 19px;
+    line-height: 1;
+  }
+  #workspace #app-sidebar[role="dialog"] {
+    overscroll-behavior: contain;
+  }
+  #workspace .mobile-nav-toggle:focus-visible,
+  #workspace .mobile-sidebar-close:focus-visible,
+  #workspace #app-sidebar .nav button:focus-visible {
+    outline: 3px solid #9be6a5 !important;
+    outline-offset: 3px;
+  }
+}
+#workspace .mobile-sidebar-close { display: none; }
+
+/* The search listbox keeps DOM focus in the combobox and exposes one active option. */
+#workspace .global-search-result {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 11px;
+  cursor: pointer;
+  text-align: left;
+}
+#workspace .global-search-result[aria-selected="true"] {
+  background: #e7f5ed;
+  outline: 2px solid #58a77a;
+  outline-offset: -2px;
+}
+html[data-theme="dark"] #workspace .global-search-result[aria-selected="true"] {
+  background: #214b34 !important;
+  outline-color: #8be3a0;
+}
+#workspace .global-search-input[role="combobox"]:focus-visible {
+  outline: 3px solid #69c9a0;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  #workspace.app.tablet-compact #app-sidebar,
+  #workspace .mobile-sidebar-close,
+  #workspace .global-search-result {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Keep the expanded navigation usable on tablet-sized screens. */
+@media (min-width: 651px) and (max-width: 1023px) {
+  #workspace.app:not(.tablet-compact):not(.sidebar-collapsed) #app-sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: 250px !important;
+    min-width: 250px !important;
+    max-width: 250px !important;
+    flex: 0 0 250px !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+  }
+  #workspace.app:not(.tablet-compact):not(.sidebar-collapsed) .main {
+    margin-left: 250px !important;
+    min-width: 0 !important;
+  }
+}
