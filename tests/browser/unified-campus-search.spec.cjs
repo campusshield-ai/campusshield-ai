@@ -305,3 +305,109 @@ test("dashboard bento cards use dark surfaces and readable text in dark mode", a
   expect(bounds.x + bounds.width).toBeLessThanOrEqual(391);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
 });
+
+test("production dashboard dark theme asset fixes all five bento cards and keeps the grid balanced", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    const workspace = document.getElementById("workspace");
+    if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
+    const login = document.getElementById("login-screen");
+    if (login) { login.hidden = true; login.style.display = "none"; }
+    document.documentElement.dataset.theme = "dark";
+  });
+
+  await page.waitForFunction(() => {
+    const link = [...document.querySelectorAll('link[rel="stylesheet"]')]
+      .find(node => node.href.includes("campusshield-dashboard-polish-v3.css"));
+    return Boolean(link?.sheet && document.querySelectorAll("#student-shortcuts .campus-home-card").length === 5);
+  });
+
+  const desktop = await page.evaluate(() => {
+    const grid = document.querySelector("#workspace #page-dashboard #student-shortcuts .campus-home-bento-grid");
+    const link = [...document.querySelectorAll('link[rel="stylesheet"]')]
+      .find(node => node.href.includes("campusshield-dashboard-polish-v3.css"));
+    const cards = [...document.querySelectorAll("#workspace #page-dashboard #student-shortcuts .campus-home-card")];
+    const styles = cards.map(card => {
+      const style = getComputedStyle(card);
+      const getColor = selector => {
+        const node = card.querySelector(selector);
+        return node ? getComputedStyle(node).color : null;
+      };
+      return {
+        type: card.classList.contains("campus-home-ai") ? "ai" : "standard",
+        backgroundColor: style.backgroundColor,
+        backgroundImage: style.backgroundImage,
+        borderColor: style.borderTopColor,
+        title: getColor("strong"),
+        description: getColor("p"),
+        footer: getColor(".campus-home-card-footer"),
+        topRowBackground: getComputedStyle(card.querySelector(".campus-home-card-top")).backgroundColor
+      };
+    });
+    return {
+      theme: document.documentElement.dataset.theme,
+      stylesheet: link?.href || null,
+      rulesLoaded: Boolean(link?.sheet?.cssRules?.length),
+      columns: getComputedStyle(grid).gridTemplateColumns.split(" ").length,
+      cards: styles
+    };
+  });
+
+  expect(desktop.theme).toBe("dark");
+  expect(desktop.stylesheet).toContain("campusshield-dashboard-polish-v3.css?v=20261109-1");
+  expect(desktop.rulesLoaded).toBe(true);
+  expect(desktop.columns).toBe(6);
+  expect(desktop.cards).toHaveLength(5);
+
+  const contrastRatio = (foreground, background) => {
+    const rgb = value => value.match(/[\\d.]+/g).slice(0, 3).map(Number).map(v => {
+      const c = v / 255;
+      return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4;
+    });
+    const [r,g,b] = rgb(foreground);
+    const [R,G,B] = rgb(background);
+    const lum = .2126*r + .7152*g + .0722*b;
+    const back = .2126*R + .7152*G + .0722*B;
+    return (Math.max(lum, back) + .05) / (Math.min(lum, back) + .05);
+  };
+
+  for (const [index, card] of desktop.cards.entries()) {
+    expect(card.backgroundColor).toBe(card.type === "ai" ? "rgb(11, 45, 32)" : "rgb(16, 41, 29)");
+    expect(card.backgroundImage).toContain("linear-gradient");
+    expect(card.backgroundImage).not.toContain("255, 255, 255");
+    expect(card.borderColor).not.toBe("rgb(255, 255, 255)");
+    expect(card.title).toBe("rgb(242, 250, 243)");
+    expect(card.description).toBe("rgb(210, 228, 214)");
+    expect(card.footer).toBe("rgb(197, 242, 205)");
+    expect(card.topRowBackground).toBe("rgba(0, 0, 0, 0)");
+    expect(contrastRatio(card.description, card.backgroundColor)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(card.title, card.backgroundColor)).toBeGreaterThanOrEqual(4.5);
+  }
+
+  for (const width of [390, 360]) {
+    await page.setViewportSize({ width, height: 844 });
+    const layout = await page.evaluate(() => {
+      const grid = document.querySelector("#student-shortcuts .campus-home-bento-grid");
+      const rect = grid.getBoundingClientRect();
+      const cards = [...grid.querySelectorAll(".campus-home-card")].map(card => {
+        const box = card.getBoundingClientRect();
+        return { left: box.left, right: box.right, width: box.width };
+      });
+      return {
+        columns: getComputedStyle(grid).gridTemplateColumns.split(" ").length,
+        gridLeft: rect.left,
+        gridRight: rect.right,
+        gridWidth: grid.clientWidth,
+        scrollWidth: grid.scrollWidth,
+        cards
+      };
+    });
+    expect(layout.columns).toBe(2);
+    expect(layout.scrollWidth).toBeLessThanOrEqual(layout.gridWidth + 1);
+    for (const card of layout.cards) {
+      expect(card.left).toBeGreaterThanOrEqual(layout.gridLeft - 1);
+      expect(card.right).toBeLessThanOrEqual(layout.gridRight + 1);
+    }
+  }
+});
