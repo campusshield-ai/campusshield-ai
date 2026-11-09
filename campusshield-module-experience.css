@@ -176,7 +176,7 @@ html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmi
 
 html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel {
   border-color: #315B40;
-  background-color: #123522;
+  background-color: var(--cs-dark-surface, #132a1f);
   box-shadow: 0 12px 30px rgba(0, 0, 0, .13);
   color: #E5F3E8;
 }
