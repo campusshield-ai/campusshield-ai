@@ -925,7 +925,7 @@
     const backdrop = $('sidebar-backdrop');
     if (!app || !sidebar || !collapseButton || !mobileButton || !backdrop) return;
     const mobile = () => window.matchMedia('(max-width: 650px)').matches;
-    const tablet = () => window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
+    const tablet = () => window.matchMedia('(min-width: 651px) and (max-width: 1023px)').matches;
     const mainContent = app.querySelector('.main');
     const bottomNavigation = app.querySelector('.mobile-bottom-nav');
     let backdropCloseTimer = null;
@@ -954,6 +954,7 @@
       mobileCloseButton = document.createElement('button');
       mobileCloseButton.type = 'button';
       mobileCloseButton.className = 'mobile-sidebar-close';
+      mobileCloseButton.id = 'mobile-sidebar-close';
       mobileCloseButton.setAttribute('aria-label', 'Close navigation menu');
       mobileCloseButton.innerHTML = '<span aria-hidden="true">×</span><span>Close menu</span>';
       const brand = sidebar.querySelector('.brand');
