@@ -11,6 +11,9 @@ async function revealWorkspace(page) {
 }
 
 test("tablet defaults to a compact icon rail while desktop collapse remains user-controlled", async ({ page }) => {
+  // The test changes viewport width repeatedly; disable CSS transitions so measurements
+  // capture the settled breakpoint layout rather than an intermediate animation frame.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   for (const width of [651, 700, 760, 768, 820, 900, 901, 1023, 1024, 1366, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     await page.addInitScript(() => {
