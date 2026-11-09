@@ -1082,6 +1082,18 @@ console.log("PASS unified campus search, approved-data scope, keyboard access, r
 
 // Cross-account cache isolation.
 assert.match(appScript, /campusGlobalSearchProfile === currentProfile/, "global search cache is bound to the active profile object");
-assert.match(appScript, /campusMarketplaceRows = \\[\\];[\\s\\S]*campusOpportunityRows = \\[\\];[\\s\\S]*campusNetworkState\\.alumni = \\[\\];/, "cached discovery rows are cleared when the signed-in account changes");
-assert.match(appScript, /prefetchCampusGlobalSearchData\\(\\)\\.catch\\(\\(\\) => \\{\\}\\);[\\s\\S]*renderCampusGlobalSearch\\(input\\.value\\)/, "account cache is cleared before rendering a newly opened search dialog");
+const globalSearchPrefetchStart = appScript.indexOf("async function prefetchCampusGlobalSearchData");
+const globalSearchPrefetchEnd = appScript.indexOf("const requests = await Promise.allSettled", globalSearchPrefetchStart);
+const globalSearchPrefetchSource = appScript.slice(globalSearchPrefetchStart, globalSearchPrefetchEnd);
+assert.ok(globalSearchPrefetchSource.includes("campusMarketplaceRows = [];") &&
+  globalSearchPrefetchSource.includes("campusOpportunityRows = [];") &&
+  globalSearchPrefetchSource.includes("campusNetworkState.volunteers = [];") &&
+  globalSearchPrefetchSource.includes("campusNetworkState.startups = [];") &&
+  globalSearchPrefetchSource.includes("campusNetworkState.alumni = [];"),
+  "cached discovery rows are cleared when the signed-in account changes");
+const openSearchStart = appScript.indexOf("function openCampusGlobalSearch");
+const openSearchEnd = appScript.indexOf("document.querySelectorAll('[data-campus-global-search]')", openSearchStart);
+const openSearchSource = appScript.slice(openSearchStart, openSearchEnd);
+assert.ok(openSearchSource.indexOf("prefetchCampusGlobalSearchData()") < openSearchSource.indexOf("renderCampusGlobalSearch(input.value)"),
+  "account cache is cleared before rendering a newly opened search dialog");
 console.log("PASS global search session-bound cache isolation");
