@@ -86,3 +86,12 @@ html[data-theme="dark"] body ::selection { color: #08291f; background: #8be3a0; 
     transition-duration: .01ms !important; animation-duration: .01ms !important;
   }
 }
+
+/* Give headings inside restored dark surfaces the same strong hierarchy. */
+html[data-theme="dark"] body :is(
+  .panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,
+  [class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],
+  [class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]
+):not(.campus-dashboard-hero) :is(h1,h2,h3,h4,h5,h6,strong,b) {
+  color: var(--cs-dark-heading) !important;
+}
