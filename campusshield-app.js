@@ -522,6 +522,24 @@
         : 'A job title never grants incident-management, risk-analysis, staff-approval, institutional-billing or administrator permissions. Those require separate system-role authorization.';
   }
 
+  function hideSessionRestore() {
+    const screen = $('session-restore-screen');
+    if (screen) screen.hidden = true;
+    const retry = $('session-restore-retry');
+    if (retry) retry.hidden = true;
+  }
+
+  function showSessionRestoreFailure() {
+    $('workspace').hidden = true;
+    $('login-screen').hidden = true;
+    const screen = $('session-restore-screen');
+    const message = $('session-restore-message');
+    const retry = $('session-restore-retry');
+    if (message) message.textContent = 'We found your saved sign-in, but could not reconnect to your workspace. Check your internet connection and try again. You do not need to enter your password again.';
+    if (retry) retry.hidden = false;
+    if (screen) screen.hidden = false;
+  }
+
   function showWorkspace(profile) {
     if (!profile) {
       currentProfile = null;
@@ -536,6 +554,7 @@
     }
 
     currentProfile = profile;
+    hideSessionRestore();
     currentStaffPosition = '';
     studentIdentitySubmission = null;
     renderRoleAccessSummary();
@@ -604,6 +623,7 @@
   }
 
   function showLogin(message) {
+    hideSessionRestore();
     window.dispatchEvent(new Event('campusshield:profile-cleared'));
     $('workspace').hidden = true;
     $('login-screen').hidden = false;
@@ -855,6 +875,7 @@
   if (window.CampusShieldBackend?.client?.auth) {
     window.CampusShieldBackend.client.auth.onAuthStateChange(event => {
       if (event === 'PASSWORD_RECOVERY') {
+        hideSessionRestore();
         passwordRecoveryActive = true;
         currentProfile = null;
         $('workspace').hidden = true;
@@ -7207,18 +7228,23 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   }
 });
 
-  // Keep render() as the app's rendering function.
+  // Keep the sign-in page hidden until Supabase has checked the saved session.
+  // A small branded restore screen prevents the login form flashing on every reload.
   $('approvals-nav').hidden = true;
   setAuthMode('signin');
+  $('session-restore-retry')?.addEventListener('click', () => window.location.reload());
 
   render();
   if (passwordRecoveryActive) {
+    hideSessionRestore();
     $('workspace').hidden = true;
     $('login-screen').hidden = false;
     setAuthMode('reset');
     $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
   } else {
-    showLogin();
+    $('workspace').hidden = true;
+    $('login-screen').hidden = true;
+    if ($('session-restore-screen')) $('session-restore-screen').hidden = false;
   }
 
   // Surface Supabase confirmation-link errors instead of silently returning to sign-in.
@@ -7237,47 +7263,106 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   }
 
   (async () => {
+    let restoredSession = null;
+    let authCheckCompleted = false;
+    let workspaceReady = false;
+    const backend = window.CampusShieldBackend;
+
     try {
-      const backend = window.CampusShieldBackend;
-      if (backend?.isConfigured) {
-        const user = await backend.getCurrentUser();
-        if (user) {
-          const {data:profile, error} = await backend.client
-            .from('profiles')
-            .select('role, requested_role, verification_status')
-            .eq('id', user.id)
-            .single();
-          if (!error && profile) {
-            if (passwordRecoveryActive) {
-              $('workspace').hidden = true;
-              $('login-screen').hidden = false;
-              setAuthMode('reset');
-              $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
-              return;
-            }
-            const workspaceReady = showWorkspace(profile);
-            if (workspaceReady) {
-              campusContext = await backend.getMyCampusContext();
-              syncCampusAccessNavigation();
-              const completedGoogleOAuth = consumeGoogleOAuthHints(profile, campusContext);
-              await refreshIncidentsFromSupabase();
-              if (!completedGoogleOAuth) {
-                $('auth-message').textContent = profile.verification_status === 'verified'
-                  ? `Signed in. Your role is ${profile.role}.`
-                  : 'Your account is pending verification. You can submit incident reports.';
-              }
-              // Always restore signed-in sessions to Overview after a fresh visit or refresh.
-              // CampusPulse/university selection remains available through its own navigation item.
-              navigate('dashboard');
-              if (isStudentAccount()) {
-                await loadStudentIdentityStatus();
-              }
-            }
-          }
+      if (!backend?.isConfigured) {
+        if (!passwordRecoveryActive) {
+          showLogin('CampusShield could not connect to its sign-in service. Refresh the page or try again shortly.');
         }
+        return;
+      }
+
+      // getSession() restores the SDK's persisted browser session before any
+      // decision is made about showing the sign-in screen.
+      const { data: sessionData, error: sessionError } = await backend.client.auth.getSession();
+      if (sessionError) throw sessionError;
+      authCheckCompleted = true;
+      restoredSession = sessionData?.session || null;
+
+      if (!restoredSession) {
+        if (passwordRecoveryActive) {
+          hideSessionRestore();
+          $('workspace').hidden = true;
+          $('login-screen').hidden = false;
+          setAuthMode('reset');
+          $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
+        } else {
+          showLogin();
+        }
+        return;
+      }
+
+      // Verify the persisted user with Supabase before requesting their RLS-protected profile.
+      const user = await backend.getCurrentUser();
+      if (!user) {
+        if (passwordRecoveryActive) return;
+        showSessionRestoreFailure();
+        return;
+      }
+
+      const { data: profile, error: profileError } = await backend.client
+        .from('profiles')
+        .select('role, requested_role, verification_status')
+        .eq('id', user.id)
+        .single();
+      if (profileError) throw profileError;
+      if (!profile) throw new Error('The signed-in account profile is not available yet.');
+
+      if (passwordRecoveryActive) {
+        hideSessionRestore();
+        $('workspace').hidden = true;
+        $('login-screen').hidden = false;
+        setAuthMode('reset');
+        $('auth-message').textContent = 'Your reset link is ready. Choose a new password below.';
+        return;
+      }
+
+      workspaceReady = showWorkspace(profile);
+      if (!workspaceReady) return;
+
+      // The workspace is visible as soon as the profile is ready. Secondary campus
+      // data loads afterwards without sending the user back to the sign-in screen.
+      try {
+        campusContext = await backend.getMyCampusContext();
+        syncCampusAccessNavigation();
+        const completedGoogleOAuth = consumeGoogleOAuthHints(profile, campusContext);
+        await refreshIncidentsFromSupabase();
+        if (!completedGoogleOAuth) {
+          $('auth-message').textContent = profile.verification_status === 'verified'
+            ? `Signed in. Your role is ${profile.role}.`
+            : 'Your account is pending verification. You can submit incident reports.';
+        }
+        // Restore the signed-in user to Overview after a reload; notifications retain
+        // their own validated deep-link behavior through navigate().
+        navigate('dashboard');
+        if (isStudentAccount()) {
+          await loadStudentIdentityStatus();
+        }
+      } catch (workspaceError) {
+        console.warn('Workspace opened, but some secondary data could not be refreshed:', workspaceError?.message || workspaceError);
+        toast('Your workspace is open. Some campus updates could not refresh; check your connection.');
       }
     } catch (err) {
-      console.warn('Could not restore previous session:', err.message);
+      console.warn('Could not restore previous session:', err?.message || err);
+      if (workspaceReady) {
+        hideSessionRestore();
+        $('workspace').hidden = false;
+        return;
+      }
+      if (restoredSession || (!authCheckCompleted && backend?.isConfigured)) {
+        showSessionRestoreFailure();
+      } else if (passwordRecoveryActive) {
+        hideSessionRestore();
+        $('workspace').hidden = true;
+        $('login-screen').hidden = false;
+        setAuthMode('reset');
+      } else {
+        showLogin('Your sign-in status could not be checked. Please refresh the page or try again.');
+      }
     }
   })();
 
