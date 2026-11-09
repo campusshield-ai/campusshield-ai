@@ -5214,18 +5214,22 @@
       }
       return new Date(b.created_at||0).getTime()-new Date(a.created_at||0).getTime();
     });
-    feed.innerHTML=rows.length?rows.map(item=>{
-      const categoryLabel=String(item.category||'other').replaceAll('_',' ');
-      const price=item.price_ngn==null?'Price not listed':'₦'+Number(item.price_ngn).toLocaleString('en-NG');
-      return '<article class="community-post campus-marketplace-card">'+
-        '<div class="community-meta"><span class="tag open">'+esc(categoryLabel)+'</span><span>·</span><strong>'+(item.status==='sold'?'Sold':'Available')+'</strong></div>'+
-        '<h3 class="community-post-title">'+esc(item.title||'Campus listing')+'</h3>'+
-        '<p class="community-post-body">'+esc(item.description||'')+'</p>'+
+    const listings = rows;
+    $('campus-marketplace-feed').innerHTML = listings.length ? listings.map(listing => {
+      const categoryLabel=String(listing.category||'other').replaceAll('_',' ');
+      const price=listing.price_ngn==null?'Price not listed':'₦'+Number(listing.price_ngn).toLocaleString('en-NG');
+      const availabilityLabel=listing.status==='sold'?'Sold':'Available';
+      return '<article class="community-post campus-live-marketplace-card campus-marketplace-card"'+
+        ' data-category="'+esc(listing.category||'other')+'" data-status="'+esc(listing.status||'published')+'"'+
+        ' data-price="'+(listing.price_ngn==null?'':String(Number(listing.price_ngn)))+'" data-created-at="'+esc(listing.created_at||'')+'">'+
+        '<div class="community-meta"><span class="tag open">'+esc(categoryLabel)+'</span><span>·</span><strong>'+availabilityLabel+'</strong></div>'+
+        '<h3 class="community-post-title">'+esc(listing.title||'Campus listing')+'</h3>'+
+        '<p class="community-post-body">'+esc(listing.description||'')+'</p>'+
         '<p class="campus-marketplace-price"><strong>'+price+'</strong></p>'+
-        '<p class="community-meta">Seller: @'+esc(item.seller_username||'campus member')+' · '+esc(dateText(item.created_at))+'</p>'+
-        (item.contact_instructions?'<p class="community-meta">Contact instructions: '+esc(item.contact_instructions)+'</p>':'')+
-        '<div class="actions">'+(item.status==='published'?'<button type="button" class="btn secondary" data-marketplace-report="'+esc(item.id)+'">Report listing</button>':'')+'</div></article>';
-    }).join(''):'<div class="community-empty"><strong>No matching listings.</strong><p>Try another category or search term, or change the availability filter.</p></div>';
+        '<p class="community-meta">Seller: @'+esc(listing.seller_username||'campus member')+' · '+esc(dateText(listing.created_at))+'</p>'+
+        (listing.contact_instructions?'<p class="community-meta">Contact instructions: '+esc(listing.contact_instructions)+'</p>':'')+
+        '<div class="actions">'+(listing.status==='published'?'<button type="button" class="btn secondary" data-marketplace-report="'+esc(listing.id)+'">Report listing</button>':'')+'</div></article>';
+    }).join('') : '<div class="community-empty"><strong>No matching listings.</strong><p>Try another category or search term, or change the availability filter.</p></div>';
     const results=$('campus-marketplace-results');
     if(results)results.textContent=rows.length+' listing(s) match your filters · '+(campusMarketplaceRows||[]).length+' approved listing(s) in this campus.';
     if(ownFeed){
