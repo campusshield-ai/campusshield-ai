@@ -46,6 +46,12 @@ assert.ok(brand.includes("#workspace .creator-tool-mark.mark-photo") &&
 assert.ok(brand.includes("#page-shieldmind .shieldmind-insights-topic[data-level=\"early\"] .shieldmind-insights-progress span") &&
   brand.includes("linear-gradient(90deg,#15803D,#86EFAC)"),
   "ShieldMind early-learning progress uses the green palette");
+assert.ok(brand.includes("#page-shieldmind .shieldmind-insights-topics h3") &&
+  brand.includes("color:#14532D !important;"),
+  "ShieldMind learning insights headings use green in light mode");
+assert.ok(brand.includes("html[data-theme=\"dark\"] #page-shieldmind .shieldmind-insights-topic-name") &&
+  brand.includes("color:#E5F3E8 !important;"),
+  "ShieldMind learning insights headings stay readable in dark mode");
 assert.ok(brand.includes("#workspace .campus-ideas-impact .cii-status-in_progress") &&
   brand.includes("#workspace .campus-voice-player"),
   "Ideas & Impact and voice-note accents use green");
