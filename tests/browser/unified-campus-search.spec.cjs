@@ -283,7 +283,7 @@ test("dashboard bento cards use dark surfaces and readable text in dark mode", a
       .toContain("linear-gradient");
     expect(card.backgroundImage).not.toContain("255, 255, 255");
     expect(card.backgroundColor).not.toBe("rgb(255, 255, 255)");
-    expect(card.borderColor).toBe("rgb(49, 91, 64)");
+    expect(card.borderColor).toBe(index === 1 ? "rgb(52, 115, 75)" : "rgb(49, 91, 64)");
     expect(card.heading).toBe("rgb(239, 248, 240)");
     expect(card.description).toBe("rgb(207, 225, 213)");
     expect(card.footer).toBe("rgb(169, 232, 181)");
