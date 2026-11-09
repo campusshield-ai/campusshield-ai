@@ -88,7 +88,7 @@ test("module headings and first-level cards retain readable forest-green dark th
     const canvas = getComputedStyle(document.body).backgroundColor;
     const panel = getComputedStyle(document.querySelector("#page-courses > .panel")).backgroundColor;
     const rgb = value => {
-      const match = value.match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/);
+      const match = value.match(/[0-9]+/g);
       if (!match) return null;
       return match.slice(1).map(Number).map(channel => {
         const normalized = channel / 255;
