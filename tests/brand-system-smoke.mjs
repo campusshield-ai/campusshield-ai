@@ -19,6 +19,15 @@ for (const page of pages) {
   assert.match(html, /<meta name="theme-color" content="#0B2E1B">/i, page + " exposes the matching browser theme colour");
 }
 
+const offlinePage = read("offline.html");
+assert.ok(offlinePage.includes('id="check-connection"') && offlinePage.includes('id="connection-status"'),
+  "Offline page provides a working connection-check control and status message");
+assert.match(offlinePage, /aria-live="polite"/, "Connection feedback is announced accessibly");
+assert.ok(offlinePage.includes('class="offline-feature-grid"') && offlinePage.includes("offline-illustration"),
+  "Offline page includes the redesigned illustration and responsive guidance cards");
+assert.ok(!/CampusShield is a prototype|does not contact emergency services/i.test(offlinePage),
+  "Offline page omits the removed prototype disclaimer");
+
 for (const token of [
   "--cs-navy:#0B2E1B","--cs-primary:#15803D","--cs-seafoam:#22C55E",
   "--cs-seafoam-soft:#DCFCE7","--cs-ink:#173325","--cs-muted:#53695B",
@@ -69,7 +78,7 @@ assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskable-512.png" &&
   icon.purpose === "maskable"), "PWA uses the dedicated safe-area maskable icon");
 
-assert.match(serviceWorker, /campusshield-offline-v6/, "Offline cache version is incremented");
+assert.match(serviceWorker, /campusshield-offline-v7/, "Offline cache version is incremented");
 assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
   serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)"),
   "Offline fallback and shared brand stylesheet are both cached");
