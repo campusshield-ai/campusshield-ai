@@ -24,7 +24,7 @@ test("student home bento cards use existing destinations and an honest CampusMap
   const destinations = await section.locator("button[data-page]").evaluateAll(buttons =>
     buttons.map(button => button.dataset.page)
   );
-  expect(destinations.sort()).toEqual(["academics", "community", "marketplace", "noticeboard", "opportunities", "shieldmind"].sort());
+  expect(destinations.sort()).toEqual(["academics", "campus-network", "community", "marketplace", "noticeboard", "opportunities", "shieldmind"].sort());
 
   for (const route of destinations) {
     await expect(page.locator(`#page-${route}`), `The ${route} destination exists`).toHaveCount(1);
