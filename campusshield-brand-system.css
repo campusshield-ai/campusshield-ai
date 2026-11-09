@@ -563,3 +563,31 @@ html[data-theme="dark"] #page-shieldmind .shieldmind-insights-panel{
   html{scroll-behavior:auto!important}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
 }
+
+
+/* Final green-accent harmonization for feature-owned components.
+   Retains amber safety/warning and red/declined states where colour carries meaning. */
+#workspace .campus-home-pulse .student-shortcut-icon{
+  background:#DCFCE7 !important;border-color:#BBF7D0 !important;color:#166534 !important;
+}
+#workspace .campus-home-academics .student-shortcut-icon{
+  background:#ECFDF5 !important;border-color:#A7F3D0 !important;color:#14532D !important;
+}
+#workspace .creator-tool-mark.mark-photo{
+  background:#DCFCE7 !important;border-color:#BBF7D0 !important;color:#166534 !important;
+}
+#workspace .creator-tool-mark.mark-rea{
+  background:#ECFDF5 !important;border-color:#A7F3D0 !important;color:#14532D !important;
+}
+#page-shieldmind .shieldmind-insights-topic[data-level="early"] .shieldmind-insights-progress span{
+  background:linear-gradient(90deg,#15803D,#86EFAC) !important;
+}
+#workspace .campus-ideas-impact .cii-status-in_progress{
+  border-color:#A7F3D0 !important;background:#ECFDF5 !important;color:#166534 !important;
+}
+#workspace .campus-voice-player{
+  accent-color:#15803D !important;
+}
+#login-screen .login-brand-copy small{
+  color:#B7D9C1 !important;
+}
