@@ -153,17 +153,19 @@ test("global campus search supports combobox keyboard navigation and no-results 
   await expect(input).toHaveAttribute("aria-expanded", "false");
   await expect(input).not.toHaveAttribute("aria-activedescendant");
 
-  await input.fill("Marketplace");
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("Enter");
-  await expect(results).toBeHidden();
-  await expect(input).toHaveValue("");
-
   await input.fill("zzzz-campusshield-no-results");
   await expect(results).toBeVisible();
   await expect(page.locator("#campus-global-search-empty")).toHaveAttribute("role", "status");
   await expect(page.locator("#campus-global-search-empty")).toContainText("No matching destination");
   await expect(page.locator("#campus-global-search-empty")).toBeVisible();
+  await expect(input).toHaveAttribute("aria-expanded", "true");
+
+  // Activate the destination last, because search navigation changes the page.
+  await input.fill("Dashboard");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await expect(results).toBeHidden();
+  await expect(input).toHaveValue("");
   expect(errors).toEqual([]);
 });
 
