@@ -30,8 +30,21 @@
     return url.href;
   }
 
+  // Keep Supabase sessions across reloads and app restarts. Do not override
+  // storageKey: the SDK's existing project-derived key preserves current sessions.
+  const authOptions = {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  };
+  try {
+    authOptions.storage = window.localStorage;
+  } catch (_storageError) {
+    // Supabase will use its supported fallback if browser storage is unavailable.
+  }
+
   const client = ready
-    ? window.supabase.createClient(cfg.url, cfg.publishableKey)
+    ? window.supabase.createClient(cfg.url, cfg.publishableKey, { auth: authOptions })
     : null;
 
   window.CampusShieldBackend = {
