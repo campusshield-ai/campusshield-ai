@@ -661,7 +661,10 @@ assert.match(serviceWorker, /self\.addEventListener\("fetch"/);
 assert.match(serviceWorker, /caches\.open\([^)]*\)[\s\S]*?cache\.add\(OFFLINE_URL\)/);
 assert.doesNotMatch(serviceWorker, /cache\.put|cache\.addAll|Authorization|supabase/i, "service worker does not cache API, auth, or incident responses");
 assert.match(offlinePage, /needs an internet connection/i);
-assert.match(offlinePage, /does not contact emergency services/i);
+assert.doesNotMatch(offlinePage, /CampusShield is a prototype|does not contact emergency services/i,
+  "offline fallback omits the removed prototype disclaimer");
+assert.match(offlinePage, /id="check-connection"/, "offline fallback exposes a connection-check action");
+assert.match(offlinePage, /aria-live="polite"/, "offline connection feedback is accessible");
 for (const [filename, size] of [["apple-touch-icon.png", 180], ["campusshield-192.png", 192], ["campusshield-512.png", 512], ["campusshield-maskable-512.png", 512]]) {
   const icon = await readFile(new URL(`../icons/${filename}`, import.meta.url));
   assert.deepEqual([...icon.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], `${filename} has a PNG signature`);

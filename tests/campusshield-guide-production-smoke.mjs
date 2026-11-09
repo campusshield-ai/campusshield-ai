@@ -77,7 +77,9 @@ for (const token of [
 ]) assert.ok(help.includes(token), "Missing public Help Centre content: " + token);
 assert.doesNotMatch(help, /CampusMap|campus-map/i);
 assert.match(help, /footer nav a\{display:inline-flex[^}]*min-height:32px/);
-assert.match(offline, /No incident reports or sign-in details are saved for offline use/i);
+assert.match(offline, /No incident reports or sign-in details are saved while you are offline/i);
+assert.match(offline, /id="check-connection"/);
+assert.doesNotMatch(offline, /CampusShield is a prototype|does not contact emergency services/i);
 assert.match(help, /Privacy Policy/);
 assert.match(help, /Terms of Use/);
 console.log("Production CampusShield in-app guide and Help Centre checks passed.");
