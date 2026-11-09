@@ -42,22 +42,29 @@ for (const pageName of MODULE_PAGES) {
       const metrics = await heading.evaluate(element => {
         const rect = element.getBoundingClientRect();
         const styles = getComputedStyle(element);
-        const action = element.querySelector(".heading-actions");
+        const action = element.querySelector(":scope > .heading-actions");
         const actionRect = action?.getBoundingClientRect();
+        const title = element.querySelector("h1")?.getBoundingClientRect();
+        const description = element.querySelector("p")?.getBoundingClientRect();
         return {
           left: rect.left,
           right: rect.right,
           width: rect.width,
           display: styles.display,
           direction: styles.flexDirection,
+          hasActions: Boolean(action),
+          titleBeforeDescription: Boolean(title && description && title.bottom <= description.top + 2),
           documentWidth: document.documentElement.scrollWidth,
           bodyWidth: document.body.scrollWidth,
           actionRight: actionRect?.right ?? null
         };
       });
 
-      expect(metrics.display).toBe("flex");
-      expect(metrics.direction).toBe(width <= 760 ? "column" : "row");
+      expect(metrics.display).toBe(metrics.hasActions ? "flex" : "block");
+      if (metrics.hasActions) {
+        expect(metrics.direction).toBe(width <= 760 ? "column" : "row");
+      }
+      expect(metrics.titleBeforeDescription).toBe(true);
       expect(metrics.left).toBeGreaterThanOrEqual(-1);
       expect(metrics.right).toBeLessThanOrEqual(width + 1);
       expect(metrics.width).toBeGreaterThan(240);
