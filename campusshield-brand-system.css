@@ -591,3 +591,16 @@ html[data-theme="dark"] #page-shieldmind .shieldmind-insights-panel{
 #login-screen .login-brand-copy small{
   color:#B7D9C1 !important;
 }
+
+#page-shieldmind .shieldmind-insights-topics h3,
+#page-shieldmind .shieldmind-insights-recommendation h3,
+#page-shieldmind .shieldmind-insights-topic-name,
+#page-shieldmind .shieldmind-insights-topic-score{
+  color:#14532D !important;
+}
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topics h3,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-recommendation h3,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topic-name,
+html[data-theme="dark"] #page-shieldmind .shieldmind-insights-topic-score{
+  color:#E5F3E8 !important;
+}
