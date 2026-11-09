@@ -164,7 +164,7 @@
   }
   function renderResults(query) {
     const q = normalizeSearchText(query);
-    const queryWords = q.split(/\\s+/).filter(Boolean);
+    const queryWords = q.split(/\s+/).filter(Boolean);
     const destinationMatches = destinations.filter(item => visibleDestination(item) &&
       (!q || queryWords.every(word => normalizeSearchText(item.title + " " + item.description + " " + item.keywords).includes(word)))).slice(0, 6);
     const matches = [...destinationMatches, ...getLiveCampusMatches(q)].slice(0, 10);
