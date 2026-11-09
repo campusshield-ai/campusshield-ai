@@ -25,6 +25,7 @@ on:
       - "scripts/generate-pwa-icons.mjs"
       - "tests/brand-system-smoke.mjs"
       - "tests/browser/shieldmind-learning-insights.spec.cjs"
+      - "tests/browser/module-page-experience.spec.cjs"
       - "playwright.config.cjs"
       - ".github/workflows/brand-system.yml"
   push:
