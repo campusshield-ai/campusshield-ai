@@ -77,6 +77,7 @@ assert.ok(htmlMarkup.includes('src="./campusshield-lovable-ux.js" defer'), "Acce
 assert.match(lovableUxCss, /min-width:\s*768px/,"tablet rail starts at 768px");
 assert.match(lovableUxCss, /max-width:\s*1023px/,"tablet rail ends at 1023px");
 assert.match(lovableUxScript, /aria-current/,"primary and mobile navigation announce the active page");
+assert.doesNotThrow(() => new Function(lovableUxScript), "Lovable UX integration script parses");
 assert.match(dashboardUpgradeJs, /role="combobox"/,"campus search exposes the combobox pattern");
 assert.match(dashboardUpgradeJs, /ArrowUp/,"campus search supports upward keyboard navigation");
 assert.match(dashboardUpgradeJs, /aria-activedescendant/,"campus search announces the active suggestion");
