@@ -4,27 +4,435 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0B2E1B">
-  <title>CampusShield is offline</title>
-  <style>
-    :root{color-scheme:light;--ink:#142536;--muted:#64748B;--line:#E2E8F0;--green:#0F766E}
-    *{box-sizing:border-box}
-    body{min-height:100vh;margin:0;display:grid;place-items:center;padding:24px;background:#F4F7FA;color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
-    main{width:min(100%,480px);padding:clamp(24px,6vw,42px);border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 18px 44px #0B1F3310}
-    .mark{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#0B1F33;color:#14B8A6;font-weight:900;letter-spacing:-.06em}
-    h1{margin:24px 0 8px;font-size:clamp(27px,7vw,36px);line-height:1.15;letter-spacing:-.05em}
-    p{color:var(--muted);font-size:14px}
-    .notice{margin-top:24px;padding:14px;border:1px solid #f0dfbd;border-radius:12px;background:#fffaf0;color:#705622;font-size:12px}
-    a{display:inline-flex;margin-top:13px;padding:10px 14px;border-radius:10px;background:var(--green);color:#fff;text-decoration:none;font-size:13px;font-weight:750}
-  </style>
+  <meta name="description" content="CampusShield AI is temporarily offline. Reconnect to access live campus content and submit reports.">
+  <title>CampusShield AI | Offline</title>
   <link rel="stylesheet" href="./campusshield-brand-system.css">
+  <style>
+    :root {
+      color-scheme: light;
+      --offline-forest: #0B2E1B;
+      --offline-green: #15803D;
+      --offline-emerald: #22C55E;
+      --offline-mint: #DCFCE7;
+      --offline-ink: #173325;
+      --offline-muted: #53695B;
+      --offline-line: #DCE9DE;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: #EAF8EE; }
+    body.offline-body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: clamp(12px, 3vw, 34px);
+      background:
+        radial-gradient(ellipse at 10% 10%, rgba(34,197,94,.18), transparent 34%),
+        radial-gradient(ellipse at 92% 88%, rgba(21,128,61,.16), transparent 32%),
+        linear-gradient(135deg, #EAF8EE 0%, #F5FBF6 48%, #E8F8EF 100%);
+      color: var(--offline-ink);
+      font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .offline-card {
+      position: relative;
+      isolation: isolate;
+      width: min(100%, 1160px);
+      overflow: hidden;
+      border: 1px solid rgba(21,128,61,.14);
+      border-radius: clamp(22px, 3vw, 36px);
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 28px 80px rgba(11,46,27,.13), 0 4px 14px rgba(11,46,27,.05);
+      padding: clamp(22px, 4.8vw, 58px) clamp(18px, 5.4vw, 66px) clamp(28px, 4vw, 48px);
+    }
+    .offline-card::before {
+      position: absolute;
+      z-index: -1;
+      inset: 0 0 auto;
+      height: 250px;
+      content: "";
+      background: radial-gradient(ellipse at 50% 0%, rgba(34,197,94,.12), transparent 66%);
+      pointer-events: none;
+    }
+    .offline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .offline-brand {
+      display: inline-flex;
+      align-items: center;
+      min-width: 0;
+      gap: 14px;
+    }
+    .offline-brand-mark {
+      display: grid;
+      width: 58px;
+      height: 58px;
+      flex: 0 0 58px;
+      place-items: center;
+      border-radius: 19px;
+      background: linear-gradient(145deg, #22C55E, #15803D 68%, #0B2E1B);
+      box-shadow: 0 8px 20px rgba(21,128,61,.2);
+    }
+    .offline-brand-copy { display: grid; gap: 1px; }
+    .offline-brand-copy strong {
+      color: var(--offline-forest);
+      font-size: clamp(18px, 2.5vw, 26px);
+      font-weight: 850;
+      letter-spacing: -.045em;
+      line-height: 1.2;
+    }
+    .offline-brand-copy span { color: var(--offline-muted); font-size: 14px; }
+    .offline-mode {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 16px;
+      border: 1px solid #B7E9C5;
+      border-radius: 999px;
+      background: #F0FDF4;
+      color: #14532D;
+      font-size: 13px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+    .offline-mode svg { color: #DC2626; }
+    .offline-illustration {
+      display: block;
+      width: min(100%, 730px);
+      height: auto;
+      max-height: 270px;
+      margin: 24px auto 0;
+    }
+    .offline-intro { position: relative; text-align: center; }
+    .offline-intro h1 {
+      margin: 12px 0 10px;
+      color: var(--offline-forest);
+      font-size: clamp(38px, 6vw, 66px);
+      font-weight: 900;
+      letter-spacing: -.065em;
+      line-height: 1.04;
+    }
+    .offline-intro > p {
+      max-width: 760px;
+      margin: 0 auto;
+      color: #435A4B;
+      font-size: clamp(15px, 2vw, 20px);
+      line-height: 1.58;
+    }
+    .offline-detail {
+      margin: 10px auto 0;
+      color: #64796A;
+      font-size: 13px;
+    }
+    .offline-feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 28px 0 0;
+    }
+    .offline-feature {
+      display: flex;
+      min-height: 90px;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid #E0F2E5;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #F2FCF5, #E7F8EC);
+      text-align: left;
+    }
+    .offline-feature-icon {
+      display: grid;
+      width: 52px;
+      height: 52px;
+      flex: 0 0 52px;
+      place-items: center;
+      border-radius: 50%;
+      background: #D5F5DE;
+      color: #15803D;
+    }
+    .offline-feature strong {
+      display: block;
+      color: #123B24;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+    .offline-feature span {
+      display: block;
+      margin-top: 3px;
+      color: #5A7161;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .offline-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin: 28px 0 0;
+    }
+    .offline-button {
+      display: inline-flex;
+      min-width: 230px;
+      min-height: 58px;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      padding: 14px 22px;
+      border: 1.5px solid var(--offline-green);
+      border-radius: 17px;
+      font: inherit;
+      font-size: 16px;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    .offline-button:hover { transform: translateY(-2px); }
+    .offline-button:focus-visible { outline: 3px solid #86EFAC; outline-offset: 4px; }
+    .offline-button:disabled { cursor: wait; opacity: .7; transform: none; }
+    .offline-button-primary {
+      border-color: #15803D;
+      background: linear-gradient(120deg, #22C55E, #15803D 78%);
+      color: #fff;
+      box-shadow: 0 9px 22px rgba(21,128,61,.22);
+    }
+    .offline-button-primary:hover { box-shadow: 0 13px 26px rgba(21,128,61,.27); }
+    .offline-button-secondary { background: #fff; color: #14532D; }
+    .offline-button-secondary:hover { background: #F0FDF4; }
+    .offline-connection-status {
+      min-height: 22px;
+      margin: 14px 0 0;
+      color: #64796A;
+      font-size: 13px;
+      text-align: center;
+    }
+    .offline-connection-status[data-state="online"] { color: #166534; font-weight: 700; }
+    .offline-connection-status[data-state="offline"] { color: #9A3412; }
+    .offline-landscape {
+      display: block;
+      width: calc(100% + clamp(36px, 10.8vw, 132px));
+      height: auto;
+      margin: 12px calc(clamp(18px, 5.4vw, 66px) * -1) calc(clamp(28px, 4vw, 48px) * -1);
+    }
+    @media (max-width: 760px) {
+      .offline-card { padding: 22px 20px 30px; }
+      .offline-header { align-items: flex-start; }
+      .offline-brand-mark { width: 50px; height: 50px; flex-basis: 50px; border-radius: 16px; }
+      .offline-mode { padding: 8px 11px; font-size: 12px; }
+      .offline-mode span { display: none; }
+      .offline-illustration { margin-top: 30px; max-height: 220px; }
+      .offline-intro h1 { margin-top: 12px; }
+      .offline-feature-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 22px; }
+      .offline-feature { min-height: 72px; padding: 12px 14px; border-radius: 16px; }
+      .offline-feature-icon { width: 46px; height: 46px; flex-basis: 46px; }
+      .offline-actions { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 22px; }
+      .offline-button { width: 100%; min-width: 0; min-height: 54px; }
+      .offline-landscape { margin-top: 6px; }
+    }
+    @media (max-width: 390px) {
+      body.offline-body { padding: 10px; }
+      .offline-card { padding: 18px 15px 24px; border-radius: 22px; }
+      .offline-brand { gap: 9px; }
+      .offline-brand-copy strong { font-size: 17px; }
+      .offline-brand-copy span { font-size: 11px; }
+      .offline-brand-mark { width: 44px; height: 44px; flex-basis: 44px; border-radius: 14px; }
+      .offline-mode { gap: 5px; padding: 7px 8px; font-size: 11px; }
+      .offline-illustration { max-height: 180px; }
+      .offline-intro h1 { font-size: clamp(34px, 10vw, 42px); }
+      .offline-intro > p { font-size: 14px; }
+      .offline-feature strong { font-size: 13px; }
+      .offline-feature span { font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
 </head>
-<body>
-  <main>
-    <div class="mark" aria-hidden="true">CS</div>
-    <h1>You’re offline</h1>
-    <p>CampusShield needs an internet connection to sign in and load or submit reports. No incident reports or sign-in details are saved for offline use.</p>
-    <a href="./">Try again</a>
-    <div class="notice">CampusShield is a prototype and does not contact emergency services.</div>
+<body class="offline-body">
+  <main class="offline-card">
+    <header class="offline-header">
+      <div class="offline-brand" aria-label="CampusShield AI, Intelligent Campus Safety">
+        <span class="offline-brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="39" height="39" fill="none">
+            <path d="M32 5 55 13v16c0 14-9 24-23 30C18 53 9 43 9 29V13L32 5Z" fill="#fff"/>
+            <path d="m12 23 20-10 20 10-20 10-20-10Z" fill="#15803D"/>
+            <path d="M20 27v9c7 6 17 6 24 0v-9l-12 6-12-6Z" fill="#15803D"/>
+            <path d="M52 23v12" stroke="#15803D" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="52" cy="38" r="2.5" fill="#15803D"/>
+          </svg>
+        </span>
+        <span class="offline-brand-copy">
+          <strong>CampusShield AI</strong>
+          <span>Intelligent Campus Safety</span>
+        </span>
+      </div>
+      <div class="offline-mode" aria-label="Offline mode">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true">
+          <path d="M3 9a15 15 0 0 1 18 0M6.5 12.5a10 10 0 0 1 11 0M10 16a4.5 4.5 0 0 1 4 0" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="m3 3 18 18" stroke="#DC2626" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>
+        <span>Offline Mode</span>
+      </div>
+    </header>
+
+    <section class="offline-intro" aria-labelledby="offline-title">
+      <svg class="offline-illustration" viewBox="0 0 820 285" role="img" aria-labelledby="offline-art-title offline-art-desc">
+        <title id="offline-art-title">Laptop showing a disconnected Wi-Fi symbol</title>
+        <desc id="offline-art-desc">A laptop sits between books, green leaves and a CampusShield coffee mug.</desc>
+        <defs>
+          <linearGradient id="laptop-screen" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#22C55E"/>
+            <stop offset="1" stop-color="#0B2E1B"/>
+          </linearGradient>
+          <linearGradient id="laptop-base" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#F8FFFA"/>
+            <stop offset="1" stop-color="#98C7A7"/>
+          </linearGradient>
+          <linearGradient id="book-green" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#22C55E"/>
+            <stop offset="1" stop-color="#15803D"/>
+          </linearGradient>
+          <linearGradient id="cup-green" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#22C55E"/>
+            <stop offset="1" stop-color="#0B2E1B"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="410" cy="258" rx="360" ry="16" fill="#B8EBD0" opacity=".55"/>
+        <circle cx="228" cy="119" r="93" fill="#DCFCE7" opacity=".7"/>
+        <circle cx="615" cy="108" r="105" fill="#DCFCE7" opacity=".55"/>
+        <g fill="#22C55E" opacity=".95">
+          <path d="M193 216c-58-29-68-83-59-125 39 17 75 64 59 125Z"/>
+          <path d="M199 217c-16-66 3-111 41-146 23 48 15 107-41 146Z"/>
+          <path d="M209 220c2-57 33-96 78-114 7 52-23 100-78 114Z"/>
+          <path d="M616 218c-2-56 24-100 70-124 13 51-11 101-70 124Z"/>
+          <path d="M625 220c24-63 67-87 112-88-8 51-48 88-112 88Z"/>
+        </g>
+        <g fill="#15803D" opacity=".82">
+          <path d="M179 222c-33-48-28-91-5-126 29 44 33 83 5 126Z"/>
+          <path d="M635 223c-6-51 13-91 48-117 10 47-5 89-48 117Z"/>
+        </g>
+        <g transform="translate(65 173)">
+          <rect x="0" y="38" width="181" height="35" rx="12" fill="#9A5A25"/>
+          <rect x="7" y="29" width="174" height="34" rx="11" fill="#C68A4C"/>
+          <rect x="10" y="29" width="155" height="25" rx="8" fill="#F7E9CB"/>
+          <path d="M14 34h135" stroke="#D8C39D" stroke-width="2"/>
+          <rect x="12" y="0" width="172" height="37" rx="12" fill="url(#book-green)"/>
+          <path d="M18 8h143" stroke="#86EFAC" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+          <rect x="159" y="7" width="18" height="23" rx="4" fill="#F8F4E9"/>
+        </g>
+        <g>
+          <rect x="280" y="32" width="260" height="190" rx="17" fill="#0B2E1B" stroke="#14532D" stroke-width="5"/>
+          <rect x="292" y="44" width="236" height="165" rx="10" fill="url(#laptop-screen)" stroke="#4ADE80" stroke-width="2"/>
+          <circle cx="410" cy="38" r="2.5" fill="#86EFAC"/>
+          <path d="M365 112c25-25 65-25 90 0M382 131c16-16 41-16 57 0M398 149c7-7 17-7 24 0" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/>
+          <circle cx="410" cy="169" r="6.5" fill="#fff"/>
+          <path d="m456 87-91 99" stroke="#F97356" stroke-width="10" stroke-linecap="round"/>
+          <path d="M257 220h306l31 25c4 4 1 9-6 9H228c-7 0-10-5-6-9l35-25Z" fill="url(#laptop-base)" stroke="#5B9B78" stroke-width="3"/>
+          <path d="M360 225h100l9 12H350l10-12Z" fill="#72A58A"/>
+          <path d="M270 246h278" stroke="#fff" stroke-width="3" opacity=".8"/>
+        </g>
+        <g transform="translate(584 156)">
+          <path d="M100 27h20c24 0 27 43 0 48h-20" fill="none" stroke="#15803D" stroke-width="13"/>
+          <path d="M12 12h91l-5 79c-1 13-10 20-22 20H37c-12 0-21-7-22-20l-3-79Z" fill="url(#cup-green)"/>
+          <path d="M17 22h80" stroke="#86EFAC" stroke-width="3" opacity=".8"/>
+          <path d="m57 43 22 8v14c0 13-9 21-22 27-13-6-22-14-22-27V51l22-8Z" fill="none" stroke="#fff" stroke-width="3"/>
+          <path d="m41 58 16-8 16 8-16 8-16-8ZM48 65v8c6 4 12 4 18 0v-8" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>
+        </g>
+      </svg>
+
+      <h1 id="offline-title">You’re Offline</h1>
+      <p>CampusShield needs an internet connection to sign in, load live campus content and submit reports. Please check your connection, then try again.</p>
+      <p class="offline-detail">No incident reports or sign-in details are saved while you are offline.</p>
+    </section>
+
+    <section class="offline-feature-grid" aria-label="What to do next">
+      <article class="offline-feature">
+        <span class="offline-feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="27" height="27" fill="none"><path d="M3 9a15 15 0 0 1 18 0M6.5 12.5a10 10 0 0 1 11 0M10 16a4.5 4.5 0 0 1 4 0" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </span>
+        <span><strong>Reconnect to Wi-Fi</strong><span>Check your network or switch to mobile data.</span></span>
+      </article>
+      <article class="offline-feature">
+        <span class="offline-feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="27" height="27" fill="none"><path d="M20 7v5h-5M4 17v-5h5M5.5 9A7 7 0 0 1 18 6l2 1M4 17l2-1a7 7 0 0 0 12.5-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span><strong>Try again when connected</strong><span>Reload CampusShield to restore live content.</span></span>
+      </article>
+      <article class="offline-feature">
+        <span class="offline-feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="27" height="27" fill="none"><path d="m12 3 8 3v5c0 5-3.2 8.4-8 10-4.8-1.6-8-5-8-10V6l8-3Z" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/><path d="m8.5 12 2.3 2.3 4.8-5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span><strong>Keep your reports private</strong><span>Report details are not stored by this offline page.</span></span>
+      </article>
+    </section>
+
+    <div class="offline-actions">
+      <a class="offline-button offline-button-primary" href="./">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M5.5 9A7 7 0 0 1 18 6l2 1M4 17l2-1a7 7 0 0 0 12.5-3" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Try Again
+      </a>
+      <button class="offline-button offline-button-secondary" id="check-connection" type="button">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="M3 9a15 15 0 0 1 18 0M6.5 12.5a10 10 0 0 1 11 0M10 16a4.5 4.5 0 0 1 4 0" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
+        Check Connection
+      </button>
+    </div>
+    <p class="offline-connection-status" id="connection-status" role="status" aria-live="polite">Reconnect to the internet, then select Try Again.</p>
+
+    <svg class="offline-landscape" viewBox="0 0 1160 112" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 39C150 5 235 111 397 86c143-22 208-30 349 8 154 41 284-2 414-55v73H0V39Z" fill="#DCFCE7"/>
+      <path d="M0 68c133-31 223 52 380 30 166-23 229-25 353 0 153 31 287-5 427-56v70H0V68Z" fill="#22C55E" opacity=".22"/>
+      <path d="M0 84c132-26 219 34 361 20 147-15 232-28 367-4 147 26 296 3 432-37v49H0V84Z" fill="#15803D"/>
+      <g fill="#0B5B2B" opacity=".95">
+        <path d="M824 87c-2-17 9-28 22-28s24 11 22 28h-44Zm9-19-5-12 10 7 8-18 7 22-5 8-15-7Z"/>
+        <path d="M910 84c-3-22 11-36 28-36s31 14 28 36h-56Zm14-27-7-14 15 9 8-25 9 31-10 10-15-11Z"/>
+        <path d="M1012 87c-3-18 8-29 22-29s25 11 22 29h-44Z"/>
+      </g>
+      <g transform="translate(1050 20)" fill="#0B2E1B">
+        <path d="M0 66V34l41-23 41 23v32H0Z"/>
+        <path d="M-5 34 41 7l46 27H-5Z" fill="#14532D"/>
+        <path d="M28 66V43h26v23H28Z" fill="#DCFCE7"/>
+        <path d="M38 66V48h6v18" fill="#14532D"/>
+        <path d="M61 66V0h10v66H61Z"/>
+        <path d="M57 5h18l-9-13-9 13Z"/>
+        <rect x="64" y="15" width="4" height="10" fill="#DCFCE7"/>
+      </g>
+    </svg>
   </main>
+
+  <script>
+    (() => {
+      const button = document.getElementById("check-connection");
+      const status = document.getElementById("connection-status");
+      if (!button || !status) return;
+
+      button.addEventListener("click", async () => {
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        status.dataset.state = "";
+        status.textContent = "Checking your connection…";
+        try {
+          const response = await fetch("./?connection-check=" + Date.now(), {
+            method: "HEAD",
+            cache: "no-store",
+            credentials: "same-origin"
+          });
+          if (!response.ok) throw new Error("Connection check failed");
+          status.dataset.state = "online";
+          status.textContent = "Connection detected. Select Try Again to reopen CampusShield.";
+        } catch (_) {
+          status.dataset.state = "offline";
+          status.textContent = "Still offline. Reconnect to Wi-Fi or mobile data, then try again.";
+        } finally {
+          button.disabled = false;
+          button.removeAttribute("aria-busy");
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
