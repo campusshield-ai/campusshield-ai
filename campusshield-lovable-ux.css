@@ -165,7 +165,7 @@
   }
   #workspace .content { padding: clamp(14px, 2vw, 22px) !important; }
   #workspace .stats { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-  #workspace .quick-action-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #workspace .quick-action-buttons { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #workspace #student-shortcuts .campus-home-bento-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 11px !important;
