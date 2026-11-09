@@ -323,8 +323,8 @@ const supabasePrimarySdkTag = htmlMarkup.indexOf('<script src="https://cdn.jsdel
 const supabaseFallbackSdkTag = htmlMarkup.indexOf('<script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>');
 const supabaseConfigTag = htmlMarkup.indexOf('<script src="./supabase-config.js" defer></script>');
 const supabaseBackendTag = htmlMarkup.indexOf('<script src="./campusshield-backend.js" defer></script>');
-assert.ok(supabasePrimarySdkTag >= 0 && supabaseFallbackSdkTag > supabasePrimarySdkTag, "Supabase browser SDK primary and backup CDNs load in order");
-assert.ok(supabaseConfigTag > supabaseFallbackSdkTag && supabaseBackendTag > supabaseConfigTag, "Supabase config and backend execute after SDK scripts");
+assert.ok(supabasePrimarySdkTag >= 0 && supabaseFallbackSdkTag === -1, "the primary Supabase SDK is loaded once without an unconditional duplicate CDN request");
+assert.ok(supabaseConfigTag > supabasePrimarySdkTag && supabaseBackendTag > supabaseConfigTag, "Supabase config and backend execute after the primary SDK");
 
 const publicKey = config.match(/publishableKey:\s*"([^"]+)"/)?.[1];
 assert.ok(publicKey?.startsWith("sb_publishable_"), "uses a publishable browser key");
