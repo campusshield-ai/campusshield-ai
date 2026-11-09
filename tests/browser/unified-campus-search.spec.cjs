@@ -91,6 +91,7 @@ test("global search finds verified campus notices and course resources", async (
     };
     addCard("campus-noticeboard-feed", "Registration closes Friday", "Verified Registrar notice: semester registration deadline is Friday.");
     addCard("campus-courses-feed", "Computer Architecture", "Approved course resources and lecture notes for second year students.");
+    addCard("campus-course-resources-feed", "Intro to Java notes", "Approved programming resource for first year students.");
   });
   const search = page.locator("#campus-global-search");
   const results = page.locator("#campus-global-search-results");
@@ -101,6 +102,8 @@ test("global search finds verified campus notices and course resources", async (
   await expect(results).toContainText("Registration closes Friday");
   await search.fill("Computer Architecture lecture notes");
   await expect(results).toContainText("Computer Architecture");
+  await search.fill("Intro to Java");
+  await expect(results).toContainText("Intro to Java notes");
 });
 
 test("My Day renders the real private timetable snapshot, clears on sign-out and fits mobile", async ({ page }) => {

@@ -99,6 +99,7 @@
       {selector:"#campus-alumni-feed article", page:"campus-network", label:"Alumni Connect"},
       {selector:"#campus-events-feed article", page:"events", label:"Campus events"},
       {selector:"#campus-courses-feed article", page:"courses", label:"Courses & study resources"},
+      {selector:"#campus-course-resources-feed article", page:"courses", label:"Course learning resource"},
       {selector:"#campus-noticeboard-feed article", page:"noticeboard", label:"Verified campus notice"},
       {selector:"#community-feed article, #campus-community-feed article, #campuspulse-feed article", page:"community", label:"CampusPulse"}
     ];
