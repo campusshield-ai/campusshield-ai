@@ -1062,19 +1062,26 @@ const globalSearchStart = appScript.indexOf("const campusGlobalSearchPageIndex")
 const globalSearchEnd = appScript.indexOf("function consumeGoogleOAuthHints", globalSearchStart);
 assert.ok(globalSearchStart >= 0 && globalSearchEnd > globalSearchStart, "global search is isolated in a dedicated app module section");
 const globalSearchSource = appScript.slice(globalSearchStart, globalSearchEnd);
-assert.match(globalSearchSource, /listCampusMarketplaceListings\\(\\)/, "search loads approved campus marketplace listings");
-assert.match(globalSearchSource, /listCampusOpportunities\\(\\)/, "search loads campus opportunities through the existing backend helper");
+assert.match(globalSearchSource, /listCampusMarketplaceListings\(\)/, "search loads approved campus marketplace listings");
+assert.match(globalSearchSource, /listCampusOpportunities\(\)/, "search loads campus opportunities through the existing backend helper");
 assert.match(globalSearchSource, /list_campus_network_posts/, "search uses the access-controlled Campus Network listing RPC");
 assert.match(globalSearchSource, /list_campus_alumni_directory/, "search uses the verified alumni directory RPC");
-assert.match(globalSearchSource, /item\\.status !== 'published'/, "search excludes unpublished opportunity records");
+assert.match(globalSearchSource, /item\.status !== 'published'/, "search excludes unpublished opportunity records");
 assert.match(globalSearchSource, /campusMarketplaceRows/, "marketplace result selection routes into the current discovery filter");
-assert.match(globalSearchSource, /renderCampusOpportunitiesDiscovery\\(\\)/, "opportunity result selection routes into the current discovery filter");
-assert.match(globalSearchSource, /renderCampusAlumniDirectory\\(\\)/, "alumni result selection routes into the current alumni filter");
+assert.match(globalSearchSource, /renderCampusOpportunitiesDiscovery\(\)/, "opportunity result selection routes into the current discovery filter");
+assert.match(globalSearchSource, /renderCampusAlumniDirectory\(\)/, "alumni result selection routes into the current alumni filter");
 assert.doesNotMatch(globalSearchSource, /student_identity_verifications|incident_reports|campus_messages|campusMarketplaceOwnRows|private.*draft/i, "global search never reads private identity, incident, message or own-draft data");
-assert.doesNotMatch(globalSearchSource, /\\.insert\\(|\\.update\\(|\\.delete\\(/, "global search is read-only");
-assert.match(globalSearchSource, /event\\.ctrlKey \\|\\| event\\.metaKey/, "Ctrl+K and Command+K open global search");
-assert.match(visualRefreshCss, /\\.campus-global-search-dialog/, "global search has dedicated visual styling");
-assert.match(visualRefreshCss, /html\\[data-theme="dark"\\] \\.campus-global-search-dialog/, "global search supports dark mode");
-assert.match(visualRefreshCss, /@media \\(max-width:760px\\)/, "global search and dashboard shortcuts adapt to mobile widths");
-assert.match(visualRefreshCss, /@media \\(max-width:360px\\)/, "dashboard shortcuts have a narrow-phone layout");
+assert.doesNotMatch(globalSearchSource, /\.insert\(|\.update\(|\.delete\(/, "global search is read-only");
+assert.match(globalSearchSource, /event\.ctrlKey \|\| event\.metaKey/, "Ctrl+K and Command+K open global search");
+assert.match(visualRefreshCss, /\.campus-global-search-dialog/, "global search has dedicated visual styling");
+assert.match(visualRefreshCss, /html\[data-theme="dark"\] \.campus-global-search-dialog/, "global search supports dark mode");
+assert.match(visualRefreshCss, /@media \(max-width:760px\)/, "global search and dashboard shortcuts adapt to mobile widths");
+assert.match(visualRefreshCss, /@media \(max-width:360px\)/, "dashboard shortcuts have a narrow-phone layout");
 console.log("PASS unified campus search, approved-data scope, keyboard access, role-aware dashboard shortcuts and responsive styling");
+
+
+// Cross-account cache isolation.
+assert.match(appScript, /campusGlobalSearchProfile === currentProfile/, "global search cache is bound to the active profile object");
+assert.match(appScript, /campusMarketplaceRows = \\[\\];[\\s\\S]*campusOpportunityRows = \\[\\];[\\s\\S]*campusNetworkState\\.alumni = \\[\\];/, "cached discovery rows are cleared when the signed-in account changes");
+assert.match(appScript, /prefetchCampusGlobalSearchData\\(\\)\\.catch\\(\\(\\) => \\{\\}\\);[\\s\\S]*renderCampusGlobalSearch\\(input\\.value\\)/, "account cache is cleared before rendering a newly opened search dialog");
+console.log("PASS global search session-bound cache isolation");
