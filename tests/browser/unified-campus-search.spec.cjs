@@ -272,7 +272,7 @@ test("dashboard bento cards use dark surfaces and readable text in dark mode", a
       backgroundImage: style.backgroundImage,
       backgroundColor: style.backgroundColor,
       borderColor: style.borderTopColor,
-      heading: read("> strong") || getComputedStyle(card.querySelector("strong")).color,
+      heading: read("strong"),
       description: read("p"),
       footer: read(".campus-home-card-footer")
     };
