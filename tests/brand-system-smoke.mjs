@@ -56,7 +56,8 @@ assert.ok(brand.includes("#workspace .campus-ideas-impact .cii-status-in_progres
   brand.includes("#workspace .campus-voice-player"),
   "Ideas & Impact and voice-note accents use green");
 assert.ok(guide.includes("--guide-ink:#173325") && guide.includes("--guide-deep:#071E13") &&
-  guide.includes("background:#123522") && guide.includes("background:#0F2C1C"),
+  guide.includes("background:#123522") && guide.includes("background:#0F2C1C") &&
+  !guide.includes("#06223a") && !guide.includes("#1b4052"),
   "The guide light and dark palettes stay in the green family");
 
 assert.match(brand, /mobile-bottom-nav/, "Mobile navigation shares the brand system");
