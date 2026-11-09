@@ -74,12 +74,9 @@
     {title:"Profile & settings", description:"Manage your profile and preferences", page:"profile-settings", keywords:"account settings personal"}
   ];
   function visibleDestination(item) {
-    // Offer a destination only when this build includes the page and its
-    // existing sidebar entry is available to this account.
-    if (!document.getElementById("page-" + item.page)) return false;
-    const sidebarEntries = Array.from(document.querySelectorAll("#app-sidebar [data-page]"))
-      .filter(element => element.dataset.page === item.page);
-    return !sidebarEntries.length || sidebarEntries.some(element => !element.hidden && !element.closest("[hidden]"));
+    // Offer a destination only when this build actually includes its page.
+    // The main navigation and destination handlers enforce the user's access.
+    return Boolean(document.getElementById("page-" + item.page));
   }
 
   function normalizeSearchText(value) {
