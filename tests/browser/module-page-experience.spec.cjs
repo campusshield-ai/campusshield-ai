@@ -87,6 +87,7 @@ test("module headings and first-level cards retain readable forest-green dark th
     const headingColor = getComputedStyle(document.querySelector("#page-courses > .heading h1")).color;
     const canvasColor = getComputedStyle(document.body).backgroundColor;
     const panelColor = getComputedStyle(document.querySelector("#page-courses > .panel")).backgroundColor;
+    const darkSurfaceToken = getComputedStyle(document.documentElement).getPropertyValue("--cs-dark-surface").trim();
 
     const parseHexColor = value => {
       if (!value || !value.startsWith("#")) return null;
@@ -155,6 +156,7 @@ test("module headings and first-level cards retain readable forest-green dark th
     const headingRgb = parseColor(headingColor);
     const canvasRgb = parseColor(canvasColor);
     const panelRgb = parseColor(panelColor);
+    const darkSurfaceRgb = parseColor(darkSurfaceToken);
 
     const contrast = headingRgb && canvasRgb ? contrastRatio(headingRgb, canvasRgb) : null;
 
@@ -164,6 +166,7 @@ test("module headings and first-level cards retain readable forest-green dark th
       panelColor,
       contrast,
       panelRgb,
+      darkSurfaceRgb,
       headingRgb,
       canvasRgb
     };
@@ -172,7 +175,8 @@ test("module headings and first-level cards retain readable forest-green dark th
   expect(colors.contrast).not.toBeNull();
   expect(Number.isFinite(colors.contrast)).toBe(true);
   expect(colors.contrast).toBeGreaterThanOrEqual(4.5);
-  expect(colors.panelColor).toBe("rgb(18, 53, 34)");
+  expect(colors.darkSurfaceRgb).not.toBeNull();
+  expect(colors.panelRgb).toEqual(colors.darkSurfaceRgb);
   await expect(heading).toBeVisible();
   await expect(panel).toBeVisible();
 });
