@@ -35,7 +35,7 @@ html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-ca
   background: var(--cs-dark-surface) !important;
   border-color: var(--cs-dark-border) !important;
 }
-html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,[class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],[class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) :is(h1,h2,h3,h4,h5,h6,p,span,small,strong,b,label,li,dt,dd,th,td,.muted,.message,[class*="-title"],[class*="-description"],[class*="-meta"],[class*="-label"],[class*="-hint"],[class*="-note"]) {
+html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,[class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],[class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) :is(p,span,small,label,li,dt,dd,th,td,.muted,.message,[class*="-title"],[class*="-description"],[class*="-meta"],[class*="-label"],[class*="-hint"],[class*="-note"]) {
   color: var(--cs-dark-text) !important;
 }
 html[data-theme="dark"] body :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
