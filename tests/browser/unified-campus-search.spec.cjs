@@ -246,3 +246,62 @@ test("dark mode keeps dashboard headings, student cards and form text readable",
   expect(metrics.input.color).toBe("rgb(230, 241, 233)");
   expect(metrics.input.background).toBe("rgb(15, 36, 25)");
 });
+
+test("dashboard bento cards use dark surfaces and readable text in dark mode", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    const workspace = document.getElementById("workspace");
+    if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
+    const login = document.getElementById("login-screen");
+    if (login) { login.hidden = true; login.style.display = "none"; }
+    document.documentElement.dataset.theme = "dark";
+  });
+
+  const bento = page.locator("#student-shortcuts");
+  await expect(bento).toBeVisible();
+  const cards = bento.locator(".campus-home-card");
+  await expect(cards).toHaveCount(5);
+
+  const styles = await cards.evaluateAll(elements => elements.map(card => {
+    const style = getComputedStyle(card);
+    const read = selector => {
+      const node = card.querySelector(selector);
+      return node ? getComputedStyle(node).color : null;
+    };
+    return {
+      backgroundImage: style.backgroundImage,
+      backgroundColor: style.backgroundColor,
+      borderColor: style.borderTopColor,
+      heading: read("strong"),
+      description: read("p"),
+      footer: read(".campus-home-card-footer")
+    };
+  }));
+
+  for (const [index, card] of styles.entries()) {
+    expect(card.backgroundImage, "card " + index + " must use its dark-mode surface, not a light gradient")
+      .toContain("linear-gradient");
+    expect(card.backgroundImage).not.toContain("255, 255, 255");
+    expect(card.backgroundColor).not.toBe("rgb(255, 255, 255)");
+    expect(card.borderColor).toBe(index === 1 ? "rgb(52, 115, 75)" : "rgb(49, 91, 64)");
+    expect(card.heading).toBe("rgb(239, 248, 240)");
+    expect(card.description).toBe("rgb(207, 225, 213)");
+    expect(card.footer).toBe("rgb(169, 232, 181)");
+  }
+
+  const ai = await bento.locator(".campus-home-ai").evaluate(element => ({
+    background: getComputedStyle(element).backgroundImage,
+    title: getComputedStyle(element.querySelector("strong")).color,
+    copy: getComputedStyle(element.querySelector("p")).color
+  }));
+  expect(ai.background).toContain("radial-gradient");
+  expect(ai.title).toBe("rgb(239, 248, 240)");
+  expect(ai.copy).toBe("rgb(207, 225, 213)");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const bounds = await bento.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds.x).toBeGreaterThanOrEqual(0);
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(391);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
+});

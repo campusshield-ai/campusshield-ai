@@ -95,3 +95,50 @@ html[data-theme="dark"] body :is(
 ):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) :is(h1,h2,h3,h4,h5,h6,strong,b) {
   color: var(--cs-dark-heading) !important;
 }
+
+
+/* Dashboard bento cards: the brand-system selector uses #workspace and a
+   light-mode background shorthand, which outranks the earlier theme rules.
+   Replace the whole background (including its image gradient) in dark mode. */
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-card {
+  border-color: #315b40 !important;
+  background: linear-gradient(145deg, #173b29 0%, #10291d 100%) !important;
+  color: #e5f1e9 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .2), inset 0 1px rgba(255,255,255,.035) !important;
+}
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-card.campus-home-ai {
+  border-color: #34734b !important;
+  background:
+    radial-gradient(ellipse at 90% 10%, rgba(127,217,138,.16), transparent 39%),
+    linear-gradient(145deg, #0b2d20 0%, #104b34 65%, #1b5e3d 100%) !important;
+}
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-card > strong {
+  color: #eff8f0 !important;
+}
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-card > p {
+  color: #cfe1d5 !important;
+}
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-card .campus-home-card-footer,
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-card .campus-home-card-footer span {
+  color: #a9e8b5 !important;
+}
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-card .campus-home-card-kicker {
+  color: #c5e8cc !important;
+}
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-card .campus-home-status {
+  border-color: #3f714d !important;
+  background: #234531 !important;
+  color: #d8efdc !important;
+}
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-card .student-shortcut-icon {
+  border-color: #416d4c !important;
+  background: #234531 !important;
+  color: #b7edc0 !important;
+}
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-card:hover {
+  border-color: #79c98b !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.24) !important;
+}
+html[data-theme="dark"] #workspace #student-shortcuts .campus-home-map-art {
+  border-color: rgba(169,232,181,.2) !important;
+}
