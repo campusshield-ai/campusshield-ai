@@ -18,6 +18,7 @@ on:
       - "service-worker.js"
       - "campusshield-dashboard-polish-v3.css"
       - "campusshield-lovable-ux.css"
+      - "campusshield-module-experience.css"
       - "campusshield-lovable-ux.js"
       - "icons/campusshield.svg"
       - "assets/campusshield-logo.svg"
