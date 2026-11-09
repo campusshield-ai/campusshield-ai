@@ -5264,9 +5264,11 @@
     if(results)results.textContent=rows.length+' matching opportunity(ies) · '+(campusOpportunityRows||[]).length+' published in your university.';
   }
 
+  async function loadCampusMarketplacePage() {
     const backend=window.CampusShieldBackend,status=$('campus-marketplace-status');
     if(!currentProfile||!backend?.isConfigured)return;
     status.textContent='Loading your campus marketplace…';
+    try {
       campusContext=await backend.getMyCampusContext();
       if(!campusContext?.university_id){status.textContent='Choose your university on the Campus community page first.';$('campus-marketplace-feed').innerHTML='<div class="community-empty">Choose your university to browse campus listings.</div>';return;}
       const [listings,ownRows]=await Promise.all([backend.listCampusMarketplaceListings(),backend.listMyCampusMarketplaceListings()]);
@@ -5276,6 +5278,8 @@
       status.textContent=campusMarketplaceRows.length+' approved listing(s) in your university marketplace.';
       if(canModerateCommunity())await loadCampusContentModeration();
     }catch(err){status.textContent=err.message||'Could not load the campus marketplace.';$('campus-marketplace-feed').innerHTML='<div class="community-empty">The marketplace is temporarily unavailable. Refresh to try again.</div>';$('campus-my-listings-status').textContent='Your submissions could not be loaded.';}
+
+  }
 
   async function loadCampusClassroomsPage() {
     const status = $('campus-classrooms-status');
