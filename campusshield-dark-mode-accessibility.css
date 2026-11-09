@@ -30,12 +30,12 @@ html[data-theme="dark"] body :is(strong,b,.stat-value,.metric-value) {
 html[data-theme="dark"] body :is(small,.muted,.text-muted,.campus-network-meta,.stat-note,.field-hint,.helper-text,.form-hint,[class*="-meta"],[class*="-hint"],[class*="-note"],[class*="-status"],[class*="-eyebrow"],[class*="-kicker"]) {
   color: var(--cs-dark-muted) !important;
 }
-html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,.dropdown-menu,.popover,[class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],[class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]):not(.campus-dashboard-hero) {
+html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,.dropdown-menu,.popover,[class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],[class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) {
   color: var(--cs-dark-text) !important;
   background: var(--cs-dark-surface) !important;
   border-color: var(--cs-dark-border) !important;
 }
-html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,[class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],[class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]):not(.campus-dashboard-hero) :is(h1,h2,h3,h4,h5,h6,p,span,small,strong,b,label,li,dt,dd,th,td,.muted,.message,[class*="-title"],[class*="-description"],[class*="-meta"],[class*="-label"],[class*="-hint"],[class*="-note"]) {
+html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,[class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],[class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) :is(h1,h2,h3,h4,h5,h6,p,span,small,strong,b,label,li,dt,dd,th,td,.muted,.message,[class*="-title"],[class*="-description"],[class*="-meta"],[class*="-label"],[class*="-hint"],[class*="-note"]) {
   color: var(--cs-dark-text) !important;
 }
 html[data-theme="dark"] body :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
@@ -92,6 +92,6 @@ html[data-theme="dark"] body :is(
   .panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,
   [class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],
   [class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]
-):not(.campus-dashboard-hero) :is(h1,h2,h3,h4,h5,h6,strong,b) {
+):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) :is(h1,h2,h3,h4,h5,h6,strong,b) {
   color: var(--cs-dark-heading) !important;
 }
