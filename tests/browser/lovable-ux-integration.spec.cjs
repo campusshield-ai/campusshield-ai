@@ -161,7 +161,7 @@ test("global campus search supports combobox keyboard navigation and no-results 
   await expect(input).toHaveAttribute("aria-expanded", "true");
 
   // Activate the destination last, because search navigation changes the page.
-  await input.fill("Dashboard");
+  await input.fill("Overview");
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Enter");
   await expect(results).toBeHidden();
