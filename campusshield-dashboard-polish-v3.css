@@ -1,0 +1,189 @@
+/*
+ * CampusShield dashboard polish v3
+ * Fresh asset URL intentionally bypasses stale copies of the previous
+ * dark-mode override. Keep the forest-green identity and strong contrast.
+ */
+
+/* Balanced editorial bento: two feature cards, then three equal student tools. */
+#workspace #page-dashboard .campus-home-bento-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+#workspace #page-dashboard .campus-home-map,
+#workspace #page-dashboard .campus-home-ai {
+  grid-column: span 3;
+  grid-row: span 2;
+  min-height: 270px;
+}
+#workspace #page-dashboard .campus-home-pulse,
+#workspace #page-dashboard .campus-home-academics,
+#workspace #page-dashboard .campus-home-safety {
+  grid-column: span 2;
+  min-height: 164px;
+}
+#workspace #page-dashboard .campus-home-bento .student-shortcuts-heading h2 {
+  font-size: clamp(22px, 2.25vw, 30px);
+  font-weight: 850;
+  letter-spacing: -.05em;
+  line-height: 1.12;
+}
+#workspace #page-dashboard .campus-home-card {
+  isolation: isolate;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+#workspace #page-dashboard .campus-home-card-top {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(25, 76, 44, .12);
+  margin-bottom: 12px;
+}
+#workspace #page-dashboard .campus-home-card > strong {
+  font-size: 17px;
+  line-height: 1.2;
+  letter-spacing: -.035em;
+}
+#workspace #page-dashboard .campus-home-card > p {
+  font-size: 12px;
+  line-height: 1.62;
+}
+#workspace #page-dashboard .campus-home-card-footer {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 11px;
+  border: 1px solid rgba(21, 128, 61, .16);
+  border-radius: 10px;
+  background: rgba(21, 128, 61, .065);
+  font-size: 11px;
+  line-height: 1.2;
+}
+#workspace #page-dashboard .campus-home-card:focus-visible {
+  outline: 3px solid #86efac;
+  outline-offset: 3px;
+}
+@media (hover: hover) and (pointer: fine) {
+  #workspace #page-dashboard .campus-home-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 34px rgba(7, 45, 29, .13);
+  }
+}
+
+/*
+ * Dark-mode cards: use both background-color and background-image with
+ * important declarations. The previous brand stylesheet sets a light
+ * background shorthand, which can otherwise leave a white image layer on top
+ * of a dark background colour.
+ */
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card {
+  color: #f2faf3 !important;
+  background-color: #10291d !important;
+  background-image:
+    radial-gradient(ellipse at 92% 8%, rgba(134, 239, 172, .10), transparent 39%),
+    linear-gradient(145deg, #173b29 0%, #10291d 72%, #0d2419 100%) !important;
+  border: 1px solid #376b48 !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .23), inset 0 1px rgba(237, 255, 240, .045) !important;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card.campus-home-ai {
+  color: #f4fff5 !important;
+  background-color: #0b2d20 !important;
+  background-image:
+    radial-gradient(ellipse at 88% 12%, rgba(134, 239, 172, .18), transparent 40%),
+    linear-gradient(135deg, #0b2d20 0%, #104b34 60%, #1c6040 100%) !important;
+  border-color: #4a8a5c !important;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card-top {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-bottom-color: rgba(191, 232, 199, .18) !important;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card > strong {
+  color: #f2faf3 !important;
+  font-size: 18px;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card > p {
+  color: #d2e4d6 !important;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card .campus-home-card-footer {
+  color: #c5f2cd !important;
+  border-color: rgba(134, 239, 172, .24) !important;
+  background: rgba(134, 239, 172, .105) !important;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card .campus-home-card-footer span {
+  color: #c5f2cd !important;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card .campus-home-card-kicker {
+  color: #c5e8cc !important;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card .campus-home-status {
+  color: #e0f4e4 !important;
+  border-color: #4a8158 !important;
+  background: #244b32 !important;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card .student-shortcut-icon {
+  color: #c2efcb !important;
+  border-color: #4a8158 !important;
+  background: #244b32 !important;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-map-art {
+  opacity: .44;
+  border-color: rgba(191, 232, 199, .22) !important;
+}
+html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card:focus-visible {
+  outline-color: #9ce9aa !important;
+}
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme="dark"] body #workspace #page-dashboard #student-shortcuts .campus-home-card:hover {
+    border-color: #8bd99a !important;
+    box-shadow: 0 17px 36px rgba(0, 0, 0, .3), 0 0 0 1px rgba(134, 239, 172, .10) !important;
+  }
+}
+
+/* Tablet and phone: retain a compact two-column rhythm with no clipped cards. */
+@media (max-width: 950px) {
+  #workspace #page-dashboard .campus-home-bento-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(138px, auto);
+    gap: 11px;
+  }
+  #workspace #page-dashboard .campus-home-map,
+  #workspace #page-dashboard .campus-home-ai {
+    grid-column: span 2;
+    grid-row: auto;
+    min-height: 205px;
+  }
+  #workspace #page-dashboard .campus-home-pulse,
+  #workspace #page-dashboard .campus-home-academics,
+  #workspace #page-dashboard .campus-home-safety {
+    grid-column: span 1;
+    min-height: 154px;
+  }
+  #workspace #page-dashboard .campus-home-safety { grid-column: span 2; }
+}
+@media (max-width: 650px) {
+  #workspace #page-dashboard .campus-home-bento-grid { gap: 9px; }
+  #workspace #page-dashboard .campus-home-card {
+    padding: 13px;
+    border-radius: 16px;
+  }
+  #workspace #page-dashboard .campus-home-map,
+  #workspace #page-dashboard .campus-home-ai { min-height: 182px; }
+  #workspace #page-dashboard .campus-home-card > strong { font-size: 15px; }
+  #workspace #page-dashboard .campus-home-card > p { font-size: 11px; }
+  #workspace #page-dashboard .campus-home-card-footer { min-height: 32px; }
+}
+@media (max-width: 370px) {
+  #workspace #page-dashboard .campus-home-bento-grid { gap: 8px; }
+  #workspace #page-dashboard .campus-home-card { padding: 11px; }
+  #workspace #page-dashboard .campus-home-card > p { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #workspace #page-dashboard .campus-home-card {
+    transition: none !important;
+  }
+  #workspace #page-dashboard .campus-home-card:hover {
+    transform: none !important;
+  }
+}
