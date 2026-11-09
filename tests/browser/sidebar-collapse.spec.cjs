@@ -50,6 +50,7 @@ test("tablet defaults to a compact icon rail while desktop collapse remains user
       await expect(guideButton).toHaveText(/How to use CampusShield/);
       await toggle.click();
       await expect(app).toHaveClass(/tablet-compact/);
+      await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(compactWidth);
     } else {
       await expect(app).not.toHaveClass(/tablet-compact/);
       await expect(guideAccess.locator(".nav-section-label")).toHaveText("GETTING STARTED");
@@ -67,10 +68,10 @@ test("tablet defaults to a compact icon rail while desktop collapse remains user
       const main = document.querySelector("#workspace .main");
       const box = sidebar.getBoundingClientRect();
       return {
-        width: box.width,
+        width: Math.round(box.width),
         scrollWidth: sidebar.scrollWidth,
         clientWidth: sidebar.clientWidth,
-        mainOffset: parseFloat(getComputedStyle(main).marginLeft),
+        mainOffset: Math.round(parseFloat(getComputedStyle(main).marginLeft)),
         iconDisplay: getComputedStyle(sidebar.querySelector(".nav button .nav-icon")).display,
         iconWidth: sidebar.querySelector(".nav button .nav-icon").getBoundingClientRect().width,
         docWidth: document.documentElement.scrollWidth,
