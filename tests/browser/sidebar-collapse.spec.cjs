@@ -57,7 +57,7 @@ test("tablet defaults to a compact icon rail while desktop collapse remains user
       await expect(featureNav.locator(".nav-section-label").first()).toHaveText("SAFETY & RESPONSE");
       await toggle.click();
       await expect(app).toHaveClass(/sidebar-collapsed/);
-      await expect.poll(() => sidebar.evaluate(el => sidebar.getBoundingClientRect().width)).toBe(compactWidth);
+      await expect.poll(() => sidebar.evaluate(el => el.getBoundingClientRect().width)).toBe(compactWidth);
       await expect(toggle).toHaveAttribute("aria-expanded", "false");
       await expect(page.locator("#app-sidebar .brand-copy")).toBeHidden();
     }
