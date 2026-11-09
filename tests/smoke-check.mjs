@@ -1045,3 +1045,36 @@ assert.match(appScript, /saved sign-in/i, "session restoration failure tells the
 assert.match(appScript, /session-restore-retry/, "session restoration has a retry action");
 assert.doesNotThrow(() => new Function(appScript), "app script parses after session restoration changes");
 console.log("PASS persistent auth restoration, no login flash on reload, and streamlined startup checks");
+
+
+// Unified Campus Search and personalized workspace shortcuts.
+assert.match(htmlMarkup, /data-campus-global-search[^>]*aria-haspopup="dialog"/, "desktop and mobile launchers open the accessible global search dialog");
+assert.match(htmlMarkup, /id="campus-global-search-dialog"[^>]*aria-labelledby="campus-global-search-title"/, "global search has a labelled native dialog");
+assert.match(htmlMarkup, /id="campus-global-search-input" type="search"/, "global search uses a bounded native search input");
+assert.match(htmlMarkup, /Private messages, incident reports, identity documents and private drafts are never included in search/, "global search explains its privacy boundary");
+assert.match(htmlMarkup, /id="dashboard-opportunities-action"[^>]*hidden/, "opportunity shortcut is hidden until campus membership is verified");
+assert.match(htmlMarkup, /id="dashboard-campus-network-action"[^>]*hidden/, "Campus Network shortcut is hidden until campus membership is verified");
+assert.match(htmlMarkup, /data-page="timetable">My timetable/, "dashboard includes a direct timetable shortcut");
+assert.match(htmlMarkup, /data-page="courses">Courses &amp; study resources/, "dashboard includes a direct study resources shortcut");
+assert.match(htmlMarkup, /data-page="marketplace">Browse Marketplace/, "dashboard includes a direct marketplace shortcut");
+assert.doesNotThrow(() => new Function(appScript), "CampusShield app parses with unified search");
+const globalSearchStart = appScript.indexOf("const campusGlobalSearchPageIndex");
+const globalSearchEnd = appScript.indexOf("function consumeGoogleOAuthHints", globalSearchStart);
+assert.ok(globalSearchStart >= 0 && globalSearchEnd > globalSearchStart, "global search is isolated in a dedicated app module section");
+const globalSearchSource = appScript.slice(globalSearchStart, globalSearchEnd);
+assert.match(globalSearchSource, /listCampusMarketplaceListings\\(\\)/, "search loads approved campus marketplace listings");
+assert.match(globalSearchSource, /listCampusOpportunities\\(\\)/, "search loads campus opportunities through the existing backend helper");
+assert.match(globalSearchSource, /list_campus_network_posts/, "search uses the access-controlled Campus Network listing RPC");
+assert.match(globalSearchSource, /list_campus_alumni_directory/, "search uses the verified alumni directory RPC");
+assert.match(globalSearchSource, /item\\.status !== 'published'/, "search excludes unpublished opportunity records");
+assert.match(globalSearchSource, /campusMarketplaceRows/, "marketplace result selection routes into the current discovery filter");
+assert.match(globalSearchSource, /renderCampusOpportunitiesDiscovery\\(\\)/, "opportunity result selection routes into the current discovery filter");
+assert.match(globalSearchSource, /renderCampusAlumniDirectory\\(\\)/, "alumni result selection routes into the current alumni filter");
+assert.doesNotMatch(globalSearchSource, /student_identity_verifications|incident_reports|campus_messages|campusMarketplaceOwnRows|private.*draft/i, "global search never reads private identity, incident, message or own-draft data");
+assert.doesNotMatch(globalSearchSource, /\\.insert\\(|\\.update\\(|\\.delete\\(/, "global search is read-only");
+assert.match(globalSearchSource, /event\\.ctrlKey \\|\\| event\\.metaKey/, "Ctrl+K and Command+K open global search");
+assert.match(visualRefreshCss, /\\.campus-global-search-dialog/, "global search has dedicated visual styling");
+assert.match(visualRefreshCss, /html\\[data-theme="dark"\\] \\.campus-global-search-dialog/, "global search supports dark mode");
+assert.match(visualRefreshCss, /@media \\(max-width:760px\\)/, "global search and dashboard shortcuts adapt to mobile widths");
+assert.match(visualRefreshCss, /@media \\(max-width:360px\\)/, "dashboard shortcuts have a narrow-phone layout");
+console.log("PASS unified campus search, approved-data scope, keyboard access, role-aware dashboard shortcuts and responsive styling");
