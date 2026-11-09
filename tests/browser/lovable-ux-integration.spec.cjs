@@ -132,7 +132,7 @@ test("global campus search supports combobox keyboard navigation and no-results 
 
   await input.fill("campus");
   await expect(results).toBeVisible();
-  await expect(options).toHaveCountGreaterThan(1);
+  expect(await options.count()).toBeGreaterThan(1);
 
   await page.keyboard.press("ArrowDown");
   const firstId = await input.getAttribute("aria-activedescendant");
@@ -153,11 +153,17 @@ test("global campus search supports combobox keyboard navigation and no-results 
   await expect(input).toHaveAttribute("aria-expanded", "false");
   await expect(input).not.toHaveAttribute("aria-activedescendant");
 
+  await input.fill("Marketplace");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await expect(results).toBeHidden();
+  await expect(input).toHaveValue("");
+
   await input.fill("zzzz-campusshield-no-results");
   await expect(results).toBeVisible();
   await expect(page.locator("#campus-global-search-empty")).toHaveAttribute("role", "status");
   await expect(page.locator("#campus-global-search-empty")).toContainText("No matching destination");
-  await expect(results).toHaveAttribute("hidden", "");
+  await expect(page.locator("#campus-global-search-empty")).toBeVisible();
   expect(errors).toEqual([]);
 });
 
