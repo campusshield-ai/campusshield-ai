@@ -4,6 +4,7 @@ on:
     branches: [staging/preview, main]
     paths:
       - "campusshield-brand-system.css"
+      - "campusshield-guide.css"
       - "index.html"
       - "about.html"
       - "features.html"
