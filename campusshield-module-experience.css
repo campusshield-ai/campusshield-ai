@@ -65,7 +65,7 @@
   min-width: 0;
   border: 1px solid var(--cs-line, #DCE9DE);
   border-radius: 18px;
-  background: var(--cs-card, #FFFFFF);
+  background-color: var(--cs-card, #FFFFFF);
   box-shadow: 0 10px 28px rgba(18, 59, 35, .045);
 }
 
@@ -176,7 +176,7 @@ html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmi
 
 html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel {
   border-color: #315B40;
-  background: #123522;
+  background-color: #123522;
   box-shadow: 0 12px 30px rgba(0, 0, 0, .13);
   color: #E5F3E8;
 }
