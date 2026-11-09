@@ -69,7 +69,17 @@ assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskable-512.png" &&
   icon.purpose === "maskable"), "PWA uses the dedicated safe-area maskable icon");
 
-assert.match(serviceWorker, /campusshield-offline-v6/, "Offline cache version is incremented");
+assert.match(serviceWorker, /campusshield-offline-v7/, "Offline cache version is incremented");
+const dashboardHtml = read("index.html");
+const dashboardPolish = read("campusshield-dashboard-polish-v3.css");
+assert.ok(dashboardHtml.includes('href="./campusshield-dashboard-polish-v3.css?v=20261109-1"'),
+  "The cache-busted dashboard polish stylesheet is loaded");
+assert.ok(dashboardHtml.indexOf("campusshield-dashboard-polish-v3.css") >
+  dashboardHtml.indexOf("campusshield-dark-mode-accessibility.css"),
+  "The fresh dashboard stylesheet loads after the previous theme overrides");
+assert.ok(dashboardPolish.includes("grid-template-columns: repeat(6, minmax(0, 1fr))") &&
+  dashboardPolish.includes("#10291d") && dashboardPolish.includes("#d2e4d6"),
+  "The dashboard polish defines a balanced six-column layout and readable dark card colours");
 assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
   serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)"),
   "Offline fallback and shared brand stylesheet are both cached");
