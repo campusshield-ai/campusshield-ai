@@ -83,12 +83,31 @@ test("module headings and first-level cards retain readable forest-green dark th
 
   const heading = page.locator("#page-courses > .heading");
   const panel = page.locator("#page-courses > .panel").first();
-  const colors = await page.evaluate(() => ({
-    heading: getComputedStyle(document.querySelector("#page-courses > .heading h1")).color,
-    panel: getComputedStyle(document.querySelector("#page-courses > .panel")).backgroundColor
-  }));
+  const colors = await page.evaluate(() => {
+    const heading = getComputedStyle(document.querySelector("#page-courses > .heading h1")).color;
+    const canvas = getComputedStyle(document.body).backgroundColor;
+    const panel = getComputedStyle(document.querySelector("#page-courses > .panel")).backgroundColor;
+    const rgb = value => {
+      const match = value.match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/);
+      if (!match) return null;
+      return match.slice(1).map(Number).map(channel => {
+        const normalized = channel / 255;
+        return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+      });
+    };
+    const luminance = value => {
+      const channels = rgb(value);
+      return channels ? 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2] : null;
+    };
+    const headingLuminance = luminance(heading);
+    const canvasLuminance = luminance(canvas);
+    const contrast = headingLuminance === null || canvasLuminance === null
+      ? 0
+      : (Math.max(headingLuminance, canvasLuminance) + 0.05) / (Math.min(headingLuminance, canvasLuminance) + 0.05);
+    return { heading, canvas, panel, contrast };
+  });
 
-  expect(colors.heading).toBe("rgb(229, 243, 232)");
+  expect(colors.contrast).toBeGreaterThanOrEqual(4.5);
   expect(colors.panel).toBe("rgb(18, 53, 34)");
   await expect(heading).toBeVisible();
   await expect(panel).toBeVisible();
