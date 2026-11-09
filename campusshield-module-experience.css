@@ -56,7 +56,7 @@
   white-space: normal;
 }
 
-#workspace .page:not(#page-dashboard) > .panel {
+#workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel {
   min-width: 0;
   border: 1px solid var(--cs-line, #DCE9DE);
   border-radius: 18px;
@@ -64,7 +64,7 @@
   box-shadow: 0 10px 28px rgba(18, 59, 35, .045);
 }
 
-#workspace .page:not(#page-dashboard) > .panel > .panel-heading {
+#workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -72,8 +72,8 @@
   margin-bottom: 14px;
 }
 
-#workspace .page:not(#page-dashboard) > .panel > .panel-heading h2,
-#workspace .page:not(#page-dashboard) > .panel > .panel-heading h3 {
+#workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading h2,
+#workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading h3 {
   margin: 0;
   color: var(--cs-ink, #173325);
   font-size: 17px;
@@ -81,7 +81,7 @@
   letter-spacing: -.035em;
 }
 
-#workspace .page:not(#page-dashboard) > .panel > .panel-heading p {
+#workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading p {
   margin: 4px 0 0;
   color: var(--cs-muted, #53695B);
   font-size: 12px;
@@ -159,17 +159,17 @@ html[data-theme="dark"] #workspace .page:not(#page-dashboard) > .heading {
 }
 
 html[data-theme="dark"] #workspace .page:not(#page-dashboard) > .heading h1,
-html[data-theme="dark"] #workspace .page:not(#page-dashboard) > .panel > .panel-heading h2,
-html[data-theme="dark"] #workspace .page:not(#page-dashboard) > .panel > .panel-heading h3 {
+html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading h2,
+html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading h3 {
   color: #E5F3E8;
 }
 
 html[data-theme="dark"] #workspace .page:not(#page-dashboard) > .heading p,
-html[data-theme="dark"] #workspace .page:not(#page-dashboard) > .panel > .panel-heading p {
+html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading p {
   color: #B7C9BD;
 }
 
-html[data-theme="dark"] #workspace .page:not(#page-dashboard) > .panel {
+html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel {
   border-color: #315B40;
   background: #123522;
   box-shadow: 0 12px 30px rgba(0, 0, 0, .13);
@@ -224,7 +224,7 @@ html[data-theme="dark"] #workspace .page:not(#page-dashboard) .table-wrap tbody 
     flex: 0 1 auto;
   }
 
-  #workspace .page:not(#page-dashboard) > .panel {
+  #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel {
     border-radius: 15px;
     padding: clamp(14px, 3.5vw, 18px);
   }
@@ -240,7 +240,7 @@ html[data-theme="dark"] #workspace .page:not(#page-dashboard) .table-wrap tbody 
     flex: 1 1 calc(50% - 8px);
   }
 
-  #workspace .page:not(#page-dashboard) > .panel > .panel-heading {
+  #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading {
     align-items: flex-start;
     flex-direction: column;
   }
