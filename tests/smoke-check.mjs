@@ -1034,7 +1034,9 @@ console.log("PASS ShieldMind paid-state learning intelligence, private practice 
 assert.match(backend, /autoRefreshToken:\s*true/, "Supabase auto-refresh is explicitly enabled");
 assert.match(backend, /persistSession:\s*true/, "Supabase session persistence is explicitly enabled");
 assert.match(backend, /detectSessionInUrl:\s*true/, "OAuth and recovery URL sessions are detected");
-assert.match(htmlMarkup, /id="session-restore-screen"/, "the branded session restore screen is present");
+assert.match(htmlMarkup, /id="session-restore-screen" class="cs-session-restore" role="status" aria-live="polite" hidden/, "the session restore screen starts hidden until its critical styles are ready");
+assert.match(htmlMarkup, /id="campusshield-session-restore-critical"/, "the restore overlay has critical inline styles independent of external CSS");
+assert.match(htmlMarkup, /id="session-restore-bootstrap"/, "the restore layer is revealed before deferred app scripts begin");
 assert.match(htmlMarkup, /<section id="login-screen" hidden/, "the login screen stays hidden until session restoration completes");
 assert.doesNotMatch(htmlMarkup, /src="https:\/\/unpkg\.com\/@supabase\/supabase-js@2"/, "the duplicate Supabase SDK CDN download is removed");
 assert.match(appScript, /auth\.getSession\(\)/, "the app checks the persisted session before showing sign-in");
