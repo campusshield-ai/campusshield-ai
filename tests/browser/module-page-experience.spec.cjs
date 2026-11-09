@@ -88,9 +88,14 @@ test("module headings and first-level cards retain readable forest-green dark th
     const canvas = getComputedStyle(document.body).backgroundColor;
     const panel = getComputedStyle(document.querySelector("#page-courses > .panel")).backgroundColor;
     const rgb = value => {
-      const match = value.match(/[0-9]+/g);
+      // Computed CSS rgb()/rgba() values contain only channel numbers before alpha.
+      // Parse the first three channels explicitly; dropping the first channel made
+      // luminance NaN and caused unrelated responsive suites to fail.
+      const match = value.match(/^rgba?\\(\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*,\\s*([0-9.]+)/i);
       if (!match) return null;
-      return match.slice(1).map(Number).map(channel => {
+      const channels = match.slice(1, 4).map(Number);
+      if (channels.length !== 3 || channels.some(channel => !Number.isFinite(channel))) return null;
+      return channels.map(channel => {
         const normalized = channel / 255;
         return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
       });
