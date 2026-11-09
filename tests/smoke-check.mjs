@@ -1045,3 +1045,5 @@ assert.match(appScript, /saved sign-in/i, "session restoration failure tells the
 assert.match(appScript, /session-restore-retry/, "session restoration has a retry action");
 assert.doesNotThrow(() => new Function(appScript), "app script parses after session restoration changes");
 console.log("PASS persistent auth restoration, no login flash on reload, and streamlined startup checks");
+
+

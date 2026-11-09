@@ -479,3 +479,15 @@ html[data-theme="dark"] .campus-network-intro-form textarea {border-color:#31534
 html[data-theme="dark"] .campus-network-my-posts {border-color:#315342;background:#122d20}
 html[data-theme="dark"] .campus-network-own-post {background:#173b2a}
 html[data-theme="dark"] .campus-network-pending-note {background:#40351e;color:#f4d99d}
+
+
+
+/* Compact, responsive dashboard actions; the existing topbar search remains the only search surface. */
+#campus-dashboard-actions { display:flex;flex-wrap:wrap;gap:9px;margin-top:15px; }
+#campus-dashboard-actions .btn { min-height:44px; }
+@media (max-width:760px) {
+  #campus-dashboard-actions { display:grid;grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:360px) {
+  #campus-dashboard-actions { grid-template-columns:minmax(0,1fr); }
+}

@@ -67,18 +67,30 @@
     {title:"Alumni Connect", description:"Discover verified alumni who opted into networking", page:"campus-network", keywords:"alumni mentor graduate networking career"},
     {title:"Opportunity Hub", description:"Explore scholarships, internships, grants and services", page:"opportunities", keywords:"jobs internships scholarship career grants mentorship hackathon"},
     {title:"Campus services & contacts", description:"Find university support contacts", page:"campus-contacts", keywords:"help clinic security contact support"},
-    {title:"Verified campus noticeboard", description:"Updates from verified campus staff", page:"noticeboard", keywords:"announcements alerts notices"},
+    {title:"Verified campus noticeboard", description:"Updates from verified campus staff", page:"noticeboard", keywords:"announcements alerts notices registration deadlines"},
+    {title:"Campus Helpdesk", description:"Track requests for university services and facilities", page:"helpdesk", keywords:"support requests wifi maintenance facilities report issue"},
+    {title:"Classrooms & Attendance", description:"Open your authorized classes and attendance tools", page:"classroom", keywords:"class lectures attendance registers teacher"},
     {title:"My timetable", description:"Review your classes and schedule", page:"timetable", keywords:"schedule classes calendar"},
     {title:"Profile & settings", description:"Manage your profile and preferences", page:"profile-settings", keywords:"account settings personal"}
   ];
   function visibleDestination(item) {
     // Offer a destination only when this build actually includes its page.
+    // The main navigation and destination handlers enforce the user's access.
     return Boolean(document.getElementById("page-" + item.page));
   }
 
-  // Search only campus content already rendered for this signed-in account.
+  function normalizeSearchText(value) {
+    return String(value || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+      .toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  }
+
+  // Search only public or campus-approved content already rendered for this account.
+  // Private messages, incident records, identity files and personal Helpdesk requests
+  // are intentionally outside these selectors.
   function getLiveCampusMatches(query) {
-    if (!query || query.length < 2) return [];
+    const normalizedQuery = normalizeSearchText(query);
+    if (normalizedQuery.length < 2) return [];
+    const queryWords = normalizedQuery.split(/\s+/).filter(Boolean);
     const sources = [
       {selector:"#campus-marketplace-feed article", page:"marketplace", label:"Marketplace"},
       {selector:"#campus-opportunities-feed article", page:"opportunities", label:"Opportunity Hub"},
@@ -86,15 +98,21 @@
       {selector:"#campus-startup-feed article", page:"campus-network", label:"Startup Corner"},
       {selector:"#campus-alumni-feed article", page:"campus-network", label:"Alumni Connect"},
       {selector:"#campus-events-feed article", page:"events", label:"Campus events"},
+      {selector:"#campus-courses-feed article", page:"courses", label:"Courses & study resources"},
+      {selector:"#campus-course-resources-feed article", page:"courses", label:"Course learning resource"},
+      {selector:"#campus-noticeboard-feed article", page:"noticeboard", label:"Verified campus notice"},
       {selector:"#community-feed article, #campus-community-feed article, #campuspulse-feed article", page:"community", label:"CampusPulse"}
     ];
     const matches = [];
     sources.forEach(source => {
-      // A feed may live inside an inactive page; the server-scoped feed is the access boundary.
+      if (!visibleDestination({page:source.page})) return;
+      // A feed may live inside an inactive page; the existing server-scoped feed
+      // remains the access boundary for every content result.
       document.querySelectorAll(source.selector).forEach(element => {
-        if (element.hidden) return;
+        if (element.hidden || element.closest("[hidden]")) return;
         const body = String(element.innerText || element.textContent || "").replace(/\s+/g, " ").trim();
-        if (!body || !body.toLocaleLowerCase().includes(query)) return;
+        const normalizedBody = normalizeSearchText(body);
+        if (!normalizedBody || !queryWords.every(word => normalizedBody.includes(word))) return;
         const heading = element.querySelector("h2,h3,h4,[data-search-title]");
         const title = String(heading?.textContent || body).trim().slice(0, 90);
         matches.push({title, description:source.label + " · " + body.slice(0, 150),
@@ -122,9 +140,10 @@
     input.blur();
   }
   function renderResults(query) {
-    const q = query.trim().toLocaleLowerCase();
+    const q = normalizeSearchText(query);
+    const queryWords = q.split(/\s+/).filter(Boolean);
     const destinationMatches = destinations.filter(item => visibleDestination(item) &&
-      (!q || (item.title + " " + item.description + " " + item.keywords).toLocaleLowerCase().includes(q))).slice(0, 6);
+      (!q || queryWords.every(word => normalizeSearchText(item.title + " " + item.description + " " + item.keywords).includes(word)))).slice(0, 6);
     const matches = [...destinationMatches, ...getLiveCampusMatches(q)].slice(0, 10);
     results.replaceChildren();
     const heading = document.createElement("div");
