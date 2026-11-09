@@ -1,0 +1,97 @@
+/* CampusShield AI — global dark-mode text contrast and surface consistency.
+   Loaded last so feature-specific light-mode declarations cannot leave dark text
+   stranded on dark surfaces. Presentation only: no data or permission changes. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cs-dark-canvas: #0b1712;
+  --cs-dark-surface: #132a1f;
+  --cs-dark-border: #315342;
+  --cs-dark-heading: #eff8f0;
+  --cs-dark-text: #cfe1d5;
+  --cs-dark-muted: #afc4b6;
+  --cs-dark-accent: #9be6a5;
+}
+html[data-theme="dark"] body,
+html[data-theme="dark"] #workspace,
+html[data-theme="dark"] #workspace .main,
+html[data-theme="dark"] #workspace .content {
+  color: var(--cs-dark-text) !important;
+  background-color: var(--cs-dark-canvas) !important;
+}
+html[data-theme="dark"] body :is(h1,h2,h3,h4,h5,h6,.dashboard-section-heading,.panel-heading h2,.campus-dashboard-card-head h3,.page-title,.section-title) {
+  color: var(--cs-dark-heading) !important;
+}
+html[data-theme="dark"] body :is(p,span,label,legend,li,dt,dd,th,td,caption,figcaption,blockquote,.message,.stat-label,.field-hint,.helper-text,.form-hint,[class*="-description"],[class*="-subtitle"],[class*="-copy"],[class*="-summary"],[class*="-title"],[class*="-label"]) {
+  color: var(--cs-dark-text) !important;
+}
+html[data-theme="dark"] body :is(strong,b,.stat-value,.metric-value) {
+  color: var(--cs-dark-heading) !important;
+}
+html[data-theme="dark"] body :is(small,.muted,.text-muted,.campus-network-meta,.stat-note,.field-hint,.helper-text,.form-hint,[class*="-meta"],[class*="-hint"],[class*="-note"],[class*="-status"],[class*="-eyebrow"],[class*="-kicker"]) {
+  color: var(--cs-dark-muted) !important;
+}
+html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,.dropdown-menu,.popover,[class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],[class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) {
+  color: var(--cs-dark-text) !important;
+  background-color: var(--cs-dark-surface) !important;
+  border-color: var(--cs-dark-border) !important;
+}
+html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,[class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],[class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) :is(p,span,small,label,li,dt,dd,th,td,.muted,.message,[class*="-title"],[class*="-description"],[class*="-meta"],[class*="-label"],[class*="-hint"],[class*="-note"]) {
+  color: var(--cs-dark-text) !important;
+}
+html[data-theme="dark"] body :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+  color: #e6f1e9 !important;
+  caret-color: #9be6a5;
+  background: #0f2419 !important;
+  border-color: #456451 !important;
+}
+html[data-theme="dark"] body :is(input,textarea)::placeholder { color: #a7bcae !important; opacity: 1; }
+html[data-theme="dark"] body select option { color: #e6f1e9; background: #132a1f; }
+html[data-theme="dark"] body input[type="checkbox"],
+html[data-theme="dark"] body input[type="radio"] { accent-color: #7fd98a; }
+html[data-theme="dark"] body a:not(.btn) { color: var(--cs-dark-accent) !important; text-underline-offset: 3px; }
+html[data-theme="dark"] body :is(button,.btn) { color: #f4fff5 !important; }
+html[data-theme="dark"] body :is(button.secondary,.btn.secondary) {
+  color: #e4f0e7 !important; border-color: #496653 !important; background-color: #1a3426 !important;
+}
+html[data-theme="dark"] .topbar {
+  color: var(--cs-dark-heading) !important; background: rgba(13,31,24,.94) !important; border-color: #29483a !important;
+}
+html[data-theme="dark"] .mobile-bottom-nav {
+  color: var(--cs-dark-heading) !important; background: rgba(13,34,24,.96) !important; border-color: var(--cs-dark-border) !important;
+}
+html[data-theme="dark"] .mobile-bottom-nav button.active,
+html[data-theme="dark"] .campus-chat-channel-tabs button.active,
+html[data-theme="dark"] .campus-chat-channel-tabs button[aria-selected="true"] {
+  color: #e8f7eb !important; background: #204b31 !important; border-color: #477b53 !important;
+}
+html[data-theme="dark"] .campus-network-tabs button[aria-selected="true"] {
+  color: #08291f !important; background: #8be3a0 !important; border-color: #8be3a0 !important;
+}
+html[data-theme="dark"] #page-dashboard .campus-dashboard-hero .hero-actions .btn:not(.secondary) { color: #08291f !important; }
+html[data-theme="dark"] #page-dashboard .campus-dashboard-hero .hero-eyebrow,
+html[data-theme="dark"] #page-dashboard .campus-dashboard-emergency-kicker { color: #a9e7b0 !important; }
+html[data-theme="dark"] .sidebar .brand-copy strong,
+html[data-theme="dark"] .sidebar .nav-icon,
+html[data-theme="dark"] .sidebar .nav button.active .nav-icon,
+html[data-theme="dark"] .sidebar .nav button:hover .nav-icon { color: #7fd98a !important; }
+html[data-theme="dark"] .login-screen { color: var(--cs-dark-text) !important; background: var(--cs-dark-canvas) !important; }
+html[data-theme="dark"] body :is(pre,code) { color: #dcece0; background-color: #102319; border-color: var(--cs-dark-border); }
+html[data-theme="dark"] body :is(table,th,td) { border-color: var(--cs-dark-border); }
+html[data-theme="dark"] body :is(th,thead) { background-color: #1a3526; }
+html[data-theme="dark"] body hr { border-color: var(--cs-dark-border); }
+html[data-theme="dark"] body :focus-visible { outline-color: #8be3a0 !important; }
+html[data-theme="dark"] body ::selection { color: #08291f; background: #8be3a0; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="dark"] body *,html[data-theme="dark"] body *::before,html[data-theme="dark"] body *::after {
+    transition-duration: .01ms !important; animation-duration: .01ms !important;
+  }
+}
+
+/* Give headings inside restored dark surfaces the same strong hierarchy. */
+html[data-theme="dark"] body :is(
+  .panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,
+  [class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],
+  [class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]
+):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) :is(h1,h2,h3,h4,h5,h6,strong,b) {
+  color: var(--cs-dark-heading) !important;
+}
