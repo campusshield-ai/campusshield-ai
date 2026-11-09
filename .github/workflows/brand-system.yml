@@ -16,6 +16,7 @@ on:
       - "student-life-preview.html"
       - "manifest.webmanifest"
       - "service-worker.js"
+      - "campusshield-dashboard-polish-v3.css"
       - "icons/campusshield.svg"
       - "assets/campusshield-logo.svg"
       - "scripts/generate-pwa-icons.mjs"
