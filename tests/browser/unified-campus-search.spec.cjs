@@ -283,10 +283,10 @@ test("dashboard bento cards use dark surfaces and readable text in dark mode", a
       .toContain("linear-gradient");
     expect(card.backgroundImage).not.toContain("255, 255, 255");
     expect(card.backgroundColor).not.toBe("rgb(255, 255, 255)");
-    expect(card.borderColor).toBe(index === 1 ? "rgb(52, 115, 75)" : "rgb(49, 91, 64)");
-    expect(card.heading).toBe("rgb(239, 248, 240)");
-    expect(card.description).toBe("rgb(207, 225, 213)");
-    expect(card.footer).toBe("rgb(169, 232, 181)");
+    expect(card.borderColor).toBe(index === 1 ? "rgb(74, 138, 92)" : "rgb(55, 107, 72)");
+    expect(card.heading).toBe("rgb(242, 250, 243)");
+    expect(card.description).toBe("rgb(210, 228, 214)");
+    expect(card.footer).toBe("rgb(197, 242, 205)");
   }
 
   const ai = await bento.locator(".campus-home-ai").evaluate(element => ({
@@ -295,8 +295,8 @@ test("dashboard bento cards use dark surfaces and readable text in dark mode", a
     copy: getComputedStyle(element.querySelector("p")).color
   }));
   expect(ai.background).toContain("radial-gradient");
-  expect(ai.title).toBe("rgb(239, 248, 240)");
-  expect(ai.copy).toBe("rgb(207, 225, 213)");
+  expect(ai.title).toBe("rgb(242, 250, 243)");
+  expect(ai.copy).toBe("rgb(210, 228, 214)");
 
   await page.setViewportSize({ width: 390, height: 844 });
   const bounds = await bento.boundingBox();
