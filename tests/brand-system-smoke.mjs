@@ -10,6 +10,9 @@ const lovableUxCss = read("campusshield-lovable-ux.css");
 const lovableUxScript = read("campusshield-lovable-ux.js");
 const iconGenerator = read("scripts/generate-pwa-icons.mjs");
 const manifest = JSON.parse(read("manifest.webmanifest"));
+const htmlMarkup = read("index.html");
+const appScript = read("campusshield-app.js");
+const dashboardUpgradeJs = read("campus-dashboard-upgrade.js");
 const pages = [
   "index.html","about.html","features.html","help.html","privacy.html",
   "terms.html","contact.html","offline.html","student-life-preview.html"
