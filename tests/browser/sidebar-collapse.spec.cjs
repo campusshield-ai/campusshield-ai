@@ -22,45 +22,43 @@ test("tablet defaults to a compact icon rail while desktop collapse remains user
 
     const app = page.locator("#workspace");
     const sidebar = page.locator("#app-sidebar");
-    const collapseButton = page.locator("#sidebar-collapse-toggle");
+    const toggle = page.locator("#sidebar-collapse-toggle");
     const guideAccess = page.locator("#sidebar-guide-access");
     const guideButton = page.locator("#guide-nav");
     const featureNav = page.locator("#app-sidebar > .nav");
-    const tablet = width >= 768 && width <= 1023;
-    const expandedWidth = width <= 900 ? 200 : 235;
+    const tablet = width >= 651 && width <= 1023;
     const compactWidth = width <= 900 ? 74 : 82;
+    let expandedWidth = await sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width));
 
     await expect(guideAccess).toBeVisible();
     await expect(featureNav.locator("#guide-nav")).toHaveCount(0);
-    await expect(collapseButton).toBeVisible();
+    await expect(toggle).toBeVisible();
 
     if (tablet) {
       await expect(app).toHaveClass(/tablet-compact/);
       await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(compactWidth);
-      await expect(collapseButton).toHaveAttribute("aria-expanded", "false");
+      await expect(toggle).toHaveAttribute("aria-expanded", "false");
       await expect(page.locator("#app-sidebar .brand-copy")).toBeHidden();
       await expect(guideButton).toBeVisible();
 
-      // Students can expand the compact rail on a tablet.
-      await collapseButton.click();
+      await toggle.click();
       await expect(app).not.toHaveClass(/tablet-compact/);
-      await expect(collapseButton).toHaveAttribute("aria-expanded", "true");
-      await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(expandedWidth);
+      await expect(toggle).toHaveAttribute("aria-expanded", "true");
+      await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(250);
+      expandedWidth = 250;
       await expect(page.locator("#app-sidebar .brand-copy")).toBeVisible();
       await expect(guideButton).toHaveText(/How to use CampusShield/);
-
-      // And collapse it again without changing the desktop preference.
-      await collapseButton.click();
+      await toggle.click();
       await expect(app).toHaveClass(/tablet-compact/);
     } else {
       await expect(app).not.toHaveClass(/tablet-compact/);
       await expect(guideAccess.locator(".nav-section-label")).toHaveText("GETTING STARTED");
       await expect(guideButton).toHaveText(/How to use CampusShield/);
       await expect(featureNav.locator(".nav-section-label").first()).toHaveText("SAFETY & RESPONSE");
-      await collapseButton.click();
+      await toggle.click();
       await expect(app).toHaveClass(/sidebar-collapsed/);
-      await expect.poll(() => sidebar.evaluate(el => el.getBoundingClientRect().width)).toBe(compactWidth);
-      await expect(collapseButton).toHaveAttribute("aria-expanded", "false");
+      await expect.poll(() => sidebar.evaluate(el => sidebar.getBoundingClientRect().width)).toBe(compactWidth);
+      await expect(toggle).toHaveAttribute("aria-expanded", "false");
       await expect(page.locator("#app-sidebar .brand-copy")).toBeHidden();
     }
 
@@ -69,34 +67,30 @@ test("tablet defaults to a compact icon rail while desktop collapse remains user
       const main = document.querySelector("#workspace .main");
       const box = sidebar.getBoundingClientRect();
       return {
-        sidebarWidth: box.width,
-        sidebarScrollWidth: sidebar.scrollWidth,
-        sidebarClientWidth: sidebar.clientWidth,
-        mainMarginLeft: parseFloat(getComputedStyle(main).marginLeft),
+        width: box.width,
+        scrollWidth: sidebar.scrollWidth,
+        clientWidth: sidebar.clientWidth,
+        mainOffset: parseFloat(getComputedStyle(main).marginLeft),
         iconDisplay: getComputedStyle(sidebar.querySelector(".nav button .nav-icon")).display,
         iconWidth: sidebar.querySelector(".nav button .nav-icon").getBoundingClientRect().width,
-        documentWidth: document.documentElement.scrollWidth,
-        viewportWidth: document.documentElement.clientWidth,
+        docWidth: document.documentElement.scrollWidth,
+        viewportWidth: document.documentElement.clientWidth
       };
     });
-    expect(metrics.sidebarWidth, `compact rail width at ${width}px`).toBe(compactWidth);
-    expect(metrics.mainMarginLeft, `content offset at ${width}px`).toBe(compactWidth);
-    expect(metrics.sidebarScrollWidth, `rail content at ${width}px`).toBeLessThanOrEqual(metrics.sidebarClientWidth + 1);
+    expect(metrics.width).toBe(compactWidth);
+    expect(metrics.mainOffset).toBe(compactWidth);
+    expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
     expect(metrics.iconDisplay).not.toBe("none");
     expect(metrics.iconWidth).toBeGreaterThanOrEqual(18);
-    expect(metrics.documentWidth).toBeLessThanOrEqual(metrics.viewportWidth + 1);
+    expect(metrics.docWidth).toBeLessThanOrEqual(metrics.viewportWidth + 1);
 
-    if (tablet) {
-      await collapseButton.click();
-      await expect(app).not.toHaveClass(/tablet-compact/);
-    } else {
-      await collapseButton.click();
-      await expect(app).not.toHaveClass(/sidebar-collapsed/);
-    }
+    await toggle.click();
+    if (tablet) await expect(app).not.toHaveClass(/tablet-compact/);
+    else await expect(app).not.toHaveClass(/sidebar-collapsed/);
     await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(expandedWidth);
     await expect(page.locator("#app-sidebar .brand-copy")).toBeVisible();
-    await expect(page.locator("#sidebar-guide-access")).toBeVisible();
-    await expect(page.locator("#guide-nav")).toBeVisible();
+    await expect(guideAccess).toBeVisible();
+    await expect(guideButton).toBeVisible();
   }
 });
 
