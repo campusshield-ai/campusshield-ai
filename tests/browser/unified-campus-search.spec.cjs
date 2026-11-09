@@ -194,3 +194,55 @@ test("My Day renders the real private timetable snapshot, clears on sign-out and
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(scrollWidth).toBeLessThanOrEqual(391);
 });
+
+test("dark mode keeps dashboard headings, student cards and form text readable", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    const workspace = document.getElementById("workspace");
+    if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
+    const login = document.getElementById("login-screen");
+    if (login) { login.hidden = true; login.style.display = "none"; }
+
+    const networkPage = document.getElementById("page-campus-network");
+    const card = document.createElement("article");
+    card.className = "campus-network-card";
+    const title = document.createElement("h3");
+    title.textContent = "Student opportunity";
+    const description = document.createElement("p");
+    description.textContent = "A visible description for students using dark mode.";
+    const field = document.createElement("input");
+    field.type = "text";
+    field.setAttribute("aria-label", "Dark mode contrast fixture");
+    field.placeholder = "Search campus opportunities";
+    card.append(title, description, field);
+    networkPage?.append(card);
+    document.documentElement.dataset.theme = "dark";
+  });
+
+  const dashboardHeading = page.locator("#page-dashboard .dashboard-section-heading");
+  const card = page.locator("#page-campus-network .campus-network-card").last();
+  const metrics = await page.evaluate(() => {
+    const read = selector => {
+      const element = document.querySelector(selector);
+      if (!element) return null;
+      const style = getComputedStyle(element);
+      return { color: style.color, background: style.backgroundColor };
+    };
+    return {
+      heading: read("#page-dashboard .dashboard-section-heading"),
+      card: read("#page-campus-network .campus-network-card"),
+      cardTitle: read("#page-campus-network .campus-network-card h3"),
+      cardCopy: read("#page-campus-network .campus-network-card p"),
+      input: read("#page-campus-network .campus-network-card input")
+    };
+  });
+
+  await expect(dashboardHeading).toHaveText("Your campus overview");
+  await expect(card).toContainText("A visible description for students using dark mode.");
+  expect(metrics.heading.color).toBe("rgb(239, 248, 240)");
+  expect(metrics.card.background).toBe("rgb(19, 42, 31)");
+  expect(metrics.cardTitle.color).toBe("rgb(239, 248, 240)");
+  expect(metrics.cardCopy.color).toBe("rgb(207, 225, 213)");
+  expect(metrics.input.color).toBe("rgb(230, 241, 233)");
+  expect(metrics.input.background).toBe("rgb(15, 36, 25)");
+});
