@@ -181,3 +181,21 @@ test("the live incident report keeps its emergency limitation warning visible", 
   await expect(note).toContainText("contact campus security or local emergency services directly");
   await expect(page.locator("#report-submit")).toContainText("Submit report");
 });
+
+test("active page is announced in desktop, sidebar and mobile navigation", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await revealWorkspace(page);
+  await expect.poll(() => page.locator('#app-sidebar button[data-page="dashboard"]').getAttribute("aria-current")).toBe("page");
+
+  await page.evaluate(() => {
+    document.querySelectorAll("#workspace .page").forEach(section => section.classList.remove("active"));
+    document.querySelector("#page-report")?.classList.add("active");
+  });
+
+  await expect.poll(() => page.locator('#app-sidebar button[data-page="report"]').getAttribute("aria-current")).toBe("page");
+  await expect(page.locator('#app-sidebar button[data-page="dashboard"]')).not.toHaveAttribute("aria-current", "page");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('.mobile-bottom-nav button[data-page="report"]')).toHaveAttribute("aria-current", "page");
+  await expect(page.locator('.mobile-bottom-nav button[data-page="dashboard"]')).not.toHaveAttribute("aria-current", "page");
+});
