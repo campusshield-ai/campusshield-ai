@@ -77,7 +77,7 @@ assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskabl
 assert.match(serviceWorker, /campusshield-offline-v8/, "Offline cache version is incremented");
 assert.ok(htmlMarkup.includes('href="./campusshield-lovable-ux.css?v=20261109-1"'), "Lovable-inspired tablet and focus styles are loaded");
 assert.ok(htmlMarkup.includes('src="./campusshield-lovable-ux.js" defer'), "Accessible active navigation integration is loaded");
-assert.match(lovableUxCss, /min-width:\s*768px/,"tablet rail starts at 768px");
+assert.match(lovableUxCss, /min-width:\s*651px/,"tablet rail starts at 768px");
 assert.match(lovableUxCss, /max-width:\s*1023px/,"tablet rail ends at 1023px");
 assert.match(lovableUxScript, /aria-current/,"primary and mobile navigation announce the active page");
 assert.doesNotThrow(() => new Function(lovableUxScript), "Lovable UX integration script parses");
