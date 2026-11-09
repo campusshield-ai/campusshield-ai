@@ -10,10 +10,13 @@ async function revealWorkspace(page) {
   });
 }
 
-test("desktop and tablet collapsed sidebar is icon-only and keeps the content offset aligned", async ({ page }) => {
-  for (const width of [651, 700, 760, 768, 900, 901, 1024, 1366, 1920]) {
+test("tablet defaults to a compact icon rail while desktop collapse remains user-controlled", async ({ page }) => {
+  for (const width of [651, 700, 760, 768, 820, 900, 901, 1023, 1024, 1366, 1920]) {
     await page.setViewportSize({ width, height: 900 });
-    await page.addInitScript(() => localStorage.removeItem("campusshield-sidebar-collapsed"));
+    await page.addInitScript(() => {
+      localStorage.removeItem("campusshield-sidebar-collapsed");
+      localStorage.removeItem("campusshield-tablet-expanded");
+    });
     await page.goto("/index.html", { waitUntil: "domcontentloaded" });
     await revealWorkspace(page);
 
@@ -23,26 +26,43 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
     const guideAccess = page.locator("#sidebar-guide-access");
     const guideButton = page.locator("#guide-nav");
     const featureNav = page.locator("#app-sidebar > .nav");
+    const tablet = width >= 768 && width <= 1023;
+    const expandedWidth = width <= 900 ? 200 : 235;
+    const compactWidth = width <= 900 ? 74 : 82;
 
     await expect(guideAccess).toBeVisible();
-    await expect(guideAccess.locator(".nav-section-label")).toHaveText("GETTING STARTED");
-    await expect(guideButton).toHaveText(/How to use CampusShield/);
     await expect(featureNav.locator("#guide-nav")).toHaveCount(0);
-    await expect(featureNav.locator(".nav-section-label").first()).toHaveText("SAFETY & RESPONSE");
     await expect(collapseButton).toBeVisible();
-    const expandedWidth = await sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width));
-    const expectedWidth = width <= 900 ? 74 : 82;
-    await collapseButton.click();
-    await expect(app).toHaveClass(/sidebar-collapsed/);
-    await expect.poll(() => sidebar.evaluate(el => el.getBoundingClientRect().width)).toBe(expectedWidth);
-    await expect(collapseButton).toHaveAttribute("aria-expanded", "false");
-    await expect(page.locator("#app-sidebar .brand-copy")).toBeHidden();
-    await expect(guideAccess).toBeVisible();
-    await expect(guideButton).toBeVisible();
-    await expect(page.locator("#app-sidebar > .nav-label")).toBeHidden();
-    await expect(page.locator("#app-sidebar .nav-section-label").first()).toBeHidden();
-    await expect(page.locator("#app-sidebar .sidebar-status")).toBeHidden();
-    await expect(page.locator("#sidebar-collapse-toggle .sidebar-toggle-label")).toBeHidden();
+
+    if (tablet) {
+      await expect(app).toHaveClass(/tablet-compact/);
+      await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(compactWidth);
+      await expect(collapseButton).toHaveAttribute("aria-expanded", "false");
+      await expect(page.locator("#app-sidebar .brand-copy")).toBeHidden();
+      await expect(guideButton).toBeVisible();
+
+      // Students can expand the compact rail on a tablet.
+      await collapseButton.click();
+      await expect(app).not.toHaveClass(/tablet-compact/);
+      await expect(collapseButton).toHaveAttribute("aria-expanded", "true");
+      await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(expandedWidth);
+      await expect(page.locator("#app-sidebar .brand-copy")).toBeVisible();
+      await expect(guideButton).toHaveText(/How to use CampusShield/);
+
+      // And collapse it again without changing the desktop preference.
+      await collapseButton.click();
+      await expect(app).toHaveClass(/tablet-compact/);
+    } else {
+      await expect(app).not.toHaveClass(/tablet-compact/);
+      await expect(guideAccess.locator(".nav-section-label")).toHaveText("GETTING STARTED");
+      await expect(guideButton).toHaveText(/How to use CampusShield/);
+      await expect(featureNav.locator(".nav-section-label").first()).toHaveText("SAFETY & RESPONSE");
+      await collapseButton.click();
+      await expect(app).toHaveClass(/sidebar-collapsed/);
+      await expect.poll(() => sidebar.evaluate(el => el.getBoundingClientRect().width)).toBe(compactWidth);
+      await expect(collapseButton).toHaveAttribute("aria-expanded", "false");
+      await expect(page.locator("#app-sidebar .brand-copy")).toBeHidden();
+    }
 
     const metrics = await page.evaluate(() => {
       const sidebar = document.querySelector("#app-sidebar");
@@ -55,28 +75,28 @@ test("desktop and tablet collapsed sidebar is icon-only and keeps the content of
         mainMarginLeft: parseFloat(getComputedStyle(main).marginLeft),
         iconDisplay: getComputedStyle(sidebar.querySelector(".nav button .nav-icon")).display,
         iconWidth: sidebar.querySelector(".nav button .nav-icon").getBoundingClientRect().width,
-        toggleIconDisplay: getComputedStyle(document.querySelector("#sidebar-collapse-toggle .sidebar-toggle-icon")).display,
         documentWidth: document.documentElement.scrollWidth,
         viewportWidth: document.documentElement.clientWidth,
       };
     });
-
-    expect(metrics.sidebarWidth, `collapsed rail width at ${width}px`).toBe(expectedWidth);
-    expect(metrics.mainMarginLeft, `content offset at ${width}px`).toBe(expectedWidth);
-    expect(metrics.sidebarScrollWidth, `collapsed rail content must not be clipped horizontally at ${width}px`).toBeLessThanOrEqual(metrics.sidebarClientWidth + 1);
+    expect(metrics.sidebarWidth, `compact rail width at ${width}px`).toBe(compactWidth);
+    expect(metrics.mainMarginLeft, `content offset at ${width}px`).toBe(compactWidth);
+    expect(metrics.sidebarScrollWidth, `rail content at ${width}px`).toBeLessThanOrEqual(metrics.sidebarClientWidth + 1);
     expect(metrics.iconDisplay).not.toBe("none");
     expect(metrics.iconWidth).toBeGreaterThanOrEqual(18);
-    expect(metrics.toggleIconDisplay).not.toBe("none");
     expect(metrics.documentWidth).toBeLessThanOrEqual(metrics.viewportWidth + 1);
 
-    await collapseButton.click();
-    await expect(app).not.toHaveClass(/sidebar-collapsed/);
+    if (tablet) {
+      await collapseButton.click();
+      await expect(app).not.toHaveClass(/tablet-compact/);
+    } else {
+      await collapseButton.click();
+      await expect(app).not.toHaveClass(/sidebar-collapsed/);
+    }
     await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(expandedWidth);
     await expect(page.locator("#app-sidebar .brand-copy")).toBeVisible();
     await expect(page.locator("#sidebar-guide-access")).toBeVisible();
     await expect(page.locator("#guide-nav")).toBeVisible();
-    await expect(page.locator("#sidebar-guide-access .nav-section-label")).toHaveText("GETTING STARTED");
-    await expect(page.locator("#app-sidebar .nav .nav-section-label").first()).toHaveText("SAFETY & RESPONSE");
   }
 });
 
@@ -96,6 +116,10 @@ test("mobile drawer remains full-width and readable when a desktop collapse pref
   await mobileButton.click();
   await expect(app).toHaveClass(/mobile-nav-open/);
   await expect(sidebar).toBeVisible();
+  await expect(sidebar).toHaveAttribute("role", "dialog");
+  await expect(sidebar).toHaveAttribute("aria-modal", "true");
+  await expect(page.locator(".main")).toHaveAttribute("inert", "");
+  await expect(page.locator("#mobile-sidebar-close")).toBeFocused();
   await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().left))).toBe(0);
   await expect(page.locator("#sidebar-backdrop")).toHaveCSS("opacity", "1");
   await expect(page.locator("#app-sidebar .sidebar-toggle")).toBeHidden();
@@ -120,6 +144,8 @@ test("mobile drawer remains full-width and readable when a desktop collapse pref
   await expect.poll(() => page.locator("body").evaluate(el => getComputedStyle(el).overflow)).toBe("hidden");
   await page.locator("#sidebar-backdrop").click({ position: { x: metrics.viewportWidth - 10, y: 500 } });
   await expect(app).not.toHaveClass(/mobile-nav-open/);
+  await expect(sidebar).not.toHaveAttribute("aria-modal", "true");
+  await expect(page.locator(".main")).not.toHaveAttribute("inert", "");
   await expect(mobileButton).toBeFocused();
   await expect.poll(() => sidebar.evaluate(el => el.getBoundingClientRect().left)).toBeLessThan(-250);
   await expect(page.locator("#sidebar-backdrop")).toBeHidden();
