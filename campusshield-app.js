@@ -925,16 +925,44 @@
     const backdrop = $('sidebar-backdrop');
     if (!app || !sidebar || !collapseButton || !mobileButton || !backdrop) return;
     const mobile = () => window.matchMedia('(max-width: 650px)').matches;
+    const tablet = () => window.matchMedia('(min-width: 651px) and (max-width: 1023px)').matches;
+    const mainContent = app.querySelector('.main');
+    const bottomNavigation = app.querySelector('.mobile-bottom-nav');
     let backdropCloseTimer = null;
+    let tabletExpandedPreference = false;
 
     try {
       if (localStorage.getItem('campusshield-sidebar-collapsed') === 'true' && !mobile()) {
         app.classList.add('sidebar-collapsed');
       }
+      tabletExpandedPreference = localStorage.getItem('campusshield-tablet-expanded') === 'true';
     } catch (_) {}
 
+    const syncTabletMode = () => {
+      if (tablet()) {
+        if (!app.classList.contains('sidebar-collapsed')) {
+          app.classList.toggle('tablet-compact', !tabletExpandedPreference);
+        }
+      } else {
+        app.classList.remove('tablet-compact');
+      }
+    };
+    syncTabletMode();
+
+    let mobileCloseButton = sidebar.querySelector('.mobile-sidebar-close');
+    if (!mobileCloseButton) {
+      mobileCloseButton = document.createElement('button');
+      mobileCloseButton.type = 'button';
+      mobileCloseButton.className = 'mobile-sidebar-close';
+      mobileCloseButton.id = 'mobile-sidebar-close';
+      mobileCloseButton.setAttribute('aria-label', 'Close navigation menu');
+      mobileCloseButton.innerHTML = '<span aria-hidden="true">×</span><span>Close menu</span>';
+      const brand = sidebar.querySelector('.brand');
+      if (brand) brand.insertAdjacentElement('afterend', mobileCloseButton);
+    }
+
     const sync = () => {
-      const collapsed = app.classList.contains('sidebar-collapsed');
+      const collapsed = app.classList.contains('sidebar-collapsed') || app.classList.contains('tablet-compact');
       const mobileOpen = app.classList.contains('mobile-nav-open');
       collapseButton.setAttribute('aria-expanded', String(!collapsed));
       collapseButton.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
@@ -943,6 +971,20 @@
       mobileButton.setAttribute('aria-expanded', String(mobileOpen));
       mobileButton.setAttribute('aria-label', mobileOpen ? 'Close navigation menu' : 'Open navigation menu');
       mobileButton.setAttribute('aria-controls', 'app-sidebar');
+
+      if (mobileOpen) {
+        sidebar.setAttribute('role', 'dialog');
+        sidebar.setAttribute('aria-modal', 'true');
+        sidebar.setAttribute('aria-label', 'CampusShield navigation menu');
+        if (mainContent) mainContent.inert = true;
+        if (bottomNavigation) bottomNavigation.inert = true;
+      } else {
+        sidebar.removeAttribute('role');
+        sidebar.removeAttribute('aria-modal');
+        sidebar.setAttribute('aria-label', 'Main navigation');
+        if (mainContent) mainContent.inert = false;
+        if (bottomNavigation) bottomNavigation.inert = false;
+      }
 
       if (backdropCloseTimer) {
         window.clearTimeout(backdropCloseTimer);
@@ -973,17 +1015,39 @@
       app.classList.add('mobile-nav-open');
       sync();
       const firstLink = sidebar.querySelector('button[data-page]:not([hidden])');
-      if (firstLink) window.requestAnimationFrame(() => firstLink.focus({ preventScroll: true }));
+      window.requestAnimationFrame(() => {
+        const initialTarget = mobileCloseButton && mobileCloseButton.getClientRects().length
+          ? mobileCloseButton : firstLink;
+        if (initialTarget) initialTarget.focus({ preventScroll: true });
+      });
     };
 
     collapseButton.addEventListener('click', () => {
       if (mobile()) { closeMobile(); return; }
-      app.classList.toggle('sidebar-collapsed');
-      try {
-        localStorage.setItem('campusshield-sidebar-collapsed', String(app.classList.contains('sidebar-collapsed')));
-      } catch (_) {}
+      if (tablet()) {
+        const currentlyCollapsed = app.classList.contains('sidebar-collapsed') || app.classList.contains('tablet-compact');
+        if (currentlyCollapsed) {
+          app.classList.remove('sidebar-collapsed', 'tablet-compact');
+          tabletExpandedPreference = true;
+          try {
+            localStorage.setItem('campusshield-sidebar-collapsed', 'false');
+            localStorage.setItem('campusshield-tablet-expanded', 'true');
+          } catch (_) {}
+        } else {
+          app.classList.add('tablet-compact');
+          tabletExpandedPreference = false;
+          try { localStorage.setItem('campusshield-tablet-expanded', 'false'); } catch (_) {}
+        }
+      } else {
+        app.classList.toggle('sidebar-collapsed');
+        try {
+          localStorage.setItem('campusshield-sidebar-collapsed', String(app.classList.contains('sidebar-collapsed')));
+        } catch (_) {}
+      }
       sync();
     });
+
+    mobileCloseButton.addEventListener('click', () => closeMobile());
 
     mobileButton.addEventListener('click', () => {
       if (app.classList.contains('mobile-nav-open')) closeMobile();
@@ -997,11 +1061,44 @@
       button.addEventListener('click', () => { if (mobile()) closeMobile(); });
     });
 
+    const drawerFocusable = () => Array.from(sidebar.querySelectorAll(
+      'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    )).filter(element =>
+      !element.closest('[hidden]') &&
+      element.getAttribute('aria-hidden') !== 'true' &&
+      element.getClientRects().length > 0 &&
+      getComputedStyle(element).visibility !== 'hidden'
+    );
+
     document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && app.classList.contains('mobile-nav-open')) closeMobile();
+      if (!app.classList.contains('mobile-nav-open')) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeMobile();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = drawerFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        mobileCloseButton?.focus({ preventScroll: true });
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const focusInside = sidebar.contains(document.activeElement);
+      if (event.shiftKey && (!focusInside || document.activeElement === first)) {
+        event.preventDefault();
+        last.focus({ preventScroll: true });
+      } else if (!event.shiftKey && (!focusInside || document.activeElement === last)) {
+        event.preventDefault();
+        first.focus({ preventScroll: true });
+      }
     });
+
     window.addEventListener('resize', () => {
       if (!mobile()) closeMobile(false);
+      syncTabletMode();
       sync();
     });
     sync();

@@ -45,13 +45,17 @@
 
   const search = document.createElement("div");
   search.className = "global-search";
-  search.innerHTML = '<svg class="global-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input class="global-search-input" id="campus-global-search" type="search" autocomplete="off" aria-label="Search campus features and resources" aria-controls="campus-global-search-results" aria-expanded="false" placeholder="Search courses, resources, events, opportunities…"><span class="global-search-kbd" aria-hidden="true">/</span><div class="global-search-results" id="campus-global-search-results" role="listbox" aria-label="Search results" hidden></div>';
+  search.innerHTML = '<svg class="global-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input class="global-search-input" id="campus-global-search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" aria-label="Search campus features and resources" aria-controls="campus-global-search-options" aria-expanded="false" placeholder="Search courses, resources, events, opportunities…"><span class="global-search-kbd" aria-hidden="true">/</span><div class="global-search-results" id="campus-global-search-results" hidden><div class="global-search-heading" id="campus-global-search-heading" aria-hidden="true"></div><div class="global-search-options" id="campus-global-search-options" role="listbox" aria-label="Campus search suggestions"></div><div class="global-search-empty" id="campus-global-search-empty" role="status" aria-live="polite" hidden></div></div>';
   header.insertBefore(search, header.querySelector(".topbar-title"));
   actions.insertBefore(themeButton, actions.firstChild);
   setTheme(root.dataset.theme || initialTheme);
 
   const input = search.querySelector("input");
   const results = search.querySelector(".global-search-results");
+  const resultOptions = search.querySelector("#campus-global-search-options");
+  const resultHeading = search.querySelector("#campus-global-search-heading");
+  const emptyState = search.querySelector("#campus-global-search-empty");
+  let activeResultIndex = -1;
   const destinations = [
     {title:"Overview", description:"Your campus dashboard and activity", page:"dashboard", keywords:"home dashboard safety"},
     {title:"Report an incident", description:"Submit a private campus safety report", page:"report", keywords:"safety incident emergency report"},
@@ -124,6 +128,25 @@
   function closeResults() {
     results.hidden = true;
     input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant");
+    activeResultIndex = -1;
+  }
+  function setActiveResult(index) {
+    const options = [...resultOptions.querySelectorAll('[role="option"]')];
+    if (!options.length) {
+      activeResultIndex = -1;
+      input.removeAttribute("aria-activedescendant");
+      return;
+    }
+    activeResultIndex = (index + options.length) % options.length;
+    options.forEach((option, optionIndex) => {
+      const selected = optionIndex === activeResultIndex;
+      option.setAttribute("aria-selected", String(selected));
+      if (selected) {
+        input.setAttribute("aria-activedescendant", option.id);
+        option.scrollIntoView?.({ block: "nearest" });
+      }
+    });
   }
   function openDestination(item) {
     const target = document.querySelector('[data-page="' + item.page + '"]');
@@ -145,57 +168,66 @@
     const destinationMatches = destinations.filter(item => visibleDestination(item) &&
       (!q || queryWords.every(word => normalizeSearchText(item.title + " " + item.description + " " + item.keywords).includes(word)))).slice(0, 6);
     const matches = [...destinationMatches, ...getLiveCampusMatches(q)].slice(0, 10);
-    results.replaceChildren();
-    const heading = document.createElement("div");
-    heading.className = "global-search-heading";
-    heading.textContent = q ? "Matching campus tools" : "Quick destinations";
-    results.append(heading);
-    if (!matches.length) {
-      const empty = document.createElement("div");
-      empty.className = "global-search-empty";
-      empty.textContent = "No matching destination yet. Try “past questions”, “events” or “safety”.";
-      results.append(empty);
-    } else {
-      matches.forEach(item => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "global-search-result";
-        button.setAttribute("role", "option");
-        const icon = document.createElement("span");
-        icon.className = "global-search-result-icon";
-        icon.setAttribute("aria-hidden", "true");
-        icon.textContent = ({dashboard:"⌂",report:"＋",shieldmind:"✧","past-questions":"▤",courses:"▦",community:"◎",events:"▣",marketplace:"▣",opportunities:"↗","campus-network":"◎","campus-contacts":"☎",noticeboard:"◉",timetable:"▦","profile-settings":"◌"})[item.page] || "↗";
-        const copy = document.createElement("span");
-        const title = document.createElement("strong");
-        title.textContent = item.title;
-        const detail = document.createElement("small");
-        detail.textContent = item.description;
-        copy.append(title, detail);
-        button.append(icon, copy);
-        button.addEventListener("click", () => {
-          openDestination(item);
-          if (item.element) window.setTimeout(() => {
-            if (item.element.isConnected) item.element.scrollIntoView({behavior:"smooth", block:"center"});
-          }, 100);
-        });
-        results.append(button);
+    resultOptions.replaceChildren();
+    resultHeading.textContent = q ? "Matching campus tools" : "Quick destinations";
+    emptyState.textContent = matches.length
+      ? ""
+      : "No matching destination yet. Try “past questions”, “events” or “safety”.";
+    emptyState.hidden = matches.length > 0;
+    activeResultIndex = -1;
+    input.removeAttribute("aria-activedescendant");
+
+    matches.forEach((item, index) => {
+      const option = document.createElement("div");
+      option.className = "global-search-result";
+      option.id = "campus-global-search-option-" + index;
+      option.setAttribute("role", "option");
+      option.setAttribute("aria-selected", "false");
+      option.tabIndex = -1;
+      const icon = document.createElement("span");
+      icon.className = "global-search-result-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = ({dashboard:"⌂",report:"＋",shieldmind:"✧","past-questions":"▤",courses:"▦",community:"◎",events:"▣",marketplace:"▣",opportunities:"↗","campus-network":"◎","campus-contacts":"☎",noticeboard:"◉",timetable:"▦","profile-settings":"◌"})[item.page] || "↗";
+      const copy = document.createElement("span");
+      const title = document.createElement("strong");
+      title.textContent = item.title;
+      const detail = document.createElement("small");
+      detail.textContent = item.description;
+      copy.append(title, detail);
+      option.append(icon, copy);
+      option.addEventListener("pointerdown", event => event.preventDefault());
+      option.addEventListener("pointermove", () => setActiveResult(index));
+      option.addEventListener("click", () => {
+        openDestination(item);
+        if (item.element) window.setTimeout(() => {
+          if (item.element.isConnected) item.element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
       });
-    }
+      resultOptions.append(option);
+    });
     results.hidden = false;
     input.setAttribute("aria-expanded", "true");
   }
+
   input.addEventListener("focus", () => renderResults(input.value));
   input.addEventListener("input", () => renderResults(input.value));
   input.addEventListener("keydown", event => {
-    if (event.key === "Escape") { closeResults(); input.blur(); }
-    if (event.key === "Enter") {
-      const first = results.querySelector("button");
-      if (first) { event.preventDefault(); first.click(); }
-    }
-    if (event.key === "ArrowDown" && !results.hidden) {
+    const options = resultOptions.querySelectorAll('[role="option"]');
+    if (event.key === "Escape" && !results.hidden) {
       event.preventDefault();
-      const first = results.querySelector("button");
-      if (first) first.focus();
+      closeResults();
+    } else if (event.key === "ArrowDown" && !results.hidden && options.length) {
+      event.preventDefault();
+      setActiveResult(activeResultIndex + 1);
+    } else if (event.key === "ArrowUp" && !results.hidden && options.length) {
+      event.preventDefault();
+      setActiveResult(activeResultIndex < 0 ? options.length - 1 : activeResultIndex - 1);
+    } else if (event.key === "Enter" && !results.hidden && options.length) {
+      event.preventDefault();
+      const selected = activeResultIndex >= 0 ? options[activeResultIndex] : options[0];
+      selected?.click();
+    } else if (event.key === "Tab") {
+      closeResults();
     }
   });
   document.addEventListener("click", event => {
