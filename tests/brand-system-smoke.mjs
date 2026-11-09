@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 const read = path => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const readBinary = path => readFileSync(new URL("../" + path, import.meta.url));
 const brand = read("campusshield-brand-system.css");
+const guide = read("campusshield-guide.css");
 const serviceWorker = read("service-worker.js");
 const iconGenerator = read("scripts/generate-pwa-icons.mjs");
 const manifest = JSON.parse(read("manifest.webmanifest"));
@@ -35,6 +36,23 @@ assert.ok(brand.includes('html[data-theme="dark"] #page-shieldmind .shieldmind-i
   "ShieldMind learning insights retain a dedicated dark-mode gradient");
 assert.match(brand, /prefers-reduced-motion:\s*reduce/, "Reduced-motion preferences are respected");
 assert.match(brand, /campus-map-nearby-safety/, "CampusMap components share the brand system");
+
+assert.ok(brand.includes("#workspace .campus-home-pulse .student-shortcut-icon") &&
+  brand.includes("#workspace .campus-home-academics .student-shortcut-icon"),
+  "CampusPulse and academics shortcut accents use green");
+assert.ok(brand.includes("#workspace .creator-tool-mark.mark-photo") &&
+  brand.includes("#workspace .creator-tool-mark.mark-rea"),
+  "Creator tool photo and reading accents use green");
+assert.ok(brand.includes("#page-shieldmind .shieldmind-insights-topic[data-level=\"early\"] .shieldmind-insights-progress span") &&
+  brand.includes("linear-gradient(90deg,#15803D,#86EFAC)"),
+  "ShieldMind early-learning progress uses the green palette");
+assert.ok(brand.includes("#workspace .campus-ideas-impact .cii-status-in_progress") &&
+  brand.includes("#workspace .campus-voice-player"),
+  "Ideas & Impact and voice-note accents use green");
+assert.ok(guide.includes("--guide-ink:#173325") && guide.includes("--guide-deep:#071E13") &&
+  guide.includes("background:#123522") && guide.includes("background:#0F2C1C"),
+  "The guide light and dark palettes stay in the green family");
+
 assert.match(brand, /mobile-bottom-nav/, "Mobile navigation shares the brand system");
 
 assert.equal(manifest.theme_color, "#0B2E1B", "PWA theme colour matches the website");
