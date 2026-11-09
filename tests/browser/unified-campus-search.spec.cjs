@@ -137,6 +137,23 @@ test("My Day renders the real private timetable snapshot, clears on sign-out and
   const panel = page.locator("#campus-my-day");
   await expect(panel).toBeVisible();
   await expect(panel).toContainText("Applied Mathematics");
+
+  await page.evaluate(() => { document.documentElement.dataset.theme = "light"; });
+  const lightPanelStyle = await panel.evaluate(element => ({
+    radius: getComputedStyle(element).borderTopLeftRadius,
+    border: getComputedStyle(element).borderTopColor
+  }));
+  expect(lightPanelStyle.radius).toBe("20px");
+  expect(lightPanelStyle.border).toBe("rgb(220, 233, 223)");
+  const itemLayout = await panel.locator(".campus-my-day-item").first().evaluate(element =>
+    getComputedStyle(element).display
+  );
+  expect(itemLayout).toBe("grid");
+
+  await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
+  const darkPanelBorder = await panel.evaluate(element => getComputedStyle(element).borderTopColor);
+  expect(darkPanelBorder).toBe("rgb(49, 83, 66)");
+  await page.evaluate(() => { document.documentElement.dataset.theme = "light"; });
   await expect(panel).toContainText("MTH 201");
   await expect(panel).toContainText("Submit lab report");
   await expect(panel).toContainText("Faculty seminar");

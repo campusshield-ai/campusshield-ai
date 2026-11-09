@@ -491,3 +491,227 @@ html[data-theme="dark"] .campus-network-pending-note {background:#40351e;color:#
 @media (max-width:360px) {
   #campus-dashboard-actions { grid-template-columns:minmax(0,1fr); }
 }
+
+
+/* My Day: a clear, private daily agenda that matches the forest-green workspace. */
+#campus-my-day.campus-my-day-panel {
+  min-width: 0;
+  margin: 18px 0 22px;
+  padding: clamp(15px, 2vw, 22px);
+  border: 1px solid #dce9df;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #ffffff 0%, #f5fbf6 100%);
+  box-shadow: 0 12px 30px rgba(16, 59, 45, .06);
+}
+#campus-my-day .campus-my-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 11px;
+}
+#campus-my-day-title {
+  margin: 0;
+  color: #163b2b;
+  font-size: clamp(1.12rem, 2.2vw, 1.42rem);
+  font-weight: 850;
+  letter-spacing: -.035em;
+  line-height: 1.25;
+}
+#campus-my-day-date {
+  margin: 5px 0 0;
+  color: #6b7e70;
+  font-size: .84rem;
+  line-height: 1.45;
+}
+#campus-my-day .campus-my-day-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 9px 13px;
+  border: 1px solid #cfe3d4;
+  border-radius: 11px;
+  background: #edf8ef;
+  color: #236b3b;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+#campus-my-day .campus-my-day-open:hover {
+  border-color: #a9d6b7;
+  background: #e2f3e6;
+  transform: translateY(-1px);
+}
+#campus-my-day .campus-my-day-summary {
+  margin: 0;
+  color: #66796c;
+  font-size: .82rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+#campus-my-day .campus-my-day-feed {
+  display: grid;
+  gap: 8px;
+  margin: 13px 0 0;
+  padding: 0;
+  list-style: none;
+}
+#campus-my-day .campus-my-day-item {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid #e0eae3;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .92);
+}
+#campus-my-day .campus-my-day-time {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 100%;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid #d8eadc;
+  border-radius: 9px;
+  background: #f0f8f1;
+  color: #24653b;
+  font-size: .75rem;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#campus-my-day .campus-my-day-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#campus-my-day .campus-my-day-copy strong {
+  display: block;
+  color: #183d2b;
+  font-size: .9rem;
+  font-weight: 800;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+#campus-my-day .campus-my-day-meta {
+  display: block;
+  margin-top: 3px;
+  color: #718278;
+  font-size: .76rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+#campus-my-day .campus-my-day-kind {
+  justify-self: end;
+  max-width: 100%;
+  padding: 5px 8px;
+  border: 1px solid #d9eadd;
+  border-radius: 999px;
+  background: #f0f8f1;
+  color: #2b7041;
+  font-size: .7rem;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+#campus-my-day .campus-my-day-item.is-complete .campus-my-day-copy strong {
+  color: #728177;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+#campus-my-day .campus-my-day-empty,
+#campus-my-day .campus-my-day-more {
+  margin: 0;
+  padding: 13px 14px;
+  border: 1px dashed #cfe0d3;
+  border-radius: 13px;
+  background: #f8fcf9;
+  color: #65776b;
+  font-size: .82rem;
+  line-height: 1.55;
+}
+#campus-my-day :where(button, a):focus-visible {
+  outline: 3px solid #78c88c;
+  outline-offset: 3px;
+}
+@media (max-width: 760px) {
+  #campus-my-day.campus-my-day-panel { margin: 15px 0 18px; }
+  #campus-my-day .campus-my-day-item {
+    grid-template-columns: 70px minmax(0, 1fr);
+    gap: 8px 10px;
+    padding: 11px;
+  }
+  #campus-my-day .campus-my-day-kind {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+@media (max-width: 390px) {
+  #campus-my-day.campus-my-day-panel { padding: 12px; border-radius: 16px; }
+  #campus-my-day .campus-my-day-header { align-items: flex-start; }
+  #campus-my-day .campus-my-day-open { width: 100%; }
+  #campus-my-day .campus-my-day-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+    padding: 10px;
+  }
+  #campus-my-day .campus-my-day-kind { grid-column: 1; }
+}
+html[data-theme="dark"] #campus-my-day.campus-my-day-panel {
+  border-color: #315342;
+  background: linear-gradient(145deg, #122d20 0%, #173b2a 100%);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .16);
+}
+html[data-theme="dark"] #campus-my-day-title,
+html[data-theme="dark"] #campus-my-day .campus-my-day-copy strong {
+  color: #e4f5e9;
+}
+html[data-theme="dark"] #campus-my-day-date,
+html[data-theme="dark"] #campus-my-day .campus-my-day-summary,
+html[data-theme="dark"] #campus-my-day .campus-my-day-meta {
+  color: #b4cabe;
+}
+html[data-theme="dark"] #campus-my-day .campus-my-day-open {
+  border-color: #315e49;
+  background: #203d35;
+  color: #b9edc2;
+}
+html[data-theme="dark"] #campus-my-day .campus-my-day-open:hover {
+  border-color: #4d8261;
+  background: #284b3d;
+}
+html[data-theme="dark"] #campus-my-day .campus-my-day-item {
+  border-color: #315342;
+  background: rgba(13, 36, 25, .72);
+}
+html[data-theme="dark"] #campus-my-day .campus-my-day-time,
+html[data-theme="dark"] #campus-my-day .campus-my-day-kind {
+  border-color: #315e49;
+  background: #173b2a;
+  color: #b9edc2;
+}
+html[data-theme="dark"] #campus-my-day .campus-my-day-empty,
+html[data-theme="dark"] #campus-my-day .campus-my-day-more {
+  border-color: #315342;
+  background: #142f22;
+  color: #c4d8ca;
+}
+html[data-theme="dark"] #campus-my-day .campus-my-day-item.is-complete .campus-my-day-copy strong {
+  color: #9aafa0;
+}
+@media (prefers-reduced-motion: reduce) {
+  #campus-my-day *, #campus-my-day *::before, #campus-my-day *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  #campus-my-day .campus-my-day-open:hover { transform: none; }
+}
