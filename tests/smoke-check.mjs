@@ -1028,3 +1028,18 @@ assert.match(htmlMarkup, /<section class="page active" id="page-dashboard">/, "D
 assert.match(htmlMarkup, /<section class="page campus-guide-page" id="page-guide"/, "The guide remains a separate page destination, not dashboard content");
 
 console.log("PASS ShieldMind paid-state learning intelligence, private practice analytics, safe topic rendering, and responsive styling");
+
+
+// Persistent auth restoration and reload experience.
+assert.match(backend, /autoRefreshToken:\s*true/, "Supabase auto-refresh is explicitly enabled");
+assert.match(backend, /persistSession:\s*true/, "Supabase session persistence is explicitly enabled");
+assert.match(backend, /detectSessionInUrl:\s*true/, "OAuth and recovery URL sessions are detected");
+assert.match(htmlMarkup, /id="session-restore-screen"/, "the branded session restore screen is present");
+assert.match(htmlMarkup, /<section id="login-screen" hidden/, "the login screen stays hidden until session restoration completes");
+assert.doesNotMatch(htmlMarkup, /src="https:\/\/unpkg\.com\/@supabase\/supabase-js@2"/, "the duplicate Supabase SDK CDN download is removed");
+assert.match(appScript, /auth\.getSession\(\)/, "the app checks the persisted session before showing sign-in");
+assert.match(appScript, /function showSessionRestoreFailure\(\)/, "a recoverable session/profile failure does not force sign-in");
+assert.match(appScript, /Your saved sign-in/, "session restoration failure tells the user to retry instead of re-entering credentials");
+assert.match(appScript, /session-restore-retry/, "session restoration has a retry action");
+assert.doesNotThrow(() => new Function(appScript), "app script parses after session restoration changes");
+console.log("PASS persistent auth restoration, no login flash on reload, and streamlined startup checks");
