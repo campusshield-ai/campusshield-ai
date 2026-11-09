@@ -361,7 +361,7 @@ test("production dashboard dark theme asset fixes all five bento cards and keeps
   expect(desktop.cards).toHaveLength(5);
 
   const contrastRatio = (foreground, background) => {
-    const rgb = value => value.match(/[\\d.]+/g).slice(0, 3).map(Number).map(v => {
+    const rgb = value => value.match(/[0-9.]+/g).slice(0, 3).map(Number).map(v => {
       const c = v / 255;
       return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4;
     });
