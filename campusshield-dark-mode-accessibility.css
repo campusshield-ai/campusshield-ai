@@ -32,7 +32,7 @@ html[data-theme="dark"] body :is(small,.muted,.text-muted,.campus-network-meta,.
 }
 html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,.dropdown-menu,.popover,[class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],[class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) {
   color: var(--cs-dark-text) !important;
-  background: var(--cs-dark-surface) !important;
+  background-color: var(--cs-dark-surface) !important;
   border-color: var(--cs-dark-border) !important;
 }
 html[data-theme="dark"] body :is(.panel,.card,.stat,.settings-card,.community-card,.modal-card,.modal-content,[class*="-card"],[class$="-panel"],[class*="-panel"],[class*="-toolbar"],[class*="-form"],[class*="-item"],[class*="-post"],[class*="-box"],[class*="-empty"]):not(.campus-dashboard-hero):not(.shieldmind-insights-panel) :is(p,span,small,label,li,dt,dd,th,td,.muted,.message,[class*="-title"],[class*="-description"],[class*="-meta"],[class*="-label"],[class*="-hint"],[class*="-note"]) {
