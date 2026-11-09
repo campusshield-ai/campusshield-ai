@@ -1169,6 +1169,7 @@
   ];
   let campusGlobalSearchResults = [];
   let campusGlobalSearchPrefetchKey = '';
+  let campusGlobalSearchProfile = null;
 
   function normalizeCampusSearchText(value) {
     return String(value ?? '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -1201,8 +1202,16 @@
   async function prefetchCampusGlobalSearchData() {
     const ready = hasVerifiedCampusStaffMembership();
     const key = String(authSessionVersion) + ':' + (ready ? 'verified-campus' : 'limited');
-    if (campusGlobalSearchPrefetchKey === key) return;
+    if (campusGlobalSearchPrefetchKey === key && campusGlobalSearchProfile === currentProfile) return;
     campusGlobalSearchPrefetchKey = key;
+    campusGlobalSearchProfile = currentProfile;
+    // Clear cross-account cached discovery immediately, including when the next
+    // account is unverified or the backend is unavailable.
+    campusMarketplaceRows = [];
+    campusOpportunityRows = [];
+    campusNetworkState.volunteers = [];
+    campusNetworkState.startups = [];
+    campusNetworkState.alumni = [];
     const backend = window.CampusShieldBackend;
     if (!ready || !currentProfile || !backend?.isConfigured || !backend?.client?.rpc) return;
     const requestSessionVersion = authSessionVersion;
@@ -1384,8 +1393,10 @@
       return;
     }
     if (!dialog.open) dialog.showModal();
-    renderCampusGlobalSearch(input.value);
+    // Start prefetch first: its synchronous cache reset prevents the prior
+    // account's results from flashing while the new user's data is requested.
     prefetchCampusGlobalSearchData().catch(() => {});
+    renderCampusGlobalSearch(input.value);
     setTimeout(() => input.focus(), 0);
   }
 
