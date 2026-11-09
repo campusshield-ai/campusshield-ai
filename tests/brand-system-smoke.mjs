@@ -6,6 +6,8 @@ const readBinary = path => readFileSync(new URL("../" + path, import.meta.url));
 const brand = read("campusshield-brand-system.css");
 const guide = read("campusshield-guide.css");
 const serviceWorker = read("service-worker.js");
+const lovableUxCss = read("campusshield-lovable-ux.css");
+const lovableUxScript = read("campusshield-lovable-ux.js");
 const iconGenerator = read("scripts/generate-pwa-icons.mjs");
 const manifest = JSON.parse(read("manifest.webmanifest"));
 const pages = [
@@ -69,7 +71,19 @@ assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskable-512.png" &&
   icon.purpose === "maskable"), "PWA uses the dedicated safe-area maskable icon");
 
-assert.match(serviceWorker, /campusshield-offline-v7/, "Offline cache version is incremented");
+assert.match(serviceWorker, /campusshield-offline-v8/, "Offline cache version is incremented");
+assert.ok(htmlMarkup.includes('href="./campusshield-lovable-ux.css?v=20261109-1"'), "Lovable-inspired tablet and focus styles are loaded");
+assert.ok(htmlMarkup.includes('src="./campusshield-lovable-ux.js" defer'), "Accessible active navigation integration is loaded");
+assert.match(lovableUxCss, /min-width:\\s*768px/,"tablet rail starts at 768px");
+assert.match(lovableUxCss, /max-width:\\s*1023px/,"tablet rail ends at 1023px");
+assert.match(lovableUxScript, /aria-current/,"primary and mobile navigation announce the active page");
+assert.match(dashboardUpgradeJs, /role="combobox"/,"campus search exposes the combobox pattern");
+assert.match(dashboardUpgradeJs, /ArrowUp/,"campus search supports upward keyboard navigation");
+assert.match(dashboardUpgradeJs, /aria-activedescendant/,"campus search announces the active suggestion");
+assert.match(appScript, /tablet-compact/,"tablet compact navigation is implemented");
+assert.match(appScript, /drawerFocusable/,"mobile drawer traps keyboard focus");
+assert.match(appScript, /aria-modal/,"mobile drawer is exposed as a modal navigation dialog");
+assert.match(htmlMarkup, /report-emergency-note/,"incident form keeps the real emergency limitation notice");
 const dashboardHtml = read("index.html");
 const dashboardPolish = read("campusshield-dashboard-polish-v3.css");
 assert.ok(dashboardHtml.includes('href="./campusshield-dashboard-polish-v3.css?v=20261109-1"'),
