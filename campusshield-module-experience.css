@@ -5,13 +5,18 @@
  */
 
 #workspace .page:not(#page-dashboard) > .heading {
+  display: block;
+  margin: 0 0 22px;
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--cs-line, #DCE9DE);
+}
+
+/* Only headings with an explicit action group need a horizontal desktop layout. */
+#workspace .page:not(#page-dashboard) > .heading:has(> .heading-actions) {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 18px;
-  margin: 0 0 22px;
-  padding: 0 0 16px;
-  border-bottom: 1px solid var(--cs-line, #DCE9DE);
 }
 
 #workspace .page:not(#page-dashboard) > .heading > div:first-child {
@@ -203,11 +208,14 @@ html[data-theme="dark"] #workspace .page:not(#page-dashboard) .table-wrap tbody 
 
 @media (max-width: 760px) {
   #workspace .page:not(#page-dashboard) > .heading {
+    margin-bottom: 17px;
+    padding-bottom: 13px;
+  }
+
+  #workspace .page:not(#page-dashboard) > .heading:has(> .heading-actions) {
     align-items: stretch;
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 17px;
-    padding-bottom: 13px;
   }
 
   #workspace .page:not(#page-dashboard) > .heading > div:first-child {
