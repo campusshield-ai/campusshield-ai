@@ -5,6 +5,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fvgtnujjnvdkhzqqcaqe.supabase.co" crossorigin>
+<link rel="dns-prefetch" href="//hywcpnoqqhxvujnimhxl.supabase.co">
 <meta name="theme-color" content="#0B2E1B">
 <meta name="description" content="CampusShield AI helps students and campus teams access safety reporting, verified campus updates, learning support and student-life resources.">
 <meta property="og:type" content="website">
@@ -2279,7 +2282,17 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 </head>
 <body>
 
-<section id="login-screen" class="login-screen" role="main">
+<div id="session-restore-screen" class="cs-session-restore" role="status" aria-live="polite">
+  <div class="cs-session-restore-card">
+    <img src="./assets/campusshield-logo.svg" alt="" width="52" height="52">
+    <span class="cs-session-restore-brand">CampusShield <strong>AI</strong></span>
+    <span class="cs-session-restore-spinner" aria-hidden="true"></span>
+    <p id="session-restore-message">Restoring your secure campus workspace…</p>
+    <button id="session-restore-retry" class="btn secondary" type="button" hidden>Try again</button>
+  </div>
+</div>
+
+<section id="login-screen" hidden class="login-screen" role="main">
   <div class="login-intro">
     <header class="login-intro-header">
       <a class="login-brand" href="#login-screen">
@@ -4549,8 +4562,6 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <div class="toast" id="toast" role="status"></div>
 <!-- Load dependencies BEFORE the application code. Keep these files beside this HTML file. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<!-- Backup CDN: if jsDelivr is blocked or unavailable, unpkg supplies the browser SDK. -->
-<script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
 <script src="./supabase-config.js" defer></script>
 <script src="./campusshield-backend.js" defer></script>
 <script src="./vendor/qrcode.js" defer></script>

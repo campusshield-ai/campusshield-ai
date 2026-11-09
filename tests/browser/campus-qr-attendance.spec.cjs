@@ -10,6 +10,11 @@ async function prepareWorkspace(page) {
   );
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   await page.evaluate(() => {
+    // This isolated feature test deliberately stubs campusshield-app.js and
+    // manually opens the workspace. Remove the real app's startup restore layer
+    // too, otherwise it correctly covers the page while its auth bootstrap runs.
+    const restore = document.getElementById("session-restore-screen");
+    if (restore) { restore.hidden = true; restore.style.display = "none"; }
     const workspace = document.getElementById("workspace");
     if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
     const login = document.getElementById("login-screen");
@@ -146,6 +151,10 @@ test("attendance QR deep-link token is removed from the address bar before accou
   await page.goto("/index.html?attendance_session=" + sessionId + "&attendance_token=" + qrToken, { waitUntil: "domcontentloaded" });
   await expect.poll(() => page.evaluate(() => !location.search.includes("attendance_token"))).toBe(true);
   await page.evaluate(() => {
+    // The application script is stubbed in this focused QR-module test.
+    // Explicitly complete the startup layer that the real app owns.
+    const restore = document.getElementById("session-restore-screen");
+    if (restore) { restore.hidden = true; restore.style.display = "none"; }
     window.CampusShieldBackend = {
       checkInCampusClassAttendance: async () => ({
         attendance_id: "44444444-4444-4444-8444-444444444444",
