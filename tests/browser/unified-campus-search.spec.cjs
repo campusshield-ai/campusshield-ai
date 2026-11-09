@@ -70,6 +70,39 @@ test("unified search finds campus spaces and currently rendered campus content",
 });
 
 
+
+
+test("global search finds verified campus notices and course resources", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    const workspace = document.getElementById("workspace");
+    if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
+    const login = document.getElementById("login-screen");
+    if (login) { login.hidden = true; login.style.display = "none"; }
+    const addCard = (feedId, title, body) => {
+      const feed = document.getElementById(feedId);
+      const card = document.createElement("article");
+      const heading = document.createElement("h3");
+      heading.textContent = title;
+      const description = document.createElement("p");
+      description.textContent = body;
+      card.append(heading, description);
+      feed?.replaceChildren(card);
+    };
+    addCard("campus-noticeboard-feed", "Registration closes Friday", "Verified Registrar notice: semester registration deadline is Friday.");
+    addCard("campus-courses-feed", "Computer Architecture", "Approved course resources and lecture notes for second year students.");
+  });
+  const search = page.locator("#campus-global-search");
+  const results = page.locator("#campus-global-search-results");
+  await expect(search).toBeVisible();
+  await expect(page.locator("#campus-global-search")).toHaveCount(1);
+  await expect(page.locator("#campus-global-search-results")).toHaveCount(1);
+  await search.fill("registration closes friday");
+  await expect(results).toContainText("Registration closes Friday");
+  await search.fill("Computer Architecture lecture notes");
+  await expect(results).toContainText("Computer Architecture");
+});
+
 test("My Day renders the real private timetable snapshot, clears on sign-out and fits mobile", async ({ page }) => {
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   await page.evaluate(() => {

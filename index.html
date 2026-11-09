@@ -2661,8 +2661,8 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   <button type="button" data-page="timetable" aria-label="My timetable">
     <span class="mobile-bottom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span><small>Timetable</small>
   </button>
-  <button type="button" data-campus-global-search aria-label="Search CampusShield" aria-haspopup="dialog" aria-controls="campus-global-search-dialog">
-    <span class="mobile-bottom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></span><small>Search</small>
+  <button type="button" data-page="courses" aria-label="Courses">
+    <span class="mobile-bottom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg></span><small>Courses</small>
   </button>
 </nav>
 <aside class="sidebar" id="app-sidebar" aria-label="Main navigation">
@@ -2698,24 +2698,6 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <button type="button" class="mobile-sidebar-signout" aria-label="Sign out of CampusShield">Sign out</button>
 </aside>
 <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
-<dialog id="campus-global-search-dialog" class="campus-global-search-dialog" aria-labelledby="campus-global-search-title">
-  <div class="campus-global-search-shell">
-    <div class="campus-global-search-heading">
-      <div><span class="campus-global-search-eyebrow">CAMPUS DISCOVERY</span><h2 id="campus-global-search-title">Search CampusShield</h2><p>Find campus tools, approved Marketplace listings, published opportunities and Campus Network posts.</p></div>
-      <button type="button" id="campus-global-search-close" class="campus-global-search-close" aria-label="Close search">×</button>
-    </div>
-    <label class="campus-global-search-field" for="campus-global-search-input">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
-      <input id="campus-global-search-input" type="search" maxlength="100" autocomplete="off" placeholder="Try “scholarship”, “textbook” or “volunteer”…">
-      <kbd>ESC</kbd>
-    </label>
-    <p id="campus-global-search-status" class="campus-global-search-status" role="status" aria-live="polite">Search only includes information your account is allowed to access.</p>
-    <div id="campus-global-search-results" class="campus-global-search-results" aria-label="Search results">
-      <div class="campus-global-search-empty"><strong>Start exploring</strong><span>Type at least two characters to search across your campus workspace.</span></div>
-    </div>
-    <p class="campus-global-search-privacy">Private messages, incident reports, identity documents and private drafts are never included in search.</p>
-  </div>
-</dialog>
 <div class="main">
 <header class="topbar">
   <div class="mobile-topbar-brand" aria-label="CampusShield AI">
@@ -2724,7 +2706,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   </div>
   <button type="button" class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="app-sidebar"><span aria-hidden="true">☰</span></button>
   <div class="topbar-title"><small>CampusShield AI</small><strong id="sectionTitle">Overview</strong></div>
-  <div class="topbar-actions"><button type="button" class="btn secondary campus-global-search-trigger" data-campus-global-search aria-label="Search CampusShield" aria-haspopup="dialog" aria-controls="campus-global-search-dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg><span>Search campus</span><kbd>Ctrl K</kbd></button><span id="incidentSyncStatus" class="sync-state" role="status" aria-live="polite">Incident data not loaded</span><button class="btn secondary" type="button" id="refresh-incidents" aria-label="Refresh incident data"><span aria-hidden="true">↻</span>Refresh data</button><button class="btn secondary" type="button" id="workspace-install-app" hidden>Install app</button><span class="demo-pill"><span class="status-dot" aria-hidden="true"></span>CAMPUS WORKSPACE</span><button class="btn secondary" type="button" id="signout-button">Sign out</button></div>
+  <div class="topbar-actions"><span id="incidentSyncStatus" class="sync-state" role="status" aria-live="polite">Incident data not loaded</span><button class="btn secondary" type="button" id="refresh-incidents" aria-label="Refresh incident data"><span aria-hidden="true">↻</span>Refresh data</button><button class="btn secondary" type="button" id="workspace-install-app" hidden>Install app</button><span class="demo-pill"><span class="status-dot" aria-hidden="true"></span>CAMPUS WORKSPACE</span><button class="btn secondary" type="button" id="signout-button">Sign out</button></div>
 </header>
 <main class="content">
 
@@ -2820,9 +2802,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   <div class="campus-dashboard-actions" id="campus-dashboard-actions" aria-label="Your campus shortcuts">
     <button class="btn secondary" type="button" data-page="timetable">My timetable</button>
     <button class="btn secondary" type="button" data-page="courses">Courses &amp; study resources</button>
-    <button class="btn secondary" type="button" data-page="marketplace">Browse Marketplace</button>
-    <button class="btn secondary" type="button" id="dashboard-opportunities-action" data-page="opportunities" hidden>Find opportunities</button>
-    <button class="btn secondary" type="button" id="dashboard-campus-network-action" data-page="campus-network" hidden>Explore Campus Network</button>
+    <button class="btn secondary" type="button" data-page="events">Browse events</button>
     <button class="btn secondary" type="button" data-page="shieldmind">Ask ShieldMind AI</button>
   </div>
   <section class="campus-dashboard-card" id="campus-dashboard-teacher-actions" hidden style="margin-top:14px" aria-labelledby="campus-dashboard-teacher-actions-title">
