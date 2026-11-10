@@ -100,7 +100,7 @@ for (const token of [
   "does not automatically call"
 ]) assert.ok(help.includes(token), "Missing public Help Centre content: " + token);
 
-assert.match(offline, /No incident reports or sign-in details are saved for offline use/i);
+assert.match(offline, /No incident reports or sign-in details are saved while you are offline/i);
 assert.match(help, /Privacy Policy/);
 assert.match(help, /Terms of Use/);
 console.log("CampusShield in-app guide and public Help Centre checks passed.");
