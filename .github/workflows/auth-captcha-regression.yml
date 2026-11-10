@@ -26,7 +26,7 @@ jobs:
           node-version: 22
       - name: Check JavaScript syntax
         run: |
-          node --check campusshield-config.js 2>/dev/null || true
+          node --check supabase-config.js
           node --check campusshield-backend.js
           node --check campusshield-app.js
       - name: Verify CAPTCHA integration and staging scope
