@@ -14,6 +14,7 @@ const manifest = JSON.parse(read("manifest.webmanifest"));
 const htmlMarkup = read("index.html");
 const appScript = read("campusshield-app.js");
 const dashboardUpgradeJs = read("campus-dashboard-upgrade.js");
+const dashboardUpgradeCss = read("campus-dashboard-upgrade.css");
 const pages = [
   "index.html","about.html","features.html","help.html","privacy.html",
   "terms.html","contact.html","offline.html","student-life-preview.html"
@@ -100,6 +101,13 @@ assert.doesNotThrow(() => new Function(lovableUxScript), "Lovable UX integration
 assert.match(dashboardUpgradeJs, /role="combobox"/,"campus search exposes the combobox pattern");
 assert.match(dashboardUpgradeJs, /ArrowUp/,"campus search supports upward keyboard navigation");
 assert.match(dashboardUpgradeJs, /aria-activedescendant/,"campus search announces the active suggestion");
+assert.match(dashboardUpgradeJs, /getTodaySnapshot/, "My Day reads the existing private timetable snapshot");
+assert.match(dashboardUpgradeJs, /campus-my-day-focus/, "My Day renders a dedicated next-item focus");
+assert.match(dashboardUpgradeJs, /HAPPENING NOW|UP NEXT|STILL TO DO/, "My Day distinguishes current, upcoming and outstanding work");
+assert.match(dashboardUpgradeJs, /campusshield:timetable-updated/, "My Day refreshes from timetable update events");
+assert.match(dashboardUpgradeCss, /campus-my-day-focus/, "My Day focus has its own responsive styling");
+assert.match(dashboardUpgradeCss, /html\[data-theme="dark"\].*campus-my-day-focus/s, "My Day focus supports dark mode");
+
 assert.match(appScript, /tablet-compact/,"tablet compact navigation is implemented");
 assert.match(appScript, /drawerFocusable/,"mobile drawer traps keyboard focus");
 assert.match(appScript, /aria-modal/,"mobile drawer is exposed as a modal navigation dialog");
