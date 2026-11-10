@@ -21,7 +21,7 @@ function normalizeSearchText(value) {
 /** @param {string} question */
 export function extractKnowledgeSearchTerms(question, maxTerms = 5) {
   const tokens = normalizeSearchText(question).split(" ").filter(Boolean);
-  return [...new Set(tokens.filter(token => token.length >= 3 && !/^\\d{4}$/.test(token) && !STOP_WORDS.has(token)))]
+  return [...new Set(tokens.filter(token => token.length >= 3 && !/^\d{4}$/.test(token) && !STOP_WORDS.has(token)))]
     .slice(0, Math.max(1, Math.min(8, maxTerms)));
 }
 
