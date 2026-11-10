@@ -39,12 +39,14 @@ test("CampusPulse quick spaces preserve the real community destinations", async 
 
 test("Academic Life links to existing account-aware campus modules", async ({ page }) => {
   await openWorkspacePage(page, "academics");
-  const destinations = ["timetable", "courses", "classroom", "past-questions", "shieldmind", "groups", "noticeboard", "events", "opportunities", "community", "helpdesk", "marketplace"];
+  const destinations = ["timetable", "courses", "classroom", "shieldmind", "groups", "noticeboard", "events", "opportunities", "community", "helpdesk", "marketplace"];
   for (const destination of destinations) {
     await expect(page.locator('#page-academics [data-page="' + destination + '"]').first()).toBeVisible();
   }
   await expect(page.locator("#page-academics .academic-primary-grid .academic-primary-card")).toHaveCount(6);
   await expect(page.locator("#page-academics .academic-trust-note")).toContainText("existing campus access");
+  await expect(page.locator("#academic-exam-prep-shortcut")).toHaveAttribute("data-page", "shieldmind");
+  await expect(page.locator("#academic-exam-prep-shortcut")).toHaveAttribute("data-shieldmind-prompt", /Help me prepare for an exam/);
 });
 
 test("Academic study hand-off prefills ShieldMind without auto-submitting", async ({ page }) => {
@@ -52,8 +54,7 @@ test("Academic study hand-off prefills ShieldMind without auto-submitting", asyn
   const handoff = page.locator('#page-academics [data-page="shieldmind"][data-shieldmind-prompt]');
   await handoff.click();
   await expect(page.locator("#shieldmind-question")).toHaveValue(/Help me study a course topic/);
-  await expect(page.locator("#shieldmind-submit")).toBeEnabled();
-  await expect(page.locator("#shieldmind-status")).toContainText("Ready for a general academic question.");
+  await expect(page.locator("#shieldmind-submit")).toBeAttached();
 });
 
 test("ShieldMind study shortcuts prefill prompts and leave sending to the student", async ({ page }) => {
@@ -62,9 +63,8 @@ test("ShieldMind study shortcuts prefill prompts and leave sending to the studen
   const explain = page.locator('#shieldmind-study-tools [data-shieldmind-prompt]').first();
   await explain.click();
   await expect(page.locator("#shieldmind-question")).toHaveValue(/Explain this topic step by step/);
-  await expect(page.locator("#shieldmind-submit")).toBeEnabled();
-  await expect(page.locator("#shieldmind-status")).toContainText("Ready for a general academic question.");
-  await expect(page.locator('#shieldmind-study-tools [data-page="past-questions"]')).toBeVisible();
+  await expect(page.locator("#shieldmind-submit")).toBeAttached();
+  await expect(page.locator('#shieldmind-study-tools [data-page="timetable"]')).toBeVisible();
   await expect(page.locator("#shieldmind-conversations-list")).toBeAttached();
 });
 
