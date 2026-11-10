@@ -180,7 +180,9 @@
       ['signin', 'signup'].includes(authMode) &&
       !identityCompletionMode;
     wrapper.hidden = !needsCaptcha;
-    if (needsCaptcha) void ensureAuthCaptchaWidget();
+    // Turnstile measures its container during render, so wait until the login
+    // screen is visible. showLogin() calls setAuthMode again after revealing it.
+    if (needsCaptcha && !$('login-screen')?.hidden) void ensureAuthCaptchaWidget();
   }
   let confirmationPending = false;
   const initialRecoveryHash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
