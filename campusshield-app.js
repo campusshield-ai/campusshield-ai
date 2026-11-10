@@ -702,6 +702,12 @@
     const hint = $('auth-captcha-hint');
     if (!config || !field || !mount) return false;
     field.hidden = false;
+    // Session restoration initially hides the sign-in screen. Wait for the
+    // actual form to become visible so Turnstile measures its real dimensions.
+    if (mount.getClientRects().length === 0) {
+      if (hint) hint.textContent = 'The secure sign-in check will appear when the form is ready…';
+      return false;
+    }
     if (authCaptchaWidgetId !== null) return true;
     if (!window.turnstile?.render) {
       if (hint) hint.textContent = 'Loading the secure sign-in check…';
@@ -748,6 +754,17 @@
     } else {
       resetAuthCaptcha();
     }
+  }
+
+  function watchAuthCaptchaVisibility() {
+    const loginScreen = $('login-screen');
+    if (!loginScreen || typeof MutationObserver === 'undefined') return;
+    const observer = new MutationObserver(() => {
+      if (!loginScreen.hidden && authMode !== 'reset' && !identityCompletionMode) {
+        renderAuthCaptcha();
+      }
+    });
+    observer.observe(loginScreen, { attributes: true, attributeFilter: ['hidden', 'class', 'style'] });
   }
 
   function requireAuthCaptchaToken(message) {
@@ -7777,7 +7794,8 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   // Keep the sign-in page hidden until Supabase has checked the saved session.
   // A small branded restore screen prevents the login form flashing on every reload.
   $('approvals-nav').hidden = true;
-  setAuthMode('signin');
+  watchAuthCaptchaVisibility();
+  setAuthMode(passwordRecoveryActive ? 'reset' : 'signin');
   $('session-restore-retry')?.addEventListener('click', () => window.location.reload());
 
   render();
