@@ -19,6 +19,9 @@ assert.equal(extractKnowledgeSearchTerms("What are the fees for 2027?").includes
 assert.equal(isOfficialCampusQuestion("What is the tuition fee for the next semester?"), true);
 assert.equal(isOfficialCampusQuestion("Explain binary search with a worked example."), false);
 assert.equal(isOfficialCampusQuestion("When does course registration close?"), true);
+assert.equal(isOfficialCampusQuestion("When is the university resumption date?"), true);
+assert.equal(isOfficialCampusQuestion("What are the hostel allocation rules?"), true);
+assert.equal(isOfficialCampusQuestion("Help me understand recursion."), false);
 
 const now = Date.parse("2026-11-10T00:00:00.000Z");
 assert.deepEqual(describeKnowledgeFreshness("2026-11-01T00:00:00.000Z", now), {
