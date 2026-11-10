@@ -106,3 +106,18 @@ test("Ideas & Impact offers accessible personal collections and updated sorting"
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client + 1);
   expect(sizes.tabs).toBeGreaterThan(250);
 });
+
+
+test("Ideas & Impact promotes constructive thinking and routes reflection to proposal creation", async ({ page }) => {
+  await openCampusPulse(page, 390);
+  const goodThoughts = page.locator("#campus-ideas-impact .cii-good-thoughts");
+  await expect(goodThoughts).toBeVisible();
+  await expect(goodThoughts.getByRole("heading", { name: /Choose the kind of impact you want to make/i })).toBeVisible();
+  await expect(goodThoughts.getByText(/Challenge the problem, not the person/i)).toBeVisible();
+  await expect(goodThoughts.getByRole("button", { name: "Share a constructive idea" })).toBeVisible();
+  await expect(page.locator("#cii-compose-details")).toHaveJSProperty("open", false);
+  await goodThoughts.getByRole("button", { name: "Share a constructive idea" }).click();
+  await expect(page.locator("#cii-compose-details")).toHaveJSProperty("open", true);
+  const sizes = await goodThoughts.evaluate(el => ({ client: el.clientWidth, scroll: el.scrollWidth }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client + 1);
+});
