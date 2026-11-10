@@ -367,11 +367,17 @@
   myDaySummary.id = "campus-my-day-summary";
   myDaySummary.className = "campus-my-day-summary";
   myDaySummary.setAttribute("aria-live", "polite");
+  const myDayFocus = document.createElement("div");
+  myDayFocus.id = "campus-my-day-focus";
+  myDayFocus.className = "campus-my-day-focus";
+  myDayFocus.hidden = true;
+  myDayFocus.setAttribute("aria-live", "polite");
+  myDayFocus.setAttribute("aria-atomic", "true");
   const myDayFeed = document.createElement("ol");
   myDayFeed.id = "campus-my-day-feed";
   myDayFeed.className = "campus-my-day-feed";
   myDayFeed.setAttribute("aria-label", "Today's classes, tasks and campus events");
-  myDayPanel.append(myDayHeader, myDaySummary, myDayFeed);
+  myDayPanel.append(myDayHeader, myDaySummary, myDayFocus, myDayFeed);
   if (shortcutHost) shortcutHost.insertAdjacentElement("afterend", myDayPanel);
   else if (dashboardHero) dashboardHero.insertAdjacentElement("afterend", myDayPanel);
 
@@ -382,6 +388,8 @@
     });
     const snapshot = window.CampusShieldTimetable?.getTodaySnapshot?.();
     myDayFeed.replaceChildren();
+    myDayFocus.replaceChildren();
+    myDayFocus.hidden = true;
     if (!snapshot?.loaded) {
       myDaySummary.textContent = myDayLoading
         ? "Syncing your private timetable…"
@@ -399,11 +407,13 @@
     const classes = items.filter(item => item.kind === "class").length;
     const events = items.filter(item => item.kind === "event").length;
     const tasks = items.length - classes - events;
+    const completedCount = items.filter(item => item.completed).length;
     const countLabel = (count, name) => count + " " + name + (count === 1 ? "" : "s");
     myDaySummary.textContent = [
       countLabel(classes, "class"),
       countLabel(tasks, "task"),
-      countLabel(events, "campus event")
+      countLabel(events, "campus event"),
+      countLabel(completedCount, "completed")
     ].join(" · ");
 
     if (!items.length) {
@@ -420,6 +430,68 @@
         ? date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
         : "Time not set";
     };
+    const now = Date.now();
+    const pending = items.filter(item => !item.completed);
+    const inProgress = pending.find(item => {
+      const start = Date.parse(item.startsAt || "");
+      const end = Date.parse(item.endsAt || "");
+      return Number.isFinite(start) && Number.isFinite(end) && start <= now && end > now;
+    });
+    const upcoming = pending.find(item => {
+      const start = Date.parse(item.startsAt || "");
+      return Number.isFinite(start) && start >= now;
+    });
+    const stillToDo = pending.find(item => {
+      const start = Date.parse(item.startsAt || "");
+      return item.kind !== "class" && item.kind !== "event" && Number.isFinite(start) && start < now;
+    });
+    const focusItem = inProgress || upcoming || stillToDo;
+
+    const appendFocusText = (tagName, className, text) => {
+      const node = document.createElement(tagName);
+      node.className = className;
+      node.textContent = text;
+      myDayFocus.append(node);
+      return node;
+    };
+    myDayFocus.hidden = false;
+    if (focusItem) {
+      const focusState = inProgress ? "HAPPENING NOW" : upcoming ? "UP NEXT" : "STILL TO DO";
+      appendFocusText("span", "campus-my-day-focus-kicker", focusState);
+      appendFocusText("strong", "campus-my-day-focus-title", String(focusItem.title || "Scheduled item"));
+      const focusMeta = [];
+      if (inProgress) {
+        focusMeta.push(focusItem.endsAt ? "Ends " + formatTime(focusItem.endsAt) : "In progress");
+      } else if (upcoming) {
+        focusMeta.push("Starts at " + formatTime(focusItem.startsAt));
+      } else {
+        focusMeta.push("Scheduled at " + formatTime(focusItem.startsAt));
+      }
+      [focusItem.label, focusItem.courseCode, focusItem.location]
+        .map(value => String(value || "").trim())
+        .filter(Boolean)
+        .forEach(value => focusMeta.push(value));
+      appendFocusText("span", "campus-my-day-focus-meta", focusMeta.join(" · "));
+    } else if (completedCount === items.length) {
+      appendFocusText("span", "campus-my-day-focus-kicker", "DAY COMPLETE");
+      appendFocusText("strong", "campus-my-day-focus-title", "You're all caught up");
+      appendFocusText("span", "campus-my-day-focus-meta", completedCount + " of " + items.length + " scheduled items completed.");
+    } else {
+      appendFocusText("span", "campus-my-day-focus-kicker", "TODAY");
+      appendFocusText("strong", "campus-my-day-focus-title", "No more items coming up");
+      appendFocusText("span", "campus-my-day-focus-meta", completedCount + " of " + items.length + " scheduled items marked complete. Check earlier entries above.");
+    }
+
+    if (focusItem) {
+      const focusAction = document.createElement("button");
+      focusAction.type = "button";
+      focusAction.className = "campus-my-day-focus-action";
+      focusAction.dataset.page = "timetable";
+      focusAction.textContent = "View schedule";
+      focusAction.setAttribute("aria-label", "Open timetable to view " + String(focusItem.title || "the next item"));
+      myDayFocus.append(focusAction);
+    }
+
     items.slice(0, 6).forEach(item => {
       const row = document.createElement("li");
       row.className = "campus-my-day-item" + (item.completed ? " is-complete" : "");
@@ -461,6 +533,12 @@
   window.addEventListener("campusshield:profile-cleared", () => {
     myDayLoading = false;
     renderMyDay();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) renderMyDay();
+  });
+  document.addEventListener("click", event => {
+    if (event.target?.closest?.('[data-page="dashboard"]')) renderMyDay();
   });
   renderMyDay();
 
