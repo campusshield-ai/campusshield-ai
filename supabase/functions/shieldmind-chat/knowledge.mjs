@@ -122,6 +122,9 @@ export function rankKnowledgeSources(sources, terms, phrase = "", limit = 4, now
  */
 export function validateKnowledgeCitations(answer, sources) {
   const sourceList = Array.isArray(sources) ? sources : [];
+  if (!sourceList.length) {
+    return { answer: String(answer ?? ""), usedSources: [], invalidMarkers: [] };
+  }
   const byMarker = new Map(sourceList.map(source => [String(source.marker || ""), source]));
   const used = new Set();
   const invalid = new Set();
