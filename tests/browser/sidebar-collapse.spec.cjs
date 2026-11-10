@@ -11,6 +11,24 @@ async function revealWorkspace(page) {
 }
 
 test("tablet defaults to a compact icon rail while desktop collapse remains user-controlled", async ({ page }) => {
+  // This layout-only test does not exercise authentication. Use a deterministic
+  // Turnstile stub in case session restoration reveals the login panel during
+  // navigation; never load Cloudflare's external challenge in this browser test.
+  await page.addInitScript(() => {
+    let widgetId = 0;
+    const callbacks = new Map();
+    window.turnstile = {
+      render(_container, options) {
+        const id = ++widgetId;
+        callbacks.set(id, options);
+        queueMicrotask(() => options.callback?.("synthetic-turnstile-test-token"));
+        return id;
+      },
+      reset(id) {
+        callbacks.get(id)?.callback?.("synthetic-turnstile-test-token");
+      },
+    };
+  });
   // The test changes viewport width repeatedly; disable CSS transitions so measurements
   // capture the settled breakpoint layout rather than an intermediate animation frame.
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -99,6 +117,21 @@ test("tablet defaults to a compact icon rail while desktop collapse remains user
 });
 
 test("mobile drawer remains full-width and readable when a desktop collapse preference is saved", async ({ page }) => {
+  await page.addInitScript(() => {
+    let widgetId = 0;
+    const callbacks = new Map();
+    window.turnstile = {
+      render(_container, options) {
+        const id = ++widgetId;
+        callbacks.set(id, options);
+        queueMicrotask(() => options.callback?.("synthetic-turnstile-test-token"));
+        return id;
+      },
+      reset(id) {
+        callbacks.get(id)?.callback?.("synthetic-turnstile-test-token");
+      },
+    };
+  });
   await page.setViewportSize({ width: 1366, height: 900 });
   await page.addInitScript(() => localStorage.setItem("campusshield-sidebar-collapsed", "true"));
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
