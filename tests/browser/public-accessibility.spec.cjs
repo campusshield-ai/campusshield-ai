@@ -15,7 +15,7 @@ for (const item of publicPages) {
   test(item.name + " meets WCAG 2.1 A/AA and accessibility best practices", async ({ page }) => {
     const pageErrors = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
-    const response = await page.goto(item.path, { waitUntil: "networkidle" });
+    const response = await page.goto(item.path, { waitUntil: "domcontentloaded" });
     expect(response && response.ok(), item.path + " must load successfully").toBeTruthy();
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"])
