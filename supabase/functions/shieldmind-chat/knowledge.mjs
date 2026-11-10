@@ -89,6 +89,8 @@ export function scoreKnowledgeSource(source, terms, phrase = "", now = Date.now(
     if (title.includes(normalizedPhrase)) score += 12;
     else if (body.includes(normalizedPhrase)) score += 5;
   }
+  // A retrieval timestamp is never enough to make an unrelated page relevant.
+  if (score <= 0) return 0;
   const freshness = describeKnowledgeFreshness(source?.fetched_at, now);
   if (freshness.freshness_level === "recent") score += 1.5;
   else if (freshness.freshness_level === "aging") score += 0.5;
