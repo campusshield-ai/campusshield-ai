@@ -1114,6 +1114,7 @@ assert.doesNotMatch(productionSupabaseConfig, /captcha|turnstile/i, "Production 
 assert.match(htmlMarkup, /id="auth-captcha-wrap"/, "the sign-in form provides an accessible CAPTCHA surface");
 assert.match(appScript, /window\.CampusShieldAuthCaptcha\s*=/, "the app exposes an in-memory CAPTCHA token provider to the backend");
 assert.match(appScript, /turnstile\.render\(/, "the app renders the explicit Cloudflare Turnstile widget");
+assert.match(appScript, /if \(needsCaptcha && !\$\('login-screen'\)\?\.hidden\)/, "Turnstile renders only after the login surface is visible");
 assert.match(backend, /async function withAuthCaptcha\(/, "auth requests share a one-use CAPTCHA token helper");
 assert.match(backend, /signInWithPassword\([\s\S]*?captchaToken/, "password sign-in forwards the CAPTCHA token to Supabase");
 assert.match(backend, /auth\.signUp\([\s\S]*?captchaToken/, "account creation forwards the CAPTCHA token to Supabase");
