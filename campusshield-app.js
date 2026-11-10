@@ -668,6 +668,99 @@
       /[^A-Za-z0-9]/.test(password);
   }
 
+  let authCaptchaToken = '';
+  let authCaptchaWidgetId = null;
+
+  function authCaptchaConfig() {
+    const config = window.CAMPUSSHIELD_SUPABASE_CONFIG || {};
+    const captcha = config.captcha || {};
+    return captcha.enabled === true &&
+      captcha.provider === 'turnstile' &&
+      typeof captcha.siteKey === 'string' &&
+      captcha.siteKey.trim()
+      ? captcha
+      : null;
+  }
+
+  function resetAuthCaptcha() {
+    authCaptchaToken = '';
+    if (authCaptchaWidgetId !== null && window.turnstile?.reset) {
+      try {
+        window.turnstile.reset(authCaptchaWidgetId);
+      } catch (error) {
+        console.warn('Could not refresh the CampusShield security check.', error);
+      }
+    }
+    const hint = $('auth-captcha-hint');
+    if (hint && authCaptchaConfig()) hint.textContent = 'Complete the security check to continue securely.';
+  }
+
+  function renderAuthCaptcha() {
+    const config = authCaptchaConfig();
+    const field = $('auth-captcha-field');
+    const mount = $('auth-captcha');
+    const hint = $('auth-captcha-hint');
+    if (!config || !field || !mount) return false;
+    field.hidden = false;
+    if (authCaptchaWidgetId !== null) return true;
+    if (!window.turnstile?.render) {
+      if (hint) hint.textContent = 'Loading the secure sign-in check…';
+      return false;
+    }
+    try {
+      authCaptchaWidgetId = window.turnstile.render(mount, {
+        sitekey: config.siteKey,
+        theme: 'auto',
+        callback: token => {
+          authCaptchaToken = String(token || '').trim();
+          if (hint) hint.textContent = authCaptchaToken
+            ? 'Security check complete. You can continue.'
+            : 'Complete the security check to continue securely.';
+        },
+        'expired-callback': () => {
+          authCaptchaToken = '';
+          if (hint) hint.textContent = 'The security check expired. Please complete it again.';
+        },
+        'error-callback': () => {
+          authCaptchaToken = '';
+          if (hint) hint.textContent = 'The security check could not load. Refresh the page and try again.';
+        },
+        'timeout-callback': () => {
+          authCaptchaToken = '';
+          if (hint) hint.textContent = 'The security check timed out. Please try again.';
+        }
+      });
+      return authCaptchaWidgetId !== null;
+    } catch (error) {
+      console.error('CampusShield security check could not be rendered.', error);
+      if (hint) hint.textContent = 'The security check could not load. Refresh the page and try again.';
+      return false;
+    }
+  }
+
+  function syncAuthCaptchaVisibility() {
+    const field = $('auth-captcha-field');
+    if (!field) return;
+    const shouldShow = Boolean(authCaptchaConfig()) && authMode !== 'reset' && !identityCompletionMode;
+    field.hidden = !shouldShow;
+    if (shouldShow) {
+      renderAuthCaptcha();
+    } else {
+      resetAuthCaptcha();
+    }
+  }
+
+  function requireAuthCaptchaToken(message) {
+    if (!authCaptchaConfig()) return undefined;
+    if (!authCaptchaToken) {
+      renderAuthCaptcha();
+      if (message) message.textContent = 'Complete the security check below before continuing.';
+      $('auth-captcha-field')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return null;
+    }
+    return authCaptchaToken;
+  }
+
   function setAuthMode(mode) {
     authMode = mode === 'signup' ? 'signup' : mode === 'reset' ? 'reset' : 'signin';
     const isSignUp = authMode === 'signup';
@@ -737,6 +830,7 @@
       : isReset
         ? 'Enter and confirm your new password.'
         : 'Please sign in or create an account.';
+    syncAuthCaptchaVisibility();
   }
 
   function syncSignupRoleFields(enabled = authMode === 'signup') {
@@ -800,6 +894,8 @@
       return;
     }
     if (authBusy) return;
+    const captchaToken = requireAuthCaptchaToken(message);
+    if (captchaToken === null) return;
 
     authBusy = true;
     button.disabled = true;
@@ -814,7 +910,8 @@
       } else {
         redirectUrl = 'https://campusshield-ai.github.io/campusshield-ai/?password-reset=1';
       }
-      const {error} = await backend.requestPasswordReset(email, redirectUrl);
+      const {error} = await backend.requestPasswordReset(email, redirectUrl, captchaToken)
+        .finally(resetAuthCaptcha);
       if (error) throw error;
       message.textContent = 'If an account exists for that email address, reset instructions have been requested. Check your inbox and spam folder.';
     } catch (error) {
@@ -6957,10 +7054,14 @@ $('page-marketplace').addEventListener('click',async function(event){
       year_of_study: $('auth-year-of-study').value
     };
 
+    const captchaToken = requireAuthCaptchaToken(msg);
+    if (captchaToken === null) return;
+
     let accountCreated = false;
     try {
       msg.textContent = 'Creating your CampusShield account…';
-      const {data, error} = await backend.signUp(email, password, name, username, universityId, profileData);
+      const {data, error} = await backend.signUp(email, password, name, username, universityId, profileData, captchaToken)
+        .finally(resetAuthCaptcha);
       if (error) throw error;
       if (!data?.user) throw new Error('Supabase did not return a user.');
 
@@ -7037,11 +7138,14 @@ $('page-marketplace').addEventListener('click',async function(event){
       msg.textContent = 'Supabase is not connected. Check configuration and script loading.';
       return;
     }
+    const captchaToken = requireAuthCaptchaToken(msg);
+    if (captchaToken === null) return;
 
     try {
       msg.textContent = 'Signing in...';
 
-      const {error} = await backend.signIn(email, password);
+      const {error} = await backend.signIn(email, password, captchaToken)
+        .finally(resetAuthCaptcha);
       if (error) throw error;
 
       // Read the authenticated user's metadata before restoring the requested role.
@@ -7644,13 +7748,16 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     msg.textContent = 'Supabase is not connected.';
     return;
   }
+  const captchaToken = requireAuthCaptchaToken(msg);
+  if (captchaToken === null) return;
 
   button.disabled = true;
 
   try {
     msg.textContent = 'Sending confirmation email...';
 
-    const { error } = await backend.resendConfirmation(email);
+    const { error } = await backend.resendConfirmation(email, captchaToken)
+      .finally(resetAuthCaptcha);
 
     if (error) throw error;
 
