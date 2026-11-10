@@ -5861,6 +5861,7 @@
     const state=campusNetworkSearchState[type];
     if(!state)return;
     if(state.timer!==null)window.clearTimeout(state.timer);
+    state.requestId+=1;
     const statusId=type==='volunteer'?'campus-volunteer-status':'campus-startup-status';
     $(statusId).textContent='Searching '+(type==='volunteer'?'volunteer':'startup')+' opportunities…';
     state.timer=window.setTimeout(()=>{
@@ -5933,6 +5934,7 @@
   function scheduleCampusAlumniDirectorySearch() {
     const state=campusNetworkSearchState.alumni;
     if(state.timer!==null)window.clearTimeout(state.timer);
+    state.requestId+=1;
     $('campus-alumni-status').textContent='Searching verified alumni…';
     state.timer=window.setTimeout(()=>{
       state.timer=null;
