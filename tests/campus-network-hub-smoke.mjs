@@ -182,8 +182,8 @@ assert.match(html, /Mentorship requests/, "The request history heading must desc
 // Responsive, keyboard-visible controls and dark-mode coverage are present.
 for (const token of [
   "campus-discovery-toolbar", "campus-network-tabs", "campus-network-card-grid",
-  "campus-network-browse-tools", "focus-visible", "max-width:620px",
-  'html[data-theme="dark"] .campus-network-card'
+  "campus-network-browse-tools", ".campus-network-intro-form select", "focus-visible", "max-width:620px",
+  'html[data-theme="dark"] .campus-network-card', 'html[data-theme="dark"] .campus-network-intro-form select'
 ]) assert.ok(css.includes(token), "Missing Campus Network / discovery styling: " + token);
 
 console.log("Campus Network and campus discovery smoke checks passed.");
