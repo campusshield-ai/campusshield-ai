@@ -74,6 +74,114 @@
   let authMode = 'signin';
   let identityCompletionMode = false;
   let authBusy = false;
+
+  let authCaptchaToken = '';
+  let authCaptchaWidgetId = null;
+  let authCaptchaLoadPromise = null;
+
+  function getAuthCaptchaConfig() {
+    const captcha = window.CAMPUSSHIELD_SUPABASE_CONFIG?.captcha;
+    return captcha?.provider === 'turnstile' && typeof captcha.siteKey === 'string' && captcha.siteKey
+      ? captcha
+      : null;
+  }
+
+  async function loadAuthCaptchaScript() {
+    if (window.turnstile?.render) return;
+    if (authCaptchaLoadPromise) return authCaptchaLoadPromise;
+    authCaptchaLoadPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.dataset.campusshieldTurnstile = 'true';
+      script.onload = () => window.turnstile?.render
+        ? resolve()
+        : reject(new Error('Cloudflare Turnstile did not initialize.'));
+      script.onerror = () => reject(new Error('Cloudflare Turnstile could not be loaded.'));
+      document.head.appendChild(script);
+    }).catch(error => {
+      authCaptchaLoadPromise = null;
+      throw error;
+    });
+    return authCaptchaLoadPromise;
+  }
+
+  async function ensureAuthCaptchaWidget() {
+    const config = getAuthCaptchaConfig();
+    if (!config) return false;
+    const wrapper = $('auth-captcha-wrap');
+    const status = $('auth-captcha-message');
+    if (wrapper) wrapper.hidden = false;
+    if (authCaptchaWidgetId !== null && window.turnstile?.reset) return true;
+    try {
+      if (status) status.textContent = 'Loading security check…';
+      await loadAuthCaptchaScript();
+      authCaptchaWidgetId = window.turnstile.render($('auth-captcha-widget'), {
+        sitekey: config.siteKey,
+        theme: 'light',
+        callback: token => {
+          authCaptchaToken = String(token || '');
+          if (status) status.textContent = authCaptchaToken
+            ? 'Security check verified.'
+            : 'Complete the security check to continue.';
+        },
+        'expired-callback': () => {
+          authCaptchaToken = '';
+          if (status) status.textContent = 'Security check expired. Please verify again.';
+        },
+        'error-callback': () => {
+          authCaptchaToken = '';
+          if (status) status.textContent = 'Security check could not complete. Refresh the page and try again.';
+        }
+      });
+      if (status) status.textContent = 'Complete the security check to continue.';
+      return true;
+    } catch (error) {
+      console.error('CampusShield CAPTCHA could not initialize:', error);
+      if (status) status.textContent = 'Security check could not load. Check your connection and refresh the page.';
+      return false;
+    }
+  }
+
+  async function getAuthCaptchaToken() {
+    if (!getAuthCaptchaConfig()) return null;
+    const ready = await ensureAuthCaptchaWidget();
+    if (!ready) throw new Error('The security check could not load. Refresh the page and try again.');
+    if (!authCaptchaToken) {
+      const status = $('auth-captcha-message');
+      if (status) status.textContent = 'Complete the security check above before continuing.';
+      $('auth-captcha-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      throw new Error('Complete the security check above before continuing.');
+    }
+    return authCaptchaToken;
+  }
+
+  function resetAuthCaptcha() {
+    authCaptchaToken = '';
+    if (authCaptchaWidgetId !== null && window.turnstile?.reset) {
+      try { window.turnstile.reset(authCaptchaWidgetId); } catch (error) {
+        console.warn('CampusShield CAPTCHA reset could not complete.', error);
+      }
+    }
+    const status = $('auth-captcha-message');
+    if (status) status.textContent = 'Complete the security check to continue.';
+  }
+
+  window.CampusShieldAuthCaptcha = {
+    getToken: getAuthCaptchaToken,
+    reset: resetAuthCaptcha
+  };
+
+  function syncAuthCaptchaVisibility() {
+    const wrapper = $('auth-captcha-wrap');
+    if (!wrapper) return;
+    const needsCaptcha = Boolean(getAuthCaptchaConfig()) &&
+      ['signin', 'signup'].includes(authMode) &&
+      !identityCompletionMode;
+    wrapper.hidden = !needsCaptcha;
+    if (needsCaptcha) void ensureAuthCaptchaWidget();
+  }
   let confirmationPending = false;
   const initialRecoveryHash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
   let passwordRecoveryActive =
@@ -714,6 +822,7 @@
     $('resend-field').hidden = isReset || (isSignUp && !confirmationPending);
     $('auth-helper').hidden = isReset;
     $('install-card').hidden = isReset;
+    syncAuthCaptchaVisibility();
     $('auth-title').textContent = identityCompletionMode ? 'Complete student setup' : isSignUp ? 'Create your account' : isReset ? 'Choose a new password' : 'Welcome back';
     $('auth-subtitle').textContent = identityCompletionMode ? 'Submit your student ID document using the university linked to your account.' : isSignUp
       ? 'Set up a CampusShield account to submit reports.'
