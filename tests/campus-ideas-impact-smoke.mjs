@@ -105,3 +105,15 @@ assert.ok(js.includes("Across CampusShield"));
 assert.ok(js.includes("state.canContribute"));
 assert.ok(js.includes("state.campus?.university_id === idea.university_id"));
 console.log("Global Ideas & Impact cross-campus access checks passed.");
+
+assert.match(js, /view: "explore"/, "Ideas & Impact has a default Explore collection");
+assert.match(js, /data-idea-view="mine"/, "Students can switch to their own proposals");
+assert.match(js, /data-idea-view="supported"/, "Students can revisit ideas they supported");
+assert.match(js, /request\.eq\("user_id", state\.user\.id\)/, "My proposals are queried by the authenticated user id");
+assert.match(js, /from\("campus_idea_supports"\)[\s\S]*?\.select\("idea_id"\)[\s\S]*?\.eq\("user_id", state\.user\.id\)/, "Supported ideas are derived from the signed-in user's own support rows");
+assert.match(js, /request\.order\("updated_at", \{ ascending: false \}\)/, "The board can sort by recently updated ideas");
+assert.match(js, /cii-progress-history/, "Ideas expose expandable progress history");
+assert.match(js, /cii-progress-list/, "Progress history uses a dedicated chronological list");
+assert.match(css, /\.cii-view-tabs/, "Personal collections have responsive navigation styles");
+assert.match(css, /\.cii-progress-history/, "Progress history has its own visual treatment");
+assert.match(css, /data-theme="dark"/, "Personal collections and progress history support dark mode");
