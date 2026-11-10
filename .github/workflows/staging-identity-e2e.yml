@@ -5,12 +5,14 @@ on:
     branches:
       - main
       - fix/enable-staging-identity-e2e-20261110
+      - test/identity-campus-scope-e2e-20261110
     paths:
       - "tests/e2e/staging-identity-e2e.mjs"
       - ".github/workflows/staging-identity-e2e.yml"
       - "supabase-config.js"
       - "supabase/migrations/20261027052000_fix_student_identity_uuid_path_regex.sql"
       - "supabase/migrations/20261027062000_add_save_my_requested_role_rpc.sql"
+      - "supabase/migrations/20261110004503_harden_student_identity_document_campus_scope.sql"
   workflow_dispatch:
 
 permissions:
@@ -23,7 +25,7 @@ concurrency:
 jobs:
   authenticated-e2e:
     name: Confirmation, identity upload, review, and cleanup
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/enable-staging-identity-e2e-20261110'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/enable-staging-identity-e2e-20261110' || github.ref == 'refs/heads/test/identity-campus-scope-e2e-20261110'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
