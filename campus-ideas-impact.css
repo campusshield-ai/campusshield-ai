@@ -612,3 +612,68 @@ body.dark .campus-ideas-impact .cii-results-count,
 [data-theme="dark"] .campus-ideas-impact .cii-results-count,
 body.dark .campus-ideas-impact .cii-field-meta,
 [data-theme="dark"] .campus-ideas-impact .cii-field-meta{color:#b3c7b8}
+
+
+/* Personal idea collections and transparent progress history. */
+.campus-ideas-impact .cii-view-tabs{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 13px;
+}
+.campus-ideas-impact .cii-view-tab{
+  display:grid;gap:3px;min-width:0;padding:11px 13px;border:1px solid #dce9df;border-radius:12px;
+  background:#f8fcf8;color:#355844;text-align:left;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease;
+}
+.campus-ideas-impact .cii-view-tab span{font-size:.8rem;font-weight:850;line-height:1.25}
+.campus-ideas-impact .cii-view-tab small{color:#718477;font-size:.68rem;line-height:1.35}
+.campus-ideas-impact .cii-view-tab[aria-pressed="true"]{
+  border-color:#6eb786;background:#eaf7ed;color:#205d3b;box-shadow:inset 0 0 0 1px #cce8d2;
+}
+.campus-ideas-impact .cii-view-tab[aria-pressed="true"] small{color:#477453}
+.campus-ideas-impact .cii-view-tab:disabled{opacity:.5;cursor:not-allowed}
+.campus-ideas-impact .cii-progress-history{
+  margin:11px 0 0;padding:10px 12px;border:1px solid #e1ebe4;border-radius:11px;background:#fbfdfb;
+}
+.campus-ideas-impact .cii-progress-history>summary{
+  color:#3f694c;font-size:.74rem;font-weight:820;cursor:pointer;list-style:none;
+}
+.campus-ideas-impact .cii-progress-history>summary::-webkit-details-marker{display:none}
+.campus-ideas-impact .cii-progress-list{
+  display:grid;gap:0;margin:12px 0 2px;padding:0 0 0 15px;list-style:none;border-left:2px solid #d6e9db;
+}
+.campus-ideas-impact .cii-progress-item{position:relative;padding:0 0 13px 10px;min-width:0}
+.campus-ideas-impact .cii-progress-item:last-child{padding-bottom:2px}
+.campus-ideas-impact .cii-progress-item::before{
+  content:"";position:absolute;left:-21px;top:5px;width:8px;height:8px;border:2px solid #fff;
+  border-radius:50%;background:#4e9b69;box-shadow:0 0 0 1px #a9d4b5;
+}
+.campus-ideas-impact .cii-progress-meta{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+.campus-ideas-impact .cii-progress-status{font-size:.64rem;font-weight:820}
+.campus-ideas-impact .cii-progress-meta time{color:#84948a;font-size:.65rem}
+.campus-ideas-impact .cii-progress-item p{margin:5px 0 0;color:#526c5b;font-size:.73rem;line-height:1.55;overflow-wrap:anywhere}
+.campus-ideas-impact .cii-view-tab:focus-visible{outline:3px solid #8ed8a6;outline-offset:2px}
+@media(max-width:680px){
+  .campus-ideas-impact .cii-view-tabs{gap:6px}
+  .campus-ideas-impact .cii-view-tab{padding:10px 9px}
+  .campus-ideas-impact .cii-view-tab span{font-size:.73rem}
+  .campus-ideas-impact .cii-view-tab small{font-size:.62rem}
+}
+@media(max-width:420px){
+  .campus-ideas-impact .cii-view-tabs{grid-template-columns:1fr}
+  .campus-ideas-impact .cii-view-tab{grid-template-columns:minmax(92px,.65fr) minmax(0,1fr);align-items:center;gap:9px}
+  .campus-ideas-impact .cii-progress-meta{align-items:flex-start;flex-direction:column;gap:3px}
+}
+body.dark .campus-ideas-impact .cii-view-tab,
+[data-theme="dark"] .campus-ideas-impact .cii-view-tab{background:#1a3025;border-color:#405b48;color:#d5e7d9}
+body.dark .campus-ideas-impact .cii-view-tab small,
+[data-theme="dark"] .campus-ideas-impact .cii-view-tab small{color:#b3c7b8}
+body.dark .campus-ideas-impact .cii-view-tab[aria-pressed="true"],
+[data-theme="dark"] .campus-ideas-impact .cii-view-tab[aria-pressed="true"]{background:#234a31;border-color:#65a87a;color:#edfaef}
+body.dark .campus-ideas-impact .cii-view-tab[aria-pressed="true"] small,
+[data-theme="dark"] .campus-ideas-impact .cii-view-tab[aria-pressed="true"] small{color:#c5e7cc}
+body.dark .campus-ideas-impact .cii-progress-history,
+[data-theme="dark"] .campus-ideas-impact .cii-progress-history{background:#1a3025;border-color:#405b48}
+body.dark .campus-ideas-impact .cii-progress-history>summary,
+[data-theme="dark"] .campus-ideas-impact .cii-progress-history>summary{color:#d5e7d9}
+body.dark .campus-ideas-impact .cii-progress-item p,
+[data-theme="dark"] .campus-ideas-impact .cii-progress-item p{color:#c3d5c8}
+body.dark .campus-ideas-impact .cii-progress-meta time,
+[data-theme="dark"] .campus-ideas-impact .cii-progress-meta time{color:#a8bdb0}
