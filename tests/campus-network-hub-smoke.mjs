@@ -117,11 +117,19 @@ assert.match(migration, /auth\.uid\(\)\) is null then[\s\S]*Sign in to request a
 assert.match(migration, /limit 12/);
 assert.match(migration, /expires_at timestamptz not null default \(now\(\) \+ interval '45 days'\)/);
 
+// Alumni Connect mentorship requests remain within the existing protected RPC contract.
+assert.match(app, /name="topic"/, "Mentorship requests must require a structured guidance topic");
+assert.match(app, /maxlength="400"/, "The note input must leave room for the topic in the RPC 500-character limit");
+assert.ok(app.includes("Guidance topic: "), "The selected topic must be included in the private request");
+assert.ok(app.includes("dateText(row.created_at)"), "Request history must show submission dates");
+assert.ok(app.includes("Awaiting response"), "Request history must label pending requests clearly");
+assert.match(html, /Mentorship requests/, "The Alumni Connect history heading must explain its purpose");
+
 // Responsive, keyboard-visible controls and dark-mode coverage are present.
 for (const token of [
   "campus-discovery-toolbar", "campus-network-tabs", "campus-network-card-grid",
-  "campus-network-browse-tools", "focus-visible", "max-width:620px",
-  'html[data-theme="dark"] .campus-network-card'
+  "campus-network-browse-tools", ".campus-network-intro-form select", "focus-visible", "max-width:620px",
+  'html[data-theme="dark"] .campus-network-card', 'html[data-theme="dark"] .campus-network-intro-form select'
 ]) assert.ok(css.includes(token), "Missing Campus Network / discovery styling: " + token);
 
 console.log("Campus Network and campus discovery smoke checks passed.");
