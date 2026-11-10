@@ -40,7 +40,7 @@ assert.match(app, /backend\.resendConfirmation\(email, captchaToken\)/);
 assert.match(app, /\.finally\(resetAuthCaptcha\)/, 'single-use challenges must be reset after protected requests');
 
 assert.match(html, /id="auth-captcha-field"/);
-assert.match(html, /id="auth-captcha"/);
+assert.match(html, /id="auth-captcha" role="group" aria-label="Complete the security check"/, 'CAPTCHA mount must be an accessible named group');
 assert.match(html, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit/);
 
 console.log('CampusShield Auth CAPTCHA checks passed: staging-only Turnstile, protected Auth calls, token expiry/reset, no browser secret.');
