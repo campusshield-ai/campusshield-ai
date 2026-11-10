@@ -612,3 +612,157 @@ body.dark .campus-ideas-impact .cii-results-count,
 [data-theme="dark"] .campus-ideas-impact .cii-results-count,
 body.dark .campus-ideas-impact .cii-field-meta,
 [data-theme="dark"] .campus-ideas-impact .cii-field-meta{color:#b3c7b8}
+
+
+/* Personal idea collections and transparent progress history. */
+.campus-ideas-impact .cii-view-tabs{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 13px;
+}
+.campus-ideas-impact .cii-view-tab{
+  display:grid;gap:3px;min-width:0;padding:11px 13px;border:1px solid #dce9df;border-radius:12px;
+  background:#f8fcf8;color:#355844;text-align:left;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease;
+}
+.campus-ideas-impact .cii-view-tab span{font-size:.8rem;font-weight:850;line-height:1.25}
+.campus-ideas-impact .cii-view-tab small{color:#718477;font-size:.68rem;line-height:1.35}
+.campus-ideas-impact .cii-view-tab[aria-pressed="true"]{
+  border-color:#6eb786;background:#eaf7ed;color:#205d3b;box-shadow:inset 0 0 0 1px #cce8d2;
+}
+.campus-ideas-impact .cii-view-tab[aria-pressed="true"] small{color:#477453}
+.campus-ideas-impact .cii-view-tab:disabled{opacity:.5;cursor:not-allowed}
+.campus-ideas-impact .cii-progress-history{
+  margin:11px 0 0;padding:10px 12px;border:1px solid #e1ebe4;border-radius:11px;background:#fbfdfb;
+}
+.campus-ideas-impact .cii-progress-history>summary{
+  color:#3f694c;font-size:.74rem;font-weight:820;cursor:pointer;list-style:none;
+}
+.campus-ideas-impact .cii-progress-history>summary::-webkit-details-marker{display:none}
+.campus-ideas-impact .cii-progress-list{
+  display:grid;gap:0;margin:12px 0 2px;padding:0 0 0 15px;list-style:none;border-left:2px solid #d6e9db;
+}
+.campus-ideas-impact .cii-progress-item{position:relative;padding:0 0 13px 10px;min-width:0}
+.campus-ideas-impact .cii-progress-item:last-child{padding-bottom:2px}
+.campus-ideas-impact .cii-progress-item::before{
+  content:"";position:absolute;left:-21px;top:5px;width:8px;height:8px;border:2px solid #fff;
+  border-radius:50%;background:#4e9b69;box-shadow:0 0 0 1px #a9d4b5;
+}
+.campus-ideas-impact .cii-progress-meta{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+.campus-ideas-impact .cii-progress-status{font-size:.64rem;font-weight:820}
+.campus-ideas-impact .cii-progress-meta time{color:#84948a;font-size:.65rem}
+.campus-ideas-impact .cii-progress-item p{margin:5px 0 0;color:#526c5b;font-size:.73rem;line-height:1.55;overflow-wrap:anywhere}
+.campus-ideas-impact .cii-view-tab:focus-visible{outline:3px solid #8ed8a6;outline-offset:2px}
+@media(max-width:680px){
+  .campus-ideas-impact .cii-view-tabs{gap:6px}
+  .campus-ideas-impact .cii-view-tab{padding:10px 9px}
+  .campus-ideas-impact .cii-view-tab span{font-size:.73rem}
+  .campus-ideas-impact .cii-view-tab small{font-size:.62rem}
+}
+@media(max-width:420px){
+  .campus-ideas-impact .cii-view-tabs{grid-template-columns:1fr}
+  .campus-ideas-impact .cii-view-tab{grid-template-columns:minmax(92px,.65fr) minmax(0,1fr);align-items:center;gap:9px}
+  .campus-ideas-impact .cii-progress-meta{align-items:flex-start;flex-direction:column;gap:3px}
+}
+body.dark .campus-ideas-impact .cii-view-tab,
+[data-theme="dark"] .campus-ideas-impact .cii-view-tab{background:#1a3025;border-color:#405b48;color:#d5e7d9}
+body.dark .campus-ideas-impact .cii-view-tab small,
+[data-theme="dark"] .campus-ideas-impact .cii-view-tab small{color:#b3c7b8}
+body.dark .campus-ideas-impact .cii-view-tab[aria-pressed="true"],
+[data-theme="dark"] .campus-ideas-impact .cii-view-tab[aria-pressed="true"]{background:#234a31;border-color:#65a87a;color:#edfaef}
+body.dark .campus-ideas-impact .cii-view-tab[aria-pressed="true"] small,
+[data-theme="dark"] .campus-ideas-impact .cii-view-tab[aria-pressed="true"] small{color:#c5e7cc}
+body.dark .campus-ideas-impact .cii-progress-history,
+[data-theme="dark"] .campus-ideas-impact .cii-progress-history{background:#1a3025;border-color:#405b48}
+body.dark .campus-ideas-impact .cii-progress-history>summary,
+[data-theme="dark"] .campus-ideas-impact .cii-progress-history>summary{color:#d5e7d9}
+body.dark .campus-ideas-impact .cii-progress-item p,
+[data-theme="dark"] .campus-ideas-impact .cii-progress-item p{color:#c3d5c8}
+body.dark .campus-ideas-impact .cii-progress-meta time,
+[data-theme="dark"] .campus-ideas-impact .cii-progress-meta time{color:#a8bdb0}
+
+
+/* Positive reflection and constructive action module. */
+.campus-ideas-impact .cii-good-thoughts{
+  display:grid;gap:15px;margin:16px 0 18px;padding:clamp(17px,2.5vw,25px);
+  border:1px solid #d8eadc;border-radius:18px;
+  background:linear-gradient(135deg,#f4fbf5 0%,#edf8f0 55%,#f8fcf8 100%);
+}
+.campus-ideas-impact .cii-good-thoughts-head{max-width:780px}
+.campus-ideas-impact .cii-good-thoughts-label{
+  display:inline-flex;margin-left:8px;padding:4px 8px;border-radius:999px;
+  background:#def2e3;color:#286443;font-size:.62rem;font-weight:850;letter-spacing:.06em;
+}
+.campus-ideas-impact .cii-good-thoughts-head h3{
+  margin:8px 0 6px;color:#17432c;font-size:clamp(1.15rem,2.1vw,1.55rem);letter-spacing:-.04em;
+}
+.campus-ideas-impact .cii-good-thoughts-head p{
+  margin:0;color:#587061;font-size:.8rem;line-height:1.65;
+}
+.campus-ideas-impact .cii-thought-grid{
+  display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:10px;
+}
+.campus-ideas-impact .cii-thought-card{
+  position:relative;display:flex;min-width:0;min-height:132px;flex-direction:column;justify-content:space-between;
+  gap:10px;padding:15px;border:1px solid #dcebe0;border-radius:14px;background:rgba(255,255,255,.82);
+}
+.campus-ideas-impact .cii-thought-featured{
+  background:linear-gradient(145deg,#164b32,#236b46);border-color:#236b46;color:#f3fff5;
+}
+.campus-ideas-impact .cii-thought-mark{color:#a7e2b5;font-family:Georgia,serif;font-size:2.5rem;line-height:.7}
+.campus-ideas-impact .cii-thought-card p{
+  margin:0;color:#315841;font-size:.83rem;font-weight:680;line-height:1.55;text-wrap:pretty;
+}
+.campus-ideas-impact .cii-thought-featured p{color:#f3fff5;font-size:.88rem}
+.campus-ideas-impact .cii-thought-card small{color:#6e8575;font-size:.66rem}
+.campus-ideas-impact .cii-thought-featured small{color:#c3e9cc}
+.campus-ideas-impact .cii-thought-topic{
+  color:#348354;font-size:.62rem;font-weight:900;letter-spacing:.1em;
+}
+.campus-ideas-impact .cii-reflection{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 14px;
+  border:1px solid #dcebe0;border-radius:13px;background:#fff;
+}
+.campus-ideas-impact .cii-reflection strong{color:#25563a;font-size:.76rem}
+.campus-ideas-impact .cii-reflection span{flex:1 1 260px;color:#61776a;font-size:.72rem;line-height:1.5}
+.campus-ideas-impact .cii-reflection .btn{min-height:38px;padding:8px 12px;font-size:.7rem}
+.campus-ideas-impact .cii-thought-footnote{margin:0;color:#789080;font-size:.65rem;line-height:1.5}
+.campus-ideas-impact .cii-good-thoughts button:focus-visible{outline:3px solid #72c68a;outline-offset:3px}
+@media(max-width:760px){
+  .campus-ideas-impact .cii-thought-grid{grid-template-columns:1fr 1fr}
+  .campus-ideas-impact .cii-thought-featured{grid-column:1/-1;min-height:115px}
+  .campus-ideas-impact .cii-thought-card{min-height:120px}
+}
+@media(max-width:460px){
+  .campus-ideas-impact .cii-good-thoughts{padding:14px;border-radius:15px}
+  .campus-ideas-impact .cii-good-thoughts-label{margin:7px 0 0}
+  .campus-ideas-impact .cii-thought-grid{grid-template-columns:1fr}
+  .campus-ideas-impact .cii-thought-featured{grid-column:auto}
+  .campus-ideas-impact .cii-thought-card{min-height:0}
+  .campus-ideas-impact .cii-reflection{align-items:stretch;flex-direction:column}
+  .campus-ideas-impact .cii-reflection .btn{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  .campus-ideas-impact .cii-good-thoughts *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+body.dark .campus-ideas-impact .cii-good-thoughts,
+[data-theme="dark"] .campus-ideas-impact .cii-good-thoughts{
+  background:linear-gradient(135deg,#1b3827,#1e3b2a 55%,#1a3025);border-color:#3d6448;
+}
+body.dark .campus-ideas-impact .cii-good-thoughts-head h3,
+[data-theme="dark"] .campus-ideas-impact .cii-good-thoughts-head h3{color:#e5f3e8}
+body.dark .campus-ideas-impact .cii-good-thoughts-head p,
+[data-theme="dark"] .campus-ideas-impact .cii-good-thoughts-head p{color:#c1d4c5}
+body.dark .campus-ideas-impact .cii-thought-card,
+[data-theme="dark"] .campus-ideas-impact .cii-thought-card{background:#20382a;border-color:#43634b}
+body.dark .campus-ideas-impact .cii-thought-card p,
+[data-theme="dark"] .campus-ideas-impact .cii-thought-card p{color:#e0eee3}
+body.dark .campus-ideas-impact .cii-thought-featured,
+[data-theme="dark"] .campus-ideas-impact .cii-thought-featured{background:linear-gradient(145deg,#17452f,#215e3e);border-color:#36704c}
+body.dark .campus-ideas-impact .cii-thought-featured p,
+[data-theme="dark"] .campus-ideas-impact .cii-thought-featured p{color:#f3fff5}
+body.dark .campus-ideas-impact .cii-reflection,
+[data-theme="dark"] .campus-ideas-impact .cii-reflection{background:#20382a;border-color:#43634b}
+body.dark .campus-ideas-impact .cii-reflection strong,
+[data-theme="dark"] .campus-ideas-impact .cii-reflection strong{color:#e0eee3}
+body.dark .campus-ideas-impact .cii-reflection span,
+[data-theme="dark"] .campus-ideas-impact .cii-reflection span,
+body.dark .campus-ideas-impact .cii-thought-footnote,
+[data-theme="dark"] .campus-ideas-impact .cii-thought-footnote{color:#b8cdbd}

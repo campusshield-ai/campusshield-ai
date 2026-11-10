@@ -82,3 +82,45 @@ test("Ideas & Impact filters reflow cleanly at tablet and desktop widths", async
     expect(sizes.filterColumns).toBe(width > 900 ? 4 : 2);
   }
 });
+
+
+test("Ideas & Impact offers accessible personal collections and updated sorting", async ({ page }) => {
+  await openCampusPulse(page, 390);
+  const tabs = page.locator("#campus-ideas-impact [data-idea-view]");
+  await expect(tabs).toHaveCount(3);
+  await expect(page.locator('[data-idea-view="explore"]')).toHaveAttribute("aria-pressed", "true");
+
+  await page.locator('[data-idea-view="mine"]').click();
+  await expect(page.locator('[data-idea-view="mine"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-idea-view="explore"]')).toHaveAttribute("aria-pressed", "false");
+
+  await page.locator('[data-idea-view="explore"]').click();
+  await expect(page.locator('[data-idea-view="explore"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#cii-sort option[value='updated']")).toHaveText("Recently updated");
+
+  const sizes = await page.locator("#campus-ideas-impact").evaluate(el => ({
+    client: el.clientWidth,
+    scroll: el.scrollWidth,
+    tabs: el.querySelector(".cii-view-tabs").getBoundingClientRect().width
+  }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client + 1);
+  expect(sizes.tabs).toBeGreaterThan(250);
+});
+
+
+test("Ideas & Impact promotes constructive thinking and routes reflection to proposal creation", async ({ page }) => {
+  await openCampusPulse(page, 390);
+  const goodThoughts = page.locator("#campus-ideas-impact .cii-good-thoughts");
+  await expect(goodThoughts).toBeVisible();
+  await expect(goodThoughts.getByRole("heading", { name: /Choose the kind of impact you want to make/i })).toBeVisible();
+  await expect(goodThoughts.getByText(/Challenge the problem, not the person/i)).toBeVisible();
+  await expect(goodThoughts.getByRole("button", { name: "Share a constructive idea" })).toBeVisible();
+  await expect(page.locator("#cii-compose-details")).toHaveJSProperty("open", false);
+  await goodThoughts.getByRole("button", { name: "Share a constructive idea" }).click();
+  // The fixture represents an unverified member: the reflection CTA must explain
+  // the contribution requirement instead of opening a privileged proposal form.
+  await expect(page.locator("#cii-status")).toContainText(/verify your campus membership/i);
+  await expect(page.locator("#cii-compose-details")).toHaveJSProperty("open", false);
+  const sizes = await goodThoughts.evaluate(el => ({ client: el.clientWidth, scroll: el.scrollWidth }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client + 1);
+});
