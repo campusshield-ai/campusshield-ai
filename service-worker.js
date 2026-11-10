@@ -1,12 +1,13 @@
-const CACHE_NAME = "campusshield-offline-v10";
+const CACHE_NAME = "campusshield-offline-v11";
 const BRAND_STYLESHEET_URL = "./campusshield-brand-system.css";
 const MODULE_STYLESHEET_URL = "./campusshield-module-experience.css?v=20261110-2";
+const SHIELDMIND_CHAT_STYLESHEET_URL = "./shieldmind-chat-history.css";
 const OFFLINE_URL = "./offline.html";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => Promise.all([cache.add(OFFLINE_URL), cache.add(BRAND_STYLESHEET_URL), cache.add(MODULE_STYLESHEET_URL)]))
+      .then((cache) => Promise.all([cache.add(OFFLINE_URL), cache.add(BRAND_STYLESHEET_URL), cache.add(MODULE_STYLESHEET_URL), cache.add(SHIELDMIND_CHAT_STYLESHEET_URL)]))
       .then(() => self.skipWaiting())
   );
 });
