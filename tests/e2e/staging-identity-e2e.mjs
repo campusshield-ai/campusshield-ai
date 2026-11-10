@@ -42,8 +42,8 @@ function strongSyntheticPassword() {
   return `Cs-E2E!-${randomBytes(24).toString("base64url")}-9aA`;
 }
 
-async function generateAndConfirmSyntheticUser(role, university) {
-  const email = `${emailPrefix}-${role}@gmail.com`;
+async function generateAndConfirmSyntheticUser(role, university, emailLabel = role) {
+  const email = `${emailPrefix}-${emailLabel}@gmail.com`;
   const password = strongSyntheticPassword();
   const baseRequestedRole = role === "admin" ? "teacher" : "student";
   const displayName = role === "admin"
@@ -159,20 +159,22 @@ async function cleanup() {
 async function run() {
   let student;
   let reviewer;
+  let otherCampusReviewer;
   try {
-    const universityResult = await admin
+    const universitiesResult = await admin
       .from("campus_universities")
       .select("id,name")
       .eq("is_active", true)
       .order("name", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    mustSucceed(universityResult.error, "Find an active staging university for the synthetic test");
-    assert.ok(universityResult.data?.id && universityResult.data?.name,
-      "Staging must contain at least one active university; no real university rows are changed");
+      .limit(2);
+    mustSucceed(universitiesResult.error, "Find two active staging universities for the campus-isolation test");
+    assert.ok(Array.isArray(universitiesResult.data) && universitiesResult.data.length >= 2,
+      "Staging must contain at least two active universities for cross-campus isolation coverage; no real university rows are changed");
 
-    const university = universityResult.data;
-    reviewer = await generateAndConfirmSyntheticUser("admin", university);
+    const [university, otherUniversity] = universitiesResult.data;
+    assert.notEqual(university.id, otherUniversity.id, "Cross-campus test uses two distinct universities");
+    reviewer = await generateAndConfirmSyntheticUser("admin", university, "same-campus-admin");
+    otherCampusReviewer = await generateAndConfirmSyntheticUser("admin", otherUniversity, "other-campus-admin");
     student = await generateAndConfirmSyntheticUser("student", university);
 
     // The unauthenticated caller must not be allowed to set a requested role.
@@ -212,6 +214,32 @@ async function run() {
     assert.equal(pending.data.status, "pending");
     assert.equal(pending.data.object_path, objectPath);
     assert.equal(pending.data.university_id, university.id);
+
+    // Verify the private Storage bucket enforces same-campus access. The student
+    // and verified administrator at the student's university may read the file;
+    // an administrator from another university and an anonymous caller may not.
+    const studentDocumentRead = await student.client.storage.from(IDENTITY_BUCKET).download(objectPath);
+    mustSucceed(studentDocumentRead.error, "Student reads their own private identity document");
+    assert.ok(studentDocumentRead.data, "Student can read their own identity document");
+
+    const sameCampusAdminRead = await reviewer.client.storage.from(IDENTITY_BUCKET).download(objectPath);
+    mustSucceed(sameCampusAdminRead.error, "Same-campus verified administrator reads the student's identity document");
+    assert.ok(sameCampusAdminRead.data, "Same-campus verified administrator can read the student's identity document");
+
+    const otherCampusAdminRead = await otherCampusReviewer.client.storage.from(IDENTITY_BUCKET).download(objectPath);
+    assert.ok(otherCampusAdminRead.error || !otherCampusAdminRead.data,
+      "Administrator from another university must not read the student's private identity document");
+
+    const anonymousDocumentRead = await anonymous().storage.from(IDENTITY_BUCKET).download(objectPath);
+    assert.ok(anonymousDocumentRead.error || !anonymousDocumentRead.data,
+      "Anonymous users must not read private student identity documents");
+
+    const crossCampusReviewAttempt = await otherCampusReviewer.client.rpc("review_student_identity_verification", {
+      p_user_id: student.id,
+      p_decision: "reject",
+      p_rejection_reason: "Unauthorized cross-campus synthetic test attempt.",
+    });
+    assert.ok(crossCampusReviewAttempt.error, "Administrator from another university cannot review the student's identity");
 
     // A student session cannot approve or reject even its own identity record.
     const studentReviewAttempt = await student.client.rpc("review_student_identity_verification", {
@@ -282,6 +310,8 @@ async function run() {
     console.log("PASS: staging confirmation-token verification completed without sending email.");
     console.log("PASS: anonymous role update denied; authenticated student role update accepted.");
     console.log("PASS: synthetic identity uploaded/submitted with the student JWT.");
+    console.log("PASS: student and same-campus admin can read the private ID; cross-campus admin and anonymous reads are denied.");
+    console.log("PASS: cross-campus admin cannot review a student's identity.");
     console.log("PASS: student review denied; verified administrator rejection recorded.");
     console.log("PASS: rejected identity resubmitted and approved with the administrator JWT.");
     console.log("PASS: approved identity set the pending student profile to verified.");
