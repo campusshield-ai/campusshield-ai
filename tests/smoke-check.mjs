@@ -10,6 +10,7 @@ const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", i
 const guidePageCss = await readFile(new URL("../campusshield-guide.css", import.meta.url), "utf8");
 const creatorToolsJs = await readFile(new URL("../student-creator-tools.js", import.meta.url), "utf8");
 const brandLockupCss = await readFile(new URL("../campusshield-brand-lockup.css", import.meta.url), "utf8");
+const moduleExperienceCss = await readFile(new URL("../campusshield-module-experience.css", import.meta.url), "utf8");
 const campusShieldLogo = await readFile(new URL("../assets/campusshield-logo.svg", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
 const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
@@ -698,9 +699,9 @@ assert.match(html, /href="#community-feed-panel"/);
 assert.match(html, /data-page="campus-chat"/);
 assert.match(html, /Shortcuts prefill your draft; review it before sending/);
 assert.match(html, /Past-question practice/);
-assert.match(css, /academic-primary-grid/);
-assert.match(css, /campuspulse-local-nav/);
-assert.match(css, /prefers-reduced-motion: reduce/);
+assert.match(moduleExperienceCss, /academic-primary-grid/);
+assert.match(moduleExperienceCss, /campuspulse-local-nav/);
+assert.match(moduleExperienceCss, /prefers-reduced-motion: reduce/);
 console.log("PASS CampusPulse, Academics and ShieldMind navigation improvements reuse existing module routes");
 
 // Academic Life hub: reuse the existing access-controlled campus features.
