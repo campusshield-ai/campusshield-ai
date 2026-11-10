@@ -482,16 +482,6 @@
       appendFocusText("span", "campus-my-day-focus-meta", completedCount + " of " + items.length + " scheduled items marked complete. Check earlier entries above.");
     }
 
-    if (focusItem) {
-      const focusAction = document.createElement("button");
-      focusAction.type = "button";
-      focusAction.className = "campus-my-day-focus-action";
-      focusAction.dataset.page = "timetable";
-      focusAction.textContent = "View schedule";
-      focusAction.setAttribute("aria-label", "Open timetable to view " + String(focusItem.title || "the next item"));
-      myDayFocus.append(focusAction);
-    }
-
     items.slice(0, 6).forEach(item => {
       const row = document.createElement("li");
       row.className = "campus-my-day-item" + (item.completed ? " is-complete" : "");
