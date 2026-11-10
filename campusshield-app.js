@@ -6931,7 +6931,7 @@ $('page-marketplace').addEventListener('click',async function(event){
         const topic=String(intro.elements.topic?.value||'').trim();
         const note=String(intro.elements.note?.value||'').trim();
         if(!topic||note.length<5)throw new Error('Choose a guidance topic and write a message of at least 5 characters.');
-        const requestNote='Guidance topic: '+topic+'\\n\\n'+note;
+        const requestNote='Guidance topic: '+topic+' | '+note;
         if(requestNote.length>500)throw new Error('Please shorten your message to fit within 500 characters.');
         const result=await window.CampusShieldBackend.client.rpc('request_campus_alumni_intro_by_username',{p_username:intro.dataset.networkIntroForm,p_note:requestNote});
         if(result.error)throw result.error;
