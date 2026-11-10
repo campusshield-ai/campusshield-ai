@@ -1011,7 +1011,7 @@ console.log("PASS independent visual refresh and static Creator & Tools Hub isol
 
 // ShieldMind private conversation history: staging migration, owner RLS, paid UI and privacy disclosure.
 assert.doesNotThrow(() => new Function(appScript), "CampusShield app script parses after chat-history wiring");
-assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./shieldmind-chat-history.css">'), "saved conversation styling is loaded");
+assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./shieldmind-chat-history.css?v=20261110-1">'), "saved conversation styling is loaded with the refreshed source-freshness asset");
 assert.doesNotMatch(htmlMarkup, /shieldmind-chat-history\.js/, "chat-history behavior is integrated into the main app without a missing script dependency");
 for (const id of ["shieldmind-history-title", "shieldmind-history-new", "shieldmind-history-search", "shieldmind-conversations-list", "shieldmind-history-status"]) {
   assert.ok(htmlMarkup.includes('id="' + id + '"'), "ShieldMind saved history includes " + id);
