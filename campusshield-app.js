@@ -5976,7 +5976,7 @@
       '<p class="campus-network-meta">'+escapeHubHtml(row.university_name)+' · '+escapeHubHtml(row.university_state)+' · Class of '+escapeHubHtml(row.graduation_year)+'</p>'+
       '<p class="campus-network-meta">'+escapeHubHtml(row.programme)+'</p><h4>'+escapeHubHtml(row.headline)+'</h4><p>'+escapeHubHtml(row.bio)+'</p>'+
       '<p class="campus-network-card-skills"><strong>Topics:</strong> '+escapeHubHtml((row.skills||[]).join(', ')||'Experience sharing')+'</p>'+
-      '<form class="campus-network-intro-form" data-network-intro-form="'+escapeHubHtml(row.username)+'"><label>Request an introduction</label><textarea name="note" required minlength="5" maxlength="500" rows="2" placeholder="Explain what guidance you are looking for."></textarea><button type="submit" class="btn">Request introduction</button></form></article>'
+      '<form class="campus-network-intro-form" data-network-intro-form="'+escapeHubHtml(row.username)+'"><label>What guidance are you seeking?<select name="topic" required><option value="">Choose a topic</option><option value="Career planning">Career planning</option><option value="CV and interviews">CV and interviews</option><option value="Entrepreneurship">Entrepreneurship</option><option value="Further study and research">Further study and research</option><option value="Technical or professional skills">Technical or professional skills</option><option value="Industry insight">Industry insight</option><option value="Other">Other</option></select></label><label>Your message<textarea name="note" required minlength="5" maxlength="400" rows="3" placeholder="Share your goal and one clear question. Avoid passwords, identity numbers or private contact details."></textarea></label><p class="muted">Your note is sent privately to this alumnus. Keep sensitive account and identity details out.</p><button type="submit" class="btn">Request mentorship</button></form></article>'
     ).join(''):'<div class="community-empty">No verified alumni match this search. Try another term or check the cross-university network.</div>';
     $('campus-alumni-status').textContent=rows.length+' verified alumni profile(s) available.';
   }
@@ -6019,10 +6019,13 @@
       const result=await window.CampusShieldBackend.client.rpc('list_my_campus_alumni_intro_requests');
       if(result.error)throw result.error;
       const rows=result.data||[];
-      target.innerHTML=rows.length?rows.map(row=>
-        '<article class="campus-network-application"><strong>'+escapeHubHtml(row.username)+' · '+escapeHubHtml(row.university_name)+'</strong><p>'+escapeHubHtml(row.note)+'</p><p class="campus-network-meta">'+escapeHubHtml(row.direction)+' · '+escapeHubHtml(row.status)+'</p>'+
-        (row.direction==='received'&&row.status==='pending'?'<button type="button" class="btn" data-alumni-intro-action="accepted" data-intro-id="'+escapeHubHtml(row.id)+'">Accept</button> <button type="button" class="btn secondary" data-alumni-intro-action="declined" data-intro-id="'+escapeHubHtml(row.id)+'">Decline</button>':'')+'</article>'
-      ).join(''):'<p class="muted">Your introduction requests will appear here.</p>';
+      target.innerHTML=rows.length?rows.map(row=>{
+        const statusLabel=({pending:'Awaiting response',accepted:'Accepted',declined:'Declined'})[row.status]||'Updated';
+        const directionLabel=row.direction==='received'?'Received by you':'Sent by you';
+        const createdLabel=dateText(row.created_at);
+        return '<article class="campus-network-application"><div class="campus-network-card-head"><div><strong>'+escapeHubHtml(row.username)+' · '+escapeHubHtml(row.university_name)+'</strong><p class="campus-network-meta">'+directionLabel+' · '+escapeHubHtml(createdLabel)+'</p></div><span class="campus-network-status" data-status="'+escapeHubHtml(row.status)+'">'+statusLabel+'</span></div><p>'+escapeHubHtml(row.note)+'</p>'+
+          (row.direction==='received'&&row.status==='pending'?'<button type="button" class="btn" data-alumni-intro-action="accepted" data-intro-id="'+escapeHubHtml(row.id)+'">Accept</button> <button type="button" class="btn secondary" data-alumni-intro-action="declined" data-intro-id="'+escapeHubHtml(row.id)+'">Decline</button>':'')+'</article>';
+      }).join(''):'<div class="community-empty">No mentorship requests yet. Send a focused request from a verified alumni profile to start a conversation.</div>';
     } catch(error) {target.textContent=error?.message||'Could not load introduction requests.';}
   }
 
@@ -6924,8 +6927,16 @@ $('page-marketplace').addEventListener('click',async function(event){
     const intro=event.target.closest('[data-network-intro-form]');
     if(intro){
       event.preventDefault();const button=intro.querySelector('button[type="submit"]');button.disabled=true;
-      try{const result=await window.CampusShieldBackend.client.rpc('request_campus_alumni_intro_by_username',{p_username:intro.dataset.networkIntroForm,p_note:intro.elements.note.value.trim()});if(result.error)throw result.error;intro.reset();toast('Introduction request sent.');await loadCampusAlumniIntroRequests();}
-      catch(error){toast(error.message||'Could not request an introduction.');}
+      try{
+        const topic=String(intro.elements.topic?.value||'').trim();
+        const note=String(intro.elements.note?.value||'').trim();
+        if(!topic||note.length<5)throw new Error('Choose a guidance topic and write a message of at least 5 characters.');
+        const requestNote='Guidance topic: '+topic+'\\n\\n'+note;
+        if(requestNote.length>500)throw new Error('Please shorten your message to fit within 500 characters.');
+        const result=await window.CampusShieldBackend.client.rpc('request_campus_alumni_intro_by_username',{p_username:intro.dataset.networkIntroForm,p_note:requestNote});
+        if(result.error)throw result.error;
+        intro.reset();toast('Mentorship request sent.');await loadCampusAlumniIntroRequests();
+      }catch(error){toast(error.message||'Could not request mentorship.');}
       finally{button.disabled=false;}
     }
   });
