@@ -46,6 +46,23 @@ test("verified synthetic student can open Lost & Found and submit a post for mod
     user: syntheticUser,
   };
 
+  // Replace only the external Turnstile script in this synthetic browser test.
+  // The test still exercises CampusShield's real token-checking helper and the
+  // Supabase request path, but does not contact Cloudflare or use a real account.
+  await page.route(/^https:\/\/challenges\\.cloudflare\\.com\/turnstile\/v0\/api\\.js\\?render=explicit$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/javascript; charset=utf-8",
+      body: `window.turnstile = {
+        render(_container, options) {
+          options.callback("synthetic-playwright-turnstile-token");
+          return "synthetic-playwright-widget";
+        },
+        reset() {}
+      };`
+    });
+  });
+
   // Stub the staging Supabase hostname with a synthetic-only fixture. This test
   // executes the actual frontend auth, routing, composer and submit handlers
   // without writing test records to a real campus database.
