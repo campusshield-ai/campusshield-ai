@@ -85,7 +85,7 @@ assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskable-512.png" &&
   icon.purpose === "maskable"), "PWA uses the dedicated safe-area maskable icon");
 
-assert.match(serviceWorker, /campusshield-offline-v10/, "Offline cache version is incremented for the updated module stylesheet");
+assert.match(serviceWorker, /campusshield-offline-v11/, "Offline cache version is incremented for the ShieldMind source styling");
 assert.ok(htmlMarkup.includes('href="./campusshield-lovable-ux.css?v=20261109-1"'), "Lovable-inspired tablet and focus styles are loaded");
 assert.ok(htmlMarkup.includes('href="./campusshield-module-experience.css?v=20261110-2"'), "Lovable-inspired module page styles are loaded after the navigation layer");
 assert.ok(htmlMarkup.indexOf("campusshield-module-experience.css") > htmlMarkup.indexOf("campusshield-lovable-ux.css"), "Module page styling loads after the existing UX layer");
@@ -124,7 +124,8 @@ assert.ok(dashboardPolish.includes("grid-template-columns: repeat(6, minmax(0, 1
   "The dashboard polish defines a balanced six-column layout and readable dark card colours");
 assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
   serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)") &&
-  serviceWorker.includes("cache.add(MODULE_STYLESHEET_URL)"),
+  serviceWorker.includes("cache.add(MODULE_STYLESHEET_URL)") &&
+  serviceWorker.includes("cache.add(SHIELDMIND_CHAT_STYLESHEET_URL)"),
   "Offline fallback, shared brand stylesheet and module page stylesheet are all cached");
 
 assert.ok(iconGenerator.includes("const background = [21, 128, 61, 255];") &&
