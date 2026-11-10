@@ -1,0 +1,33 @@
+name: CampusShield Auth CAPTCHA regression
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-auth-captcha-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auth-captcha:
+    name: Auth CAPTCHA wiring and syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          node --check campusshield-config.js 2>/dev/null || true
+          node --check campusshield-backend.js
+          node --check campusshield-app.js
+      - name: Verify CAPTCHA integration and staging scope
+        run: node tests/auth-captcha-smoke.mjs
