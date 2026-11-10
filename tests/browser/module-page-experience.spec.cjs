@@ -2,6 +2,7 @@ const { test, expect } = require("@playwright/test");
 
 const MODULE_PAGES = [
   "community",
+  "academics",
   "campus-chat",
   "timetable",
   "courses",
