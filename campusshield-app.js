@@ -758,13 +758,23 @@
 
   function watchAuthCaptchaVisibility() {
     const loginScreen = $('login-screen');
-    if (!loginScreen || typeof MutationObserver === 'undefined') return;
-    const observer = new MutationObserver(() => {
+    if (!loginScreen) return;
+    if (typeof MutationObserver !== 'undefined') {
+      const observer = new MutationObserver(() => {
+        if (!loginScreen.hidden && authMode !== 'reset' && !identityCompletionMode) {
+          renderAuthCaptcha();
+        }
+      });
+      observer.observe(loginScreen, { attributes: true, attributeFilter: ['hidden', 'class', 'style'] });
+    }
+    // The Turnstile API is loaded asynchronously so it cannot stall the
+    // public-page network-idle or initial document load. Render once both the
+    // API and the restored sign-in screen are ready.
+    window.addEventListener('load', () => {
       if (!loginScreen.hidden && authMode !== 'reset' && !identityCompletionMode) {
         renderAuthCaptcha();
       }
-    });
-    observer.observe(loginScreen, { attributes: true, attributeFilter: ['hidden', 'class', 'style'] });
+    }, { once: true });
   }
 
   function requireAuthCaptchaToken(message) {
