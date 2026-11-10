@@ -669,7 +669,9 @@
   }
 
   function setAuthMode(mode) {
-    authMode = mode === 'signup' ? 'signup' : mode === 'reset' ? 'reset' : 'signin';
+    const nextMode = mode === 'signup' ? 'signup' : mode === 'reset' ? 'reset' : 'signin';
+    if (authMode !== nextMode) window.CampusShieldCaptcha?.reset();
+    authMode = nextMode;
     const isSignUp = authMode === 'signup';
     const isReset = authMode === 'reset';
 
@@ -726,6 +728,7 @@
     $('auth-submit').hidden = identityCompletionMode;
     $('auth-submit').textContent = identityCompletionMode ? 'Submit student ID for review' : isSignUp ? 'Create account' : isReset ? 'Update password' : 'Sign in';
     $('auth-helper').hidden = identityCompletionMode || isReset;
+    window.CampusShieldCaptcha?.setVisible(!isReset && !identityCompletionMode);
     $('auth-helper').textContent = isSignUp
       ? 'Choose your university and complete your student or staff details now. Student ID files upload privately after authentication. If email confirmation is required, sign in and choose Complete student setup.'
       : 'CampusShield AI does not automatically contact emergency services.';
@@ -814,8 +817,15 @@
       } else {
         redirectUrl = 'https://campusshield-ai.github.io/campusshield-ai/?password-reset=1';
       }
-      const {error} = await backend.requestPasswordReset(email, redirectUrl);
-      if (error) throw error;
+      const captcha = window.CampusShieldCaptcha;
+      if (!captcha) throw new Error('Security verification is unavailable. Refresh the page and try again.');
+      const captchaToken = captcha.getToken();
+      try {
+        const {error} = await backend.requestPasswordReset(email, redirectUrl, captchaToken);
+        if (error) throw error;
+      } finally {
+        captcha.reset();
+      }
       message.textContent = 'If an account exists for that email address, reset instructions have been requested. Check your inbox and spam folder.';
     } catch (error) {
       console.error('Password reset request failed:', error);
@@ -6960,7 +6970,16 @@ $('page-marketplace').addEventListener('click',async function(event){
     let accountCreated = false;
     try {
       msg.textContent = 'Creating your CampusShield account…';
-      const {data, error} = await backend.signUp(email, password, name, username, universityId, profileData);
+      const captcha = window.CampusShieldCaptcha;
+      if (!captcha) throw new Error('Security verification is unavailable. Refresh the page and try again.');
+      const captchaToken = captcha.getToken();
+      let signUpResult;
+      try {
+        signUpResult = await backend.signUp(email, password, name, username, universityId, profileData, captchaToken);
+      } finally {
+        captcha.reset();
+      }
+      const {data, error} = signUpResult;
       if (error) throw error;
       if (!data?.user) throw new Error('Supabase did not return a user.');
 
@@ -7041,7 +7060,16 @@ $('page-marketplace').addEventListener('click',async function(event){
     try {
       msg.textContent = 'Signing in...';
 
-      const {error} = await backend.signIn(email, password);
+      const captcha = window.CampusShieldCaptcha;
+      if (!captcha) throw new Error('Security verification is unavailable. Refresh the page and try again.');
+      const captchaToken = captcha.getToken();
+      let signInResult;
+      try {
+        signInResult = await backend.signIn(email, password, captchaToken);
+      } finally {
+        captcha.reset();
+      }
+      const {error} = signInResult;
       if (error) throw error;
 
       // Read the authenticated user's metadata before restoring the requested role.
@@ -7650,8 +7678,16 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   try {
     msg.textContent = 'Sending confirmation email...';
 
-    const { error } = await backend.resendConfirmation(email);
-
+    const captcha = window.CampusShieldCaptcha;
+    if (!captcha) throw new Error('Security verification is unavailable. Refresh the page and try again.');
+    const captchaToken = captcha.getToken();
+    let resendResult;
+    try {
+      resendResult = await backend.resendConfirmation(email, captchaToken);
+    } finally {
+      captcha.reset();
+    }
+    const { error } = resendResult;
     if (error) throw error;
 
     msg.textContent =
