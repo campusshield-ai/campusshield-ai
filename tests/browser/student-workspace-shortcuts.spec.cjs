@@ -51,9 +51,11 @@ test("Academic Life links to existing account-aware campus modules", async ({ pa
 
 test("Academic study hand-off prefills ShieldMind without auto-submitting", async ({ page }) => {
   await openWorkspacePage(page, "academics");
+  const messageCount = await page.locator("#shieldmind-messages .shieldmind-message").count();
   const handoff = page.locator('#page-academics [data-page="shieldmind"][data-shieldmind-prompt]');
   await handoff.click();
   await expect(page.locator("#shieldmind-question")).toHaveValue(/Help me study a course topic/);
+  await expect(page.locator("#shieldmind-messages .shieldmind-message")).toHaveCount(messageCount);
   await expect(page.locator("#shieldmind-submit")).toBeAttached();
 });
 
