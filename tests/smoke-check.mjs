@@ -771,7 +771,7 @@ assert.match(shieldmindFunction, /officialCampusQuestion && !knowledgeSources\.l
 assert.match(shieldmindFunction, /officialCampusQuestion && knowledgeRetrievalFailed/, "official-campus questions fail closed when evidence lookup fails");
 assert.match(shieldmindFunction, /knowledgeSources\.every\(source => \[\"stale\", \"unknown\"\]/, "official questions do not rely only on stale or unknown-dated sources");
 assert.match(shieldmindFunction, /validateKnowledgeCitations\(answer\.slice\(0, 8000\), responseSources\)/, "model citation markers are checked against exact retrieved sources");
-assert.match(shieldmindFunction, /validatedAnswer\.usedSources\.length === 0/, "an official-campus answer without a real citation is replaced by a safe fallback");
+assert.match(shieldmindFunction, /validatedAnswer\.usedSources\.length === 0 \|\| answerCitesStaleSource/, "an official-campus answer without a real or current citation is replaced by a safe fallback");
 assert.match(shieldmindFunction, /JSON\.stringify\(source\.excerpt\)/, "crawled text is quoted as untrusted data in model context");
 assert.match(shieldmindKnowledgeHelpers, /export function extractKnowledgeSearchTerms/);
 assert.match(shieldmindKnowledgeHelpers, /export function rankKnowledgeSources/);
