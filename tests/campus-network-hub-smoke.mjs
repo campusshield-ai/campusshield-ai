@@ -172,6 +172,12 @@ assert.ok(app.includes("requestId!==searchState.requestId"), "Stale search respo
 assert.ok(app.includes("campus-volunteer-search').addEventListener('input',()=>scheduleCampusNetworkSearch('volunteer')"));
 assert.ok(app.includes("campus-startup-search').addEventListener('input',()=>scheduleCampusNetworkSearch('startup')"));
 assert.ok(app.includes("campus-alumni-search').addEventListener('input',scheduleCampusAlumniDirectorySearch"));
+assert.match(app, /name="topic"/, "Alumni introduction forms must request a structured mentorship topic");
+assert.match(app, /maxlength="400"/, "Alumni request messages must leave room for the topic in the RPC character limit");
+assert.ok(app.includes("Guidance topic: "), "Mentorship topic must be included in the private request note");
+assert.ok(app.includes("dateText(row.created_at)"), "Alumni request history must show when a request was created");
+assert.ok(app.includes("Awaiting response"), "Alumni request history must explain the pending state");
+assert.match(html, /Mentorship requests/, "The request history heading must describe the feature clearly");
 
 // Responsive, keyboard-visible controls and dark-mode coverage are present.
 for (const token of [
