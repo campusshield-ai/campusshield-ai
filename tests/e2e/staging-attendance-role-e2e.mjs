@@ -134,6 +134,17 @@ async function cleanup() {
 
 async function run() {
   try {
+    // Validate the privileged Staging credential before querying or creating fixtures.
+    // A nonempty but revoked/incorrect secret must fail with an actionable message.
+    const serviceRoleCheck = await admin.auth.admin.listUsers({ page: 1, perPage: 1 });
+    if (serviceRoleCheck.error) {
+      const message = serviceRoleCheck.error.message || String(serviceRoleCheck.error);
+      if (/invalid api key|unauthorized|forbidden|401|403/i.test(message)) {
+        throw new Error("Supabase rejected SUPABASE_STAGING_SERVICE_ROLE_KEY. Update that GitHub Actions secret with the current Staging project's server-side service-role/secret key. No attendance test fixtures were created.");
+      }
+      throw new Error("Could not validate the Staging service-role credential: " + message);
+    }
+
     const universities = await admin.from("campus_universities")
       .select("id,name").eq("is_active", true).order("name", { ascending: true }).limit(2);
     mustSucceed(universities.error, "Find active Staging universities");
