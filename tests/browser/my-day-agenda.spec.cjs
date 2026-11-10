@@ -6,6 +6,16 @@ async function openDashboard(page, width = 1366) {
   const panel = page.locator("#campus-my-day");
   await expect(panel).toBeAttached({ timeout: 10000 });
   await page.evaluate(() => {
+    const workspace = document.getElementById("workspace");
+    if (workspace) {
+      workspace.hidden = false;
+      workspace.style.display = "block";
+    }
+    const login = document.getElementById("login-screen");
+    if (login) {
+      login.hidden = true;
+      login.style.display = "none";
+    }
     window.__campusMyDayFixture = { loaded: true, items: [] };
     window.CampusShieldTimetable = {
       getTodaySnapshot: () => window.__campusMyDayFixture
