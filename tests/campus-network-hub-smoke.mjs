@@ -8,6 +8,7 @@ const app = read("../campusshield-app.js");
 const backend = read("../campusshield-backend.js");
 const css = read("../campusshield-visual-refresh.css");
 const migration = read("../supabase/migrations/20261108010000_campus_network_hub.sql");
+const privacyMigration = read("../supabase/migrations/20261110200000_campus_network_privacy_and_performance.sql");
 
 new vm.Script(app, { filename: "campusshield-app.js" });
 new vm.Script(backend, { filename: "campusshield-backend.js" });
@@ -126,6 +127,42 @@ assert.match(migration, /p_scope='network' and a\.visibility='network'/);
 assert.match(migration, /auth\.uid\(\)\) is null then[\s\S]*Sign in to request an alumni introduction/);
 assert.match(migration, /limit 12/);
 assert.match(migration, /expires_at timestamptz not null default \(now\(\) \+ interval '45 days'\)/);
+
+// Cross-university member blocks must be reciprocal on both network and alumni surfaces.
+assert.match(privacyMigration, /create or replace function private\\.is_campus_network_member_blocked/);
+assert.match(privacyMigration, /b\\.blocker_id = \\(select auth\\.uid\\(\\)\\) and b\\.blocked_id = p_other_user_id/);
+assert.match(privacyMigration, /b\\.blocker_id = p_other_user_id and b\\.blocked_id = \\(select auth\\.uid\\(\\)\\)/);
+assert.doesNotMatch(privacyMigration, /b\\.university_id\\s*=\\s*p_university_id/,
+  "Cross-university block checks must not be limited to the requester's selected university");
+assert.match(privacyMigration, /revoke all on function private\\.is_campus_network_member_blocked\\(uuid\\)[\\s\\S]*from public, anon, authenticated/);
+for (const fn of [
+  "list_campus_network_posts", "apply_to_campus_network_post",
+  "list_campus_alumni_directory", "request_campus_alumni_intro"
+]) {
+  const start = privacyMigration.indexOf("create or replace function public." + fn);
+  assert.ok(start >= 0, "Privacy migration must replace " + fn);
+  const next = privacyMigration.indexOf("\\ncreate or replace function ", start + 30);
+  const body = privacyMigration.slice(start, next < 0 ? privacyMigration.length : next);
+  assert.match(body, /private\\.is_campus_network_member_blocked/,
+    fn + " must enforce reciprocal cross-university member blocks");
+}
+for (const index of [
+  "campus_member_blocks_reverse_pair_idx",
+  "campus_alumni_intro_requests_alumni_university_id_idx",
+  "campus_alumni_intro_requests_requester_id_idx",
+  "campus_alumni_profiles_reviewed_by_idx",
+  "campus_alumni_profiles_university_id_idx",
+  "campus_network_applications_applicant_id_idx",
+  "campus_network_posts_reviewed_by_idx",
+  "campus_network_posts_user_id_idx"
+]) {
+  assert.match(privacyMigration, new RegExp("create index if not exists " + index));
+}
+const networkE2E = read("./e2e/staging-campus-network-privacy-e2e.mjs");
+assert.match(networkE2E, /alumnus blocks remote peer/);
+assert.match(networkE2E, /remote peer blocks alumnus/);
+assert.match(networkE2E, /Blocked alumni profiles must be hidden/);
+assert.match(networkE2E, /all synthetic Campus Network test rows and Auth users were removed/);
 
 // Responsive, keyboard-visible controls and dark-mode coverage are present.
 for (const token of [
