@@ -91,7 +91,7 @@ async signUp(email, password, displayName, username, universityId, profileData =
   });
 },
 
-async resendConfirmation(email, captchaToken = "") {
+async resendConfirmation(email) {
   if (!client) {
     throw new Error("Supabase is not configured.");
   }
@@ -104,8 +104,7 @@ async resendConfirmation(email, captchaToken = "") {
     type: "signup",
     email: email.trim(),
     options: {
-      emailRedirectTo: getAuthRedirectUrl(),
-      captchaToken: captchaToken || undefined
+      emailRedirectTo: getAuthRedirectUrl()
     }
   });
 },
