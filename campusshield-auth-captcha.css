@@ -1,0 +1,26 @@
+.campusshield-auth-captcha-field {
+  border: 1px solid var(--line, #dfe7e1);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--card, #fff);
+}
+.campusshield-auth-captcha-field[hidden] { display: none !important; }
+.campusshield-auth-captcha-copy {
+  margin: 0 0 10px;
+  color: var(--muted, #6d7c91);
+  font-size: 12px;
+}
+#campusshield-auth-captcha {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  max-width: 100%;
+  overflow: visible;
+}
+#campusshield-auth-captcha iframe { max-width: 100%; }
+#campusshield-captcha-message {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+#campusshield-captcha-message.is-error { color: #b3263b; }
