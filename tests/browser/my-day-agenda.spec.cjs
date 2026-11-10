@@ -147,7 +147,7 @@ test("My Day focus remains readable in dark mode", async ({ page }) => {
     const titleStyle = getComputedStyle(element.querySelector(".campus-my-day-focus-title"));
     const actionStyle = getComputedStyle(element.closest("#campus-my-day").querySelector(".campus-my-day-open"));
     const parseRgb = value => {
-      const match = String(value || "").match(/rgba?\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)/i);
+      const match = String(value || "").match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
       return match ? match.slice(1, 4).map(Number) : null;
     };
     const luminance = rgb => {
@@ -163,7 +163,7 @@ test("My Day focus remains readable in dark mode", async ({ page }) => {
       const bg = luminance(parseRgb(background));
       return fg === null || bg === null ? null : (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
     };
-    const gradientStops = [...focusStyle.backgroundImage.matchAll(/rgb\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*\\)/gi)].map(match => match[0]);
+    const gradientStops = [...focusStyle.backgroundImage.matchAll(/rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)/gi)].map(match => match[0]);
     const titleRatios = gradientStops.map(background => contrast(titleStyle.color, background)).filter(Number.isFinite);
     return {
       background: focusStyle.backgroundImage,
