@@ -18,6 +18,10 @@
   function render() {
     const container = document.getElementById(CONTAINER_ID);
     if (!container || widgetId !== null) return widgetId !== null;
+    // The login screen is deliberately hidden during Supabase session restoration.
+    // Do not render a challenge into a hidden layout; setVisible/getToken will retry
+    // when the form is actually available to the user.
+    if (container.getClientRects().length === 0) return false;
     if (!window.turnstile || typeof window.turnstile.render !== "function") {
       setStatus("Security verification could not load. Refresh the page and try again.", true);
       return false;
@@ -74,5 +78,13 @@
   }
 
   window.CampusShieldCaptcha = Object.freeze({ getToken, reset, setVisible });
+
+  const loginScreen = document.getElementById("login-screen");
+  const captchaField = document.getElementById("campusshield-auth-captcha-field");
+  if (typeof MutationObserver !== "undefined") {
+    const observer = new MutationObserver(() => render());
+    if (loginScreen) observer.observe(loginScreen, { attributes: true, attributeFilter: ["hidden", "class", "style"] });
+    if (captchaField) observer.observe(captchaField, { attributes: true, attributeFilter: ["hidden", "class", "style"] });
+  }
   render();
 })();
