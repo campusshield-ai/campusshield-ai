@@ -16,7 +16,12 @@
   };
   const staging = {
     url: "https://hywcpnoqqhxvujnimhxl.supabase.co",
-    publishableKey: "sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP"
+    publishableKey: "sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP",
+    captcha: {
+      enabled: true,
+      provider: "turnstile",
+      siteKey: "0x4AAAAAAF6tOY7MqWYcC3h8"
+    }
   };
 
   window.CAMPUSSHIELD_SUPABASE_CONFIG = isProductionHost ? production : staging;
