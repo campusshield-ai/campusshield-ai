@@ -7,7 +7,7 @@ import {
   rankKnowledgeSources,
   scoreKnowledgeSource,
   validateKnowledgeCitations
-} from "../supabase/functions/_shared/shieldmind-knowledge.mjs";
+} from "../supabase/functions/shieldmind-chat/knowledge.mjs";
 
 const terms = extractKnowledgeSearchTerms(
   "What are the official admission requirements and application deadline for 2026?",
