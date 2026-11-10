@@ -99,6 +99,36 @@
         <button type="button" class="btn cii-hero-cta" id="cii-start-idea"><span aria-hidden="true">＋</span> Share an idea</button>
       </div>
 
+      <section class="cii-good-thoughts" aria-labelledby="cii-good-thoughts-title">
+        <div class="cii-good-thoughts-head">
+          <span class="cii-eyebrow">A BETTER WAY FORWARD</span>
+          <span class="cii-good-thoughts-label">GOOD THOUGHTS · POSITIVE ACTION</span>
+          <h3 id="cii-good-thoughts-title">Choose the kind of impact you want to make.</h3>
+          <p>Good people can face criticism, and popular opinions are not always right. Listen with humility, question ideas with respect and let constructive action speak louder than noise.</p>
+        </div>
+        <div class="cii-thought-grid" aria-label="Positive reminders">
+          <article class="cii-thought-card cii-thought-featured">
+            <span class="cii-thought-mark" aria-hidden="true">“</span>
+            <p>“You do not need everyone to agree with you to do what is right. Stay kind, stay thoughtful and keep improving.”</p>
+            <small>A CampusShield reminder</small>
+          </article>
+          <article class="cii-thought-card">
+            <span class="cii-thought-topic">COURAGE</span>
+            <p>“A good idea deserves a fair hearing, not blind applause. Test it, improve it and let its impact speak.”</p>
+          </article>
+          <article class="cii-thought-card">
+            <span class="cii-thought-topic">RESPECT</span>
+            <p>“Challenge the problem, not the person. Disagreement can be the beginning of a better solution.”</p>
+          </article>
+        </div>
+        <div class="cii-reflection">
+          <strong>Turn a concern into a contribution</strong>
+          <span>What is one thing you would improve, who would it help, and what small step could start the change?</span>
+          <button type="button" class="btn secondary" id="cii-reflection-action">Share a constructive idea</button>
+        </div>
+        <p class="cii-thought-footnote">These are original CampusShield reminders, not quotations attributed to public figures. Positivity here means honest feedback, practical solutions and respect for people.</p>
+      </section>
+
       <div class="cii-principles" aria-label="How Ideas and Impact works">
         <div class="cii-step"><span>01</span><div><strong>Spot a challenge</strong><small>Explain what needs to improve</small></div></div>
         <div class="cii-step"><span>02</span><div><strong>Suggest a solution</strong><small>Make the next step practical</small></div></div>
@@ -786,6 +816,16 @@
     const root = $("#" + ROOT_ID);
     $("#cii-form").addEventListener("submit",submitIdea);
     $("#cii-refresh").addEventListener("click",loadIdeas);
+    $("#cii-reflection-action")?.addEventListener("click",()=>{
+      const panel = $("#cii-compose-details");
+      if (!panel || !state.canContribute) {
+        setStatus("Sign in, verify your campus membership and create a CampusPulse username to submit a proposal.");
+        return;
+      }
+      panel.open = true;
+      $("#cii-title-input")?.focus({preventScroll:true});
+      panel.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",block:"start"});
+    });
     $("#cii-search").addEventListener("input",render);
     $("#cii-category-filter").addEventListener("change",(event)=>{state.category=event.target.value;loadIdeas();});
     $("#cii-status-filter").addEventListener("change",(event)=>{state.status=event.target.value;loadIdeas();});
