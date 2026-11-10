@@ -2620,6 +2620,11 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
           <div class="install-copy"><strong id="install-title">Install CampusShield</strong><p id="install-guidance"></p></div>
           <button type="button" class="btn secondary" id="install-app" hidden>Install</button>
         </div>
+        <div id="auth-captcha-wrap" class="auth-captcha-wrap" hidden>
+          <span class="auth-captcha-title">Security check</span>
+          <div id="auth-captcha-widget" class="auth-captcha-widget" aria-describedby="auth-captcha-message"></div>
+          <p id="auth-captcha-message" class="auth-captcha-message" role="status" aria-live="polite">Complete the security check to continue.</p>
+        </div>
         <div class="actions"><button class="btn" type="submit" id="auth-submit" autocomplete="off">Sign in</button></div>
         <p id="auth-message" class="message" role="status" aria-live="polite">Please sign in or create an account.</p>
         <div id="google-signin-wrap" hidden>
@@ -4773,6 +4778,16 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 </main>
 </div>
 </div>
+<style id="campusshield-auth-captcha-styles">
+.auth-captcha-wrap{margin:12px 0 8px;padding:12px 13px;border:1px solid #cfe3d9;border-radius:12px;background:#f6fbf8;color:#173d35}
+.auth-captcha-title{display:block;margin:0 0 8px;font-size:11px;font-weight:850;letter-spacing:.02em}
+.auth-captcha-widget{display:flex;justify-content:center;min-height:65px;max-width:100%;overflow:hidden}
+.auth-captcha-message{margin:5px 0 0;color:#5d766d;font-size:10px;line-height:1.45}
+.auth-captcha-wrap[hidden]{display:none!important}
+@media(max-width:420px){.auth-captcha-wrap{padding:10px}.auth-captcha-widget{justify-content:flex-start;overflow-x:auto}}
+html[data-theme="dark"] .auth-captcha-wrap{border-color:#34594d;background:#102b23;color:#e6f4ec}
+html[data-theme="dark"] .auth-captcha-message{color:#b8d1c4}
+</style>
 <div class="toast" id="toast" role="status"></div>
 <!-- Load dependencies BEFORE the application code. Keep these files beside this HTML file. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>

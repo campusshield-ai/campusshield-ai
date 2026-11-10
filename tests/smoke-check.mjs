@@ -21,6 +21,7 @@ const responsiveCss = responsiveCssStart >= 0 && responsiveCssEnd > responsiveCs
 const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.js", import.meta.url), "utf8");
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
+const supabaseConfig = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
 const learningInsightsScript = await readFile(new URL("../shieldmind-learning-insights.js", import.meta.url), "utf8");
 const learningInsightsCss = await readFile(new URL("../shieldmind-learning-insights.css", import.meta.url), "utf8");
@@ -1102,3 +1103,22 @@ assert.doesNotThrow(() => new Function(appScript), "app script parses after sess
 console.log("PASS persistent auth restoration, no login flash on reload, and streamlined startup checks");
 
 
+
+
+// Staging-only Supabase Auth CAPTCHA wiring.
+const stagingSupabaseConfig = supabaseConfig.match(/const staging = \{([\s\S]*?)\};/)?.[1] || "";
+const productionSupabaseConfig = supabaseConfig.match(/const production = \{([\s\S]*?)\};/)?.[1] || "";
+assert.match(stagingSupabaseConfig, /provider:\s*"turnstile"/, "Staging Auth uses the configured Turnstile provider");
+assert.match(stagingSupabaseConfig, /siteKey:\s*"0x4AAAAAAF6tOY7MqWYcC3h8"/, "Staging uses the existing allowlisted Turnstile sitekey");
+assert.doesNotMatch(productionSupabaseConfig, /captcha|turnstile/i, "Production CAPTCHA configuration is unchanged");
+assert.match(htmlMarkup, /id="auth-captcha-wrap"/, "the sign-in form provides an accessible CAPTCHA surface");
+assert.match(appScript, /window\.CampusShieldAuthCaptcha\s*=/, "the app exposes an in-memory CAPTCHA token provider to the backend");
+assert.match(appScript, /turnstile\.render\(/, "the app renders the explicit Cloudflare Turnstile widget");
+assert.match(appScript, /if \(needsCaptcha && !\$\('login-screen'\)\?\.hidden\)/, "Turnstile renders only after the login surface is visible");
+assert.match(backend, /async function withAuthCaptcha\(/, "auth requests share a one-use CAPTCHA token helper");
+assert.match(backend, /signInWithPassword\([\s\S]*?captchaToken/, "password sign-in forwards the CAPTCHA token to Supabase");
+assert.match(backend, /auth\.signUp\([\s\S]*?captchaToken/, "account creation forwards the CAPTCHA token to Supabase");
+assert.match(backend, /auth\.resend\([\s\S]*?captchaToken/, "confirmation resend forwards the CAPTCHA token to Supabase");
+assert.match(backend, /resetPasswordForEmail\([\s\S]*?captchaToken/, "password-reset requests forward the CAPTCHA token to Supabase");
+assert.match(backend, /captchaApi\?\.reset\?\.\(\)/, "the one-use CAPTCHA widget is reset after each protected auth request");
+console.log("PASS Staging-only Turnstile CAPTCHA integration for sign-in, sign-up, email confirmation and password reset");
