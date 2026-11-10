@@ -117,3 +117,11 @@ assert.match(js, /cii-progress-list/, "Progress history uses a dedicated chronol
 assert.match(css, /\.cii-view-tabs/, "Personal collections have responsive navigation styles");
 assert.match(css, /\.cii-progress-history/, "Progress history has its own visual treatment");
 assert.match(css, /data-theme="dark"/, "Personal collections and progress history support dark mode");
+
+assert.match(js, /cii-good-thoughts/, "Ideas & Impact has a positive reflection section");
+assert.match(js, /Challenge the problem, not the person/, "The message space reinforces respectful disagreement");
+assert.match(js, /Share a constructive idea/, "Positive reflection links directly to proposal creation");
+assert.match(js, /original CampusShield reminders/, "Positive statements are clearly labelled as original platform copy");
+assert.match(css, /\.cii-thought-grid/, "Positive messages use a dedicated card grid");
+assert.match(css, /@media\(max-width:460px\)/, "Positive messages reflow on narrow phones");
+assert.match(css, /\.cii-thought-featured/, "Featured positive message has a clear visual hierarchy");
