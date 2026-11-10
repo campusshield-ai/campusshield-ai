@@ -2836,73 +2836,111 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 
 <section class="page" id="page-academics">
   <div class="heading">
-    <div><h1>Academic Life</h1><p>Reach your study plan, course spaces, study groups and university learning updates from one place.</p></div>
-    <div class="heading-actions"><button class="btn" type="button" data-page="shieldmind" data-academic-focus="planner">Open study planner</button></div>
+    <div>
+      <span class="campus-hub-eyebrow">YOUR LEARNING WORKSPACE</span>
+      <h1>Academic Life</h1>
+      <p>Move from your timetable to course spaces, learning resources and exam practice without searching through unrelated campus tools.</p>
+    </div>
+    <div class="heading-actions">
+      <button class="btn" type="button" data-page="timetable">Open my timetable</button>
+    </div>
   </div>
-  <div class="notice-inline"><strong>Your academic workspace.</strong> Use your private planner for personal study tasks and reminders. Course spaces, official notices, events and community areas continue to use their existing CampusShield access controls and university boundaries.</div>
-  <div class="grid campus-feature-grid">
-    <article class="campus-feature">
-      <span class="campus-feature-kicker">TIMETABLE &amp; DEADLINES</span>
-      <h3>Keep your study plan organized</h3>
-      <p>Use the existing private ShieldMind planner for class sessions, assignments, exams, revision blocks and reminders.</p>
-      <button class="btn secondary" type="button" data-page="shieldmind" data-academic-focus="planner">Open timetable &amp; reminders</button>
-    </article>
-    <article class="campus-feature">
-      <span class="campus-feature-kicker">COURSE SPACES</span>
-      <h3>Find your learning spaces</h3>
-      <p>Open course spaces and learning links shared through authorized campus classrooms.</p>
-      <button class="btn secondary" type="button" data-page="classroom">Open course spaces</button>
-    </article>
-    <article class="campus-feature">
-      <span class="campus-feature-kicker">COURSE DIRECTORY</span>
-      <h3>Find course outlines and learning links</h3>
-      <p>Browse campus-approved courses and external learning resources. New suggestions wait for review.</p>
-      <button class="btn secondary" type="button" data-page="courses">Open course directory</button>
-    </article>
-    <article class="campus-feature">
-      <span class="campus-feature-kicker">STUDY GROUPS</span>
-      <h3>Learn with your campus community</h3>
-      <p>Explore study circles, departments, societies and interest groups within your university.</p>
-      <button class="btn secondary" type="button" data-page="groups">Explore study groups</button>
-    </article>
-    <article class="campus-feature">
-      <span class="campus-feature-kicker">OFFICIAL ACADEMIC UPDATES</span>
-      <h3>Check verified notices</h3>
-      <p>Look for published registration information, academic updates and other university notices.</p>
-      <button class="btn secondary" type="button" data-page="noticeboard">Open noticeboard</button>
-    </article>
-    <article class="campus-feature">
-      <span class="campus-feature-kicker">EVENTS &amp; SEMINARS</span>
-      <h3>Discover campus activities</h3>
-      <p>Find seminars, career events, society meetings and other activities listed for your university.</p>
-      <button class="btn secondary" type="button" data-page="events">Browse events</button>
-    </article>
-    <article class="campus-feature">
-      <span class="campus-feature-kicker">OPPORTUNITIES</span>
-      <h3>Explore ways to grow</h3>
-      <p>Open the existing opportunity hub for scholarships, internships, grants and student resources.</p>
-      <button class="btn secondary" type="button" data-page="opportunities">Open opportunities</button>
-    </article>
-    <article class="campus-feature">
-      <span class="campus-feature-kicker">CAMPUS SUPPORT</span>
-      <h3>Get help with everyday issues</h3>
-      <p>Submit and track campus service requests without mixing them with private safety incidents.</p>
-      <button class="btn secondary" type="button" data-page="helpdesk">Open Helpdesk</button>
-    </article>
-    <article class="campus-feature">
-      <span class="campus-feature-kicker">CAMPUSPULSE</span>
-      <h3>Ask, share and connect</h3>
-      <p>Join student discussions and campus questions while keeping sensitive matters in private reporting.</p>
-      <button class="btn secondary" type="button" data-page="community">Open CampusPulse</button>
-    </article>
-    <article class="campus-feature">
-      <span class="campus-feature-kicker">CAMPUS RESOURCES</span>
-      <h3>Find campus listings</h3>
-      <p>Browse university-only marketplace listings for textbooks, student services and other items.</p>
-      <button class="btn secondary" type="button" data-page="marketplace">Open marketplace</button>
-    </article>
+
+  <div class="notice-inline academic-trust-note" role="note">
+    <strong>One connected workspace, using your existing campus access.</strong>
+    Your personal timetable and planner remain private to your account. Courses, classrooms, learning resources and official notices continue to use university verification and existing access permissions. CampusShield does not invent grades, attendance records, course details or academic deadlines.
   </div>
-  <p class="campus-roadmap-note"><strong>Privacy note:</strong> Personal study planning remains separate from public campus posts. This hub does not create duplicate records or bypass existing role, verification or university-access checks.</p>
+
+  <nav class="academic-shortcut-nav" aria-label="Academic workspace shortcuts">
+    <button type="button" data-page="timetable"><span aria-hidden="true">▦</span> Timetable</button>
+    <button type="button" data-page="courses"><span aria-hidden="true">▤</span> Courses &amp; resources</button>
+    <button type="button" data-page="classroom"><span aria-hidden="true">▣</span> Classrooms</button>
+    <button type="button" data-page="shieldmind" data-shieldmind-prompt="Help me prepare for an exam. Ask me for the course, topics, exam date and available study time, then build a realistic revision plan with practice questions." id="academic-exam-prep-shortcut"><span aria-hidden="true">✎</span> Exam prep</button>
+    <button type="button" data-page="shieldmind" data-academic-focus="planner"><span aria-hidden="true">◷</span> Private planner</button>
+  </nav>
+
+  <section class="academic-core-section" aria-labelledby="academic-core-title">
+    <div class="academic-section-heading">
+      <div>
+        <span class="campus-feature-kicker">TIMETABLE &amp; DEADLINES</span>
+        <h2 id="academic-core-title">Your core study tools</h2>
+        <p>Start with the tools that keep your week, courses and preparation organized.</p>
+      </div>
+      <span class="academic-section-note">Account-aware · Campus-scoped</span>
+    </div>
+
+    <div class="academic-primary-grid">
+      <article class="academic-primary-card academic-card-timetable">
+        <span class="academic-card-icon" aria-hidden="true">▦</span>
+        <span class="campus-feature-kicker">PLAN YOUR WEEK</span>
+        <h3>My timetable</h3>
+        <p>Review your saved classes, tasks, exams and personal reminders in your existing private schedule.</p>
+        <button class="btn" type="button" data-page="timetable">Open timetable <span aria-hidden="true">→</span></button>
+      </article>
+
+      <article class="academic-primary-card academic-card-courses">
+        <span class="academic-card-icon" aria-hidden="true">▤</span>
+        <span class="campus-feature-kicker">COURSES &amp; MATERIALS</span>
+        <h3>Courses and resources</h3>
+        <p>Find campus-approved course listings and reviewed learning resources available to your university account.</p>
+        <button class="btn" type="button" data-page="courses">Browse course directory <span aria-hidden="true">→</span></button>
+      </article>
+
+      <article class="academic-primary-card academic-card-classroom">
+        <span class="academic-card-icon" aria-hidden="true">▣</span>
+        <span class="campus-feature-kicker">LEARNING SPACES</span>
+        <h3>Classrooms and study groups</h3>
+        <p>Open authorized classroom spaces and connect with approved course or student groups.</p>
+        <div class="academic-card-actions">
+          <button class="btn" type="button" data-page="classroom">Open classrooms <span aria-hidden="true">→</span></button>
+          <button class="btn secondary" type="button" data-page="groups">Study groups</button>
+        </div>
+      </article>
+
+      <article class="academic-primary-card academic-card-exams">
+        <span class="academic-card-icon" aria-hidden="true">✎</span>
+        <span class="campus-feature-kicker">EXAM PREPARATION</span>
+        <h3>Build an exam plan</h3>
+        <p>Use ShieldMind to organise topics, revision time and practice questions. AI access and usage limits follow your existing plan.</p>
+        <button class="btn" type="button" data-page="shieldmind" data-shieldmind-prompt="Help me prepare for an exam. Ask me for the course, topics, exam date and available study time, then build a realistic revision plan with practice questions.">Plan my revision <span aria-hidden="true">→</span></button>
+      </article>
+
+      <article class="academic-primary-card academic-card-shieldmind">
+        <span class="academic-card-icon" aria-hidden="true">✦</span>
+        <span class="campus-feature-kicker">AI STUDY SUPPORT</span>
+        <h3>Study with ShieldMind</h3>
+        <p>Ask for an explanation, a summary or a revision plan. Your existing plan, usage limits and AI access rules still apply.</p>
+        <button class="btn" type="button" data-page="shieldmind" data-shieldmind-prompt="Help me study a course topic. Ask me for the course name, topic and level, then explain the idea clearly with a worked example and a short recap.">Ask ShieldMind <span aria-hidden="true">→</span></button>
+      </article>
+
+      <article class="academic-primary-card academic-card-notices">
+        <span class="academic-card-icon" aria-hidden="true">✓</span>
+        <span class="campus-feature-kicker">OFFICIAL INFORMATION</span>
+        <h3>Verified academic notices</h3>
+        <p>Check official updates from verified university publishers and confirm important dates with the institution.</p>
+        <button class="btn secondary" type="button" data-page="noticeboard">View verified notices <span aria-hidden="true">→</span></button>
+      </article>
+    </div>
+  </section>
+
+  <section class="academic-support-section" aria-labelledby="academic-support-title">
+    <div class="academic-section-heading">
+      <div>
+        <span class="campus-feature-kicker">CAMPUS LIFE</span>
+        <h2 id="academic-support-title">More ways to stay connected</h2>
+        <p>Useful campus spaces are grouped here so they do not compete with your daily study tools.</p>
+      </div>
+    </div>
+    <nav class="academic-support-nav" aria-label="Additional student services">
+      <button type="button" data-page="events"><span aria-hidden="true">▣</span><span><strong>Events &amp; seminars</strong><small>Discover university activities</small></span><span aria-hidden="true">→</span></button>
+      <button type="button" data-page="opportunities"><span aria-hidden="true">↗</span><span><strong>Opportunities</strong><small>Scholarships, internships and grants</small></span><span aria-hidden="true">→</span></button>
+      <button type="button" data-page="community"><span aria-hidden="true">◎</span><span><strong>CampusPulse</strong><small>Questions, updates and discussions</small></span><span aria-hidden="true">→</span></button>
+      <button type="button" data-page="helpdesk"><span aria-hidden="true">⌂</span><span><strong>Campus Helpdesk</strong><small>Track everyday service requests</small></span><span aria-hidden="true">→</span></button>
+      <button type="button" data-page="marketplace"><span aria-hidden="true">▧</span><span><strong>Marketplace</strong><small>Browse campus listings</small></span><span aria-hidden="true">→</span></button>
+    </nav>
+  </section>
+
+  <p class="campus-roadmap-note"><strong>Privacy and accuracy:</strong> Academic Life is a navigation hub, not a new gradebook or student-record database. It reuses the current Supabase-backed features, private account data, university boundaries and role permissions.</p>
 </section>
 
 <section class="page" id="page-report">
@@ -3075,6 +3113,13 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <section class="page" id="page-community">
 <div class="heading"><div><h1>CampusPulse</h1><p>Your university-only social space for updates, questions, polls, lost-and-found posts and safety suggestions.</p></div><div class="heading-actions"><button class="btn secondary" type="button" data-page="groups">Explore groups</button></div></div>
 <div class="notice-inline"><strong>One university, one private community.</strong> Your posts, comments, follows, groups, events and marketplace activity are limited to the university you selected. There is no cross-university student interaction. Student posts are reviewed before publication. Do not post real names, email addresses, room numbers, medical details, harassment allegations, threats, evidence, or other identifying information. Use <button type="button" class="btn secondary" data-page="report">private incident reporting</button> for sensitive concerns.</div>
+<nav class="campuspulse-local-nav" aria-label="CampusPulse spaces">
+  <a class="is-current" href="#community-feed-panel" aria-current="page"><span aria-hidden="true">◎</span><span><strong>Latest posts</strong><small>University community feed</small></span></a>
+  <button type="button" data-page="events"><span aria-hidden="true">▣</span><span><strong>Events</strong><small>What's happening on campus</small></span></button>
+  <button type="button" data-page="groups"><span aria-hidden="true">◉</span><span><strong>Groups</strong><small>Study and interest spaces</small></span></button>
+  <button type="button" data-page="campus-chat"><span aria-hidden="true">◌</span><span><strong>Campus chat</strong><small>Verified university channels</small></span></button>
+</nav>
+<p class="campuspulse-bookmark-hint"><strong>Save a useful post:</strong> use <em>Bookmark</em> on any feed post to keep it in your signed-in account. Saved items remain account-scoped; sensitive safety concerns should be reported privately.</p>
 <section class="campuspulse-welcome" aria-labelledby="campuspulse-welcome-title">
   <div class="campuspulse-welcome-copy"><span class="campuspulse-kicker">CAMPUSPULSE · YOUR CAMPUS COMMUNITY</span><h2 id="campuspulse-welcome-title">Share something useful. Find people who get it.</h2><p>Ask a question, share a helpful campus update or post a lost-and-found note. Keep personal safety concerns in private incident reports.</p></div>
   <div class="campuspulse-prompts" role="group" aria-label="Start a CampusPulse post"><button type="button" data-campus-pulse-prompt="question">Ask a question</button><button type="button" data-campus-pulse-prompt="campus_update">Share an update</button><button type="button" data-campus-pulse-prompt="lost_found">Lost &amp; Found</button></div>
@@ -3699,7 +3744,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
           </div>
         </details>
         <div class="shieldmind-composer-footer">
-          <span class="shieldmind-composer-hint"><span aria-hidden="true">✧</span> Study support · Source-aware answers</span>
+          <span class="shieldmind-composer-hint"><span aria-hidden="true">✧</span> Study support · Source-aware answers · Shortcuts fill a draft only</span>
           <div class="actions"><button class="btn" type="submit" id="shieldmind-submit"><span aria-hidden="true">↗</span> Ask ShieldMind</button><button class="btn secondary" type="button" id="shieldmind-clear" data-shieldmind-new-chat>New chat</button></div>
         </div>
         <p id="shieldmind-status" class="message" role="status" aria-live="polite">Ready for a general academic question.</p>
@@ -3708,12 +3753,12 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 
     <aside class="shieldmind-side-stack" aria-label="Study tools and recent prompts">
       <section class="panel shieldmind-side-panel" id="shieldmind-study-tools">
-        <div class="shieldmind-side-heading"><div><h2>Study tools</h2><p>Choose a shortcut to get started.</p></div><span aria-hidden="true">✦</span></div>
-        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Explain a topic I name in simple language, with a short example and a three-point recap. Ask me for the topic first."><span>01</span><div><strong>Explain a topic</strong><small>Understand difficult concepts</small></div><b aria-hidden="true">›</b></button>
-        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me summarize lecture notes I paste into the chat. Extract the key ideas, important terms, and a short revision recap. Ask me to paste the notes first."><span>02</span><div><strong>Summarize notes</strong><small>Turn notes into key points</small></div><b aria-hidden="true">›</b></button>
-        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Create a practice quiz for a subject and topic I choose. Ask me the level and number of questions, then give one question at a time and explain answers."><span>03</span><div><strong>Practice quiz</strong><small>Test your understanding</small></div><b aria-hidden="true">›</b></button>
-        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me prepare for an upcoming exam. Ask for course, topics, date and available hours, then create a balanced revision timetable and practice tasks."><span>04</span><div><strong>Exam preparation</strong><small>Build a focused revision plan</small></div><b aria-hidden="true">›</b></button>
-        <button class="shieldmind-tool" type="button" data-page="timetable"><span>05</span><div><strong>Study planner</strong><small>Open saved sessions and reminders</small></div><b aria-hidden="true">›</b></button>
+        <div class="shieldmind-side-heading"><div><h2>Study tools</h2><p>Shortcuts prefill your draft; review it before sending.</p></div><span aria-hidden="true">✦</span></div>
+        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Explain this topic step by step in clear language. Ask me for the course, topic and level first, then use a relevant example and finish with a short recap."><span>01</span><div><strong>Explain</strong><small>Understand a difficult topic</small></div><b aria-hidden="true">›</b></button>
+        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me summarise lecture notes I paste next. Extract the key ideas, important terms, worked examples and a short revision recap. Ask me to paste the notes first."><span>02</span><div><strong>Summarise</strong><small>Turn notes into key points</small></div><b aria-hidden="true">›</b></button>
+        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Create a practice quiz for a course and topic I choose. Ask me for the course, level and topic, then give one question at a time and explain the answers."><span>03</span><div><strong>Quiz me</strong><small>Check what you understand</small></div><b aria-hidden="true">›</b></button>
+        <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me build a realistic exam revision plan. Ask for my course, topics, exam date and study time available, then organise focused revision blocks and practice tasks."><span>04</span><div><strong>Revision plan</strong><small>Prepare a focused study schedule</small></div><b aria-hidden="true">›</b></button>
+        <button class="shieldmind-tool" type="button" data-page="timetable"><span>05</span><div><strong>My planner</strong><small>Open saved sessions and reminders</small></div><b aria-hidden="true">›</b></button>
       </section>
 
       <section class="panel shieldmind-side-panel shieldmind-history-panel" aria-labelledby="shieldmind-history-title">
@@ -5812,7 +5857,7 @@ table { max-width: 100%; }
 <link rel="stylesheet" href="./campusshield-dark-mode-accessibility.css">
 <link rel="stylesheet" href="./campusshield-dashboard-polish-v3.css?v=20261109-1">
 <link rel="stylesheet" href="./campusshield-lovable-ux.css?v=20261109-1">
-<link rel="stylesheet" href="./campusshield-module-experience.css?v=20261110-1">
+<link rel="stylesheet" href="./campusshield-module-experience.css?v=20261110-2">
 <script src="./campus-dashboard-upgrade.js" defer></script>
 <script src="./campus-discovery-ui.js" defer></script>
 <script src="./student-creator-tools.js" defer></script>

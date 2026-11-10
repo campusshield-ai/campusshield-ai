@@ -10,6 +10,7 @@ const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", i
 const guidePageCss = await readFile(new URL("../campusshield-guide.css", import.meta.url), "utf8");
 const creatorToolsJs = await readFile(new URL("../student-creator-tools.js", import.meta.url), "utf8");
 const brandLockupCss = await readFile(new URL("../campusshield-brand-lockup.css", import.meta.url), "utf8");
+const moduleExperienceCss = await readFile(new URL("../campusshield-module-experience.css", import.meta.url), "utf8");
 const campusShieldLogo = await readFile(new URL("../assets/campusshield-logo.svg", import.meta.url), "utf8");
 const css = dashboardUpgradeCss;
 const responsiveCssStart = htmlMarkup.indexOf('<style id="campusshield-responsive-final">');
@@ -682,6 +683,27 @@ console.log("PASS emergency-services prototype warning remains visible");
 console.log("PASS Android and iOS install metadata and guidance are present");
 console.log("PASS Android and Apple launcher icons are valid PNGs at the required sizes");
 console.log("PASS offline fallback stores no app, authentication, or incident responses");
+
+// Student workspace IA: quick navigation stays on the existing feature pages.
+assert.match(html, /academic-shortcut-nav/);
+assert.match(html, /academic-primary-grid/);
+assert.match(html, /academic-support-nav/);
+assert.match(html, /id="academic-exam-prep-shortcut"/);
+assert.match(html, /data-shieldmind-prompt="Help me study a course topic/);
+for (const destination of ["timetable", "courses", "classroom", "past-questions", "shieldmind", "groups", "noticeboard", "events", "opportunities", "community", "helpdesk", "marketplace"]) {
+  assert.match(html, new RegExp('data-page="' + destination + '"'));
+}
+assert.match(html, /campuspulse-local-nav/);
+assert.match(html, /campuspulse-bookmark-hint/);
+assert.match(html, /href="#community-feed-panel"/);
+assert.match(html, /data-page="campus-chat"/);
+assert.match(html, /Shortcuts prefill your draft; review it before sending/);
+assert.match(html, /Build an exam plan/);
+assert.match(html, /data-shieldmind-prompt="Help me prepare for an exam/);
+assert.match(moduleExperienceCss, /academic-primary-grid/);
+assert.match(moduleExperienceCss, /campuspulse-local-nav/);
+assert.match(moduleExperienceCss, /prefers-reduced-motion: reduce/);
+console.log("PASS CampusPulse, Academics and ShieldMind navigation improvements reuse existing module routes");
 
 // Academic Life hub: reuse the existing access-controlled campus features.
 assert.match(html, /id="page-academics"/);
