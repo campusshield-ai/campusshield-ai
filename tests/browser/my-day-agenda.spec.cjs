@@ -64,7 +64,7 @@ test("My Day highlights the next private timetable item", async ({ page }) => {
   await expect(focus.locator(".campus-my-day-focus-meta")).toContainText("Starts at");
   await expect(focus.locator(".campus-my-day-focus-meta")).toContainText("CSC 301");
   await expect(focus.locator(".campus-my-day-focus-meta")).toContainText("LT 2");
-  await expect(focus.locator("button[data-page='timetable']")).toHaveText("View schedule");
+  await expect(page.locator("#campus-my-day .campus-my-day-open")).toHaveText("Open timetable");
 });
 
 test("My Day prioritizes an item that is currently underway", async ({ page }) => {
@@ -118,7 +118,7 @@ for (const width of [320, 360, 390, 430, 768, 1024, 1366, 1920]) {
 
     const metrics = await page.locator("#campus-my-day-focus").evaluate(element => {
       const rect = element.getBoundingClientRect();
-      const action = element.querySelector("button")?.getBoundingClientRect();
+      const action = element.closest("#campus-my-day")?.querySelector(".campus-my-day-open")?.getBoundingClientRect();
       return {
         left: rect.left,
         right: rect.right,
@@ -145,9 +145,9 @@ test("My Day focus remains readable in dark mode", async ({ page }) => {
   const colors = await focus.evaluate(element => ({
     background: getComputedStyle(element).backgroundColor,
     title: getComputedStyle(element.querySelector(".campus-my-day-focus-title")).color,
-    action: getComputedStyle(element.querySelector("button")).color
+    action: getComputedStyle(element.closest("#campus-my-day").querySelector(".campus-my-day-open")).color
   }));
   expect(colors.background).not.toBe("rgba(0, 0, 0, 0)");
   expect(colors.title).toBe("rgb(229, 241, 238)");
-  expect(colors.action).toBe("rgb(216, 246, 223)");
+  expect(colors.action).toBe("rgb(229, 241, 238)");
 });
