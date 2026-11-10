@@ -13,8 +13,9 @@ const terms = extractKnowledgeSearchTerms(
   "What are the official admission requirements and application deadline for 2026?",
   5
 );
-assert.deepEqual(terms, ["official", "admission", "requirements", "application", "deadline"]);
-assert.equal(buildKnowledgeSearchPhrase(terms), "official admission requirements application");
+assert.deepEqual(terms, ["admission", "requirements", "application", "deadline"]);
+assert.equal(buildKnowledgeSearchPhrase(terms), "admission requirements application deadline");
+assert.equal(extractKnowledgeSearchTerms("What are the fees for 2027?").includes("2027"), false);
 assert.equal(isOfficialCampusQuestion("What is the tuition fee for the next semester?"), true);
 assert.equal(isOfficialCampusQuestion("Explain binary search with a worked example."), false);
 assert.equal(isOfficialCampusQuestion("When does course registration close?"), true);
