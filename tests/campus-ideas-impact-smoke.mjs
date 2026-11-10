@@ -101,7 +101,7 @@ assert.ok(globalAccessSql.includes("private.current_user_has_verified_campus_acc
 assert.ok(globalAccessSql.includes("private.can_read_campus_direct_message("));
 assert.ok(js.includes("requireVerifiedCampus: false"));
 assert.ok(!js.includes('.eq("university_id", state.campus.university_id)'));
-assert.ok(js.includes("Across CampusShield"));
+assert.ok(js.includes("Showing ideas you can access across CampusShield"), "Explore continues to include approved ideas across CampusShield");
 assert.ok(js.includes("state.canContribute"));
 assert.ok(js.includes("state.campus?.university_id === idea.university_id"));
 console.log("Global Ideas & Impact cross-campus access checks passed.");
