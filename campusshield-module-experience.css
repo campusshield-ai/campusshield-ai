@@ -264,3 +264,311 @@ html[data-theme="dark"] #workspace .page:not(#page-dashboard) .table-wrap tbody 
     animation-iteration-count: 1 !important;
   }
 }
+
+
+/* Student workspace navigation — compact shortcuts without replacing live modules. */
+#page-academics .academic-trust-note { margin-bottom: 14px; }
+#page-academics .academic-shortcut-nav,
+#page-community .campuspulse-local-nav {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+  padding: 9px;
+  border: 1px solid var(--cs-line, #DCE9DE);
+  border-radius: 15px;
+  background: var(--cs-card, #FFFFFF);
+}
+#page-academics .academic-shortcut-nav button,
+#page-community .campuspulse-local-nav > a,
+#page-community .campuspulse-local-nav > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--cs-ink, #173325);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+#page-academics .academic-shortcut-nav button > span,
+#page-community .campuspulse-local-nav > a > span:first-child,
+#page-community .campuspulse-local-nav > button > span:first-child {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  place-items: center;
+  border-radius: 8px;
+  background: #E8F5EB;
+  color: #176B3A;
+  font-size: 13px;
+}
+#page-community .campuspulse-local-nav > a,
+#page-community .campuspulse-local-nav > button {
+  flex: 1 1 170px;
+  min-width: 0;
+  border: 1px solid var(--cs-line, #DCE9DE);
+  background: #FFFFFF;
+  text-align: left;
+}
+#page-community .campuspulse-local-nav > a > span:nth-child(2),
+#page-community .campuspulse-local-nav > button > span:nth-child(2) {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+#page-community .campuspulse-local-nav strong { font-size: 12px; }
+#page-community .campuspulse-local-nav small {
+  color: var(--cs-muted, #53695B);
+  font-size: 10px;
+  font-weight: 600;
+}
+#page-community .campuspulse-local-nav .is-current {
+  border-color: #7BBE91;
+  background: #F0F8F1;
+}
+#page-community .campuspulse-bookmark-hint {
+  margin: -2px 0 17px;
+  padding: 9px 12px;
+  border-left: 3px solid #4EAA70;
+  border-radius: 0 9px 9px 0;
+  background: #F1F8F2;
+  color: #385B43;
+  font-size: 11px;
+  line-height: 1.55;
+}
+#page-academics .academic-core-section,
+#page-academics .academic-support-section {
+  margin: 22px 0;
+}
+#page-academics .academic-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+#page-academics .academic-section-heading h2 {
+  margin: 4px 0 0;
+  color: var(--cs-ink, #173325);
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 850;
+  letter-spacing: -.04em;
+}
+#page-academics .academic-section-heading p {
+  margin: 4px 0 0;
+  color: var(--cs-muted, #53695B);
+  font-size: 12px;
+  line-height: 1.55;
+}
+#page-academics .academic-section-note {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid #D4E8D9;
+  border-radius: 999px;
+  background: #F0F8F2;
+  color: #28623A;
+  font-size: 9px;
+  font-weight: 800;
+}
+#page-academics .academic-primary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+#page-academics .academic-primary-card {
+  display: flex;
+  min-width: 0;
+  min-height: 224px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 18px;
+  border: 1px solid var(--cs-line, #DCE9DE);
+  border-radius: 17px;
+  background: var(--cs-card, #FFFFFF);
+  box-shadow: 0 10px 28px rgba(18, 59, 35, .045);
+}
+#page-academics .academic-card-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 13px;
+  place-items: center;
+  border-radius: 12px;
+  background: #E8F5EB;
+  color: #176B3A;
+  font-size: 19px;
+}
+#page-academics .academic-primary-card h3 {
+  margin: 4px 0 5px;
+  color: var(--cs-ink, #173325);
+  font-size: 16px;
+  font-weight: 850;
+  letter-spacing: -.03em;
+}
+#page-academics .academic-primary-card p {
+  flex: 1 1 auto;
+  margin: 0 0 14px;
+  color: var(--cs-muted, #53695B);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+#page-academics .academic-primary-card .btn {
+  min-height: 38px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+#page-academics .academic-card-actions {
+  display: flex;
+  width: 100%;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+#page-academics .academic-card-actions .btn { flex: 1 1 auto; }
+#page-academics .academic-support-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+#page-academics .academic-support-nav button {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid var(--cs-line, #DCE9DE);
+  border-radius: 12px;
+  background: var(--cs-card, #FFFFFF);
+  color: var(--cs-ink, #173325);
+  text-align: left;
+}
+#page-academics .academic-support-nav button > span:first-child {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 9px;
+  background: #E8F5EB;
+  color: #176B3A;
+}
+#page-academics .academic-support-nav button > span:nth-child(2) {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+#page-academics .academic-support-nav strong { font-size: 11.5px; }
+#page-academics .academic-support-nav small {
+  color: var(--cs-muted, #53695B);
+  font-size: 10px;
+  line-height: 1.4;
+}
+#page-academics .academic-support-nav button:hover,
+#page-community .campuspulse-local-nav button:hover,
+#page-community .campuspulse-local-nav a:hover,
+#page-academics .academic-shortcut-nav button:hover {
+  border-color: #8ABF99;
+  background: #F3FAF4;
+}
+#page-academics .academic-shortcut-nav button:focus-visible,
+#page-academics .academic-support-nav button:focus-visible,
+#page-community .campuspulse-local-nav button:focus-visible,
+#page-community .campuspulse-local-nav a:focus-visible {
+  outline: 3px solid #58B879;
+  outline-offset: 3px;
+}
+#page-academics .campus-roadmap-note { margin-top: 18px; }
+
+html[data-theme="dark"] #page-academics .academic-shortcut-nav,
+html[data-theme="dark"] #page-community .campuspulse-local-nav {
+  border-color: #315B40;
+  background: #132A1F;
+}
+html[data-theme="dark"] #page-academics .academic-shortcut-nav button,
+html[data-theme="dark"] #page-community .campuspulse-local-nav > a,
+html[data-theme="dark"] #page-community .campuspulse-local-nav > button {
+  color: #E5F3E8;
+}
+html[data-theme="dark"] #page-academics .academic-shortcut-nav button > span,
+html[data-theme="dark"] #page-community .campuspulse-local-nav > a > span:first-child,
+html[data-theme="dark"] #page-community .campuspulse-local-nav > button > span:first-child,
+html[data-theme="dark"] #page-academics .academic-card-icon,
+html[data-theme="dark"] #page-academics .academic-support-nav button > span:first-child {
+  background: #1D4B30;
+  color: #B9E6C4;
+}
+html[data-theme="dark"] #page-community .campuspulse-local-nav > a,
+html[data-theme="dark"] #page-community .campuspulse-local-nav > button,
+html[data-theme="dark"] #page-academics .academic-primary-card,
+html[data-theme="dark"] #page-academics .academic-support-nav button {
+  border-color: #315B40;
+  background: #132A1F;
+  color: #E5F3E8;
+}
+html[data-theme="dark"] #page-community .campuspulse-local-nav small,
+html[data-theme="dark"] #page-community .campuspulse-bookmark-hint,
+html[data-theme="dark"] #page-academics .academic-section-heading p,
+html[data-theme="dark"] #page-academics .academic-section-heading h2,
+html[data-theme="dark"] #page-academics .academic-primary-card h3,
+html[data-theme="dark"] #page-academics .academic-support-nav small,
+html[data-theme="dark"] #page-academics .academic-primary-card p {
+  color: #C2D6C7;
+}
+html[data-theme="dark"] #page-community .campuspulse-bookmark-hint {
+  border-left-color: #75C58C;
+  background: #1A3C28;
+}
+html[data-theme="dark"] #page-community .campuspulse-local-nav .is-current {
+  border-color: #69A87D;
+  background: #1A3C28;
+}
+html[data-theme="dark"] #page-academics .academic-section-note {
+  border-color: #3C6B49;
+  background: #1A3C28;
+  color: #CDEBD4;
+}
+html[data-theme="dark"] #page-academics .academic-support-nav button:hover,
+html[data-theme="dark"] #page-community .campuspulse-local-nav button:hover,
+html[data-theme="dark"] #page-community .campuspulse-local-nav a:hover,
+html[data-theme="dark"] #page-academics .academic-shortcut-nav button:hover {
+  border-color: #5A986D;
+  background: #1B422B;
+}
+
+@media (max-width: 900px) {
+  #page-academics .academic-primary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  #page-academics .academic-primary-grid,
+  #page-academics .academic-support-nav { grid-template-columns: minmax(0, 1fr); }
+  #page-academics .academic-primary-card { min-height: 0; }
+  #page-academics .academic-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  #page-academics .academic-section-note { align-self: flex-start; }
+  #page-community .campuspulse-local-nav > a,
+  #page-community .campuspulse-local-nav > button { flex: 1 1 calc(50% - 8px); }
+}
+@media (max-width: 380px) {
+  #page-academics .academic-shortcut-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #page-academics .academic-shortcut-nav button { min-width: 0; padding: 8px; font-size: 10.5px; }
+  #page-community .campuspulse-local-nav > a,
+  #page-community .campuspulse-local-nav > button { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-academics .academic-shortcut-nav *,
+  #page-community .campuspulse-local-nav * {
+    transition-duration: .01ms !important;
+  }
+}
