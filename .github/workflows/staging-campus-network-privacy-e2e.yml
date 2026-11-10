@@ -5,7 +5,7 @@ on:
     branches: [main, "staging/preview"]
     paths:
       - ".github/workflows/staging-campus-network-privacy-e2e.yml"
-      - "supabase/migrations/20261110200000_campus_network_privacy_and_performance.sql"
+      - "supabase/migrations/20261110192326_campus_network_privacy_and_performance.sql"
       - "tests/e2e/staging-campus-network-privacy-e2e.mjs"
   workflow_dispatch:
 
