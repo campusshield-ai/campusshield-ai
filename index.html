@@ -2614,6 +2614,11 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
         <div class="field" id="resend-field">
           <button type="button" id="resend-confirmation-button" class="btn secondary">Resend confirmation email</button>
         </div>
+        <div class="field campusshield-auth-captcha-field" id="campusshield-auth-captcha-field">
+          <p class="campusshield-auth-captcha-copy">Complete this security check before signing in, creating an account, or requesting a password reset.</p>
+          <div id="campusshield-auth-captcha" aria-label="CampusShield security verification"></div>
+          <p class="message" id="campusshield-captcha-message" role="status" aria-live="polite" hidden></p>
+        </div>
         <p id="auth-helper" class="auth-footnote">CampusShield AI helps campus communities access safety reporting, student support and campus resources. Student and teacher accounts may require administrator verification before accessing protected features. CampusShield AI does not contact emergency services; in an emergency, contact your local emergency services or official campus security.</p>
         <div class="install-card" id="install-card" hidden aria-live="polite">
           <span class="install-mark" aria-hidden="true">↓</span>
@@ -4787,6 +4792,8 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <script src="./campus-course-community.js" defer></script>
 <script src="./student-rewards.js" defer></script>
 <script src="./student-rewards-admin.js" defer></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+<script src="./campusshield-auth-captcha.js" defer></script>
 <script src="./campusshield-app.js" defer></script>
 <script src="./campus-voice-notes.js" defer></script>
 <script src="./campus-ideas-impact.js" defer></script>
@@ -5849,6 +5856,7 @@ table { max-width: 100%; }
 <link rel="stylesheet" href="./campusshield-visual-refresh.css">
 <link rel="stylesheet" href="./student-creator-tools.css">
 <link rel="stylesheet" href="./campusshield-brand-lockup.css">
+<link rel="stylesheet" href="./campusshield-auth-captcha.css">
 <link rel="stylesheet" href="./campusshield-sidebar-collapse-fix.css">
 <link rel="stylesheet" href="./campus-ideas-impact.css">
 <link rel="stylesheet" href="./campusshield-guide.css">
