@@ -49,7 +49,7 @@ test("verified synthetic student can open Lost & Found and submit a post for mod
   // Replace only the external Turnstile script in this synthetic browser test.
   // The test still exercises CampusShield's real token-checking helper and the
   // Supabase request path, but does not contact Cloudflare or use a real account.
-  await page.route(/^https:\/\/challenges\\.cloudflare\\.com\/turnstile\/v0\/api\\.js\\?render=explicit$/, async (route) => {
+  await page.route(/^https:\/\/challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit$/, async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/javascript; charset=utf-8",
