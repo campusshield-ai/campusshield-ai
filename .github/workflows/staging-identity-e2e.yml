@@ -3,7 +3,8 @@ name: Staging authenticated identity end-to-end
 on:
   push:
     branches:
-      - codex/fix-registration-confirmation-role
+      - main
+      - fix/enable-staging-identity-e2e-20261110
     paths:
       - "tests/e2e/staging-identity-e2e.mjs"
       - ".github/workflows/staging-identity-e2e.yml"
@@ -22,7 +23,7 @@ concurrency:
 jobs:
   authenticated-e2e:
     name: Confirmation, identity upload, review, and cleanup
-    if: github.ref == 'refs/heads/codex/fix-registration-confirmation-role'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/enable-staging-identity-e2e-20261110'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
