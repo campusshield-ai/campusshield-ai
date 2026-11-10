@@ -106,7 +106,7 @@ assert.match(dashboardUpgradeJs, /campus-my-day-focus/, "My Day renders a dedica
 assert.match(dashboardUpgradeJs, /HAPPENING NOW|UP NEXT|STILL TO DO/, "My Day distinguishes current, upcoming and outstanding work");
 assert.match(dashboardUpgradeJs, /campusshield:timetable-updated/, "My Day refreshes from timetable update events");
 assert.match(dashboardUpgradeCss, /campus-my-day-focus/, "My Day focus has its own responsive styling");
-assert.match(dashboardUpgradeCss, /html\\[data-theme="dark"\\].*campus-my-day-focus/s, "My Day focus supports dark mode");
+assert.match(dashboardUpgradeCss, /html\[data-theme="dark"\].*campus-my-day-focus/s, "My Day focus supports dark mode");
 
 assert.match(appScript, /tablet-compact/,"tablet compact navigation is implemented");
 assert.match(appScript, /drawerFocusable/,"mobile drawer traps keyboard focus");
