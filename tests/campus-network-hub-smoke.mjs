@@ -8,7 +8,7 @@ const app = read("../campusshield-app.js");
 const backend = read("../campusshield-backend.js");
 const css = read("../campusshield-visual-refresh.css");
 const migration = read("../supabase/migrations/20261108010000_campus_network_hub.sql");
-const privacyMigration = read("../supabase/migrations/20261110200000_campus_network_privacy_and_performance.sql");
+const privacyMigration = read("../supabase/migrations/20261110192326_campus_network_privacy_and_performance.sql");
 
 new vm.Script(app, { filename: "campusshield-app.js" });
 new vm.Script(backend, { filename: "campusshield-backend.js" });
