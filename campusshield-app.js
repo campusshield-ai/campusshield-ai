@@ -8483,7 +8483,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
           ? 'Answer generated, but it could not be saved to your history. Check your connection before leaving this chat.'
           : result?.mode === 'provider'
             ? 'Study support · Verify important facts against your course materials.'
-            : 'Safe response · official campus sources are not connected, so verify important facts with your course materials.';
+            : Array.isArray(result?.sources) && result.sources.length
+              ? 'Safe response · related approved pages are shown below, but they did not verify the requested detail.'
+              : 'Safe response · no approved campus evidence was available for this request. Verify official details with your university.';
       }
     }catch(error){
       const detail=String(error?.message||'').trim();
