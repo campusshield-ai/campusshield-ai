@@ -6903,9 +6903,9 @@ $('page-marketplace').addEventListener('click',async function(event){
   $('campus-alumni-refresh').addEventListener('click',loadCampusAlumniDirectory);
   $('campus-alumni-review-refresh').addEventListener('click',loadCampusAlumniReviewQueue);
   $('campus-alumni-intro-refresh').addEventListener('click',loadCampusAlumniIntroRequests);
-  $('campus-volunteer-search').addEventListener('input',()=>renderCampusNetworkPosts('volunteer'));
-  $('campus-startup-search').addEventListener('input',()=>renderCampusNetworkPosts('startup'));
-  $('campus-alumni-search').addEventListener('input',renderCampusAlumniDirectory);
+  $('campus-volunteer-search').addEventListener('input',()=>scheduleCampusNetworkSearch('volunteer'));
+  $('campus-startup-search').addEventListener('input',()=>scheduleCampusNetworkSearch('startup'));
+  $('campus-alumni-search').addEventListener('input',scheduleCampusAlumniDirectorySearch);
   $('campus-volunteer-scope').addEventListener('change',()=>loadCampusNetworkPosts('volunteer'));
   $('campus-startup-scope').addEventListener('change',()=>loadCampusNetworkPosts('startup'));
   $('campus-alumni-scope').addEventListener('change',loadCampusAlumniDirectory);
