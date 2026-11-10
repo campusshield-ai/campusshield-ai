@@ -28,6 +28,8 @@ assert.match(backend, /async resendConfirmation\(email, captchaToken\)/);
 assert.match(backend, /emailRedirectTo: getAuthRedirectUrl\(\),\s*\.\.\.\(captchaToken \? \{ captchaToken \} : \{\}\)/);
 
 assert.match(app, /window\.turnstile\?\.render/);
+assert.match(app, /mount\.getClientRects\(\)\.length === 0/, 'Turnstile must wait until the sign-in form is visible');
+assert.match(app, /function watchAuthCaptchaVisibility\(/, 'CAPTCHA should render after session restoration reveals sign-in');
 assert.match(app, /'expired-callback'/);
 assert.match(app, /'error-callback'/);
 assert.match(app, /function requireAuthCaptchaToken\(/);
