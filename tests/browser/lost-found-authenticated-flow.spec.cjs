@@ -46,6 +46,25 @@ test("verified synthetic student can open Lost & Found and submit a post for mod
     user: syntheticUser,
   };
 
+  // Turnstile is external to the synthetic Supabase fixture. Supply a test-only
+  // widget that returns an unmistakably synthetic token; never contact Cloudflare
+  // or use real credentials in browser tests.
+  await page.addInitScript(() => {
+    let nextWidgetId = 0;
+    const widgets = new Map();
+    window.turnstile = {
+      render(_container, options) {
+        const id = ++nextWidgetId;
+        widgets.set(id, options);
+        queueMicrotask(() => options.callback?.("synthetic-turnstile-test-token"));
+        return id;
+      },
+      reset(id) {
+        widgets.get(id)?.callback?.("synthetic-turnstile-test-token");
+      },
+    };
+  });
+
   // Stub the staging Supabase hostname with a synthetic-only fixture. This test
   // executes the actual frontend auth, routing, composer and submit handlers
   // without writing test records to a real campus database.
