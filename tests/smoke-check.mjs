@@ -21,6 +21,8 @@ const responsiveCss = responsiveCssStart >= 0 && responsiveCssEnd > responsiveCs
 const dashboardUpgradeJs = await readFile(new URL("../campus-dashboard-upgrade.js", import.meta.url), "utf8");
 const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta.url), "utf8");
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
+const authCaptcha = await readFile(new URL("../campusshield-auth-captcha.js", import.meta.url), "utf8");
+const authCaptchaCss = await readFile(new URL("../campusshield-auth-captcha.css", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
 const learningInsightsScript = await readFile(new URL("../shieldmind-learning-insights.js", import.meta.url), "utf8");
 const learningInsightsCss = await readFile(new URL("../shieldmind-learning-insights.css", import.meta.url), "utf8");
@@ -1072,3 +1074,31 @@ assert.doesNotThrow(() => new Function(appScript), "app script parses after sess
 console.log("PASS persistent auth restoration, no login flash on reload, and streamlined startup checks");
 
 
+
+
+// Staging-only Cloudflare Turnstile CAPTCHA protection for Supabase Auth.
+assert.ok(htmlMarkup.includes('src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"'), "Cloudflare Turnstile API loads explicitly");
+assert.ok(htmlMarkup.includes('src="./campusshield-auth-captcha.js"'), "CampusShield CAPTCHA helper is loaded");
+assert.ok(htmlMarkup.indexOf('turnstile/v0/api.js?render=explicit') < htmlMarkup.indexOf('src="./campusshield-auth-captcha.js"'), "Turnstile API loads before its helper");
+assert.ok(htmlMarkup.indexOf('src="./campusshield-auth-captcha.js"') < htmlMarkup.indexOf('src="./campusshield-app.js"'), "CAPTCHA helper loads before app event handlers");
+assert.ok(htmlMarkup.includes('id="campusshield-auth-captcha-field"') && htmlMarkup.includes('id="campusshield-auth-captcha"'), "Auth form includes the dedicated CAPTCHA container");
+assert.ok(htmlMarkup.includes('campusshield-auth-captcha.css'), "CAPTCHA responsive styles are loaded");
+assert.match(authCaptcha, /SITE_KEY\s*=\s*"0x4AAAAAAF6tOY7MqWYcC3h8"/, "CAPTCHA helper uses the staging widget public sitekey");
+assert.match(authCaptcha, /turnstile\.render/, "CAPTCHA helper renders the explicit Turnstile widget");
+assert.match(authCaptcha, /expired-callback/, "expired challenges clear their old token");
+assert.match(authCaptcha, /function getToken\(\)/, "authentication cannot proceed without a verified token");
+assert.match(authCaptcha, /function reset\(\)/, "one-time CAPTCHA tokens can be reset after requests");
+assert.match(authCaptcha, /MutationObserver/, "widget rendering waits for the login screen to become visible");
+assert.doesNotMatch(authCaptcha, /(?:SECRET_KEY|secretKey|secret_key|sk_live_)/i, "no Turnstile secret is embedded in browser code");
+assert.match(backend, /captchaToken:\s*captchaToken \|\| undefined/, "Supabase Auth requests receive the one-time CAPTCHA token");
+assert.match(backend, /signInWithPassword\(\{ email, password \}, \{ captchaToken:/, "password sign-in is CAPTCHA protected");
+assert.match(backend, /resetPasswordForEmail\(normalizedEmail, \{ redirectTo, captchaToken:/, "password-reset email requests are CAPTCHA protected");
+assert.match(backend, /resendConfirmation\(email, captchaToken = ""\)/, "confirmation-email resend accepts CAPTCHA");
+assert.match(appScript, /CampusShieldCaptcha\?\.setVisible\(!isReset && !identityCompletionMode\)/, "CAPTCHA appears only on supported auth modes");
+assert.match(appScript, /backend\.signUp\(email, password, name, username, universityId, profileData, captchaToken\)/, "signup passes its CAPTCHA token to Supabase");
+assert.match(appScript, /backend\.signIn\(email, password, captchaToken\)/, "sign-in passes its CAPTCHA token to Supabase");
+assert.match(appScript, /backend\.requestPasswordReset\(email, redirectUrl, captchaToken\)/, "forgot-password sends its CAPTCHA token");
+assert.match(appScript, /backend\.resendConfirmation\(email, captchaToken\)/, "resending confirmation sends its CAPTCHA token");
+assert.match(authCaptchaCss, /max-width:\s*100%/, "CAPTCHA layout remains within the available screen width");
+assert.doesNotThrow(() => new Function(authCaptcha), "CAPTCHA helper parses");
+console.log("PASS staging Turnstile integration, one-time auth tokens, reset/resend protection, and responsive widget");
