@@ -128,7 +128,7 @@ export function validateKnowledgeCitations(answer, sources) {
   const byMarker = new Map(sourceList.map(source => [String(source.marker || ""), source]));
   const used = new Set();
   const invalid = new Set();
-  const cleanAnswer = String(answer ?? "").replace(/\[(\d{1,2})\]/g, (marker) => {
+  const cleanAnswer = String(answer ?? "").replace(/\[(\d{1,3})\]/g, (marker) => {
     if (!byMarker.has(marker)) {
       invalid.add(marker);
       return "";
