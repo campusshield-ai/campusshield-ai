@@ -71,5 +71,8 @@ assert.equal(citations.answer.includes("[7]"), false);
 assert.deepEqual(citations.usedSources.map(source => source.marker), ["[1]"]);
 assert.deepEqual(citations.invalidMarkers, ["[7]"]);
 assert.equal(validateKnowledgeCitations("A general explanation.", []).answer, "A general explanation.");
+const noEvidenceCitations = validateKnowledgeCitations("The unverified policy is [1].", []);
+assert.equal(noEvidenceCitations.answer, "The unverified policy is .");
+assert.deepEqual(noEvidenceCitations.invalidMarkers, ["[1]"]);
 
 console.log("PASS ShieldMind search-term extraction, title-weighted relevance, retrieval freshness and citation validation");
