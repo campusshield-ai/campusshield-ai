@@ -780,6 +780,7 @@ assert.match(shieldmindKnowledgeHelpers, /export function validateKnowledgeCitat
 assert.match(appScript, /metadata\?\.sources_heading/, "source display headings are rendered as text from response metadata");
 assert.match(appScript, /parsed\.protocol === 'https:' && !parsed\.username && !parsed\.password/, "ShieldMind source links accept only safe HTTPS destinations");
 assert.match(appScript, /shieldmind-source-freshness/, "source freshness is shown alongside evidence links");
+assert.match(htmlMarkup, /shieldmind-chat-history\.css\?v=20261110-1/, "ShieldMind source evidence styles use a refreshed asset URL");
 assert.match(appScript, /freshness_label: String\(source\.freshness_label/, "source freshness metadata is preserved in private conversation history");
 assert.match(shieldmindChatHistoryCss, /shieldmind-source-freshness\.is-stale/, "older source freshness has a distinct visual warning");
 assert.match(shieldmindChatHistoryCss, /html\[data-theme="dark"\].*shieldmind-source-freshness/s, "source freshness labels retain explicit dark-mode colours");
