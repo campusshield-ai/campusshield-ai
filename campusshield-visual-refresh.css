@@ -430,6 +430,7 @@ html[data-theme="dark"] .mobile-bottom-nav {
 .campus-network-apply-form label,.campus-network-intro-form label {font-size:.82rem;font-weight:700;color:#345044}
 .campus-network-apply-form textarea,.campus-network-intro-form textarea {width:100%;min-width:0;resize:vertical;border:1px solid #d5e1d8;border-radius:10px;padding:10px 12px;font:inherit;background:#fff}
 .campus-network-intro-form select {width:100%;min-width:0;border:1px solid #d5e1d8;border-radius:10px;padding:10px 12px;font:inherit;background:#fff;color:inherit}
+.campus-network-intro-form select {width:100%;min-width:0;border:1px solid #d5e1d8;border-radius:10px;padding:10px 12px;font:inherit;background:#fff;color:inherit}
 .campus-network-application {padding:12px;border:1px solid #e0eae3;border-radius:12px;background:#f7fbf8;margin-top:10px}
 .campus-network-review {margin-top:18px}
 .campus-network-footer {margin:20px 0 4px;padding:12px 14px;border:1px solid #dce9df;border-radius:13px;background:#f6faf7;color:#63746a;font-size:.8rem;line-height:1.6}
