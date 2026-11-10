@@ -8003,7 +8003,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       const sourceSection = document.createElement('section');
       sourceSection.className = 'shieldmind-message-sources';
       const sourceHeading = document.createElement('strong');
-      sourceHeading.textContent = 'Sources used';
+      sourceHeading.textContent = String(metadata?.sources_heading || 'Approved campus sources').slice(0, 120);
       const sourceList = document.createElement('ul');
       sources.slice(0, 5).forEach((source, index) => {
         if (!source || typeof source !== 'object') return;
@@ -8015,7 +8015,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         let safeUrl = '';
         try {
           const parsed = new URL(String(source.url || ''));
-          if (parsed.protocol === 'https:' || parsed.protocol === 'http:') safeUrl = parsed.href;
+          if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) safeUrl = parsed.href;
         } catch (_error) {}
         if (safeUrl) {
           const link = document.createElement('a');
@@ -8029,11 +8029,19 @@ $('resend-confirmation-button').addEventListener('click', async () => {
           label.textContent = String(source.title || 'Source link unavailable').slice(0, 180);
           item.appendChild(label);
         }
+        const freshnessLevel = ['recent', 'aging', 'stale', 'unknown'].includes(String(source.freshness_level || ''))
+          ? String(source.freshness_level)
+          : 'unknown';
+        const freshness = document.createElement('small');
+        freshness.className = 'shieldmind-source-freshness is-' + freshnessLevel;
+        freshness.textContent = String(source.freshness_label || 'Freshness not recorded for this saved answer').slice(0, 120);
+        item.appendChild(freshness);
         if (source.fetched_at) {
           const retrieved = new Date(source.fetched_at);
           if (!Number.isNaN(retrieved.getTime())) {
             const date = document.createElement('small');
-            date.textContent = 'Retrieved ' + retrieved.toLocaleDateString();
+            date.className = 'shieldmind-source-retrieved';
+            date.textContent = 'CampusShield retrieved ' + retrieved.toLocaleDateString();
             item.appendChild(date);
           }
         }
@@ -8252,7 +8260,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     void loadShieldMindConversations({force:true});
   }
 
-  function shieldMindHistorySourceMetadata(sources) {
+  function shieldMindHistorySourceMetadata(sources, sourcesHeading = 'Approved campus sources') {
     if (!Array.isArray(sources)) return {};
     const saved = [];
     for (const source of sources.slice(0, 5)) {
@@ -8260,19 +8268,27 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       let url = '';
       try {
         const parsed = new URL(String(source.url || ''));
-        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') continue;
+        if (parsed.protocol !== 'https:' || parsed.username || parsed.password) continue;
         url = parsed.href;
       } catch (_error) { continue; }
       const item = {
         marker: String(source.marker || '').slice(0, 12),
         title: String(source.title || url).slice(0, 100),
         url,
-        fetched_at: String(source.fetched_at || '').slice(0, 32)
+        fetched_at: String(source.fetched_at || '').slice(0, 32),
+        freshness_level: ['recent', 'aging', 'stale', 'unknown'].includes(String(source.freshness_level || ''))
+          ? String(source.freshness_level)
+          : 'unknown',
+        freshness_label: String(source.freshness_label || 'Freshness not recorded for this saved answer').slice(0, 120),
       };
       if (new TextEncoder().encode(JSON.stringify({ sources: [...saved, item] })).length > 1800) break;
       saved.push(item);
     }
-    return saved.length ? { sources: saved } : {};
+    if (!saved.length) return {};
+    return {
+      sources: saved,
+      sources_heading: String(sourcesHeading || 'Approved campus sources').slice(0, 120),
+    };
   }
 
   async function openShieldMindConversation(conversationId) {
@@ -8450,14 +8466,17 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       try {
         await saveShieldMindConversationMessage(
           backend.client, userId, conversationIdForRequest, 'assistant', answer,
-          shieldMindHistorySourceMetadata(result?.sources)
+          shieldMindHistorySourceMetadata(result?.sources, result?.sources_heading)
         );
       } catch (historyError) {
         answerSaved = false;
         console.warn('ShieldMind answer history could not be saved:', historyError?.message || 'Unknown error');
       }
       if (shieldMindConversationId === conversationIdForRequest) {
-        addShieldMindMessage('assistant', answer, result?.sources || []);
+        addShieldMindMessage('assistant', answer, {
+          sources: result?.sources || [],
+          sources_heading: result?.sources_heading || 'Approved campus sources',
+        });
         shieldMindHistory.push({role:'user',content:question},{role:'assistant',content:answer});
         shieldMindHistory = shieldMindHistory.slice(-8);
         $('shieldmind-status').textContent = !answerSaved
