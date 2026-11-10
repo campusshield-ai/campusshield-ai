@@ -58,7 +58,7 @@
       return data || {};
     },
  
-async signUp(email, password, displayName, username, universityId, profileData = {}) {
+async signUp(email, password, displayName, username, universityId, profileData = {}, captchaToken = "") {
   if (!client) throw new Error("Supabase is not configured.");
   if (typeof password !== "string" || password.length < 12 ||
       !/[a-z]/.test(password) || !/[A-Z]/.test(password) ||
@@ -85,12 +85,13 @@ async signUp(email, password, displayName, username, universityId, profileData =
         campus_official_email: safeProfileData.campus_official_email || null,
         requested_campus_admin: Boolean(safeProfileData.requested_campus_admin)
       },
-      emailRedirectTo: getAuthRedirectUrl()
+      emailRedirectTo: getAuthRedirectUrl(),
+      captchaToken: captchaToken || undefined
     }
   });
 },
 
-async resendConfirmation(email) {
+async resendConfirmation(email, captchaToken = "") {
   if (!client) {
     throw new Error("Supabase is not configured.");
   }
@@ -103,12 +104,13 @@ async resendConfirmation(email) {
     type: "signup",
     email: email.trim(),
     options: {
-      emailRedirectTo: getAuthRedirectUrl()
+      emailRedirectTo: getAuthRedirectUrl(),
+      captchaToken: captchaToken || undefined
     }
   });
 },
 
-    async requestPasswordReset(email, redirectTo) {
+    async requestPasswordReset(email, redirectTo, captchaToken = "") {
       if (!client) throw new Error("Supabase is not configured.");
       const normalizedEmail = String(email || "").trim();
       if (!normalizedEmail) throw new Error("Enter the email address for your account.");
@@ -116,7 +118,7 @@ async resendConfirmation(email) {
         throw new Error("The password-reset return URL is not valid.");
       }
 
-      return client.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
+      return client.auth.resetPasswordForEmail(normalizedEmail, { redirectTo, captchaToken: captchaToken || undefined });
     },
 
     async updatePassword(password) {
@@ -150,10 +152,10 @@ async resendConfirmation(email) {
       });
     },
 
-    async signIn(email, password) {
+    async signIn(email, password, captchaToken = "") {
       if (!client) throw new Error("Supabase is not configured.");
 
-      return client.auth.signInWithPassword({ email, password });
+      return client.auth.signInWithPassword({ email, password }, { captchaToken: captchaToken || undefined });
     },
 
     async signOut() {
