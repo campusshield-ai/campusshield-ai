@@ -38,6 +38,7 @@
     staff: false,
     canContribute: false,
     loading: false,
+    reloadPending: false,
     ideas: [],
     comments: [],
     updates: [],
@@ -340,7 +341,10 @@
   }
 
   async function loadIdeas() {
-    if (state.loading) return;
+    if (state.loading) {
+      state.reloadPending = true;
+      return;
+    }
     state.loading = true;
     const feed = $("#cii-feed");
     const refresh = $("#cii-refresh");
@@ -456,6 +460,10 @@
       if (refresh) {
         refresh.disabled = false;
         refresh.querySelector("span").textContent = "Refresh";
+      }
+      if (state.reloadPending) {
+        state.reloadPending = false;
+        loadIdeas();
       }
     }
   }
