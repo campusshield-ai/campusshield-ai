@@ -44,7 +44,8 @@
     supported: new Set(),
     category: "all",
     status: "all",
-    sort: "newest"
+    sort: "newest",
+    view: "explore"
   };
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -118,7 +119,19 @@
           <button type="button" class="btn secondary cii-refresh" id="cii-refresh" aria-label="Refresh ideas">↻ <span>Refresh</span></button>
         </div>
 
-        <div class="cii-filters" aria-label="Search and filter ideas">
+        <div class="cii-view-tabs" role="group" aria-label="Your Ideas &amp; Impact views">
+        <button type="button" class="cii-view-tab" data-idea-view="explore" aria-pressed="true">
+          <span>Explore</span><small>Campus-wide ideas</small>
+        </button>
+        <button type="button" class="cii-view-tab" data-idea-view="mine" aria-pressed="false">
+          <span>My proposals</span><small>Your submissions</small>
+        </button>
+        <button type="button" class="cii-view-tab" data-idea-view="supported" aria-pressed="false">
+          <span>Supported</span><small>Ideas you backed</small>
+        </button>
+      </div>
+
+      <div class="cii-filters" aria-label="Search and filter ideas">
           <div class="cii-search-field">
             <label class="cii-search-label" for="cii-search">Search ideas</label>
             <input id="cii-search" type="search" autocomplete="off" placeholder="Search titles, problems or solutions">
@@ -152,7 +165,7 @@
             </div>
             <div class="cii-filter-control">
               <label for="cii-sort">Sort by</label>
-              <select id="cii-sort"><option value="newest">Newest first</option><option value="support">Most supported</option></select>
+              <select id="cii-sort"><option value="newest">Newest first</option><option value="updated">Recently updated</option><option value="support">Most supported</option></select>
             </div>
             <button type="button" class="btn secondary cii-clear-filters" id="cii-clear-filters" hidden>Clear filters</button>
           </div>
@@ -280,6 +293,7 @@
     }
 
     const form = $("#cii-form");
+    syncViewTabs();
     if (form) {
       form.querySelectorAll("input,select,textarea,button").forEach((control) => {
         control.disabled = !state.canContribute;
@@ -288,6 +302,31 @@
         ? "Your proposal stays private to you and moderators at your university until approved. Once published, it is visible across CampusShield."
         : "You can browse approved ideas. To submit, support or comment, verify your campus membership and create a CampusPulse username.";
     }
+  }
+
+  function syncViewTabs() {
+    const root = $("#" + ROOT_ID);
+    if (!root) return;
+    if (!state.canContribute && state.view === "supported") state.view = "explore";
+    root.querySelectorAll("[data-idea-view]").forEach((button) => {
+      const active = button.dataset.ideaView === state.view;
+      button.setAttribute("aria-pressed", String(active));
+      button.classList.toggle("is-active", active);
+      if (button.dataset.ideaView === "supported") {
+        button.disabled = !state.canContribute;
+        button.title = state.canContribute
+          ? "View ideas you have supported."
+          : "Verify your campus membership and create a CampusPulse username to support ideas.";
+      }
+    });
+  }
+
+  function setView(view) {
+    if (!["explore", "mine", "supported"].includes(view)) return;
+    if (view === "supported" && !state.canContribute) return;
+    state.view = view;
+    syncViewTabs();
+    loadIdeas();
   }
 
   function groupBy(rows, key) {
@@ -322,11 +361,33 @@
       await prepare({ requireVerifiedCampus: false });
       let request = state.client.from("campus_ideas")
         .select("id,user_id,university_id,creator_username,title,category,impact_scope,problem_statement,proposed_solution,expected_impact,status,support_count,created_at,updated_at");
+      if (state.view === "mine") {
+        request = request.eq("user_id", state.user.id);
+      } else if (state.view === "supported") {
+        const { data: supportRows, error: supportError } = await state.client.from("campus_idea_supports")
+          .select("idea_id").eq("user_id", state.user.id);
+        if (supportError) throw supportError;
+        const supportedIds = (supportRows || []).map((row) => row.idea_id).filter(Boolean);
+        if (!supportedIds.length) {
+          state.ideas = [];
+          state.comments = [];
+          state.updates = [];
+          state.supported = new Set();
+          render();
+          setStatus("You have not supported an idea yet. Explore the board and support a proposal you believe in.");
+          return;
+        }
+        request = request.in("id", supportedIds);
+      }
       if (state.category !== "all") request = request.eq("category", state.category);
       if (state.status !== "all") request = request.eq("status", state.status);
-      request = state.sort === "support"
-        ? request.order("support_count", { ascending: false }).order("created_at", { ascending: false })
-        : request.order("created_at", { ascending: false });
+      if (state.sort === "support") {
+        request = request.order("support_count", { ascending: false }).order("created_at", { ascending: false });
+      } else if (state.sort === "updated") {
+        request = request.order("updated_at", { ascending: false }).order("created_at", { ascending: false });
+      } else {
+        request = request.order("created_at", { ascending: false });
+      }
       const { data: ideas, error } = await request.limit(60);
       if (error) throw error;
       state.ideas = Array.isArray(ideas) ? ideas : [];
@@ -336,9 +397,13 @@
         state.updates = [];
         state.supported = new Set();
         render();
-        setStatus(state.status === "all" && state.category === "all"
-          ? "No approved ideas have been published yet. Be the first to share a constructive proposal."
-          : "No ideas match these filters yet. Try clearing a filter or changing your search.");
+        setStatus(state.view === "mine"
+          ? "You have not submitted a proposal yet. Share an idea to start making a difference."
+          : state.view === "supported"
+            ? "You have not supported an idea yet. Explore the board to find a proposal you believe in."
+            : state.status === "all" && state.category === "all"
+              ? "No approved ideas have been published yet. Be the first to share a constructive proposal."
+              : "No ideas match these filters yet. Try clearing a filter or changing your search.");
         return;
       }
       const [commentsResult, updatesResult, supportsResult] = await Promise.all([
@@ -361,10 +426,13 @@
       const totalSupport = state.ideas.reduce((total, idea) => total + Number(idea.support_count || 0), 0);
       if (stats) {
         stats.hidden = false;
+        const moving = state.ideas.filter((idea) => ["planned", "in_progress"].includes(idea.status)).length;
+        const implemented = state.ideas.filter((idea) => idea.status === "implemented").length;
         stats.replaceChildren(
           create("span","","" + state.ideas.length + (state.ideas.length === 1 ? " idea in this view" : " ideas in this view")),
-          create("span","","" + totalSupport + (totalSupport === 1 ? " support on these ideas" : " supports on these ideas")),
-          create("span","","Across CampusShield")
+          create("span","","" + totalSupport + (totalSupport === 1 ? " student support" : " student supports")),
+          create("span","","" + moving + " moving forward"),
+          create("span","","" + implemented + " implemented")
         );
       }
       setStatus("Showing ideas you can access across CampusShield. Verified campus members can support, comment and submit proposals.");
@@ -400,7 +468,7 @@
       const text = [idea.title,idea.problem_statement,idea.proposed_solution,idea.expected_impact,CATEGORY_LABELS[idea.category]].join(" ").toLocaleLowerCase();
       return !search || text.includes(search);
     });
-    const filtersActive = !!search || state.category !== "all" || state.status !== "all" || state.sort !== "newest";
+    const filtersActive = !!search || state.category !== "all" || state.status !== "all" || state.sort !== "newest" || state.view !== "explore";
     const clearButton = $("#cii-clear-filters");
     if (clearButton) clearButton.hidden = !filtersActive;
     const resultsCount = $("#cii-results-count");
@@ -413,12 +481,25 @@
     if (!visible.length) {
       const empty = create("div","cii-empty");
       if (!state.ideas.length) {
-        empty.append(
-          create("strong","","No ideas to show yet"),
-          create("p","",filtersActive
-            ? "There are no ideas for this selection. Clear the filters to see more."
-            : "No approved proposals have been published yet. Share a practical idea to start the conversation.")
-        );
+        const message = state.view === "mine"
+          ? ["You have not shared an idea yet", "Your proposals will appear here, including ideas waiting for campus review."]
+          : state.view === "supported"
+            ? ["No supported ideas yet", "Support a proposal you believe in and it will be saved here for easy follow-up."]
+            : ["No ideas to show yet", filtersActive
+              ? "There are no ideas for this selection. Clear the filters to see more."
+              : "No approved proposals have been published yet. Share a practical idea to start the conversation."];
+        empty.append(create("strong","",message[0]), create("p","",message[1]));
+        if (state.view === "mine" && state.canContribute) {
+          const action = create("button","btn cii-empty-clear","Share your first idea");
+          action.type = "button";
+          action.dataset.ideaEmptyAction = "compose";
+          empty.append(action);
+        } else if (state.view === "supported") {
+          const action = create("button","btn secondary cii-empty-clear","Explore ideas");
+          action.type = "button";
+          action.dataset.ideaEmptyAction = "explore";
+          empty.append(action);
+        }
       } else {
         empty.append(
           create("strong","","No matching ideas"),
@@ -489,8 +570,27 @@
     const latestUpdate = updates[0];
     if (latestUpdate?.note) {
       const note = create("p","cii-update-note");
-      note.append(create("strong","","Campus update: "),document.createTextNode(latestUpdate.note));
+      note.append(create("strong","","Latest campus update: "),document.createTextNode(latestUpdate.note));
       card.append(note);
+    }
+    if (updates.length) {
+      const history = create("details","cii-progress-history");
+      history.append(create("summary","","Progress history · " + updates.length));
+      const timeline = create("ol","cii-progress-list");
+      updates.slice().reverse().forEach((update) => {
+        const item = create("li","cii-progress-item");
+        const meta = create("div","cii-progress-meta");
+        meta.append(
+          create("span","cii-progress-status cii-status-" + update.status,STATUS_LABELS[update.status] || update.status),
+          create("time","",friendlyTime(update.created_at))
+        );
+        if (update.created_at) meta.querySelector("time").dateTime = update.created_at;
+        item.append(meta);
+        if (update.note) item.append(create("p","",update.note));
+        timeline.append(item);
+      });
+      history.append(timeline);
+      card.append(history);
     }
 
     const actionRow = create("div","cii-idea-actions");
@@ -718,10 +818,20 @@
       if (form) submitComment(event);
     });
     root.addEventListener("click",async(event)=>{
+      const view = event.target.closest("[data-idea-view]");
+      const emptyAction = event.target.closest("[data-idea-empty-action]");
       const support = event.target.closest("[data-idea-support]");
       const review = event.target.closest("[data-idea-review]");
-      if (support) await toggleSupport(support);
-      else if (review) await reviewIdea(review);
+      if (view) setView(view.dataset.ideaView);
+      else if (emptyAction === null) {
+        if (support) await toggleSupport(support);
+        else if (review) await reviewIdea(review);
+      } else if (emptyAction.dataset.ideaEmptyAction === "compose") {
+        $("#cii-compose-details").open = true;
+        $("#cii-title-input")?.focus({ preventScroll: true });
+      } else if (emptyAction.dataset.ideaEmptyAction === "explore") {
+        setView("explore");
+      }
     });
     document.addEventListener("click",(event)=>{
       if (event.target.closest("[data-page='community']")) window.setTimeout(loadIdeas,120);
