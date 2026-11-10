@@ -22,5 +22,7 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
+      - name: Run ShieldMind retrieval quality unit tests
+        run: node --test tests/shieldmind-answer-quality.test.mjs
       - name: Run complete smoke suite
         run: node tests/smoke-check.mjs

@@ -29,6 +29,7 @@ const shieldmindChatHistoryMigration = await readFile(new URL("../supabase/migra
 const shieldmindChatHistoryIndexMigration = await readFile(new URL("../supabase/migrations/20261105014500_shieldmind_messages_owner_fk_index.sql", import.meta.url), "utf8");
 const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
+const shieldmindKnowledgeHelpers = await readFile(new URL("../supabase/functions/shieldmind-chat/knowledge.mjs", import.meta.url), "utf8");
 const paystackWebhookFunction = await readFile(new URL("../supabase/functions/paystack-webhook/index.ts", import.meta.url), "utf8");
 const paystackReconcileFunction = await readFile(new URL("../supabase/functions/paystack-reconcile/index.ts", import.meta.url), "utf8");
 const shieldmindBillingCheckout = await readFile(new URL("../supabase/functions/shieldmind-billing-checkout/index.ts", import.meta.url), "utf8");
@@ -204,7 +205,7 @@ assert.match(planner, /create_my_shieldmind_planner_item/);
 assert.match(planner, /list_my_shieldmind_planner_items/);
 assert.match(appScript, /function addShieldMindMessage\(role, message, metadata = \{\}\)/, "ShieldMind renders source and saved-chat metadata alongside AI answers");
 assert.match(appScript, /Array\.isArray\(metadata\).*metadata\?\.sources/s, "ShieldMind supports live source arrays and saved source metadata");
-assert.match(appScript, /parsed\.protocol === 'https:' \|\| parsed\.protocol === 'http:'/ , "ShieldMind source links are restricted to HTTP(S)");
+assert.match(appScript, /parsed\.protocol === 'https:' && !parsed\.username && !parsed\.password/, "ShieldMind source links are restricted to safe HTTPS destinations");
 assert.match(appScript, /navigator\.clipboard\?\.writeText/, "ShieldMind answers can be copied from the chat");
 assert.match(appScript, /result\?\.sources/, "ShieldMind displays approved source links returned by its Edge Function");
 assert.match(planner, /update_my_shieldmind_planner_item/);
@@ -757,6 +758,35 @@ assert.doesNotMatch(shieldmindFunction, /console\.(?:log|warn|error)\([^\n]*(?:q
 assert.match(shieldmindFunction, /your ShieldMind account limit has not been reached/i);
 console.log("PASS ShieldMind surfaces safe provider rate-limit and billing errors");
 
+// ShieldMind grounded campus retrieval: reuse caller RLS, approved source state and citation checks.
+assert.match(shieldmindFunction, /from "\.\/knowledge\.mjs"/, "ShieldMind loads the bundled retrieval/ranking helpers");
+assert.match(shieldmindFunction, /campus_knowledge_pages[\s\S]*campus_knowledge_sources!inner\(status,domain,university_id\)/, "campus retrieval inner-joins each page to its source record");
+assert.match(shieldmindFunction, /\.eq\("university_id", campusContext\.university_id\)/, "page retrieval is scoped to the verified campus");
+assert.match(shieldmindFunction, /\.eq\("source\.status", "approved"\)/, "only explicitly approved campus sources can be retrieved");
+assert.match(shieldmindFunction, /\.eq\("source\.university_id", campusContext\.university_id\)/, "source approval must belong to the same university");
+assert.match(shieldmindFunction, /parsedUrl\.protocol !== "https:"[\s\S]*parsedUrl\.hostname\.toLowerCase\(\) !== approvedDomain/, "source links must be HTTPS and match the approved source domain");
+assert.match(shieldmindFunction, /rankKnowledgeSources\([\s\S]*searchTerms[\s\S]*searchPhrase[\s\S]*4/, "the best four relevant source pages are ranked before model context is built");
+assert.match(shieldmindFunction, /describeKnowledgeFreshness\(page\.fetched_at\)/, "source freshness is based on CampusShield retrieval timestamps");
+assert.match(shieldmindFunction, /officialCampusQuestion && !knowledgeSources\.length/, "official-campus questions fail closed when the approved library is empty");
+assert.match(shieldmindFunction, /officialCampusQuestion && knowledgeRetrievalFailed/, "official-campus questions fail closed when evidence lookup fails");
+assert.match(shieldmindFunction, /knowledgeSources\.every\(source => \[\"stale\", \"unknown\"\]/, "official questions do not rely only on stale or unknown-dated sources");
+assert.match(shieldmindFunction, /validateKnowledgeCitations\(answer\.slice\(0, 8000\), responseSources\)/, "model citation markers are checked against exact retrieved sources");
+assert.match(shieldmindFunction, /validatedAnswer\.usedSources\.length === 0 \|\| answerCitesStaleSource/, "an official-campus answer without a real or current citation is replaced by a safe fallback");
+assert.match(shieldmindFunction, /JSON\.stringify\(source\.excerpt\)/, "crawled text is quoted as untrusted data in model context");
+assert.match(shieldmindKnowledgeHelpers, /export function extractKnowledgeSearchTerms/);
+assert.match(shieldmindKnowledgeHelpers, /export function rankKnowledgeSources/);
+assert.match(shieldmindKnowledgeHelpers, /export function describeKnowledgeFreshness/);
+assert.match(shieldmindKnowledgeHelpers, /export function validateKnowledgeCitations/);
+assert.match(appScript, /metadata\?\.sources_heading/, "source display headings are rendered as text from response metadata");
+assert.match(appScript, /parsed\.protocol === 'https:' && !parsed\.username && !parsed\.password/, "ShieldMind source links accept only safe HTTPS destinations");
+assert.match(appScript, /shieldmind-source-freshness/, "source freshness is shown alongside evidence links");
+assert.match(htmlMarkup, /shieldmind-chat-history\.css\?v=20261110-1/, "ShieldMind source evidence styles use a refreshed asset URL");
+assert.match(appScript, /freshness_label: String\(source\.freshness_label/, "source freshness metadata is preserved in private conversation history");
+assert.match(shieldmindChatHistoryCss, /shieldmind-source-freshness\.is-stale/, "older source freshness has a distinct visual warning");
+assert.match(shieldmindChatHistoryCss, /html\[data-theme="dark"\].*shieldmind-source-freshness/s, "source freshness labels retain explicit dark-mode colours");
+console.log("PASS ShieldMind approved-source RLS filtering, relevance ranking, citation validation, freshness and safe rendering");
+
+
 
 // Mobile workspace layout: protect narrow screens from horizontal overflow and cramped controls.
 assert.match(html, /Mobile-first layout hardening: prevent clipped headers, horizontal overflow, and cramped controls/);
@@ -981,7 +1011,7 @@ console.log("PASS independent visual refresh and static Creator & Tools Hub isol
 
 // ShieldMind private conversation history: staging migration, owner RLS, paid UI and privacy disclosure.
 assert.doesNotThrow(() => new Function(appScript), "CampusShield app script parses after chat-history wiring");
-assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./shieldmind-chat-history.css">'), "saved conversation styling is loaded");
+assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./shieldmind-chat-history.css?v=20261110-1">'), "saved conversation styling is loaded with the refreshed source-freshness asset");
 assert.doesNotMatch(htmlMarkup, /shieldmind-chat-history\.js/, "chat-history behavior is integrated into the main app without a missing script dependency");
 for (const id of ["shieldmind-history-title", "shieldmind-history-new", "shieldmind-history-search", "shieldmind-conversations-list", "shieldmind-history-status"]) {
   assert.ok(htmlMarkup.includes('id="' + id + '"'), "ShieldMind saved history includes " + id);
