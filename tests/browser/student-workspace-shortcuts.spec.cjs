@@ -60,18 +60,23 @@ test("Academic study hand-off prefills ShieldMind without auto-submitting", asyn
 test("ShieldMind study shortcuts prefill prompts and leave sending to the student", async ({ page }) => {
   await openWorkspacePage(page, "shieldmind");
   await page.locator("#shieldmind-workspace-grid").evaluate(node => { node.hidden = false; });
+  const messageCount = await page.locator("#shieldmind-messages .shieldmind-message").count();
   const explain = page.locator('#shieldmind-study-tools [data-shieldmind-prompt]').first();
   await explain.click();
   await expect(page.locator("#shieldmind-question")).toHaveValue(/Explain this topic step by step/);
+  await expect(page.locator("#shieldmind-messages .shieldmind-message")).toHaveCount(messageCount);
   await expect(page.locator("#shieldmind-submit")).toBeAttached();
   await expect(page.locator('#shieldmind-study-tools [data-page="timetable"]')).toBeVisible();
   await expect(page.locator("#shieldmind-conversations-list")).toBeAttached();
 });
 
-for (const name of ["academics", "community"]) {
+for (const name of ["academics", "community", "shieldmind"]) {
   for (const width of WIDTHS) {
     test(name + " workspace has no horizontal overflow at " + width + "px", async ({ page }) => {
       await openWorkspacePage(page, name, width);
+      if (name === "shieldmind") {
+        await page.locator("#shieldmind-workspace-grid").evaluate(node => { node.hidden = false; });
+      }
       const metrics = await page.evaluate(() => ({
         documentWidth: document.documentElement.scrollWidth,
         bodyWidth: document.body.scrollWidth,
