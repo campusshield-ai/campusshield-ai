@@ -36,7 +36,7 @@ export function buildKnowledgeSearchPhrase(terms) {
  * @param {string} question
  */
 export function isOfficialCampusQuestion(question) {
-  return /\b(?:official\s+(?:notice|policy|announcement|calendar|information)|polic(?:y|ies)|deadlines?|tuition|school\s+fees?|hostel\s+fees?|residence\s+fees?|admission\s+requirements?|admissions?\s+deadline|academic\s+calendar|semester\s+dates?|exam\s+dates?|course\s+registration|registration\s+deadline|graduation\s+requirements?|matriculation|clearance|transcripts?|student\s+affairs|registrar|library\s+hours|clinic\s+hours|medical\s+centre\s+hours|campus\s+office\s+hours|university\s+(?:rule|requirement|fee|deadline|calendar)|scholarship\s+eligibility)\b/i.test(String(question ?? ""));
+  return /\b(?:official\s+(?:notice|policy|announcement|calendar|information|contact)|polic(?:y|ies)|deadlines?|tuition|school\s+fees?|hostel\s+(?:fees?|allocation|rules?|booking)|accommodation\s+fees?|residence\s+fees?|admission\s+requirements?|admissions?\s+deadline|academic\s+calendar|school\s+calendar|semester\s+(?:dates?|start|end|break)|term\s+dates?|exam\s+(?:dates?|times?|schedules?)|course\s+registration|registration\s+deadline|resumption(?:\s+dates?)?|school\s+resumption|reopening(?:\s+dates?)?|graduation\s+requirements?|matriculation|clearance|transcripts?|student\s+affairs|registrar|library\s+hours|clinic\s+hours|medical\s+centre\s+hours|office\s+hours|campus\s+office\s+hours|university\s+(?:rule|requirement|fee|deadline|calendar)|scholarship\s+eligibility)\b/i.test(String(question ?? ""));
 }
 
 /**
