@@ -2855,7 +2855,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     <button type="button" data-page="timetable"><span aria-hidden="true">▦</span> Timetable</button>
     <button type="button" data-page="courses"><span aria-hidden="true">▤</span> Courses &amp; resources</button>
     <button type="button" data-page="classroom"><span aria-hidden="true">▣</span> Classrooms</button>
-    <button type="button" data-page="past-questions" id="academic-exam-prep-shortcut"><span aria-hidden="true">✎</span> Past questions</button>
+    <button type="button" data-page="shieldmind" data-shieldmind-prompt="Help me prepare for an exam. Ask me for the course, topics, exam date and available study time, then build a realistic revision plan with practice questions." id="academic-exam-prep-shortcut"><span aria-hidden="true">✎</span> Exam prep</button>
     <button type="button" data-page="shieldmind" data-academic-focus="planner"><span aria-hidden="true">◷</span> Private planner</button>
   </nav>
 
@@ -2900,9 +2900,9 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
       <article class="academic-primary-card academic-card-exams">
         <span class="academic-card-icon" aria-hidden="true">✎</span>
         <span class="campus-feature-kicker">EXAM PREPARATION</span>
-        <h3>Past questions and practice</h3>
-        <p>Reach the reviewed past-question library and available practice tools. Authentic papers remain subject to campus access and review.</p>
-        <button class="btn" type="button" data-page="past-questions">Open exam preparation <span aria-hidden="true">→</span></button>
+        <h3>Build an exam plan</h3>
+        <p>Use ShieldMind to organise topics, revision time and practice questions. AI access and usage limits follow your existing plan.</p>
+        <button class="btn" type="button" data-page="shieldmind" data-shieldmind-prompt="Help me prepare for an exam. Ask me for the course, topics, exam date and available study time, then build a realistic revision plan with practice questions.">Plan my revision <span aria-hidden="true">→</span></button>
       </article>
 
       <article class="academic-primary-card academic-card-shieldmind">
@@ -3758,8 +3758,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
         <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me summarise lecture notes I paste next. Extract the key ideas, important terms, worked examples and a short revision recap. Ask me to paste the notes first."><span>02</span><div><strong>Summarise</strong><small>Turn notes into key points</small></div><b aria-hidden="true">›</b></button>
         <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Create a practice quiz for a course and topic I choose. Ask me for the course, level and topic, then give one question at a time and explain the answers."><span>03</span><div><strong>Quiz me</strong><small>Check what you understand</small></div><b aria-hidden="true">›</b></button>
         <button class="shieldmind-tool" type="button" data-shieldmind-prompt="Help me build a realistic exam revision plan. Ask for my course, topics, exam date and study time available, then organise focused revision blocks and practice tasks."><span>04</span><div><strong>Revision plan</strong><small>Prepare a focused study schedule</small></div><b aria-hidden="true">›</b></button>
-        <button class="shieldmind-tool" type="button" data-page="past-questions"><span>05</span><div><strong>Past-question practice</strong><small>Open the reviewed exam-prep library</small></div><b aria-hidden="true">›</b></button>
-        <button class="shieldmind-tool" type="button" data-page="timetable"><span>06</span><div><strong>My planner</strong><small>Open saved sessions and reminders</small></div><b aria-hidden="true">›</b></button>
+        <button class="shieldmind-tool" type="button" data-page="timetable"><span>05</span><div><strong>My planner</strong><small>Open saved sessions and reminders</small></div><b aria-hidden="true">›</b></button>
       </section>
 
       <section class="panel shieldmind-side-panel shieldmind-history-panel" aria-labelledby="shieldmind-history-title">
