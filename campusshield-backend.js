@@ -47,6 +47,18 @@
     ? window.supabase.createClient(cfg.url, cfg.publishableKey, { auth: authOptions })
     : null;
 
+  async function withAuthCaptcha(request) {
+    const captchaApi = window.CampusShieldAuthCaptcha;
+    const captchaToken = typeof captchaApi?.getToken === "function"
+      ? await captchaApi.getToken()
+      : null;
+    try {
+      return await request(captchaToken || null);
+    } finally {
+      if (captchaToken) captchaApi?.reset?.();
+    }
+  }
+
   window.CampusShieldBackend = {
     isConfigured: ready,
     client,
@@ -67,7 +79,7 @@ async signUp(email, password, displayName, username, universityId, profileData =
   }
   const safeProfileData = profileData && typeof profileData === "object" ? profileData : {};
 
-  return client.auth.signUp({
+  return withAuthCaptcha(captchaToken => client.auth.signUp({
     email,
     password,
     options: {
@@ -85,9 +97,10 @@ async signUp(email, password, displayName, username, universityId, profileData =
         campus_official_email: safeProfileData.campus_official_email || null,
         requested_campus_admin: Boolean(safeProfileData.requested_campus_admin)
       },
-      emailRedirectTo: getAuthRedirectUrl()
+      emailRedirectTo: getAuthRedirectUrl(),
+      ...(captchaToken ? { captchaToken } : {})
     }
-  });
+  }));
 },
 
 async resendConfirmation(email) {
@@ -99,13 +112,14 @@ async resendConfirmation(email) {
     throw new Error("Enter your email address.");
   }
 
-  return client.auth.resend({
+  return withAuthCaptcha(captchaToken => client.auth.resend({
     type: "signup",
     email: email.trim(),
     options: {
-      emailRedirectTo: getAuthRedirectUrl()
+      emailRedirectTo: getAuthRedirectUrl(),
+      ...(captchaToken ? { captchaToken } : {})
     }
-  });
+  }));
 },
 
     async requestPasswordReset(email, redirectTo) {
@@ -116,7 +130,10 @@ async resendConfirmation(email) {
         throw new Error("The password-reset return URL is not valid.");
       }
 
-      return client.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
+      return withAuthCaptcha(captchaToken => client.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo,
+        ...(captchaToken ? { captchaToken } : {})
+      }));
     },
 
     async updatePassword(password) {
@@ -153,7 +170,11 @@ async resendConfirmation(email) {
     async signIn(email, password) {
       if (!client) throw new Error("Supabase is not configured.");
 
-      return client.auth.signInWithPassword({ email, password });
+      return withAuthCaptcha(captchaToken => client.auth.signInWithPassword({
+        email,
+        password,
+        ...(captchaToken ? { options: { captchaToken } } : {})
+      }));
     },
 
     async signOut() {
