@@ -245,6 +245,11 @@
   let campusOpportunityRows = [];
   let campusOpportunitySavedIds = new Set();
   const campusNetworkState = { volunteers: [], startups: [], alumni: [], applications: [], myVolunteers: [], myStartups: [] };
+  const campusNetworkSearchState = {
+    volunteer: { timer: null, requestId: 0 },
+    startup: { timer: null, requestId: 0 },
+    alumni: { timer: null, requestId: 0 }
+  };
 
   // Push notification destinations are an allowlist, not arbitrary page names.
   const notificationDestinationPages = new Set(['timetable', 'campus-messages', 'noticeboard', 'profile-settings']);
@@ -5852,16 +5857,35 @@
     $(statusId).textContent=rows.length+' '+(type==='volunteer'?'volunteer opportunity':'startup / team')+' post(s) available.';
   }
 
+  function scheduleCampusNetworkSearch(type) {
+    const state=campusNetworkSearchState[type];
+    if(!state)return;
+    if(state.timer!==null)window.clearTimeout(state.timer);
+    state.requestId+=1;
+    const statusId=type==='volunteer'?'campus-volunteer-status':'campus-startup-status';
+    $(statusId).textContent='Searching '+(type==='volunteer'?'volunteer':'startup')+' opportunities…';
+    state.timer=window.setTimeout(()=>{
+      state.timer=null;
+      void loadCampusNetworkPosts(type);
+    },280);
+  }
+
   async function loadCampusNetworkPosts(type) {
     const key=type==='volunteer'?'volunteers':'startups';
+    const searchState=campusNetworkSearchState[type];
+    if(!searchState)return;
+    if(searchState.timer!==null){window.clearTimeout(searchState.timer);searchState.timer=null;}
+    const requestId=++searchState.requestId;
     const scope=$(type==='volunteer'?'campus-volunteer-scope':'campus-startup-scope').value;
+    const query=String($(type==='volunteer'?'campus-volunteer-search':'campus-startup-search')?.value||'').trim();
     const statusId=type==='volunteer'?'campus-volunteer-status':'campus-startup-status';
-    $(statusId).textContent='Loading '+(type==='volunteer'?'volunteer':'startup')+' opportunities…';
+    $(statusId).textContent=query?'Searching verified '+(type==='volunteer'?'volunteer':'startup')+' opportunities…':'Loading '+(type==='volunteer'?'volunteer':'startup')+' opportunities…';
     try {
       const [publicResult,ownResult]=await Promise.all([
-        window.CampusShieldBackend.client.rpc('list_campus_network_posts',{p_post_type:type,p_scope:scope,p_query:null}),
+        window.CampusShieldBackend.client.rpc('list_campus_network_posts',{p_post_type:type,p_scope:scope,p_query:query||null}),
         window.CampusShieldBackend.client.rpc('list_my_campus_network_posts',{p_post_type:type})
       ]);
+      if(requestId!==searchState.requestId)return;
       if(publicResult.error)throw publicResult.error;
       if(ownResult.error)throw ownResult.error;
       campusNetworkState[key]=publicResult.data||[];
@@ -5869,6 +5893,7 @@
       renderCampusNetworkPosts(type);
       renderCampusNetworkMyPosts(type);
     } catch(error) {
+      if(requestId!==searchState.requestId)return;
       $(type==='volunteer'?'campus-volunteer-feed':'campus-startup-feed').innerHTML='<div class="community-empty">This section could not load. Refresh to try again.</div>';
       $(statusId).textContent=error?.message||'Campus Network posts are unavailable.';
     }
@@ -5906,12 +5931,28 @@
     } catch(error) {target.textContent=error?.message||'Could not load applications.';}
   }
 
+  function scheduleCampusAlumniDirectorySearch() {
+    const state=campusNetworkSearchState.alumni;
+    if(state.timer!==null)window.clearTimeout(state.timer);
+    state.requestId+=1;
+    $('campus-alumni-status').textContent='Searching verified alumni…';
+    state.timer=window.setTimeout(()=>{
+      state.timer=null;
+      void loadCampusAlumniDirectory();
+    },280);
+  }
+
   async function loadCampusAlumniDirectory() {
     const feed=$('campus-alumni-feed'),scope=$('campus-alumni-scope')?.value||'campus';
+    const searchState=campusNetworkSearchState.alumni;
     if(!feed)return;
-    $('campus-alumni-status').textContent='Loading verified alumni…';
+    if(searchState.timer!==null){window.clearTimeout(searchState.timer);searchState.timer=null;}
+    const requestId=++searchState.requestId;
+    const query=String($('campus-alumni-search')?.value||'').trim();
+    $('campus-alumni-status').textContent=query?'Searching verified alumni…':'Loading verified alumni…';
     try {
-      const result=await window.CampusShieldBackend.client.rpc('list_campus_alumni_directory',{p_scope:scope,p_query:null});
+      const result=await window.CampusShieldBackend.client.rpc('list_campus_alumni_directory',{p_scope:scope,p_query:query||null});
+      if(requestId!==searchState.requestId)return;
       if(result.error)throw result.error;
       campusNetworkState.alumni=result.data||[];
       renderCampusAlumniDirectory();
@@ -5919,6 +5960,7 @@
       $('campus-alumni-review-panel').hidden=!staff;
       if(staff)await loadCampusAlumniReviewQueue();
     } catch(error) {
+      if(requestId!==searchState.requestId)return;
       feed.innerHTML='<div class="community-empty">The alumni directory is temporarily unavailable.</div>';
       $('campus-alumni-status').textContent=error?.message||'Could not load verified alumni.';
     }
@@ -6863,9 +6905,9 @@ $('page-marketplace').addEventListener('click',async function(event){
   $('campus-alumni-refresh').addEventListener('click',loadCampusAlumniDirectory);
   $('campus-alumni-review-refresh').addEventListener('click',loadCampusAlumniReviewQueue);
   $('campus-alumni-intro-refresh').addEventListener('click',loadCampusAlumniIntroRequests);
-  $('campus-volunteer-search').addEventListener('input',()=>renderCampusNetworkPosts('volunteer'));
-  $('campus-startup-search').addEventListener('input',()=>renderCampusNetworkPosts('startup'));
-  $('campus-alumni-search').addEventListener('input',renderCampusAlumniDirectory);
+  $('campus-volunteer-search').addEventListener('input',()=>scheduleCampusNetworkSearch('volunteer'));
+  $('campus-startup-search').addEventListener('input',()=>scheduleCampusNetworkSearch('startup'));
+  $('campus-alumni-search').addEventListener('input',scheduleCampusAlumniDirectorySearch);
   $('campus-volunteer-scope').addEventListener('change',()=>loadCampusNetworkPosts('volunteer'));
   $('campus-startup-scope').addEventListener('change',()=>loadCampusNetworkPosts('startup'));
   $('campus-alumni-scope').addEventListener('change',loadCampusAlumniDirectory);

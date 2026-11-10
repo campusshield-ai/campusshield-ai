@@ -164,6 +164,15 @@ assert.match(networkE2E, /remote peer blocks alumnus/);
 assert.match(networkE2E, /Blocked alumni profiles must be hidden/);
 assert.match(networkE2E, /all synthetic Campus Network test rows and Auth users were removed/);
 
+// Search discovery on the server so matches beyond the first 100 returned rows remain findable.
+assert.ok(app.includes("function scheduleCampusNetworkSearch(type)"));
+assert.ok(app.includes("function scheduleCampusAlumniDirectorySearch()"));
+assert.ok(app.includes("p_query:query||null"), "Network and alumni RPCs must receive the live search term");
+assert.ok(app.includes("requestId!==searchState.requestId"), "Stale search responses must not overwrite newer results");
+assert.ok(app.includes("campus-volunteer-search').addEventListener('input',()=>scheduleCampusNetworkSearch('volunteer')"));
+assert.ok(app.includes("campus-startup-search').addEventListener('input',()=>scheduleCampusNetworkSearch('startup')"));
+assert.ok(app.includes("campus-alumni-search').addEventListener('input',scheduleCampusAlumniDirectorySearch"));
+
 // Responsive, keyboard-visible controls and dark-mode coverage are present.
 for (const token of [
   "campus-discovery-toolbar", "campus-network-tabs", "campus-network-card-grid",
