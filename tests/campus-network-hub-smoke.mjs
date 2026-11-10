@@ -129,21 +129,21 @@ assert.match(migration, /limit 12/);
 assert.match(migration, /expires_at timestamptz not null default \(now\(\) \+ interval '45 days'\)/);
 
 // Cross-university member blocks must be reciprocal on both network and alumni surfaces.
-assert.match(privacyMigration, /create or replace function private\\.is_campus_network_member_blocked/);
-assert.match(privacyMigration, /b\\.blocker_id = \\(select auth\\.uid\\(\\)\\) and b\\.blocked_id = p_other_user_id/);
-assert.match(privacyMigration, /b\\.blocker_id = p_other_user_id and b\\.blocked_id = \\(select auth\\.uid\\(\\)\\)/);
-assert.doesNotMatch(privacyMigration, /b\\.university_id\\s*=\\s*p_university_id/,
+assert.match(privacyMigration, /create or replace function private\.is_campus_network_member_blocked/);
+assert.match(privacyMigration, /b\.blocker_id = \(select auth\.uid\(\)\) and b\.blocked_id = p_other_user_id/);
+assert.match(privacyMigration, /b\.blocker_id = p_other_user_id and b\.blocked_id = \(select auth\.uid\(\)\)/);
+assert.doesNotMatch(privacyMigration, /b\.university_id\s*=\s*p_university_id/,
   "Cross-university block checks must not be limited to the requester's selected university");
-assert.match(privacyMigration, /revoke all on function private\\.is_campus_network_member_blocked\\(uuid\\)[\\s\\S]*from public, anon, authenticated/);
+assert.match(privacyMigration, /revoke all on function private\.is_campus_network_member_blocked\(uuid\)[\s\S]*from public, anon, authenticated/);
 for (const fn of [
   "list_campus_network_posts", "apply_to_campus_network_post",
   "list_campus_alumni_directory", "request_campus_alumni_intro"
 ]) {
-  const start = privacyMigration.indexOf("create or replace function public." + fn);
-  assert.ok(start >= 0, "Privacy migration must replace " + fn);
-  const next = privacyMigration.indexOf("\\ncreate or replace function ", start + 30);
-  const body = privacyMigration.slice(start, next < 0 ? privacyMigration.length : next);
-  assert.match(body, /private\\.is_campus_network_member_blocked/,
+  const functionStart = privacyMigration.indexOf("create or replace function public." + fn);
+  assert.ok(functionStart >= 0, "Privacy migration must replace " + fn);
+  const next = privacyMigration.indexOf("\ncreate or replace function ", functionStart + 30);
+  const body = privacyMigration.slice(functionStart, next < 0 ? privacyMigration.length : next);
+  assert.match(body, /private\.is_campus_network_member_blocked/,
     fn + " must enforce reciprocal cross-university member blocks");
 }
 for (const index of [
