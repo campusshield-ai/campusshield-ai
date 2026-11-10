@@ -1,0 +1,266 @@
+/*
+ * CampusShield AI — Lovable-inspired module page experience.
+ * Presentation-only layer: keep existing Supabase data, routes, actions and role gates.
+ * Forest green + emerald, warm canvas, clear page hierarchy and calm card surfaces.
+ */
+
+#workspace .page:not(#page-dashboard) > .heading {
+  display: block;
+  margin: 0 0 22px;
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--cs-line, #DCE9DE);
+}
+
+/* Only headings with an explicit action group need a horizontal desktop layout. */
+#workspace .page:not(#page-dashboard) > .heading:has(> .heading-actions) {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+#workspace .page:not(#page-dashboard) > .heading > div:first-child {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+#workspace .page:not(#page-dashboard) > .heading h1 {
+  margin: 0;
+  color: var(--cs-ink, #173325);
+  font-size: clamp(1.55rem, 2.35vw, 2.1rem);
+  font-weight: 850;
+  line-height: 1.12;
+  letter-spacing: -.045em;
+  text-wrap: balance;
+}
+
+#workspace .page:not(#page-dashboard) > .heading p {
+  max-width: 72ch;
+  margin: 7px 0 0;
+  color: var(--cs-muted, #53695B);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+#workspace .page:not(#page-dashboard) > .heading .heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+}
+
+#workspace .page:not(#page-dashboard) > .heading .heading-actions .btn,
+#workspace .page:not(#page-dashboard) > .heading > .btn {
+  min-height: 40px;
+  border-radius: 11px;
+  padding: 9px 13px;
+  white-space: normal;
+}
+
+#workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel {
+  min-width: 0;
+  border: 1px solid var(--cs-line, #DCE9DE);
+  border-radius: 18px;
+  background-color: var(--cs-card, #FFFFFF);
+  box-shadow: 0 10px 28px rgba(18, 59, 35, .045);
+}
+
+#workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+#workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading h2,
+#workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading h3 {
+  margin: 0;
+  color: var(--cs-ink, #173325);
+  font-size: 17px;
+  font-weight: 820;
+  letter-spacing: -.035em;
+}
+
+#workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading p {
+  margin: 4px 0 0;
+  color: var(--cs-muted, #53695B);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+#workspace .page:not(#page-dashboard) .notice-inline,
+#workspace .page:not(#page-dashboard) .notice {
+  border-radius: 13px;
+  line-height: 1.6;
+}
+
+#workspace .page:not(#page-dashboard) .field label {
+  color: var(--cs-ink, #173325);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.4;
+}
+
+#workspace .page:not(#page-dashboard) .field input,
+#workspace .page:not(#page-dashboard) .field select,
+#workspace .page:not(#page-dashboard) .field textarea {
+  min-height: 42px;
+  border: 1px solid #D2E2D5;
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: #173325;
+  font-size: 13px;
+}
+
+#workspace .page:not(#page-dashboard) .field textarea {
+  min-height: 104px;
+}
+
+#workspace .page:not(#page-dashboard) .field input:focus,
+#workspace .page:not(#page-dashboard) .field select:focus,
+#workspace .page:not(#page-dashboard) .field textarea:focus {
+  border-color: #15803D;
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, .13);
+}
+
+#workspace .page:not(#page-dashboard) .table-wrap {
+  overflow: auto;
+  border: 1px solid var(--cs-line, #DCE9DE);
+  border-radius: 13px;
+}
+
+#workspace .page:not(#page-dashboard) .table-wrap table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+#workspace .page:not(#page-dashboard) .table-wrap thead th {
+  background: #EFF7F0;
+  color: #385B43;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+#workspace .page:not(#page-dashboard) .table-wrap tbody tr:hover td {
+  background: #F7FBF7;
+}
+
+#workspace .page:not(#page-dashboard) .heading-actions .btn:focus-visible,
+#workspace .page:not(#page-dashboard) .panel button:focus-visible,
+#workspace .page:not(#page-dashboard) .panel a:focus-visible {
+  outline: 3px solid #58B879;
+  outline-offset: 3px;
+}
+
+html[data-theme="dark"] #workspace .page:not(#page-dashboard) > .heading {
+  border-bottom-color: #315B40;
+}
+
+html[data-theme="dark"] #workspace .page:not(#page-dashboard) > .heading h1,
+html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading h2,
+html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading h3 {
+  color: #E5F3E8;
+}
+
+html[data-theme="dark"] #workspace .page:not(#page-dashboard) > .heading p,
+html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading p {
+  color: #B7C9BD;
+}
+
+html[data-theme="dark"] #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel {
+  border-color: #315B40;
+  background-color: var(--cs-dark-surface, #132a1f);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .13);
+  color: #E5F3E8;
+}
+
+html[data-theme="dark"] #workspace .page:not(#page-dashboard) .field label {
+  color: #DCEDE0;
+}
+
+html[data-theme="dark"] #workspace .page:not(#page-dashboard) .field input,
+html[data-theme="dark"] #workspace .page:not(#page-dashboard) .field select,
+html[data-theme="dark"] #workspace .page:not(#page-dashboard) .field textarea {
+  border-color: #426A50;
+  background: #0D2F1D;
+  color: #E5F3E8;
+}
+
+html[data-theme="dark"] #workspace .page:not(#page-dashboard) .table-wrap {
+  border-color: #315B40;
+}
+
+html[data-theme="dark"] #workspace .page:not(#page-dashboard) .table-wrap thead th {
+  background: #1A422A;
+  color: #D9ECDE;
+}
+
+html[data-theme="dark"] #workspace .page:not(#page-dashboard) .table-wrap tbody tr:hover td {
+  background: #193D29;
+}
+
+@media (max-width: 760px) {
+  #workspace .page:not(#page-dashboard) > .heading {
+    margin-bottom: 17px;
+    padding-bottom: 13px;
+  }
+
+  #workspace .page:not(#page-dashboard) > .heading:has(> .heading-actions) {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  #workspace .page:not(#page-dashboard) > .heading > div:first-child {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  #workspace .page:not(#page-dashboard) > .heading .heading-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  #workspace .page:not(#page-dashboard) > .heading .heading-actions .btn {
+    flex: 0 1 auto;
+  }
+
+  #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel {
+    border-radius: 15px;
+    padding: clamp(14px, 3.5vw, 18px);
+  }
+}
+
+@media (max-width: 420px) {
+  #workspace .page:not(#page-dashboard) > .heading h1 {
+    font-size: clamp(1.4rem, 7vw, 1.7rem);
+  }
+
+  #workspace .page:not(#page-dashboard) > .heading .heading-actions .btn {
+    min-height: 42px;
+    flex: 1 1 calc(50% - 8px);
+  }
+
+  #workspace .page:not(#page-dashboard):not(#page-shieldmind):not(#page-campus-map) > .panel > .panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #workspace .page:not(#page-dashboard) *,
+  #workspace .page:not(#page-dashboard) *::before,
+  #workspace .page:not(#page-dashboard) *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

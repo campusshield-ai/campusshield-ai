@@ -8,6 +8,7 @@ const guide = read("campusshield-guide.css");
 const serviceWorker = read("service-worker.js");
 const lovableUxCss = read("campusshield-lovable-ux.css");
 const lovableUxScript = read("campusshield-lovable-ux.js");
+const moduleExperienceCss = read("campusshield-module-experience.css");
 const iconGenerator = read("scripts/generate-pwa-icons.mjs");
 const manifest = JSON.parse(read("manifest.webmanifest"));
 const htmlMarkup = read("index.html");
@@ -83,8 +84,14 @@ assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskable-512.png" &&
   icon.purpose === "maskable"), "PWA uses the dedicated safe-area maskable icon");
 
-assert.match(serviceWorker, /campusshield-offline-v8/, "Offline cache version is incremented");
+assert.match(serviceWorker, /campusshield-offline-v9/, "Offline cache version is incremented for the new module stylesheet");
 assert.ok(htmlMarkup.includes('href="./campusshield-lovable-ux.css?v=20261109-1"'), "Lovable-inspired tablet and focus styles are loaded");
+assert.ok(htmlMarkup.includes('href="./campusshield-module-experience.css?v=20261110-1"'), "Lovable-inspired module page styles are loaded after the navigation layer");
+assert.ok(htmlMarkup.indexOf("campusshield-module-experience.css") > htmlMarkup.indexOf("campusshield-lovable-ux.css"), "Module page styling loads after the existing UX layer");
+assert.match(moduleExperienceCss, /page:not\(#page-dashboard\) > \.heading/, "Feature pages share the refined module heading system");
+assert.match(moduleExperienceCss, /html\[data-theme="dark"\]/, "Module page cards and headings have explicit dark-mode colours");
+assert.match(moduleExperienceCss, /max-width: 760px/, "Module headers stack naturally on mobile");
+assert.match(moduleExperienceCss, /prefers-reduced-motion: reduce/, "Module page motion respects reduced-motion preferences");
 assert.ok(htmlMarkup.includes('src="./campusshield-lovable-ux.js" defer'), "Accessible active navigation integration is loaded");
 assert.match(lovableUxCss, /min-width:\s*651px/,"tablet rail starts at 651px");
 assert.match(lovableUxCss, /max-width:\s*1023px/,"tablet rail ends at 1023px");
@@ -108,8 +115,9 @@ assert.ok(dashboardPolish.includes("grid-template-columns: repeat(6, minmax(0, 1
   dashboardPolish.includes("#10291d") && dashboardPolish.includes("#d2e4d6"),
   "The dashboard polish defines a balanced six-column layout and readable dark card colours");
 assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
-  serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)"),
-  "Offline fallback and shared brand stylesheet are both cached");
+  serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)") &&
+  serviceWorker.includes("cache.add(MODULE_STYLESHEET_URL)"),
+  "Offline fallback, shared brand stylesheet and module page stylesheet are all cached");
 
 assert.ok(iconGenerator.includes("const background = [21, 128, 61, 255];") &&
   iconGenerator.includes("const shieldColor = [255, 255, 255, 255];"),

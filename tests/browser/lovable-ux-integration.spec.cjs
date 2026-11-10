@@ -17,6 +17,8 @@ async function revealWorkspace(page) {
 test("Lovable-inspired tablet rail fits 768–1023px in light and dark mode", async ({ page }) => {
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
+  // Measure the final rail width, not an in-flight width transition after a viewport resize.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 768, height: 1024 });
   await revealWorkspace(page);
 
