@@ -205,7 +205,7 @@ assert.match(planner, /create_my_shieldmind_planner_item/);
 assert.match(planner, /list_my_shieldmind_planner_items/);
 assert.match(appScript, /function addShieldMindMessage\(role, message, metadata = \{\}\)/, "ShieldMind renders source and saved-chat metadata alongside AI answers");
 assert.match(appScript, /Array\.isArray\(metadata\).*metadata\?\.sources/s, "ShieldMind supports live source arrays and saved source metadata");
-assert.match(appScript, /parsed\.protocol === 'https:' \|\| parsed\.protocol === 'http:'/ , "ShieldMind source links are restricted to HTTP(S)");
+assert.match(appScript, /parsed\.protocol === 'https:' && !parsed\.username && !parsed\.password/, "ShieldMind source links are restricted to safe HTTPS destinations");
 assert.match(appScript, /navigator\.clipboard\?\.writeText/, "ShieldMind answers can be copied from the chat");
 assert.match(appScript, /result\?\.sources/, "ShieldMind displays approved source links returned by its Edge Function");
 assert.match(planner, /update_my_shieldmind_planner_item/);
