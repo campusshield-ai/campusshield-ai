@@ -2343,6 +2343,17 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   }
 </style>
 
+  <style id="campusshield-auth-captcha-style">
+    #auth-captcha-field { margin: 10px 0 4px; min-width: 0; }
+    #auth-captcha-field[hidden] { display: none !important; }
+    #auth-captcha { display: flex; justify-content: flex-start; min-height: 0; max-width: 100%; overflow: visible; }
+    #auth-captcha iframe { max-width: 100%; }
+    #auth-captcha-field .auth-captcha-hint { margin: 7px 0 0; font-size: 11px; line-height: 1.45; }
+    @media (max-width: 420px) {
+      #auth-captcha-field { overflow-x: auto; }
+      #auth-captcha { min-width: 0; }
+    }
+  </style>
 </head>
 <body>
 
@@ -2619,6 +2630,10 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
           <span class="install-mark" aria-hidden="true">↓</span>
           <div class="install-copy"><strong id="install-title">Install CampusShield</strong><p id="install-guidance"></p></div>
           <button type="button" class="btn secondary" id="install-app" hidden>Install</button>
+        </div>
+        <div class="field auth-captcha-field" id="auth-captcha-field" hidden>
+          <div id="auth-captcha" aria-label="Complete the security check"></div>
+          <p class="muted auth-captcha-hint" id="auth-captcha-hint">Complete the security check to continue securely.</p>
         </div>
         <div class="actions"><button class="btn" type="submit" id="auth-submit" autocomplete="off">Sign in</button></div>
         <p id="auth-message" class="message" role="status" aria-live="polite">Please sign in or create an account.</p>
@@ -4778,6 +4793,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="./supabase-config.js" defer></script>
 <script src="./campusshield-backend.js" defer></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
 <script src="./vendor/qrcode.js" defer></script>
 <script src="./campus-qr-attendance.js" defer></script>
 <script src="./campus-service-directory.js" defer></script>
