@@ -1093,12 +1093,13 @@ assert.doesNotMatch(authCaptcha, /(?:SECRET_KEY|secretKey|secret_key|sk_live_)/i
 assert.match(backend, /captchaToken:\s*captchaToken \|\| undefined/, "Supabase Auth requests receive the one-time CAPTCHA token");
 assert.match(backend, /signInWithPassword\(\{ email, password \}, \{ captchaToken:/, "password sign-in is CAPTCHA protected");
 assert.match(backend, /resetPasswordForEmail\(normalizedEmail, \{ redirectTo, captchaToken:/, "password-reset email requests are CAPTCHA protected");
-assert.match(backend, /resendConfirmation\(email, captchaToken = ""\)/, "confirmation-email resend accepts CAPTCHA");
 assert.match(appScript, /CampusShieldCaptcha\?\.setVisible\(!isReset && !identityCompletionMode\)/, "CAPTCHA appears only on supported auth modes");
 assert.match(appScript, /backend\.signUp\(email, password, name, username, universityId, profileData, captchaToken\)/, "signup passes its CAPTCHA token to Supabase");
 assert.match(appScript, /backend\.signIn\(email, password, captchaToken\)/, "sign-in passes its CAPTCHA token to Supabase");
 assert.match(appScript, /backend\.requestPasswordReset\(email, redirectUrl, captchaToken\)/, "forgot-password sends its CAPTCHA token");
-assert.match(appScript, /backend\.resendConfirmation\(email, captchaToken\)/, "resending confirmation sends its CAPTCHA token");
 assert.match(authCaptchaCss, /max-width:\s*100%/, "CAPTCHA layout remains within the available screen width");
 assert.doesNotThrow(() => new Function(authCaptcha), "CAPTCHA helper parses");
-console.log("PASS staging Turnstile integration, one-time auth tokens, reset/resend protection, and responsive widget");
+assert.match(backend, /async resendConfirmation\(email\)/, "confirmation resend uses the documented Supabase endpoint");
+assert.doesNotMatch(backend, /async resendConfirmation\(email, captchaToken/, "confirmation resend does not send an unsupported CAPTCHA option");
+assert.match(appScript, /backend\.resendConfirmation\(email\)/, "confirmation resend remains available through Supabase rate limiting");
+console.log("PASS staging Turnstile integration for password sign-in, signup and reset, plus compatible confirmation resend and responsive widget");
