@@ -88,6 +88,7 @@ assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskabl
 assert.match(serviceWorker, /campusshield-offline-v11/, "Offline cache version is incremented for the ShieldMind source styling");
 assert.ok(htmlMarkup.includes('href="./campusshield-lovable-ux.css?v=20261109-1"'), "Lovable-inspired tablet and focus styles are loaded");
 assert.ok(htmlMarkup.includes('href="./campusshield-module-experience.css?v=20261110-2"'), "Lovable-inspired module page styles are loaded after the navigation layer");
+assert.ok(htmlMarkup.includes('href="./shieldmind-chat-history.css?v=20261110-1"'), "ShieldMind source freshness styles are cache-versioned");
 assert.ok(htmlMarkup.indexOf("campusshield-module-experience.css") > htmlMarkup.indexOf("campusshield-lovable-ux.css"), "Module page styling loads after the existing UX layer");
 assert.match(moduleExperienceCss, /page:not\(#page-dashboard\) > \.heading/, "Feature pages share the refined module heading system");
 assert.match(moduleExperienceCss, /html\[data-theme="dark"\]/, "Module page cards and headings have explicit dark-mode colours");
