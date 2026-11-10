@@ -142,12 +142,41 @@ test("My Day focus remains readable in dark mode", async ({ page }) => {
 
   const focus = page.locator("#campus-my-day-focus");
   await expect(focus).toBeVisible();
-  const colors = await focus.evaluate(element => ({
-    background: getComputedStyle(element).backgroundImage,
-    title: getComputedStyle(element.querySelector(".campus-my-day-focus-title")).color,
-    action: getComputedStyle(element.closest("#campus-my-day").querySelector(".campus-my-day-open")).color
-  }));
+  const colors = await focus.evaluate(element => {
+    const focusStyle = getComputedStyle(element);
+    const titleStyle = getComputedStyle(element.querySelector(".campus-my-day-focus-title"));
+    const actionStyle = getComputedStyle(element.closest("#campus-my-day").querySelector(".campus-my-day-open"));
+    const parseRgb = value => {
+      const match = String(value || "").match(/rgba?\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)/i);
+      return match ? match.slice(1, 4).map(Number) : null;
+    };
+    const luminance = rgb => {
+      if (!rgb) return null;
+      const channels = rgb.map(value => {
+        const normalized = value / 255;
+        return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+    };
+    const contrast = (foreground, background) => {
+      const fg = luminance(parseRgb(foreground));
+      const bg = luminance(parseRgb(background));
+      return fg === null || bg === null ? null : (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
+    };
+    const gradientStops = [...focusStyle.backgroundImage.matchAll(/rgb\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*\\)/gi)].map(match => match[0]);
+    const titleRatios = gradientStops.map(background => contrast(titleStyle.color, background)).filter(Number.isFinite);
+    return {
+      background: focusStyle.backgroundImage,
+      titleColor: titleStyle.color,
+      actionColor: actionStyle.color,
+      actionBackground: actionStyle.backgroundColor,
+      titleMinContrast: titleRatios.length ? Math.min(...titleRatios) : null,
+      actionContrast: contrast(actionStyle.color, actionStyle.backgroundColor)
+    };
+  });
   expect(colors.background).toContain("linear-gradient");
-  expect(colors.title).toBe("rgb(229, 241, 238)");
-  expect(colors.action).toBe("rgb(229, 241, 238)");
+  expect(colors.titleMinContrast, "My Day title contrast should be measurable against the focus gradient").not.toBeNull();
+  expect(colors.titleMinContrast).toBeGreaterThanOrEqual(4.5);
+  expect(colors.actionContrast, "My Day timetable action contrast should be measurable").not.toBeNull();
+  expect(colors.actionContrast).toBeGreaterThanOrEqual(4.5);
 });
