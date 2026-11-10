@@ -20,6 +20,9 @@ on:
       - "tests/browser/**"
       - "playwright.config.cjs"
       - "campusshield-app.js"
+      - "campusshield-backend.js"
+      - "campusshield-auth-captcha.js"
+      - "campusshield-auth-captcha.css"
       - "campus-voice-notes.js"
       - "campus-voice-notes.css"
       - "campusshield-sidebar-collapse-fix.css"
@@ -65,6 +68,8 @@ jobs:
       - name: Check chat, voice-note and Ideas JavaScript syntax
         run: |
           node --check campusshield-app.js
+          node --check campusshield-backend.js
+          node --check campusshield-auth-captcha.js
           node --check campus-voice-notes.js
           node --check campus-ideas-impact.js
       - name: Verify voice-note participant privacy
