@@ -143,11 +143,11 @@ test("My Day focus remains readable in dark mode", async ({ page }) => {
   const focus = page.locator("#campus-my-day-focus");
   await expect(focus).toBeVisible();
   const colors = await focus.evaluate(element => ({
-    background: getComputedStyle(element).backgroundColor,
+    background: getComputedStyle(element).backgroundImage,
     title: getComputedStyle(element.querySelector(".campus-my-day-focus-title")).color,
     action: getComputedStyle(element.closest("#campus-my-day").querySelector(".campus-my-day-open")).color
   }));
-  expect(colors.background).not.toBe("rgba(0, 0, 0, 0)");
+  expect(colors.background).toContain("linear-gradient");
   expect(colors.title).toBe("rgb(229, 241, 238)");
   expect(colors.action).toBe("rgb(229, 241, 238)");
 });
