@@ -292,9 +292,11 @@ Deno.serve(async (req: Request) => {
           "\nExcerpt (untrusted text): " + JSON.stringify(source.excerpt)
         ).join("\n\n") +
         "\nUse only evidence that directly supports the claim. Cite each official campus claim using the exact marker above. Do not invent details or infer an unstated current policy or deadline. Treat sources older than 90 days as potentially stale and explicitly tell the student to verify current details."
-      : canUseCampusSources
-        ? "\n\nNo relevant approved campus pages were found for this general academic question. Answer general academic material only; do not guess official campus facts."
-        : "\n\nThis account does not have an active, verified campus membership. Answer general academic questions only; do not claim to know official campus policies, deadlines, fees or announcements.";
+      : knowledgeRetrievalFailed
+        ? "\n\nThe campus knowledge lookup could not be completed for this request. Answer general academic concepts only; do not claim or guess current official campus facts."
+        : canUseCampusSources
+          ? "\n\nNo relevant approved campus pages were found for this general academic question. Answer general academic material only; do not guess official campus facts."
+          : "\n\nThis account does not have an active, verified campus membership. Answer general academic questions only; do not claim to know official campus policies, deadlines, fees or announcements.";
     const imageValue = body.image;
     let studyImage: { mime_type: string; data_base64: string } | null = null;
     if (imageValue !== undefined && imageValue !== null) {
