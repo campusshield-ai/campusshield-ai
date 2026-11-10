@@ -117,7 +117,10 @@ test("Ideas & Impact promotes constructive thinking and routes reflection to pro
   await expect(goodThoughts.getByRole("button", { name: "Share a constructive idea" })).toBeVisible();
   await expect(page.locator("#cii-compose-details")).toHaveJSProperty("open", false);
   await goodThoughts.getByRole("button", { name: "Share a constructive idea" }).click();
-  await expect(page.locator("#cii-compose-details")).toHaveJSProperty("open", true);
+  // The fixture represents an unverified member: the reflection CTA must explain
+  // the contribution requirement instead of opening a privileged proposal form.
+  await expect(page.locator("#cii-status")).toContainText(/verify your campus membership/i);
+  await expect(page.locator("#cii-compose-details")).toHaveJSProperty("open", false);
   const sizes = await goodThoughts.evaluate(el => ({ client: el.clientWidth, scroll: el.scrollWidth }));
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client + 1);
 });
