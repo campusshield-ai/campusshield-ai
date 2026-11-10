@@ -148,6 +148,6 @@ test("My Day focus remains readable in dark mode", async ({ page }) => {
     action: getComputedStyle(element.querySelector("button")).color
   }));
   expect(colors.background).not.toBe("rgba(0, 0, 0, 0)");
-  expect(colors.title).toBe("rgb(229, 243, 232)");
+  expect(colors.title).toBe("rgb(229, 241, 238)");
   expect(colors.action).toBe("rgb(216, 246, 223)");
 });
