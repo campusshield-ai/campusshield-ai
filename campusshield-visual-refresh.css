@@ -429,6 +429,7 @@ html[data-theme="dark"] .mobile-bottom-nav {
 .campus-network-apply-form,.campus-network-intro-form {display:grid;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #e3ece5}
 .campus-network-apply-form label,.campus-network-intro-form label {font-size:.82rem;font-weight:700;color:#345044}
 .campus-network-apply-form textarea,.campus-network-intro-form textarea {width:100%;min-width:0;resize:vertical;border:1px solid #d5e1d8;border-radius:10px;padding:10px 12px;font:inherit;background:#fff}
+.campus-network-intro-form select {width:100%;min-width:0;border:1px solid #d5e1d8;border-radius:10px;padding:10px 12px;font:inherit;background:#fff;color:inherit}
 .campus-network-application {padding:12px;border:1px solid #e0eae3;border-radius:12px;background:#f7fbf8;margin-top:10px}
 .campus-network-review {margin-top:18px}
 .campus-network-footer {margin:20px 0 4px;padding:12px 14px;border:1px solid #dce9df;border-radius:13px;background:#f6faf7;color:#63746a;font-size:.8rem;line-height:1.6}
@@ -460,7 +461,9 @@ html[data-theme="dark"] .campus-network-section-head h2 {color:#e4f5e9}
 html[data-theme="dark"] .campus-network-tabs button {border-color:#315342;background:#142d21;color:#d7eadc}
 html[data-theme="dark"] .campus-network-tabs button[aria-selected="true"] {background:#8be3a0;border-color:#8be3a0;color:#08291f}
 html[data-theme="dark"] .campus-network-apply-form textarea,
-html[data-theme="dark"] .campus-network-intro-form textarea {border-color:#315342;background:#0d2419;color:#e5f1e9}
+html[data-theme="dark"] .campus-network-intro-form textarea,
+html[data-theme="dark"] .campus-network-intro-form select {border-color:#315342;background:#0d2419;color:#e5f1e9}
+html[data-theme="dark"] .campus-network-intro-form label {color:#cde3d4}
 
 /* The creator's private submissions stay visually separate from public network results. */
 .campus-network-my-posts {
