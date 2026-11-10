@@ -167,3 +167,76 @@ html[data-theme="dark"] #page-shieldmind .shieldmind-history-empty { border-colo
   #page-shieldmind .shieldmind-history-open,
   #page-shieldmind .shieldmind-history-delete { transition: none !important; }
 }
+
+
+/* ShieldMind source evidence and retrieval freshness. */
+#page-shieldmind .shieldmind-message-sources {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #d5e8da;
+  border-radius: 12px;
+  background: #f6fbf7;
+}
+#page-shieldmind .shieldmind-message-sources > strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #214b34;
+  font-size: 10px;
+  font-weight: 850;
+}
+#page-shieldmind .shieldmind-message-sources ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#page-shieldmind .shieldmind-message-sources li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 3px 7px;
+  min-width: 0;
+}
+#page-shieldmind .shieldmind-message-sources a,
+#page-shieldmind .shieldmind-message-sources li > span:not(.shieldmind-source-marker) {
+  min-width: 0;
+  color: #1f6840;
+  font-size: 10px;
+  font-weight: 720;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+#page-shieldmind .shieldmind-source-marker {
+  color: #315f43;
+  font-size: 10px;
+  font-weight: 850;
+}
+#page-shieldmind .shieldmind-message-sources .shieldmind-source-freshness,
+#page-shieldmind .shieldmind-message-sources .shieldmind-source-retrieved {
+  grid-column: 2;
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+#page-shieldmind .shieldmind-source-freshness.is-recent { color: #31754a; }
+#page-shieldmind .shieldmind-source-freshness.is-aging { color: #8b681f; }
+#page-shieldmind .shieldmind-source-freshness.is-stale { color: #94533b; }
+#page-shieldmind .shieldmind-source-freshness.is-unknown,
+#page-shieldmind .shieldmind-source-retrieved { color: #718578; }
+
+html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources {
+  border-color: #315943;
+  background: #10291e;
+}
+html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources > strong,
+html[data-theme="dark"] #page-shieldmind .shieldmind-source-marker { color: #c6e8ce; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources a,
+html[data-theme="dark"] #page-shieldmind .shieldmind-message-sources li > span:not(.shieldmind-source-marker) { color: #a9dfb8; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-source-freshness.is-recent { color: #9bd4a8; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-source-freshness.is-aging { color: #e4ca85; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-source-freshness.is-stale { color: #edb29a; }
+html[data-theme="dark"] #page-shieldmind .shieldmind-source-freshness.is-unknown,
+html[data-theme="dark"] #page-shieldmind .shieldmind-source-retrieved { color: #a3bba9; }
