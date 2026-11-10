@@ -7678,16 +7678,9 @@ $('resend-confirmation-button').addEventListener('click', async () => {
   try {
     msg.textContent = 'Sending confirmation email...';
 
-    const captcha = window.CampusShieldCaptcha;
-    if (!captcha) throw new Error('Security verification is unavailable. Refresh the page and try again.');
-    const captchaToken = captcha.getToken();
-    let resendResult;
-    try {
-      resendResult = await backend.resendConfirmation(email, captchaToken);
-    } finally {
-      captcha.reset();
-    }
-    const { error } = resendResult;
+    // Supabase's resend-confirmation endpoint relies on its email rate limits;
+    // its documented SDK call does not accept a CAPTCHA token.
+    const { error } = await backend.resendConfirmation(email);
     if (error) throw error;
 
     msg.textContent =
