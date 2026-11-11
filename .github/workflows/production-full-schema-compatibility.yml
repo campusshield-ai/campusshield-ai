@@ -1,4 +1,4 @@
-name: Full Production schema compatibility test
+name: Live Classroom Production schema compatibility test
 
 on:
   # Explicit manual reruns are useful after the protected repository secret is saved.
@@ -8,8 +8,9 @@ on:
     branches: [main, staging/preview]
     paths:
       - ".github/workflows/production-full-schema-compatibility.yml"
-      - "supabase/production-candidates/**"
-      - "tests/production-migration-candidate-postgres.sql"
+      - "supabase/production-candidates/20261111_campus_live_classroom_forward_candidate.sql"
+      - "supabase/production-candidates/20261111_live_classroom_production_preflight.sql"
+      - "supabase/production-candidates/20261111_live_classroom_production_postflight.sql"
       - "tests/production-live-classroom-contract.sql"
       - "tests/fixtures/production-full-schema-synthetic-seed.sql"
 
@@ -38,7 +39,7 @@ jobs:
           fi
 
   full-schema-compatibility:
-    name: Restore schema-only Production clone and execute candidate
+    name: Restore schema-only Production clone and execute Live Classroom candidate
     needs: check-credential
     if: needs.check-credential.outputs.ready == 'true'
     runs-on: ubuntu-latest
@@ -246,12 +247,12 @@ jobs:
             *) echo "::error::Expected PostgreSQL 17 but restored into $version"; exit 1 ;;
           esac
 
-      - name: Execute read-only candidate preflight
+      - name: Execute read-only Live Classroom Production preflight
         run: |
           psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
-            -f supabase/production-candidates/20261104_production_preflight.sql
+            -f supabase/production-candidates/20261111_live_classroom_production_preflight.sql
 
-      - name: Apply candidate phases and postflight assertions
+      - name: Apply Live Classroom candidate and postflight assertions
         shell: bash
         run: |
           set -euo pipefail
@@ -277,37 +278,21 @@ jobs:
           }
           before="$(helper_hash)"
           psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
-            -f supabase/production-candidates/20261104_campusmap_forward_candidate.sql
-          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
-            -f supabase/production-candidates/20261104_campuspulse_phase2_forward_candidate.sql
-          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
-            -f supabase/production-candidates/20261104_past_questions_forward_candidate.sql
-          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
-            -f supabase/production-candidates/20261104_production_postflight.sql
-          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
-            -f supabase/production-candidates/20261111_live_classroom_production_preflight.sql
-          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
             -f supabase/production-candidates/20261111_campus_live_classroom_forward_candidate.sql
           psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
             -f supabase/production-candidates/20261111_live_classroom_production_postflight.sql
           after="$(helper_hash)"
           if [[ "$before" != "$after" ]]; then
-            echo "::error::An existing Production identity/access helper changed during candidate execution."
+            echo "::error::An existing Production identity/access or shared classroom helper changed during the Live Classroom candidate execution."
             exit 1
           fi
-          echo "Existing Production identity/access and classroom helper definitions remained unchanged in the clone."
-
+          echo "Existing Production identity/access and shared classroom helper definitions remained unchanged in the clone."
       - name: Seed synthetic users and campus memberships in the disposable clone
         shell: bash
         run: |
           set -euo pipefail
           psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
             -f tests/fixtures/production-full-schema-synthetic-seed.sql
-
-      - name: Test synthetic authenticated roles and campus isolation
-        run: |
-          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
-            -f tests/production-migration-candidate-postgres.sql
 
       - name: Test Live Classroom authenticated roles and campus isolation
         run: |
