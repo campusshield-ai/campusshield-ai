@@ -142,6 +142,32 @@ async function requestRoomToken(account, role) {
   return { token: result.data.token, serverUrl: result.data.serverUrl, room: result.data.room };
 }
 
+function inspectAccessToken(account, access, role) {
+  const parts = String(access?.token || "").split(".");
+  assert.equal(parts.length, 3, role + " LiveKit access token must be a JWT");
+  let header;
+  let claims;
+  try {
+    header = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
+    claims = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+  } catch {
+    throw new Error(role + " LiveKit access token could not be decoded as a JWT.");
+  }
+  const now = Math.floor(Date.now() / 1000);
+  assert.equal(header.alg, "HS256", role + " token must use the LiveKit HS256 signing algorithm");
+  assert.equal(typeof claims.iss, "string", role + " token must contain a LiveKit API-key issuer");
+  assert.ok(claims.iss.length > 0, role + " token issuer must not be empty");
+  assert.equal(claims.sub, account.id, role + " token subject must match the authenticated Staging user");
+  assert.ok(Number.isFinite(claims.exp) && claims.exp > now + 60, role + " token must not be expired");
+  assert.ok(!Number.isFinite(claims.nbf) || claims.nbf <= now + 30, role + " token must already be valid");
+  assert.equal(claims.video?.roomJoin, true, role + " token must grant roomJoin");
+  assert.equal(typeof claims.video?.room, "string", role + " token must contain a room name");
+  assert.ok(claims.video.room.length > 0, role + " token room name must not be empty");
+  assert.equal(claims.video?.canPublish, true, role + " token must allow microphone, camera and screen publication");
+  assert.equal(claims.video?.canSubscribe, true, role + " token must allow receiving participant tracks");
+  return { issuer: claims.iss, room: claims.video.room };
+}
+
 async function createLocalOrigin() {
   server = createServer((_request, response) => {
     response.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
@@ -161,7 +187,8 @@ async function createLiveRoomPage(context, access, localRole) {
   await page.goto(serverUrl, { waitUntil: "domcontentloaded" });
   await page.addScriptTag({ url: LIVEKIT_CLIENT_URL });
   await page.waitForFunction(() => Boolean(window.LivekitClient?.Room && window.LivekitClient?.RoomEvent));
-  await page.evaluate(async ({ token, url, role }) => {
+  try {
+    await page.evaluate(async ({ token, url, role }) => {
     const sdk = window.LivekitClient;
     const room = new sdk.Room({ adaptiveStream: false, dynacast: false });
     const stats = { remoteTracks: [], participants: [], disconnected: false };
@@ -184,7 +211,16 @@ async function createLiveRoomPage(context, access, localRole) {
     await room.connect(url, token);
     await room.localParticipant.setMicrophoneEnabled(true);
     await room.localParticipant.setCameraEnabled(true);
-  }, { token: access.token, url: access.serverUrl, role: localRole });
+    }, { token: access.token, url: access.serverUrl, role: localRole });
+  } catch (error) {
+    const message = error?.message || String(error);
+    if (/invalid token|unauthorized|not authorized/i.test(message)) {
+      throw new Error(
+        "LiveKit rejected the token minted by the Staging Edge Function. The JWT shape and claims were checked before connect; verify LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET are the matching values from one LiveKit project. LiveKit response: " + message
+      );
+    }
+    throw error;
+  }
   return page;
 }
 
@@ -348,6 +384,11 @@ async function run() {
       requestRoomToken(student, "student"),
     ]);
     assert.equal(teacherAccess.serverUrl, studentAccess.serverUrl, "Both participants must receive the same LiveKit server URL");
+    const teacherClaims = inspectAccessToken(teacher, teacherAccess, "Lecturer");
+    const studentClaims = inspectAccessToken(student, studentAccess, "Student");
+    assert.equal(teacherClaims.issuer, studentClaims.issuer, "Both tokens must be issued by the same LiveKit API key");
+    assert.equal(teacherClaims.room, studentClaims.room, "Both tokens must authorize the same LiveKit room");
+    console.log("PASS: both Staging room tokens have valid structure, future expiry, correct user identities, matching issuer/room and publish/subscribe grants.");
 
     await createLocalOrigin();
     browser = await chromium.launch({
