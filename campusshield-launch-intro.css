@@ -66,7 +66,10 @@
   border-radius: 999px;
   background: rgba(4, 26, 19, .48);
   color: #eaf7ed;
-  font: 700 12px/1.2 inherit;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
   letter-spacing: .02em;
   cursor: pointer;
   backdrop-filter: blur(12px);
@@ -184,7 +187,10 @@
 #campusshield-launch-intro .cs-launch-eyebrow {
   margin: 0 0 10px;
   color: #a4e9b1;
-  font: 850 10px/1.4 inherit;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1.4;
   letter-spacing: .22em;
   opacity: 0;
   animation: cs-launch-copy 650ms ease 1.35s forwards;
@@ -193,7 +199,10 @@
 #campusshield-launch-intro .cs-launch-title {
   margin: 0;
   color: #f6fcf7;
-  font: 780 clamp(30px, 6.3vw, 54px)/1.06 inherit;
+  font-family: inherit;
+  font-size: clamp(30px, 6.3vw, 54px);
+  font-weight: 780;
+  line-height: 1.06;
   letter-spacing: -.055em;
   opacity: 0;
   animation: cs-launch-copy 680ms ease 1.48s forwards;
