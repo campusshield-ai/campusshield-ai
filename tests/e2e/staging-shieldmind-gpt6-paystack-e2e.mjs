@@ -197,7 +197,7 @@ async function runPaystackAcceptance() {
     'input[placeholder*="security code" i]',
   ], "408", "card CVV");
 
-  const payButton = page.getByRole("button", { name: /pay|complete|submit/i }).filter({ visible: true }).last();
+  const payButton = page.locator('button:visible').filter({ hasText: /pay|complete|submit/i }).last();
   await payButton.click();
   await page.waitForURL(/billing=return/, { timeout: 120000, waitUntil: "domcontentloaded" });
 
