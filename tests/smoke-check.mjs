@@ -969,7 +969,10 @@ assert.ok(lostFoundHandlerStart >= 0 && lostFoundHandlerEnd > lostFoundHandlerSt
 const lostFoundHandler = html.slice(lostFoundHandlerStart, lostFoundHandlerEnd);
 assert.ok(lostFoundHandler.includes("postType.value = 'lost_found'"), "shortcut preselects the Lost & Found post type");
 assert.ok(lostFoundHandler.includes("communityPostForm"), "shortcut targets the community composer");
-assert.ok(lostFoundHandler.includes("scrollIntoView({behavior: 'smooth', block: 'start'})"), "shortcut scrolls to the composer");
+assert.ok(lostFoundHandler.includes("scrollIntoView({") &&
+  lostFoundHandler.includes("prefers-reduced-motion: reduce") &&
+  lostFoundHandler.includes("block: 'start'"),
+  "shortcut scrolls to the composer while respecting reduced-motion preferences");
 assert.ok(lostFoundHandler.includes("Do not post private contact details or sensitive personal information"), "shortcut includes privacy guidance");
 assert.match(html, /crawlerPanel\.hidden = !isCrawlerOwner/, "crawler panel is hidden for all other platform administrators");
 assert.match(html, /This crawler is restricted to its designated owner\./, "crawler UI repeats the owner-only guard");
