@@ -9,7 +9,7 @@ assert.ok(html.includes('href="./campusshield-launch-intro.css"'), "launch intro
 assert.ok(html.includes('src="./campusshield-launch-intro.js"'), "launch intro script is linked");
 assert.ok(html.indexOf('src="./campusshield-launch-intro.js"') < html.indexOf("</head>"), "intro bootstrap runs before app scripts");
 assert.ok(html.includes("</body>"), "app document remains complete");
-assert.ok(script.includes('localStorage.getItem(STORAGE_KEY)'), "launch history is persisted");
+assert.ok(script.includes('storage.getItem(STORAGE_KEY)'), "launch history is persisted");
 assert.ok(script.includes("REPEAT_AFTER_MS = 45 * 24 * 60 * 60 * 1000"), "repeat interval is 45 days");
 assert.ok(script.includes("MIN_UPDATE_GAP_MS = 30 * 24 * 60 * 60 * 1000"), "major update repeats observe the 30-day minimum");
 assert.ok(script.includes('window.matchMedia("(prefers-reduced-motion: reduce)")'), "reduced-motion preference is respected");
