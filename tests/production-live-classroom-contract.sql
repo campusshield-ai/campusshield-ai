@@ -19,7 +19,7 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.campus_classrooms WHERE id=v_classroom_id AND teacher_id='22222222-2222-4222-8222-000000000001' AND university_id='11111111-1111-4111-8111-111111111111') THEN
     RAISE EXCEPTION 'Admin-created classroom ownership or campus scope is incorrect.';
   END IF;
-  IF NOT private.can_manage_campus_live_classroom(v_classroom_id) THEN
+  IF NOT public.get_campus_live_classroom_capabilities(v_classroom_id) THEN
     RAISE EXCEPTION 'Verified same-campus admin cannot manage the classroom they created.';
   END IF;
 
