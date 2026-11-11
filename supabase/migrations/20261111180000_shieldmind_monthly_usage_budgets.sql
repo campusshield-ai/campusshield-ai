@@ -56,12 +56,12 @@ begin
   end if;
 
   case v_plan
-    when 'starter' then v_minute_limit := 5;  v_day_limit := 25;  v_month_limit := 200;
-    when 'plus'    then v_minute_limit := 10; v_day_limit := 50;  v_month_limit := 500;
-    when 'pro'     then v_minute_limit := 15; v_day_limit := 100; v_month_limit := 1500;
-    when 'ultra'   then v_minute_limit := 20; v_day_limit := 150; v_month_limit := 3000;
-    when 'max'     then v_minute_limit := 30; v_day_limit := 250; v_month_limit := 5000;
-    when 'premium' then v_minute_limit := 5;  v_day_limit := 25;  v_month_limit := 200;
+    when 'starter' then v_minute_limit := 5;  v_day_limit := 25;  v_month_limit := 150;
+    when 'plus'    then v_minute_limit := 10; v_day_limit := 40;  v_month_limit := 400;
+    when 'pro'     then v_minute_limit := 15; v_day_limit := 80;  v_month_limit := 1000;
+    when 'ultra'   then v_minute_limit := 20; v_day_limit := 120; v_month_limit := 2000;
+    when 'max'     then v_minute_limit := 30; v_day_limit := 200; v_month_limit := 3500;
+    when 'premium' then v_minute_limit := 5;  v_day_limit := 25;  v_month_limit := 150;
     else
       return query select false, 0;
       return;
@@ -246,7 +246,8 @@ returns table(
   period_start timestamptz,
   expires_at timestamptz,
   image_upload_limit integer,
-  image_uploads_used integer
+  image_uploads_used integer,
+  last_model text
 )
 language plpgsql
 stable
@@ -274,12 +275,12 @@ begin
   if not found or v_period_start is null then return; end if;
 
   v_request_limit := case v_plan
-    when 'starter' then 200
-    when 'plus' then 500
-    when 'pro' then 1500
-    when 'ultra' then 3000
-    when 'max' then 5000
-    when 'premium' then 200
+    when 'starter' then 150
+    when 'plus' then 400
+    when 'pro' then 1000
+    when 'ultra' then 2000
+    when 'max' then 3500
+    when 'premium' then 150
     else 0 end;
 
   select * into v_month_row from private.shieldmind_monthly_usage
@@ -301,7 +302,8 @@ begin
     v_period_start,
     v_expires_at,
     coalesce(v_image_limit,0),
-    coalesce(v_image_used,0);
+    coalesce(v_image_used,0),
+    coalesce(v_month_row.last_model,'gpt-6-luna');
 end;
 $function$;
 revoke all on function private.get_my_shieldmind_usage_impl() from public,anon;
