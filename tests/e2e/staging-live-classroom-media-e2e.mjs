@@ -120,6 +120,23 @@ async function createSyntheticUser(spec, university) {
   return { id: user.id, email, client, key: spec.key };
 }
 
+async function validateLiveKitServerCredentials(account, sessionId) {
+  const result = await account.client.functions.invoke("campus-live-class-token", {
+    body: { session_id: sessionId, diagnostic: true },
+  });
+  if (result.error) {
+    const details = await errorDetails(result.error);
+    throw new Error("Staging LiveKit server credential probe failed: " + details);
+  }
+  assert.equal(result.data?.diagnostic, true, "Staging token function must complete the server credential diagnostic");
+  assert.equal(
+    result.data?.credentialsAccepted,
+    true,
+    "LiveKit must accept the configured Staging server URL and API key/secret pair before media tokens are tested"
+  );
+  return result.data.serverHost;
+}
+
 async function requestRoomToken(account, role) {
   const result = await account.client.functions.invoke("campus-live-class-token", {
     body: { session_id: sessionId },
@@ -378,6 +395,9 @@ async function run() {
       body: { session_id: sessionId },
     });
     assert.ok(studentCannotEnd.error, "Enrolled student must not be allowed to end the live class");
+
+    const livekitHost = await validateLiveKitServerCredentials(teacher, sessionId);
+    console.log("PASS: Staging LiveKit server accepted its server-side API key/secret pair for " + livekitHost + ".");
 
     const [teacherAccess, studentAccess] = await Promise.all([
       requestRoomToken(teacher, "lecturer"),
