@@ -991,7 +991,7 @@
     sync();
   })();
 
-  function navigate(page) {
+  function navigate(page, sourceButton = null) {
     if (!currentProfile) {
       showLogin('Please sign in to access CampusShield.');
       return;
@@ -1068,13 +1068,27 @@
       el.classList.toggle('active', el.id === 'page-' + page)
     );
 
-    document.querySelectorAll('[data-page]').forEach(el => {
-      const active = el.dataset.page === page ||
-        (el.id === 'community-nav' && page === 'groups') ||
-        (el.id === 'events-services-nav' && ['noticeboard','helpdesk','marketplace'].includes(page));
+    const sidebar = document.getElementById('app-sidebar');
+    const selectedSidebarButton = sourceButton && sidebar?.contains(sourceButton) ? sourceButton : null;
+    const selectedCommunityNavId = selectedSidebarButton?.dataset.page === 'community' &&
+      ['community-nav', 'lost-found-nav', 'ideas-impact-nav'].includes(selectedSidebarButton.id)
+      ? selectedSidebarButton.id
+      : 'community-nav';
+
+    // Active state belongs to navigation controls only. Multiple destinations
+    // share the community page, so retain the exact sidebar destination selected.
+    document.querySelectorAll('#app-sidebar [data-page], .mobile-bottom-nav [data-page]').forEach(el => {
+      const inSidebar = sidebar?.contains(el);
+      const active = inSidebar
+        ? (page === 'community'
+            ? el.id === selectedCommunityNavId
+            : el.dataset.page === page ||
+              (el.id === 'community-nav' && page === 'groups') ||
+              (el.id === 'events-services-nav' && ['noticeboard', 'helpdesk'].includes(page)))
+        : el.dataset.page === page;
       el.classList.toggle('active', active);
       if (active) el.setAttribute('aria-current', 'page');
-      else el.removeAttribute('aria-current');
+      else el.removeAttribute('aria-current', 'page');
     });
 
     const names = {
@@ -3351,7 +3365,7 @@
     if (!button) return;
     if (button.tagName === 'A') e.preventDefault();
     if (button.dataset.courseSearch && $('campus-groups-search')) $('campus-groups-search').value = button.dataset.courseSearch;
-    navigate(button.dataset.page);
+    navigate(button.dataset.page, button);
     if (button.dataset.quickAction === 'incident-status') {
       const target = $('recent-reports-panel');
       if (target) target.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
@@ -3380,9 +3394,26 @@
       const postType = $('community-post-type');
       if (postType) postType.value = 'lost_found';
       const composer = $('communityPostForm');
-      if (composer) composer.scrollIntoView({behavior: 'smooth', block: 'start'});
+      if (composer) composer.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'start'
+      });
       const notice = $('community-post-message');
       if (notice) notice.textContent = 'Lost & Found: share a brief description and general location. Do not post private contact details or sensitive personal information.';
+    }
+    if (button.id === 'community-nav') {
+      document.querySelector('#page-community > .heading')?.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'start'
+      });
+    }
+    if (button.id === 'ideas-impact-nav') {
+      const scrollToIdeas = () => document.getElementById('campus-ideas-impact')?.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'start'
+      });
+      if (document.getElementById('campus-ideas-impact')) scrollToIdeas();
+      else window.setTimeout(scrollToIdeas, 160);
     }
     if (button.dataset.page === 'groups') loadCampusGroupsPage();
     if (button.dataset.page === 'timetable') window.CampusShieldTimetable?.load();
