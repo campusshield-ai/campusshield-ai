@@ -18,6 +18,8 @@ on:
       - "campusshield-launch-intro.css"
       - "campusshield-launch-intro.js"
       - "tests/campusshield-launch-intro-smoke.mjs"
+      - "tests/browser/launch-intro.spec.cjs"
+      - "playwright.config.cjs"
       - ".github/workflows/campusshield-launch-intro.yml"
 
 permissions:
