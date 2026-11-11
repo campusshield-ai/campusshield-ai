@@ -266,7 +266,8 @@ jobs:
                   'current_user_can_use_restricted_features',
                   'current_user_has_verified_campus_access',
                   'is_campusshield_owner_admin',
-                  'current_campus_account_status'
+                  'current_campus_account_status',
+                  'is_campus_network_member_blocked'
                 );
             "
           }
