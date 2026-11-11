@@ -651,3 +651,17 @@ assert.match(js, /event\.key === 'Escape'/, 'Layer panel supports Escape-key dis
 assert.match(js, /setMapLayerPanelOpen\(false\)/, 'Layer panel can close without changing map data');
 
 console.log('CampusMap static smoke checks passed.');
+
+// Production backport must not offer the GLB upload path until its private bucket and RPC are deployed.
+assert.match(mapConfig, /privateModelUploadsEnabled = false/,
+  'Private GLB model uploads remain disabled until Production Storage and the submission RPC are deployed');
+assert.match(js, /privateModelUploadsEnabled !== true/,
+  'The model submission handler fails closed while private model uploads are disabled');
+assert.match(html, /id="campus-map-profile-model-file"[^>]*disabled/,
+  'The unavailable private GLB file picker is disabled in this release');
+assert.match(html, /id="campus-map-profile-model-upload"[^>]*disabled/,
+  'The unavailable private GLB upload action is disabled in this release');
+assert.match(js, /Private GLB uploads are not enabled in this release/,
+  'Campus administrators receive a clear explanation of the disabled model upload');
+assert.doesNotMatch(js, /private Staging storage|staging migration/,
+  'Production-facing CampusMap messages do not refer to Staging');
