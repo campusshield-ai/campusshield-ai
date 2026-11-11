@@ -49,6 +49,45 @@ from (
     ('private.is_campusshield_owner_admin()',to_regprocedure('private.is_campusshield_owner_admin()') is not null)
 ) as f(helper_name,present);
 
+-- CampusPulse reuses the member-block helper introduced by the Production Campus Network release.
+-- Validate the pre-existing definition before Phase 2 grants it to authenticated RLS callers.
+do $member_block_dependency_preflight$
+declare
+  v_oid oid;
+  v_definition text;
+  v_security_definer boolean;
+  v_config text[];
+begin
+  select p.oid,p.prosecdef,p.proconfig
+    into v_oid,v_security_definer,v_config
+  from pg_proc p
+  join pg_namespace n on n.oid=p.pronamespace
+  where n.nspname='private'
+    and p.proname='is_campus_member_blocked'
+    and pg_get_function_identity_arguments(p.oid)='p_other_user_id uuid, p_university_id uuid';
+
+  if v_oid is null then
+    raise exception 'The existing Production private.is_campus_member_blocked(uuid,uuid) dependency is missing.';
+  end if;
+
+  select pg_get_functiondef(v_oid) into v_definition;
+  if not v_security_definer
+     or array_position(coalesce(v_config,array[]::text[]),'search_path=""') is null
+     or v_definition not ilike '%b.university_id = p_university_id%'
+     or v_definition not ilike '%b.blocker_id = (select auth.uid())%'
+     or v_definition not ilike '%b.blocked_id = p_other_user_id%'
+     or v_definition not ilike '%b.blocker_id = p_other_user_id%'
+     or v_definition not ilike '%b.blocked_id = (select auth.uid())%' then
+    raise exception 'The existing Production member-block helper differs from the reviewed reciprocal SECURITY DEFINER implementation.';
+  end if;
+
+  if has_function_privilege('anon',v_oid,'EXECUTE')
+     or has_function_privilege('public',v_oid,'EXECUTE') then
+    raise exception 'The existing Production member-block helper has an unsafe anon/PUBLIC EXECUTE grant.';
+  end if;
+end
+$member_block_dependency_preflight$;
+
 -- Stop if a candidate RPC already exists before these first-time table additions.
 -- Some source migrations replace earlier definitions within this same candidate phase;
 -- this guard ensures those DROP/CREATE transitions cannot touch pre-existing Production RPCs.
@@ -65,7 +104,6 @@ begin
     'private.manage_campus_map_feature_impl(uuid,text,text,text,text,text,double precision,double precision,text,boolean,boolean,jsonb)',
     'public.manage_campus_map_campus(uuid,text,text,text,text,double precision,double precision,text,text,jsonb,text,text)',
     'private.manage_campus_map_campus_impl(uuid,text,text,text,text,double precision,double precision,text,text,jsonb,text,text)',
-    'private.is_campus_member_blocked(uuid,uuid)',
     'private.prepare_campuspulse_social_item()',
     'private.prepare_campus_peer_connection()',
     'private.prepare_campus_social_report()',
