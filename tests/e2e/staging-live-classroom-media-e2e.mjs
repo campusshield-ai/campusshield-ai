@@ -267,7 +267,8 @@ async function cleanup() {
 }
 
 async function run() {
-  const serviceRoleCheck = await admin.auth.admin.listUsers({ page: 1, perPage: 1 });
+  try {
+    const serviceRoleCheck = await admin.auth.admin.listUsers({ page: 1, perPage: 1 });
   if (serviceRoleCheck.error) {
     throw new Error("Could not validate SUPABASE_STAGING_SERVICE_ROLE_KEY. Check that it is the current Staging server-side key. No test fixtures were created.");
   }
@@ -290,7 +291,6 @@ async function run() {
     campusRole: "student",
   }, university);
 
-  try {
     const classResult = await teacher.client.rpc("create_campus_classroom", {
       p_name: "Live Media E2E " + runId.slice(0, 8),
       p_subject: "Synthetic Live Classroom",
