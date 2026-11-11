@@ -1,81 +1,11 @@
 -- Allow verified campus administrators to create and own classrooms
 -- only within their active, verified university membership.
+--
+-- Keep the current Production architecture: SECURITY INVOKER public RPC,
+-- with the guarded write implementation in the non-exposed private schema.
+-- Do not alter private.can_access_classroom; existing classroom access remains
+-- governed by its current campus teacher/admin/student checks.
 
-create or replace function private.is_verified_classroom_teacher(p_classroom_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $function$
-  select exists (
-    select 1
-    from public.campus_classrooms c
-    join public.profiles p on p.id = (select auth.uid())
-    join public.campus_memberships m
-      on m.user_id = p.id
-     and m.university_id = c.university_id
-    join public.campus_universities u
-      on u.id = c.university_id
-    where c.id = p_classroom_id
-      and c.teacher_id = p.id
-      and p.verification_status = 'verified'
-      and m.membership_status = 'active'
-      and m.verification_status = 'verified'
-      and (
-        (p.role = 'teacher' and m.campus_role = 'teacher')
-        or
-        (p.role = 'admin' and m.campus_role = 'admin' and u.is_active = true)
-      )
-  );
-$function$;
-
-revoke all on function private.is_verified_classroom_teacher(uuid) from public, anon, authenticated;
-
--- Keep student enrollment and appointed-assistant access intact. A verified
--- campus admin gets the full classroom workspace only for a class they own.
-create or replace function private.can_access_classroom(p_classroom_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $function$
-  select
-    private.is_verified_classroom_teacher(p_classroom_id)
-    or exists (
-      select 1
-      from public.campus_classrooms c
-      join public.profiles p on p.id = (select auth.uid())
-      join public.campus_memberships m
-        on m.user_id = p.id
-       and m.university_id = c.university_id
-      where c.id = p_classroom_id
-        and p.verification_status = 'verified'
-        and m.membership_status = 'active'
-        and m.verification_status = 'verified'
-        and (
-          (
-            c.assistant_student_id = p.id
-            and p.role = 'student'
-            and m.campus_role = 'student'
-          )
-          or (
-            p.role = 'student'
-            and m.campus_role = 'student'
-            and exists (
-              select 1
-              from public.campus_classroom_enrollments e
-              where e.classroom_id = c.id
-                and e.student_id = p.id
-            )
-          )
-        )
-    );
-$function$;
-
--- Preserve the existing invoker-facing RPC. The implementation runs in the
--- non-exposed private schema and repeats all caller, role, and membership checks.
 create or replace function private.create_campus_classroom_impl(
   p_name text,
   p_subject text,
