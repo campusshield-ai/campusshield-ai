@@ -84,3 +84,21 @@ No Production or Staging database writes were performed during this review.
 ## Isolated execution environment status
 
 The current working runtime does not have Docker/Podman, the Supabase CLI, or a local PostgreSQL server/client installed. Consequently, the three candidate SQL phases have not been executed locally. The 74 direct source assertions and successful static GitHub Actions run are not substitutes for a disposable PostgreSQL database derived from the Production schema and role/campus-isolation E2E tests. No paid Supabase branch has been created.
+
+
+## Current Production schema compatibility rerun — 11 November 2026
+
+The candidate package was refreshed on a branch based on current `main` and tested against a fresh schema-only export of current Production PostgreSQL 17.11. The current dump includes the campus-scoped student-identity document security migration and the Campus Network privacy/performance migration applied on 10–11 November.
+
+The full disposable-clone workflow completed successfully:
+- Production schema-only export and restore to a fresh PostgreSQL 17 database.
+- Read-only current-schema preflight, including function-collision and Storage policy checks.
+- CampusMap, CampusPulse Phase 2 and Past Questions candidate phases in order.
+- Structural postflight, explicit Data API grants and Production-only billing/payment table preservation.
+- Existing Production identity/access helper hash remained unchanged.
+- Synthetic admin, teacher, approved/unapproved student and two-campus isolation tests passed, including CampusMap draft visibility, CampusPulse same-campus isolation and Past Questions reviewer-only answer keys.
+- Synthetic fixture cleanup ran on the disposable clone and the temporary schema dump was removed from the ephemeral runner.
+
+The current Production Campus Network release already owns `public.campus_member_blocks` and `private.is_campus_member_blocked(uuid,uuid)`. The Phase 2 candidate was corrected to validate and reuse these objects, rather than treating them as first-time additions. It leaves the separate `private.is_campus_network_member_blocked(uuid)` helper from the 11 November privacy release unchanged; the full-schema workflow hashes that helper before and after candidate execution.
+
+This is an isolated schema/role compatibility pass, not approval to roll out all application features. Apply each phase only with its own Staging browser/role acceptance and release sequence. The full run is recorded at GitHub Actions run [42931952542](https://github.com/campusshield-ai/campusshield-ai/actions/runs/42931952542).
