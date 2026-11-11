@@ -101,7 +101,7 @@
     root.innerHTML =
       '<div class="cs-live-toolbar"><label for="cs-live-classroom-select">Choose classroom</label>' +
       '<select id="cs-live-classroom-select" data-live-classroom-select>' + options + '</select></div>' +
-      (canManage ? '<section class="cs-live-create-card"><div class="cs-live-section-title"><div><h3>Schedule an online class</h3><p>Create a live room for this classroom. Students can join when you start it.</p></div><span class="cs-live-icon">◉</span></div>' +
+      (canManage ? '<section class="cs-live-create-card" data-live-manager-controls="true"><div class="cs-live-section-title"><div><span class="cs-live-manager-pill">LECTURER &amp; CAMPUS ADMIN CONTROLS</span><h3>Manage live classes</h3><p>Verified lecturers assigned to this classroom and verified campus admins at this university can schedule classes, start or end sessions, and add recording links.</p></div><span class="cs-live-icon" aria-hidden="true">◉</span></div>' +
         '<form id="cs-live-create-form">' +
         '<div class="cs-live-form-grid"><label>Class title *<input name="title" required minlength="3" maxlength="160" placeholder="e.g. CSC 201 — Week 4 lecture"></label>' +
         '<label>Start date &amp; time *<input name="scheduled_at" type="datetime-local" required></label>' +

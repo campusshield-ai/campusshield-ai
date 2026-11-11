@@ -6,6 +6,8 @@
 .cs-live-section-title h3,.cs-live-session-head h3,.cs-live-room-heading h3{margin:0 0 5px;font-size:17px}
 .cs-live-section-title p,.cs-live-room-footnote{margin:0;color:var(--muted,#71828a);font-size:12px}
 .cs-live-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#e8f7f1;color:#147c62;font-size:23px}
+.cs-live-manager-pill{display:inline-flex;align-items:center;margin:0 0 7px;padding:5px 9px;border:1px solid #cfe8dd;border-radius:999px;background:#edf8f2;color:#176a50;font-size:9px;font-weight:900;letter-spacing:.09em}
+.cs-live-create-card[data-live-manager-controls="true"]{border-color:#cfe8dd;background:linear-gradient(180deg,#fff,#f7fcf9)}
 .cs-live-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:15px}
 .cs-live-full-field{margin-top:13px}
 .cs-live-full-field textarea{resize:vertical}
