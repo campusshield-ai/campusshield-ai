@@ -321,7 +321,8 @@ returns table(
   period_start timestamptz,
   expires_at timestamptz,
   image_upload_limit integer,
-  image_uploads_used integer
+  image_uploads_used integer,
+  last_model text
 )
 language sql
 stable
