@@ -126,6 +126,11 @@
       if (event.key === "Escape") {
         event.preventDefault();
         finish(true);
+        return;
+      }
+      if (event.key === "Tab") {
+        event.preventDefault();
+        skipButton.focus();
       }
     }
 
