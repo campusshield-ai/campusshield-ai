@@ -311,7 +311,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const providerKey = Deno.env.get("OPENAI_API_KEY");
-    const model = Deno.env.get("SHIELDMIND_MODEL") || "gpt-4.1-mini";
+    const model = "gpt-6-luna";
     if (!providerKey) {
       return json({
         mode: "safe_fallback",
@@ -363,7 +363,7 @@ Deno.serve(async (req: Request) => {
         method: "POST",
         signal: controller.signal,
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${providerKey}` },
-        body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: 700 }),
+        body: JSON.stringify({ model, messages, reasoning_effort: "low", max_completion_tokens: 900 }),
       });
     } finally { clearTimeout(timeout); }
     if (providerResponse.status === 429) {
@@ -417,6 +417,32 @@ Deno.serve(async (req: Request) => {
     }
     const completion = await providerResponse.json().catch(() => null);
     const answer = completion?.choices?.[0]?.message?.content;
+    const inputTokens = Number(completion?.usage?.prompt_tokens ?? completion?.usage?.input_tokens ?? 0);
+    const outputTokens = Number(completion?.usage?.completion_tokens ?? completion?.usage?.output_tokens ?? 0);
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (serviceRoleKey && Number.isSafeInteger(inputTokens) && Number.isSafeInteger(outputTokens)) {
+      const usageClient = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { error: usageRecordError } = await usageClient.rpc("record_shieldmind_usage", {
+        p_user_id: user.id,
+        p_input_tokens: inputTokens,
+        p_output_tokens: outputTokens,
+        p_model: model,
+      });
+      if (usageRecordError) {
+        console.error("ShieldMind token usage could not be recorded", {
+          stage: "usage_record",
+          errorCode: usageRecordError.code || null,
+          errorName: usageRecordError.name || null,
+        });
+      }
+    } else {
+      console.error("ShieldMind token usage could not be recorded", {
+        stage: "usage_record",
+        reason: serviceRoleKey ? "provider_usage_missing" : "service_role_unavailable",
+      });
+    }
     if (typeof answer !== "string" || !answer.trim()) return json({ error: "ShieldMind received an empty answer. Please try again." }, 502);
     const validatedAnswer = validateKnowledgeCitations(answer.slice(0, 8000), responseSources);
     const answerCitesStaleSource = validatedAnswer.usedSources.some(source =>
