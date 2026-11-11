@@ -32,6 +32,10 @@
 <link rel="stylesheet" href="./campus-dashboard-upgrade.css">
 <link rel="stylesheet" href="./shieldmind-learning-insights.css">
 <link rel="stylesheet" href="./shieldmind-chat-history.css?v=20261110-1">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
+<link rel="stylesheet" href="./campus-map.css">
+<link rel="stylesheet" href="./campus-map-passport.css">
+<link rel="stylesheet" href="./campus-dashboard-insights.css">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <title>CampusShield AI | Intelligent Campus Safety</title>
@@ -2683,6 +2687,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <button class="active" data-page="dashboard"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span data-original-label="Overview">Dashboard</button>
 <button data-page="report"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z"/><path d="M12 8v4M12 16h.01"/></svg></span data-original-label="Safety &amp; Report Incident">Report incident</button><button data-page="manage" id="manage-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>Incident management</button><button data-page="risk" id="risk-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8.5 5v8L12 21l-8.5-5V8L12 3Z"/><path d="M12 8v4.5M12 16h.01"/></svg></span>Risk analysis</button>
 <div class="nav-section-label">CAMPUS LIFE</div>
+<button data-page="campus-map" id="campus-map-nav"><span class="nav-icon" aria-hidden="true">⌖</span>CampusMap</button>
 <button data-page="community" id="community-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5a3 3 0 0 1 0 6M18 14a4 4 0 0 1 3 3.9V20"/></svg></span data-original-label="CampusPulse &amp; Groups">CampusPulse</button><button data-page="community" id="lost-found-nav" data-lost-found-shortcut="true"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg></span>Lost &amp; Found</button><button data-page="campus-chat" id="campus-chat-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>Campus Chat</button><button data-page="campus-messages" id="campus-messages-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="3"/><path d="m8 18-3 3v-3M7 9h10M7 13h6"/></svg></span>Private Messages</button><button data-page="community" id="ideas-impact-nav" data-ideas-impact-nav="true"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M8.2 14.5A7 7 0 1 1 15.8 14.5c-.8.6-1.3 1.6-1.3 2.5h-5c0-.9-.5-1.9-1.3-2.5Z"/><path d="M12 3v2M4.9 6l1.4 1.4M19.1 6l-1.4 1.4"/></svg></span>Ideas &amp; Impact</button>
 <button data-page="events" id="events-services-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span data-original-label="Events &amp; Campus Services">Events &amp; Campus services</button><button data-page="student-rewards" id="student-rewards-nav"><span class="nav-icon" aria-hidden="true">✧</span>Challenges &amp; Rewards</button>
 <div class="nav-section-label">CAMPUS NETWORK</div>
@@ -2956,7 +2961,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <div class="grid two">
 <div class="field"><label for="category">Incident category *</label><select id="category" required><option value="">Select category</option><option>Medical emergency</option><option>Fire or smoke</option><option>Security concern</option><option>Accident or injury</option><option>Harassment or misconduct</option><option>Facility hazard</option><option>Theft or property</option><option>Other</option></select></div>
 <div class="field"><label for="severity">Severity *</label><select id="severity" required><option value="">Select severity</option><option>High</option><option>Medium</option><option>Low</option></select></div>
-<div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" required placeholder="e.g. Main library entrance"></div>
+<div class="field"><label for="location">Campus location *</label><input id="location" maxlength="100" required placeholder="e.g. Main library entrance"></div><div class="field report-location-pin"><label>Optional map pin</label><button class="btn secondary" type="button" id="report-use-location">◎ Attach my GPS location</button><input id="report-latitude" type="hidden"><input id="report-longitude" type="hidden"><small id="report-location-status" class="muted">Optional: click to request browser location permission. Coordinates are saved only when you submit this report and are visible only under your existing campus incident access rules.</small></div>
 <div class="field" style="align-self:end"><span class="muted">Your signed-in account is linked to this report automatically.</span></div>
 </div>
 <div class="field"><label for="description">Description *</label><textarea id="description" maxlength="800" required placeholder="Describe what happened and any immediate concerns..."></textarea></div>
@@ -3113,6 +3118,231 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     <p id="campus-helpdesk-staff-status" class="message" role="status" aria-live="polite">Loading campus queue…</p>
     <div id="campus-helpdesk-staff-queue"><div class="community-empty">Loading the campus queue…</div></div>
   </section>
+</section>
+
+<section class="page" id="page-campus-map" aria-labelledby="campus-map-title">
+  <div class="heading"><div><p class="hero-eyebrow">Explore your university</p><h1 id="campus-map-title">CampusMap</h1><p>Find verified campus buildings, facilities and walking directions.</p></div></div>
+  <div class="panel">
+    <div class="campus-map-view-status">
+      <div><strong>Campus map · data coverage and confidence</strong><small id="campus-map-scale-summary">Loading map scale…</small><small id="campus-map-3d-coverage">Building coverage has not been assessed.</small></div>
+      <button class="campus-map-action primary" type="button" id="campus-map-center">Centre campus</button>
+    </div>
+    <div id="campus-map-coverage-overview" class="campus-map-coverage-overview" aria-label="CampusMap coverage summary" aria-live="polite">
+      <div class="campus-map-coverage-card" data-state="neutral"><span>Verified campus footprints</span><strong id="campus-map-verified-count">—</strong><small>Reviewed campus building shapes</small></div>
+      <div class="campus-map-coverage-card"><span>Map footprint records</span><strong id="campus-map-record-count">—</strong><small>Campus-specific records loaded</small></div>
+      <div class="campus-map-coverage-card" id="campus-map-review-coverage-card" hidden data-state="pending"><span>Pending admin review</span><strong id="campus-map-pending-count">—</strong><small>Unpublished candidate footprints</small></div>
+      <div class="campus-map-coverage-card" id="campus-map-centre-coverage-card"><span>Campus centre</span><strong id="campus-map-centre-state">Not set</strong><small id="campus-map-centre-note">Centre provenance</small></div>
+      <div class="campus-map-coverage-card" id="campus-map-boundary-coverage-card"><span>Campus boundary</span><strong id="campus-map-boundary-state">Not mapped</strong><small id="campus-map-boundary-note">Boundary provenance</small></div>
+    </div>
+    <p class="campus-map-coverage-context">Global OpenStreetMap building shapes can help with orientation, but they are context only—not university-verified buildings, entrances, or surveyed campus geometry.</p>
+    <div class="campus-map-shell">
+    <div class="campus-map-stage"><div id="campus-map-canvas" role="application" aria-label="Interactive university map"></div>
+      <div class="campus-map-overlay"><label class="campus-map-search-wrap"><span aria-hidden="true">⌕</span><input id="campus-map-search" type="search" placeholder="Search buildings and facilities" autocomplete="off" aria-label="Search campus locations"></label>
+        <div class="campus-map-controls" role="group" aria-label="Campus map style"><button type="button" id="campus-map-2d" class="active" aria-pressed="true" title="Street map">2D</button><button type="button" id="campus-map-satellite" aria-pressed="false" title="Satellite imagery">SAT</button><button type="button" id="campus-map-3d" aria-pressed="false" title="Satellite imagery with 3D building footprints">3D</button></div>
+        <div class="campus-map-layer-tools">
+          <button type="button" class="campus-map-layer-toggle" id="campus-map-layers-toggle" aria-expanded="false" aria-controls="campus-map-layer-panel" aria-label="Show map layers">
+            <span aria-hidden="true">☷</span><span>Layers</span><span class="campus-map-layer-chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div class="campus-map-layer-panel" id="campus-map-layer-panel" role="group" aria-label="Map layer visibility" hidden>
+            <div class="campus-map-layer-panel-heading">
+              <strong>Map layers</strong>
+              <small>Choose what appears on the map</small>
+            </div>
+            <div class="campus-map-layer-options">
+              <label class="campus-map-layer-option">
+                <input type="checkbox" data-map-layer="locations" checked>
+                <span><strong>Campus locations</strong><small>Published buildings, facilities and entrances</small></span>
+              </label>
+              <label class="campus-map-layer-option">
+                <input type="checkbox" data-map-layer="boundary" checked>
+                <span><strong>Campus boundary</strong><small>Solid verified line or dashed candidate line</small></span>
+              </label>
+              <label class="campus-map-layer-option">
+                <input type="checkbox" data-map-layer="buildings" checked>
+                <span><strong>Building footprints</strong><small>Campus records and mapped 3D outlines</small></span>
+              </label>
+              <label class="campus-map-layer-option">
+                <input type="checkbox" data-map-layer="roads" checked>
+                <span><strong>Roads and footpaths</strong><small>Mapped transport network; coverage varies</small></span>
+              </label>
+              <label class="campus-map-layer-option">
+                <input type="checkbox" data-map-layer="labels" checked>
+                <span><strong>Map labels</strong><small>Place, road and campus names</small></span>
+              </label>
+              <label class="campus-map-layer-option campus-map-layer-admin-option" id="campus-map-layer-drafts-option" hidden>
+                <input type="checkbox" data-map-layer="drafts" checked>
+                <span><strong>Admin draft pins</strong><small>Private, unpublished review candidates</small></span>
+              </label>
+            </div>
+            <p class="campus-map-layer-footnote">OpenStreetMap roads and place names are reference context, not university-verified information.</p>
+          </div>
+        </div>
+      </div>
+            <div class="campus-map-legend" aria-label="Map marker legend">
+        <span><i class="campus-map-legend-verified"></i> Published location</span>
+        <span><i class="campus-map-legend-draft"></i> Admin-only draft pin</span>
+        <span class="campus-map-legend-context"><i></i> OSM roads and place labels · context only, not university-verified</span>
+        <span class="campus-map-legend-context campus-map-routing-attribution">Routing: <a href="https://routing.openstreetmap.de/about.html" target="_blank" rel="noopener noreferrer">FOSSGIS</a> · © OpenStreetMap contributors · <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Fix the map</a></span>
+      </div>
+          </div>
+    <aside class="campus-map-sidebar"><h2 id="campus-map-campus-name">Your university</h2><p>Campus locations and facilities</p>
+      <div class="campus-map-actions"><button class="campus-map-action" type="button" id="campus-map-locate">◎ My location</button><button class="campus-map-action primary" type="button" id="campus-map-route">↗ Walking route</button><button class="campus-map-action" type="button" id="campus-map-emergency">Emergency points</button><button class="campus-map-action" type="button" id="campus-map-nearby-safety">◎ Find nearby safety</button><button class="campus-map-action" type="button" id="campus-map-incidents" hidden>Incident pins</button></div>
+      <label class="campus-map-campus-picker">Campus<select id="campus-map-campus-select"><option value="main-campus">Main Campus</option></select></label>
+      <p class="campus-map-profile-summary" id="campus-map-profile-status" role="status">Loading campus map profile…</p>
+      <section id="campus-map-nearby-safety-panel" class="campus-map-nearby-safety" aria-labelledby="campus-map-nearby-safety-title" hidden>
+        <div class="campus-map-nearby-safety-heading">
+          <strong id="campus-map-nearby-safety-title">Nearest campus safety facilities</strong>
+          <button type="button" id="campus-map-nearby-safety-clear">Clear</button>
+        </div>
+        <p id="campus-map-nearby-safety-status" role="status" aria-live="polite">Use your location to find the closest published campus safety facilities.</p>
+        <div id="campus-map-nearby-safety-list" class="campus-map-nearby-safety-list"></div>
+        <small class="campus-map-nearby-safety-note">Distances are straight-line estimates, not walking distances. Your device location is processed in this browser and is not saved to CampusShield or Supabase. For emergencies, contact official campus security or local emergency services directly.</small>
+      </section>
+      <div id="campus-map-results" class="campus-map-search-results" hidden></div>
+      <nav id="campus-map-discovery-filters" class="campus-map-discovery-filters" aria-label="Filter campus locations">
+        <button type="button" class="active" data-campus-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-campus-filter="academic" aria-pressed="false">Academic</button>
+        <button type="button" data-campus-filter="residential" aria-pressed="false">Residential</button>
+        <button type="button" data-campus-filter="services" aria-pressed="false">Services</button>
+        <button type="button" data-campus-filter="access" aria-pressed="false">Access</button>
+        <button type="button" data-campus-filter="emergency" aria-pressed="false">Emergency</button>
+      </nav>
+      <div class="campus-map-discovery-summary">
+        <p id="campus-map-results-summary" role="status" aria-live="polite">Loading published campus locations…</p>
+        <button type="button" id="campus-map-clear-filters" hidden>Clear filters</button>
+      </div>
+      <nav id="campus-map-type-filters" class="campus-map-type-filters" aria-label="Filter by facility type" hidden></nav>
+      <section id="campus-map-passport" class="campus-map-passport" aria-labelledby="campus-map-passport-title" hidden>
+        <div class="campus-map-passport-topline"><span class="campus-map-passport-kicker">CAMPUS PASSPORT</span><span id="campus-map-passport-status" class="campus-map-passport-status">Verified location</span></div>
+        <h3 id="campus-map-passport-title">Select a campus location</h3>
+        <p id="campus-map-passport-description" class="campus-map-passport-description"></p>
+        <div id="campus-map-passport-facts" class="campus-map-passport-facts"></div>
+        <div id="campus-map-passport-facilities" class="campus-map-passport-section" hidden><strong>Facilities</strong><div id="campus-map-passport-facility-tags" class="campus-map-passport-tags"></div></div>
+        <div id="campus-map-passport-accessibility" class="campus-map-passport-section" hidden><strong>Accessibility</strong><div id="campus-map-passport-access-tags" class="campus-map-passport-tags"></div><p id="campus-map-passport-access-notes"></p></div>
+        <p class="campus-map-passport-safety-note">CampusShield does not contact or dispatch emergency services. When you request directions, your GPS position and destination are sent to the FOSSGIS-hosted OpenStreetMap routing service; its operator says route requests are stored in server logs. This feature does not save your live GPS position as a CampusShield or Supabase record. In an emergency, contact campus security or local emergency services directly.</p>
+        <div id="campus-map-passport-entrances" class="campus-map-passport-section" hidden><strong>Verified entrances</strong><div id="campus-map-passport-entrance-list" class="campus-map-passport-entrance-list"></div></div>
+        <div class="campus-map-passport-actions">
+          <button type="button" class="campus-map-action primary" id="campus-map-passport-route">Walk to location</button>
+          <button type="button" class="campus-map-action" id="campus-map-passport-accessible-route" disabled>Accessible entrance</button>
+        </div>
+        <div class="campus-map-passport-links"><a id="campus-map-passport-source" href="#" target="_blank" rel="noopener noreferrer" hidden>View verification source ↗</a><a id="campus-map-passport-contact" href="#" target="_blank" rel="noopener noreferrer" hidden>Contact / service link ↗</a><a id="campus-map-passport-emergency" href="#" hidden>Call listed campus contact</a></div>
+      </section>
+      <div class="campus-map-feature-list" id="campus-map-feature-list"><p class="campus-map-empty">Open CampusMap to load your university locations.</p></div>
+      <div class="campus-map-admin" id="campus-map-admin" hidden>
+        <div class="campus-map-admin-heading"><h3>Campus Map Manager</h3><span class="campus-map-admin-tag">Verified campus admin</span></div>
+        <p>Save draft locations first. Publish only after checking the exact pin against an official source or on-campus survey.</p>
+        <section class="campus-map-profile-setup" id="campus-map-profile-setup" hidden aria-labelledby="campus-map-profile-heading">
+          <div class="campus-map-profile-title"><h4 id="campus-map-profile-heading">University and campus coverage</h4><button class="campus-map-action" type="button" id="campus-map-profile-new">Add campus</button></div>
+          <p class="campus-map-profile-help">Set the campus centre and boundary separately from individual building pins. A state overview is only a regional fallback, not a campus location.</p>
+          <form id="campus-map-profile-form">
+            <input type="hidden" id="campus-map-profile-id">
+            <label>Campus name<input id="campus-map-profile-name" required maxlength="120" value="Main Campus"></label>
+            <label>Campus ID<input id="campus-map-profile-slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" value="main-campus"></label>
+            <label>State<input id="campus-map-profile-state" required maxlength="80" readonly></label>
+            <div class="campus-map-admin-coords">
+              <label>Campus centre latitude<input id="campus-map-profile-lat" type="number" min="-90" max="90" step="any" inputmode="decimal"></label>
+              <label>Campus centre longitude<input id="campus-map-profile-lng" type="number" min="-180" max="180" step="any" inputmode="decimal"></label>
+            </div>
+            <div class="campus-map-pin-tools">
+              <button class="campus-map-action" type="button" id="campus-map-profile-pick">Pick centre on map</button>
+              <button class="campus-map-action" type="button" id="campus-map-profile-gps">Use GPS</button>
+            </div>
+            <label>Centre source (HTTPS)<input id="campus-map-profile-source" type="url" placeholder="Official campus map, survey or university source"></label>
+            <label class="campus-map-admin-check"><input id="campus-map-profile-verified" type="checkbox"> I verified this exact campus-centre point against an approved campus plan or on-campus survey</label>
+            <label>Load campus boundary file (GeoJSON, maximum 2 MB)<input id="campus-map-profile-boundary-file" type="file" accept=".geojson,.json,application/geo+json,application/json"></label>
+            <p class="campus-map-profile-help">One Polygon or MultiPolygon geometry, or a GeoJSON Feature/one-feature FeatureCollection. Multi-feature files must be dissolved into one campus boundary first. The file is read locally; it is not uploaded. Loading always creates an unverified candidate.</p>
+            <label>Campus boundary GeoJSON (Polygon or MultiPolygon)<textarea id="campus-map-profile-boundary" rows="4" placeholder='{"type":"Polygon","coordinates":[...]}'></textarea></label>
+            <label>Boundary evidence source (HTTPS)<input id="campus-map-profile-boundary-source" type="url" placeholder="University campus plan or licensed boundary dataset"></label>
+            <label class="campus-map-admin-check"><input id="campus-map-profile-boundary-verified" type="checkbox"> I verified this boundary against an approved campus plan or survey</label>
+            <div class="campus-map-model-upload">
+              <h5>Real 3D campus model</h5>
+              <p>Private GLB upload is not enabled in this release. The current 3D view uses approximate OpenStreetMap building extrusions, not university-verified models.</p>
+              <label>GLB model file (maximum 25 MB)<input id="campus-map-profile-model-file" type="file" accept=".glb,model/gltf-binary" disabled></label>
+              <label>Model attribution / source<input id="campus-map-profile-model-attribution" type="text" minlength="8" maxlength="500" placeholder="University GIS team, survey firm, licence or source" disabled></label>
+              <button type="button" class="campus-map-action" id="campus-map-profile-model-upload" disabled>Upload model for review</button>
+              <p class="campus-map-profile-coverage" id="campus-map-profile-model-status" role="status">Private GLB uploads are unavailable in this release.</p>
+            </div>
+            <div class="campus-map-building-import">
+              <h5>Discover mapped buildings</h5>
+              <p>Search OpenStreetMap near this campus centre. Discovery is locked until the exact centre is verified against an approved campus plan or an on-campus survey. Official locators and candidate points are for orientation only and are not precise enough to anchor a building import.</p>
+              <label>Discovery radius
+                <select id="campus-map-building-radius">
+                  <option value="500">500 metres</option>
+                  <option value="800" selected>800 metres</option>
+                  <option value="1200">1.2 kilometres</option>
+                </select>
+              </label>
+              <button type="button" class="campus-map-action" id="campus-map-building-discover" disabled title="Locked until the exact campus centre is verified against an approved campus plan or on-campus survey.">Discover building footprints</button>
+              <p class="campus-map-profile-coverage" id="campus-map-building-import-status" role="status">Discovery locked. Verify and save the exact campus centre against an approved university plan or on-campus survey first. Imported candidates will remain private and unpublished.</p>
+              <div class="campus-map-building-candidates" id="campus-map-building-candidates"></div>
+              <section class="campus-map-building-review" id="campus-map-building-review" hidden aria-label="Review building footprint">
+                <strong id="campus-map-building-review-name">Selected building</strong>
+                <small id="campus-map-building-review-details"></small>
+                <label>Exact-footprint evidence (HTTPS)<input id="campus-map-building-review-evidence" type="url" placeholder="Approved campus plan or survey record"></label>
+                <label class="campus-map-admin-check"><input id="campus-map-building-review-confirm" type="checkbox"> I checked the outline, footprint and building location</label>
+                <div class="campus-map-admin-actions">
+                  <button type="button" class="campus-map-action primary" id="campus-map-building-verify-save">Verify, keep private</button>
+                  <button type="button" class="campus-map-action" id="campus-map-building-verify-publish">Verify and publish</button>
+                  <button type="button" class="campus-map-action danger" id="campus-map-building-reject">Reject</button>
+                </div>
+              </section>
+            </div>
+            <p class="campus-map-profile-coverage" id="campus-map-profile-coverage" role="status">Campus centre, boundary and 3D model status appear here.</p>
+            <div class="campus-map-admin-actions"><button type="submit" class="campus-map-action primary">Save campus profile</button></div>
+          </form>
+        </section>
+        <form id="campus-map-admin-form">
+          <input type="hidden" id="campus-map-feature-id">
+          <label>Campus name<input id="campus-map-admin-campus" value="Main Campus" required maxlength="120"></label>
+          <label>Campus ID<input id="campus-map-admin-campus-slug" value="main-campus" pattern="[a-z0-9]+(-[a-z0-9]+)*" required></label>
+          <label>Location name<input id="campus-map-admin-name" required minlength="2" maxlength="180" placeholder="e.g. Laz Otti Memorial Library"></label>
+          <label>Category<select id="campus-map-admin-type"><option value="building">Building</option><option value="lecture_hall">Lecture hall</option><option value="hostel">Hostel</option><option value="library">Library</option><option value="cafeteria">Cafeteria</option><option value="medical">Medical / hospital</option><option value="security">Security</option><option value="gate">Gate</option><option value="parking">Parking</option><option value="sports">Sports</option><option value="facility">Facility</option><option value="assembly_point">Assembly point</option><option value="entrance">Entrance</option><option value="accessible_entry">Accessible entry</option><option value="emergency_point">Emergency point</option></select></label>
+          <label>Description<textarea id="campus-map-admin-description" rows="2" maxlength="1000"></textarea></label>
+          <details class="campus-map-passport-editor" open>
+            <summary>Campus Passport details</summary>
+            <p>Only publish details that are confirmed by the same approved campus source or a separate official record.</p>
+            <label>Building code / room block<input id="campus-map-admin-building-code" maxlength="40" placeholder="e.g. LIB-01"></label>
+            <div class="campus-map-admin-coords">
+              <label>Opening hours<input id="campus-map-admin-opening-hours" maxlength="200" placeholder="e.g. Mon–Fri · 8:00–18:00"></label>
+              <label>Number of floors<input id="campus-map-admin-floor-count" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="Not recorded"></label>
+            </div>
+            <label>Available facilities (comma separated)<input id="campus-map-admin-facilities" maxlength="600" placeholder="Library, Wi-Fi, study rooms"></label>
+            <fieldset class="campus-map-admin-access-options">
+              <legend>Verified accessibility features</legend>
+              <label><input type="checkbox" value="step_free_entry" data-campus-accessibility> Step-free entrance</label>
+              <label><input type="checkbox" value="ramp" data-campus-accessibility> Ramp</label>
+              <label><input type="checkbox" value="lift" data-campus-accessibility> Lift</label>
+              <label><input type="checkbox" value="accessible_restroom" data-campus-accessibility> Accessible restroom</label>
+              <label><input type="checkbox" value="tactile_path" data-campus-accessibility> Tactile path</label>
+              <label><input type="checkbox" value="accessible_parking" data-campus-accessibility> Accessible parking</label>
+              <label><input type="checkbox" value="hearing_support" data-campus-accessibility> Hearing support</label>
+            </fieldset>
+            <label>Accessibility notes<textarea id="campus-map-admin-accessibility-notes" rows="2" maxlength="500" placeholder="Describe verified step-free access or limitations"></textarea></label>
+            <div class="campus-map-passport-entry-fields" hidden>
+              <label>Related verified building<select id="campus-map-admin-parent-building"><option value="">Select the building for an entrance</option></select></label>
+              <label>Entrance type<select id="campus-map-admin-entry-type"><option value="">Not an entrance</option><option value="main">Main entrance</option><option value="accessible">Accessible entrance</option><option value="service">Service entrance</option><option value="emergency">Emergency exit / entrance</option></select></label>
+            </div>
+            <label>Public contact label<input id="campus-map-admin-contact-label" maxlength="60" placeholder="e.g. Library help desk"></label>
+            <label>Public contact / service link (HTTPS)<input id="campus-map-admin-contact-url" type="url" placeholder="https://university.edu.ng/..."></label>
+            <label>Public emergency contact number<input id="campus-map-admin-emergency-phone" type="tel" maxlength="30" placeholder="Only an official campus contact"></label>
+          </details>
+          <div class="campus-map-admin-coords"><label>Latitude<input id="campus-map-admin-lat" type="number" step="any" min="-90" max="90" inputmode="decimal"></label><label>Longitude<input id="campus-map-admin-lng" type="number" step="any" min="-180" max="180" inputmode="decimal"></label></div>
+          <div class="campus-map-pin-tools">
+            <button type="button" class="campus-map-action" id="campus-map-pick-pin">Pick on map</button>
+            <button type="button" class="campus-map-action" id="campus-map-use-gps">Use GPS</button>
+            <button type="button" class="campus-map-action" id="campus-map-preview-pin">Preview pin</button>
+          </div>
+          <p class="campus-map-pin-status" id="campus-map-pin-status" role="status" aria-live="polite">Choose Pick on map or Use GPS to add a draft coordinate. The marker remains unpublished.</p>
+          <label>Coordinate evidence source (HTTPS)<input id="campus-map-admin-source" type="url" placeholder="University-approved survey or source for this exact point"><small>Use an official source that confirms this exact point and any Campus Passport details you publish.</small></label>
+          <label class="campus-map-admin-check"><input id="campus-map-admin-verified" type="checkbox"> I checked this exact location and Passport details against the source</label>
+          <label class="campus-map-admin-check"><input id="campus-map-admin-publish" type="checkbox"> Publish after verification</label>
+          <div class="campus-map-admin-actions"><button type="submit" class="campus-map-action primary">Save location</button><button type="button" class="campus-map-action" id="campus-map-admin-reset">Clear</button></div>
+        </form>
+        <h4>Locations awaiting verification</h4><div id="campus-map-admin-drafts" class="campus-map-admin-drafts"></div>
+      </div>
+      <p class="campus-map-status" id="campus-map-status" role="status" aria-live="polite">Map is ready.</p></aside>
+  </div></div>
+  <p class="muted">Map coverage depends on verified campus data. The tilted view is not a substitute for verified 3D building models. Location is used only after you grant permission.</p>
 </section>
 
 <section class="page" id="page-community">
@@ -4802,6 +5032,8 @@ html[data-theme="dark"] .auth-captcha-message{color:#b8d1c4}
 <script src="./campus-course-community.js" defer></script>
 <script src="./student-rewards.js" defer></script>
 <script src="./student-rewards-admin.js" defer></script>
+<script src="./campus-map-geometry.js" defer></script>
+<script type="module" src="./campus-map-loader.js"></script>
 <script src="./campusshield-app.js" defer></script>
 <script src="./campus-voice-notes.js" defer></script>
 <script src="./campus-ideas-impact.js" defer></script>
