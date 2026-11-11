@@ -3870,14 +3870,14 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
       <small id="shieldmind-plan-summary-expiry">Checking expiry…</small>
     </div>
     <div class="shieldmind-plan-summary-metric">
-      <span class="shieldmind-plan-summary-label">AI REQUEST ALLOWANCE</span>
+      <span class="shieldmind-plan-summary-label">AI REQUESTS USED</span>
       <strong id="shieldmind-plan-summary-requests">—</strong>
-      <small>Per minute · per day</small>
+      <small>Used · allowance for this 30-day term</small>
     </div>
     <div class="shieldmind-plan-summary-metric">
-      <span class="shieldmind-plan-summary-label">STUDY IMAGES</span>
+      <span class="shieldmind-plan-summary-label">STUDY IMAGES USED</span>
       <strong id="shieldmind-plan-summary-images">—</strong>
-      <small>Uploads per month</small>
+      <small>Used · monthly upload allowance</small>
     </div>
     <button class="btn secondary shieldmind-plan-summary-manage" type="button" data-page="billing">Manage plan</button>
   </section>
@@ -4406,13 +4406,13 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     <div class="panel-heading"><div><h2>ShieldMind AI · Individual plans</h2><p>Prepaid 30-day access to AI answers, study generation and image-assisted explanations. Plans do not auto-renew.</p></div><span class="shieldmind-pill">NGN</span></div>
     <p id="billing-ai-status" class="message" role="status" aria-live="polite">Checking your paid ShieldMind access and payment status…</p>
     <div class="shieldmind-prices">
-      <article class="shieldmind-price premium"><strong>Starter</strong><b>₦2,000</b><span>10 requests/min · 250/day</span><small>20 image uploads/month</small><button class="btn" type="button" data-billing-plan="starter" data-billing-kind="individual">Continue to payment</button></article>
-      <article class="shieldmind-price premium"><strong>Plus</strong><b>₦5,000</b><span>15 requests/min · 700/day</span><small>60 image uploads/month</small><button class="btn" type="button" data-billing-plan="plus" data-billing-kind="individual">Continue to payment</button></article>
-      <article class="shieldmind-price premium"><strong>Pro</strong><b>₦10,000</b><span>25 requests/min · 1,500/day</span><small>150 image uploads/month</small><button class="btn" type="button" data-billing-plan="pro" data-billing-kind="individual">Continue to payment</button></article>
-      <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦20,000</b><span>35 requests/min · 2,500/day</span><small>300 image uploads/month</small><button class="btn" type="button" data-billing-plan="ultra" data-billing-kind="individual">Continue to payment</button></article>
-      <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>50 requests/min · 4,000/day</span><small>600 image uploads/month</small><button class="btn" type="button" data-billing-plan="max" data-billing-kind="individual">Continue to payment</button></article>
+      <article class="shieldmind-price premium"><strong>Starter</strong><b>₦2,000</b><span>5 requests/min · 25/day · 150 per 30 days</span><small>20 image uploads/month</small><button class="btn" type="button" data-billing-plan="starter" data-billing-kind="individual">Continue to payment</button></article>
+      <article class="shieldmind-price premium"><strong>Plus</strong><b>₦5,000</b><span>10 requests/min · 40/day · 400 per 30 days</span><small>60 image uploads/month</small><button class="btn" type="button" data-billing-plan="plus" data-billing-kind="individual">Continue to payment</button></article>
+      <article class="shieldmind-price premium"><strong>Pro</strong><b>₦10,000</b><span>15 requests/min · 80/day · 1,000 per 30 days</span><small>150 image uploads/month</small><button class="btn" type="button" data-billing-plan="pro" data-billing-kind="individual">Continue to payment</button></article>
+      <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦20,000</b><span>20 requests/min · 120/day · 2,000 per 30 days</span><small>300 image uploads/month</small><button class="btn" type="button" data-billing-plan="ultra" data-billing-kind="individual">Continue to payment</button></article>
+      <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>30 requests/min · 200/day · 3,500 per 30 days</span><small>600 image uploads/month</small><button class="btn" type="button" data-billing-plan="max" data-billing-kind="individual">Continue to payment</button></article>
     </div>
-    <p class="muted" id="shieldmind-plan-usage-note">The per-minute and daily figures are usage caps, not a guaranteed monthly answer allowance. Each AI response and study image consumes provider capacity, so actual available use depends on request size, image complexity and OpenAI service/credit availability. A paid plan begins only after payment verification, lasts 30 days and must be renewed manually.</p>
+    <p class="muted" id="shieldmind-plan-usage-note">Each plan includes a fixed AI request allowance for its 30-day term, shared by ShieldMind chat, study-image explanations, AI-generated exam practice and AI marking. Per-minute and daily caps are additional anti-abuse limits. Each AI request consumes one allowance; actual provider cost varies with input/output tokens and images. Study images have a separate monthly upload limit. Plans activate only after server-side payment verification, last 30 days and renew manually.</p>
   </section>
   <section class="panel" id="institutional-billing-panel" hidden>
     <div class="panel-heading"><div><h2>University subscriptions</h2><p>Institution-level controls for verified campus teams. Student essential safety access remains free.</p></div></div>
