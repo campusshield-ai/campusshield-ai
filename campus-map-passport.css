@@ -1,0 +1,348 @@
+/* CampusMap discovery cards and location passports. No map imagery or coordinates are generated here. */
+.campus-map-discovery-filters{
+  display:flex;flex-wrap:wrap;gap:6px;margin:0 0 11px
+}
+.campus-map-discovery-filters button{
+  min-height:32px;padding:7px 10px;border:1px solid #dce9e2;border-radius:999px;
+  background:#f7faf8;color:#647a72;font-size:9px;font-weight:850;letter-spacing:.02em
+}
+.campus-map-discovery-filters button.active{
+  border-color:#1c7562;background:#174b43;color:#fff;box-shadow:0 4px 12px #174b431c
+}
+.campus-map-passport{
+  margin:0 0 13px;padding:15px;border:1px solid #cfe5d9;border-radius:17px;
+  background:linear-gradient(155deg,#f5fcf7 0%,#fff 60%,#f0f8f4 100%);
+  box-shadow:0 9px 24px rgba(20,72,55,.08)
+}
+.campus-map-passport-topline{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.campus-map-passport-kicker{color:#588271;font-size:8px;font-weight:950;letter-spacing:.17em}
+.campus-map-passport-status{display:inline-flex;align-items:center;min-height:22px;padding:4px 8px;border:1px solid #cde5d6;border-radius:999px;background:#e9f7ee;color:#27724f;font-size:8px;font-weight:850}
+.campus-map-passport h3{margin:0;color:#163e38;font-size:18px;line-height:1.2;letter-spacing:-.035em;overflow-wrap:anywhere}
+.campus-map-passport-description{margin:7px 0 12px;color:#687e75;font-size:10px;line-height:1.6;overflow-wrap:anywhere}
+.campus-map-passport-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.campus-map-passport-fact{min-width:0;padding:9px;border:1px solid #e0ece5;border-radius:11px;background:#fff}
+.campus-map-passport-fact span{display:block;margin-bottom:4px;color:#80938a;font-size:8px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.campus-map-passport-fact strong{display:block;color:#284f45;font-size:10px;line-height:1.4;overflow-wrap:anywhere}
+.campus-map-passport-section{margin-top:12px;padding-top:11px;border-top:1px solid #dfece4}
+.campus-map-passport-section>strong{display:block;margin-bottom:7px;color:#42685b;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.campus-map-passport-section>p{margin:7px 0 0;color:#6b8077;font-size:9px;line-height:1.5}
+.campus-map-passport-tags{display:flex;flex-wrap:wrap;gap:5px}
+.campus-map-passport-tag{display:inline-flex;align-items:center;min-height:23px;padding:5px 8px;border:1px solid #d9e9df;border-radius:999px;background:#fff;color:#386550;font-size:8px;font-weight:750}
+.campus-map-passport-entrance-list{display:grid;gap:6px}
+.campus-map-passport-entrance{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:9px;border:1px solid #dcebe2;border-radius:10px;background:#fff;color:#2a574b;text-align:left}
+.campus-map-passport-entrance strong{display:block;font-size:9px}
+.campus-map-passport-entrance small{display:block;margin-top:3px;color:#7a9085;font-size:8px}
+.campus-map-passport-entrance:hover{border-color:#79b99d;background:#f2faf5}
+.campus-map-passport-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:13px}
+.campus-map-passport-actions .campus-map-action{min-width:0;min-height:38px;padding:8px 9px;font-size:9px}
+.campus-map-passport-actions button:disabled{cursor:not-allowed;opacity:.48}
+.campus-map-passport-links{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:10px}
+.campus-map-passport-links a{color:#23765f;font-size:8px;font-weight:850;text-decoration:none}
+.campus-map-passport-links a:hover{text-decoration:underline}
+.campus-map-passport-editor{
+  margin:4px 0 3px;padding:11px;border:1px solid #d6e8dc;border-radius:12px;background:#fff
+}
+.campus-map-passport-editor summary{color:#285d4e;font-size:10px;font-weight:900;cursor:pointer}
+.campus-map-passport-editor>p{margin:6px 0 10px;color:#7b8f85;font-size:9px;line-height:1.5}
+.campus-map-passport-editor .campus-map-admin-access-options{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
+  margin:0;padding:10px;border:1px solid #e1ebe5;border-radius:10px
+}
+.campus-map-passport-editor .campus-map-admin-access-options legend{
+  padding:0 5px;color:#6b8578;font-size:9px;font-weight:850
+}
+.campus-map-passport-editor .campus-map-admin-access-options label{
+  display:flex;align-items:center;gap:6px;color:#587067;font-size:9px;font-weight:650
+}
+.campus-map-passport-entry-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.campus-map-feature[data-feature-type="entrance"] .campus-map-feature-icon{background:#e0f4f4;color:#126878}
+.campus-map-feature[data-feature-type="accessible_entry"] .campus-map-feature-icon{background:#e3f6e9;color:#177b54}
+html[data-theme="dark"] .campus-map-discovery-filters button{
+  border-color:#315148;background:#152f2a;color:#b0c8bc
+}
+html[data-theme="dark"] .campus-map-discovery-filters button.active{
+  border-color:#4c9b7b;background:#1c5b48;color:#fff
+}
+html[data-theme="dark"] .campus-map-passport{
+  border-color:#31594a;background:linear-gradient(155deg,#183d32,#132e2c 68%,#17372f);
+  box-shadow:0 9px 24px rgba(0,0,0,.16)
+}
+html[data-theme="dark"] .campus-map-passport h3{color:#e5f5eb}
+html[data-theme="dark"] .campus-map-passport-description,
+html[data-theme="dark"] .campus-map-passport-section>p{color:#b1c8bb}
+html[data-theme="dark"] .campus-map-passport-fact,
+html[data-theme="dark"] .campus-map-passport-entrance,
+html[data-theme="dark"] .campus-map-passport-tag{border-color:#315648;background:#183a31;color:#cae5d7}
+html[data-theme="dark"] .campus-map-passport-fact strong,
+html[data-theme="dark"] .campus-map-passport-entrance strong{color:#e0f1e6}
+html[data-theme="dark"] .campus-map-passport-fact span,
+html[data-theme="dark"] .campus-map-passport-entrance small{color:#a8c2b4}
+html[data-theme="dark"] .campus-map-passport-editor{border-color:#315548;background:#15342d}
+html[data-theme="dark"] .campus-map-passport-editor summary{color:#c5ead5}
+html[data-theme="dark"] .campus-map-passport-editor .campus-map-admin-access-options{border-color:#315548}
+html[data-theme="dark"] .campus-map-passport-editor .campus-map-admin-access-options label{color:#bed4c8}
+html[data-theme="dark"] .campus-map-passport-links a{color:#8ee1bb}
+@media(max-width:760px){
+  .campus-map-passport{padding:13px}
+  .campus-map-passport h3{font-size:17px}
+}
+@media(max-width:420px){
+  .campus-map-passport-facts{grid-template-columns:1fr 1fr}
+  .campus-map-passport-actions{grid-template-columns:1fr}
+  .campus-map-passport-editor .campus-map-admin-access-options{grid-template-columns:1fr 1fr}
+  .campus-map-passport-entry-fields{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .campus-map-discovery-filters button,.campus-map-passport-entrance{transition:none!important}
+}
+
+.campus-map-passport-safety-note{
+  margin:10px 0 0;padding:8px 9px;border:1px solid #eadfca;border-radius:9px;
+  background:#fffaf0;color:#80683a;font-size:8px;line-height:1.5
+}
+html[data-theme="dark"] .campus-map-passport-safety-note{
+  border-color:#5a4930;background:#352d20;color:#ead5a8
+}
+
+.campus-map-admin-draft .campus-map-admin-draft-details{
+  display:flex;flex:1 1 auto;min-width:0;flex-direction:column;gap:4px
+}
+.campus-map-admin-draft-links{display:flex;flex-wrap:wrap;gap:5px 10px}
+.campus-map-admin-draft-links a{
+  color:#23765f;font-size:8px;font-weight:850;text-decoration:underline;
+  text-underline-offset:2px;overflow-wrap:anywhere
+}
+.campus-map-admin-coordinate-note{
+  color:#8b7651;font-size:8px;line-height:1.45;overflow-wrap:anywhere
+}
+html[data-theme="dark"] .campus-map-admin-draft-links a{color:#91dfb8}
+html[data-theme="dark"] .campus-map-admin-coordinate-note{color:#d9c18f}
+
+
+/* Data-driven facility type filters and accessible result summary. */
+.campus-map-discovery-summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  min-width:0;
+  margin:-3px 0 8px;
+}
+.campus-map-discovery-summary p{
+  min-width:0;
+  margin:0;
+  color:#74877e;
+  font-size:9px;
+  line-height:1.4;
+  font-weight:700;
+}
+.campus-map-discovery-summary button{
+  flex:0 0 auto;
+  min-height:26px;
+  padding:5px 9px;
+  border:1px solid #d7e7dd;
+  border-radius:999px;
+  background:#fff;
+  color:#286b57;
+  font-size:8px;
+  font-weight:850;
+}
+.campus-map-discovery-summary button[hidden],
+.campus-map-type-filters[hidden]{display:none!important}
+.campus-map-discovery-summary button:hover{border-color:#78b99c;background:#f2faf5}
+.campus-map-type-filters{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  min-width:0;
+  margin:0 0 12px;
+}
+.campus-map-type-filters button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  max-width:100%;
+  min-height:29px;
+  padding:5px 8px;
+  border:1px solid #dce9e2;
+  border-radius:9px;
+  background:#fff;
+  color:#526c61;
+  font-size:8px;
+  font-weight:800;
+  line-height:1.25;
+  text-align:left;
+}
+.campus-map-type-filters button span{min-width:0;overflow-wrap:anywhere}
+.campus-map-type-filters button small{
+  display:inline-grid;
+  place-items:center;
+  min-width:17px;
+  height:17px;
+  padding:0 4px;
+  border-radius:999px;
+  background:#edf5ef;
+  color:#55786a;
+  font-size:8px;
+  font-variant-numeric:tabular-nums;
+}
+.campus-map-type-filters button.active{
+  border-color:#1c7562;
+  background:#174b43;
+  color:#fff;
+}
+.campus-map-type-filters button.active small{background:#2a7261;color:#fff}
+.campus-map-type-filters button:focus-visible,
+.campus-map-discovery-summary button:focus-visible{
+  outline:3px solid #4aab8c;
+  outline-offset:2px;
+}
+html[data-theme="dark"] .campus-map-discovery-summary p{color:#a8bfb2}
+html[data-theme="dark"] .campus-map-discovery-summary button{
+  border-color:#315648;
+  background:#183a31;
+  color:#bde4cf;
+}
+html[data-theme="dark"] .campus-map-type-filters button{
+  border-color:#315148;
+  background:#152f2a;
+  color:#c3d8cd;
+}
+html[data-theme="dark"] .campus-map-type-filters button small{background:#25493d;color:#c9e4d5}
+html[data-theme="dark"] .campus-map-type-filters button.active{
+  border-color:#4c9b7b;
+  background:#1c5b48;
+  color:#fff;
+}
+html[data-theme="dark"] .campus-map-type-filters button.active small{background:#32785e;color:#fff}
+@media(max-width:420px){
+  .campus-map-discovery-summary{align-items:flex-start}
+  .campus-map-type-filters{gap:4px}
+  .campus-map-type-filters button{min-height:28px;padding:5px 7px}
+}
+@media(prefers-reduced-motion:reduce){
+  .campus-map-type-filters button,.campus-map-discovery-summary button{transition:none!important}
+}
+
+
+/* On-demand nearest published campus safety facilities. */
+.campus-map-nearby-safety{
+  margin:10px 0 13px;
+  padding:12px;
+  border:1px solid #d8e8de;
+  border-radius:13px;
+  background:linear-gradient(145deg,#f6fbf7,#edf7f1);
+}
+.campus-map-nearby-safety[hidden]{display:none!important}
+.campus-map-nearby-safety-heading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:6px;
+}
+.campus-map-nearby-safety-heading strong{
+  color:#204d3e;
+  font-size:10px;
+  font-weight:900;
+}
+.campus-map-nearby-safety-heading button{
+  min-height:27px;
+  padding:4px 8px;
+  border:1px solid #d1e3d8;
+  border-radius:8px;
+  background:#fff;
+  color:#547568;
+  font-size:8px;
+  font-weight:850;
+}
+#campus-map-nearby-safety-status{
+  margin:0 0 8px;
+  color:#6d8277;
+  font-size:9px;
+  line-height:1.5;
+}
+.campus-map-nearby-safety-list{display:grid;gap:6px}
+.campus-map-nearby-safety-item{
+  display:grid;
+  grid-template-columns:23px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-width:0;
+  min-height:48px;
+  padding:7px 8px;
+  border:1px solid #dcebe1;
+  border-radius:10px;
+  background:#fff;
+  color:#285546;
+  text-align:left;
+}
+.campus-map-nearby-safety-item:hover{
+  border-color:#80bda0;
+  background:#f8fcf9;
+}
+.campus-map-nearby-safety-rank{
+  display:grid;
+  place-items:center;
+  width:22px;
+  height:22px;
+  border-radius:8px;
+  background:#e5f3e9;
+  color:#277354;
+  font-size:9px;
+  font-weight:900;
+}
+.campus-map-nearby-safety-copy{display:grid;gap:2px;min-width:0}
+.campus-map-nearby-safety-copy strong{
+  color:#264e40;
+  font-size:9px;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+.campus-map-nearby-safety-copy small{
+  color:#7b9084;
+  font-size:8px;
+}
+.campus-map-nearby-safety-distance{
+  color:#2e765b;
+  font-size:8px;
+  font-weight:850;
+  text-align:right;
+  white-space:nowrap;
+}
+.campus-map-nearby-safety-note{
+  display:block;
+  margin-top:9px;
+  color:#7a8d82;
+  font-size:8px;
+  line-height:1.5;
+}
+html[data-theme="dark"] .campus-map-nearby-safety{
+  border-color:#315548;
+  background:linear-gradient(145deg,#183b31,#142f29);
+}
+html[data-theme="dark"] .campus-map-nearby-safety-heading strong,
+html[data-theme="dark"] .campus-map-nearby-safety-copy strong{color:#d6eee0}
+html[data-theme="dark"] .campus-map-nearby-safety-heading button,
+html[data-theme="dark"] .campus-map-nearby-safety-item{
+  border-color:#315648;
+  background:#193a31;
+  color:#d2e9dc;
+}
+html[data-theme="dark"] .campus-map-nearby-safety-heading button{color:#b5d8c4}
+html[data-theme="dark"] .campus-map-nearby-safety-item:hover{border-color:#5b9c7c;background:#21483b}
+html[data-theme="dark"] .campus-map-nearby-safety-rank{background:#285643;color:#c9f0d8}
+html[data-theme="dark"] .campus-map-nearby-safety-copy small,
+html[data-theme="dark"] #campus-map-nearby-safety-status,
+html[data-theme="dark"] .campus-map-nearby-safety-note{color:#a7c4b2}
+html[data-theme="dark"] .campus-map-nearby-safety-distance{color:#9be0b8}
+@media(max-width:420px){
+  .campus-map-nearby-safety{padding:10px}
+  .campus-map-nearby-safety-item{grid-template-columns:22px minmax(0,1fr);gap:7px}
+  .campus-map-nearby-safety-distance{grid-column:2;text-align:left;white-space:normal}
+}
+@media(prefers-reduced-motion:reduce){
+  .campus-map-nearby-safety-item{transition:none!important}
+}
