@@ -41,6 +41,11 @@ for (const name of [
 assert.match(pulseSql, /revoke all on public\.campus_member_blocks from public,anon,authenticated/i);
 assert.match(pulseSql, /as restrictive\s+for all to anon,authenticated using \(false\)/i);
 assert.match(pulseSql, /grant execute on function private\.is_campus_member_blocked\(uuid,uuid\) to authenticated/i);
+assert.match(pulseSql, /Production Campus Network member-block table is required/i);
+assert.doesNotMatch(pulseSql, /create table public\.campus_member_blocks/i, "CampusPulse must reuse the Production Campus Network block table");
+assert.doesNotMatch(pulseSql, /create index campus_member_blocks_blocked_idx/i, "CampusPulse must reuse the existing Production block index");
+assert.match(preflightSql, /member_block_dependency_preflight/i, "Preflight validates the existing Production reciprocal block helper before reuse");
+
 
 for (const name of [
   "past_question_papers", "past_question_items", "past_question_answer_keys",
