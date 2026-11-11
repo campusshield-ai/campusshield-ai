@@ -1,4 +1,4 @@
-const CACHE_NAME = "campusshield-offline-v12";
+const CACHE_NAME = "campusshield-offline-v11";
 const BRAND_STYLESHEET_URL = "./campusshield-brand-system.css";
 const MODULE_STYLESHEET_URL = "./campusshield-module-experience.css?v=20261110-2";
 const SHIELDMIND_CHAT_STYLESHEET_URL = "./shieldmind-chat-history.css?v=20261110-1";
