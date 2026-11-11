@@ -137,7 +137,7 @@ Deno.serve(async (req: Request) => {
       updated_at: new Date().toISOString(),
       last_payment_reference: reference,
       last_payment_at: paidAtIso,
-      renewal_status: "not_renewing",
+      renewal_status: "non-renewing",
       image_upload_limit: plan.imageLimit,
     }, { onConflict: "user_id" });
     if (activateError) {
