@@ -8160,10 +8160,10 @@ $('resend-confirmation-button').addEventListener('click', async () => {
             if (imageSummary && Number.isFinite(Number(usage.image_uploads_used))) {
               imageSummary.textContent = Number(usage.image_uploads_used).toLocaleString() + ' / ' + Number(usage.image_upload_limit).toLocaleString();
             }
-            const costSummary = $('shieldmind-plan-summary-cost');
-            if (costSummary && Number.isFinite(Number(usage.estimated_cost_usd))) {
-              costSummary.textContent = '
-          }
+            if (status) {
+              status.textContent = String(usage.plan || data.plan).toUpperCase() + " · " +
+                Number(usage.requests_remaining).toLocaleString() + " AI requests left this 30-day term";
+            }
         } catch (usageError) {
           console.warn('ShieldMind allowance summary could not be refreshed:', usageError?.message || 'Unknown error');
         }
