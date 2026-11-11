@@ -30,6 +30,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./campus-dashboard-upgrade.css">
+<link rel="stylesheet" href="./campus-live-classroom.css">
 <link rel="stylesheet" href="./shieldmind-learning-insights.css">
 <link rel="stylesheet" href="./shieldmind-chat-history.css?v=20261110-1">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
@@ -2696,7 +2697,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <div class="nav-section-label">ACADEMICS & CAREERS</div>
 <button data-page="academics"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5-9 5.5-9-5.5Z"/><path d="M6.5 12.5v5c3.5 2.5 7.5 2.5 11 0v-5M21 10v6"/></svg></span data-original-label="Academic Life">Academics</button><button data-page="timetable" id="timetable-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6"/></svg></span>My Timetable</button><button data-page="courses" id="courses-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h8"/></svg></span>Courses &amp; Study Resources</button><button data-page="past-questions" id="past-questions-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8M8 10h5M8 13h7"/></svg></span>Past Questions &amp; Exam Prep</button>
 <button data-page="creator-tools" id="creator-tools-nav"><span class="nav-icon" aria-hidden="true">✦</span>Creator &amp; Tools Hub</button>
-<button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span data-original-label="Opportunities &amp; Scholarships">Opportunities</button><button data-page="classroom" id="classroom-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18v14H3zM8 21h8M12 18v3M7 8h10M7 11h7"/></svg></span>Teacher Classroom</button>
+<button data-page="opportunities" id="opportunities-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></svg></span data-original-label="Opportunities &amp; Scholarships">Opportunities</button><button data-page="classroom" id="classroom-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18v14H3zM8 21h8M12 18v3M7 8h10M7 11h7"/></svg></span>Online Classroom</button>
 <div class="nav-section-label">INSIGHTS & SUPPORT</div>
 <button data-page="analytics" id="analytics-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button><button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button><button data-page="staff-verification" id="staff-verification-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Staff verification</button><button data-page="staff-review" id="staff-review-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8l4 4v13H4V3z"/><path d="M8 11h8M8 15h8M16 3v5h4"/></svg></span>Staff applications</button>
 <div class="nav-section-label">ACCOUNT</div>
@@ -4613,6 +4614,13 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     <p id="campus-classrooms-status" class="message" role="status" aria-live="polite">Loading classrooms…</p>
     <div id="campus-classrooms-feed"><div class="community-empty">Loading classrooms…</div></div>
   </section>
+  <section class="panel" id="campus-live-classroom-panel" aria-labelledby="campus-live-classroom-heading">
+    <div class="panel-heading">
+      <div><h2 id="campus-live-classroom-heading">Live Online Classes</h2><p>Schedule lectures, join secure live rooms and find recorded sessions for your verified campus classes.</p></div>
+      <button class="btn secondary" type="button" id="campus-live-classroom-refresh">Refresh</button>
+    </div>
+    <div id="campus-live-classroom-root"><div class="community-empty">Sign in with a verified campus account to view online classes.</div></div>
+  </section>
   <section class="panel" id="classroom-detail-panel" hidden>
     <div class="panel-heading"><div><h2 id="classroom-detail-title">Classroom</h2><p id="classroom-detail-subtitle" class="muted"></p></div><button class="btn secondary" type="button" id="close-classroom-detail">Close</button></div>
     <div id="classroom-detail-content"></div>
@@ -5035,6 +5043,7 @@ html[data-theme="dark"] .auth-captcha-message{color:#b8d1c4}
 <script src="./campus-map-geometry.js" defer></script>
 <script type="module" src="./campus-map-loader.js"></script>
 <script src="./campusshield-app.js" defer></script>
+<script src="./campus-live-classroom.js" defer></script>
 <script src="./campus-voice-notes.js" defer></script>
 <script src="./campus-ideas-impact.js" defer></script>
 <script src="./campusshield-guide.js" defer></script>
