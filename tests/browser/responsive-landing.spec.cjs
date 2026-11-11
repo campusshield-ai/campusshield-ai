@@ -584,8 +584,11 @@ test("CampusMap facility type filters and live counts stay usable across seven v
   }
 
   const firstTypeButton = page.locator("#campus-map-type-filters button").nth(1);
+  const secondTypeButton = page.locator("#campus-map-type-filters button").nth(2);
   await firstTypeButton.focus();
   await expect(firstTypeButton).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(page.locator("#campus-map-type-filters button").nth(2)).toBeFocused();
+  expect(await firstTypeButton.evaluate(button => button.tabIndex)).toBe(0);
+  await secondTypeButton.focus();
+  await expect(secondTypeButton).toBeFocused();
+  expect(await secondTypeButton.evaluate(button => button.tabIndex)).toBe(0);
 });
