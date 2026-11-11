@@ -15,8 +15,23 @@ begin
      or to_regprocedure('private.current_user_has_verified_campus_access()') is null then
     raise exception 'Required existing Production role helpers are missing.';
   end if;
+  if to_regclass('public.campus_member_blocks') is null then
+    raise exception 'The Production Campus Network member-block table is required by CampusPulse Phase 2.';
+  end if;
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='campus_member_blocks' and column_name='blocker_id' and data_type='uuid')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='campus_member_blocks' and column_name='blocked_id' and data_type='uuid')
+     or not exists (select 1 from information_schema.columns where table_schema='public' and table_name='campus_member_blocks' and column_name='university_id' and data_type='uuid') then
+    raise exception 'Production campus_member_blocks columns do not match the CampusPulse dependency contract.';
+  end if;
+  if not (select relrowsecurity from pg_class where oid='public.campus_member_blocks'::regclass) then
+    raise exception 'Production campus_member_blocks must have RLS enabled.';
+  end if;
+  if has_table_privilege('anon','public.campus_member_blocks','SELECT')
+     or has_table_privilege('authenticated','public.campus_member_blocks','SELECT') then
+    raise exception 'Production campus_member_blocks must not allow direct browser reads.';
+  end if;
   foreach v_target in array array[
-    'campus_member_blocks','campus_collab_listings','campus_event_buddy_listings',
+    'campus_collab_listings','campus_event_buddy_listings',
     'campus_mentorship_profiles','campus_memories','campus_peer_connection_requests',
     'campus_social_feature_reports'
   ] loop
@@ -26,17 +41,8 @@ begin
 end
 $preflight$;
 
--- Minimal private block dependency. No direct anon/authenticated table access.
-create table public.campus_member_blocks (
-  blocker_id uuid not null references public.profiles(id) on delete cascade,
-  blocked_id uuid not null references public.profiles(id) on delete cascade,
-  university_id uuid not null references public.campus_universities(id) on delete cascade,
-  created_at timestamptz not null default now(),
-  primary key (blocker_id,blocked_id,university_id),
-  constraint campus_member_blocks_not_self check (blocker_id <> blocked_id)
-);
-create index campus_member_blocks_blocked_idx
-  on public.campus_member_blocks(blocked_id,university_id);
+-- Reuse the Production Campus Network member-block table validated above.
+-- Do not recreate its table, constraints or indexes in this phase.
 alter table public.campus_member_blocks enable row level security;
 revoke all on public.campus_member_blocks from public,anon,authenticated;
 drop policy if exists campus_member_blocks_deny_direct_access on public.campus_member_blocks;
