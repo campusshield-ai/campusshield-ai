@@ -10,6 +10,7 @@ on:
       - ".github/workflows/production-full-schema-compatibility.yml"
       - "supabase/production-candidates/**"
       - "tests/production-migration-candidate-postgres.sql"
+      - "tests/production-live-classroom-contract.sql"
       - "tests/fixtures/production-full-schema-synthetic-seed.sql"
 
 permissions:
@@ -250,7 +251,7 @@ jobs:
           psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
             -f supabase/production-candidates/20261104_production_preflight.sql
 
-      - name: Apply all three candidate phases and postflight
+      - name: Apply candidate phases and postflight assertions
         shell: bash
         run: |
           set -euo pipefail
@@ -267,7 +268,10 @@ jobs:
                   'current_user_has_verified_campus_access',
                   'is_campusshield_owner_admin',
                   'current_campus_account_status',
-                  'is_campus_network_member_blocked'
+                  'is_campus_network_member_blocked',
+                  'can_access_classroom',
+                  'can_manage_class_attendance',
+                  'is_verified_classroom_teacher'
                 );
             "
           }
@@ -280,12 +284,18 @@ jobs:
             -f supabase/production-candidates/20261104_past_questions_forward_candidate.sql
           psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
             -f supabase/production-candidates/20261104_production_postflight.sql
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f supabase/production-candidates/20261111_live_classroom_production_preflight.sql
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f supabase/production-candidates/20261111_campus_live_classroom_forward_candidate.sql
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f supabase/production-candidates/20261111_live_classroom_production_postflight.sql
           after="$(helper_hash)"
           if [[ "$before" != "$after" ]]; then
             echo "::error::An existing Production identity/access helper changed during candidate execution."
             exit 1
           fi
-          echo "Existing Production identity/access helper definitions remained unchanged in the clone."
+          echo "Existing Production identity/access and classroom helper definitions remained unchanged in the clone."
 
       - name: Seed synthetic users and campus memberships in the disposable clone
         shell: bash
@@ -298,6 +308,11 @@ jobs:
         run: |
           psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
             -f tests/production-migration-candidate-postgres.sql
+
+      - name: Test Live Classroom authenticated roles and campus isolation
+        run: |
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f tests/production-live-classroom-contract.sql
 
       - name: Remove schema-only dump and temporary role list
         if: always()
