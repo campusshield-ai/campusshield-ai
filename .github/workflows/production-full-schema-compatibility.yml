@@ -1,0 +1,304 @@
+name: Full Production schema compatibility test
+
+on:
+  # Explicit manual reruns are useful after the protected repository secret is saved.
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches: [main, staging/preview]
+    paths:
+      - ".github/workflows/production-full-schema-compatibility.yml"
+      - "supabase/production-candidates/**"
+      - "tests/production-migration-candidate-postgres.sql"
+      - "tests/fixtures/production-full-schema-synthetic-seed.sql"
+
+permissions:
+  contents: read
+
+jobs:
+  check-credential:
+    name: Check for protected Production connection secret
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.gate.outputs.ready }}
+    steps:
+      - id: gate
+        name: Check secret without displaying it
+        shell: bash
+        env:
+          PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
+        run: |
+          if [[ -z "${PRODUCTION_DB_URL:-}" ]]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Full-schema test skipped. Add the SUPABASE_PRODUCTION_DB_URL repository secret, then edit this pull request to rerun."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Protected Production database secret is configured."
+          fi
+
+  full-schema-compatibility:
+    name: Restore schema-only Production clone and execute candidate
+    needs: check-credential
+    if: needs.check-credential.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: supabase/postgres:17.11.0.018
+        env:
+          # The Supabase image bootstraps its migrations as supabase_admin.
+          # Its init script creates the postgres role after the first init stage.
+          POSTGRES_USER: supabase_admin
+          POSTGRES_PASSWORD: local-only-schema-test
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U supabase_admin -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
+      BOOTSTRAP_DB_URL: postgresql://supabase_admin:local-only-schema-test@127.0.0.1:5432/postgres
+      TARGET_DB_URL: postgresql://supabase_admin:local-only-schema-test@127.0.0.1:5432/campusshield_full_schema_test
+    steps:
+      - name: Check out review branch
+        uses: actions/checkout@v4
+
+      - name: Confirm matching PostgreSQL 17 tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm supabase/postgres:17.11.0.018 pg_dump --version
+          docker run --rm supabase/postgres:17.11.0.018 psql --version
+
+      - name: Create clean disposable target database from template0
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The Supabase service image initializes its postgres database with
+          # auth/storage and other platform schemas. Restore the Production
+          # schema-only dump into a fresh template0 database to avoid collisions.
+          psql "$BOOTSTRAP_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -c "CREATE DATABASE campusshield_full_schema_test TEMPLATE template0;"
+          test "$(psql "$TARGET_DB_URL" -X -qAt -c "select current_database()")" = "campusshield_full_schema_test"
+          echo "Clean disposable PostgreSQL target database is ready."
+
+      - name: Validate Production connection URI metadata without exposing credentials
+        shell: bash
+        env:
+          PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import re
+          from urllib.parse import parse_qs, unquote, urlsplit
+
+          raw = os.environ["PRODUCTION_DB_URL"]
+          parsed = urlsplit(raw)
+          username = unquote(parsed.username or "")
+          password = parsed.password or ""
+          host = parsed.hostname or ""
+          port = parsed.port
+          database = (parsed.path or "").lstrip("/")
+          sslmode = parse_qs(parsed.query).get("sslmode", [""])[0]
+
+          # Only non-secret URI fields are printed. Never print password, its
+          # length, a hash, or a redacted copy of the URI.
+          print(f"Connection host: {host}")
+          print(f"Connection username: {username}")
+          print(f"Connection port: {port}")
+          print(f"Database: {database}")
+          print(f"SSL mode: {sslmode}")
+          print(f"Password field present: {'yes' if password else 'no'}")
+
+          expected = {
+              "username": "postgres.fvgtnujjnvdkhzqqcaqe",
+              "host": "aws-0-eu-west-1.pooler.supabase.com",
+              "port": 5432,
+              "database": "postgres",
+              "sslmode": "require",
+          }
+          actual = {
+              "username": username,
+              "host": host,
+              "port": port,
+              "database": database,
+              "sslmode": sslmode,
+          }
+          bad = [key for key, value in expected.items() if actual[key] != value]
+          if not password or any(token in unquote(password) for token in (
+              "ENCODED_PASSWORD", "YOUR_NEW_PASSWORD", "[YOUR-PASSWORD]"
+          )):
+              bad.append("password-placeholder-or-empty")
+
+          if re.search(r"%(?![0-9A-Fa-f]{2})", password):
+              bad.append("malformed-percent-encoding")
+
+          if bad:
+              print("Connection URI metadata validation failed for: " + ", ".join(bad))
+              raise SystemExit(1)
+
+          print("Connection URI metadata validation passed; password was not displayed.")
+          PY
+
+      - name: Create private schema-only dump from Production
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${PRODUCTION_DB_URL:-}"
+          mkdir -p "$RUNNER_TEMP/campusshield-schema-test"
+          chmod 700 "$RUNNER_TEMP/campusshield-schema-test"
+
+          # This is pg_dump --schema-only: no table rows, auth users, incident
+          # reports, identity documents, payment records or Storage objects.
+          # The dump stays on this ephemeral runner and is never uploaded.
+          docker run --rm --network host \
+            --env PRODUCTION_DB_URL \
+            --env PGSSLMODE=require \
+            --volume "$RUNNER_TEMP/campusshield-schema-test:/out" \
+            supabase/postgres:17.11.0.018 \
+            sh -ceu 'pg_dump --schema-only --no-owner --quote-all-identifiers \
+              --file=/out/production-schema-only.sql "$PRODUCTION_DB_URL"'
+
+          test -s "$RUNNER_TEMP/campusshield-schema-test/production-schema-only.sql"
+
+          # Fail closed on common hard-coded credential patterns. Never print
+          # matching lines or secret values to GitHub logs.
+          if grep -Eiq \
+            'sk_(live|test)_[A-Za-z0-9]{16,}|sb_secret_[A-Za-z0-9]{16,}|AKIA[0-9A-Z]{16}|-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----' \
+            "$RUNNER_TEMP/campusshield-schema-test/production-schema-only.sql"; then
+            echo "::error::Potential credential material was detected in a schema definition. The dump will not be restored or uploaded."
+            exit 1
+          fi
+
+          if grep -Eiq '^(COPY |INSERT INTO |SELECT pg_catalog.setval)' \
+            "$RUNNER_TEMP/campusshield-schema-test/production-schema-only.sql"; then
+            echo "::error::The export contains data statements; expected a schema-only dump."
+            exit 1
+          fi
+
+          echo "Schema-only export created; no application rows were exported."
+          printf 'Tables: '
+          grep -Ec '^CREATE TABLE ' "$RUNNER_TEMP/campusshield-schema-test/production-schema-only.sql" || true
+          printf 'Functions: '
+          grep -Ec '^CREATE (OR REPLACE )?FUNCTION ' "$RUNNER_TEMP/campusshield-schema-test/production-schema-only.sql" || true
+          printf 'Policies: '
+          grep -Ec '^CREATE POLICY ' "$RUNNER_TEMP/campusshield-schema-test/production-schema-only.sql" || true
+          printf 'Triggers: '
+          grep -Ec '^CREATE TRIGGER ' "$RUNNER_TEMP/campusshield-schema-test/production-schema-only.sql" || true
+
+      - name: Recreate database roles without source credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/campusshield-schema-test"
+
+          # Select only role names, never password hashes or role secrets.
+          docker run --rm --network host \
+            --env PRODUCTION_DB_URL \
+            --env PGSSLMODE=require \
+            --volume "$RUNNER_TEMP/campusshield-schema-test:/out" \
+            supabase/postgres:17.11.0.018 \
+            sh -ceu 'psql "$PRODUCTION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 \
+              -c "SELECT encode(convert_to(rolname, '\''UTF8'\''), '\''base64'\'') \
+                  FROM pg_roles WHERE rolname !~ '\''^pg_'\'' AND rolname <> '\''postgres'\'' \
+                  ORDER BY rolname" > /out/production-role-names.b64'
+
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["RUNNER_TEMP"]) / "campusshield-schema-test"
+          encoded = (root / "production-role-names.b64").read_text().splitlines()
+          roles = {base64.b64decode(line).decode("utf-8") for line in encoded if line.strip()}
+          roles.update({"anon", "authenticated", "service_role"})
+
+          statements = []
+          for role in sorted(roles):
+              quoted = '"' + role.replace('"', '""') + '"'
+              statements.append(
+                  f"DO $role$ BEGIN CREATE ROLE {quoted} NOLOGIN; "
+                  "EXCEPTION WHEN duplicate_object THEN NULL; END $role$;"
+              )
+          statements.append('ALTER ROLE "service_role" BYPASSRLS;')
+          (root / "local-roles.sql").write_text("\n".join(statements) + "\n")
+          print(f"Prepared {len(roles)} non-login database roles for the isolated restore.")
+          PY
+
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f "$RUNNER_TEMP/campusshield-schema-test/local-roles.sql"
+
+      - name: Restore complete Production schema into disposable PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f "$RUNNER_TEMP/campusshield-schema-test/production-schema-only.sql"
+
+          version="$(psql "$TARGET_DB_URL" -X -qAt -c "show server_version")"
+          case "$version" in
+            17.*) echo "Disposable database PostgreSQL version: $version" ;;
+            *) echo "::error::Expected PostgreSQL 17 but restored into $version"; exit 1 ;;
+          esac
+
+      - name: Execute read-only candidate preflight
+        run: |
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f supabase/production-candidates/20261104_production_preflight.sql
+
+      - name: Apply all three candidate phases and postflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          helper_hash() {
+            psql "$TARGET_DB_URL" -X -qAt -c "
+              SELECT string_agg(md5(pg_get_functiondef(p.oid)), ':' ORDER BY p.proname)
+              FROM pg_proc p
+              JOIN pg_namespace n ON n.oid = p.pronamespace
+              WHERE n.nspname = 'private'
+                AND p.proname IN (
+                  'current_campus_university_id',
+                  'current_campus_role',
+                  'current_user_can_use_restricted_features',
+                  'current_user_has_verified_campus_access',
+                  'is_campusshield_owner_admin',
+                  'current_campus_account_status'
+                );
+            "
+          }
+          before="$(helper_hash)"
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f supabase/production-candidates/20261104_campusmap_forward_candidate.sql
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f supabase/production-candidates/20261104_campuspulse_phase2_forward_candidate.sql
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f supabase/production-candidates/20261104_past_questions_forward_candidate.sql
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f supabase/production-candidates/20261104_production_postflight.sql
+          after="$(helper_hash)"
+          if [[ "$before" != "$after" ]]; then
+            echo "::error::An existing Production identity/access helper changed during candidate execution."
+            exit 1
+          fi
+          echo "Existing Production identity/access helper definitions remained unchanged in the clone."
+
+      - name: Seed synthetic users and campus memberships in the disposable clone
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/production-full-schema-synthetic-seed.sql
+
+      - name: Test synthetic authenticated roles and campus isolation
+        run: |
+          psql "$TARGET_DB_URL" -X -v ON_ERROR_STOP=1 \
+            -f tests/production-migration-candidate-postgres.sql
+
+      - name: Remove schema-only dump and temporary role list
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/campusshield-schema-test"
