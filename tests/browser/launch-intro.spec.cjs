@@ -9,6 +9,7 @@ async function clearStoredIntro(page) {
 
 test("first opening shows the intro, then one Monday opening per local week", async ({ page }) => {
   await page.clock.install({ time: new Date("2026-11-11T09:00:00") });
+  await page.clock.pauseAt(new Date("2026-11-11T09:00:00"));
   await clearStoredIntro(page);
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
 
@@ -84,6 +85,7 @@ test("first opening shows the intro, then one Monday opening per local week", as
 test("a missed Monday does not cause a delayed Tuesday introduction", async ({ page }) => {
   const sunday = new Date("2026-11-15T09:00:00").getTime();
   await page.clock.install({ time: new Date("2026-11-17T09:00:00") });
+  await page.clock.pauseAt(new Date("2026-11-17T09:00:00"));
   await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
   await page.evaluate(({ key, firstShownAt }) => {
     localStorage.setItem(key, JSON.stringify({
@@ -99,6 +101,7 @@ test("a missed Monday does not cause a delayed Tuesday introduction", async ({ p
 test("legacy completion records migrate without replaying on the same Monday", async ({ page }) => {
   const legacyMonday = new Date("2026-11-16T08:00:00").getTime();
   await page.clock.install({ time: new Date("2026-11-16T12:00:00") });
+  await page.clock.pauseAt(new Date("2026-11-16T12:00:00"));
   await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
   await page.evaluate(({ key, completedAt }) => {
     localStorage.setItem(key, JSON.stringify({ completedAt, version: "1.0.0" }));
