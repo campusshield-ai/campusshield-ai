@@ -35,6 +35,8 @@ let classroomId = null;
 let sessionId = null;
 let teacher = null;
 let student = null;
+let campusAdminUser = null;
+let adminSessionId = null;
 let browser = null;
 let teacherContext = null;
 let studentContext = null;
@@ -300,6 +302,10 @@ async function cleanup() {
     const deleted = await admin.from("campus_live_class_sessions").delete().eq("id", sessionId);
     if (deleted.error) cleanupErrors.push("synthetic live session");
   }
+  if (adminSessionId) {
+    const deleted = await admin.from("campus_live_class_sessions").delete().eq("id", adminSessionId);
+    if (deleted.error) cleanupErrors.push("synthetic campus-admin live session");
+  }
   if (classroomId) {
     const enrollments = await admin.from("campus_classroom_enrollments").delete().eq("classroom_id", classroomId);
     if (enrollments.error) cleanupErrors.push("synthetic classroom enrollment");
@@ -349,6 +355,13 @@ async function run() {
     campusRole: "student",
   }, university);
 
+  campusAdminUser = await createSyntheticUser({
+    key: "campus-admin",
+    displayName: "CampusShield Synthetic Live Classroom Campus Admin",
+    profileRole: "admin",
+    campusRole: "admin",
+  }, university);
+
     const classResult = await teacher.client.rpc("create_campus_classroom", {
       p_name: "Live Media E2E " + runId.slice(0, 8),
       p_subject: "Synthetic Live Classroom",
@@ -371,6 +384,20 @@ async function run() {
     mustSucceed(teacherCapabilities.error, "Lecturer can read classroom capabilities");
     assert.equal(teacherCapabilities.data, true, "Lecturer can manage their own classroom");
 
+    const teacherClassrooms = await teacher.client.rpc("list_campus_live_classrooms");
+    mustSucceed(teacherClassrooms.error, "Lecturer can list their accessible classrooms");
+    assert.ok((teacherClassrooms.data || []).some(row => row.id === classroomId), "Lecturer sees their assigned classroom");
+
+    const adminClassrooms = await campusAdminUser.client.rpc("list_campus_live_classrooms");
+    mustSucceed(adminClassrooms.error, "Campus admin can list classrooms at their verified university");
+    assert.ok((adminClassrooms.data || []).some(row => row.id === classroomId), "Campus admin sees the lecturer-created classroom");
+
+    const adminCapabilities = await campusAdminUser.client.rpc("get_campus_live_classroom_capabilities", {
+      p_classroom_id: classroomId,
+    });
+    mustSucceed(adminCapabilities.error, "Campus admin can read classroom management capabilities");
+    assert.equal(adminCapabilities.data, true, "Verified campus admin can manage classrooms at their own university");
+
     const studentCapabilities = await student.client.rpc("get_campus_live_classroom_capabilities", {
       p_classroom_id: classroomId,
     });
@@ -388,6 +415,36 @@ async function run() {
     mustSucceed(sessionResult.error, "Lecturer schedules a live session");
     sessionId = sessionResult.data;
     assert.ok(sessionId, "The live session RPC must return an ID");
+
+    const adminVisibleSessions = await campusAdminUser.client.rpc("list_campus_live_class_sessions", {
+      p_classroom_id: classroomId,
+    });
+    mustSucceed(adminVisibleSessions.error, "Campus admin can list sessions for a lecturer-created classroom");
+    assert.ok((adminVisibleSessions.data || []).some(row => row.id === sessionId && row.can_manage === true), "Campus admin receives management controls for the lecturer's session");
+
+    const adminSessionResult = await campusAdminUser.client.rpc("create_campus_live_class_session", {
+      p_classroom_id: classroomId,
+      p_title: "Synthetic campus-admin controls test",
+      p_description: "Temporary session proving campus-admin schedule/start/end permissions.",
+      p_scheduled_at: new Date(Date.now() + 60_000).toISOString(),
+      p_duration_minutes: 30,
+      p_external_meeting_url: null,
+    });
+    mustSucceed(adminSessionResult.error, "Verified campus admin schedules a live class");
+    adminSessionId = adminSessionResult.data;
+    assert.ok(adminSessionId, "Campus-admin session creation must return an ID");
+
+    const adminStarted = await campusAdminUser.client.rpc("start_campus_live_class_session", {
+      p_session_id: adminSessionId,
+    });
+    mustSucceed(adminStarted.error, "Campus admin starts a scheduled live class");
+
+    const adminEnded = await campusAdminUser.client.functions.invoke("campus-live-class-end", {
+      body: { session_id: adminSessionId },
+    });
+    if (adminEnded.error) throw new Error("Campus admin could not end their LiveKit session: " + await errorDetails(adminEnded.error));
+    assert.equal(adminEnded.data?.ended, true, "Campus admin end function must mark the session ended");
+    assert.equal(adminEnded.data?.roomClosed, true, "A not-yet-connected admin test room is treated as closed");
 
     const started = await teacher.client.rpc("start_campus_live_class_session", { p_session_id: sessionId });
     mustSucceed(started.error, "Lecturer starts the live session");
@@ -467,7 +524,9 @@ async function run() {
     mustSucceed(finalSession.error, "Read ended Staging live session");
     assert.equal(finalSession.data.status, "ended");
 
-    console.log("PASS: verified synthetic lecturer created and started a Staging Live Classroom session.");
+    console.log("PASS: verified lecturer sees and manages their assigned classroom.");
+    console.log("PASS: verified campus admin sees lecturer-created classes and can schedule, start and end a session.");
+    console.log("PASS: enrolled synthetic student cannot manage or end a live class.");
     console.log("PASS: enrolled synthetic student received an authenticated room token; unauthorized student end was denied.");
     console.log("PASS: two separate browser participants connected to the same LiveKit room.");
     console.log("PASS: both participants published microphone and camera tracks and received the other participant's tracks.");
