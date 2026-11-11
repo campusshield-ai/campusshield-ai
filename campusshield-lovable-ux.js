@@ -13,7 +13,7 @@
       "#app-sidebar .nav button[data-page], #app-sidebar .sidebar-guide-access button[data-page], .mobile-bottom-nav button[data-page]"
     );
     navButtons.forEach((button) => {
-      const current = Boolean(pageId) && button.dataset.page === pageId;
+      const current = Boolean(pageId) && button.classList.contains("active");
       if (current) {
         button.setAttribute("aria-current", "page");
       } else {
