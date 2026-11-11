@@ -5503,7 +5503,7 @@
     const feed = $('campus-classrooms-feed');
     const hasCampusMembership = hasVerifiedCampusStaffMembership();
     const isCampusAdmin = currentProfile?.role === 'admin' && hasCampusMembership;
-    const classroomCreateAccess = currentProfile?.role === 'teacher' && hasCampusMembership;
+    const classroomCreateAccess = ['teacher','admin'].includes(currentProfile?.role) && hasCampusMembership;
     $('classroom-create-panel').hidden = !classroomCreateAccess;
     $('classroom-join-panel').hidden = !isStudentAccount();
 
@@ -5559,7 +5559,7 @@
         window.CampusShieldBackend.listCampusClassroomAnnouncements(classroomId),
         window.CampusShieldBackend.listCampusClassroomMaterials(classroomId)
       ]);
-      const teacherAccess = currentProfile?.role === 'teacher' && hasVerifiedCampusStaffMembership();
+      const classroomOwnerAccess = ['teacher','admin'].includes(currentProfile?.role) && hasVerifiedCampusStaffMembership();
       $('classroom-detail-title').textContent = classroom.name;
       $('classroom-detail-subtitle').textContent = classroom.subject + (classroom.description ? ' · ' + classroom.description : '');
       content.innerHTML = `
@@ -5569,8 +5569,8 @@
         <section class="panel"><h3>Learning links</h3>
           ${materials.length ? materials.map(item => { const url = safeHttpUrl(item.resource_url); return `<article class="panel"><h4>${escapeHubHtml(item.title)}</h4><p>${escapeHubHtml(item.description || '')}</p>${url ? `<p><a href="${escapeHubHtml(url)}" target="_blank" rel="noopener noreferrer">Open learning resource</a></p>` : '<p class="muted">This link is not valid and cannot be opened.</p>'}<p class="muted">${escapeHubHtml(formatHubDate(item.created_at))}</p></article>`; }).join('') : '<p class="muted">No learning links have been shared yet.</p>'}
         </section>
-        ${teacherAccess ? `
-          <section class="panel"><div class="panel-heading"><div><h3>Teacher tools</h3><p class="muted">These actions are checked again by Supabase.</p></div><button type="button" class="btn secondary" data-classroom-code="${escapeHubHtml(classroomId)}">Show join code</button></div>
+        ${classroomOwnerAccess ? `
+          <section class="panel"><div class="panel-heading"><div><h3>Class owner tools</h3><p class="muted">Available to the verified teacher or campus administrator who owns this class. Supabase checks every action.</p></div><button type="button" class="btn secondary" data-classroom-code="${escapeHubHtml(classroomId)}">Show join code</button></div>
             <p id="classroom-join-code-output" class="message" role="status" aria-live="polite"></p>
             <form id="classroomAnnouncementForm" data-classroom-id="${escapeHubHtml(classroomId)}">
               <div class="field"><label for="classroom-announcement-title">Announcement title *</label><input id="classroom-announcement-title" required minlength="3" maxlength="120"></div>
