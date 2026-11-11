@@ -82,4 +82,12 @@ assert.match(endFunction, /end_campus_live_class_session/);
 assert.doesNotMatch(endFunction, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.doesNotMatch(ui + backend + html, /LIVEKIT_API_SECRET|LIVEKIT_API_KEY/);
 
+
+const publicClassroomCreateDeclaration = adminCreateMigration
+  .split("create or replace function public.create_campus_classroom(")[1]
+  ?.split("as $function$")[0] || "";
+assert.match(adminCreateMigration, /create or replace function private\\.create_campus_classroom_impl/);
+assert.match(publicClassroomCreateDeclaration, /security invoker/i);
+assert.doesNotMatch(publicClassroomCreateDeclaration, /security definer/i);
+
 console.log("Campus live-classroom smoke checks passed.");
