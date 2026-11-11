@@ -10,6 +10,7 @@ on:
       - "campus-live-classroom.js"
       - "campus-live-classroom.css"
       - "supabase/migrations/*classroom*"
+      - "supabase/migrations/*profile_identity_search_path*"
       - "supabase/functions/campus-live-class-token/**"
       - "supabase/functions/campus-live-class-end/**"
       - "tests/campus-live-classroom-smoke.mjs"
