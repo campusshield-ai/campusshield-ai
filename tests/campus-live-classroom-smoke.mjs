@@ -33,6 +33,8 @@ assert.ok(adminCreateMigration.includes("v_role = 'teacher'"));
 assert.ok(adminCreateMigration.includes("m.campus_role = 'teacher'"));
 assert.doesNotMatch(adminCreateMigration, /create or replace function private\.can_access_classroom/);
 assert.match(adminScopeMigration, /private\.can_access_live_classroom/);
+assert.doesNotMatch(adminMigration, /create or replace function private\\.can_access_classroom/);
+assert.doesNotMatch(adminScopeMigration, /create or replace function private\\.can_access_classroom/);
 assert.match(adminScopeMigration, /public\.list_campus_live_classrooms/);
 assert.match(adminScopeMigration, /private\.can_access_classroom\(p_classroom_id\)/);
 assert.match(backend, /listCampusLiveClassSessions/);
