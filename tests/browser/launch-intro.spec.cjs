@@ -2,9 +2,14 @@ const { test, expect } = require("@playwright/test");
 
 const STORAGE_KEY = "campusshield.launchIntro.v1";
 
+async function clearStoredIntro(page) {
+  await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
+  await page.evaluate((key) => localStorage.removeItem(key), STORAGE_KEY);
+}
+
 test("first opening shows the intro, then one Monday opening per local week", async ({ page }) => {
   await page.clock.install({ time: new Date("2026-11-11T09:00:00") });
-  await page.addInitScript((key) => localStorage.removeItem(key), STORAGE_KEY);
+  await clearStoredIntro(page);
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
 
   const intro = page.locator("#campusshield-launch-intro");
@@ -47,7 +52,7 @@ test("first opening shows the intro, then one Monday opening per local week", as
   expect(savedFirstLaunch.lastMondayShown).toBeNull();
 
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.locator("#campusshield-launch-intro")).toHaveCount(0);
+  await expect(intro).toHaveCount(0);
 
   // First opening on Monday: show once and remember that local Monday.
   await page.clock.setFixedTime(new Date("2026-11-16T09:00:00"));
@@ -78,9 +83,9 @@ test("first opening shows the intro, then one Monday opening per local week", as
 
 test("a missed Monday does not cause a delayed Tuesday introduction", async ({ page }) => {
   const sunday = new Date("2026-11-15T09:00:00").getTime();
-  const previousMonday = "2026-11-09";
   await page.clock.install({ time: new Date("2026-11-17T09:00:00") });
-  await page.addInitScript(({ key, firstShownAt }) => {
+  await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
+  await page.evaluate(({ key, firstShownAt }) => {
     localStorage.setItem(key, JSON.stringify({
       firstShownAt,
       lastMondayShown: "2026-11-09",
@@ -89,22 +94,23 @@ test("a missed Monday does not cause a delayed Tuesday introduction", async ({ p
   }, { key: STORAGE_KEY, firstShownAt: sunday });
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   await expect(page.locator("#campusshield-launch-intro")).toHaveCount(0);
-  expect(previousMonday).toBe("2026-11-09");
 });
 
 test("legacy completion records migrate without replaying on the same Monday", async ({ page }) => {
   const legacyMonday = new Date("2026-11-16T08:00:00").getTime();
   await page.clock.install({ time: new Date("2026-11-16T12:00:00") });
-  await page.addInitScript(({ key, completedAt }) => {
+  await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
+  await page.evaluate(({ key, completedAt }) => {
     localStorage.setItem(key, JSON.stringify({ completedAt, version: "1.0.0" }));
   }, { key: STORAGE_KEY, completedAt: legacyMonday });
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("#campusshield-launch-intro")).toHaveCount(0);
+  const intro = page.locator("#campusshield-launch-intro");
+  await expect(intro).toHaveCount(0);
 
   await page.clock.setFixedTime(new Date("2026-11-23T09:00:00"));
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.locator("#campusshield-launch-intro")).toBeVisible();
-  await page.locator("#campusshield-launch-intro").getByRole("button", { name: /skip intro/i }).click();
+  await expect(intro).toBeVisible();
+  await intro.getByRole("button", { name: /skip intro/i }).click();
 
   const saved = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
   expect(saved.firstShownAt).toBe(legacyMonday);
@@ -112,7 +118,8 @@ test("legacy completion records migrate without replaying on the same Monday", a
 });
 
 test("reduced motion uses a static intro and password recovery bypasses it", async ({ page }) => {
-  await page.addInitScript((key) => localStorage.removeItem(key), STORAGE_KEY);
+  await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
+  await page.evaluate((key) => localStorage.removeItem(key), STORAGE_KEY);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
 
