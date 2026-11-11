@@ -247,7 +247,8 @@ assert.match(shieldmindBillingReconcile, /paystackKey\.startsWith\("sk_test_"\)/
 assert.match(shieldmindBillingReconcile, /\.eq\("user_id", user\.id\)/, "staging reconciliation only checks the caller's own billing intent");
 assert.match(shieldmindBillingReconcile, /api\.paystack\.co\/transaction\/verify\//, "staging reconciliation independently verifies the Paystack transaction");
 assert.match(shieldmindBillingReconcile, /last_payment_reference === reference/, "staging reconciliation is idempotent for an activated reference");
-assert.match(shieldmindBillingReconcile, /renewal_status: "not_renewing"/, "staging payment activates a prepaid term rather than automatic renewal");
+assert.match(shieldmindBillingReconcile, /renewal_status: "non-renewing"/, "staging payment activates a prepaid term rather than automatic renewal");
+assert.doesNotMatch(shieldmindBillingReconcile + paystackWebhookFunction, /not_renewing/, "payment activation uses the database-supported renewal enum");
 assert.match(html, /stagingBilling \? 'shieldmind-billing-checkout' : 'paystack-initialize'/, "checkout routes to the correct environment function");
 assert.match(html, /stagingBilling \? 'shieldmind-billing-reconcile' : 'paystack-reconcile'/, "payment return routes to the correct environment reconciliation function");
 assert.match(html, /\^sm_\[a-f0-9\]\{32\}\$\/i/, "staging payment references use the sm_ format");
