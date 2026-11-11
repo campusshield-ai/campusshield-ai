@@ -1,5 +1,5 @@
 -- PRODUCTION CANDIDATE ONLY: CampusPulse Phase 2 social extensions.
--- This includes a minimal private member-block dependency only because Phase 2 RLS calls it.
+-- Reuse the existing Production Campus Network member-block table/helper after validating them.
 -- Phase 3 profile/notification UI and RPCs are excluded.
 begin;
 do $preflight$
