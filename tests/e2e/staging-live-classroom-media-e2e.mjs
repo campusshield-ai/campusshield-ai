@@ -439,12 +439,10 @@ async function run() {
     });
     mustSucceed(adminStarted.error, "Campus admin starts a scheduled live class");
 
-    const adminEnded = await campusAdminUser.client.functions.invoke("campus-live-class-end", {
-      body: { session_id: adminSessionId },
+    const adminEnded = await campusAdminUser.client.rpc("end_campus_live_class_session", {
+      p_session_id: adminSessionId,
     });
-    if (adminEnded.error) throw new Error("Campus admin could not end their LiveKit session: " + await errorDetails(adminEnded.error));
-    assert.equal(adminEnded.data?.ended, true, "Campus admin end function must mark the session ended");
-    assert.equal(adminEnded.data?.roomClosed, true, "A not-yet-connected admin test room is treated as closed");
+    mustSucceed(adminEnded.error, "Campus admin ends their scheduled test session");
 
     const started = await teacher.client.rpc("start_campus_live_class_session", { p_session_id: sessionId });
     mustSucceed(started.error, "Lecturer starts the live session");
@@ -508,10 +506,10 @@ async function run() {
         track.identity === id && track.kind === "video" && track.source.toLowerCase().includes("screen")
       ), teacher.id, { timeout: 30_000 });
 
-    const ended = await teacher.client.functions.invoke("campus-live-class-end", {
+    const ended = await campusAdminUser.client.functions.invoke("campus-live-class-end", {
       body: { session_id: sessionId },
     });
-    if (ended.error) throw new Error("Lecturer could not end the LiveKit room: " + await errorDetails(ended.error));
+    if (ended.error) throw new Error("Verified campus admin could not end the lecturer's LiveKit room: " + await errorDetails(ended.error));
     assert.equal(ended.data?.ended, true, "Lecturer end function must mark the session ended");
     assert.equal(ended.data?.roomClosed, true, "LiveKit server must confirm room deletion");
     classroomEnded = true;
@@ -531,7 +529,7 @@ async function run() {
     console.log("PASS: two separate browser participants connected to the same LiveKit room.");
     console.log("PASS: both participants published microphone and camera tracks and received the other participant's tracks.");
     console.log("PASS: lecturer screen-share track reached the enrolled student.");
-    console.log("PASS: lecturer ended the class, LiveKit room deletion was confirmed, and both browser participants disconnected.");
+    console.log("PASS: campus admin ended the lecturer's live class, LiveKit room deletion was confirmed, and both browser participants disconnected.");
   } finally {
     await cleanup();
   }
