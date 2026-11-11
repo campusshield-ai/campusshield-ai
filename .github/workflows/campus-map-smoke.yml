@@ -1,0 +1,57 @@
+name: CampusMap feature checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "campus-map-*.js"
+      - "campus-map-*.css"
+      - "campus-dashboard-insights.css"
+      - "tests/campus-map-smoke.mjs"
+      - "tests/fixtures/campus-map-source-migrations/**"
+      - ".github/workflows/campus-map-smoke.yml"
+  pull_request:
+    branches: [main, "staging/preview"]
+    paths:
+      - "index.html"
+      - "campus-map.js"
+      - "campus-map-safety.js"
+      - "campus-map-discovery.js"
+      - "campus-map-loader.js"
+      - "campus-map-config.js"
+      - "campus-map-geometry.js"
+      - "campus-map.css"
+      - "campus-map-passport.css"
+      - "campus-map-icons.js"
+      - "campus-map-navigation.js"
+      - "campus-dashboard-insights.css"
+      - "tests/fixtures/campus-map-source-migrations/**"
+      - "supabase/migrations/*campus_map*"
+      - "docs/CAMPUSMAP_ROLLOUT.md"
+      - "tests/campus-map-smoke.mjs"
+      - ".github/workflows/campus-map-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  campus-map-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate JavaScript syntax
+        run: |
+          node --check campus-map-config.js
+          node --check campus-map.js
+          node --check campus-map-safety.js
+          node --check campus-map-discovery.js
+          node --input-type=module --check < campus-map-loader.js
+          node --check campusshield-backend.js
+          node --check campusshield-app.js
+      - name: Check CampusMap integration and access boundaries
+        run: node tests/campus-map-smoke.mjs
