@@ -100,15 +100,24 @@ Deno.serve(async (req: Request) => {
       } catch (error) {
         const providerCode = String((error as { code?: unknown })?.code || "").toLowerCase();
         const errorName = error instanceof Error ? error.name.slice(0, 80) : "UnknownError";
+        const providerStatus = Number(
+          (error as { status?: unknown; statusCode?: unknown; response?: { status?: unknown } })?.status
+          ?? (error as { statusCode?: unknown })?.statusCode
+          ?? (error as { response?: { status?: unknown } })?.response?.status
+          ?? 0
+        );
         const reason = /unauthenticated|unauthorized|permission_denied|forbidden|invalid.?token/.test(providerCode)
+          || providerStatus === 401 || providerStatus === 403
           ? "credentials_rejected"
-          : /unavailable|deadline|not_found|notfound|connection|transport/.test(providerCode) || error instanceof TypeError
+          : /unavailable|deadline|not_found|notfound|connection|transport/.test(providerCode)
+            || providerStatus === 404 || providerStatus >= 500 || error instanceof TypeError
             ? "endpoint_unreachable"
             : "provider_rejected_request";
         console.error("LiveKit credential diagnostic failed", {
           stage: "credentials_check",
           reason,
           providerCode: providerCode.slice(0, 80) || null,
+          providerStatus: providerStatus || null,
           errorName,
         });
         const message = reason === "credentials_rejected"
@@ -122,6 +131,9 @@ Deno.serve(async (req: Request) => {
           credentialsAccepted: false,
           configurationComplete: true,
           reason,
+          providerCode: providerCode.slice(0, 80) || null,
+          providerStatus: providerStatus || null,
+          providerErrorName: errorName,
           serverHost: parsedLivekitUrl.host,
         }, 503);
       }
