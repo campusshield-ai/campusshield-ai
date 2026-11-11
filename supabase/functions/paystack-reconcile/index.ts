@@ -1,29 +1,57 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const APP_ORIGIN = "https://campusshield-ai.github.io";
-const CORS = {
-  "Access-Control-Allow-Origin": APP_ORIGIN,
+const DEFAULT_APP_ORIGIN = "https://campusshield-ai.github.io";
+const DEFAULT_APP_PATH = "/campusshield-ai/";
+const ALLOWED_APP_ORIGINS = new Set([
+  DEFAULT_APP_ORIGIN,
+  "https://campusshield-ai-staging-preview.vercel.app",
+  ...(Deno.env.get("CAMPUSSHIELD_APP_ORIGINS") || "")
+    .split(",")
+    .map((value) => value.trim().replace(/\/$/, ""))
+    .filter(Boolean)
+]);
+const cors = (origin: string) => ({
+  "Access-Control-Allow-Origin": origin,
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Vary": "Origin"
-};
+});
+function getAllowedOrigin(request: Request): string | null {
+  const raw = (request.headers.get("origin") || "").trim();
+  if (!raw) return null;
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "https:" || parsed.origin !== raw) return null;
+    return ALLOWED_APP_ORIGINS.has(parsed.origin) ? parsed.origin : null;
+  } catch {
+    return null;
+  }
+}
+function getPaymentReturnUrl(origin: string): string {
+  const path = origin === DEFAULT_APP_ORIGIN ? DEFAULT_APP_PATH : "/";
+  const url = new URL(path, origin);
+  url.searchParams.set("billing", "return");
+  return url.toString();
+}
 const prices: Record<string, number> = {
   starter: 200000, plus: 500000, pro: 1000000, ultra: 2000000, max: 2800000
 };
 const limits: Record<string, number> = {
   starter: 20, plus: 60, pro: 150, ultra: 300, max: 600
 };
-const json = (status: number, body: Record<string, unknown>) =>
+const json = (status: number, body: Record<string, unknown>, origin = DEFAULT_APP_ORIGIN) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { ...CORS, "Content-Type": "application/json", "Cache-Control": "no-store" }
+    headers: { ...cors(origin), "Content-Type": "application/json", "Cache-Control": "no-store" }
   });
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
-  if (req.method !== "POST") return json(405, { error: "Method not allowed." });
-  if (req.headers.get("origin") !== APP_ORIGIN) return json(403, { error: "This checkout origin is not allowed." });
+  const origin = getAllowedOrigin(req);
+  const send = (status: number, body: Record<string, unknown>) => json(status, body, origin || DEFAULT_APP_ORIGIN);
+  if (!origin) return send(403, { error: "This payment-return origin is not allowed. Open CampusShield from its official website address." });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin) });
+  if (req.method !== "POST") return send(405, { error: "Method not allowed." });
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
@@ -31,14 +59,14 @@ Deno.serve(async (req: Request) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
     const paystackKey = Deno.env.get("PAYSTACK_SECRET_KEY") || "";
     if (!supabaseUrl || !anonKey || !serviceKey || !paystackKey) {
-      return json(503, { error: "Secure payment verification is not configured." });
+      return send(503, { error: "Secure payment verification is not configured." });
     }
     if (!paystackKey.startsWith("sk_live_")) {
-      return json(503, { error: "Production payment verification requires the Paystack live secret." });
+      return send(503, { error: "Production payment verification requires the Paystack live secret." });
     }
 
     const token = (req.headers.get("authorization") || "").match(/^Bearer\s+(.+)$/i)?.[1];
-    if (!token) return json(401, { error: "Sign in with the checkout account to verify payment." });
+    if (!token) return send(401, { error: "Sign in with the checkout account to verify payment." });
 
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: `Bearer ${token}` } },
@@ -46,15 +74,15 @@ Deno.serve(async (req: Request) => {
     });
     const { data: { user }, error: authError } = await userClient.auth.getUser(token);
     if (authError || !user?.id || !user.email || !user.email_confirmed_at) {
-      return json(401, { error: "A confirmed signed-in email is required to verify this checkout." });
+      return send(401, { error: "A confirmed signed-in email is required to verify this checkout." });
     }
 
     let input: any;
     try { input = await req.json(); }
-    catch { return json(400, { error: "Invalid verification request." }); }
+    catch { return send(400, { error: "Invalid verification request." }); }
     const reference = String(input?.reference || "").trim();
     if (!/^csa_[a-f0-9]{32}$/i.test(reference)) {
-      return json(400, { error: "Invalid Paystack reference." });
+      return send(400, { error: "Invalid Paystack reference." });
     }
 
     const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
@@ -63,14 +91,14 @@ Deno.serve(async (req: Request) => {
       .eq("provider_reference", reference)
       .eq("user_id", user.id)
       .maybeSingle();
-    if (orderError) return json(503, { error: "Could not look up your payment request." });
-    if (!order) return json(404, { error: "No payment request was found for this signed-in account." });
+    if (orderError) return send(503, { error: "Could not look up your payment request." });
+    if (!order) return send(404, { error: "No payment request was found for this signed-in account." });
     if (!["pending", "failed", "paid"].includes(order.status)) {
-      return json(409, { error: "This payment request is not eligible for verification." });
+      return send(409, { error: "This payment request is not eligible for verification." });
     }
     if (order.billing_period !== "monthly" || order.currency !== "NGN" ||
         prices[order.plan] !== order.amount_kobo || !limits[order.plan]) {
-      return json(409, { error: "Payment request details do not match an active ShieldMind plan." });
+      return send(409, { error: "Payment request details do not match an active ShieldMind plan." });
     }
 
     const verificationResponse = await fetch(
@@ -83,7 +111,7 @@ Deno.serve(async (req: Request) => {
         tx?.status !== "success" || tx?.reference !== reference ||
         Number(tx?.amount) !== order.amount_kobo || tx?.currency !== order.currency ||
         String(tx?.customer?.email || "").toLowerCase() !== user.email.toLowerCase()) {
-      return json(409, {
+      return send(409, {
         verified: false, activated: false,
         message: "Paystack has not confirmed a successful payment yet. Retry verification; do not start another checkout while this one is pending."
       });
@@ -95,7 +123,7 @@ Deno.serve(async (req: Request) => {
       : (tx?.paid_at || now.toISOString());
     const paidAt = new Date(paidAtValue);
     if (!Number.isFinite(paidAt.getTime())) {
-      return json(503, { error: "The verified payment timestamp needs reconciliation." });
+      return send(503, { error: "The verified payment timestamp needs reconciliation." });
     }
 
     if (order.status !== "paid") {
@@ -103,14 +131,14 @@ Deno.serve(async (req: Request) => {
         .update({ status: "paid", paid_at: paidAt.toISOString(), updated_at: now.toISOString() })
         .eq("id", order.id).in("status", ["pending", "failed"])
         .select("id,paid_at").maybeSingle();
-      if (updateError) return json(503, { error: "Could not record verified payment." });
+      if (updateError) return send(503, { error: "Could not record verified payment." });
       if (updatedOrder?.paid_at) {
         paidAt.setTime(new Date(updatedOrder.paid_at).getTime());
       } else {
         const { data: latest, error: latestError } = await db.from("shieldmind_payment_orders")
           .select("status,paid_at").eq("id", order.id).maybeSingle();
-        if (latestError) return json(503, { error: "Could not reconcile verified payment." });
-        if (latest?.status !== "paid") return json(409, { error: "Payment is verified, but the order is not payable." });
+        if (latestError) return send(503, { error: "Could not reconcile verified payment." });
+        if (latest?.status !== "paid") return send(409, { error: "Payment is verified, but the order is not payable." });
         if (latest.paid_at) paidAt.setTime(new Date(latest.paid_at).getTime());
       }
     }
@@ -118,15 +146,15 @@ Deno.serve(async (req: Request) => {
     const { data: currentSubscription, error: subscriptionLookupError } = await db.from("shieldmind_subscriptions")
       .select("last_payment_reference,started_at")
       .eq("user_id", user.id).maybeSingle();
-    if (subscriptionLookupError) return json(503, { error: "Could not check your active subscription." });
+    if (subscriptionLookupError) return send(503, { error: "Could not check your active subscription." });
 
     if (currentSubscription?.last_payment_reference === reference) {
-      return json(200, { verified: true, activated: true, duplicate: true, billing_mode: "prepaid", period_days: 30 });
+      return send(200, { verified: true, activated: true, duplicate: true, billing_mode: "prepaid", period_days: 30 });
     }
 
     const currentStartedAt = Date.parse(currentSubscription?.started_at || "");
     if (Number.isFinite(currentStartedAt) && currentStartedAt > paidAt.getTime()) {
-      return json(200, {
+      return send(200, {
         verified: true, activated: false, action_required: true,
         message: "Payment verified, but a newer subscription was preserved. Contact CampusShield support before making another payment."
       });
@@ -152,10 +180,10 @@ Deno.serve(async (req: Request) => {
       image_upload_limit: limits[order.plan]
     }, { onConflict: "user_id" });
     if (subscriptionError) {
-      return json(503, { error: "Payment verified, but activation needs reconciliation. Retry verification." });
+      return send(503, { error: "Payment verified, but activation needs reconciliation. Retry verification." });
     }
-    return json(200, { verified: true, activated: true, billing_mode: "prepaid", period_days: 30 });
+    return send(200, { verified: true, activated: true, billing_mode: "prepaid", period_days: 30 });
   } catch {
-    return json(500, { error: "Payment verification could not be completed." });
+    return send(500, { error: "Payment verification could not be completed." });
   }
 });
