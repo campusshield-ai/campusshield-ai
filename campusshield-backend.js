@@ -1714,6 +1714,20 @@ async getCurrentUser() {
         throw new Error("Choose your university in Campus community before submitting a report.");
       }
 
+      const coordinate = (value, minimum, maximum, label) => {
+        if (value === null || value === undefined || value === '') return null;
+        const number = Number(value);
+        if (!Number.isFinite(number) || number < minimum || number > maximum) {
+          throw new Error('The attached ' + label + ' is outside the valid coordinate range.');
+        }
+        return number;
+      };
+      const latitude = coordinate(input.latitude, -90, 90, 'latitude');
+      const longitude = coordinate(input.longitude, -180, 180, 'longitude');
+      if ((latitude === null) !== (longitude === null)) {
+        throw new Error('Both latitude and longitude are required when attaching a map pin.');
+      }
+
       const { data, error } = await client
         .from("incidents")
         .insert({
@@ -1722,7 +1736,9 @@ async getCurrentUser() {
           category: input.category,
           severity: input.severity,
           location: input.location,
-          description: input.description
+          description: input.description,
+          latitude,
+          longitude
         })
         .select()
         .single();
