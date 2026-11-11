@@ -8164,6 +8164,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
               status.textContent = String(usage.plan || data.plan).toUpperCase() + " · " +
                 Number(usage.requests_remaining).toLocaleString() + " AI requests left this 30-day term";
             }
+          }
         } catch (usageError) {
           console.warn('ShieldMind allowance summary could not be refreshed:', usageError?.message || 'Unknown error');
         }
