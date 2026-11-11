@@ -3256,11 +3256,11 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
             <label class="campus-map-admin-check"><input id="campus-map-profile-boundary-verified" type="checkbox"> I verified this boundary against an approved campus plan or survey</label>
             <div class="campus-map-model-upload">
               <h5>Real 3D campus model</h5>
-              <p>Upload a university-supplied GLB building/campus model. It stays private and pending review; it is not shown on the public map until approved.</p>
-              <label>GLB model file (maximum 25 MB)<input id="campus-map-profile-model-file" type="file" accept=".glb,model/gltf-binary"></label>
-              <label>Model attribution / source<input id="campus-map-profile-model-attribution" type="text" minlength="8" maxlength="500" placeholder="University GIS team, survey firm, licence or source"></label>
-              <button type="button" class="campus-map-action" id="campus-map-profile-model-upload">Upload model for review</button>
-              <p class="campus-map-profile-coverage" id="campus-map-profile-model-status" role="status">No 3D model submitted.</p>
+              <p>Private GLB upload is not enabled in this release. The current 3D view uses approximate OpenStreetMap building extrusions, not university-verified models.</p>
+              <label>GLB model file (maximum 25 MB)<input id="campus-map-profile-model-file" type="file" accept=".glb,model/gltf-binary" disabled></label>
+              <label>Model attribution / source<input id="campus-map-profile-model-attribution" type="text" minlength="8" maxlength="500" placeholder="University GIS team, survey firm, licence or source" disabled></label>
+              <button type="button" class="campus-map-action" id="campus-map-profile-model-upload" disabled>Upload model for review</button>
+              <p class="campus-map-profile-coverage" id="campus-map-profile-model-status" role="status">Private GLB uploads are unavailable in this release.</p>
             </div>
             <div class="campus-map-building-import">
               <h5>Discover mapped buildings</h5>
