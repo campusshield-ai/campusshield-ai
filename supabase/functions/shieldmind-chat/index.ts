@@ -310,6 +310,17 @@ Deno.serve(async (req: Request) => {
       studyImage={mime_type:mimeType,data_base64:base64};
     }
 
+    const providerKey = Deno.env.get("OPENAI_API_KEY");
+    const model = Deno.env.get("SHIELDMIND_MODEL") || "gpt-4.1-mini";
+    if (!providerKey) {
+      return json({
+        mode: "safe_fallback",
+        answer: "ShieldMind's AI provider is not configured yet. No answer was sent to an external AI provider. Please consult your course materials or lecturer while this service is being configured.",
+        sources: responseSources,
+        sources_heading: responseSources.length ? "Approved campus pages — verify details before relying on them" : undefined,
+      });
+    }
+
     const { data: quotaData, error: quotaError } = await client.rpc("consume_shieldmind_quota");
     const quota = Array.isArray(quotaData) ? quotaData[0] : quotaData;
     if (quotaError || !quota) {
@@ -322,17 +333,6 @@ Deno.serve(async (req: Request) => {
       return json({ error: "ShieldMind usage controls could not be verified. Please try again later." }, 503);
     }
     if (quota.allowed !== true) return json({ error: "You have reached ShieldMind's usage limit. Please try again later." }, 429);
-
-    const providerKey = Deno.env.get("OPENAI_API_KEY");
-    const model = Deno.env.get("SHIELDMIND_MODEL") || "gpt-4.1-mini";
-    if (!providerKey) {
-      return json({
-        mode: "safe_fallback",
-        answer: "ShieldMind's AI provider is not configured yet. No answer was sent to an external AI provider. Please consult your course materials or lecturer while this service is being configured.",
-        sources: responseSources,
-        sources_heading: responseSources.length ? "Approved campus pages — verify details before relying on them" : undefined,
-      });
-    }
 
     if (studyImage) {
       const {data:imageQuotaData,error:imageQuotaError}=await client.rpc("consume_shieldmind_image_upload");
