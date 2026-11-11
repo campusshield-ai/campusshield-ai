@@ -228,9 +228,21 @@ async function runPaystackAcceptance() {
 }
 
 try {
-  const usage = await runAiAcceptance();
-  assert.equal(usage.last_model, "gpt-6-luna");
-  await runPaystackAcceptance();
+  const failures = [];
+  try {
+    const usage = await runAiAcceptance();
+    assert.equal(usage.last_model, "gpt-6-luna");
+  } catch (error) {
+    failures.push("GPT-6 Luna acceptance: " + (error?.message || String(error)));
+  }
+  // Keep the sandbox payment test independent: an OpenAI credit issue must not
+  // prevent us from proving the Paystack checkout/verification/unlock path.
+  try {
+    await runPaystackAcceptance();
+  } catch (error) {
+    failures.push("Paystack test purchase: " + (error?.message || String(error)));
+  }
+  if (failures.length) throw new Error(failures.join("\n"));
 } finally {
   if (browser) await browser.close().catch(() => {});
   for (const userId of createdUserIds) {
