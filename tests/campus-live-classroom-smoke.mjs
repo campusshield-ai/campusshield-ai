@@ -17,6 +17,7 @@ const adminCreateMigration = await read("supabase/migrations/20261105105004_camp
 const staffScopeMigration = await read("supabase/migrations/20261111160000_live_classroom_multi_membership_controls.sql");
 const tokenFunction = await read("supabase/functions/campus-live-class-token/index.ts");
 const endFunction = await read("supabase/functions/campus-live-class-end/index.ts");
+const profileIdentityMigration = await read("supabase/migrations/20261111170000_harden_profile_identity_search_path.sql");
 
 assert.match(html, /campus-live-classroom\.css/);
 assert.match(html, /campus-live-classroom\.js/);
@@ -94,6 +95,7 @@ assert.match(endFunction, /deleteRoom\(context\.room_name\)/);
 assert.match(endFunction, /end_campus_live_class_session/);
 assert.doesNotMatch(endFunction, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.doesNotMatch(ui + backend + html, /LIVEKIT_API_SECRET|LIVEKIT_API_KEY/);
+assert.ok(profileIdentityMigration.includes("set search_path = ''"));
 
 
 const publicClassroomCreateDeclaration = adminCreateMigration
