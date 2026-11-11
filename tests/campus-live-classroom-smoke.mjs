@@ -14,6 +14,7 @@ const indexMigration = await read("supabase/migrations/20261105024500_index_live
 const adminMigration = await read("supabase/migrations/20261105102246_campus_admin_live_classroom_access.sql");
 const adminScopeMigration = await read("supabase/migrations/20261105103142_campus_live_classroom_admin_only_scope.sql");
 const adminCreateMigration = await read("supabase/migrations/20261105105004_campus_admin_classroom_creation.sql");
+const staffScopeMigration = await read("supabase/migrations/20261111160000_live_classroom_multi_membership_controls.sql");
 const tokenFunction = await read("supabase/functions/campus-live-class-token/index.ts");
 const endFunction = await read("supabase/functions/campus-live-class-end/index.ts");
 
@@ -47,6 +48,16 @@ assert.match(app, /\['teacher','admin'\]\.includes\(currentProfile\?\.role\)/);
 assert.match(html, /Verified teachers and campus administrators can create classes/);
 assert.match(ui, /listCampusLiveClassSessions/);
 assert.match(ui, /getCampusLiveClassroomCapabilities/);
+assert.match(ui, /data-live-manager-controls="true"/);
+assert.match(ui, /LECTURER &amp; CAMPUS ADMIN CONTROLS/);
+assert.match(ui, /canManage && item.status === "scheduled"/);
+assert.match(ui, /canManage && item.status === "live"/);
+assert.match(ui, /canManage && item.status === "ended"/);
+assert.match(staffScopeMigration, /m\.user_id = \(select auth\.uid\(\)\)/);
+assert.match(staffScopeMigration, /m\.membership_status = 'active'/);
+assert.match(staffScopeMigration, /m\.verification_status = 'verified'/);
+assert.match(staffScopeMigration, /private\.can_access_live_classroom\(c\.id\)/);
+assert.doesNotMatch(staffScopeMigration, /current_campus_university_id/);
 assert.match(ui, /data-live-action="join"/);
 assert.match(ui, /TrackSubscribed/);
 assert.match(ui, /setMicrophoneEnabled/);
