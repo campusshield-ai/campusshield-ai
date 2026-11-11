@@ -9,6 +9,7 @@ const visualRefreshCss = await readFile(new URL("../campusshield-visual-refresh.
 const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", import.meta.url), "utf8");
 const guidePageCss = await readFile(new URL("../campusshield-guide.css", import.meta.url), "utf8");
 const creatorToolsJs = await readFile(new URL("../student-creator-tools.js", import.meta.url), "utf8");
+const lovableUx = await readFile(new URL("../campusshield-lovable-ux.js", import.meta.url), "utf8");
 const brandLockupCss = await readFile(new URL("../campusshield-brand-lockup.css", import.meta.url), "utf8");
 const moduleExperienceCss = await readFile(new URL("../campusshield-module-experience.css", import.meta.url), "utf8");
 const campusShieldLogo = await readFile(new URL("../assets/campusshield-logo.svg", import.meta.url), "utf8");
@@ -401,6 +402,9 @@ assert.match(html, /el\.id === 'community-nav' && page === 'groups'/);
 assert.match(html, /el\.id === 'events-services-nav' && \['noticeboard','helpdesk'\]\.includes\(page\)/);
 assert.match(html, /const activeNavKey = page === requestedPage \? requestedNavKey : page;/, "shared route navigation preserves the clicked sidebar destination");
 assert.match(html, /el\.dataset\.navKey \? el\.dataset\.navKey === activeNavKey : el\.dataset\.page === page/, "sidebar active state uses destination keys where configured");
+assert.match(lovableUx, /button\.dataset\.page === pageId/, "ARIA navigation sync supports direct page changes");
+assert.match(lovableUx, /button\.classList\.contains\("active"\)/, "ARIA navigation sync prefers the uniquely selected menu item");
+assert.match(lovableUx, /button\.dataset\.navKey === pageId/, "ARIA navigation sync falls back to the canonical item for shared routes");
 assert.match(html, /id="nav-admin-heading" hidden/);
 assert.match(html, /function syncNavSectionHeadings\(\)/);
 assert.match(html, /!canManageIncidents\(\)/);
