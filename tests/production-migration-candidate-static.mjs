@@ -7,7 +7,11 @@ const pulseSql = readCandidate("../supabase/production-candidates/20261104_campu
 const pqSql = readCandidate("../supabase/production-candidates/20261104_past_questions_forward_candidate.sql");
 const preflightSql = readCandidate("../supabase/production-candidates/20261104_production_preflight.sql");
 const postflightSql = readCandidate("../supabase/production-candidates/20261104_production_postflight.sql");
-const allPhases = [mapSql, pulseSql, pqSql];
+const liveSql = readCandidate("../supabase/production-candidates/20261111_campus_live_classroom_forward_candidate.sql");
+const livePreflightSql = readCandidate("../supabase/production-candidates/20261111_live_classroom_production_preflight.sql");
+const livePostflightSql = readCandidate("../supabase/production-candidates/20261111_live_classroom_production_postflight.sql");
+const liveContractSql = readCandidate("./production-live-classroom-contract.sql");
+const allPhases = [mapSql, pulseSql, pqSql, liveSql];
 
 for (const phase of allPhases) {
   assert.match(phase, /^-- PRODUCTION CANDIDATE ONLY/m);
@@ -87,4 +91,20 @@ assert.match(pqSql, /grant select, update on public\.practice_attempts to servic
 assert.match(pqSql, /grant insert on public\.practice_answers to service_role/i);
 assert.match(postflightSql, /CampusMap Data API read grants are missing/i);
 assert.match(postflightSql, /Past Questions service_role table grants do not cover/i);
+
+assert.match(liveSql, /alter table public\.campus_live_class_sessions enable row level security/i);
+assert.match(liveSql, /revoke all on table public\.campus_live_class_sessions from public, anon, authenticated/i);
+assert.match(liveSql, /create or replace function public\.create_campus_classroom/i);
+assert.match(liveSql, /security invoker/i);
+assert.match(liveSql, /private\.can_access_live_classroom/i);
+assert.doesNotMatch(liveSql, /create or replace function private\.can_access_classroom/i, "Live Classroom must preserve the shared classroom access helper");
+assert.match(livePreflightSql, /^-- READ-ONLY/m);
+assert.doesNotMatch(livePreflightSql, /\b(insert into|update\s+|delete\s+from|alter table|drop table|truncate|create table)\b/i);
+assert.match(livePostflightSql, /Live Classroom sessions table must have RLS enabled/i);
+assert.match(livePostflightSql, /Public RPC must remain SECURITY INVOKER/i);
+assert.match(livePostflightSql, /Private implementation must be SECURITY DEFINER with empty search_path/i);
+assert.match(liveContractSql, /Synthetic Live Classroom A/i);
+assert.match(liveContractSql, /participant_role/i);
+assert.match(liveContractSql, /Cross-campus student was allowed/i);
+assert.match(liveContractSql, /Teacher creation remains supported/i);
 console.log("Production migration candidate static checks passed.");
