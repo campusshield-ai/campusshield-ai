@@ -1,11 +1,9 @@
-/* CampusShield AI — first launch + rare repeat introduction. */
+/* CampusShield AI — first launch + first opening every Monday. */
 (() => {
   "use strict";
 
   const STORAGE_KEY = "campusshield.launchIntro.v1";
-  const INTRO_VERSION = "1.0.0";
-  const REPEAT_AFTER_MS = 45 * 24 * 60 * 60 * 1000;
-  const MIN_UPDATE_GAP_MS = 30 * 24 * 60 * 60 * 1000;
+
   const NORMAL_DURATION_MS = 4800;
   const REDUCED_MOTION_DURATION_MS = 1200;
   const EXIT_DURATION_MS = 280;
@@ -20,31 +18,69 @@
     try {
       const storage = window.localStorage;
       const raw = storage.getItem(STORAGE_KEY);
-      return { available: true, record: raw ? JSON.parse(raw) : null };
+      const record = raw ? JSON.parse(raw) : null;
+      return {
+        available: true,
+        record: record && typeof record === "object" && !Array.isArray(record) ? record : null
+      };
     } catch (_error) {
       return { available: false, record: null };
     }
   }
 
-  function shouldShow(record, now) {
-    if (!record || !Number.isFinite(Number(record.completedAt))) return true;
-
-    const completedAt = Number(record.completedAt);
-    const elapsed = now - completedAt;
-    if (elapsed < 0) return false;
-
-    const currentMajor = INTRO_VERSION.split(".")[0];
-    const previousMajor = String(record.version || "").split(".")[0];
-    const majorUpdateDue = currentMajor !== previousMajor && elapsed >= MIN_UPDATE_GAP_MS;
-    return majorUpdateDue || elapsed >= REPEAT_AFTER_MS;
+  function localDateKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day;
   }
 
-  function saveCompletion(now) {
+  function firstShownAt(record) {
+    if (!record || typeof record !== "object") return null;
+    const value = Number(record.firstShownAt ?? record.completedAt);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }
+
+  function lastMondayShown(record) {
+    if (!record || typeof record !== "object") return null;
+
+    if (typeof record.lastMondayShown === "string"
+      && /^\d{4}-\d{2}-\d{2}$/.test(record.lastMondayShown)) {
+      return record.lastMondayShown;
+    }
+
+    // Upgrade existing v1 records without replaying the intro twice on the
+    // same Monday. Legacy records stored only the completion timestamp.
+    const legacyCompletedAt = Number(record.completedAt);
+    if (Number.isFinite(legacyCompletedAt) && legacyCompletedAt > 0) {
+      const legacyDate = new Date(legacyCompletedAt);
+      if (legacyDate.getDay() === 1) return localDateKey(legacyDate);
+    }
+    return null;
+  }
+
+  function shouldShow(record, now) {
+    // The very first app opening is always the brand introduction.
+    if (!firstShownAt(record)) return true;
+
+    const today = new Date(now);
+    if (today.getDay() !== 1) return false;
+
+    // On Mondays, show only on the first app opening of that local calendar day.
+    return lastMondayShown(record) !== localDateKey(today);
+  }
+
+  function saveCompletion(now, previousRecord) {
+    const today = new Date(now);
+    const mondayAlreadyShown = lastMondayShown(previousRecord);
+    const record = {
+      firstShownAt: firstShownAt(previousRecord) || now,
+      lastMondayShown: today.getDay() === 1 ? localDateKey(today) : mondayAlreadyShown,
+      version: "2.0.0"
+    };
+
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        completedAt: now,
-        version: INTRO_VERSION
-      }));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
     } catch (_error) {
       // If storage becomes unavailable after launch, the app remains usable.
     }
@@ -88,8 +124,7 @@
     if (isPasswordRecovery()) return;
 
     const storageState = readStorage();
-    // Prefer a fast, unobstructed launch over repeating the intro when persistent
-    // storage is blocked or unavailable in the current browser context.
+    // Prefer an immediate app launch when persistent storage is unavailable.
     if (!storageState.available || !shouldShow(storageState.record, Date.now())) return;
 
     const overlay = createIntro();
@@ -110,7 +145,7 @@
     function finish(skipped) {
       if (finished) return;
       finished = true;
-      saveCompletion(Date.now());
+      saveCompletion(Date.now(), storageState.record);
       window.clearTimeout(timer);
 
       if (skipped) {
