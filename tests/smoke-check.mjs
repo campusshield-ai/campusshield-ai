@@ -398,7 +398,9 @@ assert.doesNotMatch(html, /showToast\('Contact details saved\.'\)/);
 
 assert.match(html, /id="nav-staff-heading" hidden/);
 assert.match(html, /el\.id === 'community-nav' && page === 'groups'/);
-assert.match(html, /el\.id === 'events-services-nav' && \['noticeboard','helpdesk','marketplace'\]/);
+assert.match(html, /el\.id === 'events-services-nav' && \['noticeboard','helpdesk'\]\.includes\(page\)/);
+assert.match(html, /const activeNavKey = page === requestedPage \? requestedNavKey : page;/, "shared route navigation preserves the clicked sidebar destination");
+assert.match(html, /el\.dataset\.navKey \? el\.dataset\.navKey === activeNavKey : el\.dataset\.page === page/, "sidebar active state uses destination keys where configured");
 assert.match(html, /id="nav-admin-heading" hidden/);
 assert.match(html, /function syncNavSectionHeadings\(\)/);
 assert.match(html, /!canManageIncidents\(\)/);
@@ -957,7 +959,9 @@ assert.match(profileAvatarStorageMigration, /grant select on public\.community_p
 assert.match(profileAvatarStorageMigration, /RLS must be enabled on public\.community_posts/i, "migration refuses to grant reads unless community RLS is enabled");
 
 assert.match(campusServiceCrawler, /campusshieldaitechnologies@gmail\.com/, "crawler endpoint is restricted to its designated owner email");
-assert.ok(html.includes('<button data-page="community" id="lost-found-nav" data-lost-found-shortcut="true">'), "Lost & Found has a dedicated campus navigation shortcut");
+assert.ok(html.includes('<button data-page="community" id="community-nav" data-nav-key="community">'), "CampusPulse has its own navigation identity");
+assert.ok(html.includes('<button data-page="community" id="lost-found-nav" data-nav-key="lost-found" data-lost-found-shortcut="true">'), "Lost & Found has a dedicated campus navigation shortcut and active state");
+assert.ok(html.includes('<button data-page="community" id="ideas-impact-nav" data-nav-key="ideas-impact" data-ideas-impact-nav="true">'), "Ideas & Impact has its own navigation identity");
 const lostFoundHandlerStart = html.indexOf("if (button.hasAttribute('data-lost-found-shortcut'))");
 const lostFoundHandlerEnd = html.indexOf("if (button.dataset.page === 'groups')", lostFoundHandlerStart);
 assert.ok(lostFoundHandlerStart >= 0 && lostFoundHandlerEnd > lostFoundHandlerStart, "Lost & Found shortcut has a dedicated click handler");
