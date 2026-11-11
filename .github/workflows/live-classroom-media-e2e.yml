@@ -1,0 +1,69 @@
+name: Live Classroom two-user LiveKit media acceptance
+
+on:
+  pull_request:
+    branches: [main, "staging/preview"]
+    paths:
+      - ".github/workflows/live-classroom-media-e2e.yml"
+      - "tests/e2e/staging-live-classroom-media-e2e.mjs"
+      - "campus-live-classroom.js"
+      - "supabase/functions/campus-live-class-token/**"
+      - "supabase/functions/campus-live-class-end/**"
+      - "supabase/migrations/20261105*live*classroom*.sql"
+      - "supabase/migrations/2026110510*campus_admin*.sql"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-staging-live-classroom-media-e2e
+  cancel-in-progress: false
+
+jobs:
+  livekit-media-e2e:
+    name: Real lecturer, enrolled student and LiveKit media flow
+    if: github.repository == 'campusshield-ai/campusshield-ai' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_STAGING_URL: https://hywcpnoqqhxvujnimhxl.supabase.co
+      SUPABASE_STAGING_ANON_KEY: sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP
+      SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate the exact Staging target and service credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_STAGING_URL"
+          test -n "$SUPABASE_STAGING_ANON_KEY"
+          test -n "$SUPABASE_STAGING_SERVICE_ROLE_KEY" || {
+            echo "::error::Add the SUPABASE_STAGING_SERVICE_ROLE_KEY repository secret for the Staging project only."
+            exit 1
+          }
+          actual_ref="$(node -e 'const u=new URL(process.env.SUPABASE_STAGING_URL); if(u.protocol!=="https:") process.exit(2); const m=u.hostname.match(/^([a-z0-9]+)\.supabase\.co$/); if(!m) process.exit(2); process.stdout.write(m[1])')"
+          if [ "$actual_ref" != "hywcpnoqqhxvujnimhxl" ]; then
+            echo "::error::Refusing to run: this workflow is restricted to the approved Staging Supabase project."
+            exit 1
+          fi
+          echo "Staging project reference verified. Credential values are not printed."
+
+      - name: Install pinned Supabase and Playwright clients
+        run: npm install --no-save --no-package-lock @supabase/supabase-js@2.95.0 @playwright/test@1.64.1
+
+      - name: Install Chromium without apt mirror dependencies
+        run: npx playwright install chromium
+
+      - name: Check Live Classroom E2E test syntax
+        run: node --check tests/e2e/staging-live-classroom-media-e2e.mjs
+
+      - name: Run the real two-user LiveKit media acceptance test
+        run: node tests/e2e/staging-live-classroom-media-e2e.mjs

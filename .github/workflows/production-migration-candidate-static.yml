@@ -6,6 +6,7 @@ on:
     paths:
       - "supabase/production-candidates/**"
       - "tests/production-migration-candidate-static.mjs"
+      - "tests/production-live-classroom-contract.sql"
       - ".github/workflows/production-migration-candidate-static.yml"
   push:
     branches: [review/production-forward-migration-package]

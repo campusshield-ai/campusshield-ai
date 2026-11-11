@@ -62,13 +62,13 @@ assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\?\.
   "Verified students, teachers and campus administrators must be able to open classrooms.");
 assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\.role\)/,
   "The classroom route must enforce the same verified role allowlist as navigation.");
-assert.match(app, /const classroomCreateAccess = currentProfile\?\.role === 'teacher'/,
-  "Classroom creation stays limited to verified teachers; administrators supervise existing university classrooms.");
+assert.match(app, /const classroomCreateAccess = \['teacher','admin'\]\.includes\(currentProfile\?\.role\)/,
+  "Verified teachers and campus administrators can create classes they own within their university.");
 assert.match(app, /const isCampusAdmin = currentProfile\?\.role === 'admin' && hasCampusMembership/);
 assert.match(app, /University classrooms/);
 assert.match(attendance, /Verified lecturers manage attendance for classrooms they teach/);
 assert.match(attendance, /Verified campus administrators can supervise attendance across their active, verified university/);
 assert.match(html, /Join your classes, manage teaching spaces and track attendance/);
-assert.match(html, /Only verified teachers can create classes/);
+assert.match(html, /Verified teachers and campus administrators can create classes for their own university/);
 
 console.log("Campus QR attendance smoke checks passed.");
