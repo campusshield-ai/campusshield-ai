@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
-import { AccessToken } from "npm:livekit-server-sdk@2.19.2";
+import { AccessToken, RoomServiceClient } from "npm:livekit-server-sdk@2.19.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -86,6 +86,28 @@ Deno.serve(async (req: Request) => {
     }
     if (!["wss:", "ws:"].includes(parsedLivekitUrl.protocol)) {
       return json({ error: "The live classroom video service has an invalid server address." }, 503);
+    }
+
+    if (body?.diagnostic === true) {
+      const apiUrl = new URL(parsedLivekitUrl.toString());
+      apiUrl.protocol = apiUrl.protocol === "wss:" ? "https:" : "http:";
+      const roomService = new RoomServiceClient(apiUrl.origin, livekitApiKey, livekitApiSecret);
+      try {
+        // This non-destructive probe verifies the Staging server URL and API key/secret pair.
+        // It returns only a boolean and never exposes room names or credential material.
+        await roomService.listRooms();
+        return json({ diagnostic: true, credentialsAccepted: true, serverHost: parsedLivekitUrl.host });
+      } catch (error) {
+        console.error("LiveKit credential diagnostic failed", {
+          stage: "credentials_check",
+          errorName: error instanceof Error ? error.name.slice(0, 80) : "UnknownError",
+        });
+        return json({
+          error: "LiveKit rejected the configured server URL or API key/secret pair. Verify all three values belong to the same LiveKit project.",
+          diagnostic: true,
+          credentialsAccepted: false,
+        }, 503);
+      }
     }
 
     const participantName = String(context.participant_display_name || "Campus member").slice(0, 80);
