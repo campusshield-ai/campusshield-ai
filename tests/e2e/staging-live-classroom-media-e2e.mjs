@@ -107,7 +107,9 @@ async function createSyntheticUser(spec, university) {
     id: user.id,
     display_name: spec.displayName,
     role: spec.profileRole,
-    requested_role: spec.profileRole,
+    // The app's requested_role constraint intentionally accepts only student/teacher.
+    // The effective admin role is provisioned directly by this Staging-only service-role test.
+    requested_role: spec.requestedRole || spec.profileRole,
     verification_status: "verified",
   }, { onConflict: "id" });
   mustSucceed(profile.error, "Provision synthetic profile for " + spec.key);
@@ -359,6 +361,7 @@ async function run() {
     key: "campus-admin",
     displayName: "CampusShield Synthetic Live Classroom Campus Admin",
     profileRole: "admin",
+    requestedRole: "teacher",
     campusRole: "admin",
   }, university);
 
