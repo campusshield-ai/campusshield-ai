@@ -7,3 +7,6 @@ window.CampusShieldMapConfig.maptilerKey = window.CampusShieldMapConfig.maptiler
 
 /* Configurable HTTPS MapLibre style URL. Keep the no-key pilot style by default. */
 window.CampusShieldMapConfig.baseStyleUrl = window.CampusShieldMapConfig.baseStyleUrl || 'https://tiles.openfreemap.org/styles/liberty';
+
+/* Private GLB model storage and submission are not part of this Production release. */
+window.CampusShieldMapConfig.privateModelUploadsEnabled = false;
