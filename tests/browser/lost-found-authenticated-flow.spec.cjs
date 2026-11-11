@@ -188,12 +188,51 @@ test("verified synthetic student can open Lost & Found and submit a post for mod
     await expect(welcomeTour).toBeHidden();
   }
 
+  const communityNavIds = ["community-nav", "lost-found-nav", "ideas-impact-nav"];
+  async function expectOnlyCommunityNavSelected(selectedId) {
+    for (const id of communityNavIds) {
+      const item = page.locator("#" + id);
+      if (id === selectedId) {
+        await expect(item).toHaveClass(/active/);
+        await expect(item).toHaveAttribute("aria-current", "page");
+      } else {
+        await expect(item).not.toHaveClass(/active/);
+        await expect(item).not.toHaveAttribute("aria-current", "page");
+      }
+    }
+  }
+
+  await page.locator("#community-nav").click();
+  await expectOnlyCommunityNavSelected("community-nav");
+
+  await page.locator("#ideas-impact-nav").click();
+  await expect(page.locator("#page-community")).toBeVisible();
+  await expectOnlyCommunityNavSelected("ideas-impact-nav");
+
   await page.locator("#lost-found-nav").click();
+  await expectOnlyCommunityNavSelected("lost-found-nav");
   await expect(page.locator("#page-community")).toBeVisible();
   await expect(page.locator("#community-post-type")).toHaveValue("lost_found");
   await expect(page.locator("#community-post-message")).toContainText(
     "Do not post private contact details or sensitive personal information"
   );
+
+  const eventsNav = page.locator("#events-services-nav");
+  const marketplaceNav = page.locator("#marketplace-nav");
+  await eventsNav.click();
+  await expect(eventsNav).toHaveClass(/active/);
+  await expect(marketplaceNav).not.toHaveClass(/active/);
+  await expect(eventsNav).toHaveAttribute("aria-current", "page");
+  await expect(marketplaceNav).not.toHaveAttribute("aria-current", "page");
+
+  await marketplaceNav.click();
+  await expect(marketplaceNav).toHaveClass(/active/);
+  await expect(eventsNav).not.toHaveClass(/active/);
+  await expect(marketplaceNav).toHaveAttribute("aria-current", "page");
+  await expect(eventsNav).not.toHaveAttribute("aria-current", "page");
+
+  await page.locator("#lost-found-nav").click();
+  await expectOnlyCommunityNavSelected("lost-found-nav");
   await expect(page.locator("#community-feed-status")).toContainText("published post", { timeout: 10000 });
 
   await page.locator("#community-post-title-input").fill("Synthetic Lost & Found test item");

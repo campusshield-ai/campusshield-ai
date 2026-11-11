@@ -9,16 +9,34 @@
   function syncCurrentNavigation() {
     const activePage = workspace.querySelector(".page.active");
     const pageId = activePage?.id?.replace(/^page-/, "") || "";
-    const navButtons = workspace.querySelectorAll(
+    const navButtons = Array.from(workspace.querySelectorAll(
       "#app-sidebar .nav button[data-page], #app-sidebar .sidebar-guide-access button[data-page], .mobile-bottom-nav button[data-page]"
+    ));
+
+    const candidates = navButtons.filter((button) =>
+      Boolean(pageId) && (
+        button.dataset.page === pageId ||
+        (button.id === "community-nav" && pageId === "groups") ||
+        (button.id === "events-services-nav" && ["noticeboard", "helpdesk"].includes(pageId))
+      )
     );
+    // When a route is shared, the app's active class identifies the exact
+    // sidebar destination that was clicked. For direct page changes (such as
+    // restored routes and accessibility tests), fall back to the canonical
+    // route item and its equivalent mobile-navigation item.
+    const activeCandidates = candidates.filter((button) => button.classList.contains("active"));
+    let currentButtons = activeCandidates;
+    if (!currentButtons.length) {
+      const canonical = candidates.filter((button) => button.dataset.navKey === pageId);
+      const sharedNavigation = candidates.filter((button) => !button.dataset.navKey);
+      currentButtons = [...canonical, ...sharedNavigation];
+      if (!currentButtons.length) currentButtons = candidates;
+    }
+    const currentSet = new Set(currentButtons);
+
     navButtons.forEach((button) => {
-      const current = Boolean(pageId) && button.dataset.page === pageId;
-      if (current) {
-        button.setAttribute("aria-current", "page");
-      } else {
-        button.removeAttribute("aria-current");
-      }
+      if (currentSet.has(button)) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
     });
   }
 

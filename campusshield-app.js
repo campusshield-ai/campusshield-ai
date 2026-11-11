@@ -1220,11 +1220,12 @@
     sync();
   })();
 
-  function navigate(page) {
+  function navigate(page, requestedNavKey = page) {
     if (!currentProfile) {
       showLogin('Please sign in to access CampusShield.');
       return;
     }
+    const requestedPage = page;
     if (page === 'past-questions' && !window.PastQuestionPractice?.isEnabled?.()) {
       page = 'dashboard';
       toast('Past Questions & Exam Prep is coming soon. We’re preparing verified study materials before launch.');
@@ -1293,14 +1294,16 @@
     // ShieldMind and plan information are available to all signed-in users.
     // The Edge Function applies its own eligibility rules only to protected capabilities.
 
+    const activeNavKey = page === requestedPage ? requestedNavKey : page;
+
     document.querySelectorAll('.page').forEach(el =>
       el.classList.toggle('active', el.id === 'page-' + page)
     );
 
     document.querySelectorAll('[data-page]').forEach(el => {
-      const active = el.dataset.page === page ||
+      const active = (el.dataset.navKey ? el.dataset.navKey === activeNavKey : el.dataset.page === page) ||
         (el.id === 'community-nav' && page === 'groups') ||
-        (el.id === 'events-services-nav' && ['noticeboard','helpdesk','marketplace'].includes(page));
+        (el.id === 'events-services-nav' && ['noticeboard','helpdesk'].includes(page));
       el.classList.toggle('active', active);
       if (active) el.setAttribute('aria-current', 'page');
       else el.removeAttribute('aria-current');
@@ -3449,7 +3452,7 @@
     if (!button) return;
     if (button.tagName === 'A') e.preventDefault();
     if (button.dataset.courseSearch && $('campus-groups-search')) $('campus-groups-search').value = button.dataset.courseSearch;
-    navigate(button.dataset.page);
+    navigate(button.dataset.page, button.dataset.navKey || button.dataset.page);
     if (button.dataset.quickAction === 'incident-status') {
       const target = $('recent-reports-panel');
       if (target) target.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});

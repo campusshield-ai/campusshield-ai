@@ -9,6 +9,7 @@ const visualRefreshCss = await readFile(new URL("../campusshield-visual-refresh.
 const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", import.meta.url), "utf8");
 const guidePageCss = await readFile(new URL("../campusshield-guide.css", import.meta.url), "utf8");
 const creatorToolsJs = await readFile(new URL("../student-creator-tools.js", import.meta.url), "utf8");
+const lovableUx = await readFile(new URL("../campusshield-lovable-ux.js", import.meta.url), "utf8");
 const brandLockupCss = await readFile(new URL("../campusshield-brand-lockup.css", import.meta.url), "utf8");
 const moduleExperienceCss = await readFile(new URL("../campusshield-module-experience.css", import.meta.url), "utf8");
 const campusShieldLogo = await readFile(new URL("../assets/campusshield-logo.svg", import.meta.url), "utf8");
@@ -398,7 +399,12 @@ assert.doesNotMatch(html, /showToast\('Contact details saved\.'\)/);
 
 assert.match(html, /id="nav-staff-heading" hidden/);
 assert.match(html, /el\.id === 'community-nav' && page === 'groups'/);
-assert.match(html, /el\.id === 'events-services-nav' && \['noticeboard','helpdesk','marketplace'\]/);
+assert.match(html, /el\.id === 'events-services-nav' && \['noticeboard','helpdesk'\]\.includes\(page\)/);
+assert.match(html, /const activeNavKey = page === requestedPage \? requestedNavKey : page;/, "shared route navigation preserves the clicked sidebar destination");
+assert.match(html, /el\.dataset\.navKey \? el\.dataset\.navKey === activeNavKey : el\.dataset\.page === page/, "sidebar active state uses destination keys where configured");
+assert.match(lovableUx, /button\.dataset\.page === pageId/, "ARIA navigation sync supports direct page changes");
+assert.match(lovableUx, /button\.classList\.contains\("active"\)/, "ARIA navigation sync prefers the uniquely selected menu item");
+assert.match(lovableUx, /button\.dataset\.navKey === pageId/, "ARIA navigation sync falls back to the canonical item for shared routes");
 assert.match(html, /id="nav-admin-heading" hidden/);
 assert.match(html, /function syncNavSectionHeadings\(\)/);
 assert.match(html, /!canManageIncidents\(\)/);
@@ -957,7 +963,9 @@ assert.match(profileAvatarStorageMigration, /grant select on public\.community_p
 assert.match(profileAvatarStorageMigration, /RLS must be enabled on public\.community_posts/i, "migration refuses to grant reads unless community RLS is enabled");
 
 assert.match(campusServiceCrawler, /campusshieldaitechnologies@gmail\.com/, "crawler endpoint is restricted to its designated owner email");
-assert.ok(html.includes('<button data-page="community" id="lost-found-nav" data-lost-found-shortcut="true">'), "Lost & Found has a dedicated campus navigation shortcut");
+assert.ok(html.includes('<button data-page="community" id="community-nav" data-nav-key="community">'), "CampusPulse has its own navigation identity");
+assert.ok(html.includes('<button data-page="community" id="lost-found-nav" data-nav-key="lost-found" data-lost-found-shortcut="true">'), "Lost & Found has a dedicated campus navigation shortcut and active state");
+assert.ok(html.includes('<button data-page="community" id="ideas-impact-nav" data-nav-key="ideas-impact" data-ideas-impact-nav="true">'), "Ideas & Impact has its own navigation identity");
 const lostFoundHandlerStart = html.indexOf("if (button.hasAttribute('data-lost-found-shortcut'))");
 const lostFoundHandlerEnd = html.indexOf("if (button.dataset.page === 'groups')", lostFoundHandlerStart);
 assert.ok(lostFoundHandlerStart >= 0 && lostFoundHandlerEnd > lostFoundHandlerStart, "Lost & Found shortcut has a dedicated click handler");
