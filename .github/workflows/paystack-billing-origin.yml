@@ -1,0 +1,34 @@
+name: Paystack billing origin and pricing safeguards
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/paystack-initialize/index.ts"
+      - "supabase/functions/paystack-reconcile/index.ts"
+      - "supabase/functions/shieldmind-chat/index.ts"
+      - "index.html"
+      - "tests/paystack-billing-origin-smoke.mjs"
+      - ".github/workflows/paystack-billing-origin.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/paystack-initialize/index.ts"
+      - "supabase/functions/paystack-reconcile/index.ts"
+      - "supabase/functions/shieldmind-chat/index.ts"
+      - "index.html"
+      - "tests/paystack-billing-origin-smoke.mjs"
+      - ".github/workflows/paystack-billing-origin.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  billing-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate Paystack origin, return, pricing and quota safeguards
+        run: node tests/paystack-billing-origin-smoke.mjs
