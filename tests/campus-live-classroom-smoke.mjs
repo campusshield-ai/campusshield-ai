@@ -22,8 +22,8 @@ assert.match(html, /campus-live-classroom\.js/);
 assert.match(html, /id="campus-live-classroom-root"/);
 assert.match(html, /Online Classroom/);
 
-assert.match(app, /\['admin','teacher','student'\]\.includes\(currentProfile\?\.role\)/);
-assert.match(app, /\['admin','teacher','student'\]\.includes\(currentProfile\.role\)/);
+assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\?\.role\)/);
+assert.match(app, /\['student','teacher','admin'\]\.includes\(currentProfile\.role\)/);
 assert.match(backend, /listCampusLiveClassrooms/);
 assert.match(adminCreateMigration, /p\.role = 'admin'/);
 assert.match(adminCreateMigration, /m\.campus_role = 'admin'/);
