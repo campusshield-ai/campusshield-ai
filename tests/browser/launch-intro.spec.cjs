@@ -1,10 +1,15 @@
 const { test, expect } = require("@playwright/test");
 
 const STORAGE_KEY = "campusshield.launchIntro.v1";
-const FORTY_SIX_DAYS = 46 * 24 * 60 * 60 * 1000;
 
-test("first launch shows the intro responsively, then Skip remembers completion", async ({ page }) => {
-  await page.addInitScript((key) => localStorage.removeItem(key), STORAGE_KEY);
+async function clearStoredIntro(page) {
+  await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
+  await page.evaluate((key) => localStorage.removeItem(key), STORAGE_KEY);
+}
+
+test("first opening shows the intro, then one Monday opening per local week", async ({ page }) => {
+  await page.clock.install({ time: new Date("2026-11-11T09:00:00") });
+  await clearStoredIntro(page);
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
 
   const intro = page.locator("#campusshield-launch-intro");
@@ -41,19 +46,80 @@ test("first launch shows the intro responsively, then Skip remembers completion"
   await page.keyboard.press("Escape");
   await expect(intro).toHaveCount(0);
 
-  const saved = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
-  expect(saved.version).toBe("1.0.0");
-  expect(Number.isFinite(saved.completedAt)).toBeTruthy();
+  const savedFirstLaunch = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+  expect(savedFirstLaunch.version).toBe("2.0.0");
+  expect(Number.isFinite(savedFirstLaunch.firstShownAt)).toBeTruthy();
+  expect(savedFirstLaunch.lastMondayShown).toBeNull();
 
   await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(intro).toHaveCount(0);
+
+  // First opening on Monday: show once and remember that local Monday.
+  await page.clock.setFixedTime(new Date("2026-11-16T09:00:00"));
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(intro).toBeVisible();
+  await intro.getByRole("button", { name: /skip intro/i }).click();
+  await expect(intro).toHaveCount(0);
+
+  const mondayRecord = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+  expect(mondayRecord.lastMondayShown).toBe("2026-11-16");
+  expect(mondayRecord.firstShownAt).toBe(savedFirstLaunch.firstShownAt);
+
+  // More opens on Monday and Tuesday do not replay the brand animation.
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(intro).toHaveCount(0);
+  await page.clock.setFixedTime(new Date("2026-11-17T09:00:00"));
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(intro).toHaveCount(0);
+
+  // The first opening on the next Monday displays it again exactly once.
+  await page.clock.setFixedTime(new Date("2026-11-23T09:00:00"));
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(intro).toBeVisible();
+  await intro.getByRole("button", { name: /skip intro/i }).click();
+  const nextMondayRecord = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+  expect(nextMondayRecord.lastMondayShown).toBe("2026-11-23");
+});
+
+test("a missed Monday does not cause a delayed Tuesday introduction", async ({ page }) => {
+  const sunday = new Date("2026-11-15T09:00:00").getTime();
+  await page.clock.install({ time: new Date("2026-11-17T09:00:00") });
+  await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
+  await page.evaluate(({ key, firstShownAt }) => {
+    localStorage.setItem(key, JSON.stringify({
+      firstShownAt,
+      lastMondayShown: "2026-11-09",
+      version: "2.0.0"
+    }));
+  }, { key: STORAGE_KEY, firstShownAt: sunday });
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   await expect(page.locator("#campusshield-launch-intro")).toHaveCount(0);
 });
 
-test("the intro repeats after 45 days and respects reduced motion", async ({ page }) => {
-  await page.addInitScript(({ key, oldAt }) => {
-    localStorage.setItem(key, JSON.stringify({ completedAt: oldAt, version: "1.0.0" }));
-  }, { key: STORAGE_KEY, oldAt: Date.now() - FORTY_SIX_DAYS });
+test("legacy completion records migrate without replaying on the same Monday", async ({ page }) => {
+  const legacyMonday = new Date("2026-11-16T08:00:00").getTime();
+  await page.clock.install({ time: new Date("2026-11-16T12:00:00") });
+  await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
+  await page.evaluate(({ key, completedAt }) => {
+    localStorage.setItem(key, JSON.stringify({ completedAt, version: "1.0.0" }));
+  }, { key: STORAGE_KEY, completedAt: legacyMonday });
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  const intro = page.locator("#campusshield-launch-intro");
+  await expect(intro).toHaveCount(0);
 
+  await page.clock.setFixedTime(new Date("2026-11-23T09:00:00"));
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(intro).toBeVisible();
+  await intro.getByRole("button", { name: /skip intro/i }).click();
+
+  const saved = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+  expect(saved.firstShownAt).toBe(legacyMonday);
+  expect(saved.lastMondayShown).toBe("2026-11-23");
+});
+
+test("reduced motion uses a static intro and password recovery bypasses it", async ({ page }) => {
+  await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
+  await page.evaluate((key) => localStorage.removeItem(key), STORAGE_KEY);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
 
@@ -62,10 +128,7 @@ test("the intro repeats after 45 days and respects reduced motion", async ({ pag
   await expect(intro.locator(".cs-launch-mark")).toHaveCSS("animation-name", "none");
   await intro.getByRole("button", { name: /skip intro/i }).click();
   await expect(intro).toHaveCount(0);
-});
 
-test("password recovery bypasses the launch introduction", async ({ page }) => {
-  await page.addInitScript((key) => localStorage.removeItem(key), STORAGE_KEY);
   await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("#campusshield-launch-intro")).toHaveCount(0);
+  await expect(intro).toHaveCount(0);
 });
