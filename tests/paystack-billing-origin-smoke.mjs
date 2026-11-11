@@ -38,6 +38,9 @@ for (const [plan, kobo, display] of pricePairs) {
 }
 
 assert.ok(chat.indexOf("const providerKey =") < chat.indexOf("consume_shieldmind_quota"), "OpenAI configuration must be checked before consuming user request quota");
-assert.ok(html.includes("The per-minute and daily figures are usage caps"), "Billing UI must disclose that rate limits are caps, not guaranteed monthly answer bundles");
+assert.ok(html.includes("Each plan includes a fixed AI request allowance for its 30-day term"), "Billing UI must show the prepaid term request allowance");
+assert.ok(chat.includes('const model = "gpt-6-luna"'), "Production ShieldMind chat must use GPT-6 Luna");
+assert.ok(chat.includes("max_completion_tokens: 900"), "Chat output length must be bounded for predictable provider spend");
+assert.ok(chat.includes("record_shieldmind_usage"), "Actual provider token use must be written to the server-side ledger");
 
 console.log("Paystack origin, return URL, plan price and ShieldMind quota preflight checks passed.");
