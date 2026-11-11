@@ -96,7 +96,7 @@ async function runAiAcceptance() {
     started_at: start,
     expires_at: expiry,
     image_upload_limit: 20,
-    renewal_status: "not_renewing",
+    renewal_status: "non-renewing",
   }, { onConflict: "user_id" });
   if (subscription.error) throw new Error("Could not provision synthetic Staging plan: " + subscription.error.message);
 
