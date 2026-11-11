@@ -196,5 +196,46 @@ test("verified synthetic student can open Lost & Found and submit a post for mod
     p_location: "General library lobby",
   });
   expect(requestLog.some((item) => item.path === "/rest/v1/rpc/create_campus_social_post")).toBe(true);
-  expect(pageErrors, "the Lost & Found flow should not throw browser runtime errors").toEqual([]);
+
+  const expectOnlySidebarDestination = async (id) => {
+    await expect(page.locator("#app-sidebar .nav button.active")).toHaveCount(1);
+    await expect(page.locator("#app-sidebar .nav button[aria-current='page']")).toHaveCount(1);
+    await expect(page.locator("#" + id)).toHaveClass(/active/);
+    const activeIds = await page.locator("#app-sidebar .nav button.active").evaluateAll((buttons) =>
+      buttons.map((button) => button.id)
+    );
+    expect(activeIds).toEqual([id]);
+  };
+
+  // Each CampusPulse destination shares the same community page, but only the
+  // destination selected by the student should be highlighted in the sidebar.
+  await expectOnlySidebarDestination("lost-found-nav");
+  await expect(page.locator("#community-post-type")).toHaveValue("lost_found");
+
+  await page.locator("#ideas-impact-nav").click();
+  await expect(page.locator("#page-community")).toBeVisible();
+  await expect(page.locator("#campus-ideas-impact")).toBeInViewport();
+  await expectOnlySidebarDestination("ideas-impact-nav");
+
+  await page.locator("#community-nav").click();
+  await expect(page.locator("#page-community > .heading")).toBeInViewport();
+  await expectOnlySidebarDestination("community-nav");
+
+  // Marketplace is an independent destination, not an active child of Events.
+  await page.locator("#marketplace-nav").click();
+  await expect(page.locator("#page-marketplace")).toBeVisible();
+  await expectOnlySidebarDestination("marketplace-nav");
+  await expect(page.locator("#events-services-nav")).not.toHaveAttribute("aria-current", "page");
+
+  await page.locator("#events-services-nav").click();
+  await expect(page.locator("#page-events")).toBeVisible();
+  await expectOnlySidebarDestination("events-services-nav");
+
+  // The Marketplace shortcut inside Events must switch the active item too.
+  await page.locator("#page-events .heading-actions [data-page='marketplace']").click();
+  await expect(page.locator("#page-marketplace")).toBeVisible();
+  await expectOnlySidebarDestination("marketplace-nav");
+  await expect(page.locator("#events-services-nav")).not.toHaveAttribute("aria-current", "page");
+
+  expect(pageErrors, "the navigation and Lost & Found flows should not throw browser runtime errors").toEqual([]);
 });
