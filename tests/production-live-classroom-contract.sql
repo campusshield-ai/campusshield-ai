@@ -117,7 +117,7 @@ DECLARE v_classroom_id uuid;
 BEGIN
   SELECT c.id INTO v_classroom_id
   FROM public.create_campus_classroom('Synthetic Teacher Classroom','Production QA','Teacher regression test') AS c;
-  IF v_classroom_id IS NULL OR NOT private.can_manage_campus_live_classroom(v_classroom_id) THEN
+  IF v_classroom_id IS NULL OR NOT public.get_campus_live_classroom_capabilities(v_classroom_id) THEN
     RAISE EXCEPTION 'Verified teacher classroom creation or management regressed.';
   END IF;
 END
