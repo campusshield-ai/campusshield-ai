@@ -1063,6 +1063,15 @@ async getCurrentUser() {
       if (error) throw error;
     },
 
+    // Live Classroom selector: admins see only classes at their own verified university.
+    async listCampusLiveClassrooms() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_live_classrooms");
+      if (error) throw error;
+      return data || [];
+    },
+
+
     // Classroom API: table reads are RLS-scoped; all writes use guarded database RPCs.
     async listCampusClassrooms() {
       if (!client) throw new Error("Supabase is not configured.");
@@ -1242,6 +1251,99 @@ async getCurrentUser() {
       if (error) throw error;
       return Array.isArray(data) ? data[0] || null : data;
     },
+
+    // Live Online Classroom API: private RPCs enforce verified campus membership and class permissions.
+    async listCampusLiveClassSessions(classroomId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_live_class_sessions", {
+        p_classroom_id: classroomId
+      });
+      if (error) throw error;
+      return data || [];
+    },
+
+    async getCampusLiveClassroomCapabilities(classroomId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("get_campus_live_classroom_capabilities", {
+        p_classroom_id: classroomId
+      });
+      if (error) throw error;
+      return data === true;
+    },
+
+    async createCampusLiveClassSession(input) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("create_campus_live_class_session", {
+        p_classroom_id: input.classroomId,
+        p_title: String(input.title || "").trim(),
+        p_description: String(input.description || "").trim(),
+        p_scheduled_at: input.scheduledAt,
+        p_duration_minutes: Number(input.durationMinutes || 60),
+        p_external_meeting_url: input.externalMeetingUrl || null
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async startCampusLiveClassSession(sessionId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("start_campus_live_class_session", {
+        p_session_id: sessionId
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async endCampusLiveClassSession(sessionId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("campus-live-class-end", {
+        body: { session_id: sessionId }
+      });
+      if (error) {
+        let message = "";
+        try {
+          const response = error.context;
+          if (response && typeof response.clone === "function") {
+            const payload = await response.clone().json();
+            if (typeof payload?.error === "string") message = payload.error;
+          }
+        } catch (_parseError) {}
+        throw new Error(message || error.message || "Could not end the live class.");
+      }
+      if (data?.error) throw new Error(String(data.error));
+      return data || {};
+    },
+
+    async setCampusLiveClassRecording(sessionId, recordingUrl) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("set_campus_live_class_recording", {
+        p_session_id: sessionId,
+        p_recording_url: String(recordingUrl || "").trim()
+      });
+      if (error) throw error;
+      return data;
+    },
+
+    async requestCampusLiveClassToken(sessionId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.functions.invoke("campus-live-class-token", {
+        body: { session_id: sessionId }
+      });
+      if (error) {
+        let message = "";
+        try {
+          const response = error.context;
+          if (response && typeof response.clone === "function") {
+            const payload = await response.clone().json();
+            if (typeof payload?.error === "string") message = payload.error;
+          }
+        } catch (_parseError) {}
+        throw new Error(message || error.message || "Live class access could not be prepared.");
+      }
+      if (data?.error) throw new Error(String(data.error));
+      return data || {};
+    },
+
 
     // Opportunity Hub API: direct reads are limited to safe columns by PostgreSQL grants/RLS.
     async listCampusOpportunities() {
