@@ -1437,6 +1437,9 @@ import './campus-map-safety.js';
   }
 
   async function uploadCampusGlbModel() {
+    if (window.CampusShieldMapConfig?.privateModelUploadsEnabled !== true) {
+      return setStatus('Private 3D model submission is not enabled in this release.', 'warning');
+    }
     if (!isCampusAdmin) return setStatus('Only a verified campus administrator can upload a building model.', 'warning');
     const profile = activeCampusProfile;
     if (!profile?.id || !profile?.university_id) {
@@ -1477,7 +1480,7 @@ import './campus-map-safety.js';
         throw submitError;
       }
       $('campus-map-profile-model-file').value = '';
-      setStatus('3D model uploaded to private Staging storage and submitted for review. It will not appear on student maps until approved.', 'success');
+      setStatus('3D model uploaded to private campus storage and submitted for review. It will not appear on student maps until approved.', 'success');
       await loadCampus();
     } catch (error) {
       setStatus(error.message || 'The campus 3D model upload failed.', 'error');
@@ -2045,11 +2048,22 @@ import './campus-map-safety.js';
     $('campus-map-profile-boundary').value = profile?.boundary_geojson ? JSON.stringify(profile.boundary_geojson, null, 2) : '';
     $('campus-map-profile-boundary-source').value = profile?.boundary_source_url || '';
     $('campus-map-profile-boundary-verified').checked = profile?.boundary_status === 'verified';
-    $('campus-map-profile-model-attribution').value = profile?.model_attribution || '';
+    const modelUploadsEnabled = window.CampusShieldMapConfig?.privateModelUploadsEnabled === true;
+    const modelFileInput = $('campus-map-profile-model-file');
+    const modelAttributionInput = $('campus-map-profile-model-attribution');
+    const modelUploadButton = $('campus-map-profile-model-upload');
+    if (modelFileInput) modelFileInput.disabled = !modelUploadsEnabled;
+    if (modelAttributionInput) {
+      modelAttributionInput.value = profile?.model_attribution || '';
+      modelAttributionInput.disabled = !modelUploadsEnabled;
+    }
+    if (modelUploadButton) modelUploadButton.disabled = !modelUploadsEnabled;
     if ($('campus-map-profile-model-status')) {
       const modelState = profile?.model_status || 'not_submitted';
       $('campus-map-profile-model-status').dataset.state = modelState;
-      $('campus-map-profile-model-status').textContent = modelState === 'approved'
+      $('campus-map-profile-model-status').textContent = !modelUploadsEnabled
+        ? 'Private GLB uploads are not enabled in this release. The 3D view uses approximate OpenStreetMap extrusions, not university-verified building models.'
+        : modelState === 'approved'
         ? 'Approved model recorded. Rendering remains gated on the 3D model review and renderer integration.'
         : modelState === 'pending_review'
           ? 'GLB model uploaded privately and awaiting review. It is not shown to students.'
@@ -2175,7 +2189,7 @@ import './campus-map-safety.js';
         : 'This campus has no verified map pins yet. Administrators can review the prepared location directory.', 'info');
     } catch (error) {
       console.error('CampusMap could not load campus locations.', error);
-      setStatus('Campus map data could not be loaded. Check your campus membership and staging migration.', 'error');
+      setStatus('Campus map data could not be loaded. Check your campus membership and the required CampusMap database setup.', 'error');
     }
   }
 
