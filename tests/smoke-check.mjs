@@ -29,6 +29,7 @@ const learningInsightsCss = await readFile(new URL("../shieldmind-learning-insig
 const shieldmindChatHistoryCss = await readFile(new URL("../shieldmind-chat-history.css", import.meta.url), "utf8");
 const shieldmindChatHistoryMigration = await readFile(new URL("../supabase/migrations/20261105013000_shieldmind_private_chat_history.sql", import.meta.url), "utf8");
 const shieldmindChatHistoryIndexMigration = await readFile(new URL("../supabase/migrations/20261105014500_shieldmind_messages_owner_fk_index.sql", import.meta.url), "utf8");
+const shieldmindMonthlyUsageMigration = await readFile(new URL("../supabase/migrations/20261111180000_shieldmind_monthly_usage_budgets.sql", import.meta.url), "utf8");
 const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
 const shieldmindKnowledgeHelpers = await readFile(new URL("../supabase/functions/shieldmind-chat/knowledge.mjs", import.meta.url), "utf8");
@@ -424,8 +425,8 @@ assert.match(shieldmindPageMarkup, /id="shieldmind-plan-status"/);
 assert.match(shieldmindPageMarkup, /id="shieldmind-plan-summary"/, "ShieldMind has an active-plan allowance summary");
 assert.match(shieldmindPageMarkup, /id="shieldmind-plan-summary-requests"/, "ShieldMind plan summary has an AI request allowance");
 assert.match(shieldmindPageMarkup, /id="shieldmind-plan-summary-images"/, "ShieldMind plan summary has a monthly image allowance");
-assert.match(appScript, /starter: \{ minute: 10, day: 250, images: 20 \}/, "Starter allowance summary matches the server quota");
-assert.match(appScript, /max: \{ minute: 50, day: 4000, images: 600 \}/, "Max allowance summary matches the server quota");
+assert.match(appScript, /starter: \{ monthly: 150, images: 20 \}/, "Starter 30-day allowance summary matches the server quota");
+assert.match(appScript, /max: \{ monthly: 3500, images: 600 \}/, "Max 30-day allowance summary matches the server quota");
 assert.match(shieldmindPageMarkup, /id="shieldmind-paid-gate"/);
 assert.match(shieldmindPageMarkup, /data-page="billing">Compare plans &amp; subscribe/);
 assert.match(shieldmindPageMarkup, /class="shieldmind-quick-actions" aria-label="ShieldMind quick actions" hidden/);
@@ -438,6 +439,23 @@ for (const plan of ["starter", "plus", "pro", "ultra", "max"]) assert.match(bill
 assert.doesNotMatch(billingMarkup, /<strong>Free<\/strong>|₦0/, "ShieldMind no longer offers a free AI tier");
 assert.match(billingMarkup, /Essential campus safety stays free/);
 assert.match(billingMarkup, /prepaid for 30 days and renew manually/);
+assert.match(billingMarkup, /150 per 30 days/);
+assert.match(billingMarkup, /400 per 30 days/);
+assert.match(billingMarkup, /1,000 per 30 days/);
+assert.match(billingMarkup, /2,000 per 30 days/);
+assert.match(billingMarkup, /3,500 per 30 days/);
+assert.match(billingMarkup, /shared by ShieldMind chat, study-image explanations, AI-generated exam practice and AI marking/);
+assert.match(shieldmindFunction, /const model = "gpt-6-luna"/, "ShieldMind chat uses GPT-6 Luna");
+assert.match(shieldmindFunction, /reasoning_effort: "low", max_completion_tokens: 900/, "GPT-6 Luna uses bounded completion output");
+assert.match(shieldmindFunction, /record_shieldmind_usage/, "actual OpenAI token usage is recorded by the server");
+assert.match(shieldmindMonthlyUsageMigration, /create table if not exists private\.shieldmind_monthly_usage/i);
+assert.match(shieldmindMonthlyUsageMigration, /v_month_limit := 150/);
+assert.match(shieldmindMonthlyUsageMigration, /v_month_limit := 3500/);
+assert.match(shieldmindMonthlyUsageMigration, /estimated_cost_usd/);
+assert.match(shieldmindMonthlyUsageMigration, /auth\.role\(\)[\s\S]*service_role/);
+assert.match(shieldmindMonthlyUsageMigration, /public\.get_my_shieldmind_usage/);
+assert.match(shieldmindMonthlyUsageMigration, /public\.record_shieldmind_usage/);
+
 assert.match(html, /id="institutional-billing-panel" hidden/);
 assert.match(html, /function canManageInstitutionalBilling\(\)/);
 assert.match(html, /if \(kind === 'institution' && !canManageInstitutionalBilling\(\)\)/);
@@ -455,6 +473,10 @@ const practiceModelCall = pastQuestionFunction.indexOf('const apiKey = Deno.env.
 assert.ok(practiceSubscriptionGate >= 0 && practiceSubscriptionGate < practiceModelCall, "AI practice and marking verify paid access before model use");
 assert.match(pastQuestionFunction, /code: "SUBSCRIPTION_REQUIRED"/);
 assert.match(pastQuestionFunction, /subscription.status === "active"/);
+assert.match(pastQuestionFunction, /rpc\("consume_shieldmind_quota"\)/, "AI practice and marking share the monthly request allowance");
+assert.match(pastQuestionFunction, /rpc\("record_shieldmind_usage"/, "AI practice and marking record provider token usage");
+assert.match(pastQuestionFunction, /"gpt-6-luna"/, "AI exam prep uses GPT-6 Luna");
+
 assert.match(pastQuestionFunction, /Date\.parse\(subscription\.expires_at\) > Date\.now\(\)/);
 assert.match(appScript, /async function refreshShieldMindPlan\(\)/);
 assert.match(appScript, /window\.CampusShieldShieldMindAccess = state/);
