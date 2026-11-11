@@ -97,7 +97,7 @@ Deno.serve(async(req:Request)=>{
     user_id:order.user_id,plan:order.plan,status:"active",billing_period:"monthly",
     provider:"paystack",provider_reference:reference,amount_kobo:order.amount_kobo,currency:"NGN",
     started_at:paidAtIso,expires_at:expiry.toISOString(),updated_at:now.toISOString(),
-    last_payment_reference:reference,last_payment_at:paidAtIso,renewal_status:"not_renewing",
+    last_payment_reference:reference,last_payment_at:paidAtIso,renewal_status:"non-renewing",
     image_upload_limit:limits[order.plan]
   },{onConflict:"user_id"});
   if(subError)return json({error:"Payment verified but activation needs reconciliation"},503);
