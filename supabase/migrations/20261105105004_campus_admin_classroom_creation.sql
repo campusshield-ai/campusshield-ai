@@ -30,9 +30,10 @@ as $function$
   );
 $function$;
 
--- Keep the normal student enrollment and appointed-assistant paths unchanged.
--- A campus admin can access the full classroom workspace only when they are
--- the recorded owner/creator of that class.
+revoke all on function private.is_verified_classroom_teacher(uuid) from public, anon, authenticated;
+
+-- Keep student enrollment and appointed-assistant access intact. A verified
+-- campus admin gets the full classroom workspace only for a class they own.
 create or replace function private.can_access_classroom(p_classroom_id uuid)
 returns boolean
 language sql
@@ -73,9 +74,9 @@ as $function$
     );
 $function$;
 
--- Class owners may be verified teachers or verified admins for the same
--- university. The admin only gets owner permissions on classrooms they create.
-create or replace function public.create_campus_classroom(
+-- Preserve the existing invoker-facing RPC. The implementation runs in the
+-- non-exposed private schema and repeats all caller, role, and membership checks.
+create or replace function private.create_campus_classroom_impl(
   p_name text,
   p_subject text,
   p_description text default ''
@@ -101,7 +102,7 @@ begin
   where p.id = v_user
     and p.verification_status = 'verified';
 
-  if v_role not in ('teacher', 'admin') then
+  if v_role is null or v_role not in ('teacher', 'admin') then
     raise exception 'Only verified teachers or campus administrators can create classes.' using errcode = '42501';
   end if;
 
@@ -147,6 +148,24 @@ begin
 end;
 $function$;
 
--- This SECURITY DEFINER RPC is a protected write endpoint.
+revoke all on function private.create_campus_classroom_impl(text, text, text) from public, anon;
+grant usage on schema private to authenticated;
+grant execute on function private.create_campus_classroom_impl(text, text, text) to authenticated;
+
+create or replace function public.create_campus_classroom(
+  p_name text,
+  p_subject text,
+  p_description text default ''
+)
+returns public.campus_classrooms
+language plpgsql
+security invoker
+set search_path = ''
+as $function$
+begin
+  return private.create_campus_classroom_impl(p_name, p_subject, p_description);
+end;
+$function$;
+
 revoke all on function public.create_campus_classroom(text, text, text) from public, anon;
 grant execute on function public.create_campus_classroom(text, text, text) to authenticated;
