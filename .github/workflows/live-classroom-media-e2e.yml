@@ -62,5 +62,8 @@ jobs:
       - name: Install Chromium without apt mirror dependencies
         run: npx playwright install chromium
 
+      - name: Check Live Classroom E2E test syntax
+        run: node --check tests/e2e/staging-live-classroom-media-e2e.mjs
+
       - name: Run the real two-user LiveKit media acceptance test
         run: node tests/e2e/staging-live-classroom-media-e2e.mjs
