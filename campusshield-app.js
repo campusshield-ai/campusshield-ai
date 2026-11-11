@@ -1088,7 +1088,7 @@
         : el.dataset.page === page;
       el.classList.toggle('active', active);
       if (active) el.setAttribute('aria-current', 'page');
-      else el.removeAttribute('aria-current', 'page');
+      else el.removeAttribute('aria-current');
     });
 
     const names = {
