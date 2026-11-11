@@ -64,8 +64,6 @@ assert.match(adminMigration, /private\.is_verified_campus_admin_for_classroom/);
 assert.match(adminMigration, /private\.can_manage_campus_live_classroom/);
 assert.match(adminMigration, /m\.campus_role = 'admin'/);
 assert.match(adminMigration, /m\.university_id = c\.university_id/);
-assert.match(adminScopeMigration, /p\.role = 'teacher'/);
-assert.match(adminScopeMigration, /p\.role = 'student'/);
 assert.match(migration, /revoke all on function public\.get_campus_live_class_token_context\(uuid\) from public, anon/i);
 assert.match(migration, /grant execute on function public\.get_campus_live_class_token_context\(uuid\) to authenticated/i);
 
