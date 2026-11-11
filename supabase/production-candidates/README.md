@@ -6,7 +6,7 @@ These SQL files are deliberately outside `supabase/migrations/`, so normal Supab
 
 ## Phases
 1. `20261104_campusmap_forward_candidate.sql` — CampusMap's three tables, verified-map functions/policies and nullable incident-map columns. Existing incident rows are not backfilled.
-2. `20261104_campuspulse_phase2_forward_candidate.sql` — six Phase 2 social tables plus the minimal private member-block table/helper required by Phase 2 RLS.
+2. `20261104_campuspulse_phase2_forward_candidate.sql` — six Phase 2 social tables; reuses the existing Production `campus_member_blocks` table and reciprocal private helper after validating their schema, RLS and direct-client denial.
 3. `20261104_past_questions_forward_candidate.sql` — five Past Questions/practice tables, a private PDF bucket, authenticated coverage RPC and the minimal server-only `service_role` grants required by the Past Questions Edge Function.
 
 ## Validation sequence
