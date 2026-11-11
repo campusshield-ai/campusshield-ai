@@ -62,6 +62,11 @@ async function errorDetails(error) {
   if (context && typeof context.clone === "function") {
     const payload = await context.clone().json().catch(() => null);
     if (payload?.error) message += ": " + payload.error;
+    if (payload?.reason) message += " [provider reason: " + String(payload.reason).slice(0, 60) + "]";
+    if (payload?.providerCode) message += " [provider code: " + String(payload.providerCode).slice(0, 60) + "]";
+    if (payload?.providerStatus) message += " [provider status: " + Number(payload.providerStatus) + "]";
+    if (payload?.providerErrorName) message += " [provider error: " + String(payload.providerErrorName).slice(0, 60) + "]";
+    if (payload?.serverHost) message += " [LiveKit host: " + String(payload.serverHost).slice(0, 255) + "]";
     if (context.status) message += " (HTTP " + context.status + ")";
   }
   return message;
