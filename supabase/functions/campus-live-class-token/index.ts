@@ -98,14 +98,31 @@ Deno.serve(async (req: Request) => {
         await roomService.listRooms();
         return json({ diagnostic: true, credentialsAccepted: true, serverHost: parsedLivekitUrl.host });
       } catch (error) {
+        const providerCode = String((error as { code?: unknown })?.code || "").toLowerCase();
+        const errorName = error instanceof Error ? error.name.slice(0, 80) : "UnknownError";
+        const reason = /unauthenticated|unauthorized|permission_denied|forbidden|invalid.?token/.test(providerCode)
+          ? "credentials_rejected"
+          : /unavailable|deadline|not_found|notfound|connection|transport/.test(providerCode) || error instanceof TypeError
+            ? "endpoint_unreachable"
+            : "provider_rejected_request";
         console.error("LiveKit credential diagnostic failed", {
           stage: "credentials_check",
-          errorName: error instanceof Error ? error.name.slice(0, 80) : "UnknownError",
+          reason,
+          providerCode: providerCode.slice(0, 80) || null,
+          errorName,
         });
+        const message = reason === "credentials_rejected"
+          ? "LiveKit rejected the API key/secret pair. Create or copy a matching key pair from this same LiveKit project."
+          : reason === "endpoint_unreachable"
+            ? "The LiveKit server URL could not be reached or does not expose the room API. Recheck the project's WSS URL."
+            : "LiveKit did not accept the server-side credential check. Verify the URL and key pair belong to one project.";
         return json({
-          error: "LiveKit rejected the configured server URL or API key/secret pair. Verify all three values belong to the same LiveKit project.",
+          error: message,
           diagnostic: true,
           credentialsAccepted: false,
+          configurationComplete: true,
+          reason,
+          serverHost: parsedLivekitUrl.host,
         }, 503);
       }
     }
