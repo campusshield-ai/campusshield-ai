@@ -14,6 +14,7 @@ assert.ok(script.includes("REPEAT_AFTER_MS = 45 * 24 * 60 * 60 * 1000"), "repeat
 assert.ok(script.includes("MIN_UPDATE_GAP_MS = 30 * 24 * 60 * 60 * 1000"), "major update repeats observe the 30-day minimum");
 assert.ok(script.includes('window.matchMedia("(prefers-reduced-motion: reduce)")'), "reduced-motion preference is respected");
 assert.ok(script.includes('event.key === "Escape"'), "Escape skips the intro");
+assert.ok(script.includes('event.key === "Tab"'), "keyboard focus stays within the intro");
 assert.ok(script.includes('skipButton.addEventListener("click"'), "visible skip control is wired");
 assert.ok(script.includes('query.get("password-reset") === "1"'), "password recovery bypasses the intro");
 assert.ok(script.includes('overlay.remove()'), "intro is removed after completion");
