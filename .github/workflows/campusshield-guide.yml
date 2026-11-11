@@ -1,0 +1,39 @@
+name: CampusShield guide and Help Centre checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "campusshield-app.js"
+      - "campusshield-guide.js"
+      - "campusshield-guide.css"
+      - "help.html"
+      - "tests/campusshield-guide-smoke.mjs"
+      - "tests/browser/campusshield-guide.spec.cjs"
+      - ".github/workflows/campusshield-guide.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-guide-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guide:
+    name: Guide navigation, content and layout checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check guide and app syntax
+        run: |
+          node --check campusshield-app.js
+          node --check campusshield-guide.js
+      - name: Verify guide and Help Centre content contracts
+        run: node tests/campusshield-guide-smoke.mjs
