@@ -5,6 +5,8 @@ import vm from "node:vm";
 const source = readFileSync(new URL("../supabase-config.js", import.meta.url), "utf8");
 const environments = [
   ["campusshield-ai.github.io", "https://fvgtnujjnvdkhzqqcaqe.supabase.co"],
+  ["campusshieldai.com", "https://fvgtnujjnvdkhzqqcaqe.supabase.co"],
+  ["www.campusshieldai.com", "https://fvgtnujjnvdkhzqqcaqe.supabase.co"],
   ["campusshield-ai-staging-preview.vercel.app", "https://hywcpnoqqhxvujnimhxl.supabase.co"],
   ["campusshield-ai-staging-p-git-branch.vercel.app", "https://hywcpnoqqhxvujnimhxl.supabase.co"],
   ["localhost", "https://hywcpnoqqhxvujnimhxl.supabase.co"]
