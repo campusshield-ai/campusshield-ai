@@ -82,6 +82,16 @@ async function callModel(
     signal: AbortSignal.timeout(20000),
   });
   if (!response.ok) {
+    const { error: releaseError } = await service.rpc("release_shieldmind_usage_reservation", {
+      p_user_id: context.user.id,
+      p_release_image: false,
+    });
+    if (releaseError) {
+      console.error("Exam-prep usage reservation could not be released", {
+        code: releaseError.code || null,
+        name: releaseError.name || null,
+      });
+    }
     throw new Error(response.status === 429
       ? "ShieldMind AI is rate-limited or has reached its provider billing limit. Try again later."
       : "ShieldMind AI could not complete this request. Try again or ask a lecturer for help.");
