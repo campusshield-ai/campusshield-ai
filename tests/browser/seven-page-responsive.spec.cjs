@@ -39,8 +39,11 @@ for (const width of widths) {
           : page.locator("footer").last();
         await expect(footer).toBeVisible();
         const footerLinks = footer.locator("nav").first().locator("a");
-        await expect(footerLinks).toHaveCount(7);
-        for (const target of ["features.html", "for-universities.html", "about.html", "help.html", "privacy.html", "terms.html", "contact.html"]) {
+        const footerTargets = pageInfo.name === "Home"
+          ? ["features.html", "about.html", "help.html", "privacy.html", "terms.html", "contact.html"]
+          : ["features.html", "for-universities.html", "about.html", "help.html", "privacy.html", "terms.html", "contact.html"];
+        await expect(footerLinks).toHaveCount(footerTargets.length);
+        for (const target of footerTargets) {
           await expect(footer.locator(`nav a[href="./${target}"]`).first()).toBeVisible();
         }
         const firstLink = footerLinks.first();
