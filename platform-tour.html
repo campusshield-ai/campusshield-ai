@@ -154,7 +154,7 @@
     <a href="#role-tour">Role-based tour</a>
     <a href="#command-centre">Command Centre</a>
     <a href="#campus-map">CampusMap</a>
-    <a href="#campus-life">CampusPulse &amp; Services</a>
+    <a href="#campus-pulse-services">CampusPulse &amp; Services</a>
     <a href="#shieldmind">ShieldMind AI</a>
     <a href="#trust-centre">Trust Centre</a>
     <a href="#partnerships">Partnerships</a>
@@ -169,6 +169,21 @@
       <article class="tour-card"><span class="tour-icon" aria-hidden="true">⌖</span><h3>Campus safety</h3><p>Give students a clear route to report concerns and help authorised teams coordinate review and follow-up.</p><div class="tour-meta"><span class="tour-chip">Incident reporting</span><span class="tour-chip">Response workflow</span></div></article>
       <article class="tour-card"><span class="tour-icon" aria-hidden="true">◎</span><h3>Connected student life</h3><p>Bring campus updates, student groups, events and moderated community conversations closer together.</p><div class="tour-meta"><span class="tour-chip">CampusPulse</span><span class="tour-chip">Lost &amp; Found</span></div></article>
       <article class="tour-card"><span class="tour-icon" aria-hidden="true">✦</span><h3>Academic and campus support</h3><p>Help students find university services and understand campus guidance through organised information and AI assistance.</p><div class="tour-meta"><span class="tour-chip">Services Hub</span><span class="tour-chip">ShieldMind AI</span></div></article>
+    </div>
+    <div id="campus-pulse-services" class="tour-grid two" style="margin-top:16px">
+      <div class="tour-card">
+        <h3>CampusPulse · sample moderated feed</h3>
+        <div class="feed-item"><span class="feed-label">Verified notice · Sample</span><h3>Library access update</h3><p>A demonstration notice showing how an institution-published update can be distinguished from student posts.</p></div>
+        <div class="feed-item"><span class="feed-label">Lost &amp; Found · Sample</span><h3>Found: calculator near the study area</h3><p>A sample item relay that directs collection through an appropriate staffed campus desk rather than exposing personal contact details.</p></div>
+        <div class="feed-item"><span class="feed-label">Campus event · Sample</span><h3>Student research showcase</h3><p>An illustrative community event post from a sample student organisation.</p></div>
+      </div>
+      <div class="tour-card">
+        <h3>University Services Hub · sample directory</h3>
+        <div class="feed-item"><span class="feed-label">Student Affairs</span><h3>Student support and welfare</h3><p>Find guidance on student support, campus processes and the appropriate office to contact.</p></div>
+        <div class="feed-item"><span class="feed-label">Registrar</span><h3>Academic records and term information</h3><p>Locate official academic calendar information and registration guidance.</p></div>
+        <div class="feed-item"><span class="feed-label">Medical Services</span><h3>Health and counselling directory</h3><p>Find the institution's published contact and referral information. This directory is not a clinical or emergency service.</p></div>
+        <div class="feed-item"><span class="feed-label">ICT Helpdesk</span><h3>Account, network and campus-card assistance</h3><p>Find approved support channels for university technology services.</p></div>
+      </div>
     </div>
   </section>
 
@@ -253,7 +268,7 @@
     </header>
     <div class="map-layout">
       <div>
-        <div class="map-blueprint" role="img" aria-label="Schematic demonstration campus layout with sample library, science hall, student residence, student union and main gate locations connected by illustrative paths">
+        <div class="map-blueprint" role="group" aria-label="Schematic demonstration campus layout with sample library, science hall, student residence, student union and main gate locations connected by illustrative paths">
           <div class="map-path path-one"></div><div class="map-path path-two"></div>
           <button class="map-node node-library" type="button" data-place="Central Library" data-search="library study learning step-free"><strong>Central Library</strong><small>Sample building</small></button>
           <button class="map-node node-science" type="button" data-place="Science Hall" data-search="science laboratory lecture"><strong>Science Hall</strong><small>Sample building</small></button>
@@ -279,31 +294,9 @@
     </div>
   </section>
 
-  <section class="tour-section" id="campus-life" aria-labelledby="campus-life-title">
-    <header class="tour-section-header">
-      <div><p class="tour-kicker">05 · STUDENT LIFE &amp; UNIVERSITY SERVICES</p><h2 id="campus-life-title">CampusPulse and the Services Hub.</h2></div>
-      <p>Separate official information from student community activity, while making essential university offices easier to discover.</p>
-    </header>
-    <div class="tour-grid two">
-      <div class="tour-card">
-        <h3>CampusPulse · sample moderated feed</h3>
-        <div class="feed-item"><span class="feed-label">Verified notice · Sample</span><h3>Library access update</h3><p>A demonstration notice showing how an institution-published update can be distinguished from student posts.</p></div>
-        <div class="feed-item"><span class="feed-label">Lost &amp; Found · Sample</span><h3>Found: calculator near the study area</h3><p>A sample item relay that directs collection through an appropriate staffed campus desk rather than exposing personal contact details.</p></div>
-        <div class="feed-item"><span class="feed-label">Campus event · Sample</span><h3>Student research showcase</h3><p>An illustrative community event post from a sample student organisation.</p></div>
-      </div>
-      <div class="tour-card">
-        <h3>University Services Hub · sample directory</h3>
-        <div class="feed-item"><span class="feed-label">Student Affairs</span><h3>Student support and welfare</h3><p>Find guidance on student support, campus processes and the appropriate office to contact.</p></div>
-        <div class="feed-item"><span class="feed-label">Registrar</span><h3>Academic records and term information</h3><p>Locate official academic calendar information and registration guidance.</p></div>
-        <div class="feed-item"><span class="feed-label">Medical Services</span><h3>Health and counselling directory</h3><p>Find the institution's published contact and referral information. This directory is not a clinical or emergency service.</p></div>
-        <div class="feed-item"><span class="feed-label">ICT Helpdesk</span><h3>Account, network and campus-card assistance</h3><p>Find approved support channels for university technology services.</p></div>
-      </div>
-    </div>
-  </section>
-
   <section class="tour-section" id="shieldmind" aria-labelledby="shieldmind-title">
     <header class="tour-section-header">
-      <div><p class="tour-kicker">06 · SHIELDMIND AI</p><h2 id="shieldmind-title">Answers grounded in campus information.</h2></div>
+      <div><p class="tour-kicker">05 · SHIELDMIND AI</p><h2 id="shieldmind-title">Answers grounded in campus information.</h2></div>
       <p>Try a few prewritten sample questions to see how a policy-grounded assistant can show its supporting documents and make its limits clear.</p>
     </header>
     <div class="tour-grid two">
@@ -327,7 +320,7 @@
 
   <section class="tour-section" id="trust-centre" aria-labelledby="trust-centre-title">
     <header class="tour-section-header">
-      <div><p class="tour-kicker">07 · TRUST &amp; PRIVACY CENTRE</p><h2 id="trust-centre-title">Show who should see what.</h2></div>
+      <div><p class="tour-kicker">06 · TRUST &amp; PRIVACY CENTRE</p><h2 id="trust-centre-title">Show who should see what.</h2></div>
       <p>Explore example access scenarios to understand why student identity, private incident reports and general community posts should not all be visible to the same people.</p>
     </header>
     <div class="role-switcher" role="group" aria-label="Choose a privacy demonstration scenario">
@@ -348,7 +341,7 @@
 
   <section class="tour-section" id="partnerships" aria-labelledby="partnerships-title">
     <header class="tour-section-header">
-      <div><p class="tour-kicker">08 · UNIVERSITY PARTNERSHIP PORTAL</p><h2 id="partnerships-title">Start with a scoped institutional pilot.</h2></div>
+      <div><p class="tour-kicker">07 · UNIVERSITY PARTNERSHIP PORTAL</p><h2 id="partnerships-title">Start with a scoped institutional pilot.</h2></div>
       <p>Use a structured evaluation to understand campus needs, verify data and operating requirements, and agree on a realistic adoption decision.</p>
     </header>
     <div class="pilot-steps">
