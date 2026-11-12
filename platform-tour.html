@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0B2E1B">
+  <meta name="description" content="Explore an interactive CampusShield AI demonstration across student, campus security and university administrator workflows.">
+  <title>Interactive Platform Tour | CampusShield AI</title>
+  <link rel="canonical" href="https://campusshield-ai.github.io/campusshield-ai/platform-tour.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CampusShield AI">
+  <meta property="og:title" content="Interactive Platform Tour | CampusShield AI">
+  <meta property="og:description" content="Explore a clearly labelled demonstration of CampusShield AI campus safety, student services and university workflows.">
+  <meta property="og:url" content="https://campusshield-ai.github.io/campusshield-ai/platform-tour.html">
+  <meta name="twitter:card" content="summary">
+  <link rel="stylesheet" href="./campusshield-brand-system.css">
+  <link rel="stylesheet" href="./campusshield-public-pages.css">
+  <style>
+    :root{--tour-ink:#173325;--tour-muted:#5C7162;--tour-line:#DCE9DE;--tour-pale:#F5F9F5;--tour-green:#14532D;--tour-teal:#0F766E}
+    body.platform-tour{background:var(--tour-pale)}
+    .tour-hero{max-width:960px}
+    .tour-hero .tour-hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+    .tour-hero-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 17px;border:1px solid #DCFCE7;border-radius:999px;background:#DCFCE7;color:#14532D;text-decoration:none;font-size:12px;font-weight:850}
+    .tour-hero-actions a.secondary{border-color:#9BC9A8;background:#FFFFFF14;color:#F0FDF4}
+    .tour-banner{display:flex;align-items:flex-start;gap:12px;margin:0 0 24px;padding:15px 17px;border:1px solid #E8DAB7;border-left:4px solid #A87923;border-radius:13px;background:#FFFAF0;color:#624F2B;font-size:12px;line-height:1.65}
+    .tour-banner strong{display:block;margin-bottom:3px;color:#563D12}
+    .tour-banner .tour-banner-icon{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:#F7E8C6;color:#986A20;font-weight:900}
+    .tour-nav{position:sticky;top:8px;z-index:5;display:flex;gap:7px;flex-wrap:wrap;margin:0 0 28px;padding:9px;border:1px solid #DCE9DE;border-radius:16px;background:rgba(255,255,255,.94);box-shadow:0 8px 24px rgba(7,30,19,.07);backdrop-filter:blur(12px)}
+    .tour-nav a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 12px;border-radius:999px;color:#315B3D;text-decoration:none;font-size:11px;font-weight:850}
+    .tour-nav a:hover,.tour-nav a:focus-visible{background:#EAF7EC;color:#14532D}
+    .tour-section{padding:clamp(25px,4vw,42px);margin:0 0 22px;border:1px solid var(--tour-line);border-radius:22px;background:#FFFFFF;box-shadow:0 14px 35px rgba(18,49,58,.045);scroll-margin-top:100px}
+    .tour-section-header{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px}
+    .tour-kicker{margin:0 0 7px;color:#237342;font-size:10px;font-weight:900;letter-spacing:.17em;text-transform:uppercase}
+    .tour-section h2{margin:0;color:#173325;font-size:clamp(24px,3vw,34px);line-height:1.14;letter-spacing:-.045em}
+    .tour-section-header>p{max-width:560px;margin:0;color:var(--tour-muted);font-size:12px;line-height:1.7}
+    .tour-grid{display:grid;gap:14px}
+    .tour-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .tour-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .tour-card{min-width:0;padding:19px;border:1px solid #E2ECE4;border-radius:16px;background:#FBFDFB}
+    .tour-card h3{margin:0 0 7px;color:#173325;font-size:14px;letter-spacing:-.02em}
+    .tour-card p{margin:0;color:#5C7162;font-size:12px;line-height:1.7}
+    .tour-icon{display:grid;place-items:center;width:36px;height:36px;margin-bottom:13px;border-radius:11px;background:#E7F5E9;color:#176534;font-size:15px;font-weight:900}
+    .tour-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .tour-chip{display:inline-flex;align-items:center;min-height:27px;padding:5px 9px;border:1px solid #DCE9DE;border-radius:999px;background:#F5F9F5;color:#315B3D;font-size:10px;font-weight:800}
+    .tour-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+    .tour-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border:1px solid #176534;border-radius:11px;background:#176534;color:#FFFFFF;font-size:12px;font-weight:850;cursor:pointer}
+    .tour-button.secondary{border-color:#C8DDCC;background:#FFFFFF;color:#245B39}
+    .tour-button:hover{filter:brightness(.97)}
+    .tour-button[aria-pressed="true"]{background:#0B362A;border-color:#0B362A;color:#FFFFFF}
+    .role-switcher,.filter-switcher{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 17px}
+    .role-panel{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:18px}
+    .role-panel-main{padding:22px;border-radius:17px;background:linear-gradient(140deg,#0B2E1B,#17613A);color:#F0FDF4}
+    .role-panel-main .tour-kicker{color:#A7F3D0}
+    .role-panel-main h3{margin:0 0 9px;font-size:22px;line-height:1.2;letter-spacing:-.035em}
+    .role-panel-main p{margin:0;color:#D1E7D7;font-size:12px;line-height:1.7}
+    .role-step-list{display:grid;gap:9px;align-content:start}
+    .role-step{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;padding:13px;border:1px solid #E2ECE4;border-radius:13px;background:#FBFDFB}
+    .role-step span{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:#E7F5E9;color:#176534;font-size:10px;font-weight:900}
+    .role-step strong{display:block;color:#234C31;font-size:12px}
+    .role-step small{display:block;margin-top:3px;color:#607366;font-size:11px;line-height:1.55}
+    .table-scroll{overflow-x:auto;border:1px solid #E2ECE4;border-radius:14px}
+    .tour-table{width:100%;min-width:660px;border-collapse:collapse}
+    .tour-table th,.tour-table td{padding:12px 13px;border-bottom:1px solid #E7EFE8;text-align:left;font-size:11px;vertical-align:middle}
+    .tour-table th{background:#F5F9F5;color:#45614D;font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+    .tour-table tr:last-child td{border-bottom:0}
+    .tour-table td{color:#31513B}
+    .status-tag{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#FFF5DF;color:#98600A;font-size:10px;font-weight:850}
+    .status-tag[data-status="In review"]{background:#EAF2FF;color:#235EB2}
+    .status-tag[data-status="Resolved"]{background:#E6F9EF;color:#168154}
+    .row-action{min-height:34px;padding:6px 9px;border:1px solid #C8DDCC;border-radius:9px;background:#FFFFFF;color:#245B39;font-size:10px;font-weight:850;cursor:pointer}
+    .demo-control{display:grid;gap:7px;margin:12px 0}
+    .demo-control label{color:#31513B;font-size:11px;font-weight:850}
+    .demo-control input,.demo-control select,.demo-control textarea{width:100%;min-height:44px;padding:10px 12px;border:1px solid #C8D9CD;border-radius:10px;background:#FFFFFF;color:#173325;font:inherit;font-size:12px}
+    .demo-control textarea{min-height:85px;resize:vertical}
+    .preview-box{padding:16px;border:1px solid #C8DDCC;border-radius:14px;background:#F5FAF6}
+    .preview-box strong{display:block;margin-bottom:5px;color:#234C31;font-size:12px}
+    .preview-box p{margin:0;color:#53695B;font-size:12px;line-height:1.7}
+    .map-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(245px,.75fr);gap:17px}
+    .map-blueprint{position:relative;min-height:360px;overflow:hidden;border:1px solid #BBD8C4;border-radius:17px;background-color:#EAF3EB;background-image:linear-gradient(90deg,rgba(40,103,65,.07) 1px,transparent 1px),linear-gradient(rgba(40,103,65,.07) 1px,transparent 1px);background-size:30px 30px}
+    .map-path{position:absolute;height:10px;border:2px solid #FFFFFF;border-radius:999px;background:#9BC9A8;box-shadow:0 0 0 1px #78A987}
+    .map-path.path-one{left:13%;right:14%;top:49%;transform:rotate(-10deg)}
+    .map-path.path-two{left:48%;top:14%;bottom:12%;width:10px;height:auto}
+    .map-node{position:absolute;z-index:1;width:125px;min-height:58px;padding:9px;border:1px solid #9BC9A8;border-radius:12px;background:#FFFFFF;box-shadow:0 5px 14px rgba(20,83,45,.1);text-align:left;cursor:pointer}
+    .map-node strong{display:block;color:#234C31;font-size:10px;line-height:1.35}
+    .map-node small{display:block;margin-top:3px;color:#607366;font-size:9px}
+    .map-node[hidden]{display:none}
+    .map-node.node-library{left:8%;top:15%}.map-node.node-science{right:7%;top:12%}.map-node.node-residence{left:7%;bottom:11%}.map-node.node-union{right:8%;bottom:10%}.map-node.node-gate{left:calc(50% - 62px);top:43%}
+    .map-legend{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
+    .map-legend span{padding:5px 8px;border:1px solid #C8DDCC;border-radius:999px;background:#FFFFFFE8;color:#31513B;font-size:9px;font-weight:800}
+    .map-results{display:grid;gap:8px;margin-top:12px}
+    .map-result{padding:10px 11px;border:1px solid #E2ECE4;border-radius:11px;background:#FBFDFB;color:#31513B;font-size:11px}
+    .map-result[hidden]{display:none}
+    .feed-item{padding:15px 0;border-top:1px solid #E7EFE8}
+    .feed-item:first-child{padding-top:0;border-top:0}
+    .feed-item .feed-label{color:#237342;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+    .feed-item h3{margin:5px 0;color:#234C31;font-size:13px}
+    .feed-item p{margin:0;color:#5C7162;font-size:11px;line-height:1.65}
+    .answer-box{min-height:150px}
+    .answer-citations{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+    .answer-citations span{padding:6px 8px;border:1px solid #C8DDCC;border-radius:9px;background:#FFFFFF;color:#315B3D;font-size:10px;font-weight:800}
+    .trust-scenario{padding:18px;border:1px solid #C8DDCC;border-radius:15px;background:#F5FAF6}
+    .trust-scenario h3{margin:0 0 6px;color:#234C31;font-size:14px}
+    .trust-scenario p{margin:0;color:#53695B;font-size:12px;line-height:1.7}
+    .pilot-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .pilot-step{padding:16px;border:1px solid #DCE9DE;border-radius:14px;background:#FBFDFB}
+    .pilot-step span{display:block;color:#237342;font-size:10px;font-weight:950;letter-spacing:.1em}
+    .pilot-step h3{margin:7px 0;color:#234C31;font-size:12px}
+    .pilot-step p{margin:0;color:#607366;font-size:11px;line-height:1.6}
+    .tour-status{min-height:22px;margin:10px 0 0;color:#496653;font-size:11px}
+    @media(max-width:820px){.tour-section-header{display:block}.tour-section-header>p{margin-top:10px}.tour-grid.three{grid-template-columns:repeat(2,minmax(0,1fr))}.map-layout,.role-panel{grid-template-columns:1fr}.pilot-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:620px){.tour-section{padding:20px 16px}.tour-grid.three,.tour-grid.two,.pilot-steps{grid-template-columns:1fr}.tour-nav{position:static}.tour-nav a{min-height:44px;padding-inline:10px}.map-blueprint{min-height:330px}.map-node{width:106px;padding:8px}.map-node.node-gate{left:calc(50% - 53px)}.tour-hero .tour-hero-actions a{width:100%}.tour-section-header{margin-bottom:17px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tour-button,.tour-card,.map-node{transition:none!important;animation:none!important}}
+  </style>
+</head>
+<body class="public-page platform-tour">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<header class="top">
+  <div class="public-header-inner">
+    <div class="public-header-row">
+      <a class="brand" href="./index.html#login-screen"><span class="mark" aria-hidden="true">CS</span><span>Campus<strong>Shield</strong> AI</span></a>
+      <nav class="public-nav" aria-label="Primary navigation">
+        <a href="./features.html">Features</a>
+        <a href="./platform-tour.html" aria-current="page">Interactive Tour</a>
+        <a href="./for-universities.html">For Universities</a>
+        <a href="./about.html">About</a>
+        <a href="./trust-safety.html">Trust &amp; Safety</a>
+        <a href="./help.html">Help</a>
+        <a href="./privacy.html">Privacy</a>
+        <a href="./terms.html">Terms</a>
+        <a href="./contact.html">Contact</a>
+        <a class="public-nav-launch" href="./index.html#login-screen">Open platform <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+    <div class="public-hero tour-hero">
+      <p class="public-eyebrow">EXPLORE THE CAMPUSSHIELD EXPERIENCE</p>
+      <h1>See how a smarter, safer campus can work.</h1>
+      <p>Explore sample student, security and university workflows in one connected demonstration. Switch roles, preview campus operations and see how information can be organised responsibly.</p>
+      <div class="public-hero-meta"><span>ROLE-BASED WALKTHROUGH</span><span>INTERACTIVE SAMPLE DATA</span><span>PRIVACY-AWARE DESIGN</span></div>
+      <div class="tour-hero-actions">
+        <a href="#role-tour">Start interactive tour <span aria-hidden="true">&nbsp;↓</span></a>
+        <a class="secondary" href="./for-universities.html">University adoption</a>
+      </div>
+    </div>
+  </div>
+</header>
+<main id="main-content" tabindex="-1">
+  <aside class="tour-banner" aria-label="Demonstration notice">
+    <span class="tour-banner-icon" aria-hidden="true">i</span>
+    <div><strong>Demonstration environment — not connected to live university records.</strong> All people, buildings, incidents, notices, routes, policy documents and operational states on this page are illustrative sample data. Actions update this page only: they do not dispatch responders, send alerts, approve identities, contact emergency services or write to Supabase.</div>
+  </aside>
+
+  <nav class="tour-nav" aria-label="Interactive tour sections">
+    <a href="#overview">Overview</a>
+    <a href="#role-tour">Role-based tour</a>
+    <a href="#command-centre">Command Centre</a>
+    <a href="#campus-map">CampusMap</a>
+    <a href="#campus-life">CampusPulse &amp; Services</a>
+    <a href="#shieldmind">ShieldMind AI</a>
+    <a href="#trust-centre">Trust Centre</a>
+    <a href="#partnerships">Partnerships</a>
+  </nav>
+
+  <section class="tour-section" id="overview" aria-labelledby="overview-title">
+    <header class="tour-section-header">
+      <div><p class="tour-kicker">01 · PLATFORM OVERVIEW</p><h2 id="overview-title">One connected campus experience.</h2></div>
+      <p>CampusShield brings safety workflows, verified campus information, student communities and useful university services into one institution-aware experience.</p>
+    </header>
+    <div class="tour-grid three">
+      <article class="tour-card"><span class="tour-icon" aria-hidden="true">⌖</span><h3>Campus safety</h3><p>Give students a clear route to report concerns and help authorised teams coordinate review and follow-up.</p><div class="tour-meta"><span class="tour-chip">Incident reporting</span><span class="tour-chip">Response workflow</span></div></article>
+      <article class="tour-card"><span class="tour-icon" aria-hidden="true">◎</span><h3>Connected student life</h3><p>Bring campus updates, student groups, events and moderated community conversations closer together.</p><div class="tour-meta"><span class="tour-chip">CampusPulse</span><span class="tour-chip">Lost &amp; Found</span></div></article>
+      <article class="tour-card"><span class="tour-icon" aria-hidden="true">✦</span><h3>Academic and campus support</h3><p>Help students find university services and understand campus guidance through organised information and AI assistance.</p><div class="tour-meta"><span class="tour-chip">Services Hub</span><span class="tour-chip">ShieldMind AI</span></div></article>
+    </div>
+  </section>
+
+  <section class="tour-section" id="role-tour" aria-labelledby="role-tour-title">
+    <header class="tour-section-header">
+      <div><p class="tour-kicker">02 · INTERACTIVE PLATFORM TOUR</p><h2 id="role-tour-title">Explore the platform by role.</h2></div>
+      <p>Switch between three perspectives to see how the same campus workflows can be presented with different responsibilities and access boundaries.</p>
+    </header>
+    <div class="role-switcher" role="group" aria-label="Choose a demonstration role">
+      <button class="tour-button" type="button" data-role="student" aria-pressed="true">Student</button>
+      <button class="tour-button secondary" type="button" data-role="security" aria-pressed="false">Campus Security</button>
+      <button class="tour-button secondary" type="button" data-role="admin" aria-pressed="false">University Admin</button>
+    </div>
+    <div class="role-panel" aria-live="polite">
+      <div class="role-panel-main">
+        <p class="tour-kicker" id="role-label">STUDENT WORKSPACE</p>
+        <h3 id="role-title">Find support and stay connected.</h3>
+        <p id="role-description">A student can discover university information, join campus communities, use academic support and submit a concern through the appropriate private reporting workflow.</p>
+        <div class="tour-meta"><span class="tour-chip">Sample workflow</span><span class="tour-chip">No sign-in required</span></div>
+      </div>
+      <div class="role-step-list" id="role-steps">
+        <div class="role-step"><span>01</span><div><strong>Discover campus information</strong><small>Find notices, service details and campus locations.</small></div></div>
+        <div class="role-step"><span>02</span><div><strong>Use student support</strong><small>Explore CampusPulse, academic help and the Services Hub.</small></div></div>
+        <div class="role-step"><span>03</span><div><strong>Report a concern</strong><small>Use the designated reporting flow; sensitive reports are not public posts.</small></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tour-section" id="command-centre" aria-labelledby="command-centre-title">
+    <header class="tour-section-header">
+      <div><p class="tour-kicker">03 · UNIVERSITY COMMAND CENTRE</p><h2 id="command-centre-title">A clearer view of campus operations.</h2></div>
+      <p>Preview how an authorised operations team could review a sample incident queue, stage an advisory and export demonstration records.</p>
+    </header>
+    <div class="tour-grid three" style="margin-bottom:18px">
+      <article class="tour-card"><p class="tour-kicker">SAMPLE QUEUE</p><h3>Incident triage</h3><p>Review the category, location, priority and current handling state of each illustrative record.</p></article>
+      <article class="tour-card"><p class="tour-kicker">SAMPLE COMMUNICATION</p><h3>Campus advisory</h3><p>Preview a notice and the campus zone it would target. This does not send an alert.</p></article>
+      <article class="tour-card"><p class="tour-kicker">SAMPLE REPORTING</p><h3>Operational export</h3><p>Download the synthetic records shown in this demonstration as a CSV file.</p></article>
+    </div>
+    <div class="tour-card">
+      <div class="tour-section-header" style="margin-bottom:12px">
+        <div><h3>Illustrative incident queue</h3><p class="muted">Synthetic demonstration records only — never live student reports.</p></div>
+        <button class="tour-button secondary" type="button" id="export-incidents">Export sample CSV</button>
+      </div>
+      <div class="filter-switcher" role="group" aria-label="Filter sample incidents">
+        <button class="tour-button" type="button" data-filter="all" aria-pressed="true">All records</button>
+        <button class="tour-button secondary" type="button" data-filter="Open" aria-pressed="false">Open</button>
+        <button class="tour-button secondary" type="button" data-filter="In review" aria-pressed="false">In review</button>
+        <button class="tour-button secondary" type="button" data-filter="Resolved" aria-pressed="false">Resolved</button>
+      </div>
+      <div class="table-scroll">
+        <table class="tour-table" id="incident-table">
+          <thead><tr><th scope="col">Reference</th><th scope="col">Category &amp; location</th><th scope="col">Priority</th><th scope="col">Status</th><th scope="col">Sample action</th></tr></thead>
+          <tbody>
+            <tr data-status="Open"><td>DEMO-101</td><td>Lighting concern · West Courtyard</td><td>Medium</td><td><span class="status-tag" data-status-label data-status="Open">Open</span></td><td><button class="row-action" type="button" data-next-status="In review">Move to review</button></td></tr>
+            <tr data-status="In review"><td>DEMO-102</td><td>Access support · Library entrance</td><td>Low</td><td><span class="status-tag" data-status-label data-status="In review">In review</span></td><td><button class="row-action" type="button" data-next-status="Resolved">Mark resolved</button></td></tr>
+            <tr data-status="Resolved"><td>DEMO-103</td><td>Facilities follow-up · Science Hall</td><td>Low</td><td><span class="status-tag" data-status-label data-status="Resolved">Resolved</span></td><td><button class="row-action" type="button" data-next-status="Open">Reopen sample</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tour-status" id="incident-status" role="status" aria-live="polite">Showing all three illustrative records.</p>
+    </div>
+    <div class="tour-grid two" style="margin-top:16px">
+      <div class="tour-card">
+        <h3>Stage a campus advisory preview</h3>
+        <p>Compose a sample notice and see how the message might appear before an authorised team uses its real publishing workflow.</p>
+        <div class="demo-control"><label for="advisory-zone">Sample target zone</label><select id="advisory-zone"><option>West Academic Ridge</option><option>Central Quadrangle</option><option>North Residential Quarter</option><option>All campus zones</option></select></div>
+        <div class="demo-control"><label for="advisory-headline">Headline</label><input id="advisory-headline" maxlength="90" value="Sample facilities update"></div>
+        <div class="demo-control"><label for="advisory-guidance">Actionable guidance</label><textarea id="advisory-guidance" maxlength="240">Use the designated campus information channels for verified updates.</textarea></div>
+        <button class="tour-button" type="button" id="preview-advisory">Preview advisory</button>
+      </div>
+      <div class="preview-box" id="advisory-preview" aria-live="polite">
+        <strong>Student device preview · Sample only</strong>
+        <p>Your staged notice will appear here. No push notification or campus alert is sent.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="tour-section" id="campus-map" aria-labelledby="campus-map-title">
+    <header class="tour-section-header">
+      <div><p class="tour-kicker">04 · CAMPUSMAP</p><h2 id="campus-map-title">Explore a sample campus layout.</h2></div>
+      <p>Search illustrative locations and preview a route between two sample points. This schematic is not a surveyed map and does not represent verified real-world safe routes.</p>
+    </header>
+    <div class="map-layout">
+      <div>
+        <div class="map-blueprint" role="img" aria-label="Schematic demonstration campus layout with sample library, science hall, student residence, student union and main gate locations connected by illustrative paths">
+          <div class="map-path path-one"></div><div class="map-path path-two"></div>
+          <button class="map-node node-library" type="button" data-place="Central Library" data-search="library study learning step-free"><strong>Central Library</strong><small>Sample building</small></button>
+          <button class="map-node node-science" type="button" data-place="Science Hall" data-search="science laboratory lecture"><strong>Science Hall</strong><small>Sample building</small></button>
+          <button class="map-node node-residence" type="button" data-place="Residence Commons" data-search="residence hostel accommodation"><strong>Residence Commons</strong><small>Sample building</small></button>
+          <button class="map-node node-union" type="button" data-place="Student Union" data-search="union student services events"><strong>Student Union</strong><small>Sample building</small></button>
+          <button class="map-node node-gate" type="button" data-place="Main Gate" data-search="gate reception entrance"><strong>Main Gate</strong><small>Sample entrance</small></button>
+          <div class="map-legend"><span>Illustrative campus path</span><span>Sample location</span></div>
+        </div>
+        <div class="map-results" id="map-results" aria-live="polite">
+          <div class="map-result">Central Library · Sample building</div><div class="map-result">Science Hall · Sample building</div><div class="map-result">Residence Commons · Sample building</div><div class="map-result">Student Union · Sample building</div><div class="map-result">Main Gate · Sample entrance</div>
+        </div>
+      </div>
+      <div class="tour-card">
+        <h3>Search and preview a route</h3>
+        <div class="demo-control"><label for="map-search">Search sample places</label><input id="map-search" type="search" placeholder="Search buildings or entrances"></div>
+        <div class="demo-control"><label for="route-origin">Route origin</label><select id="route-origin"><option>Central Library</option><option>Science Hall</option><option>Residence Commons</option><option>Student Union</option><option>Main Gate</option></select></div>
+        <div class="demo-control"><label for="route-destination">Route destination</label><select id="route-destination"><option>Student Union</option><option>Central Library</option><option>Science Hall</option><option>Residence Commons</option><option>Main Gate</option></select></div>
+        <div class="demo-control"><label><input type="checkbox" id="step-free-route" checked style="width:auto;min-height:0;margin-right:7px"> Show step-free route preference</label></div>
+        <button class="tour-button" type="button" id="preview-route">Preview sample route</button>
+        <div class="preview-box" style="margin-top:13px" id="route-preview" aria-live="polite"><strong>Route preview</strong><p>Choose two different sample places to see an illustrative route summary.</p></div>
+        <p class="tour-status">Real campus geometry, accessible entrances and route safety must be verified by each university before operational use.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="tour-section" id="campus-life" aria-labelledby="campus-life-title">
+    <header class="tour-section-header">
+      <div><p class="tour-kicker">05 · STUDENT LIFE &amp; UNIVERSITY SERVICES</p><h2 id="campus-life-title">CampusPulse and the Services Hub.</h2></div>
+      <p>Separate official information from student community activity, while making essential university offices easier to discover.</p>
+    </header>
+    <div class="tour-grid two">
+      <div class="tour-card">
+        <h3>CampusPulse · sample moderated feed</h3>
+        <div class="feed-item"><span class="feed-label">Verified notice · Sample</span><h3>Library access update</h3><p>A demonstration notice showing how an institution-published update can be distinguished from student posts.</p></div>
+        <div class="feed-item"><span class="feed-label">Lost &amp; Found · Sample</span><h3>Found: calculator near the study area</h3><p>A sample item relay that directs collection through an appropriate staffed campus desk rather than exposing personal contact details.</p></div>
+        <div class="feed-item"><span class="feed-label">Campus event · Sample</span><h3>Student research showcase</h3><p>An illustrative community event post from a sample student organisation.</p></div>
+      </div>
+      <div class="tour-card">
+        <h3>University Services Hub · sample directory</h3>
+        <div class="feed-item"><span class="feed-label">Student Affairs</span><h3>Student support and welfare</h3><p>Find guidance on student support, campus processes and the appropriate office to contact.</p></div>
+        <div class="feed-item"><span class="feed-label">Registrar</span><h3>Academic records and term information</h3><p>Locate official academic calendar information and registration guidance.</p></div>
+        <div class="feed-item"><span class="feed-label">Medical Services</span><h3>Health and counselling directory</h3><p>Find the institution's published contact and referral information. This directory is not a clinical or emergency service.</p></div>
+        <div class="feed-item"><span class="feed-label">ICT Helpdesk</span><h3>Account, network and campus-card assistance</h3><p>Find approved support channels for university technology services.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tour-section" id="shieldmind" aria-labelledby="shieldmind-title">
+    <header class="tour-section-header">
+      <div><p class="tour-kicker">06 · SHIELDMIND AI</p><h2 id="shieldmind-title">Answers grounded in campus information.</h2></div>
+      <p>Try a few prewritten sample questions to see how a policy-grounded assistant can show its supporting documents and make its limits clear.</p>
+    </header>
+    <div class="tour-grid two">
+      <div class="tour-card">
+        <h3>Sample questions</h3>
+        <div class="role-step-list" style="margin-top:12px">
+          <button class="tour-button secondary" type="button" data-question="library">What are the sample library access arrangements?</button>
+          <button class="tour-button secondary" type="button" data-question="escort">How does an after-hours escort request work?</button>
+          <button class="tour-button secondary" type="button" data-question="support">Where can a student find support services?</button>
+        </div>
+        <p class="tour-status">These prewritten examples do not call a live AI model or retrieve a real university's current policies.</p>
+      </div>
+      <div class="preview-box answer-box" id="shieldmind-answer" aria-live="polite">
+        <strong>ShieldMind sample answer</strong>
+        <p>Select a sample question. The answer and document labels will appear here.</p>
+        <div class="answer-citations" id="answer-citations"></div>
+      </div>
+    </div>
+    <div class="tour-banner" style="margin-top:17px;margin-bottom:0"><span class="tour-banner-icon" aria-hidden="true">!</span><div><strong>Important safety boundary</strong>ShieldMind AI is not an emergency channel and does not replace official university decisions. For an immediate safety threat, contact your campus security response channel or local emergency services.</div></div>
+  </section>
+
+  <section class="tour-section" id="trust-centre" aria-labelledby="trust-centre-title">
+    <header class="tour-section-header">
+      <div><p class="tour-kicker">07 · TRUST &amp; PRIVACY CENTRE</p><h2 id="trust-centre-title">Show who should see what.</h2></div>
+      <p>Explore example access scenarios to understand why student identity, private incident reports and general community posts should not all be visible to the same people.</p>
+    </header>
+    <div class="role-switcher" role="group" aria-label="Choose a privacy demonstration scenario">
+      <button class="tour-button" type="button" data-trust="incident" aria-pressed="true">Private incident report</button>
+      <button class="tour-button secondary" type="button" data-trust="lostfound" aria-pressed="false">Lost &amp; Found relay</button>
+      <button class="tour-button secondary" type="button" data-trust="identity" aria-pressed="false">Identity evidence</button>
+    </div>
+    <div class="trust-scenario" id="trust-scenario" aria-live="polite">
+      <h3>Private incident report</h3>
+      <p><strong>Student:</strong> can submit and follow the report according to the platform workflow. <strong>Authorised campus personnel:</strong> can review the information needed for their assigned response. <strong>Other students and public visitors:</strong> should not see the private report or its evidence.</p>
+    </div>
+    <div class="tour-grid three" style="margin-top:15px">
+      <article class="tour-card"><h3>Identity review</h3><p>Verification evidence should be submitted through a designated private process and reviewed by authorised personnel.</p></article>
+      <article class="tour-card"><h3>Role-based access</h3><p>Capabilities should follow approved roles and campus membership, not a self-selected job title or public profile.</p></article>
+      <article class="tour-card"><h3>Human oversight</h3><p>AI assistance and automated workflows should not replace accountable campus decisions or emergency procedures.</p></article>
+    </div>
+  </section>
+
+  <section class="tour-section" id="partnerships" aria-labelledby="partnerships-title">
+    <header class="tour-section-header">
+      <div><p class="tour-kicker">08 · UNIVERSITY PARTNERSHIP PORTAL</p><h2 id="partnerships-title">Start with a scoped institutional pilot.</h2></div>
+      <p>Use a structured evaluation to understand campus needs, verify data and operating requirements, and agree on a realistic adoption decision.</p>
+    </header>
+    <div class="pilot-steps">
+      <article class="pilot-step"><span>PHASE 01</span><h3>Institutional discovery</h3><p>Identify the university stakeholders, priority workflows and campus information sources.</p></article>
+      <article class="pilot-step"><span>PHASE 02</span><h3>Security and data review</h3><p>Review identity, permissions, privacy requirements, integration boundaries and responsibilities.</p></article>
+      <article class="pilot-step"><span>PHASE 03</span><h3>Controlled pilot</h3><p>Agree a limited cohort, verified information scope, support plan and evaluation measures.</p></article>
+      <article class="pilot-step"><span>PHASE 04</span><h3>Evaluation and decision</h3><p>Review evidence with the institution before deciding whether to expand, revise or stop the pilot.</p></article>
+    </div>
+    <div class="public-cta" style="margin-top:20px">
+      <div class="public-cta-copy"><p class="public-cta-kicker">UNIVERSITY ADOPTION</p><h2>Explore a CampusShield AI pilot for your institution.</h2><p>Discuss your campus priorities, existing systems and the safeguards needed for a responsible evaluation.</p></div>
+      <a class="button" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=campusshieldaitechnologies%40gmail.com&amp;su=CampusShield%20AI%20institutional%20demo%20request" target="_blank" rel="noopener noreferrer">Request an institutional demo <span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+
+  <p class="tour-status" style="text-align:center">This public tour is an illustrative product walkthrough. Actual availability, data coverage, permissions and integrations depend on verified implementation and institution configuration.</p>
+  <footer>
+    <span>© 2026 CampusShield AI. All rights reserved.</span>
+    <nav aria-label="CampusShield information pages">
+      <a href="./features.html">Features</a><a href="./for-universities.html">For Universities</a><a href="./about.html">About</a><a href="./trust-safety.html">Trust &amp; Safety</a><a href="./help.html">Help</a><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a><a href="./contact.html">Contact</a>
+    </nav>
+  </footer>
+</main>
+<script>
+(() => {
+  "use strict";
+  const roleContent = {
+    student: {
+      label: "STUDENT WORKSPACE",
+      title: "Find support and stay connected.",
+      description: "A student can discover university information, join campus communities, use academic support and submit a concern through the appropriate private reporting workflow.",
+      steps: [
+        ["Discover campus information","Find notices, service details and campus locations."],
+        ["Use student support","Explore CampusPulse, academic help and the Services Hub."],
+        ["Report a concern","Use the designated reporting flow; sensitive reports are not public posts."]
+      ]
+    },
+    security: {
+      label: "CAMPUS SECURITY WORKSPACE",
+      title: "Review incidents and coordinate follow-up.",
+      description: "Authorised campus security personnel can work from an incident queue, review relevant location context and coordinate the next action within their assigned permissions.",
+      steps: [
+        ["Review assigned reports","Assess the sample category, severity and information needed for response."],
+        ["Coordinate campus teams","Escalate relevant facilities or support requests through approved workflows."],
+        ["Maintain an auditable handoff","Record status changes and follow-up using the institution's configured process."]
+      ]
+    },
+    admin: {
+      label: "UNIVERSITY ADMINISTRATOR WORKSPACE",
+      title: "Oversee campus services and governance.",
+      description: "An authorised university administrator can review institution-level activity, oversee account approvals and align departments while respecting access boundaries.",
+      steps: [
+        ["Review institution activity","Explore aggregated operational information and service activity."],
+        ["Manage access governance","Review identity submissions and approved role assignments."],
+        ["Improve campus operations","Coordinate verified notices, source information and evaluation reporting."]
+      ]
+    }
+  };
+  const roleButtons = Array.from(document.querySelectorAll("[data-role]"));
+  roleButtons.forEach((button) => button.addEventListener("click", () => {
+    const item = roleContent[button.dataset.role];
+    if (!item) return;
+    roleButtons.forEach((entry) => {
+      const active = entry === button;
+      entry.setAttribute("aria-pressed", String(active));
+      entry.classList.toggle("secondary", !active);
+    });
+    document.getElementById("role-label").textContent = item.label;
+    document.getElementById("role-title").textContent = item.title;
+    document.getElementById("role-description").textContent = item.description;
+    const list = document.getElementById("role-steps");
+    list.replaceChildren();
+    item.steps.forEach((step, index) => {
+      const row = document.createElement("div");
+      row.className = "role-step";
+      const number = document.createElement("span");
+      number.textContent = String(index + 1).padStart(2, "0");
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = step[0];
+      const detail = document.createElement("small");
+      detail.textContent = step[1];
+      copy.append(title, detail);
+      row.append(number, copy);
+      list.append(row);
+    });
+  }));
+
+  const incidentTable = document.getElementById("incident-table");
+  const incidentRows = Array.from(incidentTable.querySelectorAll("tbody tr"));
+  const filters = Array.from(document.querySelectorAll("[data-filter]"));
+  filters.forEach((button) => button.addEventListener("click", () => {
+    const filter = button.dataset.filter;
+    filters.forEach((entry) => {
+      const active = entry === button;
+      entry.setAttribute("aria-pressed", String(active));
+      entry.classList.toggle("secondary", !active);
+    });
+    let visible = 0;
+    incidentRows.forEach((row) => {
+      row.hidden = filter !== "all" && row.dataset.status !== filter;
+      if (!row.hidden) visible += 1;
+    });
+    document.getElementById("incident-status").textContent = "Showing " + visible + " sample record" + (visible === 1 ? "" : "s") + ".";
+  }));
+  incidentTable.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-next-status]");
+    if (!button) return;
+    const row = button.closest("tr");
+    const next = button.dataset.nextStatus;
+    row.dataset.status = next;
+    const badge = row.querySelector("[data-status-label]");
+    badge.dataset.status = next;
+    badge.textContent = next;
+    const nextAction = next === "Open" ? "Move to review" : next === "In review" ? "Mark resolved" : "Reopen sample";
+    button.dataset.nextStatus = next === "Open" ? "In review" : next === "In review" ? "Resolved" : "Open";
+    button.textContent = nextAction;
+    const currentFilter = document.querySelector("[data-filter][aria-pressed='true']")?.dataset.filter || "all";
+    row.hidden = currentFilter !== "all" && currentFilter !== next;
+    document.getElementById("incident-status").textContent = "Updated sample record " + row.cells[0].textContent + " to " + next + ". This change is local to the demonstration.";
+  });
+  document.getElementById("export-incidents").addEventListener("click", () => {
+    const rows = [["Reference","Category and location","Priority","Status"]];
+    incidentRows.forEach((row) => rows.push([
+      row.cells[0].textContent.trim(),
+      row.cells[1].textContent.trim(),
+      row.cells[2].textContent.trim(),
+      row.dataset.status
+    ]));
+    const csv = rows.map((row) => row.map((value) => '"' + String(value).replace(/"/g, '""') + '"').join(",")).join("\r\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "campusshield-sample-incidents.csv";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    document.getElementById("incident-status").textContent = "Sample incident CSV download started. No live records were exported.";
+  });
+
+  document.getElementById("preview-advisory").addEventListener("click", () => {
+    const title = document.getElementById("advisory-headline").value.trim() || "Sample campus advisory";
+    const zone = document.getElementById("advisory-zone").value;
+    const guidance = document.getElementById("advisory-guidance").value.trim() || "No guidance entered.";
+    const preview = document.getElementById("advisory-preview");
+    const heading = document.createElement("strong");
+    heading.textContent = title + " · Preview only";
+    const paragraph = document.createElement("p");
+    paragraph.textContent = zone + " — " + guidance + " This preview does not send a notification.";
+    preview.replaceChildren(heading, paragraph);
+  });
+
+  const placeNodes = Array.from(document.querySelectorAll("[data-place]"));
+  document.getElementById("map-search").addEventListener("input", (event) => {
+    const term = event.target.value.trim().toLowerCase();
+    placeNodes.forEach((node) => {
+      node.hidden = term.length > 0 && !(node.dataset.place + " " + node.dataset.search).toLowerCase().includes(term);
+    });
+    const resultNodes = Array.from(document.querySelectorAll(".map-result"));
+    resultNodes.forEach((node) => { node.hidden = term.length > 0 && !node.textContent.toLowerCase().includes(term); });
+  });
+  placeNodes.forEach((node) => node.addEventListener("click", () => {
+    const origin = document.getElementById("route-origin");
+    const destination = document.getElementById("route-destination");
+    if (!origin.dataset.selectedByUser) {
+      origin.value = node.dataset.place;
+      origin.dataset.selectedByUser = "true";
+    } else {
+      destination.value = node.dataset.place;
+      destination.dataset.selectedByUser = "";
+    }
+    document.getElementById("route-preview").querySelector("p").textContent = "Selected " + node.dataset.place + ". Choose the other endpoint and preview the sample route.";
+  }));
+  document.getElementById("preview-route").addEventListener("click", () => {
+    const origin = document.getElementById("route-origin").value;
+    const destination = document.getElementById("route-destination").value;
+    const stepFree = document.getElementById("step-free-route").checked;
+    const preview = document.getElementById("route-preview");
+    const heading = document.createElement("strong");
+    const paragraph = document.createElement("p");
+    if (origin === destination) {
+      heading.textContent = "Choose two different places";
+      paragraph.textContent = "Select a different origin and destination to preview a route.";
+    } else {
+      heading.textContent = origin + " → " + destination;
+      paragraph.textContent = "Illustrative " + (stepFree ? "step-free preference" : "general") + " route preview between two sample locations. The route has not been checked against real campus geometry, lighting, access rules or current safety conditions.";
+    }
+    preview.replaceChildren(heading, paragraph);
+  });
+
+  const sampleAnswers = {
+    library: {
+      answer: "The sample library guide describes building access, quiet study areas and entry arrangements. Actual hours and access rules must be checked against the current university-published guide.",
+      citations: ["Sample Central Library & Quiet Study Access Guide"]
+    },
+    escort: {
+      answer: "The sample after-hours guidance describes how a student can request an escort through the institution's designated channel. This demonstration does not create a real request or dispatch a person.",
+      citations: ["Sample Safe Escort & After-Hours Transit Policy"]
+    },
+    support: {
+      answer: "The sample directory points students toward the appropriate Student Affairs, Medical Services or counselling contact. It is a directory example, not a clinical assessment or emergency response.",
+      citations: ["Sample Student Medical & Counselling Triage Directory"]
+    }
+  };
+  document.querySelectorAll("[data-question]").forEach((button) => button.addEventListener("click", () => {
+    const item = sampleAnswers[button.dataset.question];
+    if (!item) return;
+    const answer = document.getElementById("shieldmind-answer");
+    const heading = document.createElement("strong");
+    heading.textContent = "ShieldMind sample answer";
+    const paragraph = document.createElement("p");
+    paragraph.textContent = item.answer;
+    const citations = document.createElement("div");
+    citations.className = "answer-citations";
+    item.citations.forEach((citation) => {
+      const tag = document.createElement("span");
+      tag.textContent = "Source: " + citation;
+      citations.append(tag);
+    });
+    answer.replaceChildren(heading, paragraph, citations);
+  }));
+
+  const trustScenarios = {
+    incident: {
+      title: "Private incident report",
+      text: "Student: can submit and follow the report according to the platform workflow. Authorised campus personnel: can review the information needed for their assigned response. Other students and public visitors: should not see the private report or its evidence."
+    },
+    lostfound: {
+      title: "Lost & Found relay",
+      text: "Student: can use the approved relay to ask about an item. Relevant staff: can coordinate collection through a designated desk. Other visitors: should not receive a student's private phone number or email address."
+    },
+    identity: {
+      title: "Identity evidence",
+      text: "Applicant: can submit the required evidence through the designated private workflow. Authorised reviewers: can assess the submission. Other students and public visitors: should not see identity documents or verification notes."
+    }
+  };
+  const trustButtons = Array.from(document.querySelectorAll("[data-trust]"));
+  trustButtons.forEach((button) => button.addEventListener("click", () => {
+    const item = trustScenarios[button.dataset.trust];
+    if (!item) return;
+    trustButtons.forEach((entry) => {
+      const active = entry === button;
+      entry.setAttribute("aria-pressed", String(active));
+      entry.classList.toggle("secondary", !active);
+    });
+    const heading = document.createElement("h3");
+    heading.textContent = item.title;
+    const paragraph = document.createElement("p");
+    paragraph.textContent = item.text;
+    document.getElementById("trust-scenario").replaceChildren(heading, paragraph);
+  }));
+})();
+</script>
+</body>
+</html>
