@@ -123,7 +123,7 @@ test("sign-in and create-account mode remain reachable", async ({ page }) => {
 test("site-wide legal links and contact fallback remain explicit", async ({ page }) => {
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   const landingFooter = page.locator(".login-footer-links");
-  await expect(landingFooter.locator("a")).toHaveCount(6);
+  await expect(landingFooter.locator("a")).toHaveCount(8);
   await expect(landingFooter.locator("a").nth(0)).toHaveText("Features");
   await expect(landingFooter.locator("a").nth(1)).toHaveText("About");
   await expect(landingFooter.locator("a").nth(2)).toHaveText("Help");
@@ -174,6 +174,7 @@ test("site-wide legal links and contact fallback remain explicit", async ({ page
 test("public privacy, terms and contact pages render without mobile overflow", async ({ page }) => {
   const pages = [
     { route: "/for-universities.html", title: /For Universities/, heading: /A more connected digital campus, built around people/ },
+    { route: "/trust-safety.html", title: /Trust & Safety/, heading: /Trust, Privacy & Responsible Campus Technology/ },
     { route: "/privacy.html", title: /Privacy Policy/, heading: "Privacy Policy" },
     { route: "/terms.html", title: /Terms of Use/, heading: "Terms of Use" },
     { route: "/contact.html", title: /Contact/, heading: "Contact CampusShield AI" },
