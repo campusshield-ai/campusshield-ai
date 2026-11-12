@@ -83,15 +83,18 @@
     threadObserver.observe(threadActive, { attributes: true, attributeFilter: ["hidden"] });
   }
 
+  let pageWasActive = page.classList.contains("active");
   const pageObserver = new MutationObserver(() => {
-    if (page.classList.contains("active")) {
+    const pageIsActive = page.classList.contains("active");
+    if (pageIsActive && !pageWasActive) {
       if (threadActive && !threadActive.hidden) showThread();
-    } else {
+    } else if (!pageIsActive && pageWasActive) {
       hasOpenThread = false;
       layout.classList.remove("is-thread-open");
       setPhoneThreadOpen(false);
       setNewMessageOpen(false, false);
     }
+    pageWasActive = pageIsActive;
   });
   pageObserver.observe(page, { attributes: true, attributeFilter: ["class"] });
 
