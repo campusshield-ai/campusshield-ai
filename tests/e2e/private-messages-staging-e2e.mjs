@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
 function required(name) {
@@ -25,7 +25,6 @@ const admin = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 const runTag = randomUUID().replaceAll("-", "").slice(0, 10);
-const password = "PM-E2E-" + randomBytes(24).toString("hex") + "!";
 const createdUsers = [];
 const userClients = [];
 
@@ -91,15 +90,29 @@ async function createVerifiedStudent(suffix) {
     confirmed_fraud: false
   }, { onConflict: "user_id" }).select("user_id").single(), "Prepare disposable approved identity fixture");
 
+  // Generate the one-time token through the server-side admin API, then verify it
+  // with the student's anon client. This exercises a real authenticated session
+  // without using the CAPTCHA-protected password sign-in endpoint or weakening Auth.
+  const link = check(await admin.auth.admin.generateLink({
+    type: "magiclink",
+    email
+  }), "Generate temporary student sign-in token");
+  const tokenHash = link?.properties?.hashed_token;
+  const verificationType = link?.properties?.verification_type || "magiclink";
+  assert.ok(tokenHash, "Admin generated a one-time sign-in token hash");
+
   const client = createClient(supabaseUrl, anonKey, {
     auth: { autoRefreshToken: false, persistSession: false }
   });
-  const signedIn = check(await client.auth.signInWithPassword({ email, password }),
-    "Sign in temporary student " + suffix);
+  const signedIn = check(await client.auth.verifyOtp({
+    token_hash: tokenHash,
+    type: verificationType
+  }), "Verify one-time sign-in token for temporary student " + suffix);
   assert.equal(signedIn.user.id, authUser.id, "The student session is authenticated as its created account");
   userClients.push(client);
 
-  const verified = check(await client.rpc("get_my_campus_context"), "Check verified campus context");
+  const verifiedRows = check(await client.rpc("get_my_campus_context"), "Check verified campus context");
+  const verified = Array.isArray(verifiedRows) ? verifiedRows[0] : verifiedRows;
   assert.equal(verified?.membership_status, "active");
   assert.equal(verified?.verification_status, "verified");
 
