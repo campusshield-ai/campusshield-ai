@@ -28,7 +28,7 @@ assert.match(accessGuardMigration, /private\\.account_lifecycle_is_active/i, "ac
 assert.match(accessGuardMigration, /auth\\.users u[\\s\\S]*u\\.banned_until > clock_timestamp/i, "already-issued JWTs check the Auth ban state");
 assert.match(accessGuardMigration, /as restrictive for all to authenticated/i, "deactivated accounts are blocked by restrictive public-table RLS");
 assert.match(accessGuardMigration, /private\\.current_user_has_verified_campus_access\\(\\)/i, "verified campus authorization includes lifecycle state");
-assert.match(accessGuardMigration, /\\*\\/\\s*15 \\* \\* \\*/i, "scheduled purge is checked every 15 minutes");
+assert.ok(accessGuardMigration.includes("'* * * * *'"), "scheduled purge is checked every minute");
 assert.doesNotMatch(accessGuardMigration, /alter table storage\\.objects/i, "migration does not attempt to take ownership of Supabase-managed Storage tables");
 
 assert.match(edge, /DEACTIVATION_DAYS = 90/i, "Edge Function uses a 90-day recovery window");
