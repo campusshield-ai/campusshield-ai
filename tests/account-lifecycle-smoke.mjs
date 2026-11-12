@@ -7,6 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (name) => fs.readFileSync(path.join(root, name), "utf8");
 
 const migration = read("supabase/migrations/20261112150000_account_lifecycle_90_day_grace_period.sql");
+const accessGuardMigration = read("supabase/migrations/20261112160000_account_lifecycle_access_guard.sql");
 const edge = read("supabase/functions/account-lifecycle/index.ts");
 const ui = read("campusshield-account-lifecycle.js");
 const html = read("index.html");
@@ -22,6 +23,13 @@ assert.match(migration, /delete from storage\.objects/i, "owned Storage objects 
 assert.match(migration, /status='purge_blocked'/i, "blocked purges remain recorded and retryable");
 assert.match(migration, /private\.platform_admins/i, "trusted platform administrators are excluded from purge");
 assert.doesNotMatch(migration, /grant execute on function private\.purge_expired_account_lifecycle\(\) to authenticated/i, "clients cannot run the purge");
+
+assert.match(accessGuardMigration, /private\\.account_lifecycle_is_active/i, "account active-state helper exists");
+assert.match(accessGuardMigration, /auth\\.users u[\\s\\S]*u\\.banned_until > clock_timestamp/i, "already-issued JWTs check the Auth ban state");
+assert.match(accessGuardMigration, /as restrictive for all to authenticated/i, "deactivated accounts are blocked by restrictive public-table RLS");
+assert.match(accessGuardMigration, /private\\.current_user_has_verified_campus_access\\(\\)/i, "verified campus authorization includes lifecycle state");
+assert.match(accessGuardMigration, /\\*\\/\\s*15 \\* \\* \\*/i, "scheduled purge is checked every 15 minutes");
+assert.doesNotMatch(accessGuardMigration, /alter table storage\\.objects/i, "migration does not attempt to take ownership of Supabase-managed Storage tables");
 
 assert.match(edge, /DEACTIVATION_DAYS = 90/i, "Edge Function uses a 90-day recovery window");
 assert.match(edge, /ban_duration: LONG_BAN_DURATION/i, "deactivation uses a reversible Auth ban");
