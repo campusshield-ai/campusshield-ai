@@ -1,0 +1,31 @@
+name: CampusShield account lifecycle checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "campusshield-account-lifecycle.js"
+      - "campusshield-account-lifecycle.css"
+      - "supabase/functions/account-lifecycle/**"
+      - "supabase/migrations/20261112150000_account_lifecycle_90_day_grace_period.sql"
+      - "tests/account-lifecycle-smoke.mjs"
+      - "index.html"
+      - ".github/workflows/account-lifecycle.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  account-lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check account lifecycle implementation
+        run: node tests/account-lifecycle-smoke.mjs
+      - name: Check browser JavaScript syntax
+        run: node --check campusshield-account-lifecycle.js
