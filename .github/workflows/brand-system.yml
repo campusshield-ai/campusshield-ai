@@ -8,6 +8,7 @@ on:
       - "index.html"
       - "about.html"
       - "features.html"
+      - "for-universities.html"
       - "help.html"
       - "privacy.html"
       - "terms.html"
