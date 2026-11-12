@@ -140,7 +140,34 @@ test("site-wide legal links and contact fallback remain explicit", async ({ page
 
   await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
   await expect(page.getByText(/on-site form is not connected/i)).toBeVisible();
+
+  // Primary contact actions must open browser-based Gmail drafts, not depend
+  // on an installed desktop/mobile mail handler. Each action also keeps a
+  // direct mailto fallback for users who prefer their configured email app.
+  const contactActions = page.locator(".email-action[data-contact-action]");
+  await expect(contactActions).toHaveCount(3);
+  const expectedSubjects = {
+    support: "CampusShield AI support request",
+    privacy: "CampusShield AI privacy request",
+    partnership: "CampusShield AI partnership enquiry",
+  };
+  for (const [kind, subject] of Object.entries(expectedSubjects)) {
+    const action = page.locator(`.email-action[data-contact-action="${kind}"]`);
+    await expect(action).toBeVisible();
+    await expect(action).toHaveAttribute("target", "_blank");
+    await expect(action).toHaveAttribute("rel", "noopener noreferrer");
+    const href = await action.getAttribute("href");
+    const draft = new URL(href);
+    expect(draft.origin + draft.pathname).toBe("https://mail.google.com/mail/");
+    expect(draft.searchParams.get("view")).toBe("cm");
+    expect(draft.searchParams.get("fs")).toBe("1");
+    expect(draft.searchParams.get("to")).toBe("campusshieldaitechnologies@gmail.com");
+    expect(draft.searchParams.get("su")).toBe(subject);
+    expect(draft.searchParams.get("body")).toBeTruthy();
+  }
+  await expect(page.locator(".email-action-fallback[href^='mailto:campusshieldaitechnologies@gmail.com']")).toHaveCount(3);
   await expect(page.locator('a[href^="mailto:campusshieldaitechnologies@gmail.com"]')).toHaveCount(4);
+  await expect(page.locator(".public-cta a[href^='https://mail.google.com/mail/']")).toHaveCount(1);
   await expect(page.locator('a[href*="tiktok.com"], a[href*="youtube.com"]')).toHaveCount(0);
 });
 
