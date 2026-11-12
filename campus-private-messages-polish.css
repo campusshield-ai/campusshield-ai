@@ -562,6 +562,16 @@ body.dark #page-campus-messages .campus-dm-empty-start,
     display: inline-flex;
   }
 }
+/* Remove the page entrance transform while the phone thread is modal.
+   Otherwise position:fixed would be anchored to the transformed page instead of the viewport. */
+#page-campus-messages.campus-dm-phone-thread-open {
+  animation: none !important;
+  transform: none !important;
+}
+body.cs-dm-phone-thread-open {
+  overflow: hidden;
+}
+
 @media (max-width: 650px) {
   #page-campus-messages > .heading {
     align-items: flex-start;
@@ -586,14 +596,14 @@ body.dark #page-campus-messages .campus-dm-empty-start,
   #page-campus-messages .campus-dm-layout.is-thread-open .campus-dm-thread {
     position: fixed;
     z-index: 120;
-    inset: 0 auto auto 50%;
+    inset: 0;
     display: flex;
     width: 100vw;
     max-width: 100vw;
     height: 100dvh;
     min-height: 100dvh;
     margin: 0;
-    transform: translateX(-50%);
+    transform: none;
     border: 0;
     border-radius: 0;
     padding-top: env(safe-area-inset-top);
