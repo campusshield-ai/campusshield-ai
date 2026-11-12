@@ -42,7 +42,6 @@ async function createVerifiedStudent(suffix) {
 
   const created = await admin.auth.admin.createUser({
     email,
-    password,
     email_confirm: true,
     user_metadata: { display_name: displayName, role: "student" }
   });
