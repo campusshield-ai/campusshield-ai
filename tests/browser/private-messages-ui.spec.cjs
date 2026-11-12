@@ -69,9 +69,20 @@ test("A selected conversation opens on mobile and Back to inbox restores the lis
   await expect(page.locator(".campus-dm-layout")).toHaveClass(/is-thread-open/);
   await expect(page.locator("#campus-dm-mobile-back")).toBeVisible();
 
-  const openThreadWidth = await page.locator(".campus-dm-thread").evaluate((thread) => thread.getBoundingClientRect().width);
-  expect(openThreadWidth).toBeGreaterThan(380);
-  expect(openThreadWidth).toBeLessThanOrEqual(391);
+  const openThreadMetrics = await page.locator(".campus-dm-thread").evaluate((thread) => {
+    const rect = thread.getBoundingClientRect();
+    return {
+      width: rect.width,
+      left: rect.left,
+      right: rect.right,
+      viewport: window.innerWidth,
+      documentWidth: document.documentElement.scrollWidth
+    };
+  });
+  expect(openThreadMetrics.width).toBe(openThreadMetrics.viewport);
+  expect(openThreadMetrics.left).toBe(0);
+  expect(openThreadMetrics.right).toBe(openThreadMetrics.viewport);
+  expect(openThreadMetrics.documentWidth).toBeLessThanOrEqual(openThreadMetrics.viewport);
 
   await page.locator("#campus-dm-mobile-back").click();
   await expect(page.locator(".campus-dm-layout")).not.toHaveClass(/is-thread-open/);
