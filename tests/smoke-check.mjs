@@ -32,6 +32,7 @@ const shieldmindChatHistoryIndexMigration = await readFile(new URL("../supabase/
 const shieldmindMonthlyUsageMigration = await readFile(new URL("../supabase/migrations/20261111180000_shieldmind_monthly_usage_budgets.sql", import.meta.url), "utf8");
 const timetable = await readFile(new URL("../campus-timetable.js", import.meta.url), "utf8");
 const shieldmindFunction = await readFile(new URL("../supabase/functions/shieldmind-chat/index.ts", import.meta.url), "utf8");
+const shieldmindBudgetHardeningMigration = await readFile(new URL("../supabase/migrations/20261112000000_shieldmind_reservation_and_rls_hardening.sql", import.meta.url), "utf8");
 const shieldmindKnowledgeHelpers = await readFile(new URL("../supabase/functions/shieldmind-chat/knowledge.mjs", import.meta.url), "utf8");
 const paystackWebhookFunction = await readFile(new URL("../supabase/functions/paystack-webhook/index.ts", import.meta.url), "utf8");
 const paystackReconcileFunction = await readFile(new URL("../supabase/functions/paystack-reconcile/index.ts", import.meta.url), "utf8");
@@ -781,6 +782,12 @@ assert.match(shieldmindFunction, /ShieldMind image quota check failed/, "image q
 assert.match(shieldmindFunction, /errorName: _error instanceof Error/, "unexpected runtime diagnostics record only an error class");
 assert.doesNotMatch(shieldmindFunction, /console\.(?:log|warn|error)\([^\n]*(?:question|messages|providerKey|Authorization|data_base64)/i, "diagnostic logs exclude prompts, secrets, and uploaded-image payloads");
 assert.match(shieldmindFunction, /ShieldMind provider billing or usage limit reached/,"provider quota errors are distinguishable in server logs");
+assert.match(shieldmindBudgetHardeningMigration, /alter table private\.shieldmind_monthly_usage enable row level security/i);
+assert.match(shieldmindBudgetHardeningMigration, /current_setting\('request\.jwt\.claim\.role'/i);
+assert.doesNotMatch(shieldmindBudgetHardeningMigration, /auth\.role\(\)/i, "service-role usage accounting avoids deprecated auth.role()");
+assert.match(shieldmindFunction, /releaseShieldMindReservation\(supabaseUrl, user\.id, Boolean\(studyImage\)\)/, "provider failures return reserved monthly/image allowance");
+assert.match(pastQuestionFunction, /release_shieldmind_usage_reservation/, "AI exam prep releases its reserved monthly allowance on provider rejection");
+
 assert.match(shieldmindFunction, /ShieldMind provider rate limit returned/,"provider rate limits are logged separately");
 assert.match(shieldmindFunction, /ShieldMind provider returned a non-success response/,"provider server errors record status and structured code only");
 assert.match(shieldmindFunction, /ShieldMind request failed unexpectedly/,"unexpected runtime failures are visible without logging prompts or secrets");
