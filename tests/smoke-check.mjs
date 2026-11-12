@@ -1221,6 +1221,11 @@ assert.match(appScript, /data-campus-dm-filter/,
 console.log("PASS Private Messages responsive workspace, accessible mobile navigation, preserved backend and voice/report controls");
 
 
+assert.match(htmlMarkup, /<link rel="stylesheet" href="\.\/campusshield-launch-intro\.css\?v=20261112-2">/,
+  "first-launch overlay styles use a fresh cache key");
+assert.match(htmlMarkup, /<script src="\.\/campusshield-launch-intro\.js\?v=20261112-2" defer><\/script>/,
+  "first-launch overlay logic uses a fresh cache key");
+
 // First-launch intro overlay must keep the login page from intercepting overlay actions.
 assert.match(launchIntroScript, /document\.body\.classList\.add\("cs-launch-active"\)/,
   "first-launch overlay marks the background as temporarily inactive");
