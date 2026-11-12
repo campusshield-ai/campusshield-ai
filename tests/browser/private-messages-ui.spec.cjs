@@ -52,8 +52,51 @@ test("Private Messages stays within the viewport from phone to wide desktop", as
     expect(dimensions.layoutScroll, "Message panels must not overflow horizontally at " + width + "px")
       .toBeLessThanOrEqual(dimensions.layoutClient + 1);
     expect(dimensions.railWidth).toBeGreaterThan(240);
-    expect(dimensions.threadWidth).toBeGreaterThan(240);
+    if (width <= 900) {
+      // Tablet and phone use a master/detail flow: only the inbox is shown until a conversation is selected.
+      expect(dimensions.threadWidth, "the unselected thread stays out of the inbox view at " + width + "px")
+        .toBe(0);
+    } else {
+      expect(dimensions.threadWidth, "desktop keeps both message panes visible at " + width + "px")
+        .toBeGreaterThan(240);
+    }
   }
+});
+
+test("A selected conversation opens on mobile and Back to inbox restores the list", async ({ page }) => {
+  await openPrivateMessages(page, 390);
+  await page.locator("#campus-dm-thread-active").evaluate((thread) => { thread.hidden = false; });
+  await expect(page.locator(".campus-dm-layout")).toHaveClass(/is-thread-open/);
+  await expect(page.locator("#campus-dm-mobile-back")).toBeVisible();
+
+  const openThreadMetrics = await page.locator(".campus-dm-thread").evaluate((thread) => {
+    const rect = thread.getBoundingClientRect();
+    return {
+      width: rect.width,
+      height: rect.height,
+      left: rect.left,
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom,
+      viewport: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      documentWidth: document.documentElement.scrollWidth
+    };
+  });
+  expect(openThreadMetrics.width).toBe(openThreadMetrics.viewport);
+  expect(openThreadMetrics.height).toBe(openThreadMetrics.viewportHeight);
+  expect(openThreadMetrics.left).toBe(0);
+  expect(openThreadMetrics.top).toBe(0);
+  expect(openThreadMetrics.right).toBe(openThreadMetrics.viewport);
+  expect(openThreadMetrics.bottom).toBe(openThreadMetrics.viewportHeight);
+  expect(openThreadMetrics.documentWidth).toBeLessThanOrEqual(openThreadMetrics.viewport);
+  await expect(page.locator("body")).toHaveClass(/cs-dm-phone-thread-open/);
+
+  await page.locator("#campus-dm-mobile-back").click();
+  await expect(page.locator(".campus-dm-layout")).not.toHaveClass(/is-thread-open/);
+  await expect(page.locator("#page-campus-messages")).not.toHaveClass(/campus-dm-phone-thread-open/);
+  await expect(page.locator("body")).not.toHaveClass(/cs-dm-phone-thread-open/);
+  await expect(page.locator(".campus-dm-rail")).toBeVisible();
 });
 
 test("Inbox filters and search remain locked until campus verification", async ({ page }) => {

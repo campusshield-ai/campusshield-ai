@@ -1,4 +1,12 @@
 /* CampusShield AI — lightweight first-launch introduction. */
+/* Keep the underlying login/workspace from intercepting the overlay controls. */
+body.cs-launch-active > *:not(#campusshield-launch-intro) {
+  pointer-events: none !important;
+}
+#campusshield-launch-intro {
+  pointer-events: auto;
+}
+
 #campusshield-launch-intro,
 #campusshield-launch-intro * {
   box-sizing: border-box;

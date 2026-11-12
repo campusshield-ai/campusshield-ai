@@ -1,0 +1,47 @@
+name: Private Messages Staging acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "campusshield-backend.js"
+      - "campus-private-messages-polish.css"
+      - "campus-private-messages-polish.js"
+      - "tests/e2e/private-messages-staging-e2e.mjs"
+      - ".github/workflows/private-messages-staging-e2e.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: private-messages-staging-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  private-messages-staging:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_STAGING_URL: ${{ secrets.SUPABASE_STAGING_URL || vars.SUPABASE_STAGING_URL }}
+      SUPABASE_STAGING_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY || vars.SUPABASE_STAGING_ANON_KEY }}
+      SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
+      SUPABASE_STAGING_UNIVERSITY_ID: "3da504fe-fcac-4cc5-b985-dac80d8a7706"
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pinned Supabase client
+        run: npm install --no-save --no-package-lock @supabase/supabase-js@2.95.0
+
+      - name: Check Staging test script syntax
+        run: node --check tests/e2e/private-messages-staging-e2e.mjs
+
+      - name: Run authenticated student-to-student acceptance flow
+        run: node tests/e2e/private-messages-staging-e2e.mjs

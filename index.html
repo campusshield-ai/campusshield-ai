@@ -2348,8 +2348,8 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   }
 </style>
 
-<link rel="stylesheet" href="./campusshield-launch-intro.css">
-<script src="./campusshield-launch-intro.js" defer></script>
+<link rel="stylesheet" href="./campusshield-launch-intro.css?v=20261112-2">
+<script src="./campusshield-launch-intro.js?v=20261112-2" defer></script>
 
 </head>
 <body>
@@ -3511,18 +3511,27 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   <div class="campus-dm-layout">
     <aside class="panel campus-dm-rail" aria-label="Message requests and conversations">
       <section class="campus-dm-new" aria-labelledby="campus-dm-new-title">
-        <div class="campus-dm-section-title"><span class="campus-dm-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><div><h2 id="campus-dm-new-title">New message</h2><p>Find someone at your university</p></div></div>
-        <form id="campus-dm-search-form">
-          <div class="field"><label for="campus-dm-search">Campus username</label><input id="campus-dm-search" minlength="3" maxlength="20" autocomplete="off" placeholder="e.g. ada_cs01" required></div>
-          <button class="btn secondary" type="submit" id="campus-dm-search-button">Find member</button>
-        </form>
-        <p id="campus-dm-search-status" class="message" role="status" aria-live="polite"></p>
-        <div id="campus-dm-search-results" class="campus-dm-search-results"></div>
-        <form id="campus-dm-request-form" hidden>
-          <div class="campus-dm-selected-recipient"><span>Message request to</span><strong id="campus-dm-selected-username">@username</strong><button class="campus-dm-clear-selection" id="campus-dm-clear-selection" type="button" aria-label="Choose a different member">Change</button></div>
-          <div class="field"><label for="campus-dm-introduction">Introduce yourself *</label><textarea id="campus-dm-introduction" maxlength="1200" rows="3" placeholder="Write a short, respectful first message…" required></textarea></div>
-          <button class="btn" type="submit" id="campus-dm-request-send">Send message request</button>
-        </form>
+        <div class="campus-dm-section-title">
+          <span class="campus-dm-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+          <div><h2 id="campus-dm-new-title">New message</h2><p>Find someone at your university</p></div>
+          <button class="campus-dm-new-toggle" type="button" id="campus-dm-new-toggle" aria-expanded="false" aria-controls="campus-dm-new-body">
+            <span data-toggle-label>Compose</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <div id="campus-dm-new-body" class="campus-dm-new-body" hidden>
+          <form id="campus-dm-search-form">
+            <div class="field"><label for="campus-dm-search">Campus username</label><input id="campus-dm-search" minlength="3" maxlength="20" autocomplete="off" placeholder="e.g. ada_cs01" required></div>
+            <button class="btn secondary" type="submit" id="campus-dm-search-button">Find member</button>
+          </form>
+          <p id="campus-dm-search-status" class="message" role="status" aria-live="polite"></p>
+          <div id="campus-dm-search-results" class="campus-dm-search-results"></div>
+          <form id="campus-dm-request-form" hidden>
+            <div class="campus-dm-selected-recipient"><span>Message request to</span><strong id="campus-dm-selected-username">@username</strong><button class="campus-dm-clear-selection" id="campus-dm-clear-selection" type="button" aria-label="Choose a different member">Change</button></div>
+            <div class="field"><label for="campus-dm-introduction">Introduce yourself *</label><textarea id="campus-dm-introduction" maxlength="1200" rows="3" placeholder="Write a short, respectful first message…" required></textarea></div>
+            <button class="btn" type="submit" id="campus-dm-request-send">Send message request</button>
+          </form>
+        </div>
       </section>
       <div class="campus-dm-inbox-title">
         <div><h2>Inbox</h2><p>Your message requests and private conversations</p></div>
@@ -3548,9 +3557,15 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
       <div id="campus-dm-thread-empty" class="campus-dm-thread-empty">
         <span class="campus-dm-thread-empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-5.5 4v-4.2A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8 8h8M8 11.5h5"/></svg></span>
         <h2>Your private inbox</h2><p>Choose a conversation or find a campus member to start a message request.</p>
+        <button type="button" class="campus-dm-empty-start" id="campus-dm-empty-start">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Find a campus member
+        </button>
       </div>
       <div id="campus-dm-thread-active" hidden>
         <div class="campus-dm-thread-header">
+          <button type="button" class="campus-dm-back" id="campus-dm-mobile-back" aria-label="Back to inbox">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6M9 12h11"/></svg><span>Inbox</span>
+          </button>
           <div class="campus-dm-avatar" id="campus-dm-thread-avatar">C</div>
           <div class="campus-dm-thread-contact"><strong id="campus-dm-thread-name">@campus_member</strong><span id="campus-dm-thread-subtitle">Private conversation</span></div>
           <button type="button" class="campus-dm-block-button" id="campus-dm-block-button" hidden>Block</button>
@@ -6117,9 +6132,11 @@ table { max-width: 100%; }
 <link rel="stylesheet" href="./campusshield-dashboard-polish-v3.css?v=20261109-1">
 <link rel="stylesheet" href="./campusshield-lovable-ux.css?v=20261109-1">
 <link rel="stylesheet" href="./campusshield-module-experience.css?v=20261110-2">
+<link rel="stylesheet" href="./campus-private-messages-polish.css?v=20261112-3">
 <script src="./campus-dashboard-upgrade.js" defer></script>
 <script src="./campus-discovery-ui.js" defer></script>
 <script src="./student-creator-tools.js" defer></script>
 <script src="./campusshield-lovable-ux.js" defer></script>
+<script src="./campus-private-messages-polish.js?v=20261112-4" defer></script>
 </body>
 </html>
