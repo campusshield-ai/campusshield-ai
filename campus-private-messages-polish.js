@@ -72,7 +72,9 @@
   }
 
   const pageObserver = new MutationObserver(() => {
-    if (!page.classList.contains("active")) {
+    if (page.classList.contains("active")) {
+      if (threadActive && !threadActive.hidden) showThread();
+    } else {
       hasOpenThread = false;
       layout.classList.remove("is-thread-open");
       setNewMessageOpen(false, false);
