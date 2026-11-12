@@ -7,6 +7,7 @@ on:
       - ".github/workflows/shieldmind-staging-acceptance.yml"
       - "tests/e2e/staging-shieldmind-gpt6-paystack-e2e.mjs"
       - "supabase/migrations/20261111180000_shieldmind_monthly_usage_budgets.sql"
+      - "supabase/migrations/20261112000000_shieldmind_reservation_and_rls_hardening.sql"
       - "supabase/functions/shieldmind-chat/**"
       - "supabase/functions/past-question-practice/**"
       - "campusshield-app.js"
@@ -35,10 +36,10 @@ jobs:
       SUPABASE_STAGING_APP_ORIGIN: https://campusshield-ai-staging-preview.vercel.app
     steps:
       - name: Check out the tested commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
