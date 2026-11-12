@@ -10,12 +10,14 @@ assert.ok(html.includes('src="./campusshield-launch-intro.js"'), "launch intro s
 assert.ok(html.indexOf('src="./campusshield-launch-intro.js"') < html.indexOf("</head>"), "intro bootstrap runs before app scripts");
 assert.ok(html.includes("</body>"), "app document remains complete");
 assert.ok(script.includes('storage.getItem(STORAGE_KEY)'), "launch history is persisted");
-assert.ok(script.includes("function localDateKey(date)"), "weekly schedule uses a device-local calendar date");
-assert.ok(script.includes("today.getDay() !== 1"), "weekly intro is Monday-only");
-assert.ok(script.includes('lastMondayShown(record) !== localDateKey(today)'), "intro is shown at most once per local Monday");
+assert.ok(script.includes("const REPEAT_INTERVAL_MS = 45 * 24 * 60 * 60 * 1000"), "repeat cooldown is 45 days");
+assert.ok(script.includes("now - previousShownAt >= REPEAT_INTERVAL_MS"), "intro repeats only after the full cooldown");
+assert.ok(script.includes("function lastShownAt(record)"), "last display time is tracked");
+assert.ok(script.includes("record.lastShownAt"), "last display timestamp is persisted");
+assert.ok(script.includes("record.lastMondayShown"), "previous weekly records migrate safely");
 assert.ok(script.includes("function firstShownAt(record)"), "first-launch history is preserved");
 assert.ok(script.includes("record.firstShownAt ?? record.completedAt"), "legacy launch records remain compatible");
-assert.ok(script.includes("record.lastMondayShown"), "Monday completion is persisted");
+assert.ok(script.includes("record.lastMondayShown"), "previous weekly completion records remain migratable");
 assert.ok(script.includes('window.matchMedia("(prefers-reduced-motion: reduce)")'), "reduced-motion preference is respected");
 assert.ok(script.includes('event.key === "Escape"'), "Escape skips the intro");
 assert.ok(script.includes('event.key === "Tab"'), "keyboard focus stays within the intro");
@@ -29,4 +31,4 @@ assert.ok(styles.includes("@media (prefers-reduced-motion: reduce)"), "reduced-m
 assert.ok(styles.includes(".is-leaving"), "completion transition is defined");
 assert.ok(!script.includes("Get Started"), "intro does not add an extra onboarding screen");
 
-console.log("CampusShield first-launch + Monday intro smoke checks passed.");
+console.log("CampusShield first-launch + rare-repeat intro smoke checks passed.");
