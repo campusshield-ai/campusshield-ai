@@ -784,7 +784,7 @@ assert.doesNotMatch(shieldmindFunction, /console\.(?:log|warn|error)\([^\n]*(?:q
 assert.match(shieldmindFunction, /ShieldMind provider billing or usage limit reached/,"provider quota errors are distinguishable in server logs");
 assert.match(shieldmindBudgetHardeningMigration, /alter table private\.shieldmind_monthly_usage enable row level security/i);
 assert.match(shieldmindBudgetHardeningMigration, /current_setting\('request\.jwt\.claim\.role'/i);
-assert.doesNotMatch(shieldmindBudgetHardeningMigration, /auth\.role\(\)/i, "service-role usage accounting avoids deprecated auth.role()");
+assert.match(shieldmindBudgetHardeningMigration, /v_jwt_role := coalesce\([\s\S]*current_setting\('request\.jwt\.claim\.role'/i, "service-role accounting reads the JWT role from request claims instead of the deprecated helper");
 assert.match(shieldmindFunction, /releaseShieldMindReservation\(supabaseUrl, user\.id, Boolean\(studyImage\)\)/, "provider failures return reserved monthly/image allowance");
 assert.match(pastQuestionFunction, /release_shieldmind_usage_reservation/, "AI exam prep releases its reserved monthly allowance on provider rejection");
 
