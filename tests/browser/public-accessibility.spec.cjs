@@ -5,6 +5,7 @@ const publicPages = [
   { path: "/", name: "CampusShield sign-in" },
   { path: "/about.html", name: "About" },
   { path: "/features.html", name: "Features" },
+  { path: "/for-universities.html", name: "For Universities" },
   { path: "/help.html", name: "How to use CampusShield" },
   { path: "/privacy.html", name: "Privacy" },
   { path: "/terms.html", name: "Terms" },
