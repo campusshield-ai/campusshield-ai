@@ -22,10 +22,10 @@ test("sample incident filters and status changes remain local to the demonstrati
   await row.getByRole("button", { name: "Move to review" }).click();
   await expect(row).toHaveAttribute("data-status", "In review");
   await expect(row).toBeHidden();
+  await expect(page.locator("#incident-status")).toContainText("local to the demonstration");
   await page.locator('[data-filter="In review"]').click();
   await expect(row).toBeVisible();
   await expect(row.locator("[data-status-label]")).toHaveText("In review");
-  await expect(page.locator("#incident-status")).toContainText("local to the demonstration");
 });
 
 test("advisory action displays a preview without claiming to send an alert", async ({ page }) => {
