@@ -31,7 +31,7 @@ assert.match(edge, /profile\.role === "admin" \|\| isPlatformAdmin === true/i, "
 assert.match(edge, /action === "list-deactivated"/i, "administrator queue is available");
 assert.match(edge, /action === "restore"/i, "administrator reactivation action is available");
 assert.doesNotMatch(edge, /auth\.admin\.deleteUser\(/i, "deactivation never permanently deletes a user");
-assert.doesNotMatch(edge, /SERVICE_ROLE_KEY/.test(ui) ? /SERVICE_ROLE_KEY/ : /$a/, "service-role secrets are not in browser UI");
+assert.doesNotMatch(ui, /SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE_KEY/i, "service-role secrets are not in browser UI");
 
 assert.match(ui, /account-lifecycle-deactivate/i, "profile UI offers deactivation");
 assert.match(ui, /list-deactivated/i, "admin UI loads the recovery queue");
