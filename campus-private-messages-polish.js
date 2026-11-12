@@ -16,6 +16,7 @@
 
   if (!layout || !newPanel || !newBody || !newToggle) return;
 
+  let hasOpenThread = false;
   const isSinglePane = () => window.matchMedia("(max-width: 900px)").matches;
 
   function setNewMessageOpen(open, focusSearch) {
@@ -31,12 +32,14 @@
   }
 
   function showThread() {
+    hasOpenThread = true;
     if (!isSinglePane()) return;
     layout.classList.add("is-thread-open");
     requestAnimationFrame(() => backButton?.focus({ preventScroll: true }));
   }
 
   function showInbox() {
+    hasOpenThread = false;
     layout.classList.remove("is-thread-open");
     requestAnimationFrame(() => {
       page.querySelector(".campus-dm-conversation.active")?.focus({ preventScroll: true });
@@ -70,6 +73,7 @@
 
   const pageObserver = new MutationObserver(() => {
     if (!page.classList.contains("active")) {
+      hasOpenThread = false;
       layout.classList.remove("is-thread-open");
       setNewMessageOpen(false, false);
     }
@@ -77,9 +81,9 @@
   pageObserver.observe(page, { attributes: true, attributeFilter: ["class"] });
 
   window.addEventListener("resize", () => {
-    if (isSinglePane() && threadActive && !threadActive.hidden) {
+    if (isSinglePane() && hasOpenThread) {
       layout.classList.add("is-thread-open");
-    } else if (!isSinglePane()) {
+    } else {
       layout.classList.remove("is-thread-open");
     }
   }, { passive: true });
