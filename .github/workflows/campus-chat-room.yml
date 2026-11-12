@@ -1,0 +1,53 @@
+name: Campus Chat room upgrade checks
+
+on:
+  pull_request:
+    branches: [main, staging/preview]
+    paths:
+      - "index.html"
+      - "campusshield-app.js"
+      - "campus-chat-room-upgrade.css"
+      - "campus-chat-room-enhancements.js"
+      - "service-worker.js"
+      - "tests/browser/campus-chat-room-upgrade.spec.cjs"
+      - ".github/workflows/campus-chat-room.yml"
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "campusshield-app.js"
+      - "campus-chat-room-upgrade.css"
+      - "campus-chat-room-enhancements.js"
+      - "service-worker.js"
+      - "tests/browser/campus-chat-room-upgrade.spec.cjs"
+      - ".github/workflows/campus-chat-room.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campus-chat-room-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  campus-chat-room:
+    name: Campus Chat UI, keyboard and responsive checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check chat scripts parse
+        run: |
+          node --check campusshield-app.js
+          node --check campus-chat-room-enhancements.js
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock @playwright/test@1.64.1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run Campus Chat room tests
+        env:
+          CI: "true"
+        run: npx playwright test --config=playwright.config.cjs tests/browser/campus-chat-room-upgrade.spec.cjs
