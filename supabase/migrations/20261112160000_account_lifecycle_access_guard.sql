@@ -27,9 +27,37 @@ $function$;
 revoke all on function private.account_lifecycle_is_active() from public, anon;
 grant execute on function private.account_lifecycle_is_active() to authenticated, service_role;
 
--- This staging schema uses current_user_has_verified_campus_access() as a
--- shared authorization guard across campus interaction and Storage policies.
--- Require the account lifecycle to be active before verified access is granted.
+-- Preserve the environment's pre-existing verified-campus authorization logic.
+-- Staging and Production have different implementations of this shared helper.
+-- Copy its existing definition under a private internal name before wrapping it,
+-- so existing Storage policies that reference the original function OID continue
+-- to receive both the original checks and the lifecycle check.
+do $preserve_helper$
+declare
+  v_definition text;
+begin
+  if to_regprocedure('private.current_user_has_verified_campus_access_pre_lifecycle()') is null then
+    v_definition := pg_get_functiondef(
+      'private.current_user_has_verified_campus_access()'::regprocedure
+    );
+    v_definition := replace(
+      v_definition,
+      'FUNCTION private.current_user_has_verified_campus_access()',
+      'FUNCTION private.current_user_has_verified_campus_access_pre_lifecycle()'
+    );
+    execute v_definition;
+  end if;
+end;
+$preserve_helper$;
+
+revoke all on function private.current_user_has_verified_campus_access_pre_lifecycle()
+  from public, anon, authenticated, service_role;
+grant execute on function private.current_user_has_verified_campus_access_pre_lifecycle()
+  to postgres;
+
+-- Wrap the original helper in place. Replacing the function body in place keeps
+-- every existing policy dependency (including Storage policies) attached to the
+-- same function OID while preserving the project's original membership/role rules.
 create or replace function private.current_user_has_verified_campus_access()
 returns boolean
 language sql
@@ -38,28 +66,14 @@ security definer
 set search_path = ''
 as $function$
   select private.account_lifecycle_is_active()
-     and exists (
-       select 1
-       from public.profiles p
-       where p.id = (select auth.uid())
-         and p.verification_status = 'verified'
-         and (
-           (
-             (p.requested_role = 'student' or p.role = 'student')
-             and coalesce((select private.current_campus_role()), '') = 'student'
-           )
-           or (
-             p.role in ('teacher','security','admin')
-             and coalesce((select private.current_campus_role()), '') in ('teacher','security','admin')
-           )
-         )
-         and not exists (
-           select 1 from public.student_identity_verifications siv
-           where siv.user_id = p.id and siv.confirmed_fraud = true
-             and siv.fraud_lock_at is not null and now() >= siv.fraud_lock_at
-         )
+     and coalesce(
+       (select private.current_user_has_verified_campus_access_pre_lifecycle()),
+       false
      );
 $function$;
+
+revoke all on function private.current_user_has_verified_campus_access() from public, anon;
+grant execute on function private.current_user_has_verified_campus_access() to authenticated, service_role;
 
 -- A restrictive policy is ANDed with each existing permissive ownership and
 -- campus-membership policy. It therefore blocks a deactivated JWT on exposed
