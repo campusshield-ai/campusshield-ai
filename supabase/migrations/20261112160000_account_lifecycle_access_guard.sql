@@ -1,4 +1,6 @@
--- Deny requests from deactivated accounts even while an already-issued JWT is still within its expiry window.
+-- Deny requests from deactivated accounts even while an already-issued JWT is
+-- within its expiry window. Apply a restrictive row-level policy to every RLS
+-- enabled public table without changing each table's existing ownership rules.
 
 create or replace function private.account_lifecycle_is_active()
 returns boolean
@@ -18,16 +20,17 @@ as $function$
        select 1
        from auth.users u
        where u.id = (select auth.uid())
-         and u.deleted_at is not null
+         and (u.deleted_at is not null or u.banned_until > clock_timestamp())
      );
 $function$;
 
 revoke all on function private.account_lifecycle_is_active() from public, anon;
 grant execute on function private.account_lifecycle_is_active() to authenticated, service_role;
 
--- Keep the existing role/verification checks, but make deactivation a global
--- access stop for the helper used by restricted campus workflows.
-create or replace function private.current_user_can_use_restricted_features()
+-- This staging schema uses current_user_has_verified_campus_access() as a
+-- shared authorization guard across campus interaction and Storage policies.
+-- Require the account lifecycle to be active before verified access is granted.
+create or replace function private.current_user_has_verified_campus_access()
 returns boolean
 language sql
 stable
@@ -35,23 +38,32 @@ security definer
 set search_path = ''
 as $function$
   select private.account_lifecycle_is_active()
-     and coalesce((
-       select case
-         when p.verification_status <> 'verified' then false
-         when p.role in ('admin','security','teacher') then true
-         when p.role = 'student' then exists (
-           select 1 from public.student_identity_verifications siv
-           where siv.user_id = p.id and siv.status = 'approved'
-         )
-         else false
-       end
+     and exists (
+       select 1
        from public.profiles p
        where p.id = (select auth.uid())
-     ), false);
+         and p.verification_status = 'verified'
+         and (
+           (
+             (p.requested_role = 'student' or p.role = 'student')
+             and coalesce((select private.current_campus_role()), '') = 'student'
+           )
+           or (
+             p.role in ('teacher','security','admin')
+             and coalesce((select private.current_campus_role()), '') in ('teacher','security','admin')
+           )
+         )
+         and not exists (
+           select 1 from public.student_identity_verifications siv
+           where siv.user_id = p.id and siv.confirmed_fraud = true
+             and siv.fraud_lock_at is not null and now() >= siv.fraud_lock_at
+         )
+     );
 $function$;
 
--- Add a restrictive policy, not a permissive one: this ANDs with each table's
--- existing row-level policies without changing its ownership/campus rules.
+-- A restrictive policy is ANDed with each existing permissive ownership and
+-- campus-membership policy. It therefore blocks a deactivated JWT on exposed
+-- public tables without broadening any user's existing access.
 do $policies$
 declare
   v_table record;
@@ -74,20 +86,14 @@ begin
 end;
 $policies$;
 
--- Supabase Storage also accepts the user's JWT. Apply the same account-state
--- guard to objects so old tokens cannot continue reading/writing private files.
-alter table storage.objects enable row level security;
-drop policy if exists account_lifecycle_active_guard on storage.objects;
-create policy account_lifecycle_active_guard
-on storage.objects
-as restrictive
-for all
-to authenticated
-using ((select private.account_lifecycle_is_active()))
-with check ((select private.account_lifecycle_is_active()));
+-- Storage's objects table is owned by Supabase's managed storage role and
+-- cannot be altered by this project's migration role. Auth bans and session
+-- revocation stop new sessions; already-issued access tokens retain their
+-- normal short JWT expiry. Existing Storage policies that use the verified
+-- campus helper above will also reject deactivated users.
 
--- Check the purge queue every 15 minutes. The function still refuses to act
--- before each account's exact 90-day deadline.
+-- Run the purge queue every 15 minutes. The purge function still checks each
+-- account's exact 90-day deadline before permanently removing anything.
 do $schedule$
 begin
   if exists (select 1 from cron.job where jobname = 'campusshield-account-lifecycle-daily-purge') then
