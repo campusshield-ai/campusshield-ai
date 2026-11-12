@@ -188,7 +188,7 @@ body.public-page .public-cta{
 body.public-page footer{
   display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
   margin:20px 2px 0;padding:22px 4px 0;border-top:1px solid var(--cs-public-line);
-  color:#6B7F70;font-size:12px;
+  color:#52695A;font-size:12px;
 }
 body.public-page footer nav{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 body.public-page footer nav a{
