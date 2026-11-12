@@ -5,6 +5,8 @@ const pages = [
     ["Features", "/features.html"], ["About", "/about.html"], ["Help", "/help.html"]
   ]},
   { name: "Features", path: "/features.html" },
+  { name: "For Universities", path: "/for-universities.html" },
+  { name: "Trust & Safety", path: "/trust-safety.html" },
   { name: "About", path: "/about.html" },
   { name: "Help", path: "/help.html" },
   { name: "Privacy", path: "/privacy.html" },
@@ -38,8 +40,9 @@ for (const width of widths) {
           : page.locator("footer").last();
         await expect(footer).toBeVisible();
         const footerLinks = footer.locator("nav").first().locator("a");
-        await expect(footerLinks).toHaveCount(6);
-        for (const target of ["features.html", "about.html", "help.html", "privacy.html", "terms.html", "contact.html"]) {
+        const footerTargets = ["features.html", "for-universities.html", "about.html", "trust-safety.html", "help.html", "privacy.html", "terms.html", "contact.html"];
+        await expect(footerLinks).toHaveCount(footerTargets.length);
+        for (const target of footerTargets) {
           await expect(footer.locator(`nav a[href="./${target}"]`).first()).toBeVisible();
         }
         const firstLink = footerLinks.first();
@@ -55,7 +58,7 @@ for (const width of widths) {
 
 test("homepage public navigation links open their intended pages", async ({ page }) => {
   await page.goto("/index.html");
-  for (const [label, path] of [["Features", "/features.html"], ["About", "/about.html"], ["Help", "/help.html"]]) {
+  for (const [label, path] of [["Features", "/features.html"], ["For Universities", "/for-universities.html"], ["About", "/about.html"], ["Trust & Safety", "/trust-safety.html"], ["Help", "/help.html"]]) {
     await page.goto("/index.html");
     await page.getByRole("navigation", { name: "Public navigation" }).getByRole("link", { name: label }).click();
     await expect(page).toHaveURL(new RegExp(path.replace(".", "\\.")));
@@ -67,7 +70,7 @@ test("information-page footer navigation works between pages", async ({ page }) 
   for (const pageInfo of pages.slice(1)) {
     await page.goto(pageInfo.path);
     const footer = page.locator("footer").last();
-    for (const [label, path] of [["Features", "/features.html"], ["About", "/about.html"], ["Help", "/help.html"], ["Privacy", "/privacy.html"], ["Terms", "/terms.html"], ["Contact", "/contact.html"]]) {
+    for (const [label, path] of [["Features", "/features.html"], ["For Universities", "/for-universities.html"], ["About", "/about.html"], ["Trust & Safety", "/trust-safety.html"], ["Help", "/help.html"], ["Privacy", "/privacy.html"], ["Terms", "/terms.html"], ["Contact", "/contact.html"]]) {
       const link = footer.getByRole("link", { name: label, exact: true });
       await expect(link).toBeVisible();
       await expect(link).toHaveAttribute("href", `.${path}`);

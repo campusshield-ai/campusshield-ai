@@ -80,8 +80,8 @@ test("landing page fits phone, tablet, iPad, laptop and desktop viewports", asyn
       ).toBeLessThanOrEqual(metrics.documentHeight + 1);
       expect(
         metrics.intro.height,
-        `${viewport.name}: dark landing panel must stretch to the full grid row with no blank strip`,
-      ).toBeGreaterThanOrEqual(metrics.login.height - 1);
+        `${viewport.name}: dark landing panel must stretch to the authentication column's first grid row`,
+      ).toBeGreaterThanOrEqual(metrics.formWrap.height - 1);
     }
     if (viewport.width > 650 && viewport.width <= 1440) {
       expect(metrics.illustrationDisplay, `${viewport.name}: illustration must not collide with tablet/laptop headline`).toBe("none");
@@ -123,13 +123,22 @@ test("sign-in and create-account mode remain reachable", async ({ page }) => {
 test("site-wide legal links and contact fallback remain explicit", async ({ page }) => {
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   const landingFooter = page.locator(".login-footer-links");
-  await expect(landingFooter.locator("a")).toHaveCount(6);
-  await expect(landingFooter.locator("a").nth(0)).toHaveText("Features");
-  await expect(landingFooter.locator("a").nth(1)).toHaveText("About");
-  await expect(landingFooter.locator("a").nth(2)).toHaveText("Help");
-  await expect(landingFooter.locator("a").nth(3)).toHaveText("Privacy");
-  await expect(landingFooter.locator("a").nth(4)).toHaveText("Terms");
-  await expect(landingFooter.locator("a").nth(5)).toHaveText("Contact");
+  await expect(landingFooter.locator("a")).toHaveCount(8);
+  const expectedLandingLinks = [
+    ["./features.html", "Features"],
+    ["./for-universities.html", "For Universities"],
+    ["./about.html", "About"],
+    ["./trust-safety.html", "Trust & Safety"],
+    ["./help.html", "Help"],
+    ["./privacy.html", "Privacy"],
+    ["./terms.html", "Terms"],
+    ["./contact.html", "Contact"],
+  ];
+  for (const [href, label] of expectedLandingLinks) {
+    const link = landingFooter.locator(`a[href="${href}"]`);
+    await expect(link).toHaveCount(1);
+    await expect(link).toHaveText(label);
+  }
   const appFooter = page.locator(".app-legal-footer");
   await expect(appFooter.locator('a[href="./privacy.html"]')).toHaveCount(1);
   await expect(appFooter.locator('a[href="./terms.html"]')).toHaveCount(1);
@@ -173,6 +182,8 @@ test("site-wide legal links and contact fallback remain explicit", async ({ page
 
 test("public privacy, terms and contact pages render without mobile overflow", async ({ page }) => {
   const pages = [
+    { route: "/for-universities.html", title: /For Universities/, heading: /A more connected digital campus, built around people/ },
+    { route: "/trust-safety.html", title: /Trust & Safety/, heading: /Trust, Privacy & Responsible Campus Technology/ },
     { route: "/privacy.html", title: /Privacy Policy/, heading: "Privacy Policy" },
     { route: "/terms.html", title: /Terms of Use/, heading: "Terms of Use" },
     { route: "/contact.html", title: /Contact/, heading: "Contact CampusShield AI" },
@@ -215,12 +226,14 @@ test("language selector translates the access experience and remembers the choic
   await expect(page.locator(".login-public-nav a").nth(0)).toHaveText("Ilé");
   await expect(page.locator("#auth-title")).toHaveText("Ẹ kú àbọ̀");
   await expect(page.locator("#auth-tabs [data-auth-mode='signup']")).toHaveText("Ṣẹ̀dá àkọọ́lẹ̀");
-  await expect(page.locator(".login-footer-links a").nth(0)).toHaveText("Àwọn Ẹ̀ya");
-  await expect(page.locator(".login-footer-links a").nth(1)).toHaveText("Nípa wa");
-  await expect(page.locator(".login-footer-links a").nth(2)).toHaveText("Ìrànlọ́wọ́");
-  await expect(page.locator(".login-footer-links a").nth(3)).toHaveText("Ìpamọ́");
-  await expect(page.locator(".login-footer-links a").nth(4)).toHaveText("Àwọn Òfin Lílò");
-  await expect(page.locator(".login-footer-links a").nth(5)).toHaveText("Kàn sí wa");
+  await expect(page.locator(".login-footer-links a[href='./features.html']")).toHaveText("Àwọn Ẹ̀ya");
+  await expect(page.locator(".login-footer-links a[href='./for-universities.html']")).toHaveText("Fún àwọn Yunifásítì");
+  await expect(page.locator(".login-footer-links a[href='./about.html']")).toHaveText("Nípa wa");
+  await expect(page.locator(".login-footer-links a[href='./trust-safety.html']")).toHaveText("Ìgbẹ́kẹ̀lé àti Ààbò");
+  await expect(page.locator(".login-footer-links a[href='./help.html']")).toHaveText("Ìrànlọ́wọ́");
+  await expect(page.locator(".login-footer-links a[href='./privacy.html']")).toHaveText("Ìpamọ́");
+  await expect(page.locator(".login-footer-links a[href='./terms.html']")).toHaveText("Àwọn Òfin Lílò");
+  await expect(page.locator(".login-footer-links a[href='./contact.html']")).toHaveText("Kàn sí wa");
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator("#campusshield-language")).toHaveValue("yo");

@@ -132,12 +132,21 @@ assert.ok(html.includes('<option value="ig" lang="ig">Igbo</option>'), "language
 assert.ok(htmlMarkup.includes('<script src="./campusshield-i18n.js" defer></script>'), "language bundle is deferred in dependency order");
 assert.doesNotThrow(() => new Function(i18nScript), "multilingual UI bundle parses");
 assert.ok(!i18nScript.includes('[".login-brand-copy small","brandTagline"]'), "brand tagline remains fixed when the language changes");
-assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(1)","features"]'), "landing footer first link remains Features");
-assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(2)","about"]'), "landing footer second link remains About");
-assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(3)","help"]'), "landing footer third link remains Help");
-assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(4)","privacy"]'), "landing footer fourth link remains Privacy");
-assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(5)","terms"]'), "landing footer fifth link remains Terms");
-assert.ok(i18nScript.includes('[".login-footer-links a:nth-child(6)","contact"]'), "landing footer sixth link remains Contact");
+for (const [href, key, label] of [
+  ["./features.html", "features", "Features"],
+  ["./for-universities.html", "universities", "For Universities"],
+  ["./about.html", "about", "About"],
+  ["./trust-safety.html", "trustSafetyNav", "Trust & Safety"],
+  ["./help.html", "help", "Help"],
+  ["./privacy.html", "privacy", "Privacy"],
+  ["./terms.html", "terms", "Terms"],
+  ["./contact.html", "contact", "Contact"],
+]) {
+  assert.ok(
+    i18nScript.includes(`[".login-footer-links a[href='${href}']","${key}"]`),
+    `landing footer link for ${label} is translated by destination`,
+  );
+}
 assert.ok(i18nScript.includes('localStorage.setItem("campusshield_language", locale)'), "language choice is saved on this device");
 assert.match(i18nScript, /"fr"/, "French is available");
 assert.match(i18nScript, /"es"/, "Spanish is available");

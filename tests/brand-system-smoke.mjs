@@ -16,7 +16,7 @@ const appScript = read("campusshield-app.js");
 const dashboardUpgradeJs = read("campus-dashboard-upgrade.js");
 const dashboardUpgradeCss = read("campus-dashboard-upgrade.css");
 const pages = [
-  "index.html","about.html","features.html","help.html","privacy.html",
+  "index.html","about.html","features.html","for-universities.html","trust-safety.html","help.html","privacy.html",
   "terms.html","contact.html","offline.html","student-life-preview.html"
 ];
 
