@@ -173,6 +173,7 @@ test("site-wide legal links and contact fallback remain explicit", async ({ page
 
 test("public privacy, terms and contact pages render without mobile overflow", async ({ page }) => {
   const pages = [
+    { route: "/for-universities.html", title: /For Universities/, heading: /A more connected digital campus, built around people/ },
     { route: "/privacy.html", title: /Privacy Policy/, heading: "Privacy Policy" },
     { route: "/terms.html", title: /Terms of Use/, heading: "Terms of Use" },
     { route: "/contact.html", title: /Contact/, heading: "Contact CampusShield AI" },
