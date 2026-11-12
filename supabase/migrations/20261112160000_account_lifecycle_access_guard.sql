@@ -105,7 +105,7 @@ begin
 
   perform cron.schedule(
     'campusshield-account-lifecycle-purge',
-    '*/15 * * * *',
+    '* * * * *',
     'select * from private.purge_expired_account_lifecycle();'
   );
 end;
