@@ -2353,6 +2353,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <script src="./campusshield-launch-intro.js?v=20261112-2" defer></script>
 
   <link rel="stylesheet" href="./campusshield-account-lifecycle.css?v=20261112-1">
+<link rel="stylesheet" href="./campus-chat-room-upgrade.css">
 </head>
 <body>
 
@@ -3559,6 +3560,23 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
       </div>
       <span class="campus-chat-live-tag"><span class="status-dot" aria-hidden="true"></span>Live chat</span>
     </div>
+    <div class="campus-chat-toolbar">
+      <div class="campus-chat-channel-context">
+        <strong id="campus-chat-active-channel">General</strong>
+        <span id="campus-chat-channel-description">Campus-wide questions, updates and conversations.</span>
+      </div>
+      <div class="campus-chat-toolbar-actions">
+        <label class="campus-chat-search" for="campus-chat-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 4.5 4.5"/></svg>
+          <input id="campus-chat-search" type="search" maxlength="100" placeholder="Search recent messages…" autocomplete="off">
+        </label>
+        <span id="campus-chat-search-status" class="campus-chat-search-status" aria-live="polite">Latest messages</span>
+        <button class="campus-chat-refresh" id="campus-chat-refresh" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 11.9-3"/></svg>
+          Refresh
+        </button>
+      </div>
+    </div>
     <div class="campus-chat-channel-tabs" role="tablist" aria-label="Campus chat topics">
       <button type="button" class="active" role="tab" aria-selected="true" data-chat-channel="general">General</button>
       <button type="button" role="tab" aria-selected="false" data-chat-channel="study_help">Study Help</button>
@@ -3566,8 +3584,11 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
       <button type="button" role="tab" aria-selected="false" data-chat-channel="marketplace">Marketplace</button>
     </div>
     <p id="campus-chat-status" class="message" role="status" aria-live="polite">Loading your university chat…</p>
-    <div id="campus-chat-messages" class="campus-chat-messages" role="log" aria-label="Campus chat messages" aria-live="polite" aria-relevant="additions text">
-      <div class="campus-chat-empty"><strong>Welcome to Campus Chat</strong><p>Choose a topic and start a helpful conversation with your campus community.</p></div>
+    <div class="campus-chat-feed-wrap">
+      <div id="campus-chat-messages" class="campus-chat-messages" role="log" aria-label="Campus chat messages" aria-live="polite" aria-relevant="additions text">
+        <div class="campus-chat-empty"><strong>Welcome to Campus Chat</strong><p>Choose a topic and start a helpful conversation with your campus community.</p></div>
+      </div>
+      <button class="campus-chat-jump-latest" id="campus-chat-jump-latest" type="button" hidden>↓ New messages</button>
     </div>
     <form id="campus-chat-form" class="campus-chat-compose">
       <label class="visually-hidden" for="campus-chat-input">Write a campus chat message</label>
@@ -3578,7 +3599,11 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
         <span class="campus-voice-status" id="campus-chat-voice-status" role="status" aria-live="polite">Optional voice note · up to 90 seconds</span>
         <audio class="campus-voice-preview" id="campus-chat-voice-preview" controls preload="metadata" hidden></audio>
       </div>
-      <div class="campus-chat-compose-footer"><span>Be respectful. Messages are limited to 1,200 characters.</span><button class="btn" type="submit" id="campus-chat-send" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-7 18-3-7-8-3Z"/><path d="M11 14 21 3"/></svg>Send message</button></div>
+      <div class="campus-chat-compose-footer">
+        <span class="campus-chat-compose-guidance">Enter to send · Shift + Enter for a new line</span>
+        <span id="campus-chat-char-count" class="campus-chat-char-count" aria-live="polite">0 / 1,200</span>
+        <button class="btn" type="submit" id="campus-chat-send" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-7 18-3-7-8-3Z"/><path d="M11 14 21 3"/></svg>Send message</button>
+      </div>
     </form>
   </section>
 
@@ -5346,6 +5371,7 @@ html[data-theme="dark"] .auth-captcha-message{color:#b8d1c4}
 <script src="./campusshield-app.js" defer></script>
 <script src="./campus-live-classroom.js" defer></script>
 <script src="./campus-voice-notes.js" defer></script>
+<script src="./campus-chat-room-enhancements.js" defer></script>
 <script src="./campus-ideas-impact.js" defer></script>
 <script src="./campusshield-guide.js" defer></script>
 <script>
