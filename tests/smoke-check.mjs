@@ -3,6 +3,8 @@ import { readFile } from "node:fs/promises";
 
 const htmlMarkup = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const appScript = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
+const launchIntroScript = await readFile(new URL("../campusshield-launch-intro.js", import.meta.url), "utf8");
+const launchIntroCss = await readFile(new URL("../campusshield-launch-intro.css", import.meta.url), "utf8");
 const html = htmlMarkup + "\n" + appScript;
 const privateMessagesPolishCss = await readFile(new URL("../campus-private-messages-polish.css", import.meta.url), "utf8");
 const privateMessagesPolishJs = await readFile(new URL("../campus-private-messages-polish.js", import.meta.url), "utf8");
@@ -1215,3 +1217,13 @@ for (const api of [
 assert.match(appScript, /data-campus-dm-filter/,
   "the existing All, Requests and Accepted filters remain handled by the original app");
 console.log("PASS Private Messages responsive workspace, accessible mobile navigation, preserved backend and voice/report controls");
+
+
+// First-launch intro overlay must keep the login page from intercepting overlay actions.
+assert.match(launchIntroScript, /document\.body\.classList\.add\("cs-launch-active"\)/,
+  "first-launch overlay marks the background as temporarily inactive");
+assert.match(launchIntroScript, /document\.body\.classList\.remove\("cs-launch-active"\)/,
+  "first-launch overlay restores background interaction when closed");
+assert.match(launchIntroCss, /body\.cs-launch-active\s*>\s*\*:not\(#campusshield-launch-intro\)\s*\{[^}]*pointer-events:\s*none\s*!important/s,
+  "first-launch overlay blocks pointer events on background controls");
+console.log("PASS first-launch overlay isolates its controls and restores the underlying login page");
