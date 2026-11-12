@@ -5,9 +5,9 @@ const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const script = await readFile(new URL("../campusshield-launch-intro.js", import.meta.url), "utf8");
 const styles = await readFile(new URL("../campusshield-launch-intro.css", import.meta.url), "utf8");
 
-assert.ok(html.includes('href="./campusshield-launch-intro.css"'), "launch intro stylesheet is linked");
-assert.ok(html.includes('src="./campusshield-launch-intro.js"'), "launch intro script is linked");
-assert.ok(html.indexOf('src="./campusshield-launch-intro.js"') < html.indexOf("</head>"), "intro bootstrap runs before app scripts");
+assert.ok(html.includes('href="./campusshield-launch-intro.css?v=20261112-2"'), "launch intro stylesheet is linked");
+assert.ok(html.includes('src="./campusshield-launch-intro.js?v=20261112-2"'), "launch intro script is linked");
+assert.ok(html.indexOf('src="./campusshield-launch-intro.js?v=20261112-2"') < html.indexOf("</head>"), "intro bootstrap runs before app scripts");
 assert.ok(html.includes("</body>"), "app document remains complete");
 assert.ok(script.includes('storage.getItem(STORAGE_KEY)'), "launch history is persisted");
 assert.ok(script.includes("function localDateKey(date)"), "weekly schedule uses a device-local calendar date");
