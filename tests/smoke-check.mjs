@@ -1167,9 +1167,9 @@ console.log("PASS Staging-only Turnstile CAPTCHA integration for sign-in, sign-u
 
 
 // Private Messages workspace polish — preserve live messaging handlers and improve responsive navigation.
-assert.match(htmlMarkup, /<link rel="stylesheet" href="\.\/campus-private-messages-polish\.css\?v=20261112-2">/,
+assert.match(htmlMarkup, /<link rel="stylesheet" href="\.\/campus-private-messages-polish\.css\?v=20261112-3">/,
   "Private Messages workspace polish stylesheet is loaded");
-assert.match(htmlMarkup, /<script src="\.\/campus-private-messages-polish\.js\?v=20261112-2" defer><\/script>/,
+assert.match(htmlMarkup, /<script src="\.\/campus-private-messages-polish\.js\?v=20261112-3" defer><\/script>/,
   "Private Messages workspace behavior loads as a deferred page enhancement");
 assert.match(htmlMarkup, /id="campus-dm-new-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="campus-dm-new-body"/,
   "new-message form toggle exposes its expanded state and controlled panel");
@@ -1193,8 +1193,14 @@ assert.match(privateMessagesPolishCss, /@media\s*\(max-width:\s*900px\)/,
   "tablet layout switches to a single-pane inbox/conversation flow");
 assert.match(privateMessagesPolishCss, /@media\s*\(max-width:\s*650px\)/,
   "phone layout uses a full-screen conversation surface");
-assert.match(privateMessagesPolishCss, /width:\s*100vw;[\s\S]*?transform:\s*translateX\(-50%\)/,
-  "selected phone conversation spans the viewport even inside padded content");
+assert.match(privateMessagesPolishCss, /width:\s*100vw;[\s\S]*?height:\s*100dvh;[\s\S]*?inset:\s*0;/,
+  "selected phone conversation spans the full viewport");
+assert.match(privateMessagesPolishCss, /campus-dm-phone-thread-open[\s\S]*?transform:\s*none\s*!important/,
+  "phone full-screen mode removes the page entrance transform");
+assert.match(privateMessagesPolishCss, /cs-dm-phone-thread-open[\s\S]*?overflow:\s*hidden/,
+  "phone full-screen mode locks background scrolling");
+assert.match(privateMessagesPolishJs, /cs-dm-phone-thread-open/,
+  "phone full-screen state is restored and cleared by the layout controller");
 assert.match(privateMessagesPolishCss, /prefers-reduced-motion:\s*reduce/,
   "the new page styling respects reduced-motion preferences");
 assert.match(privateMessagesPolishCss, /body\.dark|data-theme="dark"/,
