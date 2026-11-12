@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="./campus-map-passport.css">
 <link rel="stylesheet" href="./campus-dashboard-insights.css">
 <link rel="stylesheet" href="./campus-live-classroom.css">
+<link rel="stylesheet" href="./institutional-billing-experience.css?v=20261112-1">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <title>CampusShield AI | Intelligent Campus Safety</title>
@@ -4429,14 +4430,181 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     </div>
     <p class="muted" id="shieldmind-plan-usage-note">Each plan includes a fixed AI request allowance for its 30-day term, shared by ShieldMind chat, study-image explanations, AI-generated exam practice and AI marking. Per-minute and daily caps are additional anti-abuse limits. Each AI request consumes one allowance; actual provider cost varies with input/output tokens and images. Study images have a separate monthly upload limit. Plans activate only after server-side payment verification, last 30 days and renew manually.</p>
   </section>
-  <section class="panel" id="institutional-billing-panel" hidden>
-    <div class="panel-heading"><div><h2>University subscriptions</h2><p>Institution-level controls for verified campus teams. Student essential safety access remains free.</p></div></div>
-    <div class="shieldmind-prices">
-      <article class="shieldmind-price"><strong>Starter · University</strong><b>₦100,000</b><span>per month</span><small>₦1,000,000 yearly · Core campus verification, notices, helpdesk and safety dashboard</small><button class="btn secondary" type="button" data-billing-plan="university-starter" data-billing-kind="institution">Request institutional billing</button></article>
-      <article class="shieldmind-price premium"><strong>Professional · University</strong><b>₦250,000</b><span>per month</span><small>₦2,500,000 yearly · Expanded analytics, moderation and campus administration</small><button class="btn" type="button" data-billing-plan="university-professional" data-billing-kind="institution">Request institutional billing</button></article>
-      <article class="shieldmind-price premium"><strong>Enterprise</strong><b>From ₦500,000</b><span>per month</span><small>From ₦5,000,000 yearly · Multi-campus controls, integrations and support</small><button class="btn" type="button" data-billing-plan="university-enterprise" data-billing-kind="institution">Request institutional billing</button></article>
+  <section class="panel institutional-billing-shell" id="institutional-billing-panel" hidden>
+    <div class="institutional-hero">
+      <div class="institutional-hero-copy">
+        <span class="institutional-eyebrow">CAMPUSSHIELD AI · FOR UNIVERSITIES</span>
+        <h2>One coordinated workspace for a better-managed campus</h2>
+        <p>Give authorised university teams clearer visibility of campus safety activity, trusted communication and student-support requests — while keeping essential student safety access free.</p>
+        <div class="institutional-promise"><strong>What the institution is paying for</strong><span>Campus operations tools, verified institutional workflows, administration and the level of analytics or campus coverage included in the selected package.</span></div>
+      </div>
+      <div class="institutional-hero-aside" aria-label="Institutional subscription highlights">
+        <span class="institutional-aside-label">BUILT AROUND CAMPUS OPERATIONS</span>
+        <div><b>01</b><span>See and coordinate</span></div>
+        <div><b>02</b><span>Communicate with confidence</span></div>
+        <div><b>03</b><span>Review and improve</span></div>
+      </div>
     </div>
-    <p class="muted">University subscriptions require an authorized institutional representative. Invoice or bank-transfer payments must be manually reconciled by authorized staff; they do not automatically unlock a university.</p>
+
+    <div class="institutional-section-heading">
+      <span class="institutional-eyebrow">WHY UNIVERSITIES NEED IT</span>
+      <h3>Move from scattered updates to coordinated campus operations</h3>
+      <p>Campus information is often spread across phone calls, paper records, group chats and separate offices. CampusShield gives authorised teams a shared digital place to manage selected campus workflows and follow up more consistently.</p>
+    </div>
+    <div class="institutional-outcome-grid">
+      <article class="institutional-outcome-card">
+        <span class="institutional-outcome-icon" aria-hidden="true">01</span>
+        <h4>Better safety visibility</h4>
+        <p>Give authorised security and university staff a structured view of submitted incident reports, their status and the follow-up recorded in the platform.</p>
+        <small>Helps teams coordinate; it does not replace campus security or emergency services.</small>
+      </article>
+      <article class="institutional-outcome-card">
+        <span class="institutional-outcome-icon" aria-hidden="true">02</span>
+        <h4>Trusted campus communication</h4>
+        <p>Publish verified notices and important campus updates in a recognisable place, reducing dependence on scattered or unverified messages.</p>
+        <small>Official publishing remains limited to authorised roles.</small>
+      </article>
+      <article class="institutional-outcome-card">
+        <span class="institutional-outcome-icon" aria-hidden="true">03</span>
+        <h4>More organised student support</h4>
+        <p>Give students a clearer route to submit Helpdesk requests and find relevant university service information, with more structured follow-up by the responsible team.</p>
+        <small>The platform helps route requests; it does not replace the service departments.</small>
+      </article>
+      <article class="institutional-outcome-card">
+        <span class="institutional-outcome-icon" aria-hidden="true">04</span>
+        <h4>Stronger campus governance</h4>
+        <p>Support institution verification, authorised staff roles and approval workflows so campus tools are managed by the right people.</p>
+        <small>Access is based on the user's role and approved campus permissions.</small>
+      </article>
+      <article class="institutional-outcome-card">
+        <span class="institutional-outcome-icon" aria-hidden="true">05</span>
+        <h4>Evidence for better planning</h4>
+        <p>Use available operational dashboards and analytics to review patterns, spot recurring concerns and guide internal discussions about where attention may be needed.</p>
+        <small>Insights support decisions; they do not guarantee outcomes or replace professional judgement.</small>
+      </article>
+      <article class="institutional-outcome-card">
+        <span class="institutional-outcome-icon" aria-hidden="true">06</span>
+        <h4>A more connected student experience</h4>
+        <p>Bring campus notices, communities, events, services, Lost &amp; Found and student-life tools into one connected platform experience.</p>
+        <small>Student-facing features remain subject to account permissions and each module's availability.</small>
+      </article>
+    </div>
+
+    <div class="institutional-section-heading institutional-packages-heading">
+      <span class="institutional-eyebrow">CHOOSE YOUR LEVEL OF COVERAGE</span>
+      <h3>What your university receives in each package</h3>
+      <p>All institutional plans are for the university or institution, not individual student accounts. The final scope is confirmed during institutional review and onboarding.</p>
+    </div>
+    <div class="shieldmind-prices institutional-plan-grid">
+      <article class="shieldmind-price institutional-plan-card">
+        <span class="institutional-plan-tag">CAMPUS FOUNDATION</span>
+        <strong>Starter · University</strong>
+        <b>₦100,000</b>
+        <span>per month</span>
+        <small>₦1,000,000 yearly · A practical starting package for an institution organising its core campus workflows.</small>
+        <ul class="institutional-includes">
+          <li>Verified institution profile and campus affiliation workflows</li>
+          <li>Verified campus notices and official updates</li>
+          <li>Institutional Helpdesk request intake</li>
+          <li>Core campus safety dashboard and incident-status visibility</li>
+          <li>Authorised institutional access and standard onboarding guidance</li>
+        </ul>
+        <p class="institutional-plan-outcome"><b>Best for:</b> institutions starting with core verification, communication and safety coordination.</p>
+        <button class="btn secondary" type="button" data-billing-plan="university-starter" data-billing-kind="institution">Request institutional billing</button>
+      </article>
+
+      <article class="shieldmind-price premium institutional-plan-card institutional-plan-featured">
+        <span class="institutional-plan-tag">EXPANDED OPERATIONS</span>
+        <strong>Professional · University</strong>
+        <b>₦250,000</b>
+        <span>per month</span>
+        <small>₦2,500,000 yearly · A broader operating package for institutions coordinating more teams and campus activity.</small>
+        <p class="institutional-inherits">Everything in Starter, plus:</p>
+        <ul class="institutional-includes">
+          <li>Expanded analytics and operational trend views</li>
+          <li>Broader campus administration and team workflows</li>
+          <li>Expanded moderation and content oversight tools</li>
+          <li>More structured review of campus notices and service activity</li>
+          <li>Additional administrative configuration during onboarding</li>
+        </ul>
+        <p class="institutional-plan-outcome"><b>Best for:</b> institutions that need wider administration, moderation and operational insight.</p>
+        <button class="btn" type="button" data-billing-plan="university-professional" data-billing-kind="institution">Request institutional billing</button>
+      </article>
+
+      <article class="shieldmind-price premium institutional-plan-card">
+        <span class="institutional-plan-tag">MULTI-CAMPUS &amp; CUSTOM SCOPE</span>
+        <strong>Enterprise</strong>
+        <b>From ₦500,000</b>
+        <span>per month</span>
+        <small>From ₦5,000,000 yearly · Custom institutional coverage shaped around campus structure and requirements.</small>
+        <p class="institutional-inherits">Everything in Professional, plus:</p>
+        <ul class="institutional-includes">
+          <li>Multi-campus administration and central oversight</li>
+          <li>Campus-level roles and delegated administration, as agreed</li>
+          <li>Integration planning and supported custom configuration</li>
+          <li>Rollout planning for multiple campuses or institutional units</li>
+          <li>Tailored reporting and support arrangements defined in the agreement</li>
+        </ul>
+        <p class="institutional-plan-outcome"><b>Best for:</b> universities and groups with multiple campuses or specific integration needs.</p>
+        <button class="btn" type="button" data-billing-plan="university-enterprise" data-billing-kind="institution">Request an Enterprise consultation</button>
+      </article>
+    </div>
+    <p class="institutional-scope-note"><strong>Scope and availability:</strong> package descriptions are the proposed service scope. Specific modules, campus coverage, integrations, onboarding deliverables and support commitments are confirmed in writing before payment and activation. Enterprise integrations or custom work are not assumed to be available until technically reviewed and agreed.</p>
+
+    <div class="institutional-section-heading">
+      <span class="institutional-eyebrow">HOW IT WORKS</span>
+      <h3>From institutional request to an active campus workspace</h3>
+      <p>The university stays in control of who represents it, what is included and when the service is activated.</p>
+    </div>
+    <ol class="institutional-onboarding-steps">
+      <li><b>1</b><div><strong>Submit an official request</strong><p>An authorised representative provides the institution name, official contact details, selected package and preferred billing period.</p></div></li>
+      <li><b>2</b><div><strong>Verify the institution and agree the scope</strong><p>CampusShield reviews the request, confirms the representative's authority and clarifies campuses, modules, access roles and any custom requirements.</p></div></li>
+      <li><b>3</b><div><strong>Receive an invoice and arrange payment</strong><p>The institution receives the agreed billing details. Invoice or bank-transfer payments are manually reconciled by authorised CampusShield staff.</p></div></li>
+      <li><b>4</b><div><strong>Provision and onboard authorised teams</strong><p>After payment and approval are confirmed, the agreed institutional access is configured and relevant staff receive onboarding guidance.</p></div></li>
+      <li><b>5</b><div><strong>Use, review and improve</strong><p>Teams use the tools within their permissions, review activity and identify operational improvements over the subscription period.</p></div></li>
+    </ol>
+
+    <div class="institutional-section-heading">
+      <span class="institutional-eyebrow">THE VALUE TO YOUR INSTITUTION</span>
+      <h3>What the university gains</h3>
+    </div>
+    <div class="institutional-value-list">
+      <div><strong>More coordinated teams</strong><span>Relevant campus teams can work from clearer workflows rather than relying only on disconnected channels.</span></div>
+      <div><strong>More consistent communication</strong><span>Students have a recognised place to find verified institutional updates.</span></div>
+      <div><strong>Clearer follow-up</strong><span>Structured requests and incident statuses help responsible teams track what still needs attention.</span></div>
+      <div><strong>Better operational insight</strong><span>Available dashboards and analytics can support internal reviews and more informed resource discussions.</span></div>
+      <div><strong>Stronger student engagement</strong><span>Connected student-life modules can make campus information, communities and services easier to discover.</span></div>
+      <div><strong>Scalable administration</strong><span>Institutions can begin with core workflows and request wider or multi-campus scope as their needs grow.</span></div>
+    </div>
+
+    <div class="institutional-boundary-grid">
+      <article>
+        <span class="institutional-eyebrow">WHAT REMAINS FREE</span>
+        <h4>Essential student safety access</h4>
+        <p>Core student safety access, including incident reporting and emergency guidance, remains free. A university subscription is not a fee students must pay to access essential safety reporting.</p>
+      </article>
+      <article>
+        <span class="institutional-eyebrow">SEPARATE SERVICE</span>
+        <h4>Individual ShieldMind AI plans</h4>
+        <p>ShieldMind AI is a separate paid service for individual users. A university institutional plan does not automatically pay for every student's personal ShieldMind plan unless a separate institutional licence is agreed in writing.</p>
+      </article>
+      <article>
+        <span class="institutional-eyebrow">IMPORTANT LIMIT</span>
+        <h4>Not an emergency-response provider</h4>
+        <p>CampusShield helps people submit information and helps authorised teams coordinate follow-up. It does not automatically dispatch security, police, ambulance or other emergency services, and it does not replace trained campus personnel.</p>
+      </article>
+    </div>
+
+    <div class="institutional-faq">
+      <h3>Institutional subscription questions</h3>
+      <details><summary>Does the university pay for every student account?</summary><p>No. The institutional subscription covers the agreed university-level tools and administration. Essential student safety access remains free. Personal ShieldMind AI access is separate unless a university-wide AI licence is negotiated.</p></details>
+      <details><summary>Does submitting this form activate the plan?</summary><p>No. The request starts an institutional review. Access is activated only after the institution is verified, the scope is agreed, payment is confirmed and authorised staff complete provisioning.</p></details>
+      <details><summary>Can we start with one package and expand later?</summary><p>Yes. The university can request a package review when its campus coverage or operational needs change. Any upgrade, additional campus or custom service must be agreed and priced before it is activated.</p></details>
+      <details><summary>Does CampusShield replace our security office or emergency numbers?</summary><p>No. CampusShield is a coordination and information platform. The university's trained personnel, official emergency procedures and emergency service contacts remain essential.</p></details>
+    </div>
+
+    <p class="muted institutional-billing-footnote">University subscriptions require an authorised institutional representative. Prices shown are the published starting packages; final Enterprise pricing and any custom scope are confirmed in a written quotation. Invoice or bank-transfer requests are manually reconciled and do not automatically unlock an institution.</p>
+
     <form id="institutional-billing-form" hidden>
       <h3>Request institutional billing</h3>
       <p class="muted">This submits a request for review only. It does not charge your institution or activate any premium access.</p>
