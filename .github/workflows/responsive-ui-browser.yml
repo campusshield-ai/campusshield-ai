@@ -30,7 +30,6 @@ on:
       - "help.html"
       - "about.html"
       - "features.html"
-      - "for-universities.html"
       - "help.html"
       - "playwright.config.cjs"
       - "tests/browser/**"
