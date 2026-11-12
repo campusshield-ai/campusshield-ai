@@ -5,6 +5,7 @@ const pages = [
     ["Features", "/features.html"], ["About", "/about.html"], ["Help", "/help.html"]
   ]},
   { name: "Features", path: "/features.html" },
+  { name: "Interactive Tour", path: "/platform-tour.html" },
   { name: "For Universities", path: "/for-universities.html" },
   { name: "Trust & Safety", path: "/trust-safety.html" },
   { name: "About", path: "/about.html" },
@@ -58,7 +59,7 @@ for (const width of widths) {
 
 test("homepage public navigation links open their intended pages", async ({ page }) => {
   await page.goto("/index.html");
-  for (const [label, path] of [["Features", "/features.html"], ["For Universities", "/for-universities.html"], ["About", "/about.html"], ["Trust & Safety", "/trust-safety.html"], ["Help", "/help.html"]]) {
+  for (const [label, path] of [["Features", "/features.html"], ["Interactive Tour", "/platform-tour.html"], ["For Universities", "/for-universities.html"], ["About", "/about.html"], ["Trust & Safety", "/trust-safety.html"], ["Help", "/help.html"]]) {
     await page.goto("/index.html");
     await page.getByRole("navigation", { name: "Public navigation" }).getByRole("link", { name: label }).click();
     await expect(page).toHaveURL(new RegExp(path.replace(".", "\\.")));
