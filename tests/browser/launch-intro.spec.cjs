@@ -121,6 +121,12 @@ test("legacy completion records migrate without replaying on the same Monday", a
 });
 
 test("reduced motion uses a static intro and password recovery bypasses it", async ({ page }) => {
+  // Keep the reduced-motion intro on screen while the test inspects and
+  // activates Skip; real-time timers otherwise remove the short static card
+  // during slower CI browser runs.
+  const fixedTime = new Date("2026-11-12T09:00:00");
+  await page.clock.install({ time: fixedTime });
+  await page.clock.pauseAt(fixedTime);
   await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
   await page.evaluate((key) => localStorage.removeItem(key), STORAGE_KEY);
   await page.emulateMedia({ reducedMotion: "reduce" });
