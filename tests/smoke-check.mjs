@@ -1215,8 +1215,12 @@ assert.match(privateMessagesPolishJs, /aria-expanded/,
   "New message expansion is kept accessible to assistive technology");
 assert.match(privateMessagesPolishJs, /is-thread-open/,
   "mobile conversation navigation has a distinct open-thread state");
-assert.match(privateMessagesPolishJs, /page\.classList\.contains\("active"\)[\s\S]*?showThread\(\)/,
+assert.match(privateMessagesPolishJs, /pageWasActive\s*=\s*page\.classList\.contains\("active"\)/,
+  "the layout controller tracks route activation independently of its own mobile classes");
+assert.match(privateMessagesPolishJs, /pageIsActive\s*&&\s*!pageWasActive/,
   "returning to Private Messages restores the selected thread on narrow screens");
+assert.match(privateMessagesPolishJs, /!pageIsActive\s*&&\s*pageWasActive/,
+  "leaving Private Messages clears fullscreen thread state only on route exit");
 assert.doesNotMatch(privateMessagesPolishJs, /CampusShieldBackend|supabase|sendCampusDirectMessage/,
   "the layout enhancement does not replace or bypass existing backend handlers");
 for (const api of [
