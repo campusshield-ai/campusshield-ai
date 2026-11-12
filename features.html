@@ -44,6 +44,20 @@
 </style>
   <link rel="stylesheet" href="./campusshield-brand-system.css">
   <link rel="stylesheet" href="./campusshield-public-pages.css">
+  <style>
+    .feature-directory{margin-top:24px}
+    .feature-directory h2,.feature-audiences h2,.feature-journey h2{margin:7px 0 8px;color:#173325;font-size:clamp(22px,3vw,30px);letter-spacing:-.035em}
+    .feature-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px}
+    .feature-area{scroll-margin-top:18px}
+    .feature-area-number{display:block;margin-bottom:9px;color:#237342;font-size:10px;font-weight:900;letter-spacing:.12em}
+    .feature-area h2{margin:0 0 7px;font-size:17px}
+    .feature-area p{margin:0;color:#53695B;font-size:13px;line-height:1.65}
+    .feature-audiences,.feature-journey{margin-top:30px}
+    .feature-audiences .grid,.feature-journey .grid{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px}
+    .feature-audiences .card h2,.feature-journey .card h2{margin:0 0 7px;font-size:15px}
+    .feature-audiences .card p,.feature-journey .card p{margin:0;color:#53695B;font-size:12px}
+    @media(max-width:680px){.feature-directory-grid,.feature-audiences .grid,.feature-journey .grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body class="public-page public-page--features">
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -55,15 +69,41 @@
     </nav>
     <article>
       <p class="lead">One connected experience for campus safety, trusted access, and student life.</p>
-<div class="grid">
-<section class="card"><h2>Incident reporting</h2><p>Submit campus safety concerns with relevant details so authorized campus personnel can review and follow up according to their access permissions.</p></section>
-<section class="card"><h2>Incident management</h2><p>Support authorized security staff with incident review, status updates, and organized follow-up workflows.</p></section>
-<section class="card"><h2>Risk analysis</h2><p>Review available incident patterns and campus risk information to support awareness and informed planning. Analytics depend on the data available to the institution.</p></section>
-<section class="card"><h2>Identity verification</h2><p>Support institution-specific identity checks and administrator review for protected student features. Identity documents should be submitted only through the approved private workflow.</p></section>
-<section class="card"><h2>Campus community and opportunities</h2><p>Where enabled, discover campus groups, events, notices, internships, scholarships, jobs, and other student opportunities.</p></section>
-<section class="card"><h2>ShieldMind AI and support</h2><p>Where available and configured, the campus assistant can help users navigate campus information and platform resources. AI responses should be checked against official sources.</p></section>
-</div>
-<section class="section feature-extras" aria-labelledby="ecosystem-heading"><p class="eyebrow">BEYOND THE BASICS</p><h2 id="ecosystem-heading">A connected campus experience</h2><p class="lead">CampusShield is designed to bring everyday campus tools closer together. Individual modules may be enabled differently by each institution.</p><div class="grid"><section class="card"><h3>CampusPulse & student communities</h3><p>Discover campus conversations, groups and student-led activity in the spaces enabled for your institution.</p></section><section class="card"><h3>Private Messages</h3><p>Use one-to-one conversations and message requests for more focused communication. Keep sensitive safety details out of ordinary chat.</p></section><section class="card"><h3>CampusMap</h3><p>Explore campus geography and available place information. Building coverage and verified details depend on the map data available for each campus.</p></section><section class="card"><h3>Academics & exam preparation</h3><p>Organise timetable information, course communities and available study resources. Practice material should be checked against your course requirements.</p></section><section class="card"><h3>Campus services & noticeboard</h3><p>Find campus notices, events and service information where the relevant university sources and modules are enabled.</p></section><section class="card"><h3>Ideas, opportunities & discovery</h3><p>Participate in Ideas & Impact and explore opportunities, marketplace listings and Lost & Found when available to your campus.</p></section></div></section>
+<section class="feature-directory" aria-labelledby="feature-directory-heading">
+  <p class="eyebrow">TEN PLATFORM AREAS</p>
+  <h2 id="feature-directory-heading">Explore the CampusShield ecosystem</h2>
+  <p class="lead">A connected set of campus tools for safety workflows, student communities, academic support and everyday services. Availability depends on campus configuration and account permissions.</p>
+  <div class="grid feature-directory-grid">
+    <article class="card feature-area" id="incident-reporting"><span class="feature-area-number">01 · SAFETY</span><h2>Incident reporting</h2><p>Submit a campus safety concern with relevant details so authorised personnel can review it and follow up through the configured incident workflow.</p></article>
+    <article class="card feature-area" id="incident-management"><span class="feature-area-number">02 · SAFETY</span><h2>Incident management</h2><p>Authorised security users can review submitted reports, update available status fields and coordinate follow-up in line with their campus permissions.</p></article>
+    <article class="card feature-area" id="campus-updates"><span class="feature-area-number">03 · CAMPUS UPDATES</span><h2>Campus alerts &amp; noticeboard</h2><p>Find available campus announcements, notices and updates. The platform does not automatically contact or dispatch emergency services.</p></article>
+    <article class="card feature-area" id="campus-map"><span class="feature-area-number">04 · DISCOVERY</span><h2>CampusMap</h2><p>Explore campus geography and available place information. Building coverage, entrances and location accuracy depend on the map data available and verified for each campus.</p></article>
+    <article class="card feature-area" id="risk-analysis"><span class="feature-area-number">05 · INSIGHTS</span><h2>Risk analysis &amp; safety insights</h2><p>Review available incident patterns and campus risk information to support awareness and planning. Insights depend on the quality and completeness of the underlying data.</p></article>
+    <article class="card feature-area" id="campuspulse"><span class="feature-area-number">06 · COMMUNITY</span><h2>CampusPulse &amp; student communities</h2><p>Discover campus conversations, groups and student-led activity in the community spaces enabled for your institution. Keep sensitive personal or safety information out of public posts.</p></article>
+    <article class="card feature-area" id="private-messages"><span class="feature-area-number">07 · COMMUNICATION</span><h2>Private Messages</h2><p>Use one-to-one conversations and message requests for focused communication. Private messages are not a substitute for the incident-reporting or official emergency process.</p></article>
+    <article class="card feature-area" id="shieldmind-ai"><span class="feature-area-number">08 · AI SUPPORT</span><h2>ShieldMind AI</h2><p>Where configured and available, the campus assistant can help users explore campus knowledge, understand academic topics and organise learning. Check important answers against official sources.</p></article>
+    <article class="card feature-area" id="academic-workspace"><span class="feature-area-number">09 · ACADEMICS</span><h2>Academic workspace</h2><p>Bring together timetable information, course communities, study resources and past-question practice where the relevant modules and materials are enabled for your campus.</p></article>
+    <article class="card feature-area" id="student-services"><span class="feature-area-number">10 · SERVICES</span><h2>Student services &amp; discovery</h2><p>Find available events, campus service information, Helpdesk, Lost &amp; Found, marketplace listings and student opportunities in the modules enabled for your institution.</p></article>
+  </div>
+</section>
+<section class="section feature-audiences" aria-labelledby="feature-audiences-heading">
+  <p class="eyebrow">DESIGNED AROUND CAMPUS ROLES</p>
+  <h2 id="feature-audiences-heading">One platform, different campus experiences</h2>
+  <div class="grid">
+    <section class="card"><h2>For students</h2><p>Discover campus communities, available services, academic resources, timetable information and ways to submit campus concerns.</p></section>
+    <section class="card"><h2>For campus security</h2><p>Use authorised incident review, status management and available risk information to support established campus safety procedures.</p></section>
+    <section class="card"><h2>For university administrators</h2><p>Support campus membership review, role-aware access and institutional information through the configuration and permissions assigned to your institution.</p></section>
+  </div>
+</section>
+<section class="section feature-journey" aria-labelledby="feature-journey-heading">
+  <p class="eyebrow">GETTING STARTED</p>
+  <h2 id="feature-journey-heading">How users enter the campus experience</h2>
+  <div class="grid">
+    <section class="card"><h2>1. Create an account</h2><p>Provide account details and select your institution through the CampusShield sign-up flow.</p></section>
+    <section class="card"><h2>2. Complete verification</h2><p>Submit student or staff evidence through the designated private workflow where required. Review is handled by authorised personnel.</p></section>
+    <section class="card"><h2>3. Use enabled tools</h2><p>Access features according to your approved account role, verified campus membership and institution configuration.</p></section>
+  </div>
+</section>
 <p class="muted">Feature availability can vary by institution, account role, and deployment configuration. CampusShield AI is a demonstration platform and does not contact emergency services.</p>
     </article>
     <section class="public-cta"><div class="public-cta-copy"><p class="public-cta-kicker">CAMPUSSHIELD AI</p><h2>Bring more of campus into one connected experience.</h2><p>Explore the platform and see which tools are available to your university.</p></div><a class="button" href="./index.html#login-screen">Explore CampusShield <span aria-hidden="true">↗</span></a></section>
