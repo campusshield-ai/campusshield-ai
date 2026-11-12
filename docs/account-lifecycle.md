@@ -14,7 +14,7 @@ The sign-in page provides the support route. Administrator accounts and trusted 
 
 ## Permanent deletion
 
-Supabase Cron runs the purge once daily at 03:00 UTC. It only selects deactivated accounts whose `purge_after` has elapsed. The purge removes the account's owned Storage objects and the known RESTRICT-linked classroom/audit rows before deleting the Auth user. Cascading foreign keys remove associated account data.
+Supabase Cron runs the purge once every minute. It only selects deactivated accounts whose `purge_after` has elapsed. The purge removes the account's owned Storage objects and the known RESTRICT-linked classroom/audit rows before deleting the Auth user. Cascading foreign keys remove associated account data.
 
 If an unexpected foreign-key dependency blocks deletion, the lifecycle state becomes `purge_blocked`, the error is recorded for administrator review, and the account stays banned. The job retries on subsequent daily runs rather than pretending deletion succeeded.
 
