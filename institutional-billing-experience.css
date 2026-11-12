@@ -1,0 +1,95 @@
+/* CampusShield AI — institutional subscription experience */
+#page-billing .institutional-billing-shell{padding:clamp(17px,2.4vw,30px);border-color:#d8e9dc;background:linear-gradient(180deg,#fff 0%,#fbfefb 100%)}
+#page-billing .institutional-hero{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(230px,.8fr);gap:24px;align-items:stretch;padding:clamp(20px,3vw,34px);border:1px solid #cfe6d4;border-radius:20px;background:radial-gradient(ellipse at 95% 0%,rgba(89,191,113,.18),transparent 40%),linear-gradient(120deg,#f5fbf6,#eaf6ed 70%,#f7fcf7)}
+#page-billing .institutional-eyebrow{display:block;margin:0 0 8px;color:#23814d;font-size:10px;font-weight:900;letter-spacing:.14em}
+#page-billing .institutional-hero h2{max-width:720px;margin:0;color:#123d29;font-size:clamp(25px,3vw,36px);line-height:1.12;letter-spacing:-.045em}
+#page-billing .institutional-hero-copy>p{max-width:740px;margin:13px 0 18px;color:#4f6b5a;font-size:14px;line-height:1.7}
+#page-billing .institutional-promise{display:grid;gap:4px;max-width:680px;padding:13px 15px;border:1px solid #cbe3d0;border-radius:12px;background:rgba(255,255,255,.75)}
+#page-billing .institutional-promise strong{color:#1b5935;font-size:12px}
+#page-billing .institutional-promise span{color:#597263;font-size:12px;line-height:1.55}
+#page-billing .institutional-hero-aside{display:grid;align-content:center;gap:10px;padding:17px;border:1px solid rgba(126,183,140,.4);border-radius:16px;background:rgba(255,255,255,.65)}
+#page-billing .institutional-aside-label{margin-bottom:3px;color:#6c8975;font-size:9px;font-weight:900;letter-spacing:.12em}
+#page-billing .institutional-hero-aside>div{display:flex;align-items:center;gap:11px;color:#234b32;font-size:12px;font-weight:750}
+#page-billing .institutional-hero-aside b{display:grid;width:29px;height:29px;flex:0 0 29px;place-items:center;border-radius:9px;background:#dff2e3;color:#18804a;font-size:10px}
+#page-billing .institutional-section-heading{margin:28px 0 15px}
+#page-billing .institutional-section-heading h3{margin:0 0 6px;color:#173e2b;font-size:clamp(19px,2vw,24px);letter-spacing:-.025em}
+#page-billing .institutional-section-heading>p{max-width:900px;margin:0;color:#63796b;font-size:12px;line-height:1.7}
+#page-billing .institutional-outcome-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#page-billing .institutional-outcome-card{min-width:0;padding:17px;border:1px solid #dcebe0;border-radius:15px;background:linear-gradient(150deg,#fff,#f7fbf7)}
+#page-billing .institutional-outcome-icon{display:grid;width:30px;height:30px;place-items:center;margin-bottom:10px;border-radius:10px;background:#e3f4e7;color:#187b45;font-size:10px;font-weight:900}
+#page-billing .institutional-outcome-card h4{margin:0 0 6px;color:#214832;font-size:13px}
+#page-billing .institutional-outcome-card p{margin:0;color:#5c7163;font-size:11px;line-height:1.65}
+#page-billing .institutional-outcome-card small{display:block;margin-top:9px;color:#85968a;font-size:9px;line-height:1.5}
+#page-billing .institutional-packages-heading{margin-top:34px}
+#page-billing .institutional-plan-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+#page-billing .institutional-plan-card{min-height:0;padding:20px;border-radius:17px}
+#page-billing .institutional-plan-tag{display:inline-flex;align-self:flex-start;margin-bottom:8px;padding:5px 8px;border:1px solid #d5ead9;border-radius:999px;background:#eff9f0;color:#267a45;font-size:8px;font-weight:900;letter-spacing:.08em}
+#page-billing .institutional-plan-card strong{font-size:13px}
+#page-billing .institutional-plan-card b{font-size:29px}
+#page-billing .institutional-plan-card small{min-height:0;margin:8px 0 11px;font-size:10px;line-height:1.65}
+#page-billing .institutional-inherits{margin:4px 0 8px;color:#267348;font-size:10px;font-weight:850}
+#page-billing .institutional-includes{display:grid;gap:8px;margin:6px 0 14px;padding:0;list-style:none}
+#page-billing .institutional-includes li{position:relative;padding-left:19px;color:#486454;font-size:10px;line-height:1.55}
+#page-billing .institutional-includes li:before{position:absolute;left:0;top:0;color:#16824b;content:"✓";font-size:12px;font-weight:900}
+#page-billing .institutional-plan-outcome{margin:auto 0 13px;padding:10px;border-radius:10px;background:#f0f8f1;color:#587161;font-size:10px;line-height:1.55}
+#page-billing .institutional-plan-outcome b{color:#28583a;font-size:10px}
+#page-billing .institutional-plan-card .btn{margin-top:0;min-height:43px;font-size:10px}
+#page-billing .institutional-plan-featured{border-color:#79c491!important;box-shadow:0 12px 30px rgba(21,112,58,.09)}
+#page-billing .institutional-scope-note{margin:13px 0 0;padding:12px 14px;border-left:3px solid #69b77e;border-radius:0 10px 10px 0;background:#f3faf4;color:#63796b;font-size:10px;line-height:1.65}
+#page-billing .institutional-scope-note strong{color:#285b3a}
+#page-billing .institutional-onboarding-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:0;padding:0;list-style:none}
+#page-billing .institutional-onboarding-steps li{display:flex;gap:9px;min-width:0;padding:13px;border:1px solid #deebe1;border-radius:13px;background:#fff}
+#page-billing .institutional-onboarding-steps li>b{display:grid;width:26px;height:26px;flex:0 0 26px;place-items:center;border-radius:50%;background:#e4f4e7;color:#177943;font-size:10px}
+#page-billing .institutional-onboarding-steps strong{display:block;color:#244a32;font-size:10px;line-height:1.45}
+#page-billing .institutional-onboarding-steps p{margin:5px 0 0;color:#6a7f70;font-size:9px;line-height:1.55}
+#page-billing .institutional-value-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px 20px;padding:4px 0}
+#page-billing .institutional-value-list>div{display:grid;gap:3px;padding:12px 0;border-bottom:1px solid #e6efe8}
+#page-billing .institutional-value-list strong{color:#28533a;font-size:11px}
+#page-billing .institutional-value-list span{color:#687d6f;font-size:10px;line-height:1.6}
+#page-billing .institutional-boundary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:23px}
+#page-billing .institutional-boundary-grid article{padding:15px;border:1px solid #deebe1;border-radius:14px;background:#fbfefb}
+#page-billing .institutional-boundary-grid h4{margin:0 0 6px;color:#234a32;font-size:12px}
+#page-billing .institutional-boundary-grid p{margin:0;color:#647a6b;font-size:10px;line-height:1.65}
+#page-billing .institutional-faq{margin-top:25px}
+#page-billing .institutional-faq h3{margin:0 0 9px;color:#1d462e;font-size:17px}
+#page-billing .institutional-faq details{border-top:1px solid #e3eee6;padding:12px 2px}
+#page-billing .institutional-faq summary{color:#315b3e;cursor:pointer;font-size:11px;font-weight:800}
+#page-billing .institutional-faq details p{max-width:900px;margin:8px 0 0;color:#64796a;font-size:10px;line-height:1.7}
+#page-billing .institutional-billing-footnote{margin-top:16px;line-height:1.7}
+#page-billing #institutional-billing-form{margin-top:24px;padding:20px;border:1px solid #d9e9dd;border-radius:15px;background:#f8fcf8}
+#page-billing #institutional-billing-form h3{margin-top:0;color:#1d462e}
+html[data-theme="dark"] #page-billing .institutional-billing-shell{border-color:#315542;background:linear-gradient(180deg,#10261c,#0c2118)}
+html[data-theme="dark"] #page-billing .institutional-hero{border-color:#315f42;background:radial-gradient(ellipse at 95% 0%,rgba(89,191,113,.12),transparent 40%),linear-gradient(120deg,#142e20,#173725 70%,#142d20)}
+html[data-theme="dark"] #page-billing .institutional-hero h2,html[data-theme="dark"] #page-billing .institutional-section-heading h3,html[data-theme="dark"] #page-billing .institutional-faq h3{color:#e5f5e8}
+html[data-theme="dark"] #page-billing .institutional-hero-copy>p,html[data-theme="dark"] #page-billing .institutional-section-heading>p,html[data-theme="dark"] #page-billing .institutional-promise span{color:#b5cdbb}
+html[data-theme="dark"] #page-billing .institutional-promise,html[data-theme="dark"] #page-billing .institutional-hero-aside,html[data-theme="dark"] #page-billing .institutional-outcome-card,html[data-theme="dark"] #page-billing .institutional-onboarding-steps li,html[data-theme="dark"] #page-billing .institutional-boundary-grid article{border-color:#315440;background:#152d20}
+html[data-theme="dark"] #page-billing .institutional-promise strong,html[data-theme="dark"] #page-billing .institutional-hero-aside>div,html[data-theme="dark"] #page-billing .institutional-outcome-card h4,html[data-theme="dark"] #page-billing .institutional-onboarding-steps strong,html[data-theme="dark"] #page-billing .institutional-boundary-grid h4,html[data-theme="dark"] #page-billing .institutional-value-list strong{color:#dcf0df}
+html[data-theme="dark"] #page-billing .institutional-outcome-card p,html[data-theme="dark"] #page-billing .institutional-boundary-grid p,html[data-theme="dark"] #page-billing .institutional-onboarding-steps p,html[data-theme="dark"] #page-billing .institutional-value-list span,html[data-theme="dark"] #page-billing .institutional-faq details p{color:#afc7b5}
+html[data-theme="dark"] #page-billing .institutional-plan-tag,html[data-theme="dark"] #page-billing .institutional-outcome-icon,html[data-theme="dark"] #page-billing .institutional-plan-outcome{border-color:#345e42;background:#1b3a27;color:#c7ebcd}
+html[data-theme="dark"] #page-billing .institutional-plan-outcome b,html[data-theme="dark"] #page-billing .institutional-inherits,html[data-theme="dark"] #page-billing .institutional-includes li,html[data-theme="dark"] #page-billing .institutional-faq summary{color:#cae8ce}
+html[data-theme="dark"] #page-billing .institutional-scope-note{border-left-color:#56a86e;background:#173525;color:#c0d3c4}
+html[data-theme="dark"] #page-billing .institutional-faq details,html[data-theme="dark"] #page-billing .institutional-value-list>div{border-color:#2a4735}
+html[data-theme="dark"] #page-billing #institutional-billing-form{border-color:#315542;background:#142b1e}
+@media(max-width:1050px){
+ #page-billing .institutional-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #page-billing .institutional-plan-card:last-child{grid-column:1/-1}
+ #page-billing .institutional-onboarding-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ #page-billing .institutional-hero{grid-template-columns:minmax(0,1fr)}
+ #page-billing .institutional-hero-aside{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ #page-billing .institutional-aside-label{grid-column:1/-1}
+ #page-billing .institutional-hero-aside>div{align-items:flex-start;flex-direction:column;gap:5px;font-size:9px}
+ #page-billing .institutional-outcome-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #page-billing .institutional-boundary-grid{grid-template-columns:1fr}
+ #page-billing .institutional-onboarding-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+ #page-billing .institutional-plan-grid{grid-template-columns:minmax(0,1fr)}
+ #page-billing .institutional-plan-card:last-child{grid-column:auto}
+ #page-billing .institutional-outcome-grid{grid-template-columns:minmax(0,1fr)}
+ #page-billing .institutional-onboarding-steps{grid-template-columns:minmax(0,1fr)}
+ #page-billing .institutional-value-list{grid-template-columns:minmax(0,1fr)}
+ #page-billing .institutional-hero{padding:18px}
+ #page-billing .institutional-hero h2{font-size:25px}
+}
