@@ -18,6 +18,13 @@
 
   let hasOpenThread = false;
   const isSinglePane = () => window.matchMedia("(max-width: 900px)").matches;
+  const isPhone = () => window.matchMedia("(max-width: 650px)").matches;
+
+  function setPhoneThreadOpen(open) {
+    const active = Boolean(open && isPhone());
+    page.classList.toggle("campus-dm-phone-thread-open", active);
+    document.body.classList.toggle("cs-dm-phone-thread-open", active);
+  }
 
   function setNewMessageOpen(open, focusSearch) {
     newPanel.classList.toggle("is-open", open);
@@ -33,14 +40,19 @@
 
   function showThread() {
     hasOpenThread = true;
-    if (!isSinglePane()) return;
+    if (!isSinglePane()) {
+      setPhoneThreadOpen(false);
+      return;
+    }
     layout.classList.add("is-thread-open");
+    setPhoneThreadOpen(true);
     requestAnimationFrame(() => backButton?.focus({ preventScroll: true }));
   }
 
   function showInbox() {
     hasOpenThread = false;
     layout.classList.remove("is-thread-open");
+    setPhoneThreadOpen(false);
     requestAnimationFrame(() => {
       page.querySelector(".campus-dm-conversation.active")?.focus({ preventScroll: true });
     });
@@ -77,6 +89,7 @@
     } else {
       hasOpenThread = false;
       layout.classList.remove("is-thread-open");
+      setPhoneThreadOpen(false);
       setNewMessageOpen(false, false);
     }
   });
@@ -85,8 +98,10 @@
   window.addEventListener("resize", () => {
     if (isSinglePane() && hasOpenThread) {
       layout.classList.add("is-thread-open");
+      setPhoneThreadOpen(true);
     } else {
       layout.classList.remove("is-thread-open");
+      setPhoneThreadOpen(false);
     }
   }, { passive: true });
 })();
