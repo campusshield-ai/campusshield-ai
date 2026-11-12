@@ -2413,6 +2413,7 @@
   let campusChatSubscriptionUniversityId = null;
   let campusChatMessages = [];
   let campusChatLoadGeneration = 0;
+  let campusChatMessageRequestGeneration = 0;
 
   function canModerateCampusChat() {
     return hasVerifiedCampusStaffMembership() &&
@@ -2441,6 +2442,8 @@
   function setCampusChatChannel(channel) {
     if (!CAMPUS_CHAT_CHANNELS.some(function(item) { return item.id === channel; })) return;
     campusChatChannel = channel;
+    const messageList = $("campus-chat-messages");
+    if (messageList) messageList.dataset.forceBottom = "true";
     document.querySelectorAll("[data-chat-channel]").forEach(function(button) {
       const active = button.dataset.chatChannel === channel;
       button.classList.toggle("active", active);
@@ -2456,12 +2459,20 @@
   async function refreshCampusChatMessages(options) {
     const backend = window.CampusShieldBackend;
     const generation = campusChatLoadGeneration;
-    if (!backend?.isConfigured || !campusChatUniversityId) return;
+    const requestGeneration = ++campusChatMessageRequestGeneration;
+    const requestedChannel = campusChatChannel;
+    const requestedUniversity = campusChatUniversityId;
+    if (!backend?.isConfigured || !requestedUniversity) return;
     const list = $("campus-chat-messages");
     const status = $("campus-chat-status");
     try {
-      const rows = await backend.listCampusChatMessages(campusChatChannel);
-      if (generation !== campusChatLoadGeneration || !campusChatUniversityId) return;
+      const rows = await backend.listCampusChatMessages(requestedChannel);
+      if (
+        generation !== campusChatLoadGeneration ||
+        requestGeneration !== campusChatMessageRequestGeneration ||
+        requestedChannel !== campusChatChannel ||
+        requestedUniversity !== campusChatUniversityId
+      ) return;
       campusChatMessages = Array.isArray(rows) ? rows : [];
       renderCampusChatMessages(campusChatMessages);
       if (status && !(options && options.quiet)) {
@@ -2477,6 +2488,16 @@
   function renderCampusChatMessages(rows) {
     const list = $("campus-chat-messages");
     if (!list) return;
+
+    const previousCards = Array.from(list.querySelectorAll("[data-message-id]"));
+    const previousIds = new Set(previousCards.map(card => card.dataset.messageId).filter(Boolean));
+    const hadPreviousMessages = previousIds.size > 0;
+    const previousScrollTop = list.scrollTop;
+    const wasNearBottom = list.scrollHeight - list.scrollTop - list.clientHeight <= 120 ||
+      list.scrollHeight <= list.clientHeight + 8;
+    const forceBottom = list.dataset.forceBottom === "true";
+    delete list.dataset.forceBottom;
+
     list.replaceChildren();
     if (!Array.isArray(rows) || !rows.length) {
       const empty = document.createElement("div");
@@ -2487,37 +2508,139 @@
       copy.textContent = "Start the conversation with a helpful question, study tip or campus update.";
       empty.append(title, copy);
       list.appendChild(empty);
+      document.dispatchEvent(new CustomEvent("campus-chat:rendered", {
+        detail: { newMessageCount: 0, atBottom: true, messageCount: 0 }
+      }));
       return;
     }
+
     const myUsername = communityProfile?.username || "";
+    const newMessageCount = hadPreviousMessages
+      ? rows.filter(row => row?.id && !previousIds.has(String(row.id))).length
+      : 0;
+    let previousDayKey = "";
+    let previousAuthor = "";
+    let previousTimestamp = 0;
+
+    function dateKey(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "unknown";
+      return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") +
+        "-" + String(date.getDate()).padStart(2, "0");
+    }
+
+    function dateLabel(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "Earlier";
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      if (date.toDateString() === today.toDateString()) return "Today";
+      if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+      return new Intl.DateTimeFormat(undefined, {
+        weekday: "long", month: "long", day: "numeric"
+      }).format(date);
+    }
+
+    function initials(value) {
+      const parts = String(value || "campus_member").replace(/^@/, "").split(/[._-]+/).filter(Boolean);
+      return (parts.length > 1 ? parts[0][0] + parts[1][0] : String(parts[0] || "C").slice(0, 2))
+        .toUpperCase();
+    }
+
+    function avatarHue(value) {
+      let hash = 0;
+      for (const char of String(value || "campus_member")) hash = (hash * 31 + char.charCodeAt(0)) % 360;
+      return String(hash);
+    }
+
     rows.forEach(function(row) {
-      const card = document.createElement("article");
-      card.className = "campus-chat-message" +
-        (myUsername && row.author_username === myUsername ? " is-mine" : "") +
-        (row.status === "hidden" ? " is-hidden" : "");
-      card.dataset.status = String(row.status || "");
-      const meta = document.createElement("div");
-      meta.className = "campus-chat-message-meta";
-      const author = document.createElement("strong");
-      author.textContent = "@" + String(row.author_username || "campus_member");
-      const time = document.createElement("time");
-      time.dateTime = row.created_at || "";
-      time.textContent = row.created_at ? dateText(row.created_at) : "Just now";
-      meta.append(author, time);
-      const body = document.createElement("p");
-      body.className = "campus-chat-message-body";
-      body.textContent = row.status === "hidden"
+      const createdAt = row.created_at ? new Date(row.created_at) : new Date();
+      const validTime = !Number.isNaN(createdAt.getTime());
+      const dayKey = validTime ? dateKey(createdAt) : "unknown";
+      const currentTimestamp = validTime ? createdAt.getTime() : 0;
+      const username = String(row.author_username || "campus_member");
+      const bodyText = row.status === "hidden"
         ? "This message has been hidden by campus staff."
         : String(row.body || "");
+
+      if (dayKey !== previousDayKey) {
+        const divider = document.createElement("div");
+        divider.className = "campus-chat-day-divider";
+        divider.dataset.dayKey = dayKey;
+        const label = document.createElement("span");
+        label.textContent = validTime ? dateLabel(createdAt) : "Earlier";
+        divider.appendChild(label);
+        list.appendChild(divider);
+      }
+
+      const card = document.createElement("article");
+      const grouped = username === previousAuthor &&
+        currentTimestamp > 0 && previousTimestamp > 0 &&
+        currentTimestamp - previousTimestamp >= 0 &&
+        currentTimestamp - previousTimestamp <= 5 * 60 * 1000 &&
+        dayKey === previousDayKey;
+      card.className = "campus-chat-message" +
+        (myUsername && username === myUsername ? " is-mine" : "") +
+        (row.status === "hidden" ? " is-hidden" : "") +
+        (grouped ? " is-grouped" : "");
+      card.dataset.status = String(row.status || "");
+      card.dataset.messageId = String(row.id || "");
+      card.dataset.search = (username + " " + bodyText).toLocaleLowerCase();
+
+      const meta = document.createElement("div");
+      meta.className = "campus-chat-message-meta";
+      const avatar = document.createElement("span");
+      avatar.className = "campus-chat-avatar";
+      avatar.setAttribute("aria-hidden", "true");
+      avatar.textContent = initials(username);
+      avatar.style.setProperty("--chat-avatar-hue", avatarHue(username));
+
+      const author = document.createElement("strong");
+      author.textContent = "@" + username;
+      const time = document.createElement("time");
+      time.dateTime = row.created_at || "";
+      time.textContent = validTime
+        ? new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(createdAt)
+        : "Just now";
+      if (validTime) {
+        time.title = new Intl.DateTimeFormat(undefined, {
+          dateStyle: "full", timeStyle: "short"
+        }).format(createdAt);
+      }
+      meta.append(avatar, author, time);
+
+      const body = document.createElement("p");
+      body.className = "campus-chat-message-body";
+      body.textContent = bodyText;
       card.append(meta, body);
 
       const actions = document.createElement("div");
       actions.className = "campus-chat-message-actions";
-      if (row.status === "published" && myUsername !== row.author_username) {
+      if (row.status === "published") {
+        const copy = document.createElement("button");
+        copy.type = "button";
+        copy.className = "campus-chat-message-action";
+        copy.textContent = "Copy";
+        copy.setAttribute("aria-label", "Copy message from @" + username);
+        copy.addEventListener("click", async function() {
+          try {
+            if (!navigator.clipboard?.writeText) throw new Error("Clipboard access is unavailable in this browser.");
+            await navigator.clipboard.writeText(String(row.body || ""));
+            toast("Message copied.");
+          } catch (error) {
+            toast(error?.message || "Could not copy this message.");
+          }
+        });
+        actions.appendChild(copy);
+      }
+
+      if (row.status === "published" && myUsername !== username) {
         const report = document.createElement("button");
         report.type = "button";
+        report.className = "campus-chat-message-action";
         report.textContent = "Report";
-        report.setAttribute("aria-label", "Report message from @" + String(row.author_username || "campus member"));
+        report.setAttribute("aria-label", "Report message from @" + username);
         report.addEventListener("click", function() {
           const dialog = $("campus-chat-report-dialog");
           if (!dialog || typeof dialog.showModal !== "function") {
@@ -2535,8 +2658,9 @@
       if (canModerateCampusChat()) {
         const moderate = document.createElement("button");
         moderate.type = "button";
+        moderate.className = "campus-chat-message-action";
         moderate.dataset.action = row.status === "hidden" ? "restore" : "hide";
-        moderate.textContent = row.status === "hidden" ? "Restore message" : "Hide message";
+        moderate.textContent = row.status === "hidden" ? "Restore" : "Hide";
         moderate.addEventListener("click", async function() {
           if (row.status !== "hidden" && !window.confirm("Hide this message from students at this university?")) return;
           moderate.disabled = true;
@@ -2552,10 +2676,28 @@
         });
         actions.appendChild(moderate);
       }
+
       if (actions.childNodes.length) card.appendChild(actions);
       list.appendChild(card);
+      previousDayKey = dayKey;
+      previousAuthor = username;
+      previousTimestamp = currentTimestamp;
     });
-    list.scrollTop = list.scrollHeight;
+
+    const shouldStickToBottom = forceBottom || !hadPreviousMessages || wasNearBottom;
+    if (shouldStickToBottom) {
+      list.scrollTop = list.scrollHeight;
+    } else {
+      list.scrollTop = previousScrollTop;
+    }
+
+    document.dispatchEvent(new CustomEvent("campus-chat:rendered", {
+      detail: {
+        newMessageCount,
+        atBottom: shouldStickToBottom,
+        messageCount: rows.length
+      }
+    }));
   }
 
   async function loadCampusChatReports() {
@@ -2636,6 +2778,7 @@
       return;
     }
     const generation = ++campusChatLoadGeneration;
+    campusChatMessageRequestGeneration += 1;
     setCampusChatReady(false);
     if (status) status.textContent = "Checking your university membership…";
     if (list) list.innerHTML = '<div class="campus-chat-empty"><strong>Loading your campus room…</strong><p>Checking access and loading recent messages.</p></div>';
