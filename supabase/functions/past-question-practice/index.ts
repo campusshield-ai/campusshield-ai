@@ -72,15 +72,33 @@ async function callModel(
   if (quotaResult.error || quota?.allowed !== true) {
     throw new Error("Your ShieldMind 30-day AI request allowance or rate limit has been reached.");
   }
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
-    body: JSON.stringify({
-      model, messages, reasoning_effort: "low", max_completion_tokens: maxTokens,
-      response_format: { type: "json_object" },
-    }),
-    signal: AbortSignal.timeout(20000),
-  });
+  let response: Response;
+  try {
+    response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+      body: JSON.stringify({
+        model, messages, reasoning_effort: "low", max_completion_tokens: maxTokens,
+        response_format: { type: "json_object" },
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+  } catch (providerConnectionError) {
+    const { error: releaseError } = await service.rpc("release_shieldmind_usage_reservation", {
+      p_user_id: context.user.id,
+      p_release_image: false,
+    });
+    if (releaseError) {
+      console.error("Exam-prep usage reservation could not be released", {
+        code: releaseError.code || null,
+        name: releaseError.name || null,
+      });
+    }
+    console.warn("Exam-prep provider connection failed", {
+      errorName: providerConnectionError instanceof Error ? providerConnectionError.name.slice(0, 80) : "UnknownError",
+    });
+    throw new Error("ShieldMind could not connect to its AI provider. Your monthly request allowance has been restored; please try again.");
+  }
   if (!response.ok) {
     const { error: releaseError } = await service.rpc("release_shieldmind_usage_reservation", {
       p_user_id: context.user.id,
