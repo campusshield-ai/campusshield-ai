@@ -26,6 +26,7 @@ on:
       - "contact.html"
       - "about.html"
       - "features.html"
+      - "platform-tour.html"
       - "for-universities.html"
       - "trust-safety.html"
       - "help.html"
