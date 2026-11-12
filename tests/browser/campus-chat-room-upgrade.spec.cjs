@@ -80,7 +80,7 @@ test("Enter sends and Shift+Enter keeps a new line in the composer", async ({ pa
   await input.type("Second line");
   await expect(input).toHaveValue("First line\nSecond line");
   await expect.poll(() => page.evaluate(() => window.__campusChatSubmitCount)).toBe(1);
-  await expect(page.locator("#campus-chat-char-count")).toHaveText("23 / 1,200");
+  await expect(page.locator("#campus-chat-char-count")).toHaveText("22 / 1,200");
 });
 
 test("Campus Chat stays within the viewport across phone, tablet and desktop widths", async ({ page }) => {
