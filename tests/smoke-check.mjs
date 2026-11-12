@@ -4,6 +4,8 @@ import { readFile } from "node:fs/promises";
 const htmlMarkup = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const appScript = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
 const html = htmlMarkup + "\n" + appScript;
+const privateMessagesPolishCss = await readFile(new URL("../campus-private-messages-polish.css", import.meta.url), "utf8");
+const privateMessagesPolishJs = await readFile(new URL("../campus-private-messages-polish.js", import.meta.url), "utf8");
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
 const visualRefreshCss = await readFile(new URL("../campusshield-visual-refresh.css", import.meta.url), "utf8");
 const creatorToolsCss = await readFile(new URL("../student-creator-tools.css", import.meta.url), "utf8");
@@ -1160,3 +1162,54 @@ assert.match(backend, /auth\.resend\([\s\S]*?captchaToken/, "confirmation resend
 assert.match(backend, /resetPasswordForEmail\([\s\S]*?captchaToken/, "password-reset requests forward the CAPTCHA token to Supabase");
 assert.match(backend, /captchaApi\?\.reset\?\.\(\)/, "the one-use CAPTCHA widget is reset after each protected auth request");
 console.log("PASS Staging-only Turnstile CAPTCHA integration for sign-in, sign-up, email confirmation and password reset");
+
+
+// Private Messages workspace polish — preserve live messaging handlers and improve responsive navigation.
+assert.match(htmlMarkup, /<link rel="stylesheet" href="\.\/campus-private-messages-polish\.css\?v=20261112-1">/,
+  "Private Messages workspace polish stylesheet is loaded");
+assert.match(htmlMarkup, /<script src="\.\/campus-private-messages-polish\.js\?v=20261112-1" defer><\/script>/,
+  "Private Messages workspace behavior loads as a deferred page enhancement");
+assert.match(htmlMarkup, /id="campus-dm-new-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="campus-dm-new-body"/,
+  "new-message form toggle exposes its expanded state and controlled panel");
+assert.match(htmlMarkup, /id="campus-dm-new-body"[^>]*hidden/,
+  "member search starts collapsed to prioritize the inbox");
+assert.match(htmlMarkup, /id="campus-dm-empty-start"/,
+  "the empty conversation state offers a direct start-message action");
+assert.match(htmlMarkup, /id="campus-dm-mobile-back"[^>]*aria-label="Back to inbox"/,
+  "the conversation view exposes an accessible back-to-inbox action");
+for (const id of [
+  "campus-dm-search-form", "campus-dm-search", "campus-dm-request-form",
+  "campus-dm-conversation-search", "campus-dm-conversations", "campus-dm-thread-active",
+  "campus-dm-thread-messages", "campus-dm-compose-form", "campus-dm-compose-input",
+  "campus-dm-voice-record", "campus-dm-report-dialog", "campus-dm-moderation"
+]) {
+  assert.ok(htmlMarkup.includes('id="' + id + '"'), "existing private-message control remains: " + id);
+}
+assert.match(privateMessagesPolishCss, /grid-template-columns:\s*minmax\(310px,\s*360px\)\s+minmax\(0,\s*1fr\)/,
+  "desktop inbox and conversation use a balanced two-pane grid");
+assert.match(privateMessagesPolishCss, /@media\s*\(max-width:\s*900px\)/,
+  "tablet layout switches to a single-pane inbox/conversation flow");
+assert.match(privateMessagesPolishCss, /@media\s*\(max-width:\s*650px\)/,
+  "phone layout uses a full-screen conversation surface");
+assert.match(privateMessagesPolishCss, /prefers-reduced-motion:\s*reduce/,
+  "the new page styling respects reduced-motion preferences");
+assert.match(privateMessagesPolishCss, /body\.dark|data-theme="dark"/,
+  "the new page styles include dark-mode support");
+assert.doesNotThrow(() => new Function(privateMessagesPolishJs),
+  "Private Messages responsive enhancement JavaScript parses");
+assert.match(privateMessagesPolishJs, /aria-expanded/,
+  "New message expansion is kept accessible to assistive technology");
+assert.match(privateMessagesPolishJs, /is-thread-open/,
+  "mobile conversation navigation has a distinct open-thread state");
+assert.doesNotMatch(privateMessagesPolishJs, /CampusShieldBackend|supabase|sendCampusDirectMessage/,
+  "the layout enhancement does not replace or bypass existing backend handlers");
+for (const api of [
+  "listMyCampusDirectConversations", "listCampusDirectMessages", "createCampusDirectMessageRequest",
+  "sendCampusDirectMessage", "respondCampusDirectMessageRequest", "subscribeCampusDirectMessages",
+  "reportCampusDirectMessage"
+]) {
+  assert.ok(backend.includes(api), "existing Supabase direct-message backend contract remains: " + api);
+}
+assert.match(appScript, /data-campus-dm-filter/,
+  "the existing All, Requests and Accepted filters remain handled by the original app");
+console.log("PASS Private Messages responsive workspace, accessible mobile navigation, preserved backend and voice/report controls");
