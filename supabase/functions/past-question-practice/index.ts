@@ -72,6 +72,22 @@ async function callModel(
   if (quotaResult.error || quota?.allowed !== true) {
     throw new Error("Your ShieldMind 30-day AI request allowance or rate limit has been reached.");
   }
+
+  // Refund only the request reservation when no usable answer can be returned.
+  // This does not erase a provider-cost entry when OpenAI already reported token usage.
+  const releaseReservation = async () => {
+    const { error: releaseError } = await service.rpc("release_shieldmind_usage_reservation", {
+      p_user_id: context.user.id,
+      p_release_image: false,
+    });
+    if (releaseError) {
+      console.error("Exam-prep usage reservation could not be released", {
+        code: releaseError.code || null,
+        name: releaseError.name || null,
+      });
+    }
+  };
+
   let response: Response;
   try {
     response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -84,42 +100,31 @@ async function callModel(
       signal: AbortSignal.timeout(20000),
     });
   } catch (providerConnectionError) {
-    const { error: releaseError } = await service.rpc("release_shieldmind_usage_reservation", {
-      p_user_id: context.user.id,
-      p_release_image: false,
-    });
-    if (releaseError) {
-      console.error("Exam-prep usage reservation could not be released", {
-        code: releaseError.code || null,
-        name: releaseError.name || null,
-      });
-    }
+    await releaseReservation();
     console.warn("Exam-prep provider connection failed", {
       errorName: providerConnectionError instanceof Error ? providerConnectionError.name.slice(0, 80) : "UnknownError",
     });
     throw new Error("ShieldMind could not connect to its AI provider. Your monthly request allowance has been restored; please try again.");
   }
   if (!response.ok) {
-    const { error: releaseError } = await service.rpc("release_shieldmind_usage_reservation", {
-      p_user_id: context.user.id,
-      p_release_image: false,
-    });
-    if (releaseError) {
-      console.error("Exam-prep usage reservation could not be released", {
-        code: releaseError.code || null,
-        name: releaseError.name || null,
-      });
-    }
+    await releaseReservation();
     throw new Error(response.status === 429
       ? "ShieldMind AI is rate-limited or has reached its provider billing limit. Try again later."
       : "ShieldMind AI could not complete this request. Try again or ask a lecturer for help.");
   }
-  const payload = await response.json();
-  const content = payload?.choices?.[0]?.message?.content;
-  if (typeof content !== "string" || !content.trim()) throw new Error("ShieldMind AI returned an empty response. Please try again.");
+
+  let payload: Record<string, any>;
+  try {
+    payload = await response.json();
+  } catch {
+    await releaseReservation();
+    throw new Error("ShieldMind AI returned an unreadable response. Your monthly request allowance has been restored; please try again.");
+  }
+
   const inputTokens = Number(payload?.usage?.prompt_tokens ?? payload?.usage?.input_tokens ?? 0);
   const outputTokens = Number(payload?.usage?.completion_tokens ?? payload?.usage?.output_tokens ?? 0);
-  if (Number.isSafeInteger(inputTokens) && Number.isSafeInteger(outputTokens)) {
+  if (Number.isSafeInteger(inputTokens) && inputTokens >= 0 &&
+      Number.isSafeInteger(outputTokens) && outputTokens >= 0) {
     const { error: usageError } = await service.rpc("record_shieldmind_usage", {
       p_user_id: context.user.id,
       p_input_tokens: inputTokens,
@@ -133,8 +138,18 @@ async function callModel(
       });
     }
   }
-  try { return JSON.parse(content); }
-  catch { throw new Error("ShieldMind AI returned an unreadable response. Please try again."); }
+
+  const content = payload?.choices?.[0]?.message?.content;
+  if (typeof content !== "string" || !content.trim()) {
+    await releaseReservation();
+    throw new Error("ShieldMind AI returned an empty response. Your monthly request allowance has been restored; please try again.");
+  }
+  try {
+    return JSON.parse(content);
+  } catch {
+    await releaseReservation();
+    throw new Error("ShieldMind AI returned an unreadable response. Your monthly request allowance has been restored; please try again.");
+  }
 }
 type UserContext = {
   user: { id: string };
