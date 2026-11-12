@@ -24,12 +24,12 @@ assert.match(migration, /status='purge_blocked'/i, "blocked purges remain record
 assert.match(migration, /private\.platform_admins/i, "trusted platform administrators are excluded from purge");
 assert.doesNotMatch(migration, /grant execute on function private\.purge_expired_account_lifecycle\(\) to authenticated/i, "clients cannot run the purge");
 
-assert.match(accessGuardMigration, /private\\.account_lifecycle_is_active/i, "account active-state helper exists");
-assert.match(accessGuardMigration, /auth\\.users u[\\s\\S]*u\\.banned_until > clock_timestamp/i, "already-issued JWTs check the Auth ban state");
-assert.match(accessGuardMigration, /as restrictive for all to authenticated/i, "deactivated accounts are blocked by restrictive public-table RLS");
-assert.match(accessGuardMigration, /private\\.current_user_has_verified_campus_access\\(\\)/i, "verified campus authorization includes lifecycle state");
+assert.ok(accessGuardMigration.includes("private.account_lifecycle_is_active"), "account active-state helper exists");
+assert.ok(accessGuardMigration.includes("auth.users u") && accessGuardMigration.includes("u.banned_until > clock_timestamp"), "already-issued JWTs check the Auth ban state");
+assert.ok(accessGuardMigration.includes("as restrictive for all to authenticated"), "deactivated accounts are blocked by restrictive public-table RLS");
+assert.ok(accessGuardMigration.includes("private.current_user_has_verified_campus_access()"), "verified campus authorization includes lifecycle state");
 assert.ok(accessGuardMigration.includes("'* * * * *'"), "scheduled purge is checked every minute");
-assert.doesNotMatch(accessGuardMigration, /alter table storage\\.objects/i, "migration does not attempt to take ownership of Supabase-managed Storage tables");
+assert.ok(!accessGuardMigration.includes("alter table storage.objects"), "migration does not attempt to take ownership of Supabase-managed Storage tables");
 
 assert.match(edge, /DEACTIVATION_DAYS = 90/i, "Edge Function uses a 90-day recovery window");
 assert.match(edge, /ban_duration: LONG_BAN_DURATION/i, "deactivation uses a reversible Auth ban");
