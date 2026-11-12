@@ -115,7 +115,7 @@ assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/privacy\.html"/,
 assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/terms\.html"/, "landing footer links to Terms");
 assert.match(html, /class="login-footer-links"[\s\S]*?href="\.\/contact\.html"/, "landing footer links to Contact");
 assert.match(privacyPage, /<title>Privacy Policy \| CampusShield AI<\/title>/, "privacy policy page exists and is titled");
-assert.match(privacyPage, /Development-stage notice/, "privacy page warns against using real sensitive data in previews");
+assert.doesNotMatch(privacyPage, /Development-stage notice|staging or preview environments|interim operational notice/i, "public privacy page does not expose internal development-stage messaging");
 assert.match(termsPage, /<title>Terms of Use \| CampusShield AI<\/title>/, "terms page exists and is titled");
 assert.match(termsPage, /does not automatically contact or dispatch emergency services/i, "terms page states the emergency limitation");
 assert.match(contactPage, /mailto:campusshieldaitechnologies@gmail\.com/, "contact page provides the configured support email");
@@ -145,10 +145,8 @@ assert.match(i18nScript, /"pt"/, "Portuguese is available");
 assert.match(i18nScript, /"sw"/, "Swahili is available");
 assert.match(i18nScript, /"ar"/, "Arabic is available");
 assert.match(i18nScript, /"zh"/, "Simplified Chinese is available");
-assert.match(privacyPage, /CAC\) approved reservation of the proposed company name/, "privacy page reports the CAC-approved proposed company-name reservation");
-assert.match(privacyPage, /not a Certificate of Incorporation/, "privacy page distinguishes name reservation from incorporation");
-assert.match(privacyPage, /availability code is not an RC number/, "privacy page does not mislabel the name-reservation code as a company RC number");
-assert.match(privacyPage, /not a statement that a Data Protection Officer \(DPO\) or statutory data-protection contact has been appointed/, "privacy page does not invent a statutory data-protection contact");
+assert.doesNotMatch(privacyPage, /CAC\) approved reservation of the proposed company name|not a Certificate of Incorporation|availability code is not an RC number|Data Protection Officer \(DPO\)/i, "public privacy page does not expose internal CAC reservation or unappointed-contact details");
+assert.match(privacyPage, /<h2>Privacy contact<\/h2>[\s\S]*?campusshieldaitechnologies@gmail\.com/, "privacy page retains the public privacy contact");
 assert.doesNotMatch(privacyPage, /project materials available for this deployment do not confirm/i, "privacy page removes the obsolete pre-reservation disclaimer");
 assert.match(privacyPage, /Nigeria Data Protection Act 2023/, "privacy policy references applicable Nigerian data-protection law without claiming compliance");
 assert.ok(privacyPage.includes("https://ndpc.gov.ng/ndp-act-2023/"), "privacy policy links to the official NDPC Act resource");
@@ -158,13 +156,12 @@ assert.ok(html.includes('href="./contact.html">Contact support</a>'), "signed-in
 assert.match(contactPage, /on-site form is not connected/i, "contact page does not pretend a web form sends messages");
 assert.match(contactPage, /press Send/, "contact page explains that the user must send the drafted email themselves");
 assert.match(privacyPage, /No fixed, time-based retention schedule was verified/, "privacy page avoids making up retention periods");
-assert.match(privacyPage, /GitHub Pages and Vercel/, "privacy page identifies hosting providers present in the deployment");
+assert.match(privacyPage, /Website hosting providers/, "privacy page describes website hosting providers");
 assert.match(privacyPage, /Supabase/, "privacy page identifies the database/auth/storage provider");
 assert.match(privacyPage, /OpenAI/, "privacy page identifies the configured ShieldMind AI provider");
 assert.match(privacyPage, /Paystack/, "privacy page identifies the optional payment provider");
-assert.match(termsPage, /CAC\) approved the reservation of the proposed company name/, "terms page reports the approved proposed company-name reservation");
-assert.match(termsPage, /reservation of a proposed name only; it is not company incorporation/, "terms page distinguishes name reservation from incorporation");
-assert.match(termsPage, /service operator's legal identity, registered address and applicable jurisdiction must still be verified/, "terms page keeps outstanding operator details explicit");
+assert.doesNotMatch(termsPage, /CAC\) approved the reservation of the proposed company name|reservation of a proposed name only|RC number|interim terms/i, "public Terms do not expose internal company-reservation or draft-status wording");
+assert.match(termsPage, /<h2>9\. Questions and updates<\/h2>[\s\S]*?campusshieldaitechnologies@gmail\.com/, "Terms retain a public contact and update section");
 assert.doesNotMatch(termsPage, /project materials available here do not confirm/i, "terms page removes the obsolete pre-reservation disclaimer");
 
 assert.match(html, /id="signup-verification-guidance"/, "signup explains role-specific identity verification");
