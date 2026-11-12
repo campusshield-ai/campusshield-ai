@@ -1167,9 +1167,9 @@ console.log("PASS Staging-only Turnstile CAPTCHA integration for sign-in, sign-u
 
 
 // Private Messages workspace polish — preserve live messaging handlers and improve responsive navigation.
-assert.match(htmlMarkup, /<link rel="stylesheet" href="\.\/campus-private-messages-polish\.css\?v=20261112-1">/,
+assert.match(htmlMarkup, /<link rel="stylesheet" href="\.\/campus-private-messages-polish\.css\?v=20261112-2">/,
   "Private Messages workspace polish stylesheet is loaded");
-assert.match(htmlMarkup, /<script src="\.\/campus-private-messages-polish\.js\?v=20261112-1" defer><\/script>/,
+assert.match(htmlMarkup, /<script src="\.\/campus-private-messages-polish\.js\?v=20261112-2" defer><\/script>/,
   "Private Messages workspace behavior loads as a deferred page enhancement");
 assert.match(htmlMarkup, /id="campus-dm-new-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="campus-dm-new-body"/,
   "new-message form toggle exposes its expanded state and controlled panel");
