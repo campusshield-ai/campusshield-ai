@@ -1201,6 +1201,8 @@ assert.match(privateMessagesPolishJs, /aria-expanded/,
   "New message expansion is kept accessible to assistive technology");
 assert.match(privateMessagesPolishJs, /is-thread-open/,
   "mobile conversation navigation has a distinct open-thread state");
+assert.match(privateMessagesPolishJs, /page\.classList\.contains\("active"\)[\s\S]*?showThread\(\)/,
+  "returning to Private Messages restores the selected thread on narrow screens");
 assert.doesNotMatch(privateMessagesPolishJs, /CampusShieldBackend|supabase|sendCampusDirectMessage/,
   "the layout enhancement does not replace or bypass existing backend handlers");
 for (const api of [
