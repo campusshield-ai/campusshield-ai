@@ -1,0 +1,24 @@
+.account-lifecycle-danger-zone{
+  margin-top:18px;
+  padding:16px;
+  border:1px solid #f0c8bd;
+  border-radius:14px;
+  background:linear-gradient(180deg,#fffaf8 0%,#fff 100%);
+}
+.account-lifecycle-danger-zone h3{margin:0 0 7px;color:#913b2c;font-size:15px}
+.account-lifecycle-danger-zone p{margin:6px 0;color:#5f6f75;font-size:13px;line-height:1.6}
+.account-lifecycle-danger-zone .account-lifecycle-status{font-weight:800;color:#193d42}
+.account-lifecycle-danger-zone .account-lifecycle-help{font-size:12px}
+.account-lifecycle-danger-zone .btn.danger{
+  border:1px solid #b94739;
+  background:#a9362b;
+  color:#fff;
+}
+.account-lifecycle-legacy-note{font-size:11px;color:#8a4d34;line-height:1.45}
+#account-lifecycle-admin-panel .table-wrap{overflow-x:auto}
+#account-lifecycle-admin-rows td{vertical-align:middle}
+#account-lifecycle-admin-rows small{display:inline-block;margin-top:3px;color:#6e7b82;overflow-wrap:anywhere}
+@media(max-width:700px){
+  .account-lifecycle-danger-zone{padding:13px}
+  #account-lifecycle-admin-rows td{min-width:125px}
+}
