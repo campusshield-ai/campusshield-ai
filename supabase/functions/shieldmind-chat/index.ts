@@ -398,6 +398,13 @@ Deno.serve(async (req: Request) => {
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${providerKey}` },
         body: JSON.stringify({ model, messages, reasoning_effort: "low", max_completion_tokens: 900 }),
       });
+    } catch (providerConnectionError) {
+      await releaseShieldMindReservation(supabaseUrl, user.id, Boolean(studyImage));
+      console.warn("ShieldMind provider connection failed", {
+        stage: "provider_network",
+        errorName: providerConnectionError instanceof Error ? providerConnectionError.name.slice(0, 80) : "UnknownError",
+      });
+      return json({ error: "ShieldMind could not connect to its AI provider. Your monthly request allowance has been restored; please try again." }, 502);
     } finally { clearTimeout(timeout); }
     if (providerResponse.status === 429) {
       // A provider-side rejection returned no answer. Release the reserved 30-day
