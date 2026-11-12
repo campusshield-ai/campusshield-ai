@@ -128,6 +128,7 @@
     if (!storageState.available || !shouldShow(storageState.record, Date.now())) return;
 
     const overlay = createIntro();
+    document.body.classList.add("cs-launch-active");
     document.body.appendChild(overlay);
 
     const skipButton = overlay.querySelector(".cs-launch-skip");
@@ -140,6 +141,7 @@
       window.clearTimeout(timer);
       window.removeEventListener("keydown", onKeyDown, true);
       overlay.remove();
+      document.body.classList.remove("cs-launch-active");
     }
 
     function finish(skipped) {
