@@ -77,6 +77,10 @@
   pageObserver.observe(page, { attributes: true, attributeFilter: ["class"] });
 
   window.addEventListener("resize", () => {
-    if (!isSinglePane()) layout.classList.remove("is-thread-open");
+    if (isSinglePane() && threadActive && !threadActive.hidden) {
+      layout.classList.add("is-thread-open");
+    } else if (!isSinglePane()) {
+      layout.classList.remove("is-thread-open");
+    }
   }, { passive: true });
 })();
