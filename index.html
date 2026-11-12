@@ -2352,6 +2352,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <link rel="stylesheet" href="./campusshield-launch-intro.css?v=20261112-2">
 <script src="./campusshield-launch-intro.js?v=20261112-2" defer></script>
 
+  <link rel="stylesheet" href="./campusshield-account-lifecycle.css?v=20261112-1">
 </head>
 <body>
 
@@ -2624,6 +2625,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
           <button type="button" id="resend-confirmation-button" class="btn secondary">Resend confirmation email</button>
         </div>
         <p id="auth-helper" class="auth-footnote">CampusShield AI helps campus communities access safety reporting, student support and campus resources. Student and teacher accounts may require administrator verification before accessing protected features. CampusShield AI does not contact emergency services; in an emergency, contact your local emergency services or official campus security.</p>
+        <p id="account-lifecycle-reactivation-help" class="auth-footnote">Deactivated your account by mistake? Contact <a href="mailto:campusshieldaitechnologies@gmail.com?subject=CampusShield%20AI%20account%20reactivation">CampusShield support</a> within 90 days to request reactivation.</p>
         <div class="install-card" id="install-card" hidden aria-live="polite">
           <span class="install-mark" aria-hidden="true">↓</span>
           <div class="install-copy"><strong id="install-title">Install CampusShield</strong><p id="install-guidance"></p></div>
@@ -4769,6 +4771,14 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     <section class="panel" aria-labelledby="profile-settings-security-title">
       <div class="panel-heading"><div><h2 id="profile-settings-security-title">Sign-in &amp; security</h2><p>Protect access to your account.</p></div></div>
       <p>Use the sign-in method linked to your account. Never share your password, one-time codes, or private identity documents.</p>
+      <section class="account-lifecycle-danger-zone" id="account-lifecycle-panel" aria-labelledby="account-lifecycle-title">
+        <h3 id="account-lifecycle-title">Deactivate account</h3>
+        <p class="account-lifecycle-status" id="account-lifecycle-status" role="status" aria-live="polite">Checking your account status…</p>
+        <p id="account-lifecycle-deadline">No deletion is scheduled for this account.</p>
+        <p class="account-lifecycle-help" id="account-lifecycle-help">Deactivation blocks sign-in. You can request reactivation through CampusShield support within 90 days. After the recovery window, permanent deletion begins.</p>
+        <div class="actions"><button class="btn danger" id="account-lifecycle-deactivate" type="button">Deactivate my account</button></div>
+        <p class="muted">This action is not immediate permanent deletion. Your account enters a 90-day recovery period.</p>
+      </section>
       <div class="actions"><button class="btn secondary" id="profile-settings-signout" type="button">Sign out</button></div>
     </section>
   </div>
@@ -5135,6 +5145,12 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     <p id="platform-admin-access-message" class="message" role="status" aria-live="polite">Checking platform administrator access…</p>
   </section>
   <div id="platform-admin-tools" hidden>
+    <section class="panel" id="account-lifecycle-admin-panel">
+      <div class="panel-heading"><div><h2>Account deactivation &amp; recovery</h2><p>Review accounts in the 90-day recovery window and restore access before the deadline.</p></div><button class="btn secondary" type="button" id="account-lifecycle-admin-refresh">Refresh list</button></div>
+      <p id="account-lifecycle-admin-message" class="message" role="status" aria-live="polite">Loading deactivated accounts…</p>
+      <div class="table-wrap"><table><caption class="sr-only">Deactivated accounts awaiting reactivation or the 90-day permanent deletion deadline</caption><thead><tr><th scope="col">Account</th><th scope="col">State</th><th scope="col">Permanent deletion</th><th scope="col">Purge attempts</th><th scope="col">Action</th></tr></thead><tbody id="account-lifecycle-admin-rows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+      <p class="muted">Legacy Auth soft-deleted accounts cannot be restored through the supported Supabase Auth API. New deactivations use a reversible ban and can be restored here before the 90-day deadline.</p>
+    </section>
     <section class="panel">
       <div class="panel-heading"><div><h2>University listing requests</h2><p>Approve only after verifying the official institution name and website.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-requests">Refresh requests</button></div>
       <p id="platform-admin-requests-message" class="message" role="status" aria-live="polite">Loading requests…</p>
@@ -6306,5 +6322,6 @@ table { max-width: 100%; }
 <script src="./student-creator-tools.js" defer></script>
 <script src="./campusshield-lovable-ux.js" defer></script>
 <script src="./campus-private-messages-polish.js?v=20261112-4" defer></script>
+  <script src="./campusshield-account-lifecycle.js?v=20261112-1" defer></script>
 </body>
 </html>
