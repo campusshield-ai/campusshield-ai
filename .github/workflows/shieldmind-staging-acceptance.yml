@@ -1,0 +1,74 @@
+name: ShieldMind GPT-6 Luna and Paystack Staging acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/shieldmind-staging-acceptance.yml"
+      - "tests/e2e/staging-shieldmind-gpt6-paystack-e2e.mjs"
+      - "supabase/migrations/20261111180000_shieldmind_monthly_usage_budgets.sql"
+      - "supabase/migrations/20261112000000_shieldmind_reservation_and_rls_hardening.sql"
+      - "supabase/functions/shieldmind-chat/**"
+      - "supabase/functions/past-question-practice/**"
+      - "campusshield-app.js"
+      - "index.html"
+      - "tests/smoke-check.mjs"
+      - "tests/paystack-billing-origin-smoke.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusshield-staging-shieldmind-acceptance
+  cancel-in-progress: false
+
+jobs:
+  gpt6-and-paystack:
+    name: Real GPT-6 Luna text/image and Paystack test purchase
+    if: github.repository == 'campusshield-ai/campusshield-ai' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SUPABASE_STAGING_URL: https://hywcpnoqqhxvujnimhxl.supabase.co
+      SUPABASE_STAGING_ANON_KEY: sb_publishable_qxFnFGkyBzVvvzQ3oFsyLw_tK6HCKOP
+      SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
+      SUPABASE_STAGING_APP_ORIGIN: https://campusshield-ai-staging-preview.vercel.app
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Validate exact Staging target and service credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_STAGING_URL"
+          test -n "$SUPABASE_STAGING_ANON_KEY"
+          test -n "$SUPABASE_STAGING_SERVICE_ROLE_KEY" || {
+            echo "::error::Add SUPABASE_STAGING_SERVICE_ROLE_KEY for the Staging project only."
+            exit 1
+          }
+          actual_ref="$(node -e 'const u=new URL(process.env.SUPABASE_STAGING_URL); if(u.protocol!=="https:") process.exit(2); const m=u.hostname.match(/^([a-z0-9]+)\.supabase\.co$/); if(!m) process.exit(2); process.stdout.write(m[1])')"
+          if [ "$actual_ref" != "hywcpnoqqhxvujnimhxl" ]; then
+            echo "::error::Refusing ShieldMind acceptance against a non-Staging project."
+            exit 1
+          fi
+          test "$SUPABASE_STAGING_APP_ORIGIN" = "https://campusshield-ai-staging-preview.vercel.app"
+          echo "Staging project and app origin verified. Secret values are not printed."
+
+      - name: Install pinned Supabase and Playwright clients
+        run: npm install --no-save --no-package-lock @supabase/supabase-js@2.95.0 @playwright/test@1.64.1
+
+      - name: Install Chromium
+        run: npx playwright install chromium
+
+      - name: Check Staging acceptance script syntax
+        run: node --check tests/e2e/staging-shieldmind-gpt6-paystack-e2e.mjs
+
+      - name: Test real GPT-6 Luna text and image responses, monthly usage ledger, and Paystack test payment
+        run: node tests/e2e/staging-shieldmind-gpt6-paystack-e2e.mjs

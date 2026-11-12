@@ -8091,12 +8091,12 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if (quickActions) quickActions.hidden = !state.active;
       const planSummary = $('shieldmind-plan-summary');
       const planCaps = {
-        starter: { minute: 10, day: 250, images: 20 },
-        plus: { minute: 15, day: 700, images: 60 },
-        pro: { minute: 25, day: 1500, images: 150 },
-        ultra: { minute: 35, day: 2500, images: 300 },
-        max: { minute: 50, day: 4000, images: 600 },
-        premium: { minute: 10, day: 250, images: 20 },
+        starter: { monthly: 150, images: 20 },
+        plus: { monthly: 400, images: 60 },
+        pro: { monthly: 1000, images: 150 },
+        ultra: { monthly: 2000, images: 300 },
+        max: { monthly: 3500, images: 600 },
+        premium: { monthly: 150, images: 20 },
       };
       const caps = state.active ? planCaps[state.plan] : null;
       if (planSummary) planSummary.hidden = !caps;
@@ -8109,7 +8109,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         if (expiry) expiry.textContent = state.expiresAt
           ? 'Active until ' + new Date(state.expiresAt).toLocaleDateString()
           : 'Active subscription';
-        if (requests) requests.textContent = caps.minute.toLocaleString() + ' / ' + caps.day.toLocaleString();
+        if (requests) requests.textContent = '0 / ' + caps.monthly.toLocaleString();
         if (images) images.textContent = caps.images.toLocaleString();
       }
       // Keep the header badge compact on narrow phones; full detail remains in the gate and billing page.
@@ -8148,7 +8148,30 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       );
       if (active) {
         document.querySelectorAll('[data-billing-plan]').forEach(button => { button.disabled = false; });
-        return applyAccess(true, data);
+        applyAccess(true, data);
+        try {
+          const { data: usageData, error: usageError } = await backend.client.rpc('get_my_shieldmind_usage');
+          const usage = Array.isArray(usageData) ? usageData[0] : usageData;
+          if (!usageError && usage && Number.isFinite(Number(usage.requests_used)) && Number.isFinite(Number(usage.request_limit))) {
+            const requestSummary = $('shieldmind-plan-summary-requests');
+            if (requestSummary) {
+              requestSummary.textContent = Number(usage.requests_used).toLocaleString() +
+                ' / ' + Number(usage.request_limit).toLocaleString();
+            }
+            const imageSummary = $('shieldmind-plan-summary-images');
+            if (imageSummary && Number.isFinite(Number(usage.image_uploads_used))) {
+              imageSummary.textContent = Number(usage.image_uploads_used).toLocaleString() +
+                ' / ' + Number(usage.image_upload_limit).toLocaleString();
+            }
+            if (status) {
+              status.textContent = String(usage.plan || data.plan).toUpperCase() + ' · ' +
+                Number(usage.requests_remaining).toLocaleString() + ' AI requests left this 30-day term';
+            }
+          }
+        } catch (usageError) {
+          console.warn('ShieldMind allowance summary could not be refreshed:', usageError?.message || 'Unknown error');
+        }
+        return true;
       }
       return applyAccess(false, null, 'Your ShieldMind plan is not active. Choose Starter, Plus, Pro, Ultra or Max to continue.');
     } catch (error) {

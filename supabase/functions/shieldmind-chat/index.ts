@@ -22,6 +22,35 @@ function json(body: Record<string, unknown>, status = 200, extraHeaders: Record<
   });
 }
 
+async function releaseShieldMindReservation(
+  supabaseUrl: string,
+  userId: string,
+  releaseImage: boolean,
+): Promise<void> {
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!serviceRoleKey) {
+    console.error("ShieldMind usage reservation could not be released", {
+      stage: "usage_reservation_release",
+      reason: "service_role_unavailable",
+    });
+    return;
+  }
+  const serviceClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { error } = await serviceClient.rpc("release_shieldmind_usage_reservation", {
+    p_user_id: userId,
+    p_release_image: releaseImage,
+  });
+  if (error) {
+    console.error("ShieldMind usage reservation could not be released", {
+      stage: "usage_reservation_release",
+      errorCode: error.code || null,
+      errorName: error.name || null,
+    });
+  }
+}
+
 function looksLikeSensitiveRequest(text: string): boolean {
   const patterns = [
     /incident\s*(report|description|case|id)/i,
@@ -311,7 +340,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const providerKey = Deno.env.get("OPENAI_API_KEY");
-    const model = Deno.env.get("SHIELDMIND_MODEL") || "gpt-4.1-mini";
+    const model = "gpt-6-luna";
     if (!providerKey) {
       return json({
         mode: "safe_fallback",
@@ -338,6 +367,7 @@ Deno.serve(async (req: Request) => {
       const {data:imageQuotaData,error:imageQuotaError}=await client.rpc("consume_shieldmind_image_upload");
       const imageQuota=Array.isArray(imageQuotaData)?imageQuotaData[0]:imageQuotaData;
       if (imageQuotaError || !imageQuota) {
+        await releaseShieldMindReservation(supabaseUrl, user.id, false);
         console.error("ShieldMind image quota check failed", {
           stage: "image_quota",
           errorCode: imageQuotaError?.code || null,
@@ -345,7 +375,10 @@ Deno.serve(async (req: Request) => {
         });
         return json({ error: "Image allowance could not be verified. Please try again later." }, 503);
       }
-      if(imageQuota.allowed!==true)return json({error:"No remaining study-image allowance. A paid ShieldMind plan is required."},429);
+      if(imageQuota.allowed!==true) {
+        await releaseShieldMindReservation(supabaseUrl, user.id, false);
+        return json({error:"No remaining study-image allowance. A paid ShieldMind plan is required."},429);
+      }
     }
     const userContent=studyImage
       ? [{type:"text",text:question},{type:"image_url",image_url:{url:`data:${studyImage.mime_type};base64,${studyImage.data_base64}`}}]
@@ -363,10 +396,21 @@ Deno.serve(async (req: Request) => {
         method: "POST",
         signal: controller.signal,
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${providerKey}` },
-        body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: 700 }),
+        body: JSON.stringify({ model, messages, reasoning_effort: "low", max_completion_tokens: 900 }),
       });
+    } catch (providerConnectionError) {
+      await releaseShieldMindReservation(supabaseUrl, user.id, Boolean(studyImage));
+      console.warn("ShieldMind provider connection failed", {
+        stage: "provider_network",
+        errorName: providerConnectionError instanceof Error ? providerConnectionError.name.slice(0, 80) : "UnknownError",
+      });
+      return json({ error: "ShieldMind could not connect to its AI provider. Your monthly request allowance has been restored; please try again." }, 502);
     } finally { clearTimeout(timeout); }
     if (providerResponse.status === 429) {
+      // A provider-side rejection returned no answer. Release the reserved 30-day
+      // request (and image allowance, if one was reserved) so users are not charged
+      // for an unavailable AI provider. Minute/day anti-abuse counters remain intact.
+      await releaseShieldMindReservation(supabaseUrl, user.id, Boolean(studyImage));
       // Inspect only the provider's structured error code; never expose its raw body or headers.
       const providerFailure = await providerResponse.json().catch(() => null);
       const providerCode = String(providerFailure?.error?.code || providerFailure?.error?.type || "").toLowerCase();
@@ -407,6 +451,7 @@ Deno.serve(async (req: Request) => {
       }, 429, { "Retry-After": retryAfter });
     }
     if (!providerResponse.ok) {
+      await releaseShieldMindReservation(supabaseUrl, user.id, Boolean(studyImage));
       console.error("ShieldMind provider returned a non-success response", {
         stage: "provider_http",
         providerStatus: providerResponse.status,
@@ -417,6 +462,32 @@ Deno.serve(async (req: Request) => {
     }
     const completion = await providerResponse.json().catch(() => null);
     const answer = completion?.choices?.[0]?.message?.content;
+    const inputTokens = Number(completion?.usage?.prompt_tokens ?? completion?.usage?.input_tokens ?? 0);
+    const outputTokens = Number(completion?.usage?.completion_tokens ?? completion?.usage?.output_tokens ?? 0);
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (serviceRoleKey && Number.isSafeInteger(inputTokens) && Number.isSafeInteger(outputTokens)) {
+      const usageClient = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { error: usageRecordError } = await usageClient.rpc("record_shieldmind_usage", {
+        p_user_id: user.id,
+        p_input_tokens: inputTokens,
+        p_output_tokens: outputTokens,
+        p_model: model,
+      });
+      if (usageRecordError) {
+        console.error("ShieldMind token usage could not be recorded", {
+          stage: "usage_record",
+          errorCode: usageRecordError.code || null,
+          errorName: usageRecordError.name || null,
+        });
+      }
+    } else {
+      console.error("ShieldMind token usage could not be recorded", {
+        stage: "usage_record",
+        reason: serviceRoleKey ? "provider_usage_missing" : "service_role_unavailable",
+      });
+    }
     if (typeof answer !== "string" || !answer.trim()) return json({ error: "ShieldMind received an empty answer. Please try again." }, 502);
     const validatedAnswer = validateKnowledgeCitations(answer.slice(0, 8000), responseSources);
     const answerCitesStaleSource = validatedAnswer.usedSources.some(source =>

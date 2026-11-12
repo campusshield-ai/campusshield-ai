@@ -51,7 +51,7 @@ Deno.serve(async(req:Request)=>{
    if(existingError)throw new Error("subscription lookup failed");
    if(existing?.plan&&existing.plan!=="free"&&existing.status==="active"&&existing.expires_at&&Date.parse(existing.expires_at)>Date.now())throw new Error("paid subscription already active");
    const expiry=new Date(Date.now()+30*86400000).toISOString();
-   const {error:subError}=await db.from("shieldmind_subscriptions").upsert({user_id:intent.user_id,plan:intent.plan,status:"active",billing_period:"monthly",provider:"paystack",provider_reference:reference,amount_kobo:intent.amount_kobo,currency:"NGN",started_at:now,expires_at:expiry,updated_at:now,last_payment_reference:reference,last_payment_at:now,renewal_status:"not_renewing",image_upload_limit:limits[intent.plan]},{onConflict:"user_id"});
+   const {error:subError}=await db.from("shieldmind_subscriptions").upsert({user_id:intent.user_id,plan:intent.plan,status:"active",billing_period:"monthly",provider:"paystack",provider_reference:reference,amount_kobo:intent.amount_kobo,currency:"NGN",started_at:now,expires_at:expiry,updated_at:now,last_payment_reference:reference,last_payment_at:now,renewal_status:"non-renewing",image_upload_limit:limits[intent.plan]},{onConflict:"user_id"});
    if(subError)throw new Error("activation write failed");
    const {error:usedError}=await db.schema("private").from("shieldmind_billing_intents").update({status:"matched",updated_at:now}).eq("id",intent.id).eq("status","pending");
    if(usedError)throw new Error("intent finalization failed");
