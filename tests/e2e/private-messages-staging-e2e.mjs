@@ -179,7 +179,9 @@ async function main() {
   assert.equal(senderMessages[0].body, pendingMessages[0].body);
   assert.match(senderMessages[1].body, new RegExp(runTag));
   assert.equal(senderMessages[0].is_mine, true);
-  assert.equal(senderMessages[1].is_mine, false);
+  assert.equal(senderMessages[1].is_mine, true);
+  assert.equal(recipientMessages[0].is_mine, false);
+  assert.equal(recipientMessages[1].is_mine, false);
   assert.deepEqual(
     recipientMessages.map((message) => message.id),
     senderMessages.map((message) => message.id),
