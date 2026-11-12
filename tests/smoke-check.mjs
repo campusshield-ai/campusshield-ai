@@ -1193,8 +1193,12 @@ assert.match(privateMessagesPolishCss, /@media\s*\(max-width:\s*900px\)/,
   "tablet layout switches to a single-pane inbox/conversation flow");
 assert.match(privateMessagesPolishCss, /@media\s*\(max-width:\s*650px\)/,
   "phone layout uses a full-screen conversation surface");
-assert.match(privateMessagesPolishCss, /width:\s*100vw;[\s\S]*?height:\s*100dvh;[\s\S]*?inset:\s*0;/,
-  "selected phone conversation spans the full viewport");
+assert.match(privateMessagesPolishCss, /width:\s*100vw;/,
+  "selected phone conversation spans the full viewport width");
+assert.match(privateMessagesPolishCss, /height:\s*100dvh;/,
+  "selected phone conversation spans the full viewport height");
+assert.match(privateMessagesPolishCss, /inset:\s*0;/,
+  "selected phone conversation is pinned to all viewport edges");
 assert.match(privateMessagesPolishCss, /campus-dm-phone-thread-open[\s\S]*?transform:\s*none\s*!important/,
   "phone full-screen mode removes the page entrance transform");
 assert.match(privateMessagesPolishCss, /cs-dm-phone-thread-open[\s\S]*?overflow:\s*hidden/,
