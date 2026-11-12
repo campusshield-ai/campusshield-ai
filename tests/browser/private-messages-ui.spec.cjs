@@ -73,19 +73,29 @@ test("A selected conversation opens on mobile and Back to inbox restores the lis
     const rect = thread.getBoundingClientRect();
     return {
       width: rect.width,
+      height: rect.height,
       left: rect.left,
+      top: rect.top,
       right: rect.right,
+      bottom: rect.bottom,
       viewport: window.innerWidth,
+      viewportHeight: window.innerHeight,
       documentWidth: document.documentElement.scrollWidth
     };
   });
   expect(openThreadMetrics.width).toBe(openThreadMetrics.viewport);
+  expect(openThreadMetrics.height).toBe(openThreadMetrics.viewportHeight);
   expect(openThreadMetrics.left).toBe(0);
+  expect(openThreadMetrics.top).toBe(0);
   expect(openThreadMetrics.right).toBe(openThreadMetrics.viewport);
+  expect(openThreadMetrics.bottom).toBe(openThreadMetrics.viewportHeight);
   expect(openThreadMetrics.documentWidth).toBeLessThanOrEqual(openThreadMetrics.viewport);
+  await expect(page.locator("body")).toHaveClass(/cs-dm-phone-thread-open/);
 
   await page.locator("#campus-dm-mobile-back").click();
   await expect(page.locator(".campus-dm-layout")).not.toHaveClass(/is-thread-open/);
+  await expect(page.locator("#page-campus-messages")).not.toHaveClass(/campus-dm-phone-thread-open/);
+  await expect(page.locator("body")).not.toHaveClass(/cs-dm-phone-thread-open/);
   await expect(page.locator(".campus-dm-rail")).toBeVisible();
 });
 
