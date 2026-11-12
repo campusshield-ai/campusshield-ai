@@ -2479,6 +2479,12 @@
         status.textContent = "Showing the latest campus messages. Live updates are enabled when connected.";
       }
     } catch (error) {
+      if (
+        generation !== campusChatLoadGeneration ||
+        requestGeneration !== campusChatMessageRequestGeneration ||
+        requestedChannel !== campusChatChannel ||
+        requestedUniversity !== campusChatUniversityId
+      ) return;
       if (list) list.innerHTML = '<div class="campus-chat-empty"><strong>Chat is temporarily unavailable</strong><p>The university chat service may still be getting set up. Refresh this page to retry.</p></div>';
       if (status) status.textContent = error?.message || "Campus chat could not be loaded.";
       throw error;
