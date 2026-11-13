@@ -5,7 +5,7 @@ const sessionId = "22222222-2222-4222-8222-222222222222";
 const qrToken = "a".repeat(64);
 
 async function prepareWorkspace(page) {
-  await page.route("**/campusshield-app.js", route =>
+  await page.route("**/campusshield-app.js*", route =>
     route.fulfill({ status: 200, contentType: "application/javascript", body: "" })
   );
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
