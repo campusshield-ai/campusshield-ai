@@ -4,6 +4,7 @@ import vm from "node:vm";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const index = read("../index.html");
+const featureLoader = read("../campusshield-feature-loader.js");
 const app = read("../campusshield-app.js");
 const guide = read("../campusshield-guide.js");
 const css = read("../campusshield-guide.css");
@@ -20,7 +21,7 @@ assert.match(index, /data-guide-filter="all"/);
 assert.match(index, /data-guide-filter="safety"/);
 assert.match(index, /href="\.\/help\.html"/);
 assert.match(index, /href="\.\/campusshield-guide\.css"/);
-assert.match(index, /src="\.\/campusshield-guide\.js" defer/);
+assert.match(featureLoader, /guide:\s*\{[\s\S]*?campusshield-guide\.js/);
 assert.ok((index.match(/data-guide-card/g) || []).length >= 10, "Guide should contain at least ten searchable feature cards");
 assert.match(app, /guide:\s*['"]How to use CampusShield['"]/);
 assert.match(guide, /search\?\.addEventListener\(["']input["']/);
