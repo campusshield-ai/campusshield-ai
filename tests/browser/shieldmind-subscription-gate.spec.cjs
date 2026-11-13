@@ -10,6 +10,15 @@ async function openWorkspace(page, target) {
     ? page.waitForRequest(request => new URL(request.url()).pathname.endsWith("/past-question-practice.js"))
     : null;
   await page.evaluate(targetPage => {
+    if (targetPage === "past-questions") {
+      // This test covers the UI entitlement gate only. Enable the staging-only
+      // feature locally and stub the backend so no Supabase request is made.
+      Object.defineProperty(window, "CAMPUSSHIELD_SUPABASE_CONFIG", {
+        configurable: true,
+        value: { url: "https://hywcpnoqqhxvujnimhxl.supabase.co" }
+      });
+      window.CampusShieldBackend = { isConfigured: false, client: null };
+    }
     document.querySelector("#login-screen").style.display = "none";
     const workspace = document.querySelector("#workspace");
     workspace.hidden = false;
