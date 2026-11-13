@@ -14,6 +14,7 @@ test('Online Classroom panel remains accessible and contained from phone to desk
   await page.evaluate(() => {
     document.querySelector('#login-screen').hidden = true;
     document.querySelector('#workspace').hidden = false;
+    document.querySelectorAll('#workspace .page').forEach(page => page.classList.remove('active'));
     document.querySelector('#page-classroom').classList.add('active');
   });
   await classroomModuleRequest;
