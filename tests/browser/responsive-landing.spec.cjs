@@ -430,17 +430,21 @@ test("workspace-only feature scripts load on first use instead of initial app st
   expect(featureRequests, "feature-only bundles should stay out of the initial login/dashboard request path").toEqual([]);
 
   const rewardsRequest = page.waitForRequest(request => request.url().endsWith("/student-rewards.js"));
-  await page.locator("#page-student-rewards").evaluate(element => element.classList.add("active"));
+  const activatePage = async id => page.evaluate(pageId => {
+    document.querySelectorAll(".page.active").forEach(element => element.classList.remove("active"));
+    document.getElementById(pageId)?.classList.add("active");
+  }, id);
+  await activatePage("page-student-rewards");
   await rewardsRequest;
   await expect.poll(() => page.evaluate(() => Boolean(window.CampusShieldStudentRewards))).toBe(true);
 
   const marketplaceRequest = page.waitForRequest(request => request.url().endsWith("/campus-discovery-ui.js"));
-  await page.locator("#page-marketplace").evaluate(element => element.classList.add("active"));
+  await activatePage("page-marketplace");
   await marketplaceRequest;
   await expect.poll(() => page.locator("#campus-marketplace-results").count()).toBe(1);
 
   const shieldmindPlannerRequest = page.waitForRequest(request => request.url().endsWith("/shieldmind-planner.js"));
-  await page.locator("#page-shieldmind").evaluate(element => element.classList.add("active"));
+  await activatePage("page-shieldmind");
   await shieldmindPlannerRequest;
   await expect.poll(() => page.evaluate(() => Boolean(window.CampusShieldPlanner))).toBe(true);
 
