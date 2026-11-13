@@ -710,6 +710,10 @@ assert.match(serviceWorker, /STATIC_DESTINATIONS\.has\(request\.destination\)/, 
 assert.match(serviceWorker, /request\.headers\.has\("authorization"\)/, "authenticated requests bypass static caching");
 assert.match(serviceWorker, /request\.cache === "no-store"/, "explicit no-store requests bypass static caching");
 assert.match(serviceWorker, /await cache\.put\(request, response\.clone\(\)\)/, "successful static assets are saved for repeat visits");
+assert.match(serviceWorker, /campusshield-static-v14/, "the static asset cache version advances with the mobile performance stylesheet");
+assert.ok(htmlMarkup.includes('href="./campusshield-performance-polish.css?v=20261113-1"'), "mobile performance polish is versioned for cache-safe updates");
+assert.match(appScript, /image\.decoding = 'async'/, "private profile photos decode asynchronously");
+assert.match(appScript, /loading="lazy" decoding="async"/, "community image attachments load lazily and decode asynchronously");
 assert.match(offlinePage, /needs an internet connection/i);
 assert.doesNotMatch(offlinePage, /CampusShield is a prototype|does not contact emergency services/i,
   "offline fallback omits the removed prototype disclaimer");
@@ -1278,7 +1282,7 @@ assert.match(featureLoader, /"campus-contacts":\s*\{[\s\S]*?campus-service-direc
 assert.match(featureLoader, /"student-rewards":[\s\S]*student-rewards\.js/, "Student Rewards is first-use loaded");
 assert.match(featureLoader, /CampusShieldStudentRewards\?\.load/, "Student Rewards refreshes after its lazy module loads");
 assert.match(featureLoader, /campusshield:profile-ready[\s\S]*loadDashboardTimetable\(\)/, "Dashboard timetable loads after a signed-in profile is ready");
-assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v13"/, "static asset cache is versioned");
+assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v14"/, "static asset cache is versioned");
 assert.match(serviceWorkerSource, /STATIC_DESTINATIONS = new Set\(\["script", "style", "image", "font"\]\)/, "only static browser resources use the repeat-visit cache");
 assert.match(serviceWorkerSource, /request\.headers\.has\("authorization"\)/, "authenticated requests are excluded from the service-worker cache");
 console.log("PASS lazy feature startup and versioned static asset caching");

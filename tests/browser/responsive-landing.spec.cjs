@@ -458,3 +458,36 @@ test("workspace-only feature scripts load on first use instead of initial app st
   await contactsRequest;
   await expect.poll(() => page.evaluate(() => Boolean(window.CampusShieldServiceDirectory))).toBe(true);
 });
+
+
+test("mobile page transitions stay brief and use native scroll behavior", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/index.html?mobile-performance-test=1", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#login-screen")).toBeVisible();
+  const performanceStylesheet = page.locator('link[href*="campusshield-performance-polish.css"]');
+  await expect.poll(() => performanceStylesheet.evaluate(link => Boolean(link.sheet))).toBe(true);
+
+  const mobileMotion = await page.locator("#page-dashboard").evaluate(element => {
+    element.classList.add("active");
+    const style = getComputedStyle(element);
+    return {
+      scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
+      animationName: style.animationName,
+      animationDurationMs: Math.max(...style.animationDuration.split(",").map(value => {
+        const duration = parseFloat(value);
+        return value.includes("ms") ? duration : duration * 1000;
+      })),
+    };
+  });
+  expect(mobileMotion.scrollBehavior).toBe("auto");
+  expect(mobileMotion.animationName).toBe("page-in");
+  expect(mobileMotion.animationDurationMs).toBeLessThanOrEqual(160);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const reducedMotion = await page.locator("#page-dashboard").evaluate(element => ({
+    scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
+    animationName: getComputedStyle(element).animationName,
+  }));
+  expect(reducedMotion.scrollBehavior).toBe("auto");
+  expect(reducedMotion.animationName).toBe("none");
+});
