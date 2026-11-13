@@ -6,6 +6,7 @@ const read = path => readFile(new URL(path, root), "utf8");
 
 const html = await read("index.html");
 const app = await read("campusshield-app.js");
+const featureLoader = await read("campusshield-feature-loader.js");
 const backend = await read("campusshield-backend.js");
 const ui = await read("campus-live-classroom.js");
 const css = await read("campus-live-classroom.css");
@@ -20,7 +21,7 @@ const endFunction = await read("supabase/functions/campus-live-class-end/index.t
 const profileIdentityMigration = await read("supabase/migrations/20261111170000_harden_profile_identity_search_path.sql");
 
 assert.match(html, /campus-live-classroom\.css/);
-assert.match(html, /campus-live-classroom\.js/);
+assert.match(featureLoader, /classroom:\s*\{\s*scripts:\s*\["\.\/campus-live-classroom\.js\?v=20261113-1"\]/);
 assert.match(html, /id="campus-live-classroom-root"/);
 assert.match(html, /Online Classroom/);
 
