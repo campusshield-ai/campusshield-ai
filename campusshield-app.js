@@ -1980,6 +1980,7 @@
     const image = $(imageId);
     const fallback = $(fallbackId);
     if (!image || !fallback) return false;
+    image.decoding = 'async';
     const renderToken = (profileAvatarRenderTokens.get(imageId) || 0) + 1;
     profileAvatarRenderTokens.set(imageId, renderToken);
     image.hidden = true;
@@ -2321,6 +2322,7 @@
       const prepared = await prepareProfileAvatar(file);
       if (profileAvatarPreviewUrl) URL.revokeObjectURL(profileAvatarPreviewUrl);
       profileAvatarPreviewUrl = URL.createObjectURL(prepared.file);
+      image.decoding = 'async';
       image.src = profileAvatarPreviewUrl;
       image.hidden = false;
       fallback.hidden = true;
@@ -5177,7 +5179,7 @@
           return '<figure><video controls preload="metadata" aria-label="' + alt + '"><source src="' + url + '" type="' + esc(media.mime_type) + '">Your browser cannot play this video.</video>' +
             (media.alt_text ? '<figcaption>' + esc(media.alt_text) + '</figcaption>' : '') + '</figure>';
         }
-        return '<figure><img src="' + url + '" alt="' + alt + '" loading="lazy" referrerpolicy="no-referrer">' +
+        return '<figure><img src="' + url + '" alt="' + alt + '" loading="lazy" decoding="async" referrerpolicy="no-referrer">' +
           (media.alt_text ? '<figcaption>' + esc(media.alt_text) + '</figcaption>' : '') + '</figure>';
       }).join('');
       const mediaBlock = mediaHtml ? '<div class="community-media-grid">' + mediaHtml + '</div>' : '';
