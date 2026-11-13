@@ -513,7 +513,7 @@ assert.match(coverageCss, /campus-map-coverage-overview/, 'CampusMap coverage ca
 assert.match(css, /prefers-reduced-motion/, 'CampusMap visual controls retain reduced-motion support');
 
 
-assert.match(html, /href="\.\/campus-map-passport\.css"/, 'Website and installable PWA load the Campus Passport styling layer');
+assert.match(mapLoader, /loadStylesheet\('campus-map-passport', '\.\/campus-map-passport\.css/, 'Campus Passport styles load on first map use');
 assert.match(html, /id="campus-map-discovery-filters"/, 'CampusMap has task-oriented discovery filters');
 for (const filter of ['all','academic','residential','services','access','emergency']) {
   assert.match(html, new RegExp('data-campus-filter="' + filter + '"'), 'CampusMap includes the ' + filter + ' discovery filter');
