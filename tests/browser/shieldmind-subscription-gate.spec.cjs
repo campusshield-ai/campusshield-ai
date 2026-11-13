@@ -6,6 +6,9 @@ async function openWorkspace(page, target) {
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   await page.locator("#workspace .global-search-input").waitFor({ state: "attached" });
   await page.locator("#shieldmind-paid-gate").waitFor({ state: "attached" });
+  const pastQuestionsRequest = target === "past-questions"
+    ? page.waitForRequest(request => new URL(request.url()).pathname.endsWith("/past-question-practice.js"))
+    : null;
   await page.evaluate(targetPage => {
     document.querySelector("#login-screen").style.display = "none";
     const workspace = document.querySelector("#workspace");
@@ -18,6 +21,11 @@ async function openWorkspace(page, target) {
     document.querySelectorAll("#workspace .page").forEach(section => section.classList.remove("active"));
     document.querySelector("#page-" + targetPage).classList.add("active");
   }, target);
+  if (pastQuestionsRequest) {
+    await pastQuestionsRequest;
+    await expect.poll(() => page.evaluate(() => Boolean(window.PastQuestionPractice))).toBe(true);
+    await expect.poll(() => page.locator("#page-past-questions").getAttribute("data-feature-loaded")).toBe("true");
+  }
 }
 
 test("ShieldMind locks AI chat until the account has an active paid plan", async ({ page }) => {
