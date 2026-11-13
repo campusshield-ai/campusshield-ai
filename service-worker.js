@@ -4,7 +4,6 @@ const BRAND_STYLESHEET_URL = "./campusshield-brand-system.css";
 const MODULE_STYLESHEET_URL = "./campusshield-module-experience.css?v=20261110-2";
 const SHIELDMIND_CHAT_STYLESHEET_URL = "./shieldmind-chat-history.css?v=20261110-1";
 const CAMPUS_CHAT_STYLESHEET_URL = "./campus-chat-room-upgrade.css";
-const CAMPUS_CHAT_SCRIPT_URL = "./campus-chat-room-enhancements.js";
 const OFFLINE_URL = "./offline.html";
 const STATIC_DESTINATIONS = new Set(["script", "style", "image", "font"]);
 
@@ -16,8 +15,7 @@ self.addEventListener("install", (event) => {
         cache.add(BRAND_STYLESHEET_URL),
         cache.add(MODULE_STYLESHEET_URL),
         cache.add(SHIELDMIND_CHAT_STYLESHEET_URL),
-        cache.add(CAMPUS_CHAT_STYLESHEET_URL),
-        cache.add(CAMPUS_CHAT_SCRIPT_URL)
+        cache.add(CAMPUS_CHAT_STYLESHEET_URL)
       ]))
       .then(() => self.skipWaiting())
   );
