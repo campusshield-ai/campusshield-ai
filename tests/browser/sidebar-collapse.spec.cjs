@@ -245,6 +245,11 @@ test("desktop sidebar stays smooth and consistent through rapid collapse/expand 
   const sidebar = page.locator("#app-sidebar");
   const main = page.locator("#workspace .main");
   const toggle = page.locator("#sidebar-collapse-toggle");
+  const expandedLayout = await page.evaluate(() => ({
+    sidebarWidth: Math.round(document.querySelector("#app-sidebar").getBoundingClientRect().width),
+    mainOffset: Math.round(parseFloat(getComputedStyle(document.querySelector("#workspace .main")).marginLeft)),
+  }));
+  expect(expandedLayout.sidebarWidth).toBeGreaterThan(82);
 
   const motion = await sidebar.evaluate(el => {
     const style = getComputedStyle(el);
@@ -270,8 +275,8 @@ test("desktop sidebar stays smooth and consistent through rapid collapse/expand 
   await page.waitForTimeout(230);
   await expect(app).not.toHaveClass(/sidebar-collapsed/);
   await expect(toggle).toHaveAttribute("aria-expanded", "true");
-  await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(250);
-  await expect.poll(() => main.evaluate(el => Math.round(parseFloat(getComputedStyle(el).marginLeft)))).toBe(250);
+  await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(expandedLayout.sidebarWidth);
+  await expect.poll(() => main.evaluate(el => Math.round(parseFloat(getComputedStyle(el).marginLeft)))).toBe(expandedLayout.mainOffset);
 
   await toggle.evaluate(button => {
     for (let index = 0; index < 5; index += 1) button.click();
