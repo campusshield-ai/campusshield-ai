@@ -1,0 +1,23 @@
+/* Small runtime polish for mobile scrolling and workspace route changes.
+   Keep native touch scrolling responsive; shorten only the page-entry animation. */
+@media (max-width: 650px) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  #workspace .page.active {
+    animation: page-in .16s cubic-bezier(.2, .72, .2, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    scroll-behavior: auto !important;
+  }
+
+  #workspace .page.active {
+    animation: none !important;
+    transition: none !important;
+  }
+}
