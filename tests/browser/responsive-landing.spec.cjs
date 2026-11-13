@@ -378,6 +378,9 @@ test("CampusMap renderer and map-only assets load only after opening the map", a
     if (/maplibre-gl|campus-map-geometry\.js/.test(request.url())) mapRequests.push(request.url());
   });
 
+  await page.route("https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css", route =>
+    route.fulfill({ status: 200, contentType: "text/css", body: "" })
+  );
   await page.route("https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs", route => route.abort());
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   await expect(page.locator("#login-screen")).toBeVisible();
