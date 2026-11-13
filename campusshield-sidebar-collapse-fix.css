@@ -366,3 +366,29 @@
     line-height:1.35 !important;
   }
 }
+
+/* Desktop performance guard: animate only the rail width.
+   Animating min/max-width as well forces the sidebar to snap at one end of
+   the transition. Keeping those constraints open lets width interpolate
+   smoothly; dropping will-change avoids pinning a large layout layer. */
+@media (min-width: 651px) {
+  #workspace.app #app-sidebar {
+    min-width: 0 !important;
+    max-width: none !important;
+    transition: width .18s cubic-bezier(.22,.72,.18,1), box-shadow .16s ease !important;
+    will-change: auto !important;
+  }
+
+  #workspace.app.sidebar-collapsed #app-sidebar {
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  #workspace.app .main {
+    transition: margin-left .18s cubic-bezier(.22,.72,.18,1) !important;
+  }
+
+  #workspace.app #app-sidebar .sidebar-toggle-icon {
+    transition: transform .14s ease !important;
+  }
+}
