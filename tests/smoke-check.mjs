@@ -1264,3 +1264,15 @@ assert.match(campusMapLoader, /loadGeometryHelpers\(\)/, "OSM geometry helpers a
 assert.match(campusMapScript, /initialize\(\)\s*\{\s*if \(!map\) ensureMap\(\)/, "the map module exposes safe initialization after lazy import");
 assert.doesNotMatch(htmlMarkup, /maplibre-gl\.css|href="\.\/campus-map\.css"|href="\.\/campus-map-passport\.css"|src="\.\/campus-map-geometry\.js"/, "map-only assets are not render-blocking first-load resources");
 assert.match(htmlMarkup, /\.report-location-pin\s*\{[^}]*display:\s*flex/s, "incident GPS attachment keeps its shared form layout without loading CampusMap CSS");
+
+
+const featureLoader = await readFile(new URL("../campusshield-feature-loader.js", import.meta.url), "utf8");
+const serviceWorker = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
+assert.match(featureLoader, /new MutationObserver\(observeActiveRoute\)/, "workspace-only modules load when their page becomes active");
+assert.match(featureLoader, /"marketplace":[\s\S]*campus-discovery-ui\.js/, "Marketplace discovery controls are first-use loaded");
+assert.match(featureLoader, /"student-rewards":[\s\S]*student-rewards\.js/, "Student Rewards is first-use loaded");
+assert.match(featureLoader, /CampusShieldStudentRewards\?\.load/, "Student Rewards refreshes after its lazy module loads");
+assert.match(serviceWorker, /STATIC_CACHE_NAME = "campusshield-static-v13"/, "static asset cache is versioned");
+assert.match(serviceWorker, /STATIC_DESTINATIONS = new Set\(\["script", "style", "image", "font"\]\)/, "only static browser resources use the repeat-visit cache");
+assert.match(serviceWorker, /request\.headers\.has\("authorization"\)/, "authenticated requests are excluded from the service-worker cache");
+console.log("PASS lazy feature startup and versioned static asset caching");
