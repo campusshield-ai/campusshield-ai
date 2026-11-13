@@ -10,10 +10,14 @@ async function openShieldMind(page) {
     workspace.classList.remove("mobile-nav-open", "sidebar-collapsed");
     document.querySelectorAll("#workspace .page").forEach(section => section.classList.remove("active"));
     document.querySelector("#page-shieldmind").classList.add("active");
-    // Reveal the presentation layer only. Data access remains covered separately
-    // by the module's paid-entitlement and staging-environment smoke assertions.
-    document.querySelector("#shieldmind-learning-insights").hidden = false;
   });
+  await expect.poll(
+    () => page.evaluate(() => Boolean(window.CampusShieldLearningInsights)),
+    { message: "ShieldMind learning-insights module loads on first visit" }
+  ).toBe(true);
+  // Reveal the presentation layer only after its lazy module has initialized.
+  // Data access remains covered separately by paid-entitlement smoke assertions.
+  await page.locator("#shieldmind-learning-insights").evaluate(element => { element.hidden = false; });
   await expect(page.locator("#shieldmind-learning-insights")).toBeVisible();
 }
 
