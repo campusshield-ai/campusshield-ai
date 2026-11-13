@@ -34,6 +34,10 @@ async function openWorkspace(page, target) {
     await pastQuestionsRequest;
     await expect.poll(() => page.evaluate(() => Boolean(window.PastQuestionPractice))).toBe(true);
     await expect.poll(() => page.locator("#page-past-questions").getAttribute("data-feature-loaded")).toBe("true");
+    // This test isolates the paid-plan gate. The mock account has no campus
+    // membership, so expose this one section after its separate campus gate
+    // has run; do not pretend the mock is a verified student account.
+    await page.locator("#pq-ai-section").evaluate(section => { section.hidden = false; });
   }
 }
 
