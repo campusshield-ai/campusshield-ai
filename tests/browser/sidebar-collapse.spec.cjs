@@ -217,3 +217,77 @@ test("Getting Started stays pinned while feature navigation scrolls", async ({ p
     await expect(guide).toBeVisible();
   }
 });
+
+
+test("desktop sidebar stays smooth and consistent through rapid collapse/expand toggles", async ({ page }) => {
+  await page.addInitScript(() => {
+    let widgetId = 0;
+    const callbacks = new Map();
+    window.turnstile = {
+      render(_container, options) {
+        const id = ++widgetId;
+        callbacks.set(id, options);
+        queueMicrotask(() => options.callback?.("synthetic-turnstile-test-token"));
+        return id;
+      },
+      reset(id) {
+        callbacks.get(id)?.callback?.("synthetic-turnstile-test-token");
+      },
+    };
+    localStorage.removeItem("campusshield-sidebar-collapsed");
+    localStorage.removeItem("campusshield-tablet-expanded");
+  });
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await revealWorkspace(page);
+
+  const app = page.locator("#workspace");
+  const sidebar = page.locator("#app-sidebar");
+  const main = page.locator("#workspace .main");
+  const toggle = page.locator("#sidebar-collapse-toggle");
+
+  const motion = await sidebar.evaluate(el => {
+    const style = getComputedStyle(el);
+    return {
+      properties: style.transitionProperty.split(",").map(value => value.trim()),
+      durations: style.transitionDuration.split(",").map(value => parseFloat(value.trim()) * (value.includes("ms") ? 1 : 1000)),
+      minWidth: style.minWidth,
+      maxWidth: style.maxWidth,
+      willChange: style.willChange,
+    };
+  });
+  expect(motion.properties).toContain("width");
+  expect(Math.max(...motion.durations)).toBeLessThanOrEqual(180);
+  expect(motion.minWidth).toBe("0px");
+  expect(motion.maxWidth).toBe("none");
+  expect(motion.willChange).not.toContain("width");
+
+  // Trigger multiple state changes in one frame to catch stale class/ARIA
+  // states and transitions that become stuck after an interrupted animation.
+  await toggle.evaluate(button => {
+    for (let index = 0; index < 6; index += 1) button.click();
+  });
+  await page.waitForTimeout(230);
+  await expect(app).not.toHaveClass(/sidebar-collapsed/);
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(250);
+  await expect.poll(() => main.evaluate(el => Math.round(parseFloat(getComputedStyle(el).marginLeft)))).toBe(250);
+
+  await toggle.evaluate(button => {
+    for (let index = 0; index < 5; index += 1) button.click();
+  });
+  await page.waitForTimeout(230);
+  await expect(app).toHaveClass(/sidebar-collapsed/);
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(82);
+  await expect.poll(() => main.evaluate(el => Math.round(parseFloat(getComputedStyle(el).marginLeft)))).toBe(82);
+
+  const finalLayout = await page.evaluate(() => ({
+    documentWidth: document.documentElement.scrollWidth,
+    viewportWidth: document.documentElement.clientWidth,
+    sidebarScrollWidth: document.querySelector("#app-sidebar").scrollWidth,
+    sidebarClientWidth: document.querySelector("#app-sidebar").clientWidth,
+  }));
+  expect(finalLayout.documentWidth).toBeLessThanOrEqual(finalLayout.viewportWidth + 1);
+  expect(finalLayout.sidebarScrollWidth).toBeLessThanOrEqual(finalLayout.sidebarClientWidth + 1);
+});
