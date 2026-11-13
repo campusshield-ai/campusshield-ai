@@ -491,3 +491,48 @@ test("mobile page transitions stay brief and use native scroll behavior", async 
   expect(reducedMotion.scrollBehavior).toBe("auto");
   expect(reducedMotion.animationName).toBe("none");
 });
+
+
+test("optional workspace bundles stay out of login startup and load on first use", async ({ page }) => {
+  const deferredRequests = [];
+  const deferredNames = [
+    "past-question-practice.js",
+    "campus-live-classroom.js",
+    "student-rewards-admin.js",
+    "vendor/qrcode.js"
+  ];
+  page.on("request", request => {
+    const pathname = new URL(request.url()).pathname;
+    if (deferredNames.some(name => pathname.endsWith("/" + name))) deferredRequests.push(pathname);
+  });
+
+  await page.goto("/index.html?deferred-workspace-test=1", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#login-screen")).toBeVisible();
+  await page.waitForTimeout(350);
+  expect(deferredRequests, "optional modules should not download on the initial login path").toEqual([]);
+
+  const activatePage = async id => page.evaluate(pageId => {
+    document.querySelectorAll(".page.active").forEach(element => element.classList.remove("active"));
+    document.getElementById(pageId)?.classList.add("active");
+  }, id);
+
+  const pastQuestionsRequest = page.waitForRequest(request => request.url().includes("/past-question-practice.js"));
+  await activatePage("page-past-questions");
+  await pastQuestionsRequest;
+  await expect.poll(() => page.evaluate(() => Boolean(window.PastQuestionPractice))).toBe(true);
+
+  const adminRewardsRequest = page.waitForRequest(request => request.url().includes("/student-rewards-admin.js"));
+  await activatePage("page-admin-rewards");
+  await adminRewardsRequest;
+  await expect.poll(() => page.evaluate(() => Boolean(window.CampusShieldAdminRewards))).toBe(true);
+
+  const classroomRequest = page.waitForRequest(request => request.url().includes("/campus-live-classroom.js"));
+  await activatePage("page-classroom");
+  await classroomRequest;
+  await expect.poll(() => page.locator("#page-classroom").getAttribute("data-feature-loaded")).toBe("true");
+
+  expect(deferredRequests.some(path => path.endsWith("/vendor/qrcode.js"))).toBe(false);
+  expect(deferredRequests.some(path => path.endsWith("/past-question-practice.js"))).toBe(true);
+  expect(deferredRequests.some(path => path.endsWith("/student-rewards-admin.js"))).toBe(true);
+  expect(deferredRequests.some(path => path.endsWith("/campus-live-classroom.js"))).toBe(true);
+});
