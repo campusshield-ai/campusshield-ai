@@ -1277,6 +1277,7 @@ assert.match(featureLoader, /opportunities:\s*\{[\s\S]*?campus-discovery-ui\.js/
 assert.match(featureLoader, /"campus-contacts":\s*\{[\s\S]*?campus-service-directory\.js/, "Campus Contacts directory loads on first use");
 assert.match(featureLoader, /"student-rewards":[\s\S]*student-rewards\.js/, "Student Rewards is first-use loaded");
 assert.match(featureLoader, /CampusShieldStudentRewards\?\.load/, "Student Rewards refreshes after its lazy module loads");
+assert.match(featureLoader, /campusshield:profile-ready[\s\S]*loadDashboardTimetable\(\)/, "Dashboard timetable loads after a signed-in profile is ready");
 assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v13"/, "static asset cache is versioned");
 assert.match(serviceWorkerSource, /STATIC_DESTINATIONS = new Set\(\["script", "style", "image", "font"\]\)/, "only static browser resources use the repeat-visit cache");
 assert.match(serviceWorkerSource, /request\.headers\.has\("authorization"\)/, "authenticated requests are excluded from the service-worker cache");
