@@ -113,6 +113,14 @@ test("global search keeps recently opened destinations handy and can clear them"
     if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
     const login = document.getElementById("login-screen");
     if (login) { login.hidden = true; login.style.display = "none"; }
+    // Provide a visible destination trigger without relying on a signed-in session.
+    // This isolates the in-session recent-history behavior from auth navigation.
+    document.querySelectorAll('[data-page="opportunities"]').forEach(element => { element.hidden = true; });
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.dataset.page = "opportunities";
+    trigger.textContent = "Open Opportunity Hub";
+    document.getElementById("page-dashboard")?.append(trigger);
   });
 
   const search = page.locator("#campus-global-search");
