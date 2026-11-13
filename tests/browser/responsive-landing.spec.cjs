@@ -417,7 +417,8 @@ test("workspace-only feature scripts load on first use instead of initial app st
     "student-creator-tools.js",
     "campus-chat-room-enhancements.js",
     "campus-voice-notes.js",
-    "campus-private-messages-polish.js"
+    "campus-private-messages-polish.js",
+    "campus-service-directory.js"
   ];
   page.on("request", request => {
     const url = new URL(request.url());
@@ -451,4 +452,9 @@ test("workspace-only feature scripts load on first use instead of initial app st
   expect(featureRequests).toContain("/student-rewards.js");
   expect(featureRequests).toContain("/campus-discovery-ui.js");
   expect(featureRequests).toContain("/shieldmind-planner.js");
+
+  const contactsRequest = page.waitForRequest(request => request.url().endsWith("/campus-service-directory.js"));
+  await activatePage("page-campus-contacts");
+  await contactsRequest;
+  await expect.poll(() => page.evaluate(() => Boolean(window.CampusShieldServiceDirectory))).toBe(true);
 });
