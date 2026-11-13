@@ -1293,6 +1293,8 @@ assert.match(featureLoader, /"admin-rewards":[\s\S]*?student-rewards-admin\.js[\
   "administrator rewards loads only after its protected route is opened");
 assert.match(featureLoader, /"past-questions":[\s\S]*?past-question-practice\.js[\s\S]*?PastQuestionPractice\?\.load/,
   "past questions loads and initializes only on first use");
+assert.match(pastQuestionPractice, /window\.PastQuestionPractice = \{ load, isEnabled \}/,
+  "past-question workspace script exposes its first-use initialization API");
 assert.match(featureLoader, /classroom:\s*\{[\s\S]*?campus-live-classroom\.js/,
   "live classroom bundle loads only on its workspace route");
 assert.match(qrAttendance, /function ensureQrCodeLibrary\(\)/,
