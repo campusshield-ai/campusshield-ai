@@ -17,6 +17,7 @@ assert.match(html, /data-alert-count="unread"/, "Unread filter has a live unread
 assert.match(html, /Helpdesk activity/, "The card accurately identifies its data source");
 
 assert.match(renderer, /activeFilter === 'unread'/, "Unread view filters to unread helpdesk alerts");
+assert.match(app, /filterGroup\.onclick = function\(event\)/, "Reopening Profile Settings does not stack filter event listeners");
 assert.match(renderer, /setAttribute\('aria-pressed'/, "Filter state is exposed to assistive technology");
 assert.match(renderer, /readIds\.delete\(row\.id\)/, "Read alerts can be marked unread");
 assert.match(renderer, /readIds\.add\(row\.id\)/, "Unread alerts can be marked read");
