@@ -4,6 +4,7 @@ import vm from "node:vm";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const index = read("../index.html");
+const featureLoader = read("../campusshield-feature-loader.js");
 const app = read("../campusshield-app.js");
 const guide = read("../campusshield-guide.js");
 const css = read("../campusshield-guide.css");
@@ -33,7 +34,7 @@ assert.match(app, /querySelectorAll\('\.nav button\[data-page\], \.sidebar-guide
 assert.doesNotMatch(index, /mobile-topbar-help/, "The mobile top bar must not duplicate the dedicated sidebar guide link");
 assert.match(index, /id="page-guide"[^>]*aria-labelledby="guide-title"/);
 assert.match(index, /campusshield-guide\.css/);
-assert.match(index, /campusshield-guide\.js/);
+assert.match(featureLoader, /guide:\s*\{[\s\S]*?campusshield-guide\.js/);
 assert.match(app, /guide:'How to use CampusShield'/);
 
 for (const token of [
