@@ -45,7 +45,7 @@
 
   const search = document.createElement("div");
   search.className = "global-search";
-  search.innerHTML = '<svg class="global-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input class="global-search-input" id="campus-global-search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" aria-label="Search campus features and resources" aria-controls="campus-global-search-options" aria-expanded="false" placeholder="Search courses, resources, events, opportunities…"><span class="global-search-kbd" aria-hidden="true">/</span><div class="global-search-results" id="campus-global-search-results" hidden><div class="global-search-heading" id="campus-global-search-heading" aria-hidden="true"></div><div class="global-search-options" id="campus-global-search-options" role="listbox" aria-label="Campus search suggestions"></div><div class="global-search-empty" id="campus-global-search-empty" role="status" aria-live="polite" hidden></div></div>';
+  search.innerHTML = '<svg class="global-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input class="global-search-input" id="campus-global-search" type="search" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" aria-label="Search campus features and resources" aria-controls="campus-global-search-options" aria-expanded="false" placeholder="Search courses, resources, events, opportunities…"><span class="global-search-kbd" aria-hidden="true">/</span><div class="global-search-results" id="campus-global-search-results" hidden><div class="global-search-heading" id="campus-global-search-heading"><span class="global-search-heading-label"></span><button class="global-search-clear-recent" type="button" aria-label="Clear recent destinations" hidden>Clear</button></div><div class="global-search-options" id="campus-global-search-options" role="listbox" aria-label="Campus search suggestions"></div><div class="global-search-empty" id="campus-global-search-empty" role="status" aria-live="polite" hidden></div></div>';
   header.insertBefore(search, header.querySelector(".topbar-title"));
   actions.insertBefore(themeButton, actions.firstChild);
   setTheme(root.dataset.theme || initialTheme);
@@ -53,9 +53,13 @@
   const input = search.querySelector("input");
   const results = search.querySelector(".global-search-results");
   const resultOptions = search.querySelector("#campus-global-search-options");
-  const resultHeading = search.querySelector("#campus-global-search-heading");
+  const resultHeading = search.querySelector(".global-search-heading-label");
+  const clearRecentButton = search.querySelector(".global-search-clear-recent");
   const emptyState = search.querySelector("#campus-global-search-empty");
   let activeResultIndex = -1;
+  // Recently opened destinations stay in this page session only. No search terms,
+  // private content or account data are written to storage.
+  let recentDestinations = [];
   const destinations = [
     {title:"Overview", description:"Your campus dashboard and activity", page:"dashboard", keywords:"home dashboard safety"},
     {title:"Report an incident", description:"Submit a private campus safety report", page:"report", keywords:"safety incident emergency report"},
@@ -77,10 +81,23 @@
     {title:"My timetable", description:"Review your classes and schedule", page:"timetable", keywords:"schedule classes calendar"},
     {title:"Profile & settings", description:"Manage your profile and preferences", page:"profile-settings", keywords:"account settings personal"}
   ];
+  function isAvailableTrigger(element) {
+    return Boolean(element && !element.hidden && !element.disabled &&
+      element.getAttribute("aria-disabled") !== "true" && !element.closest("[hidden]"));
+  }
+
+  function findDestinationTrigger(pageName) {
+    const triggers = Array.from(document.querySelectorAll('[data-page="' + pageName + '"]'))
+      .filter(isAvailableTrigger);
+    // Prefer the primary navigation, then dashboard shortcuts. Never click a
+    // role-gated/hidden first match when another valid entry point exists.
+    return triggers.find(element => element.closest("#app-sidebar, .mobile-bottom-nav")) ||
+      triggers.find(element => element.closest("#page-dashboard")) || triggers[0] || null;
+  }
+
   function visibleDestination(item) {
-    // Offer a destination only when this build actually includes its page.
-    // The main navigation and destination handlers enforce the user's access.
-    return Boolean(document.getElementById("page-" + item.page));
+    const page = document.getElementById("page-" + item.page);
+    return Boolean(page && !page.hidden && !page.closest("[hidden]") && findDestinationTrigger(item.page));
   }
 
   function normalizeSearchText(value) {
@@ -148,16 +165,25 @@
       }
     });
   }
+  function rememberDestination(item) {
+    const recent = {
+      title: String(item.title || "Campus destination"),
+      description: String(item.description || "Recently opened campus space"),
+      page: item.page
+    };
+    recentDestinations = [recent, ...recentDestinations.filter(entry => entry.page !== recent.page)].slice(0, 4);
+  }
+
   function openDestination(item) {
-    const target = document.querySelector('[data-page="' + item.page + '"]');
-    if (target) target.click();
-    else {
-      const page = document.getElementById("page-" + item.page);
-      if (page) {
-        document.querySelectorAll(".page.active").forEach(el => el.classList.remove("active"));
-        page.classList.add("active");
-      }
+    const target = findDestinationTrigger(item.page);
+    // Access can change while the suggestion list is open (for example, after
+    // account verification changes). Re-check before activating the destination.
+    if (!target || !visibleDestination(item)) {
+      closeResults();
+      return;
     }
+    rememberDestination(item);
+    target.click();
     input.value = "";
     closeResults();
     input.blur();
@@ -165,11 +191,23 @@
   function renderResults(query) {
     const q = normalizeSearchText(query);
     const queryWords = q.split(/\s+/).filter(Boolean);
-    const destinationMatches = destinations.filter(item => visibleDestination(item) &&
-      (!q || queryWords.every(word => normalizeSearchText(item.title + " " + item.description + " " + item.keywords).includes(word)))).slice(0, 6);
-    const matches = [...destinationMatches, ...getLiveCampusMatches(q)].slice(0, 10);
+    const destinationMatches = q
+      ? destinations.filter(item => visibleDestination(item) &&
+          queryWords.every(word => normalizeSearchText(item.title + " " + item.description + " " + item.keywords).includes(word)))
+        .sort((a, b) => {
+          const aTitle = normalizeSearchText(a.title);
+          const bTitle = normalizeSearchText(b.title);
+          const score = title => title === q ? 0 : title.startsWith(q) ? 1 : queryWords.every(word => title.includes(word)) ? 2 : 3;
+          return score(aTitle) - score(bTitle);
+        }).slice(0, 6)
+      : [];
+    const recentMatches = !q ? recentDestinations.filter(visibleDestination).slice(0, 4) : [];
+    const quickMatches = !q && !recentMatches.length ? destinations.filter(visibleDestination).slice(0, 6) : [];
+    const primaryMatches = q ? destinationMatches : recentMatches.length ? recentMatches : quickMatches;
+    const matches = [...primaryMatches, ...getLiveCampusMatches(q)].slice(0, 10);
     resultOptions.replaceChildren();
-    resultHeading.textContent = q ? "Matching campus tools" : "Quick destinations";
+    resultHeading.textContent = q ? "Matching campus tools" : recentMatches.length ? "Recently opened" : "Quick destinations";
+    clearRecentButton.hidden = q.length > 0 || recentMatches.length === 0;
     emptyState.textContent = matches.length
       ? ""
       : "No matching destination yet. Try “past questions”, “events” or “safety”.";
@@ -209,8 +247,16 @@
     input.setAttribute("aria-expanded", "true");
   }
 
+  clearRecentButton.addEventListener("click", () => {
+    recentDestinations = [];
+    renderResults(input.value);
+    input.focus();
+  });
   input.addEventListener("focus", () => renderResults(input.value));
   input.addEventListener("input", () => renderResults(input.value));
+  search.addEventListener("focusout", event => {
+    if (!search.contains(event.relatedTarget)) closeResults();
+  });
   input.addEventListener("keydown", event => {
     const options = resultOptions.querySelectorAll('[role="option"]');
     if (event.key === "Escape" && !results.hidden) {
@@ -226,8 +272,6 @@
       event.preventDefault();
       const selected = activeResultIndex >= 0 ? options[activeResultIndex] : options[0];
       selected?.click();
-    } else if (event.key === "Tab") {
-      closeResults();
     }
   });
   document.addEventListener("click", event => {
@@ -329,7 +373,7 @@
       {title:"Marketplace", page:"marketplace"},
       {title:"Opportunity Hub", page:"opportunities"},
       {title:"Campus Network", page:"campus-network"}
-    ].filter(visibleDestination).forEach(item => {
+    ].filter(item => Boolean(document.getElementById("page-" + item.page))).forEach(item => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "campus-dashboard-quicklink";
