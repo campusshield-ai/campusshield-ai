@@ -1273,6 +1273,8 @@ assert.match(htmlMarkup, /\.report-location-pin\s*\{[^}]*display:\s*flex/s, "inc
 const serviceWorkerSource = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
 assert.match(featureLoader, /new MutationObserver\(observeActiveRoute\)/, "workspace-only modules load when their page becomes active");
 assert.match(featureLoader, /marketplace:\s*\{[\s\S]*?campus-discovery-ui\.js/, "Marketplace discovery controls are first-use loaded");
+assert.match(featureLoader, /opportunities:\s*\{[\s\S]*?campus-discovery-ui\.js/, "Opportunity discovery controls load on first use");
+assert.match(featureLoader, /"campus-contacts":\s*\{[\s\S]*?campus-service-directory\.js/, "Campus Contacts directory loads on first use");
 assert.match(featureLoader, /"student-rewards":[\s\S]*student-rewards\.js/, "Student Rewards is first-use loaded");
 assert.match(featureLoader, /CampusShieldStudentRewards\?\.load/, "Student Rewards refreshes after its lazy module loads");
 assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v13"/, "static asset cache is versioned");
