@@ -120,6 +120,8 @@ test("global search keeps recently opened destinations handy and can clear them"
     trigger.type = "button";
     trigger.dataset.page = "opportunities";
     trigger.textContent = "Open Opportunity Hub";
+    // Keep this focused fixture from invoking the real authenticated route handler.
+    trigger.addEventListener("click", event => event.stopPropagation());
     document.getElementById("page-dashboard")?.append(trigger);
   });
 
