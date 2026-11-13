@@ -1275,6 +1275,10 @@ assert.match(htmlMarkup, /\.report-location-pin\s*\{[^}]*display:\s*flex/s, "inc
 
 
 const serviceWorkerSource = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
+const qrAttendance = await readFile(new URL("../campus-qr-attendance.js", import.meta.url), "utf8");
+const liveClassroom = await readFile(new URL("../campus-live-classroom.js", import.meta.url), "utf8");
+const adminRewards = await readFile(new URL("../student-rewards-admin.js", import.meta.url), "utf8");
+const pastQuestionPractice = await readFile(new URL("../past-question-practice.js", import.meta.url), "utf8");
 assert.match(featureLoader, /new MutationObserver\(observeActiveRoute\)/, "workspace-only modules load when their page becomes active");
 assert.match(featureLoader, /marketplace:\s*\{[\s\S]*?campus-discovery-ui\.js/, "Marketplace discovery controls are first-use loaded");
 assert.match(featureLoader, /opportunities:\s*\{[\s\S]*?campus-discovery-ui\.js/, "Opportunity discovery controls load on first use");
@@ -1282,7 +1286,29 @@ assert.match(featureLoader, /"campus-contacts":\s*\{[\s\S]*?campus-service-direc
 assert.match(featureLoader, /"student-rewards":[\s\S]*student-rewards\.js/, "Student Rewards is first-use loaded");
 assert.match(featureLoader, /CampusShieldStudentRewards\?\.load/, "Student Rewards refreshes after its lazy module loads");
 assert.match(featureLoader, /campusshield:profile-ready[\s\S]*loadDashboardTimetable\(\)/, "Dashboard timetable loads after a signed-in profile is ready");
-assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v14"/, "static asset cache is versioned");
+assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v15"/, "static asset cache is advanced for the new lazy modules");
+assert.doesNotMatch(htmlMarkup, /<script[^>]+src=["']\.\/(?:vendor\/qrcode\.js|student-rewards-admin\.js|campus-live-classroom\.js|past-question-practice\.js)/,
+  "QR, admin rewards, live classroom and exam-prep bundles are not requested during initial app startup");
+assert.match(featureLoader, /"admin-rewards":[\s\S]*?student-rewards-admin\.js[\s\S]*?CampusShieldAdminRewards\?\.load/,
+  "administrator rewards loads only after its protected route is opened");
+assert.match(featureLoader, /"past-questions":[\s\S]*?past-question-practice\.js[\s\S]*?PastQuestionPractice\?\.load/,
+  "past questions loads and initializes only on first use");
+assert.match(featureLoader, /classroom:\s*\{[\s\S]*?campus-live-classroom\.js/,
+  "live classroom bundle loads only on its workspace route");
+assert.match(qrAttendance, /function ensureQrCodeLibrary\(\)/,
+  "the QR generator has a first-use loader");
+assert.match(qrAttendance, /Promise\.all\(\[[\s\S]*?ensureQrCodeLibrary\(\)[\s\S]*?issueCampusClassAttendanceQrToken/,
+  "the QR generator downloads alongside the one-time attendance token request");
+assert.match(liveClassroom, /if \(page\.classList\.contains\("active"\)\) void refresh\(\)/,
+  "a lazily imported active classroom starts loading immediately");
+assert.match(adminRewards, /window\.CampusShieldAdminRewards = \{ load \}/,
+  "admin rewards exposes a route-triggered loader");
+assert.doesNotMatch(adminRewards, /onAuthStateChange|visibilitychange|syncNav/,
+  "admin rewards does not issue background auth/profile checks for every visitor");
+assert.match(appScript, /Promise\.all\(\[[\s\S]*?backend\.getCurrentUser\(\)[\s\S]*?profilePromise[\s\S]*?\]\)/,
+  "session validation and the RLS profile read overlap during login restoration");
+assert.match(appScript, /currentProfile\?\.id|requestVersion !== authSessionVersion/,
+  "asynchronous dashboard identity hydration remains tied to the current signed-in session");
 assert.match(serviceWorkerSource, /STATIC_DESTINATIONS = new Set\(\["script", "style", "image", "font"\]\)/, "only static browser resources use the repeat-visit cache");
 assert.match(serviceWorkerSource, /request\.headers\.has\("authorization"\)/, "authenticated requests are excluded from the service-worker cache");
 console.log("PASS lazy feature startup and versioned static asset caching");
