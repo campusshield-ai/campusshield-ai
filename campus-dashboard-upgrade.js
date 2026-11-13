@@ -373,7 +373,7 @@
       {title:"Marketplace", page:"marketplace"},
       {title:"Opportunity Hub", page:"opportunities"},
       {title:"Campus Network", page:"campus-network"}
-    ].filter(visibleDestination).forEach(item => {
+    ].filter(item => Boolean(document.getElementById("page-" + item.page))).forEach(item => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "campus-dashboard-quicklink";
