@@ -1263,3 +1263,4 @@ assert.match(campusMapLoader, /import\('https:\/\/unpkg\.com\/maplibre-gl@6\.16\
 assert.match(campusMapLoader, /loadGeometryHelpers\(\)/, "OSM geometry helpers are loaded only with CampusMap");
 assert.match(campusMapScript, /initialize\(\)\s*\{\s*if \(!map\) ensureMap\(\)/, "the map module exposes safe initialization after lazy import");
 assert.doesNotMatch(htmlMarkup, /maplibre-gl\.css|href="\.\/campus-map\.css"|href="\.\/campus-map-passport\.css"|src="\.\/campus-map-geometry\.js"/, "map-only assets are not render-blocking first-load resources");
+assert.match(htmlMarkup, /\.report-location-pin\s*\{[^}]*display:\s*flex/s, "incident GPS attachment keeps its shared form layout without loading CampusMap CSS");
