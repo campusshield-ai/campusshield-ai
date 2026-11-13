@@ -106,6 +106,70 @@ test("global search finds verified campus notices and course resources", async (
   await expect(results).toContainText("Intro to Java notes");
 });
 
+test("global search keeps recently opened destinations handy and can clear them", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    const workspace = document.getElementById("workspace");
+    if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
+    const login = document.getElementById("login-screen");
+    if (login) { login.hidden = true; login.style.display = "none"; }
+  });
+
+  const search = page.locator("#campus-global-search");
+  const results = page.locator("#campus-global-search-results");
+  const heading = page.locator("#campus-global-search-heading .global-search-heading-label");
+  const clear = page.getByRole("button", { name: "Clear recent destinations" });
+  await search.fill("Opportunity Hub");
+  await expect(results).toContainText("Opportunity Hub");
+  await page.locator("#campus-global-search-options [role=option]").filter({ hasText: "Opportunity Hub" }).first().click();
+  await expect(results).toBeHidden();
+
+  await search.focus();
+  await expect(heading).toHaveText("Recently opened");
+  await expect(clear).toBeVisible();
+  await expect(page.locator("#campus-global-search-options [role=option]")).toHaveCount(1);
+  await expect(page.locator("#campus-global-search-options")).toContainText("Opportunity Hub");
+
+  await clear.click();
+  await expect(heading).toHaveText("Quick destinations");
+  await expect(clear).toBeHidden();
+  await expect(page.locator("#campus-global-search-options")).not.toContainText("Opportunity Hub");
+});
+
+test("global search respects role-gated destinations and activates an available trigger", async ({ page }) => {
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    const workspace = document.getElementById("workspace");
+    if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
+    const login = document.getElementById("login-screen");
+    if (login) { login.hidden = true; login.style.display = "none"; }
+    document.querySelectorAll('[data-page="noticeboard"]').forEach(element => { element.hidden = true; });
+  });
+
+  const search = page.locator("#campus-global-search");
+  const results = page.locator("#campus-global-search-results");
+  await search.fill("Verified campus noticeboard");
+  await expect(results).not.toContainText("Verified campus noticeboard");
+
+  await page.evaluate(() => {
+    // Model a role-valid secondary entry point while leaving the first (hidden)
+    // navigation match gated. Search must activate the visible entry point.
+    const visibleTrigger = document.createElement("button");
+    visibleTrigger.type = "button";
+    visibleTrigger.dataset.page = "noticeboard";
+    visibleTrigger.textContent = "Open verified notices";
+    visibleTrigger.addEventListener("click", () => {
+      document.documentElement.dataset.visibleNoticeboardTriggerActivated = "true";
+    }, { capture: true, once: true });
+    document.getElementById("page-dashboard")?.append(visibleTrigger);
+  });
+
+  await search.fill("Verified campus noticeboard");
+  await expect(results).toContainText("Verified campus noticeboard");
+  await page.locator("#campus-global-search-options [role=option]").filter({ hasText: "Verified campus noticeboard" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-visible-noticeboard-trigger-activated", "true");
+});
+
 test("My Day renders the real private timetable snapshot, clears on sign-out and fits mobile", async ({ page }) => {
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   await page.evaluate(() => {
