@@ -1,15 +1,22 @@
-const CACHE_NAME = "campusshield-offline-v12";
+const CACHE_NAME = "campusshield-offline-v13";
+const STATIC_CACHE_NAME = "campusshield-static-v13";
 const BRAND_STYLESHEET_URL = "./campusshield-brand-system.css";
 const MODULE_STYLESHEET_URL = "./campusshield-module-experience.css?v=20261110-2";
 const SHIELDMIND_CHAT_STYLESHEET_URL = "./shieldmind-chat-history.css?v=20261110-1";
 const CAMPUS_CHAT_STYLESHEET_URL = "./campus-chat-room-upgrade.css";
-const CAMPUS_CHAT_SCRIPT_URL = "./campus-chat-room-enhancements.js";
 const OFFLINE_URL = "./offline.html";
+const STATIC_DESTINATIONS = new Set(["script", "style", "image", "font"]);
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => Promise.all([cache.add(OFFLINE_URL), cache.add(BRAND_STYLESHEET_URL), cache.add(MODULE_STYLESHEET_URL), cache.add(SHIELDMIND_CHAT_STYLESHEET_URL), cache.add(CAMPUS_CHAT_STYLESHEET_URL), cache.add(CAMPUS_CHAT_SCRIPT_URL)]))
+      .then((cache) => Promise.all([
+        cache.add(OFFLINE_URL),
+        cache.add(BRAND_STYLESHEET_URL),
+        cache.add(MODULE_STYLESHEET_URL),
+        cache.add(SHIELDMIND_CHAT_STYLESHEET_URL),
+        cache.add(CAMPUS_CHAT_STYLESHEET_URL)
+      ]))
       .then(() => self.skipWaiting())
   );
 });
@@ -17,7 +24,12 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key.startsWith("campusshield-offline-") && key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys
+        .filter((key) =>
+          ((key.startsWith("campusshield-offline-") && key !== CACHE_NAME) ||
+           (key.startsWith("campusshield-static-") && key !== STATIC_CACHE_NAME))
+        )
+        .map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
@@ -65,12 +77,33 @@ self.addEventListener("notificationclick", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
-  if (request.method !== "GET" || request.mode !== "navigate") return;
+  if (request.method !== "GET" || request.headers.has("authorization")) return;
 
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
+  if (url.origin !== self.location.origin || !url.pathname.startsWith(new URL(self.registration.scope).pathname)) return;
 
-  event.respondWith(
-    fetch(request).catch(async () => (await caches.match(OFFLINE_URL)) || Response.error())
-  );
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request).catch(async () => (await caches.match(OFFLINE_URL)) || Response.error())
+    );
+    return;
+  }
+
+  if (!STATIC_DESTINATIONS.has(request.destination) || request.cache === "no-store") return;
+
+  const cachePromise = caches.open(STATIC_CACHE_NAME);
+  const cachedPromise = cachePromise.then((cache) => cache.match(request));
+  const refreshPromise = cachePromise.then((cache) => fetch(request).then(async (response) => {
+    if (response.ok && response.type !== "opaque") {
+      await cache.put(request, response.clone());
+    }
+    return response;
+  }));
+
+  event.respondWith(cachedPromise.then((cached) =>
+    cached || refreshPromise.catch(() => Response.error())
+  ));
+  event.waitUntil(cachedPromise.then((cached) =>
+    cached ? refreshPromise.then(() => undefined).catch(() => undefined) : undefined
+  ));
 });

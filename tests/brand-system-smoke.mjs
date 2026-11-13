@@ -85,7 +85,7 @@ assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskable-512.png" &&
   icon.purpose === "maskable"), "PWA uses the dedicated safe-area maskable icon");
 
-assert.match(serviceWorker, /campusshield-offline-v12/, "Offline cache version is incremented for the Campus Chat room assets");
+assert.match(serviceWorker, /campusshield-offline-v13/, "Offline cache version is incremented for the Campus Chat room assets");
 assert.ok(htmlMarkup.includes('href="./campusshield-lovable-ux.css?v=20261109-1"'), "Lovable-inspired tablet and focus styles are loaded");
 assert.ok(htmlMarkup.includes('href="./campusshield-module-experience.css?v=20261110-2"'), "Lovable-inspired module page styles are loaded after the navigation layer");
 assert.ok(htmlMarkup.includes('href="./shieldmind-chat-history.css?v=20261110-1"'), "ShieldMind source freshness styles are cache-versioned");
@@ -127,9 +127,12 @@ assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
   serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)") &&
   serviceWorker.includes("cache.add(MODULE_STYLESHEET_URL)") &&
   serviceWorker.includes("cache.add(SHIELDMIND_CHAT_STYLESHEET_URL)") &&
-  serviceWorker.includes("cache.add(CAMPUS_CHAT_STYLESHEET_URL)") &&
-  serviceWorker.includes("cache.add(CAMPUS_CHAT_SCRIPT_URL)"),
-  "Offline fallback, shared brand, module and Campus Chat assets are all cached");
+  serviceWorker.includes("cache.add(CAMPUS_CHAT_STYLESHEET_URL)"),
+  "Offline fallback, shared brand, module and Campus Chat styles are cached");
+assert.doesNotMatch(serviceWorker, /CAMPUS_CHAT_SCRIPT_URL|cache\.add\(.*campus-chat-room-enhancements\.js/,
+  "the lazy Campus Chat behavior script is not downloaded during offline-cache installation");
+assert.match(serviceWorker, /STATIC_DESTINATIONS = new Set\(\["script", "style", "image", "font"\]\)/,
+  "the lazy Campus Chat behavior script is cached after first use");
 
 assert.ok(iconGenerator.includes("const background = [21, 128, 61, 255];") &&
   iconGenerator.includes("const shieldColor = [255, 255, 255, 255];"),

@@ -3,9 +3,10 @@ import { readFile } from "node:fs/promises";
 
 const htmlMarkup = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const appScript = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
+const featureLoader = await readFile(new URL("../campusshield-feature-loader.js", import.meta.url), "utf8");
 const launchIntroScript = await readFile(new URL("../campusshield-launch-intro.js", import.meta.url), "utf8");
 const launchIntroCss = await readFile(new URL("../campusshield-launch-intro.css", import.meta.url), "utf8");
-const html = htmlMarkup + "\n" + appScript;
+const html = htmlMarkup + "\n" + appScript + "\n" + featureLoader;
 const privateMessagesPolishCss = await readFile(new URL("../campus-private-messages-polish.css", import.meta.url), "utf8");
 const privateMessagesPolishJs = await readFile(new URL("../campus-private-messages-polish.js", import.meta.url), "utf8");
 const dashboardUpgradeCss = await readFile(new URL("../campus-dashboard-upgrade.css", import.meta.url), "utf8");
@@ -216,7 +217,7 @@ assert.match(timetable, /escapeCalendarText/);
 assert.match(timetable, /foldCalendarLine/);
 assert.match(timetable, /occurrence\?\.recurring/, "recurring class occurrences are expanded for calendar export");
 assert.match(timetable, /campusEvents\.forEach/, "published campus events are included in the calendar export");
-assert.ok(htmlMarkup.includes('<script src="./shieldmind-planner.js" defer></script>'), "ShieldMind planner is deferred in dependency order");
+assert.match(featureLoader, /shieldmind:\s*\{[\s\S]*?shieldmind-planner\.js/, "ShieldMind planner loads on first page use");
 assert.doesNotMatch(html, /campusshield-backend-identity-addon\.js/);
 assert.match(planner, /create_my_shieldmind_planner_item/);
 assert.match(planner, /list_my_shieldmind_planner_items/);
@@ -701,11 +702,14 @@ assert.match(campusPushMigration, /revoke all on table public\.campus_push_subsc
 assert.match(campusPushMigration, /revoke all on table public\.campus_push_delivery_events from anon, authenticated/i);
 assert.match(campusPushMigration, /grant all on table public\.campus_push_subscriptions to service_role/i);
 assert.match(campusPushMigration, /grant all on table public\.campus_push_delivery_events to service_role/i);
-assert.match(serviceWorker, /request\.mode\s*!==\s*"navigate"/);
+assert.match(serviceWorker, /if \(request\.mode === "navigate"\)[\s\S]*?return;/, "navigation keeps its separate network-first offline fallback");
 assert.doesNotThrow(() => new Function(serviceWorker), "service worker parses");
 assert.match(serviceWorker, /self\.addEventListener\("fetch"/);
 assert.match(serviceWorker, /caches\.open\([^)]*\)[\s\S]*?cache\.add\(OFFLINE_URL\)/);
-assert.doesNotMatch(serviceWorker, /cache\.put|cache\.addAll|Authorization|supabase/i, "service worker does not cache API, auth, or incident responses");
+assert.match(serviceWorker, /STATIC_DESTINATIONS\.has\(request\.destination\)/, "only browser static-resource destinations are cacheable");
+assert.match(serviceWorker, /request\.headers\.has\("authorization"\)/, "authenticated requests bypass static caching");
+assert.match(serviceWorker, /request\.cache === "no-store"/, "explicit no-store requests bypass static caching");
+assert.match(serviceWorker, /await cache\.put\(request, response\.clone\(\)\)/, "successful static assets are saved for repeat visits");
 assert.match(offlinePage, /needs an internet connection/i);
 assert.doesNotMatch(offlinePage, /CampusShield is a prototype|does not contact emergency services/i,
   "offline fallback omits the removed prototype disclaimer");
@@ -1032,7 +1036,7 @@ assert.match(htmlMarkup, /data-page="creator-tools" id="creator-tools-nav"/, "Cr
 assert.match(appScript, /'creator-tools':'Creator & Tools Hub'/, "Creator & Tools Hub has a workspace page title");
 assert.match(htmlMarkup, /href="\.\/campusshield-visual-refresh\.css"/, "Presentation-only visual refresh stylesheet is included");
 assert.match(htmlMarkup, /href="\.\/student-creator-tools\.css"/, "Creator & Tools Hub stylesheet is included");
-assert.match(htmlMarkup, /src="\.\/student-creator-tools\.js" defer/, "Creator & Tools Hub behaviour is included");
+assert.match(featureLoader, /"creator-tools":[\s\S]*student-creator-tools\.js/, "Creator & Tools Hub behaviour loads on first page use");
 assert.equal((creatorToolsPage.match(/class="creator-tool-card/g) || []).length, 5, "Creator & Tools Hub contains five curated external tools");
 for (const name of ["PdfCraft", "PhotoCraft", "VoiceStudio", "ArtCraft", "REA"]) {
   assert.ok(creatorToolsPage.includes(">" + name + "</h3>"), "Creator & Tools Hub includes " + name);
@@ -1106,7 +1110,7 @@ console.log("PASS ShieldMind private persistent chat history, owner RLS, search/
 
 // ShieldMind Premium learning intelligence: private, staged, read-only progress analytics.
 assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./shieldmind-learning-insights.css">'), "ShieldMind learning insights stylesheet is loaded");
-assert.ok(htmlMarkup.includes('<script src="./shieldmind-learning-insights.js" defer></script>'), "ShieldMind learning insights module loads before the main app");
+assert.match(featureLoader, /shieldmind:\s*\{[\s\S]*?shieldmind-learning-insights\.js/, "ShieldMind learning insights load on first page use");
 assert.ok(htmlMarkup.includes('id="shieldmind-learning-insights"') && htmlMarkup.includes('hidden>'), "learning insights are hidden until paid access is verified");
 for (const id of ["shieldmind-insights-attempts", "shieldmind-insights-average", "shieldmind-insights-days", "shieldmind-insights-topics-count", "shieldmind-insights-topics", "shieldmind-insights-recommendation"]) {
   assert.ok(htmlMarkup.includes('id="' + id + '"'), "learning insights include " + id);
@@ -1178,8 +1182,8 @@ console.log("PASS Staging-only Turnstile CAPTCHA integration for sign-in, sign-u
 // Private Messages workspace polish — preserve live messaging handlers and improve responsive navigation.
 assert.match(htmlMarkup, /<link rel="stylesheet" href="\.\/campus-private-messages-polish\.css\?v=20261112-3">/,
   "Private Messages workspace polish stylesheet is loaded");
-assert.match(htmlMarkup, /<script src="\.\/campus-private-messages-polish\.js\?v=20261112-4" defer><\/script>/,
-  "Private Messages workspace behavior loads as a deferred page enhancement");
+assert.match(featureLoader, /"campus-messages":[\s\S]*campus-private-messages-polish\.js\?v=20261112-4/,
+  "Private Messages workspace behavior loads on first page use");
 assert.match(htmlMarkup, /id="campus-dm-new-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="campus-dm-new-body"/,
   "new-message form toggle exposes its expanded state and controlled panel");
 assert.match(htmlMarkup, /id="campus-dm-new-body"[^>]*hidden/,
@@ -1264,3 +1268,17 @@ assert.match(campusMapLoader, /loadGeometryHelpers\(\)/, "OSM geometry helpers a
 assert.match(campusMapScript, /initialize\(\)\s*\{\s*if \(!map\) ensureMap\(\)/, "the map module exposes safe initialization after lazy import");
 assert.doesNotMatch(htmlMarkup, /maplibre-gl\.css|href="\.\/campus-map\.css"|href="\.\/campus-map-passport\.css"|src="\.\/campus-map-geometry\.js"/, "map-only assets are not render-blocking first-load resources");
 assert.match(htmlMarkup, /\.report-location-pin\s*\{[^}]*display:\s*flex/s, "incident GPS attachment keeps its shared form layout without loading CampusMap CSS");
+
+
+const serviceWorkerSource = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
+assert.match(featureLoader, /new MutationObserver\(observeActiveRoute\)/, "workspace-only modules load when their page becomes active");
+assert.match(featureLoader, /marketplace:\s*\{[\s\S]*?campus-discovery-ui\.js/, "Marketplace discovery controls are first-use loaded");
+assert.match(featureLoader, /opportunities:\s*\{[\s\S]*?campus-discovery-ui\.js/, "Opportunity discovery controls load on first use");
+assert.match(featureLoader, /"campus-contacts":\s*\{[\s\S]*?campus-service-directory\.js/, "Campus Contacts directory loads on first use");
+assert.match(featureLoader, /"student-rewards":[\s\S]*student-rewards\.js/, "Student Rewards is first-use loaded");
+assert.match(featureLoader, /CampusShieldStudentRewards\?\.load/, "Student Rewards refreshes after its lazy module loads");
+assert.match(featureLoader, /campusshield:profile-ready[\s\S]*loadDashboardTimetable\(\)/, "Dashboard timetable loads after a signed-in profile is ready");
+assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v13"/, "static asset cache is versioned");
+assert.match(serviceWorkerSource, /STATIC_DESTINATIONS = new Set\(\["script", "style", "image", "font"\]\)/, "only static browser resources use the repeat-visit cache");
+assert.match(serviceWorkerSource, /request\.headers\.has\("authorization"\)/, "authenticated requests are excluded from the service-worker cache");
+console.log("PASS lazy feature startup and versioned static asset caching");

@@ -4,6 +4,7 @@ import vm from "node:vm";
 
 const read = path => readFileSync(new URL(path, import.meta.url), "utf8");
 const html = read("../index.html");
+const featureLoader = read("../campusshield-feature-loader.js");
 const dashboard = read("../campus-dashboard-upgrade.js");
 const discovery = read("../campus-discovery-ui.js");
 const app = read("../campusshield-app.js");
@@ -14,7 +15,7 @@ new vm.Script(discovery, { filename: "campus-discovery-ui.js" });
 new vm.Script(app, { filename: "campusshield-app.js" });
 new vm.Script(timetable, { filename: "campus-timetable.js" });
 
-assert.match(html, /campus-discovery-ui\.js/);
+assert.match(featureLoader, /marketplace:\s*\{[\s\S]*?campus-discovery-ui\.js/);
 assert.match(dashboard, /getLiveCampusMatches/);
 assert.match(dashboard, /campus-marketplace-feed article/);
 assert.match(dashboard, /campus-opportunities-feed article/);

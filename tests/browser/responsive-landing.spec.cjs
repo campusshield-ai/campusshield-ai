@@ -401,3 +401,60 @@ test("CampusMap renderer and map-only assets load only after opening the map", a
   expect(mapRequests.some(url => url.includes("campus-map-geometry.js"))).toBeTruthy();
   expect(mapRequests.some(url => url.endsWith("/maplibre-gl.mjs"))).toBeTruthy();
 });
+
+
+test("workspace-only feature scripts load on first use instead of initial app startup", async ({ page }) => {
+  const featureRequests = [];
+  const featureNames = [
+    "campus-course-community.js",
+    "student-rewards.js",
+    "shieldmind-planner.js",
+    "shieldmind-learning-insights.js",
+    "campus-timetable.js",
+    "campus-ideas-impact.js",
+    "campus-discovery-ui.js",
+    "campusshield-guide.js",
+    "student-creator-tools.js",
+    "campus-chat-room-enhancements.js",
+    "campus-voice-notes.js",
+    "campus-private-messages-polish.js",
+    "campus-service-directory.js"
+  ];
+  page.on("request", request => {
+    const url = new URL(request.url());
+    if (featureNames.some(name => url.pathname.endsWith("/" + name))) featureRequests.push(url.pathname);
+  });
+
+  await page.goto("/index.html?lazy-feature-test=1", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#login-screen")).toBeVisible();
+  await page.waitForTimeout(300);
+  expect(featureRequests, "feature-only bundles should stay out of the initial login/dashboard request path").toEqual([]);
+
+  const rewardsRequest = page.waitForRequest(request => request.url().endsWith("/student-rewards.js"));
+  const activatePage = async id => page.evaluate(pageId => {
+    document.querySelectorAll(".page.active").forEach(element => element.classList.remove("active"));
+    document.getElementById(pageId)?.classList.add("active");
+  }, id);
+  await activatePage("page-student-rewards");
+  await rewardsRequest;
+  await expect.poll(() => page.evaluate(() => Boolean(window.CampusShieldStudentRewards))).toBe(true);
+
+  const marketplaceRequest = page.waitForRequest(request => request.url().endsWith("/campus-discovery-ui.js"));
+  await activatePage("page-marketplace");
+  await marketplaceRequest;
+  await expect.poll(() => page.locator("#campus-marketplace-results").count()).toBe(1);
+
+  const shieldmindPlannerRequest = page.waitForRequest(request => request.url().endsWith("/shieldmind-planner.js"));
+  await activatePage("page-shieldmind");
+  await shieldmindPlannerRequest;
+  await expect.poll(() => page.evaluate(() => Boolean(window.CampusShieldPlanner))).toBe(true);
+
+  expect(featureRequests).toContain("/student-rewards.js");
+  expect(featureRequests).toContain("/campus-discovery-ui.js");
+  expect(featureRequests).toContain("/shieldmind-planner.js");
+
+  const contactsRequest = page.waitForRequest(request => request.url().endsWith("/campus-service-directory.js"));
+  await activatePage("page-campus-contacts");
+  await contactsRequest;
+  await expect.poll(() => page.evaluate(() => Boolean(window.CampusShieldServiceDirectory))).toBe(true);
+});

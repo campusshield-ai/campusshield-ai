@@ -5,6 +5,7 @@ import path from "node:path";
 const root = process.cwd();
 const read = (name) => fs.readFileSync(path.join(root, name), "utf8");
 const html = read("index.html");
+const featureLoader = read("campusshield-feature-loader.js");
 const app = read("campusshield-app.js");
 const voice = read("campus-voice-notes.js");
 const css = read("campus-voice-notes.css");
@@ -12,7 +13,8 @@ const migration = read("supabase/migrations/20261105205000_campus_chat_private_v
 const privacyFix = read("supabase/migrations/20261105221500_global_ideas_voice_access_sidebar_fix.sql");
 
 assert.match(html, /id="ideas-impact-nav"[^>]*data-ideas-impact-nav/);
-assert.match(html, /campus-voice-notes\.js/);
+assert.match(featureLoader, /"campus-chat":[\s\S]*campus-voice-notes\.js/);
+assert.match(featureLoader, /"campus-messages":[\s\S]*campus-voice-notes\.js/);
 assert.match(html, /campus-voice-notes\.css/);
 assert.match(html, /id="campus-chat-voice-record"/);
 assert.match(html, /id="campus-dm-voice-record"/);
