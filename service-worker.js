@@ -93,20 +93,19 @@ self.addEventListener("fetch", (event) => {
 
   if (!STATIC_DESTINATIONS.has(request.destination) || request.cache === "no-store") return;
 
-  event.respondWith((async () => {
-    const cache = await caches.open(STATIC_CACHE_NAME);
-    const cached = await cache.match(request);
-    const refresh = fetch(request).then(async (response) => {
-      if (response.ok && response.type !== "opaque") {
-        await cache.put(request, response.clone());
-      }
-      return response;
-    });
-
-    if (cached) {
-      event.waitUntil(refresh.then(() => undefined).catch(() => undefined));
-      return cached;
+  const cachePromise = caches.open(STATIC_CACHE_NAME);
+  const cachedPromise = cachePromise.then((cache) => cache.match(request));
+  const refreshPromise = cachePromise.then((cache) => fetch(request).then(async (response) => {
+    if (response.ok && response.type !== "opaque") {
+      await cache.put(request, response.clone());
     }
-    return refresh.catch(() => Response.error());
-  })());
+    return response;
+  }));
+
+  event.respondWith(cachedPromise.then((cached) =>
+    cached || refreshPromise.catch(() => Response.error())
+  ));
+  event.waitUntil(cachedPromise.then((cached) =>
+    cached ? refreshPromise.then(() => undefined).catch(() => undefined) : undefined
+  ));
 });
