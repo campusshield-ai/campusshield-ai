@@ -1691,6 +1691,8 @@
     const list = $('profile-settings-alerts');
     const status = $('profile-settings-alerts-status');
     const allReadButton = $('profile-settings-mark-all-read');
+    const filterGroup = $('profile-settings-alert-filters');
+    let activeFilter = 'all';
     if (!list || !status || !user) return;
     list.replaceChildren();
     status.textContent = 'Loading your latest updates…';
@@ -1762,25 +1764,48 @@
       function renderAlerts() {
         list.replaceChildren();
         const unreadCount = rows.filter(function(row) { return !readIds.has(row.id); }).length;
-        status.textContent = unreadCount + ' unread update' + (unreadCount === 1 ? '' : 's') + ' · read status is saved on this device.';
-        if (allReadButton) allReadButton.disabled = !rows.length || unreadCount === 0;
+        const totalCount = rows.length;
+        const visibleRows = activeFilter === 'unread'
+          ? rows.filter(function(row) { return !readIds.has(row.id); })
+          : rows;
 
-        if (!rows.length) {
+        status.textContent = unreadCount + ' unread helpdesk alert' + (unreadCount === 1 ? '' : 's') +
+          ' · ' + totalCount + ' recent in total · read status is saved on this device.';
+        if (allReadButton) allReadButton.disabled = unreadCount === 0;
+
+        if (filterGroup) {
+          const allButton = filterGroup.querySelector('[data-alert-filter="all"]');
+          const unreadButton = filterGroup.querySelector('[data-alert-filter="unread"]');
+          const allCount = filterGroup.querySelector('[data-alert-count="all"]');
+          const unreadCountLabel = filterGroup.querySelector('[data-alert-count="unread"]');
+          if (allCount) allCount.textContent = String(totalCount);
+          if (unreadCountLabel) unreadCountLabel.textContent = String(unreadCount);
+          if (allButton) allButton.setAttribute('aria-pressed', String(activeFilter === 'all'));
+          if (unreadButton) unreadButton.setAttribute('aria-pressed', String(activeFilter === 'unread'));
+        }
+
+        if (!visibleRows.length) {
           const empty = document.createElement('div');
           empty.className = 'profile-alert-empty';
+          empty.tabIndex = -1;
+          empty.dataset.alertEmpty = 'true';
           const heading = document.createElement('strong');
           heading.textContent = 'You’re all caught up';
           const copy = document.createElement('p');
-          copy.textContent = canSeeCampusQueue
-            ? 'New campus helpdesk requests from the last seven days will appear here.'
-            : 'Replies to your campus helpdesk requests will appear here.';
+          if (rows.length && activeFilter === 'unread') {
+            copy.textContent = 'There are no unread Helpdesk updates. Switch to All to review recent activity.';
+          } else {
+            copy.textContent = canSeeCampusQueue
+              ? 'New campus helpdesk requests from the last seven days will appear here.'
+              : 'Replies to your campus helpdesk requests will appear here.';
+          }
           copy.style.margin = '0';
           empty.append(heading, copy);
           list.appendChild(empty);
           return;
         }
 
-        rows.forEach(function(row) {
+        visibleRows.forEach(function(row) {
           const isRead = readIds.has(row.id);
           const item = document.createElement('article');
           item.className = 'profile-alert-item' + (isRead ? ' is-read' : '');
@@ -1790,6 +1815,9 @@
           icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg>';
           const content = document.createElement('div');
           content.className = 'profile-alert-content';
+          const kind = document.createElement('span');
+          kind.className = 'profile-alert-kind';
+          kind.textContent = row.type === 'request' ? 'New Helpdesk request' : 'Staff reply';
           const title = document.createElement('h3');
           title.className = 'profile-alert-title';
           title.textContent = row.title;
@@ -1804,37 +1832,58 @@
           const open = document.createElement('button');
           open.type = 'button';
           open.className = 'profile-alert-action profile-alert-open';
-          open.textContent = 'Open';
+          open.textContent = 'Open Helpdesk';
+          open.setAttribute('aria-label', 'Open Helpdesk for ' + row.title);
           open.dataset.page = 'helpdesk';
           actions.appendChild(open);
-          if (isRead) {
-            const read = document.createElement('span');
-            read.className = 'profile-alert-read-indicator';
-            read.textContent = 'Read';
-            actions.appendChild(read);
-          } else {
-            const markRead = document.createElement('button');
-            markRead.type = 'button';
-            markRead.className = 'profile-alert-action';
-            markRead.textContent = 'Mark read';
-            markRead.addEventListener('click', function() {
-              readIds.add(row.id);
-              persistReadIds();
-              renderAlerts();
-            });
-            actions.appendChild(markRead);
-          }
-          content.append(title, meta, time, actions);
+
+          const toggleRead = document.createElement('button');
+          toggleRead.type = 'button';
+          toggleRead.className = 'profile-alert-action';
+          toggleRead.textContent = isRead ? 'Mark unread' : 'Mark read';
+          toggleRead.setAttribute('aria-label', (isRead ? 'Mark unread: ' : 'Mark read: ') + row.title);
+          toggleRead.dataset.alertToggleId = row.id;
+          toggleRead.addEventListener('click', function() {
+            const currentIndex = visibleRows.findIndex(function(itemRow) { return itemRow.id === row.id; });
+            const nextVisible = visibleRows[currentIndex + 1] || visibleRows[currentIndex - 1] || null;
+            const restoreFocusId = activeFilter === 'unread' && !isRead
+              ? (nextVisible ? nextVisible.id : '__empty')
+              : row.id;
+            if (isRead) readIds.delete(row.id);
+            else readIds.add(row.id);
+            persistReadIds();
+            renderAlerts();
+            if (restoreFocusId === '__empty') {
+              list.querySelector('[data-alert-empty="true"]')?.focus();
+            } else {
+              Array.from(list.querySelectorAll('[data-alert-toggle-id]')).find(function(button) {
+                return button.dataset.alertToggleId === restoreFocusId;
+              })?.focus();
+            }
+          });
+          actions.appendChild(toggleRead);
+          content.append(kind, title, meta, time, actions);
           item.append(icon, content);
           list.appendChild(item);
         });
       }
 
+      if (filterGroup) {
+        filterGroup.addEventListener('click', function(event) {
+          const button = event.target.closest('[data-alert-filter]');
+          if (!button || !filterGroup.contains(button)) return;
+          activeFilter = button.dataset.alertFilter === 'unread' ? 'unread' : 'all';
+          renderAlerts();
+        });
+      }
+
       if (allReadButton) {
         allReadButton.onclick = function() {
+          if (!rows.some(function(row) { return !readIds.has(row.id); })) return;
           rows.forEach(function(row) { readIds.add(row.id); });
           persistReadIds();
           renderAlerts();
+          if (activeFilter === 'unread') list.querySelector('[data-alert-empty="true"]')?.focus();
         };
       }
       renderAlerts();
