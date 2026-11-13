@@ -127,9 +127,12 @@ assert.ok(serviceWorker.includes("cache.add(OFFLINE_URL)") &&
   serviceWorker.includes("cache.add(BRAND_STYLESHEET_URL)") &&
   serviceWorker.includes("cache.add(MODULE_STYLESHEET_URL)") &&
   serviceWorker.includes("cache.add(SHIELDMIND_CHAT_STYLESHEET_URL)") &&
-  serviceWorker.includes("cache.add(CAMPUS_CHAT_STYLESHEET_URL)") &&
-  serviceWorker.includes("cache.add(CAMPUS_CHAT_SCRIPT_URL)"),
-  "Offline fallback, shared brand, module and Campus Chat assets are all cached");
+  serviceWorker.includes("cache.add(CAMPUS_CHAT_STYLESHEET_URL)"),
+  "Offline fallback, shared brand, module and Campus Chat styles are cached");
+assert.doesNotMatch(serviceWorker, /CAMPUS_CHAT_SCRIPT_URL|cache\.add\(.*campus-chat-room-enhancements\.js/,
+  "the lazy Campus Chat behavior script is not downloaded during offline-cache installation");
+assert.match(serviceWorker, /STATIC_DESTINATIONS = new Set\(\["script", "style", "image", "font"\]\)/,
+  "the lazy Campus Chat behavior script is cached after first use");
 
 assert.ok(iconGenerator.includes("const background = [21, 128, 61, 255];") &&
   iconGenerator.includes("const shieldColor = [255, 255, 255, 255];"),
