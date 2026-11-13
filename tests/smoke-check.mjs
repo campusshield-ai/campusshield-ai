@@ -702,11 +702,14 @@ assert.match(campusPushMigration, /revoke all on table public\.campus_push_subsc
 assert.match(campusPushMigration, /revoke all on table public\.campus_push_delivery_events from anon, authenticated/i);
 assert.match(campusPushMigration, /grant all on table public\.campus_push_subscriptions to service_role/i);
 assert.match(campusPushMigration, /grant all on table public\.campus_push_delivery_events to service_role/i);
-assert.match(serviceWorker, /request\.mode\s*!==\s*"navigate"/);
+assert.match(serviceWorker, /if \(request\.mode === "navigate"\)[\s\S]*?return;/, "navigation keeps its separate network-first offline fallback");
 assert.doesNotThrow(() => new Function(serviceWorker), "service worker parses");
 assert.match(serviceWorker, /self\.addEventListener\("fetch"/);
 assert.match(serviceWorker, /caches\.open\([^)]*\)[\s\S]*?cache\.add\(OFFLINE_URL\)/);
-assert.doesNotMatch(serviceWorker, /cache\.put|cache\.addAll|Authorization|supabase/i, "service worker does not cache API, auth, or incident responses");
+assert.match(serviceWorker, /STATIC_DESTINATIONS\.has\(request\.destination\)/, "only browser static-resource destinations are cacheable");
+assert.match(serviceWorker, /request\.headers\.has\("authorization"\)/, "authenticated requests bypass static caching");
+assert.match(serviceWorker, /request\.cache === "no-store"/, "explicit no-store requests bypass static caching");
+assert.match(serviceWorker, /await cache\.put\(request, response\.clone\(\)\)/, "successful static assets are saved for repeat visits");
 assert.match(offlinePage, /needs an internet connection/i);
 assert.doesNotMatch(offlinePage, /CampusShield is a prototype|does not contact emergency services/i,
   "offline fallback omits the removed prototype disclaimer");
@@ -1269,7 +1272,7 @@ assert.match(htmlMarkup, /\.report-location-pin\s*\{[^}]*display:\s*flex/s, "inc
 
 const serviceWorkerSource = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
 assert.match(featureLoader, /new MutationObserver\(observeActiveRoute\)/, "workspace-only modules load when their page becomes active");
-assert.match(featureLoader, /"marketplace":[\s\S]*campus-discovery-ui\.js/, "Marketplace discovery controls are first-use loaded");
+assert.match(featureLoader, /marketplace:\s*\{[\s\S]*?campus-discovery-ui\.js/, "Marketplace discovery controls are first-use loaded");
 assert.match(featureLoader, /"student-rewards":[\s\S]*student-rewards\.js/, "Student Rewards is first-use loaded");
 assert.match(featureLoader, /CampusShieldStudentRewards\?\.load/, "Student Rewards refreshes after its lazy module loads");
 assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v13"/, "static asset cache is versioned");
