@@ -14,7 +14,7 @@ const globalAccessSql = read("../supabase/migrations/20261105221500_global_ideas
 
 new vm.Script(js, { filename: "campus-ideas-impact.js" });
 assert.match(html, /campus-ideas-impact\.css/);
-assert.match(featureLoader, /"community":[\s\S]*campus-ideas-impact\.js/);
+assert.match(featureLoader, /community:\s*\{[\s\S]*?campus-ideas-impact\.js/);
 for (const token of ["Ideas &amp; Impact","problem_statement","proposed_solution","expected_impact","impact_scope"]) {
   assert.ok(js.includes(token) || html.includes(token), "Missing Ideas & Impact contract: " + token);
 }
