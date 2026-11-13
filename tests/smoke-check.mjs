@@ -217,7 +217,7 @@ assert.match(timetable, /escapeCalendarText/);
 assert.match(timetable, /foldCalendarLine/);
 assert.match(timetable, /occurrence\?\.recurring/, "recurring class occurrences are expanded for calendar export");
 assert.match(timetable, /campusEvents\.forEach/, "published campus events are included in the calendar export");
-assert.match(featureLoader, /"shieldmind":[\s\S]*shieldmind-planner\.js/, "ShieldMind planner loads on first page use");
+assert.match(featureLoader, /shieldmind:\s*\{[\s\S]*?shieldmind-planner\.js/, "ShieldMind planner loads on first page use");
 assert.doesNotMatch(html, /campusshield-backend-identity-addon\.js/);
 assert.match(planner, /create_my_shieldmind_planner_item/);
 assert.match(planner, /list_my_shieldmind_planner_items/);
@@ -1107,7 +1107,7 @@ console.log("PASS ShieldMind private persistent chat history, owner RLS, search/
 
 // ShieldMind Premium learning intelligence: private, staged, read-only progress analytics.
 assert.ok(htmlMarkup.includes('<link rel="stylesheet" href="./shieldmind-learning-insights.css">'), "ShieldMind learning insights stylesheet is loaded");
-assert.match(featureLoader, /"shieldmind":[\s\S]*shieldmind-learning-insights\.js/, "ShieldMind learning insights load on first page use");
+assert.match(featureLoader, /shieldmind:\s*\{[\s\S]*?shieldmind-learning-insights\.js/, "ShieldMind learning insights load on first page use");
 assert.ok(htmlMarkup.includes('id="shieldmind-learning-insights"') && htmlMarkup.includes('hidden>'), "learning insights are hidden until paid access is verified");
 for (const id of ["shieldmind-insights-attempts", "shieldmind-insights-average", "shieldmind-insights-days", "shieldmind-insights-topics-count", "shieldmind-insights-topics", "shieldmind-insights-recommendation"]) {
   assert.ok(htmlMarkup.includes('id="' + id + '"'), "learning insights include " + id);
