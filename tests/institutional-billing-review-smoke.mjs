@@ -1,0 +1,278 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+const html = read('index.html');
+const app = read('campusshield-app.js');
+const migration = read('supabase/migrations/20261106215716_institutional_billing_review_controls.sql');
+const campusScopeMigration = read('supabase/migrations/20261106220002_institutional_billing_review_campus_scope.sql');
+const universityIndexMigration = read('supabase/migrations/20261106220108_institutional_billing_review_university_index.sql');
+const invoiceMigration = read('supabase/migrations/20261106221005_institutional_invoice_issuance.sql');
+const invoiceLockMigration = read('supabase/migrations/20261106221257_institutional_invoice_request_status_lock.sql');
+const invoiceIssuerIndexMigration = read('supabase/migrations/20261106221410_institutional_invoice_issuer_index.sql');
+const paymentReconciliationMigration = read('supabase/migrations/20261106225141_institutional_payment_reconciliation.sql');
+const subscriptionLifecycleMigration = read('supabase/migrations/20261106232713_institutional_subscription_lifecycle.sql');
+const subscriptionLifecycleIndexMigration = read('supabase/migrations/20261106233030_institutional_subscription_lifecycle_fk_indexes.sql');
+const subscriptionWebhookHardeningMigration = read('supabase/migrations/20261106233337_institutional_subscription_webhook_validation_hardening.sql');
+const subscriptionActorIndexMigration = read('supabase/migrations/20261106233509_institutional_subscription_actor_fk_indexes.sql');
+const institutionalPaymentAdmin = read('supabase/functions/campus-institutional-payment-admin/index.ts');
+const institutionalPaystackWebhook = read('supabase/functions/campus-institutional-paystack-webhook/index.ts');
+const docs = read('docs/INSTITUTIONAL_BILLING_REVIEW.md');
+
+assert.match(html, /id="platform-admin-institutional-billing"/,
+  'Trusted platform administration includes an institutional billing review panel');
+assert.match(html, /id="platform-admin-billing-requests-table"/,
+  'Platform billing review exposes an accessible request table');
+assert.match(html, /does not confirm payment or activate a subscription/i,
+  'Billing review UI makes clear that approval is not payment or campus activation');
+assert.match(app, /async function loadInstitutionalBillingAdminRequests\(\)/,
+  'Only the platform administration flow loads the global billing queue');
+assert.match(app, /!await backend\.isPlatformAdmin\(\)/,
+  'The browser rechecks trusted platform-admin authorization before reviewing requests');
+assert.match(app, /\.update\(\{ status, response_message: responseMessage \|\| null \}\)/,
+  'The review action changes only request status and the public response');
+assert.match(app, /Only approved requests can receive an invoice; invoice issuance is not payment confirmation/i,
+  'The admin queue distinguishes request approval from a paid subscription');
+assert.match(app, /Request approved · invoice and payment still pending/,
+  'Requesters are told that an approved enquiry still requires invoice and payment');
+assert.match(app, /response_message/,
+  'The requester history displays reviewer responses');
+assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.campus_institutional_billing_requests/i,
+  'The migration safely creates the request table when it is missing');
+assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_select_own[\s\S]*public\.platform_is_admin\(\)/i,
+  'The request SELECT policy preserves verified requester and trusted platform-admin access');
+assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_insert_own[\s\S]*status = 'pending'/i,
+  'New requests remain pending and must be submitted by the authenticated requester');
+assert.match(migration, /GRANT UPDATE \(status, response_message\)[\s\S]*TO authenticated/i,
+  'Authenticated updates are limited to request status and response columns');
+assert.match(migration, /CREATE POLICY campus_institutional_billing_requests_update_platform_admin[\s\S]*USING \(public\.platform_is_admin\(\)\)[\s\S]*WITH CHECK \(public\.platform_is_admin\(\)\)/i,
+  'Only trusted platform admins can update institutional billing requests');
+assert.match(migration, /NEW\.reviewed_at := pg_catalog\.now\(\)/,
+  'The database records the review timestamp');
+assert.match(campusScopeMigration, /ADD COLUMN IF NOT EXISTS university_id uuid/i,
+  'Each new billing request is linked to its canonical university');
+assert.match(campusScopeMigration, /membership\.campus_role = 'admin'[\s\S]*membership\.membership_status = 'active'[\s\S]*membership\.verification_status = 'verified'/i,
+  'Only an active, verified campus-admin membership can submit an institutional billing request');
+assert.match(campusScopeMigration, /university\.id = membership\.university_id[\s\S]*university\.name\) = lower\(btrim\(campus_institutional_billing_requests\.institution_name\)\)/i,
+  "The requested institution must match the user's verified university");
+assert.match(campusScopeMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_requester_created_idx/i,
+  'Requester history and requester foreign-key lookups are indexed');
+assert.match(universityIndexMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_university_idx/i,
+  'University foreign-key lookups are indexed');
+assert.match(campusScopeMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_reviewed_by_idx/i,
+  'Reviewer foreign-key lookups are indexed');
+assert.match(migration, /NEW\.reviewed_by := auth\.uid\(\)/,
+  'The database records the authenticated reviewer');
+assert.match(html, /id="platform-admin-invoice-form"/,
+  'The platform admin console includes an invoice issuance form');
+assert.match(html, /id="institutional-billing-invoices"/,
+  'Verified campus admins have a dedicated invoice history area');
+assert.match(app, /async function loadInstitutionalBillingInvoices\(\)/,
+  'The requester can load their own institutional invoices');
+assert.match(app, /const institutionalPaystackMonthlyLinks = Object\.freeze\(/,
+  'The three account-owner-provided institutional Paystack links are configured as fixed monthly pages');
+assert.match(app, /https:\/\/paystack\.shop\/pay\/gqjub0yz1y[\s\S]*https:\/\/paystack\.shop\/pay\/8u81ku5v94[\s\S]*https:\/\/paystack\.shop\/pay\/p1h6s3mgcj/,
+  'Starter, Professional and Enterprise use their exact supplied Paystack URLs');
+assert.match(app, /function institutionalInvoiceMatchesFixedPaystackPlan[\s\S]*invoice\?\.status === 'issued'[\s\S]*invoice\?\.billing_period === 'monthly'[\s\S]*invoice\?\.currency === 'NGN'[\s\S]*Number\(invoice\?\.total_kobo\) === page\.amountKobo/,
+  'Paystack links are shown only for issued NGN monthly invoices matching the exact fixed page total');
+assert.match(app, /This is a live recurring monthly subscription, not a one-time invoice payment/,
+  'The requester is warned that Paystack pages create recurring monthly charges');
+assert.match(app, /returnedFromInstitutionalPayment[\s\S]*awaiting finance verification/,
+  'Returning from a Paystack page never activates institutional access');
+assert.match(app, /Paystack may charge monthly until cancelled/,
+  'The requester is told that a Paystack subscription may keep recurring until cancelled');
+assert.match(app, /This is an annual invoice[\s\S]*monthly recurring plans/,
+  'Annual invoices cannot use monthly Paystack links');
+assert.match(app, /custom Enterprise invoice totals are kept off the fixed-price Enterprise link|custom Enterprise quote/,
+  'Custom Enterprise invoice totals are kept off the fixed-price Enterprise link');
+assert.match(html, /Request invoice &amp; payment link/,
+  'Institutional plan CTAs guide the requester into the invoice-first flow');
+assert.match(app, /function printInstitutionalInvoice\(invoice\)/,
+  'Issued invoices have a printable invoice view that can be saved as PDF');
+assert.match(app, /PRO FORMA · AWAITING PAYMENT/,
+  'The printed document is clearly labelled as a pro forma invoice');
+assert.match(app, /not a receipt or proof of payment/,
+  'The printed pro forma invoice cannot be mistaken for a payment receipt');
+assert.match(app, /from\('campus_institutional_invoices'\)/,
+  'The finance queue and requester history use the dedicated invoice table');
+assert.match(app, /amountPattern = \/\^\\d\{1,10\}/,
+  'Finance invoice amounts are validated before conversion to kobo');
+assert.match(invoiceMigration, /total_kobo bigint GENERATED ALWAYS AS \(subtotal_kobo \+ tax_kobo\) STORED/i,
+  'The database calculates invoice totals from subtotal and tax');
+assert.match(invoiceMigration, /GRANT INSERT \([\s\S]*payment_instructions[\s\S]*\)[\s\S]*TO authenticated/i,
+  'Invoice insertion is column-limited; invoice number and paid status are not client-writable');
+assert.match(invoiceMigration, /CREATE POLICY campus_institutional_invoices_insert_platform_admin[\s\S]*public\.platform_is_admin\(\)/i,
+  'Only trusted platform administrators can issue invoices');
+assert.match(invoiceMigration, /billing_request\.status <> 'approved'/,
+  'The database rejects invoices for requests that are not approved');
+assert.match(invoiceMigration, /NEW\.status := 'issued'/,
+  'The database always creates invoices in issued status');
+assert.match(invoiceMigration, /NEW\.issued_by := auth\.uid\(\)/,
+  'The database records the authenticated invoice issuer');
+assert.match(invoiceMigration, /CREATE POLICY campus_institutional_invoices_select_requester_or_platform_admin/i,
+  'Only the requesting verified campus representative and trusted platform admins can read invoices');
+assert.doesNotMatch(invoiceMigration, /GRANT UPDATE|GRANT DELETE/i,
+  'Authenticated users cannot update or delete issued invoices');
+assert.doesNotMatch(invoiceMigration, /SECURITY DEFINER/i,
+  'Invoice creation trigger does not introduce a SECURITY DEFINER function');
+assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS public\.campus_institutional_subscriptions/i,
+  'Verified institutional payments create a dedicated subscription record');
+assert.match(paymentReconciliationMigration, /ALTER TABLE public\.campus_institutional_invoices[\s\S]*ADD COLUMN IF NOT EXISTS paid_reference/i,
+  'Invoices record the verified payment timestamp, reference and finance actor');
+assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS private\.campus_institutional_paystack_events/i,
+  'Signed Paystack lifecycle events are stored in a private inbox');
+assert.match(paymentReconciliationMigration, /CREATE TABLE IF NOT EXISTS private\.campus_institutional_payment_audit/i,
+  'Institutional payment verification creates an audit record');
+assert.match(paymentReconciliationMigration, /prevent_institutional_payment_audit_mutation[\s\S]*BEFORE UPDATE OR DELETE/i,
+  'Institutional payment audit entries are append-only');
+assert.match(paymentReconciliationMigration, /REVOKE ALL ON FUNCTION public\.commit_campus_institutional_paystack_payment[\s\S]*TO service_role/i,
+  'Only the backend service role can commit verified invoice payment and subscription activation');
+assert.match(paymentReconciliationMigration, /public\.platform_is_admin\(\)[\s\S]*campus_memberships/i,
+  'Institutional subscription status is visible only to platform admins or verified campus admins');
+assert.match(subscriptionLifecycleMigration, /ADD COLUMN IF NOT EXISTS next_payment_at/i,
+  'Institutional subscriptions track the next Paystack renewal date');
+assert.match(subscriptionLifecycleMigration, /record_campus_institutional_paystack_renewal/,
+  'A service-role-only database routine records verified recurring payments');
+assert.match(subscriptionLifecycleMigration, /mark_campus_institutional_paystack_renewal_failed/,
+  'A verified failure event updates the renewal attention state');
+assert.match(subscriptionLifecycleMigration, /mark_campus_institutional_paystack_subscription_nonrenewing/,
+  'Paystack cancellation events set the university subscription to non-renewing');
+assert.match(subscriptionLifecycleMigration, /REVOKE ALL ON FUNCTION public\.record_campus_institutional_paystack_renewal[\s\S]*TO service_role/i,
+  'Only the service role can update subscription renewal periods from Paystack events');
+assert.match(subscriptionLifecycleIndexMigration, /campus_institutional_payment_audit_subscription_idx/,
+  'Institutional payment audit foreign-key lookups are indexed');
+assert.match(subscriptionActorIndexMigration, /campus_institutional_invoices_paid_by_idx[\s\S]*campus_institutional_subscriptions_activated_by_idx/,
+  'Institutional payer and subscription activator foreign-key lookups are indexed');
+assert.match(subscriptionWebhookHardeningMigration, /p_subscription_code[\s\S]*IS NULL[\s\S]*p_event_id IS NULL[\s\S]*p_amount_kobo IS NULL/,
+  'Recurring-payment routines reject missing provider identifiers, event IDs and amounts at the database layer');
+assert.match(subscriptionWebhookHardeningMigration, /p_customer_email[\s\S]*IS NULL[\s\S]*p_provider_domain IS NULL/,
+  'Recurring-payment routines reject missing customer and environment details');
+assert.match(institutionalPaymentAdmin, /expectedPaystackDomain\(url\)/,
+  'The finance action determines Test or Live mode from its Supabase project');
+assert.match(institutionalPaymentAdmin, /providerSubscription\?\.domain !== expectedDomain/,
+  'The recurring Paystack subscription must match the configured environment');
+assert.match(institutionalPaymentAdmin, /providerSubscription\?\.status !== "active"/,
+  'The first charge cannot activate a university without an active Paystack subscription');
+assert.match(institutionalPaymentAdmin, /providerSubscription\?\.plan\?\.interval !== "monthly"/,
+  'The first charge cannot activate an invoice against a non-monthly Paystack plan');
+assert.match(institutionalPaystackWebhook, /expectedPaystackDomain\(url\)/,
+  'The institutional webhook is isolated to its own Test or Live project environment');
+assert.match(institutionalPaystackWebhook, /record_campus_institutional_paystack_renewal/,
+  'Verified recurring invoice updates renew the institutional paid-through date');
+assert.match(institutionalPaystackWebhook, /mark_campus_institutional_paystack_renewal_failed/,
+  'Failed recurring charges mark institutional renewal attention');
+assert.match(institutionalPaystackWebhook, /mark_campus_institutional_paystack_subscription_nonrenewing/,
+  'Paystack cancellation events stop future renewal scheduling');
+assert.match(app, /function isProductionSupabaseEnvironment\(\)/,
+  'The supplied hosted payment links are enabled only in the Production Supabase environment');
+assert.match(app, /Live collection is disabled in this Staging preview/,
+  'Staging invoice history blocks the supplied live payment links');
+assert.match(app, /subscription_code: subscriptionCode/,
+  'Finance submits the transaction reference and recurring subscription code together');
+assert.match(app, /Manage \/ cancel recurring payments/,
+  'Verified campus administrators can manage or cancel recurring billing');
+assert.match(app, /get\('institution-billing'\)/,
+  'Institutional Paystack return navigation uses a separate query parameter');
+assert.match(app, /returnedFromInstitutionalPayment[\s\S]*awaiting finance verification/,
+  'Institutional Paystack returns display a pending-verification message without activating access');
+assert.match(app, /else if \(returnedFromPayment\)/,
+  'Personal ShieldMind payment reconciliation remains separate from institutional return handling');
+assert.match(docs, /institution-billing=return/,
+  'The documentation provides the institutional payment return URL');
+assert.match(docs, /Your payment is awaiting CampusShield verification/,
+  'The Paystack success message tells institutions payment is still being verified');
+assert.match(docs, /The three links supplied by the account owner are live payment pages/,
+  'The release documentation identifies the supplied pages as live collection links');
+assert.match(docs, /hidden from Staging/,
+  'The documentation states live collection links are not displayed in Staging');
+assert.match(institutionalPaystackWebhook, /x-paystack-signature/,
+  'Institutional webhook reads the Paystack signature header');
+assert.match(institutionalPaystackWebhook, /name: "HMAC", hash: "SHA-512"/,
+  'Institutional webhook verifies Paystack signatures using HMAC SHA-512');
+assert.match(institutionalPaystackWebhook, /expectedPaystackDomain\(url\)/,
+  'The institutional webhook selects the Paystack environment from its Supabase project');
+assert.match(institutionalPaystackWebhook, /sk_" \+ expectedDomain \+ "_/, 
+  'The webhook refuses a Paystack secret from the wrong environment');
+assert.match(institutionalPaystackWebhook, /record_campus_institutional_paystack_renewal/,
+  'Verified recurring invoice payments extend the linked university subscription');
+assert.match(institutionalPaystackWebhook, /mark_campus_institutional_paystack_renewal_failed/,
+  'Failed recurring invoices flag the university subscription for payment attention');
+assert.match(institutionalPaystackWebhook, /mark_campus_institutional_paystack_subscription_nonrenewing/,
+  'Paystack not-renew and disabled events stop future renewal scheduling');
+assert.match(institutionalPaystackWebhook, /refund\.processed[\s\S]*review_required/,
+  'Refund and dispute events are retained for finance review rather than silently ignored');
+assert.match(institutionalPaystackWebhook, /invoice\.payment_failed[\s\S]*subscription\.disable/i,
+  'Recurring payment failures and subscription lifecycle events are captured for audit');
+assert.match(institutionalPaymentAdmin, /platform_is_admin/,
+  'Only trusted platform finance administrators can verify institutional payments');
+assert.match(institutionalPaymentAdmin, /tx\?\.status !== "success"[\s\S]*tx\?\.amount[\s\S]*tx\?\.currency !== "NGN"[\s\S]*tx\?\.domain !== expectedDomain/,
+  'Finance verification checks successful status, exact NGN amount and matching Paystack environment');
+assert.match(institutionalPaymentAdmin, /api\.paystack\.co\/subscription\//,
+  'Finance fetches the Paystack recurring subscription before activating an invoice');
+assert.match(institutionalPaymentAdmin, /providerSubscription\?\.status !== "active"[\s\S]*plan\?\.interval !== "monthly"/,
+  'Finance verifies the exact recurring subscription is active and monthly');
+assert.match(institutionalPaymentAdmin, /subscription_code: subscriptionCode/,
+  'Finance records the exact recurring subscription code on first activation');
+assert.ok(institutionalPaymentAdmin.includes('const matchedChargeEvent = chargeEvents?.[0] || null;'),
+  'The matched signed charge event is retained without shadowing the finance-entered subscription code');
+assert.ok(institutionalPaymentAdmin.includes('webhookSubscriptionCode !== subscriptionCode'),
+  'A signed charge event with a conflicting subscription code is rejected');
+assert.ok(institutionalPaymentAdmin.includes('p_subscription_code: subscriptionCode,'),
+  'The Paystack API-verified subscription code is persisted even if webhook delivery is delayed');
+assert.ok(institutionalPaymentAdmin.includes('p_event_id: matchedChargeEvent?.id || null,'),
+  'The payment commit records the matching signed event when it is available');
+assert.doesNotMatch(institutionalPaymentAdmin, /const subscriptionCode = chargeEvents/,
+  'Webhook data cannot replace or erase the finance-verified subscription code');
+assert.match(institutionalPaymentAdmin, /get_subscription_management_link/,
+  'Verified active campus administrators can request a hosted recurring-subscription management link');
+assert.match(institutionalPaymentAdmin, /profile\?\.role !== "admin"[\s\S]*campus\.membership_status !== "active"/,
+  'Subscription management is limited to verified active campus administrators for that institution');
+assert.match(institutionalPaymentAdmin, /bill_to_email[\s\S]*customer\?\.email/i,
+  'The verified Paystack customer email must match the invoice bill-to email');
+assert.match(institutionalPaymentAdmin, /commit_campus_institutional_paystack_payment/,
+  'Verified payment, invoice paid state and subscription activation are committed atomically');
+assert.match(app, /campus-institutional-payment-admin/,
+  'The platform finance console calls the protected payment verification function');
+assert.match(app, /Verify & activate/,
+  'The platform finance console exposes a controlled Verify & activate action for eligible invoices');
+assert.match(app, /activeInstitutionalSubscription\.plan[\s\S]*current paid-through date/,
+  'The verified campus administrator can see their institutional subscription and paid-through date');
+assert.match(app, /Manage \/ cancel recurring payments/,
+  'The verified campus administrator can open the Paystack recurring-subscription management page');
+assert.match(app, /get_subscription_management_link/,
+  'The requester subscription controls use the authenticated management-link action');
+assert.match(app, /function isProductionSupabaseEnvironment\(\)/,
+  'Live payment pages are scoped to the Production Supabase environment');
+assert.match(app, /!isProductionSupabaseEnvironment\(\) \|\| !institutionalInvoiceMatchesFixedPaystackPlan/,
+  'Live Paystack links are hidden from Staging previews');
+assert.match(app, /Live collection is disabled in this Staging preview/,
+  'Staging invoice history explains that the supplied Paystack URLs are live payment pages');
+assert.match(app, /subscription_code: subscriptionCode/,
+  'Finance submits both the transaction reference and recurring subscription code');
+assert.match(app, /paid_reference/,
+  'The requester and finance views can display a recorded payment reference');
+assert.match(institutionalPaymentAdmin, /body\?\.action === "list_payment_audit"/,
+  'The payment audit is exposed only through the trusted finance Edge Function');
+assert.match(institutionalPaymentAdmin, /campus_institutional_payment_audit[\s\S]*verified_at/,
+  'The finance-only audit action reads the append-only payment audit in verification order');
+assert.match(app, /async function loadInstitutionalBillingPaymentAudit\(\)/,
+  'The platform finance console loads the verified payment audit');
+assert.match(app, /action: 'list_payment_audit'/,
+  'The browser requests payment audit data through the protected finance function');
+assert.match(html, /id="platform-admin-billing-audit-table"/,
+  'Platform finance has a dedicated verified institutional payment audit table');
+assert.match(html, /id="platform-admin-refresh-billing-audit"/,
+  'Platform finance can refresh the verified institutional payment audit');
+assert.match(invoiceIssuerIndexMigration, /CREATE INDEX IF NOT EXISTS campus_institutional_invoices_issued_by_idx/i,
+  'Invoice issuer foreign-key lookups are indexed');
+assert.match(invoiceLockMigration, /campus_billing_request_lock_after_invoice/i,
+  'The database locks billing request status after an invoice is issued');
+assert.match(invoiceLockMigration, /billing_request_status_change_after_invoice/i,
+  'The immutable invoice status trigger is present');
+assert.doesNotMatch(migration, /SECURITY DEFINER/i,
+  'Review metadata trigger does not introduce a SECURITY DEFINER function');
+assert.doesNotMatch(app, /service[_-]?role/i,
+  'No service-role credential is added to browser code');
+assert.match(docs, /does not activate paid access/i,
+  'The documentation describes the non-activation boundary');
+console.log('Institutional billing review smoke checks passed.');

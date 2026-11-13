@@ -1,0 +1,34 @@
+name: Institutional billing review checks
+
+on:
+  pull_request:
+    branches: [main, "staging/preview"]
+    paths:
+      - "index.html"
+      - "campusshield-app.js"
+      - "supabase/migrations/*institutional_billing_review*"
+      - "supabase/migrations/*institutional_invoice*"
+      - "supabase/migrations/*institutional_payment_reconciliation*"
+      - "supabase/migrations/*institutional_subscription_*"
+      - "supabase/functions/campus-institutional-payment-admin/**"
+      - "supabase/functions/campus-institutional-paystack-webhook/**"
+      - "docs/INSTITUTIONAL_BILLING_REVIEW.md"
+      - "tests/institutional-billing-review-smoke.mjs"
+      - ".github/workflows/institutional-billing-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  institutional-billing-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate application JavaScript
+        run: node --check campusshield-app.js
+      - name: Check billing workflow and access boundaries
+        run: node tests/institutional-billing-review-smoke.mjs
