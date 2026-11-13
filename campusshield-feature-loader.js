@@ -34,6 +34,12 @@
     marketplace: {
       scripts: ["./campus-discovery-ui.js"]
     },
+    opportunities: {
+      scripts: ["./campus-discovery-ui.js"]
+    },
+    "campus-contacts": {
+      scripts: ["./campus-service-directory.js"]
+    },
     guide: {
       scripts: ["./campusshield-guide.js"]
     },
