@@ -547,7 +547,7 @@ assert.match(html, /id="pq-submit-form"/, "students can submit permitted past pa
 assert.match(html, /id="pq-quiz-form"/, "the exam simulator has an answer submission form");
 assert.match(html, /id="pq-reviewer-tools" hidden/, "review and marking-key tools are hidden by default");
 assert.match(html, /id="pq-topic-weaknesses"/, "practice results include topic-level revision suggestions");
-assert.ok(htmlMarkup.includes('<script src="./past-question-practice.js" defer></script>'), "past-question UI logic is deferred in dependency order");
+assert.match(featureLoader, /"past-questions":\s*\{\s*scripts:\s*\["\.\/past-question-practice\.js\?v=20261113-1"\]/, "past-question UI logic loads on first use in dependency order");
 assert.doesNotThrow(() => new Function(pastQuestionScript), "past-question UI script parses");
 assert.match(pastQuestionMigration, /create table if not exists public\.past_question_papers/i);
 assert.match(pastQuestionMigration, /create table if not exists public\.past_question_items/i);
