@@ -145,7 +145,7 @@ test("student scan controls are explicit and QR deep links are scrubbed from the
 });
 
 test("attendance QR deep-link token is removed from the address bar before account interaction", async ({ page }) => {
-  await page.route("**/campusshield-app.js", route =>
+  await page.route("**/campusshield-app.js*", route =>
     route.fulfill({ status: 200, contentType: "application/javascript", body: "" })
   );
   await page.goto("/index.html?attendance_session=" + sessionId + "&attendance_token=" + qrToken, { waitUntil: "domcontentloaded" });
