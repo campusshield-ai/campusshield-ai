@@ -6,6 +6,7 @@ const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const js = read("../campus-ideas-impact.js");
 const css = read("../campus-ideas-impact.css");
 const html = read("../index.html");
+const featureLoader = read("../campusshield-feature-loader.js");
 const sql = read("../supabase/migrations/20261105130000_campus_ideas_impact_mvp.sql");
 const statusGuard = read("../supabase/migrations/20261105131500_campus_idea_status_context_guard.sql");
 const statusContextSql = read("../supabase/migrations/20261105131500_campus_idea_status_context_guard.sql");
@@ -13,7 +14,7 @@ const globalAccessSql = read("../supabase/migrations/20261105221500_global_ideas
 
 new vm.Script(js, { filename: "campus-ideas-impact.js" });
 assert.match(html, /campus-ideas-impact\.css/);
-assert.match(html, /campus-ideas-impact\.js/);
+assert.match(featureLoader, /"community":[\s\S]*campus-ideas-impact\.js/);
 for (const token of ["Ideas &amp; Impact","problem_statement","proposed_solution","expected_impact","impact_scope"]) {
   assert.ok(js.includes(token) || html.includes(token), "Missing Ideas & Impact contract: " + token);
 }
