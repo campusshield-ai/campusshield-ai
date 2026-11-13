@@ -212,12 +212,14 @@ assert.match(html, /id="campus-map-scale-summary"/, 'Live map scale label is pre
 assert.match(html, /id="campus-map-pick-pin"/, 'Administrators can place a pin directly on the map');
 assert.match(html, /id="campus-map-use-gps"/, 'Administrators can capture a GPS candidate with device accuracy');
 assert.match(html, /id="campus-map-preview-pin"/, 'Administrators can preview manually entered coordinates');
-assert.match(html, /campus-map-geometry\.js/, 'OSM footprint geometry helpers load before CampusMap');
+assert.match(mapLoader, /campus-map-geometry\.js/, 'OSM footprint geometry helpers load when CampusMap is opened');
+assert.doesNotMatch(html, /campus-map-geometry\.js/, 'OSM geometry helpers are not downloaded during initial app boot');
 assert.match(mapLoader, /import\('\.\/campus-map\.js'\)/, 'CampusMap module is loaded after the MapLibre ESM bootstrap');
 assert.match(js, /window\.CampusMapGeometry\?\.osmWayToBuildingCandidate/, 'OSM building imports use the extracted geometry helper');
-assert.ok(html.indexOf('campus-map-geometry.js') < html.indexOf('campus-map-loader.js'), 'geometry helper loads before the MapLibre module loader');
+assert.match(mapLoader, /await loadGeometryHelpers\(\);[\s\S]*await import\('https:\/\/unpkg\.com\/maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.mjs'\)/, 'geometry helpers load before the MapLibre ESM bundle');
 
-assert.match(html, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.css/, 'MapLibre CSS is pinned to v6.16.0');
+assert.match(mapLoader, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.css/, 'MapLibre CSS is pinned and loaded by the lazy map bootstrap');
+assert.doesNotMatch(html, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.css/, 'MapLibre CSS does not block the initial page render');
 assert.match(html, /type="module" src="\.\/campus-map-loader\.js"/, 'MapLibre v6 is loaded through an ordered ES-module bootstrap');
 assert.match(mapLoader, /maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.mjs/, 'MapLibre v6 imports the ES-module bundle');
 assert.match(mapLoader, /window\.maplibregl = maplibregl;[\s\S]*await import\('\.\/campus-map\.js'\)/, 'CampusMap imports only after the MapLibre namespace is ready');
