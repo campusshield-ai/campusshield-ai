@@ -18,6 +18,17 @@
       scripts: ["./student-rewards.js"],
       onEnter: () => window.CampusShieldStudentRewards?.load?.({ force: true })
     },
+    "admin-rewards": {
+      scripts: ["./student-rewards-admin.js?v=20261113-1"],
+      onEnter: () => window.CampusShieldAdminRewards?.load?.()
+    },
+    "past-questions": {
+      scripts: ["./past-question-practice.js?v=20261113-1"],
+      onEnter: () => window.PastQuestionPractice?.load?.()
+    },
+    classroom: {
+      scripts: ["./campus-live-classroom.js?v=20261113-1"]
+    },
     shieldmind: {
       scripts: ["./shieldmind-planner.js", "./shieldmind-learning-insights.js"],
       onEnter: () => {
