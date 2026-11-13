@@ -1869,12 +1869,12 @@
       }
 
       if (filterGroup) {
-        filterGroup.addEventListener('click', function(event) {
+        filterGroup.onclick = function(event) {
           const button = event.target.closest('[data-alert-filter]');
           if (!button || !filterGroup.contains(button)) return;
           activeFilter = button.dataset.alertFilter === 'unread' ? 'unread' : 'all';
           renderAlerts();
-        });
+        };
       }
 
       if (allReadButton) {
