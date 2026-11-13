@@ -1010,8 +1010,18 @@ button,input,select,textarea{max-width:100%;min-width:0}
 .profile-mark-all-read svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .profile-mark-all-read:disabled{opacity:.38;cursor:default}
 .profile-mark-all-read:focus-visible,.profile-alert-action:focus-visible{outline:3px solid rgba(49,103,170,.25);outline-offset:3px;border-radius:6px}
-.profile-alerts-status{margin:0 0 6px;color:#7588a0;font-size:12px}
+.profile-alerts-status{margin:0 0 6px;color:#7588a0;font-size:12px;line-height:1.5}
+.profile-alert-filters{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:5px 0 9px;padding:4px;border:1px solid #dfeae4;border-radius:12px;background:#f6faf7}
+.profile-alert-filter{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;min-height:38px;padding:7px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:#627a6f;font:inherit;font-size:12px;font-weight:750;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease}
+.profile-alert-filter:hover{background:#edf6f0;color:#245a43}
+.profile-alert-filter[aria-pressed="true"]{border-color:#c9e0d1;background:#fff;color:#176b4d;box-shadow:0 2px 7px rgba(24,91,62,.07)}
+.profile-alert-filter:focus-visible{outline:3px solid rgba(39,132,92,.25);outline-offset:2px}
+.profile-alert-filter-count{display:inline-grid;place-items:center;min-width:21px;height:21px;padding:0 6px;border-radius:99px;background:#e7f2eb;color:#2b7656;font-size:10px;font-weight:850;line-height:1}
+.profile-alert-kind{display:inline-flex;align-items:center;margin:0 0 6px;padding:3px 7px;border-radius:99px;background:#e9f5ed;color:#26704e;font-size:10px;font-weight:800;letter-spacing:.01em}
 .profile-alerts-list{display:grid;align-content:start}
+.profile-alert-empty:focus{outline:2px solid rgba(39,132,92,.28);outline-offset:3px;border-radius:8px}
+.profile-alert-item.is-read .profile-alert-kind{background:#f0f3f1;color:#6c7e73}
+@media(max-width:600px){.profile-alert-filters{margin-top:7px}.profile-alert-filter{min-height:40px}}
 .profile-alert-item{display:grid;grid-template-columns:43px minmax(0,1fr);gap:13px;padding:18px 0;border-bottom:1px solid #e9eef4}
 .profile-alert-item:last-child{border-bottom:0}
 .profile-alert-item.is-read{opacity:.72}
@@ -4816,15 +4826,23 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     <section class="panel profile-alerts-card" aria-labelledby="profile-settings-alerts-title">
       <div class="profile-alerts-header">
         <div>
-          <p class="profile-overline">YOUR UPDATES</p>
-          <h2 id="profile-settings-alerts-title">Your alerts</h2>
+          <p class="profile-overline">CAMPUS HELPDESK</p>
+          <h2 id="profile-settings-alerts-title">Helpdesk activity</h2>
         </div>
         <button class="profile-mark-all-read" id="profile-settings-mark-all-read" type="button" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 12 5 5L21 4"></path><path d="m14 17 2 2 5-5"></path></svg>
           Mark all read
         </button>
       </div>
-      <p id="profile-settings-alerts-status" class="profile-alerts-status" role="status" aria-live="polite">Loading your latest updates…</p>
+      <p id="profile-settings-alerts-status" class="profile-alerts-status" role="status" aria-live="polite">Loading your latest Helpdesk updates…</p>
+      <div class="profile-alert-filters" id="profile-settings-alert-filters" role="group" aria-label="Filter Helpdesk alerts">
+        <button type="button" class="profile-alert-filter" data-alert-filter="all" aria-pressed="true">
+          <span>All</span><span class="profile-alert-filter-count" data-alert-count="all">0</span>
+        </button>
+        <button type="button" class="profile-alert-filter" data-alert-filter="unread" aria-pressed="false">
+          <span>Unread</span><span class="profile-alert-filter-count" data-alert-count="unread">0</span>
+        </button>
+      </div>
       <div id="profile-settings-alerts" class="profile-alerts-list">
         <div class="profile-alert-empty">Checking for account updates…</div>
       </div>
