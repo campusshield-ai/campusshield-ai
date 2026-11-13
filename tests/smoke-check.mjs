@@ -848,7 +848,7 @@ console.log("PASS ShieldMind approved-source RLS filtering, relevance ranking, c
 
 // Mobile workspace layout: protect narrow screens from horizontal overflow and cramped controls.
 assert.match(html, /Mobile-first layout hardening: prevent clipped headers, horizontal overflow, and cramped controls/);
-assert.ok(htmlMarkup.includes('<script src="./campusshield-app.js" defer></script>'), "large app code is external and deferred instead of parser-blocking inline JS");
+assert.ok(htmlMarkup.includes('<script src="./campusshield-app.js?v=20261113-2" defer></script>'), "large app code remains external, cache-versioned and deferred instead of parser-blocking inline JS");
 assert.doesNotThrow(() => new Function(appScript), "externalized main application bundle parses");
 assert.ok(appScript.includes("function canManageIncidents()"), "external application bundle retains role-gated incident controls");
 assert.ok(responsiveCss.includes("CampusShield cross-device layout guardrails and responsive fit pass"), "global cross-device layout guardrails are loaded");
