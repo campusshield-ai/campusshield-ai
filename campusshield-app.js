@@ -1817,7 +1817,7 @@
           content.className = 'profile-alert-content';
           const kind = document.createElement('span');
           kind.className = 'profile-alert-kind';
-          kind.textContent = row.type === 'request' ? 'New Helpdesk request' : 'Staff reply';
+          kind.textContent = row.type === 'request' ? 'New Helpdesk request' : 'Staff update';
           const title = document.createElement('h3');
           title.className = 'profile-alert-title';
           title.textContent = row.title;
