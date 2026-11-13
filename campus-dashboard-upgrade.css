@@ -29,7 +29,7 @@ html[data-theme="dark"] .theme-toggle{background:#19333a;color:#a8f0dc;border-co
 .global-search-kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:#81918f;border:1px solid var(--cs-border);border-radius:5px;padding:2px 5px;pointer-events:none}
 .global-search-results{position:absolute;top:calc(100% + 9px);left:0;right:0;z-index:30;max-height:min(65vh,430px);overflow:auto;background:#fff;border:1px solid #e2eae6;border-radius:15px;box-shadow:0 18px 45px #17313a20;padding:7px}
 .global-search-results[hidden]{display:none}
-.global-search-heading{padding:9px 10px 6px;color:#82918f;font-size:10px;font-weight:850;letter-spacing:.1em;text-transform:uppercase}
+.global-search-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px 6px;color:#82918f;font-size:10px;font-weight:850;letter-spacing:.1em;text-transform:uppercase}.global-search-clear-recent{min-height:27px;padding:4px 8px;border:1px solid #dce9e4;border-radius:8px;background:#f7faf8;color:#416258;font-size:10px;font-weight:800;letter-spacing:0;text-transform:none}.global-search-clear-recent:hover{border-color:#91d9c6;background:#eff8f3;color:#17634f}.global-search-clear-recent:focus-visible{outline:3px solid #61cdb5;outline-offset:2px}
 .global-search-result{width:100%;display:flex;align-items:center;gap:11px;border:0;background:transparent;color:#17313a;text-align:left;padding:10px;border-radius:10px;font-size:12px}
 .global-search-result:hover,.global-search-result:focus-visible{background:#eff7f3;outline:none}
 .global-search-result-icon{display:grid;place-items:center;width:31px;height:31px;flex:0 0 31px;border-radius:9px;background:#def5ed;color:#17634f;font-size:15px}
@@ -114,3 +114,5 @@ html[data-theme="dark"] .campus-my-day-focus-kicker{color:#9be7ad}
 html[data-theme="dark"] .campus-my-day-focus-title{color:#e5f3e8}
 html[data-theme="dark"] .campus-my-day-focus-meta{color:#b2cdb9}
 @media(max-width:600px){.campus-my-day-focus{grid-template-columns:minmax(0,1fr);gap:5px;padding:12px}.campus-my-day-focus-action{grid-column:1;grid-row:auto;justify-self:start;margin-top:5px}}
+
+html[data-theme="dark"] .global-search-clear-recent{border-color:#355058;background:#19333a;color:#a8e9d7}html[data-theme="dark"] .global-search-clear-recent:hover{border-color:#5c9a82;background:#214b42;color:#d5fff0}
