@@ -85,7 +85,7 @@ assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskable-512.png" &&
   icon.purpose === "maskable"), "PWA uses the dedicated safe-area maskable icon");
 
-assert.match(serviceWorker, /campusshield-offline-v12/, "Offline cache version is incremented for the Campus Chat room assets");
+assert.match(serviceWorker, /campusshield-offline-v13/, "Offline cache version is incremented for the Campus Chat room assets");
 assert.ok(htmlMarkup.includes('href="./campusshield-lovable-ux.css?v=20261109-1"'), "Lovable-inspired tablet and focus styles are loaded");
 assert.ok(htmlMarkup.includes('href="./campusshield-module-experience.css?v=20261110-2"'), "Lovable-inspired module page styles are loaded after the navigation layer");
 assert.ok(htmlMarkup.includes('href="./shieldmind-chat-history.css?v=20261110-1"'), "ShieldMind source freshness styles are cache-versioned");
