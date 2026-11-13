@@ -8,6 +8,7 @@
   const scriptPromises = new Map();
   let lastRoute = "";
   let routeSequence = 0;
+  let dashboardTimetableScriptPromise = null;
 
   const features = {
     groups: {
@@ -26,7 +27,11 @@
     },
     timetable: {
       scripts: ["./campus-timetable.js"],
-      onEnter: () => window.CampusShieldTimetable?.load?.()
+      onEnter: () => {
+        if (!window.CampusShieldTimetable?.getTodaySnapshot?.().loaded) {
+          window.CampusShieldTimetable?.load?.();
+        }
+      }
     },
     community: {
       scripts: ["./campus-ideas-impact.js"]
@@ -108,6 +113,28 @@
       void enterFeature(current.name, current.page, sequence);
     }
   }
+
+  function loadDashboardTimetable() {
+    if (!dashboardTimetableScriptPromise) {
+      dashboardTimetableScriptPromise = loadScript("./campus-timetable.js").catch(error => {
+        dashboardTimetableScriptPromise = null;
+        console.warn("CampusShield dashboard timetable could not load.", {
+          message: error?.message || "Unknown loading error"
+        });
+        return null;
+      });
+    }
+    dashboardTimetableScriptPromise.then(() => {
+      if (window.CampusShieldTimetable) void window.CampusShieldTimetable.load();
+    });
+  }
+
+  // The dashboard's My Day card uses the timetable snapshot too. Keep the
+  // timetable module out of public login startup, but load it after a verified
+  // profile is ready so the signed-in dashboard is complete without navigation.
+  window.addEventListener("campusshield:profile-ready", event => {
+    if (event.detail?.role) loadDashboardTimetable();
+  });
 
   const observer = new MutationObserver(observeActiveRoute);
   observer.observe(workspace, {
