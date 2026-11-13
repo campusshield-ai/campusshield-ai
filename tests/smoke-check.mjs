@@ -710,7 +710,7 @@ assert.match(serviceWorker, /STATIC_DESTINATIONS\.has\(request\.destination\)/, 
 assert.match(serviceWorker, /request\.headers\.has\("authorization"\)/, "authenticated requests bypass static caching");
 assert.match(serviceWorker, /request\.cache === "no-store"/, "explicit no-store requests bypass static caching");
 assert.match(serviceWorker, /await cache\.put\(request, response\.clone\(\)\)/, "successful static assets are saved for repeat visits");
-assert.match(serviceWorker, /campusshield-static-v14/, "the static asset cache version advances with the mobile performance stylesheet");
+assert.match(serviceWorker, /campusshield-static-v15/, "the static asset cache version advances with the login/dashboard lazy-loading release");
 assert.ok(htmlMarkup.includes('href="./campusshield-performance-polish.css?v=20261113-1"'), "mobile performance polish is versioned for cache-safe updates");
 assert.match(appScript, /image\.decoding = 'async'/, "private profile photos decode asynchronously");
 assert.match(appScript, /loading="lazy" decoding="async"/, "community image attachments load lazily and decode asynchronously");
