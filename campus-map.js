@@ -2663,5 +2663,13 @@ import './campus-map-safety.js';
     }
   });
 
-  window.CampusShieldCampusMap = { refresh: loadCampus, reloadIncidents: loadIncidentPins };
+  window.CampusShieldCampusMap = {
+    initialize() {
+      if (!map) ensureMap();
+      else scheduleMapResize();
+      if (!campus && client()) void loadCampus();
+    },
+    refresh: loadCampus,
+    reloadIncidents: loadIncidentPins
+  };
 })();

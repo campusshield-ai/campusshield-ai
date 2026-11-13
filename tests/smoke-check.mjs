@@ -72,6 +72,9 @@ const pastQuestionFunction = await readFile(new URL("../supabase/functions/past-
 const pastQuestionScript = await readFile(new URL("../past-question-practice.js", import.meta.url), "utf8");
 const pastQuestionCoverageMigration = await readFile(new URL("../supabase/migrations/20261028023527_past_question_nationwide_coverage.sql", import.meta.url), "utf8");
 const pastQuestionCoveragePermissionMigration = await readFile(new URL("../supabase/migrations/20261101143036_restrict_public_past_question_coverage_rpc_to_authenticated.sql", import.meta.url), "utf8");
+
+const campusMapLoader = await readFile(new URL("../campus-map-loader.js", import.meta.url), "utf8");
+const campusMapScript = await readFile(new URL("../campus-map.js", import.meta.url), "utf8");
 const offlinePage = await readFile(new URL("../offline.html", import.meta.url), "utf8");
 const privacyPage = await readFile(new URL("../privacy.html", import.meta.url), "utf8");
 const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf8");
@@ -1254,3 +1257,10 @@ assert.match(launchIntroScript, /document\.body\.classList\.remove\("cs-launch-a
 assert.match(launchIntroCss, /body\.cs-launch-active\s*>\s*\*:not\(#campusshield-launch-intro\)\s*\{[^}]*pointer-events:\s*none\s*!important/s,
   "first-launch overlay blocks pointer events on background controls");
 console.log("PASS first-launch overlay isolates its controls and restores the underlying login page");
+
+assert.match(campusMapLoader, /new MutationObserver\(startWhenVisible\)/, "CampusMap loading waits until its route becomes active");
+assert.match(campusMapLoader, /import\('https:\/\/unpkg\.com\/maplibre-gl@6\.16\.0\/dist\/maplibre-gl\.mjs'\)/, "MapLibre is dynamically imported on first map use");
+assert.match(campusMapLoader, /loadGeometryHelpers\(\)/, "OSM geometry helpers are loaded only with CampusMap");
+assert.match(campusMapScript, /initialize\(\)\s*\{\s*if \(!map\) ensureMap\(\)/, "the map module exposes safe initialization after lazy import");
+assert.doesNotMatch(htmlMarkup, /maplibre-gl\.css|href="\.\/campus-map\.css"|href="\.\/campus-map-passport\.css"|src="\.\/campus-map-geometry\.js"/, "map-only assets are not render-blocking first-load resources");
+assert.match(htmlMarkup, /\.report-location-pin\s*\{[^}]*display:\s*flex/s, "incident GPS attachment keeps its shared form layout without loading CampusMap CSS");

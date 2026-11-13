@@ -370,3 +370,34 @@ test("live GitHub Pages serves and initializes the Production Supabase client", 
   });
   expect(authSettings.status, diagnostics).toBe(200);
 });
+
+
+test("CampusMap renderer and map-only assets load only after opening the map", async ({ page }) => {
+  const mapRequests = [];
+  page.on("request", request => {
+    if (/maplibre-gl|campus-map-geometry\.js/.test(request.url())) mapRequests.push(request.url());
+  });
+
+  await page.route("https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css", route =>
+    route.fulfill({ status: 200, contentType: "text/css", body: "" })
+  );
+  await page.route("https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs", route => route.abort());
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#login-screen")).toBeVisible();
+
+  await page.waitForTimeout(300);
+  expect(mapRequests, "the initial page should not request map engine or geometry assets").toEqual([]);
+  await expect(page.locator('link[data-campusshield-lazy-map-style]')).toHaveCount(0);
+  await expect(page.locator('script[src*="campus-map-geometry.js"]')).toHaveCount(0);
+
+  const mapEngineRequest = page.waitForRequest(request =>
+    request.url() === "https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs"
+  );
+  await page.locator("#page-campus-map").evaluate(element => element.classList.add("active"));
+  await mapEngineRequest;
+
+  await expect.poll(() => page.locator('link[data-campusshield-lazy-map-style]').count()).toBe(3);
+  await expect.poll(() => page.locator('script[src*="campus-map-geometry.js"]').count()).toBe(1);
+  expect(mapRequests.some(url => url.includes("campus-map-geometry.js"))).toBeTruthy();
+  expect(mapRequests.some(url => url.endsWith("/maplibre-gl.mjs"))).toBeTruthy();
+});
