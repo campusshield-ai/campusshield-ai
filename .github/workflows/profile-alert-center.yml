@@ -1,0 +1,36 @@
+name: Profile Helpdesk Alert Center
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "campusshield-app.js"
+      - "index.html"
+      - "tests/profile-alert-center-smoke.mjs"
+      - ".github/workflows/profile-alert-center.yml"
+  push:
+    branches: [main]
+    paths:
+      - "campusshield-app.js"
+      - "index.html"
+      - "tests/profile-alert-center-smoke.mjs"
+      - ".github/workflows/profile-alert-center.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  alert-center:
+    name: Helpdesk alert center regression
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check app JavaScript syntax
+        run: node --check campusshield-app.js
+      - name: Run Helpdesk alert center smoke checks
+        run: node tests/profile-alert-center-smoke.mjs
