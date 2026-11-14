@@ -21,7 +21,7 @@
 #page-billing .institutional-outcome-card p{margin:0;color:#5c7163;font-size:11px;line-height:1.65}
 #page-billing .institutional-outcome-card small{display:block;margin-top:9px;color:#85968a;font-size:9px;line-height:1.5}
 #page-billing .institutional-packages-heading{margin-top:34px}
-#page-billing .institutional-plan-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+#page-billing .institutional-plan-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
 #page-billing .institutional-plan-card{min-height:0;padding:20px;border-radius:17px}
 #page-billing .institutional-plan-tag{display:inline-flex;align-self:flex-start;margin-bottom:8px;padding:5px 8px;border:1px solid #d5ead9;border-radius:999px;background:#eff9f0;color:#267a45;font-size:8px;font-weight:900;letter-spacing:.08em}
 #page-billing .institutional-plan-card strong{font-size:13px}
@@ -70,9 +70,9 @@ html[data-theme="dark"] #page-billing .institutional-plan-outcome b,html[data-th
 html[data-theme="dark"] #page-billing .institutional-scope-note{border-left-color:#56a86e;background:#173525;color:#c0d3c4}
 html[data-theme="dark"] #page-billing .institutional-faq details,html[data-theme="dark"] #page-billing .institutional-value-list>div{border-color:#2a4735}
 html[data-theme="dark"] #page-billing #institutional-billing-form{border-color:#315542;background:#142b1e}
-@media(max-width:1050px){
+@media(max-width:1180px){
  #page-billing .institutional-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
- #page-billing .institutional-plan-card:last-child{grid-column:1/-1}
+ #page-billing .institutional-plan-card:last-child{grid-column:auto}
  #page-billing .institutional-onboarding-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(max-width:760px){
@@ -93,3 +93,18 @@ html[data-theme="dark"] #page-billing #institutional-billing-form{border-color:#
  #page-billing .institutional-hero{padding:18px}
  #page-billing .institutional-hero h2{font-size:25px}
 }
+/* Premier Institutional Command flagship tier */
+#page-billing .institutional-plan-command{position:relative;overflow:hidden;border:1px solid #176745!important;background:linear-gradient(155deg,#0a3024 0%,#104431 58%,#0d392b 100%)!important;color:#f4fbf5;box-shadow:0 16px 34px rgba(10,63,39,.17)}
+#page-billing .institutional-plan-command:before{position:absolute;top:-68px;right:-58px;width:170px;height:170px;border:1px solid rgba(142,222,165,.20);border-radius:50%;content:"";box-shadow:0 0 0 24px rgba(142,222,165,.045),0 0 0 50px rgba(142,222,165,.025);pointer-events:none}
+#page-billing .institutional-plan-command .institutional-plan-tag{border-color:rgba(151,228,173,.35);background:rgba(151,228,173,.12);color:#c4f0d0}
+#page-billing .institutional-plan-command>strong,#page-billing .institutional-plan-command>b,#page-billing .institutional-plan-command>span:not(.institutional-plan-tag){color:#f4fbf5}
+#page-billing .institutional-plan-command>small{color:#c6ddcd}
+#page-billing .institutional-plan-command .institutional-inherits{color:#a9e7bb}
+#page-billing .institutional-plan-command .institutional-includes li{color:#e1f1e5}
+#page-billing .institutional-plan-command .institutional-includes li:before{color:#9ae7af}
+#page-billing .institutional-plan-command .institutional-plan-outcome{border:1px solid rgba(164,225,180,.20);background:rgba(255,255,255,.08);color:#d0e4d5}
+#page-billing .institutional-plan-command .institutional-plan-outcome b{color:#edfff1}
+#page-billing .institutional-plan-command .btn{border:1px solid #9cdeb0;background:#b4ebc2!important;color:#0d3927!important}
+#page-billing .institutional-plan-command .btn:hover{background:#d0f5d8!important}
+html[data-theme="dark"] #page-billing .institutional-plan-command{border-color:#367b55!important;background:linear-gradient(155deg,#0a2b20 0%,#103c2a 58%,#0c3023 100%)!important}
+@media(max-width:560px){#page-billing .institutional-plan-command{min-height:0}}

@@ -1347,6 +1347,23 @@ assert.match(htmlMarkup, /finance-related title does not grant billing access by
 assert.doesNotThrow(() => new Function(appScript), "finance capability UI changes parse as JavaScript");
 assert.doesNotThrow(() => new Function(backend), "finance capability backend methods parse as JavaScript");
 
+const premierInstitutionalPlanMigration = await readFile(new URL("../supabase/migrations/20261114162000_add_university_premier_institutional_plan.sql", import.meta.url), "utf8");
+assert.match(premierInstitutionalPlanMigration, /university-premier/);
+const premierInvoicePricingMigration = await readFile(new URL("../supabase/migrations/20261114163000_enforce_premier_institutional_invoice_pricing.sql", import.meta.url), "utf8");
+assert.match(premierInvoicePricingMigration, /NEW\.subtotal_kobo IS DISTINCT FROM 120000000/);
+assert.match(premierInvoicePricingMigration, /NEW\.subtotal_kobo IS DISTINCT FROM 1200000000/);
+assert.match(appScript, /premierBasePrice/);
+assert.match(appScript, /subtotal\.input\.readOnly = true/);
+assert.match(premierInstitutionalPlanMigration, /campus_institutional_billing_requests_requested_plan_check/);
+assert.match(premierInstitutionalPlanMigration, /campus_institutional_invoices_plan_check/);
+assert.match(premierInstitutionalPlanMigration, /campus_institutional_subscriptions_plan_check/);
+assert.match(htmlMarkup, /data-billing-plan="university-premier"/);
+assert.match(htmlMarkup, /value="university-premier"/);
+assert.match(htmlMarkup, /₦1,200,000/);
+assert.match(htmlMarkup, /₦12,000,000 yearly/);
+assert.match(htmlMarkup, /institutional-plan-command/);
+assert.match(htmlMarkup, /href="https:\/\/paystack\.shop\/pay\/-yix8599da"[^>]*>Subscribe monthly/);
+assert.match(htmlMarkup, /Request Premier Command \/ onboarding/);
 const institutionalInvoiceMigration = await readFile(new URL("../supabase/migrations/20261114110000_institutional_invoice_payment_workflow.sql", import.meta.url), "utf8");
 const institutionalPaymentAdmin = await readFile(new URL("../supabase/functions/campus-institutional-payment-admin/index.ts", import.meta.url), "utf8");
 const institutionalPaymentWebhook = await readFile(new URL("../supabase/functions/campus-institutional-paystack-webhook/index.ts", import.meta.url), "utf8");

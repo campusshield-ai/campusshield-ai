@@ -4210,7 +4210,7 @@
         message.textContent = 'No institutional billing requests are waiting for invoice issuance.';
         return;
       }
-      message.textContent = 'Review each request and issue a university invoice only after confirming the agreed amount and scope.';
+      message.textContent = 'Review each request and issue a university invoice only after confirming the agreed scope. Premier base prices are fixed by billing period; applicable tax is entered separately.';
       data.forEach(request => {
         const card = document.createElement('article');
         card.className = 'community-post platform-institutional-request';
@@ -4241,7 +4241,21 @@
           wrap.append(label, input);
           return {wrap,input};
         };
-        const subtotal = makeField('Invoice subtotal (NGN)', 'number', '', '0.01', '0.01');
+        const premierBasePrice = request.requested_plan === 'university-premier'
+          ? (request.billing_period === 'yearly' ? 12000000 : 1200000)
+          : null;
+        const subtotal = makeField(
+          'Invoice subtotal (NGN)',
+          'number',
+          premierBasePrice === null ? '' : premierBasePrice.toFixed(2),
+          '0.01',
+          '0.01'
+        );
+        if (premierBasePrice !== null) {
+          subtotal.input.readOnly = true;
+          subtotal.input.setAttribute('aria-label', 'Fixed Premier Institutional Command base price in naira');
+          subtotal.input.title = 'The Premier base price is fixed by the approved package. Applicable tax, if any, is entered separately.';
+        }
         const tax = makeField('Tax (NGN)', 'number', '0.00', '0.01', '0');
         const dueDate = makeField('Due date', 'date', new Date(Date.now()+7*86400000).toISOString().slice(0,10));
         grid.append(subtotal.wrap, tax.wrap, dueDate.wrap);
