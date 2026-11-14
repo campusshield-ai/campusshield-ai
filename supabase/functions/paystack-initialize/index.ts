@@ -34,8 +34,8 @@ function getPaymentReturnUrl(origin: string): string {
   url.searchParams.set("billing", "return");
   return url.toString();
 }
-const prices:Record<string,number>={starter:200000,plus:500000,pro:1000000,ultra:2000000,max:2800000};
-const limits:Record<string,number>={starter:20,plus:60,pro:150,ultra:300,max:600};
+const prices:Record<string,number>={starter:200000,plus:500000,elite:700000,pro:1000000,ultra:2000000,max:2800000};
+const limits:Record<string,number>={starter:20,plus:60,elite:100,pro:150,ultra:300,max:600};
 const json=(status:number,body:Record<string,unknown>,origin=DEFAULT_APP_ORIGIN)=>new Response(JSON.stringify(body),{status,headers:{...cors(origin),"Content-Type":"application/json","Cache-Control":"no-store"}});
 Deno.serve(async(req:Request)=>{
  const origin=getAllowedOrigin(req);
