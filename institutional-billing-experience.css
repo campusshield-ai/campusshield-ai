@@ -359,3 +359,87 @@ html[data-theme="dark"] #platform-institutional-billing-panel .institutional-inv
 html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-safety-note{border-color:#315c40;background:#142d1d;color:#d2e7d6}
 html[data-theme="dark"] #platform-institutional-billing-panel .institutional-request-context{border-color:#315541;background:#142d1e;color:#c7dfcd}
 html[data-theme="dark"] #platform-institutional-billing-panel .institutional-request-context.warning{border-color:#6d572b;background:#302817;color:#f1d89e}
+
+
+/* Dual-path university plan cards: secure subscription + consultation */
+#page-billing .institutional-packages-heading{margin-bottom:14px}
+#page-billing .institutional-package-controls{
+  display:grid;grid-template-columns:minmax(190px,.34fr) minmax(0,1fr);align-items:center;gap:14px;
+  margin:0 0 17px;padding:14px 16px;border:1px solid #d8e9de;border-radius:14px;
+  background:linear-gradient(110deg,#f5fbf6,#fff)
+}
+#page-billing .institutional-package-controls label{display:grid;gap:6px;color:#28543b;font-size:11px;font-weight:850}
+#page-billing .institutional-package-controls select{
+  box-sizing:border-box;width:100%;min-height:42px;padding:9px 12px;border:1px solid #c8dfd0;
+  border-radius:10px;background:#fff;color:#183e2c;font:inherit;font-size:12px
+}
+#page-billing .institutional-package-controls p{margin:0;color:#5b7464;font-size:11px;line-height:1.65}
+#page-billing .institutional-package-controls p strong{color:#1e5a38}
+#page-billing .institutional-plan-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-top:auto}
+#page-billing .institutional-plan-actions .btn{width:100%;min-width:0;min-height:44px;margin:0;padding:10px 12px;white-space:normal;line-height:1.35}
+#page-billing .institutional-plan-actions .institutional-subscribe-cta{
+  border:1px solid #167344;background:linear-gradient(135deg,#167b45,#11623b);color:#fff;
+  box-shadow:0 7px 16px rgba(18,103,58,.14)
+}
+#page-billing .institutional-plan-actions .institutional-subscribe-cta:hover{background:linear-gradient(135deg,#1d8b52,#147146)}
+#page-billing .institutional-plan-actions .institutional-consult-cta{
+  border:1px solid #b8d8c3;background:#f4fbf6;color:#21563a
+}
+#page-billing .institutional-plan-actions .institutional-consult-cta:hover{border-color:#7fbd94;background:#eaf7ee}
+#page-billing .institutional-plan-actions .btn:focus-visible,
+#page-billing .institutional-package-controls select:focus-visible{outline:3px solid rgba(26,132,77,.24);outline-offset:3px}
+#page-billing #institutional-billing-form{
+  box-sizing:border-box;max-width:100%;padding:clamp(16px,2.4vw,25px);border:1px solid #d4e7db;
+  border-radius:18px;background:linear-gradient(160deg,#fff,#f8fcf9);box-shadow:0 12px 32px rgba(17,68,42,.06)
+}
+#page-billing #institutional-billing-form h3{margin-top:0;color:#163f2b;font-size:clamp(19px,2.3vw,24px)}
+#page-billing #institutional-billing-form-intro{color:#597463;font-size:12px;line-height:1.65}
+#page-billing .institutional-request-intent-note{margin:12px 0;padding:11px 13px;border:1px solid #cce5d5;border-left:3px solid #18824b;border-radius:9px;background:#eff9f2;color:#2f6844;font-size:11px;line-height:1.6}
+#page-billing #institutional-billing-form .field input,
+#page-billing #institutional-billing-form .field select,
+#page-billing #institutional-billing-form .field textarea{box-sizing:border-box;max-width:100%;width:100%;min-width:0}
+#page-billing #institution-billing-message{min-height:100px;resize:vertical}
+@media(max-width:760px){
+  #page-billing .institutional-package-controls{grid-template-columns:minmax(0,1fr);gap:9px;padding:12px}
+}
+@media(max-width:430px){
+  #page-billing .institutional-plan-actions .btn{min-height:46px}
+  #page-billing .institutional-plan-card{padding:15px}
+}
+html[data-theme="dark"] #page-billing .institutional-package-controls{
+  border-color:#315642;background:linear-gradient(110deg,#142d20,#10261b)
+}
+html[data-theme="dark"] #page-billing .institutional-package-controls label,
+html[data-theme="dark"] #page-billing .institutional-package-controls p,
+html[data-theme="dark"] #page-billing .institutional-package-controls p strong{color:#c8e3cf}
+html[data-theme="dark"] #page-billing .institutional-package-controls select{
+  border-color:#365b44;background:#0e2418;color:#e2f1e5
+}
+html[data-theme="dark"] #page-billing .institutional-plan-actions .institutional-subscribe-cta{
+  border-color:#469d67;background:linear-gradient(135deg,#176d43,#135638);color:#f1fff4
+}
+html[data-theme="dark"] #page-billing .institutional-plan-actions .institutional-consult-cta{
+  border-color:#3d7251;background:#173323;color:#d1e8d7
+}
+html[data-theme="dark"] #page-billing #institutional-billing-form{
+  border-color:#315641;background:linear-gradient(160deg,#142d20,#10261b)
+}
+html[data-theme="dark"] #page-billing #institutional-billing-form h3{color:#e4f4e8}
+html[data-theme="dark"] #page-billing #institutional-billing-form-intro{color:#bdd6c4}
+html[data-theme="dark"] #page-billing .institutional-request-intent-note{
+  border-color:#315c40;background:#142d1d;color:#d2e7d6
+}
+html[data-theme="dark"] #page-billing #institutional-billing-form .field input,
+html[data-theme="dark"] #page-billing #institutional-billing-form .field select,
+html[data-theme="dark"] #page-billing #institutional-billing-form .field textarea{
+  border-color:#365c43;background:#0d2117;color:#e6f3e9
+}
+#page-billing .institutional-plan-command .institutional-plan-actions .institutional-subscribe-cta{
+  border:1px solid #a2e6b4;background:#b5efc4;color:#0d3b28
+}
+#page-billing .institutional-plan-command .institutional-plan-actions .institutional-consult-cta{
+  border:1px solid rgba(171,237,190,.48);background:rgba(255,255,255,.10);color:#e4f8e9
+}
+#page-billing .institutional-plan-command .institutional-plan-actions .institutional-consult-cta:hover{
+  background:rgba(255,255,255,.16)
+}
