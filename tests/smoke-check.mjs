@@ -67,8 +67,8 @@ const profileAvatar20MbMigration = await readFile(new URL("../supabase/migration
 const profileAvatarPathFixMigration = await readFile(new URL("../supabase/migrations/20261027030000_fix_profile_avatar_path_validation.sql", import.meta.url), "utf8");
 const profileAvatarRlsFixMigration = await readFile(new URL("../supabase/migrations/20261027032000_fix_profile_avatar_upload_rls_size_check.sql", import.meta.url), "utf8");
 const studentIdentityPathFixMigration = await readFile(new URL("../supabase/migrations/20261027052000_fix_student_identity_uuid_path_regex.sql", import.meta.url), "utf8");
-const studentIdentityAutomationMigration = await readFile(new URL("../supabase/migrations/20261114140000_student_identity_automated_verification.sql", import.meta.url), "utf8");
-const studentIdentityUploadFunction = await readFile(new URL("../supabase/functions/student-identity-upload-scan/index.ts", import.meta.url), "utf8");
+const campusShieldPr352IdentityMigration = await readFile(new URL("../supabase/migrations/20261114140000_student_identity_automated_verification.sql", import.meta.url), "utf8");
+const campusShieldPr352IdentityUploadFunction = await readFile(new URL("../supabase/functions/student-identity-upload-scan/index.ts", import.meta.url), "utf8");
 const requestedRoleRpcMigration = await readFile(new URL("../supabase/migrations/20261027062000_add_save_my_requested_role_rpc.sql", import.meta.url), "utf8");
 const pastQuestionMigration = await readFile(new URL("../supabase/migrations/20261027230000_past_questions_exam_prep.sql", import.meta.url), "utf8");
 const pastQuestionFunction = await readFile(new URL("../supabase/functions/past-question-practice/index.ts", import.meta.url), "utf8");
@@ -1011,35 +1011,35 @@ assert.match(backend, /share_with_official_verifier/);
 assert.match(backend, /attest_original_document/);
 assert.match(appScript, /shareWithOfficialVerifier:\s*\$\('identity-share-university-verifier'\)\.checked/,
   "the optional consent choice is passed into the secure upload request");
-assert.match(studentIdentityUploadFunction, /originalDocumentAttested/,
+assert.match(campusShieldPr352IdentityUploadFunction, /originalDocumentAttested/,
   "the upload Edge Function enforces original-document attestation server-side");
-assert.match(studentIdentityUploadFunction, /share_with_official_verifier/,
+assert.match(campusShieldPr352IdentityUploadFunction, /share_with_official_verifier/,
   "the upload Edge Function reads the explicit university-verifier consent");
-assert.match(studentIdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_URL/);
-assert.match(studentIdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_TOKEN/);
-assert.match(studentIdentityUploadFunction, /document_authentic\s*===\s*true/,
+assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_URL/);
+assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_TOKEN/);
+assert.match(campusShieldPr352IdentityUploadFunction, /document_authentic\s*===\s*true/,
   "automatic approval requires explicit confirmation of document authenticity");
-assert.match(studentIdentityUploadFunction, /active_enrollment\s*===\s*true/,
+assert.match(campusShieldPr352IdentityUploadFunction, /active_enrollment\s*===\s*true/,
   "automatic approval requires confirmation of active enrolment");
-assert.match(studentIdentityUploadFunction, /student_number_match\s*===\s*true/);
-assert.match(studentIdentityUploadFunction, /university_match\s*===\s*true/);
-assert.match(studentIdentityUploadFunction, /auto_approve_student_identity_from_official_verifier/,
+assert.match(campusShieldPr352IdentityUploadFunction, /student_number_match\s*===\s*true/);
+assert.match(campusShieldPr352IdentityUploadFunction, /university_match\s*===\s*true/);
+assert.match(campusShieldPr352IdentityUploadFunction, /auto_approve_student_identity_from_official_verifier/,
   "only the restricted database routine can grant automatic student approval");
-assert.match(studentIdentityUploadFunction, /recordManualReview/,
+assert.match(campusShieldPr352IdentityUploadFunction, /recordManualReview/,
   "inconclusive or unavailable university checks are retained for human review");
-assert.match(studentIdentityAutomationMigration, /requested_role IS DISTINCT FROM 'student'/,
+assert.match(campusShieldPr352IdentityMigration, /requested_role IS DISTINCT FROM 'student'/,
   "automatic approval is strictly limited to student applications");
-assert.match(studentIdentityAutomationMigration, /student_identity_upload_scans/,
+assert.match(campusShieldPr352IdentityMigration, /student_identity_upload_scans/,
   "automatic approval requires a recorded clean file scan");
-assert.match(studentIdentityAutomationMigration, /duplicate_identity_signal/,
+assert.match(campusShieldPr352IdentityMigration, /duplicate_identity_signal/,
   "duplicate matric numbers or document hashes are routed to manual review");
-assert.match(studentIdentityAutomationMigration, /campus_identity_auto_review_audit/,
+assert.match(campusShieldPr352IdentityMigration, /campus_identity_auto_review_audit/,
   "automated decisions have an audit record");
-assert.match(studentIdentityAutomationMigration, /FROM PUBLIC, anon, authenticated[\s\S]*?TO service_role/,
+assert.match(campusShieldPr352IdentityMigration, /FROM PUBLIC, anon, authenticated[\s\S]*?TO service_role/,
   "automatic approval execution is restricted to the trusted service role");
-assert.match(studentIdentityAutomationMigration, /campus_memberships[\s\S]*?membership_status = 'active'/,
+assert.match(campusShieldPr352IdentityMigration, /campus_memberships[\s\S]*?membership_status = 'active'/,
   "automatic approval requires an active membership at the selected university");
-assert.match(studentIdentityAutomationMigration, /email_confirmed_at/,
+assert.match(campusShieldPr352IdentityMigration, /email_confirmed_at/,
   "automatic approval requires a confirmed email address");
 assert.match(backend, /rpc\("save_my_requested_role"/, "requested-role persistence uses the dedicated Supabase RPC");
 assert.match(requestedRoleRpcMigration, /create or replace function public\.save_my_requested_role\(p_requested_role text\)/i, "requested-role RPC is defined in a migration");
