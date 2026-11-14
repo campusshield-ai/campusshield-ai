@@ -4210,19 +4210,29 @@
         message.textContent = 'No institutional billing requests are waiting for invoice issuance.';
         return;
       }
-      message.textContent = 'Review each request and issue a university invoice only after confirming the agreed scope. Premier base prices are fixed by billing period; applicable tax is entered separately.';
+      message.textContent = 'Review the institution, contact, requested package and procurement context before issuing an invoice. The server remains authoritative for pricing, permissions and invoice creation.';
+      const money = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 });
+      const localToday = () => {
+        const now = new Date();
+        return [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
+      };
       data.forEach(request => {
         const card = document.createElement('article');
         card.className = 'community-post platform-institutional-request';
+        card.dataset.requestId = request.id;
+
         const title = document.createElement('h3');
         title.textContent = request.institution_name + ' · ' + String(request.requested_plan || '').replace(/-/g, ' ');
         const detail = document.createElement('p');
         detail.className = 'muted';
         detail.textContent = (request.billing_period || 'monthly') + ' · ' +
-          (request.contact_email || 'No billing contact') + ' · Requested ' +
+          (request.contact_email || 'No billing contact supplied') + ' · Requested ' +
           new Date(request.created_at).toLocaleDateString();
+
         const note = document.createElement('p');
-        note.textContent = request.message || 'No additional procurement details supplied.';
+        note.textContent = request.message?.trim() || 'No procurement details were supplied with this request. Confirm the institution’s authorised contact and procurement requirements before issuing an invoice.';
+        note.className = request.message?.trim() ? '' : 'message warning';
+
         const grid = document.createElement('div');
         grid.className = 'grid two';
         const makeField = (labelText, type, value, step, min) => {
@@ -4238,7 +4248,8 @@
             input.value = value;
             input.inputMode = 'decimal';
           } else input.value = value || '';
-          wrap.append(label, input);
+          label.appendChild(input);
+          wrap.append(label);
           return {wrap,input};
         };
         const premierBasePrice = request.requested_plan === 'university-premier'
@@ -4257,22 +4268,78 @@
           subtotal.input.title = 'The Premier base price is fixed by the approved package. Applicable tax, if any, is entered separately.';
         }
         const tax = makeField('Tax (NGN)', 'number', '0.00', '0.01', '0');
-        const dueDate = makeField('Due date', 'date', new Date(Date.now()+7*86400000).toISOString().slice(0,10));
+        const dueDate = makeField('Due date', 'date', localToday());
+        dueDate.input.min = localToday();
         grid.append(subtotal.wrap, tax.wrap, dueDate.wrap);
+
+        const totalPanel = document.createElement('div');
+        totalPanel.className = 'institutional-invoice-total';
+        totalPanel.setAttribute('aria-live', 'polite');
+        const totalLabel = document.createElement('span');
+        totalLabel.textContent = 'Total payable';
+        const totalValue = document.createElement('strong');
+        totalValue.textContent = '—';
+        const totalHint = document.createElement('small');
+        totalHint.textContent = 'Subtotal plus applicable tax';
+        totalPanel.append(totalLabel, totalValue, totalHint);
+        const updateTotal = () => {
+          const a = Number(subtotal.input.value);
+          const b = Number(tax.input.value);
+          totalValue.textContent = Number.isFinite(a) && Number.isFinite(b) && a >= 0 && b >= 0
+            ? money.format(a + b)
+            : 'Enter valid amounts';
+        };
+        subtotal.input.addEventListener('input', updateTotal);
+        tax.input.addEventListener('input', updateTotal);
+        updateTotal();
+
         const instructionsWrap = document.createElement('div');
         instructionsWrap.className = 'field';
         const instructionsLabel = document.createElement('label');
-        instructionsLabel.textContent = 'Payment instructions for the institution';
+        instructionsLabel.textContent = 'Payment instructions for the institution *';
         const instructions = document.createElement('textarea');
         instructions.maxLength = 2000;
         instructions.required = true;
-        instructions.placeholder = 'Include procurement/support contact and any required reference guidance.';
-        instructionsWrap.append(instructionsLabel, instructions);
+        instructions.minLength = 20;
+        instructions.setAttribute('aria-label', 'Payment instructions for the institution');
+        instructions.placeholder = 'State the authorised procurement/support contact, invoice payment reference to quote, and how the institution should send payment evidence. Do not include bank or card secrets.';
+        instructionsLabel.appendChild(instructions);
+        const instructionsHint = document.createElement('small');
+        instructionsHint.className = 'muted';
+        instructionsHint.textContent = '20–2,000 characters. Give the institution clear next steps and a reference to quote.';
+        instructionsWrap.append(instructionsLabel, instructionsHint);
+
+        const confirmWrap = document.createElement('label');
+        confirmWrap.className = 'institutional-invoice-confirm';
+        const confirm = document.createElement('input');
+        confirm.type = 'checkbox';
+        confirm.required = true;
+        const confirmText = document.createElement('span');
+        confirmText.textContent = 'I have verified the institution and its authorised billing contact, confirmed the requested package and billing period, and reviewed any procurement or purchase-order requirements.';
+        confirmWrap.append(confirm, confirmText);
+
+        const reviewLine = document.createElement('p');
+        reviewLine.className = 'muted';
+        reviewLine.textContent = 'No payment is recorded by issuing this invoice. Access is activated only after the server verifies the payment and applies the approved subscription rules.';
+
+        const feedback = document.createElement('p');
+        feedback.className = 'message';
+        feedback.setAttribute('role', 'status');
+        feedback.setAttribute('aria-live', 'polite');
+
         const issue = document.createElement('button');
         issue.type = 'button';
         issue.className = 'btn';
-        issue.textContent = 'Approve request and issue invoice';
+        issue.textContent = 'Verify details and issue invoice';
+        issue.disabled = true;
+        const syncReady = () => {
+          issue.disabled = !(confirm.checked && instructions.value.trim().length >= 20);
+        };
+        confirm.addEventListener('change', syncReady);
+        instructions.addEventListener('input', syncReady);
+
         issue.addEventListener('click', async () => {
+          if (issue.disabled) return;
           const parseKobo = (field, allowZero) => {
             const raw = String(field.value || '').trim();
             if (!/^\d{1,12}(?:\.\d{1,2})?$/.test(raw)) throw new Error('Enter a valid NGN amount with up to two decimal places.');
@@ -4286,16 +4353,26 @@
           try {
             subtotalKobo = parseKobo(subtotal.input, false);
             taxKobo = parseKobo(tax.input, true);
-            if (!dueDate.input.value || dueDate.input.value < new Date().toISOString().slice(0,10)) {
+            if (!dueDate.input.value || dueDate.input.value < localToday()) {
               throw new Error('Choose a due date that is today or later.');
             }
-            if (instructions.value.trim().length < 8) throw new Error('Add clear payment instructions (at least 8 characters).');
+            if (instructions.value.trim().length < 20) {
+              throw new Error('Provide complete payment instructions (at least 20 characters).');
+            }
+            if (!confirm.checked) {
+              throw new Error('Confirm that the institution, billing contact, package and procurement requirements have been verified.');
+            }
+            if (subtotalKobo + taxKobo > Number.MAX_SAFE_INTEGER) throw new Error('The total invoice amount is too large.');
           } catch (validationError) {
-            message.textContent = validationError.message;
+            feedback.textContent = validationError.message;
+            feedback.className = 'message error';
             return;
           }
+
           issue.disabled = true;
-          message.textContent = 'Issuing the invoice securely…';
+          issue.textContent = 'Issuing securely…';
+          feedback.textContent = 'Submitting the invoice request securely. Do not refresh or submit again.';
+          feedback.className = 'message';
           try {
             const { data: issued, error: issueError } = await backend.client.rpc('issue_campus_institutional_invoice', {
               p_billing_request_id: request.id,
@@ -4305,17 +4382,27 @@
               p_payment_instructions: instructions.value.trim()
             });
             if (issueError) throw issueError;
-            message.textContent = 'Invoice ' + (issued?.invoice_number || '') + ' was issued for ' + request.institution_name + '.';
+            feedback.textContent = 'Invoice ' + (issued?.invoice_number || '') + ' was issued. The request has been refreshed.';
+            feedback.className = 'message success';
+            message.textContent = feedback.textContent;
             await loadPlatformInstitutionalBillingRequests();
           } catch (issueFailure) {
-            message.textContent = issueFailure.message || 'The invoice could not be issued.';
-            issue.disabled = false;
+            feedback.textContent = issueFailure.message || 'The invoice could not be issued. Refresh the request list before retrying to avoid creating a duplicate.';
+            feedback.className = 'message error';
+            issue.textContent = 'Retry after refreshing';
+            issue.disabled = true;
+            const refreshBeforeRetry = document.createElement('button');
+            refreshBeforeRetry.type = 'button';
+            refreshBeforeRetry.className = 'btn secondary';
+            refreshBeforeRetry.textContent = 'Refresh requests';
+            refreshBeforeRetry.addEventListener('click', loadPlatformInstitutionalBillingRequests, { once: true });
+            actions.replaceChildren(refreshBeforeRetry);
           }
         });
         const actions = document.createElement('div');
         actions.className = 'actions';
         actions.appendChild(issue);
-        card.append(title, detail, note, grid, instructionsWrap, actions);
+        card.append(title, detail, note, grid, totalPanel, instructionsWrap, confirmWrap, reviewLine, feedback, actions);
         host.appendChild(card);
       });
     } catch (error) {
