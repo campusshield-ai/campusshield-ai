@@ -433,7 +433,7 @@
       const intentMessage = requestIntent === 'consultation'
         ? 'CONSULTATION REQUEST — Please review the institution and contact us to discuss the appropriate package and scope.'
         : 'SUBSCRIPTION / OFFICIAL INVOICE REQUEST — Please verify the institution and issue an official invoice for the selected package and billing period. Do not initiate payment until an invoice is issued.';
-      const requestMessage = [intentMessage, message].filter(Boolean).join('\\n\\n').slice(0, 2000);
+      const requestMessage = [intentMessage, message].filter(Boolean).join('\n\n').slice(0, 2000);
       if (!universityId) {
         status.textContent = 'Your verified university could not be confirmed. Refresh your campus session before submitting.';
         return;
@@ -4346,6 +4346,27 @@
         const note = document.createElement('p');
         note.className = request.message?.trim() ? 'institutional-request-context' : 'institutional-request-context warning';
         note.textContent = request.message?.trim() || 'No procurement details were supplied. Confirm the institution’s authorised contact, purchase-order requirements and agreed scope before issuing an invoice.';
+
+        const consultationOnly = String(request.message || '').startsWith('CONSULTATION REQUEST');
+        if (consultationOnly) {
+          card.classList.add('institutional-consultation-request');
+          const badge = document.createElement('span');
+          badge.className = 'institutional-request-kind';
+          badge.textContent = 'CONSULTATION ONLY · NO INVOICE REQUESTED';
+          const guidance = document.createElement('p');
+          guidance.className = 'institutional-consultation-guidance';
+          guidance.textContent = 'Discuss package scope, campus coverage and implementation needs with this institution first. This enquiry must not be converted into an invoice until the institution explicitly submits a subscription / official invoice request.';
+          card.append(title, detail, badge, note, guidance);
+          if (/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(request.contact_email || '').trim())) {
+            const contact = document.createElement('a');
+            contact.href = 'mailto:' + String(request.contact_email).trim();
+            contact.textContent = 'Contact institutional representative';
+            contact.className = 'institutional-consultation-contact';
+            card.appendChild(contact);
+          }
+          host.appendChild(card);
+          return;
+        }
 
         const grid = document.createElement('div');
         grid.className = 'institutional-invoice-fields';
