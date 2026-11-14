@@ -616,8 +616,8 @@
       limit='Security access does not grant staff-application approvals, institutional billing administration, campus administrator powers, or platform-wide controls.';
     } else if(role==='teacher' && campusOk && currentCampusFinanceAccess?.university_id){
       state='approved';badge='Appointed campus finance officer';title='University finance workspace';description='Your verified staff appointment adds a narrow finance capability for '+String(currentCampusFinanceAccess.university_name || 'your university')+'.';
-      items=['Submit and track institutional CampusShield billing requests for your own university.','Use the regular verified staff workspace, including assigned teaching/classroom tools where enabled.','Keep institution billing requests and finance communications tied to your approved campus identity.'];
-      limit='Your finance appointment does not grant invoice payment/reconciliation, refunds, student fee collection, incident management, staff approvals, campus administration or platform-wide access. The production hosted-invoice payment flow is not enabled yet.';
+      items=['Submit and track institutional CampusShield billing requests for your own university.','View and pay CampusShield invoices issued to this university, then retrieve and reconcile payment receipts.','Use the regular verified staff workspace, including assigned teaching/classroom tools where enabled.'];
+      limit='Your finance appointment permits payment and reconciliation of CampusShield institutional invoices, plus access to their receipts, for this university only. It does not grant access to student tuition or other student fee records, refunds, other universities, incidents, staff approvals, campus administration or platform-wide financial records.';
     } else if(role==='teacher' && campusOk){
       state='approved';badge='Verified university staff';title='University staff workspace';description='Your verified staff workspace is based on the teacher/staff system role, not your job title.';
       items=['Create and manage classroom spaces where enabled for verified teachers.','Use campus opportunities, community and student-support features available to verified staff.','Publish official campus notices where the feature and campus policies allow it.'];
@@ -7798,7 +7798,7 @@ $('page-marketplace').addEventListener('click',async function(event){
           '<td>' + esc(row.position_title) + '</td><td>' + esc(statusText) + '</td>' +
           '<td><button type="button" class="' + buttonClass + '" data-finance-action="' + action + '" data-finance-user="' + esc(row.user_id) + '">' + label + '</button></td></tr>';
       }).join('');
-      message.textContent = 'Appointments apply only to this university. A finance officer can submit and track institutional billing requests; this does not enable payment reconciliation or refunds.';
+      message.textContent = 'Appointments apply only to this university. A finance officer can view, pay and reconcile CampusShield institutional invoices and receipts for this university only. Student fee records, refunds and other universities remain excluded.';
     } catch (err) {
       tbody.innerHTML = '<tr><td colspan="4">Finance appointments could not be loaded.</td></tr>';
       message.textContent = err?.message || 'Only a verified campus administrator can manage finance appointments.';
