@@ -138,6 +138,18 @@ Deno.serve(async (req: Request) => {
         .limit(50);
       if (invoiceError) return json({ error: "Institutional invoices could not be loaded." }, 503);
       const invoiceIds = (invoices || []).map((invoice: any) => invoice.id);
+      const attemptQuery = invoiceIds.length
+        ? await db.schema("private").from("campus_institutional_payment_attempts")
+          .select("invoice_id,reference,status,expires_at,created_at")
+          .in("invoice_id", invoiceIds)
+          .in("status", ["pending", "review_required"])
+          .order("created_at", { ascending: false })
+        : { data: [], error: null };
+      if (attemptQuery.error) return json({ error: "Institutional payment attempts could not be loaded." }, 503);
+      const latestAttempt = new Map<string, any>();
+      for (const row of attemptQuery.data || []) {
+        if (!latestAttempt.has(row.invoice_id)) latestAttempt.set(row.invoice_id, row);
+      }
       const auditQuery = invoiceIds.length
         ? await db.schema("private").from("campus_institutional_payment_audit")
           .select("invoice_id,receipt_number,provider_reference,provider_transaction_id,amount_kobo,currency,provider_paid_at,verified_at,payment_kind,verified_source")
@@ -153,6 +165,7 @@ Deno.serve(async (req: Request) => {
         invoices: (invoices || []).map((invoice: any) => ({
           ...invoice,
           receipt: receiptByInvoice.get(invoice.id) || null,
+          latest_attempt: latestAttempt.get(invoice.id) || null,
         })),
         university_name: campus.university_name || null,
         payments_enabled: paymentsEnabled,
@@ -346,7 +359,7 @@ Deno.serve(async (req: Request) => {
 
       const { data: committed, error: commitError } = await db.rpc("commit_campus_institutional_invoice_payment", {
         p_attempt_id: attempt.id,
-        p_actor_user_id: user.id,
+        p_actor_user_id: attempt.actor_user_id,
         p_reference: reference,
         p_transaction_id: transactionId,
         p_amount_kobo: Number(tx.amount),
@@ -356,6 +369,7 @@ Deno.serve(async (req: Request) => {
         p_paid_at: paidAt.toISOString(),
         p_event_id: null,
         p_verified_source: "finance",
+        p_verified_by_user_id: user.id,
       });
       if (commitError || !committed?.receipt_number) {
         console.error("Verified institutional invoice payment needs reconciliation.", {
