@@ -443,3 +443,12 @@ html[data-theme="dark"] #page-billing #institutional-billing-form .field textare
 #page-billing .institutional-plan-command .institutional-plan-actions .institutional-consult-cta:hover{
   background:rgba(255,255,255,.16)
 }
+
+#platform-institutional-billing-panel .institutional-consultation-request{border-color:#c9dfd0;background:linear-gradient(145deg,#f8fcf9,#fff)}
+#platform-institutional-billing-panel .institutional-request-kind{display:inline-flex;align-self:flex-start;width:max-content;max-width:100%;padding:6px 9px;border:1px solid #c6e0cf;border-radius:999px;background:#eef8f1;color:#286542;font-size:9px;font-weight:900;letter-spacing:.06em}
+#platform-institutional-billing-panel .institutional-consultation-guidance{margin:0;padding:11px 13px;border-left:3px solid #81b992;background:#f3faf5;color:#557161;font-size:11px;line-height:1.6}
+#platform-institutional-billing-panel .institutional-consultation-contact{width:max-content;max-width:100%;color:#176b46;font-size:12px;font-weight:800;overflow-wrap:anywhere}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-consultation-request{border-color:#315541;background:#142c20}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-request-kind{border-color:#315c40;background:#183a28;color:#c7ebd0}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-consultation-guidance{background:#10291b;color:#c1d8c7}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-consultation-contact{color:#80dba1}
