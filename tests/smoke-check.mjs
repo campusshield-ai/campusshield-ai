@@ -29,6 +29,12 @@ const i18nScript = await readFile(new URL("../campusshield-i18n.js", import.meta
 const backend = await readFile(new URL("../campusshield-backend.js", import.meta.url), "utf8");
 const supabaseConfig = await readFile(new URL("../supabase-config.js", import.meta.url), "utf8");
 const planner = await readFile(new URL("../shieldmind-planner.js", import.meta.url), "utf8");
+const shieldmindStudyRoom = await readFile(new URL("../shieldmind-study-room.js", import.meta.url), "utf8");
+const commandExperienceCss = await readFile(new URL("../campusshield-command-experience.css", import.meta.url), "utf8");
+const publicFeaturesPage = await readFile(new URL("../features.html", import.meta.url), "utf8");
+const robotsTxt = await readFile(new URL("../robots.txt", import.meta.url), "utf8");
+const sitemapXml = await readFile(new URL("../sitemap.xml", import.meta.url), "utf8");
+const webManifest = JSON.parse(await readFile(new URL("../manifest.webmanifest", import.meta.url), "utf8"));
 const learningInsightsScript = await readFile(new URL("../shieldmind-learning-insights.js", import.meta.url), "utf8");
 const learningInsightsCss = await readFile(new URL("../shieldmind-learning-insights.css", import.meta.url), "utf8");
 const shieldmindChatHistoryCss = await readFile(new URL("../shieldmind-chat-history.css", import.meta.url), "utf8");
@@ -1422,5 +1428,25 @@ assert.doesNotThrow(() => new Function(appScript), "institutional invoice UI par
 assert.match(institutionalPaymentAdmin, /markAttemptForReview\(db, attemptId\)/);
 assert.match(institutionalPaymentWebhook, /verifyModernPaystackSignature/);
 assert.match(institutionalPaymentWebhook, /Math\.abs\(Math\.floor\(Date\.now\(\) \/ 1000\) - timestamp\) > 300/);
+
+assert.match(htmlMarkup, /application\/ld\+json/, "public platform page exposes structured software metadata");
+assert.match(htmlMarkup, /shieldmind-study-room-builder/, "ShieldMind includes the interactive Study Room builder");
+assert.match(htmlMarkup, /platform-admin-command-center/, "platform administration includes a unified command desk");
+assert.match(htmlMarkup, /platform-university-listing-requests/);
+assert.match(htmlMarkup, /platform-senior-staff-requests/);
+assert.match(featureLoader, /shieldmind-study-room\.js/, "Study Room builder is lazy-loaded with ShieldMind");
+assert.doesNotThrow(() => new Function(shieldmindStudyRoom), "Study Room builder parses as JavaScript");
+assert.match(shieldmindStudyRoom, /question\.value = prompt/, "Study Room creates a reviewable draft in the existing composer");
+assert.match(shieldmindStudyRoom, /Nothing has been sent yet/, "Study Room does not send prompts automatically");
+assert.doesNotMatch(shieldmindStudyRoom, /fetch\(|functions\.invoke|\.submit\(/, "Study Room builder does not bypass the normal ShieldMind submit flow");
+assert.match(commandExperienceCss, /backdrop-filter:blur/, "glass styling is progressive enhancement for map overlays");
+assert.match(commandExperienceCss, /prefers-reduced-motion/, "new command experience respects reduced motion");
+assert.match(publicFeaturesPage, /interactive Study Rooms/);
+assert.match(robotsTxt, /Sitemap: https:\/\/campusshield-ai\.github\.io\/campusshield-ai\/sitemap\.xml/);
+assert.match(sitemapXml, /<urlset/);
+assert.match(sitemapXml, /\/features\.html/);
+assert.match(sitemapXml, /\/privacy\.html/);
+assert.match(webManifest.description, /campus mapping/);
 console.log("PASS university institutional invoice, private payment, receipt and webhook security safeguards");
+console.log("PASS interactive Study Room builder, platform command desk, accessibility styling and public SEO metadata");
 
