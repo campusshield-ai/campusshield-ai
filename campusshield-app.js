@@ -4210,7 +4210,14 @@
         message.textContent = 'No institutional billing requests are waiting for invoice issuance.';
         return;
       }
-      message.textContent = 'Review each request and issue a university invoice only after confirming the agreed scope. Premier base prices are fixed by billing period; applicable tax is entered separately.';
+      message.textContent = 'Review the institution, authorised billing contact, requested package and procurement context before issuing an invoice. Server-side pricing and permissions remain authoritative.';
+      const money = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 });
+      const localDate = (date = new Date()) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+      };
       data.forEach(request => {
         const card = document.createElement('article');
         card.className = 'community-post platform-institutional-request';
@@ -4219,15 +4226,18 @@
         const detail = document.createElement('p');
         detail.className = 'muted';
         detail.textContent = (request.billing_period || 'monthly') + ' · ' +
-          (request.contact_email || 'No billing contact') + ' · Requested ' +
+          (request.contact_email || 'No billing contact supplied') + ' · Requested ' +
           new Date(request.created_at).toLocaleDateString();
+
         const note = document.createElement('p');
-        note.textContent = request.message || 'No additional procurement details supplied.';
+        note.className = request.message?.trim() ? 'institutional-request-context' : 'institutional-request-context warning';
+        note.textContent = request.message?.trim() || 'No procurement details were supplied. Confirm the institution’s authorised contact, purchase-order requirements and agreed scope before issuing an invoice.';
+
         const grid = document.createElement('div');
-        grid.className = 'grid two';
+        grid.className = 'institutional-invoice-fields';
         const makeField = (labelText, type, value, step, min) => {
           const wrap = document.createElement('div');
-          wrap.className = 'field';
+          wrap.className = 'field institutional-invoice-field';
           const label = document.createElement('label');
           label.textContent = labelText;
           const input = document.createElement('input');
@@ -4238,64 +4248,117 @@
             input.value = value;
             input.inputMode = 'decimal';
           } else input.value = value || '';
-          wrap.append(label, input);
+          label.appendChild(input);
+          wrap.appendChild(label);
           return {wrap,input};
         };
         const premierBasePrice = request.requested_plan === 'university-premier'
           ? (request.billing_period === 'yearly' ? 12000000 : 1200000)
           : null;
-        const subtotal = makeField(
-          'Invoice subtotal (NGN)',
-          'number',
-          premierBasePrice === null ? '' : premierBasePrice.toFixed(2),
-          '0.01',
-          '0.01'
-        );
+        const subtotal = makeField('Invoice subtotal (NGN)', 'number',
+          premierBasePrice === null ? '' : premierBasePrice.toFixed(2), '0.01', '0.01');
         if (premierBasePrice !== null) {
           subtotal.input.readOnly = true;
           subtotal.input.setAttribute('aria-label', 'Fixed Premier Institutional Command base price in naira');
           subtotal.input.title = 'The Premier base price is fixed by the approved package. Applicable tax, if any, is entered separately.';
         }
         const tax = makeField('Tax (NGN)', 'number', '0.00', '0.01', '0');
-        const dueDate = makeField('Due date', 'date', new Date(Date.now()+7*86400000).toISOString().slice(0,10));
+        const dueDate = makeField('Due date', 'date', localDate(new Date(Date.now() + 7 * 86400000)));
+        dueDate.input.min = localDate();
         grid.append(subtotal.wrap, tax.wrap, dueDate.wrap);
+
+        const totalPanel = document.createElement('div');
+        totalPanel.className = 'institutional-invoice-total';
+        totalPanel.setAttribute('aria-live', 'polite');
+        const totalLabel = document.createElement('span');
+        totalLabel.textContent = 'Total payable';
+        const totalValue = document.createElement('strong');
+        const totalHint = document.createElement('small');
+        totalHint.textContent = 'Calculated as invoice subtotal plus tax';
+        totalPanel.append(totalLabel, totalValue, totalHint);
+        const updateTotal = () => {
+          const a = Number(subtotal.input.value);
+          const b = Number(tax.input.value);
+          totalValue.textContent = subtotal.input.value !== '' && tax.input.value !== '' &&
+            Number.isFinite(a) && Number.isFinite(b) && a >= 0 && b >= 0
+            ? money.format(a + b) : 'Enter valid amounts';
+        };
+        subtotal.input.addEventListener('input', updateTotal);
+        tax.input.addEventListener('input', updateTotal);
+        updateTotal();
+
         const instructionsWrap = document.createElement('div');
-        instructionsWrap.className = 'field';
+        instructionsWrap.className = 'field institutional-invoice-instructions';
         const instructionsLabel = document.createElement('label');
-        instructionsLabel.textContent = 'Payment instructions for the institution';
+        instructionsLabel.textContent = 'Payment instructions for the institution *';
         const instructions = document.createElement('textarea');
         instructions.maxLength = 2000;
+        instructions.minLength = 20;
         instructions.required = true;
-        instructions.placeholder = 'Include procurement/support contact and any required reference guidance.';
-        instructionsWrap.append(instructionsLabel, instructions);
+        instructions.setAttribute('aria-label', 'Payment instructions for the institution');
+        instructions.placeholder = 'State the authorised procurement/support contact, invoice payment reference to quote, and how to submit payment evidence. Never include bank or card passwords.';
+        const instructionsHint = document.createElement('small');
+        instructionsHint.textContent = '20–2,000 characters. Give the institution clear next steps and the exact reference to quote.';
+        instructionsLabel.appendChild(instructions);
+        instructionsWrap.append(instructionsLabel, instructionsHint);
+
+        const confirmWrap = document.createElement('label');
+        confirmWrap.className = 'institutional-invoice-confirm';
+        const confirm = document.createElement('input');
+        confirm.type = 'checkbox';
+        confirm.required = true;
+        const confirmText = document.createElement('span');
+        confirmText.textContent = 'I verified the institution and authorised billing contact, confirmed the requested package and billing period, and reviewed procurement or purchase-order requirements.';
+        confirmWrap.append(confirm, confirmText);
+
+        const safetyNote = document.createElement('p');
+        safetyNote.className = 'institutional-invoice-safety-note';
+        safetyNote.textContent = 'Issuing an invoice does not record payment or activate access. Subscription activation remains dependent on server-verified payment and the approved subscription rules.';
+
+        const feedback = document.createElement('p');
+        feedback.className = 'message institutional-invoice-feedback';
+        feedback.setAttribute('role', 'status');
+        feedback.setAttribute('aria-live', 'polite');
+
+        const actions = document.createElement('div');
+        actions.className = 'actions institutional-invoice-actions';
         const issue = document.createElement('button');
         issue.type = 'button';
         issue.className = 'btn';
-        issue.textContent = 'Approve request and issue invoice';
+        issue.textContent = 'Verify details and issue invoice';
+        issue.disabled = true;
+        const syncReady = () => {
+          issue.disabled = !(confirm.checked && instructions.value.trim().length >= 20);
+        };
+        confirm.addEventListener('change', syncReady);
+        instructions.addEventListener('input', syncReady);
+
         issue.addEventListener('click', async () => {
+          if (issue.disabled) return;
           const parseKobo = (field, allowZero) => {
             const raw = String(field.value || '').trim();
-            if (!/^\d{1,12}(?:\.\d{1,2})?$/.test(raw)) throw new Error('Enter a valid NGN amount with up to two decimal places.');
+            if (!/^\\d{1,12}(?:\\.\\d{1,2})?$/.test(raw)) throw new Error('Enter a valid NGN amount with up to two decimal places.');
             const value = Math.round(Number(raw) * 100);
-            if (!Number.isSafeInteger(value) || (allowZero ? value < 0 : value <= 0)) {
-              throw new Error('Enter a valid invoice amount.');
-            }
+            if (!Number.isSafeInteger(value) || (allowZero ? value < 0 : value <= 0)) throw new Error('Enter a valid invoice amount.');
             return value;
           };
           let subtotalKobo, taxKobo;
           try {
             subtotalKobo = parseKobo(subtotal.input, false);
             taxKobo = parseKobo(tax.input, true);
-            if (!dueDate.input.value || dueDate.input.value < new Date().toISOString().slice(0,10)) {
-              throw new Error('Choose a due date that is today or later.');
-            }
-            if (instructions.value.trim().length < 8) throw new Error('Add clear payment instructions (at least 8 characters).');
+            if (!dueDate.input.value || dueDate.input.value < localDate()) throw new Error('Choose a due date that is today or later.');
+            if (instructions.value.trim().length < 20) throw new Error('Provide clear payment instructions (at least 20 characters).');
+            if (!confirm.checked) throw new Error('Confirm the institution, contact, package and procurement checks before issuing.');
+            if (subtotalKobo + taxKobo > Number.MAX_SAFE_INTEGER) throw new Error('The total invoice amount is too large.');
           } catch (validationError) {
-            message.textContent = validationError.message;
+            feedback.textContent = validationError.message;
+            feedback.className = 'message error institutional-invoice-feedback';
             return;
           }
           issue.disabled = true;
-          message.textContent = 'Issuing the invoice securely…';
+          issue.textContent = 'Issuing securely…';
+          feedback.textContent = 'Submitting securely. Do not refresh or submit this invoice again.';
+          feedback.className = 'message institutional-invoice-feedback';
           try {
             const { data: issued, error: issueError } = await backend.client.rpc('issue_campus_institutional_invoice', {
               p_billing_request_id: request.id,
@@ -4305,17 +4368,25 @@
               p_payment_instructions: instructions.value.trim()
             });
             if (issueError) throw issueError;
-            message.textContent = 'Invoice ' + (issued?.invoice_number || '') + ' was issued for ' + request.institution_name + '.';
+            feedback.textContent = 'Invoice ' + (issued?.invoice_number || '') + ' was issued for ' + request.institution_name + '.';
+            feedback.className = 'message success institutional-invoice-feedback';
+            message.textContent = feedback.textContent;
             await loadPlatformInstitutionalBillingRequests();
           } catch (issueFailure) {
-            message.textContent = issueFailure.message || 'The invoice could not be issued.';
-            issue.disabled = false;
+            feedback.textContent = issueFailure.message || 'The invoice could not be issued. Refresh the request list before retrying to avoid duplicate submissions.';
+            feedback.className = 'message error institutional-invoice-feedback';
+            issue.textContent = 'Refresh before retrying';
+            issue.disabled = true;
+            const refresh = document.createElement('button');
+            refresh.type = 'button';
+            refresh.className = 'btn secondary';
+            refresh.textContent = 'Refresh requests';
+            refresh.addEventListener('click', loadPlatformInstitutionalBillingRequests, { once: true });
+            actions.replaceChildren(refresh);
           }
         });
-        const actions = document.createElement('div');
-        actions.className = 'actions';
         actions.appendChild(issue);
-        card.append(title, detail, note, grid, instructionsWrap, actions);
+        card.append(title, detail, note, grid, totalPanel, instructionsWrap, confirmWrap, safetyNote, feedback, actions);
         host.appendChild(card);
       });
     } catch (error) {
