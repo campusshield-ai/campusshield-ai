@@ -14,7 +14,13 @@
 
   const production = {
     url: "https://fvgtnujjnvdkhzqqcaqe.supabase.co",
-    publishableKey: "sb_publishable_IDVCTiln0UBuyi_riZ-CJw__i84wmor"
+    publishableKey: "sb_publishable_IDVCTiln0UBuyi_riZ-CJw__i84wmor",
+    // Public Production Turnstile sitekey; the matching secret must be saved
+    // in Production Supabase Auth before this challenge is enabled for users.
+    captcha: {
+      provider: "turnstile",
+      siteKey: "0x4AAAAAAGBCYZUA6wurC0U1"
+    }
   };
   const staging = {
     url: "https://hywcpnoqqhxvujnimhxl.supabase.co",

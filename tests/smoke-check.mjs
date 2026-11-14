@@ -334,21 +334,27 @@ assert.match(config, /https:\/\/fvgtnujjnvdkhzqqcaqe\.supabase\.co/);
 assert.doesNotMatch(config, /campusshield-ai-staging-preview\.vercel\.app/, "staging hostname must not be in the production host allowlist");
 assert.match(config, /campusshield-ai\.github\.io/, "GitHub Pages production hostname remains recognized");
 
-function configuredSupabaseProject(hostname) {
+function configuredSupabaseSettings(hostname) {
   const fakeWindow = { location: { hostname } };
   new Function("window", "console", config)(fakeWindow, { info() {} });
-  return new URL(fakeWindow.CAMPUSSHIELD_SUPABASE_CONFIG.url).hostname;
+  return fakeWindow.CAMPUSSHIELD_SUPABASE_CONFIG;
 }
-assert.equal(configuredSupabaseProject("campusshield-ai.github.io"), "fvgtnujjnvdkhzqqcaqe.supabase.co");
-assert.equal(configuredSupabaseProject("campusshield-ai-staging-preview.vercel.app"), "hywcpnoqqhxvujnimhxl.supabase.co", "the stable Vercel staging hostname must use Staging");
-assert.equal(configuredSupabaseProject("campusshield-ai-staging-preview-7cvp4w3qe.vercel.app"), "hywcpnoqqhxvujnimhxl.supabase.co", "unique Vercel previews remain isolated on Staging");
+const productionSettings = configuredSupabaseSettings("campusshield-ai.github.io");
+assert.equal(new URL(productionSettings.url).hostname, "fvgtnujjnvdkhzqqcaqe.supabase.co");
+assert.equal(productionSettings.captcha?.provider, "turnstile", "the production host selects the Production Turnstile provider");
+assert.equal(productionSettings.captcha?.siteKey, "0x4AAAAAAGBCYZUA6wurC0U1", "the production site selects its own Cloudflare widget");
+const stagingSettings = configuredSupabaseSettings("campusshield-ai-staging-preview.vercel.app");
+assert.equal(new URL(stagingSettings.url).hostname, "hywcpnoqqhxvujnimhxl.supabase.co", "the stable Vercel staging hostname must use Staging");
+assert.equal(stagingSettings.captcha?.siteKey, "0x4AAAAAAF6tOY7MqWYcC3h8", "Staging retains its independent Cloudflare widget");
+const uniquePreviewSettings = configuredSupabaseSettings("campusshield-ai-staging-preview-7cvp4w3qe.vercel.app");
+assert.equal(new URL(uniquePreviewSettings.url).hostname, "hywcpnoqqhxvujnimhxl.supabase.co", "unique Vercel previews remain isolated on Staging");
 // Production's legacy identity table intentionally has no university_id column.
 // The admin identity review UI only needs the institution label stored on the record.
 const studentIdentityRead = appScript.match(/\.from\('student_identity_verifications'\)\s*\.select\('([^']+)'\)/);
 assert.ok(studentIdentityRead, "student identity review query remains present");
 assert.ok(studentIdentityRead[1].split(',').map((field) => field.trim()).includes("institution_name"), "student identity review reads the submitted institution");
 assert.ok(!studentIdentityRead[1].split(',').map((field) => field.trim()).includes("university_id"), "student identity review does not request a column absent from Production");
-assert.equal(configuredSupabaseProject("localhost"), "hywcpnoqqhxvujnimhxl.supabase.co", "local development remains isolated on Staging");
+assert.equal(new URL(configuredSupabaseSettings("localhost").url).hostname, "hywcpnoqqhxvujnimhxl.supabase.co", "local development remains isolated on Staging");
 
 const supabasePrimarySdkTag = htmlMarkup.indexOf('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>');
 const supabaseFallbackSdkTag = htmlMarkup.indexOf('<script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>');
@@ -722,7 +728,7 @@ assert.match(serviceWorker, /STATIC_DESTINATIONS\.has\(request\.destination\)/, 
 assert.match(serviceWorker, /request\.headers\.has\("authorization"\)/, "authenticated requests bypass static caching");
 assert.match(serviceWorker, /request\.cache === "no-store"/, "explicit no-store requests bypass static caching");
 assert.match(serviceWorker, /await cache\.put\(request, response\.clone\(\)\)/, "successful static assets are saved for repeat visits");
-assert.match(serviceWorker, /campusshield-static-v15/, "the static asset cache version advances with the login/dashboard lazy-loading release");
+assert.match(serviceWorker, /campusshield-static-v16/, "the static asset cache version advances with the login/dashboard lazy-loading release");
 assert.ok(htmlMarkup.includes('href="./campusshield-performance-polish.css?v=20261113-1"'), "mobile performance polish is versioned for cache-safe updates");
 assert.match(appScript, /image\.decoding = 'async'/, "private profile photos decode asynchronously");
 assert.match(appScript, /loading="lazy" decoding="async"/, "community image attachments load lazily and decode asynchronously");
@@ -1181,7 +1187,9 @@ const stagingSupabaseConfig = supabaseConfig.match(/const staging = \{([\s\S]*?)
 const productionSupabaseConfig = supabaseConfig.match(/const production = \{([\s\S]*?)\};/)?.[1] || "";
 assert.match(stagingSupabaseConfig, /provider:\s*"turnstile"/, "Staging Auth uses the configured Turnstile provider");
 assert.match(stagingSupabaseConfig, /siteKey:\s*"0x4AAAAAAF6tOY7MqWYcC3h8"/, "Staging uses the existing allowlisted Turnstile sitekey");
-assert.doesNotMatch(productionSupabaseConfig, /captcha|turnstile/i, "Production CAPTCHA configuration is unchanged");
+assert.match(productionSupabaseConfig, /provider:\s*"turnstile"/, "Production Auth uses its dedicated Turnstile provider");
+assert.match(productionSupabaseConfig, /siteKey:\s*"0x4AAAAAAGBCYZUA6wurC0U1"/, "Production uses its own allowlisted Turnstile sitekey");
+assert.doesNotMatch(productionSupabaseConfig, /0x4AAAAAAF6tOY7MqWYcC3h8/, "Production never reuses the Staging widget");
 assert.match(htmlMarkup, /id="auth-captcha-wrap"/, "the sign-in form provides an accessible CAPTCHA surface");
 assert.match(appScript, /window\.CampusShieldAuthCaptcha\s*=/, "the app exposes an in-memory CAPTCHA token provider to the backend");
 assert.match(appScript, /turnstile\.render\(/, "the app renders the explicit Cloudflare Turnstile widget");
@@ -1298,7 +1306,7 @@ assert.match(featureLoader, /"campus-contacts":\s*\{[\s\S]*?campus-service-direc
 assert.match(featureLoader, /"student-rewards":[\s\S]*student-rewards\.js/, "Student Rewards is first-use loaded");
 assert.match(featureLoader, /CampusShieldStudentRewards\?\.load/, "Student Rewards refreshes after its lazy module loads");
 assert.match(featureLoader, /campusshield:profile-ready[\s\S]*loadDashboardTimetable\(\)/, "Dashboard timetable loads after a signed-in profile is ready");
-assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v15"/, "static asset cache is advanced for the new lazy modules");
+assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v16"/, "static asset cache is advanced for the new lazy modules");
 assert.doesNotMatch(htmlMarkup, /<script[^>]+src=["']\.\/(?:vendor\/qrcode\.js|student-rewards-admin\.js|campus-live-classroom\.js|past-question-practice\.js)/,
   "QR, admin rewards, live classroom and exam-prep bundles are not requested during initial app startup");
 assert.match(featureLoader, /"admin-rewards":[\s\S]*?student-rewards-admin\.js[\s\S]*?CampusShieldAdminRewards\?\.load/,

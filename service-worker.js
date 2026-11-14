@@ -1,5 +1,5 @@
 const CACHE_NAME = "campusshield-offline-v13";
-const STATIC_CACHE_NAME = "campusshield-static-v15";
+const STATIC_CACHE_NAME = "campusshield-static-v16";
 const BRAND_STYLESHEET_URL = "./campusshield-brand-system.css";
 const MODULE_STYLESHEET_URL = "./campusshield-module-experience.css?v=20261110-2";
 const SHIELDMIND_CHAT_STYLESHEET_URL = "./shieldmind-chat-history.css?v=20261110-1";
