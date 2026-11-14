@@ -1362,6 +1362,8 @@ assert.match(htmlMarkup, /value="university-premier"/);
 assert.match(htmlMarkup, /₦1,200,000/);
 assert.match(htmlMarkup, /₦12,000,000 yearly/);
 assert.match(htmlMarkup, /institutional-plan-command/);
+assert.match(htmlMarkup, /href="https:\/\/paystack\.shop\/pay\/-yix8599da"[^>]*>Subscribe monthly/);
+assert.match(htmlMarkup, /Request Premier Command \/ onboarding/);
 const institutionalInvoiceMigration = await readFile(new URL("../supabase/migrations/20261114110000_institutional_invoice_payment_workflow.sql", import.meta.url), "utf8");
 const institutionalPaymentAdmin = await readFile(new URL("../supabase/functions/campus-institutional-payment-admin/index.ts", import.meta.url), "utf8");
 const institutionalPaymentWebhook = await readFile(new URL("../supabase/functions/campus-institutional-paystack-webhook/index.ts", import.meta.url), "utf8");
