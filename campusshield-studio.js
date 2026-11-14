@@ -23,6 +23,9 @@
     if (typeof backend?.getCurrentUser === "function") {
       return backend.getCurrentUser().then(user => user?.id || "");
     }
+    if (backend?.client?.auth?.getSession) {
+      return backend.client.auth.getSession().then(result => result?.data?.session?.user?.id || "");
+    }
     if (backend?.client?.auth?.getUser) {
       return backend.client.auth.getUser().then(result => result?.data?.user?.id || "");
     }
