@@ -38,6 +38,7 @@
 <link rel="stylesheet" href="./campus-dashboard-insights.css">
 <link rel="stylesheet" href="./campus-live-classroom.css">
 <link rel="stylesheet" href="./institutional-billing-experience.css?v=20261114-2">
+<link rel="stylesheet" href="./university-crawler-command-center.css?v=20261114-1">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <title>CampusShield AI | Intelligent Campus Safety</title>
@@ -5359,8 +5360,8 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     </section>
     <section class="panel crawler-live-panel" id="platform-service-directory-crawler" hidden aria-label="Owner-only university services crawler">
       <div class="crawler-live-top">
-        <div><p class="crawler-eyebrow"><span class="crawler-live-dot"></span> PRIVATE LIVE CRAWLER</p><h2>University web crawler</h2>
-        <p>Discover official campus services. Review each source before it becomes verified CampusShield AI directory data.</p></div>
+        <div><p class="crawler-eyebrow"><span class="crawler-live-dot"></span> PRIVATE LIVE CRAWLER · OWNER CONSOLE</p><h2>University intelligence crawler</h2>
+        <p>Discover official university service pages, inspect source evidence and approve verified directory updates from one control centre.</p></div>
         <span class="crawler-owner-pill">♛ Owner only</span>
       </div>
       <div class="crawler-network" aria-label="Illustration of connected official university pages">
@@ -5370,20 +5371,24 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
         </svg>
         <span class="crawler-float crawler-float-a">Admissions</span><span class="crawler-float crawler-float-b">Academics</span><span class="crawler-float crawler-float-c">Student Affairs</span><span class="crawler-float crawler-float-d">Medical Services</span>
       </div>
+      <div class="crawler-command-summary" aria-label="Crawler operating principles"><span><strong>01</strong> Discover official sources</span><span><strong>02</strong> Review evidence</span><span><strong>03</strong> Approve verified data</span></div>
       <div class="crawler-progress-card">
         <div class="crawler-progress-label"><strong>Latest crawl results</strong><span id="platform-service-crawler-progress-label">Waiting to start</span></div>
         <div class="crawler-progress-track"><span id="platform-service-crawler-progress-bar"></span></div>
       </div>
       <div class="crawler-stat-grid">
-        <div class="crawler-stat"><span>Pages scanned</span><strong id="platform-crawler-pages">—</strong></div>
-        <div class="crawler-stat"><span>Office pages found</span><strong id="platform-crawler-offices">—</strong></div>
-        <div class="crawler-stat"><span>Verified fields updated</span><strong id="platform-crawler-fields">—</strong></div>
+        <div class="crawler-stat"><span>Pages scanned</span><strong id="platform-crawler-pages">—</strong><small>Actual pages fetched and scanned</small></div>
+        <div class="crawler-stat"><span>Office candidates</span><strong id="platform-crawler-offices">—</strong><small>Sources awaiting or receiving review</small></div>
+        <div class="crawler-stat"><span>Awaiting owner review</span><strong id="platform-crawler-pending">—</strong><small>Not yet published to the directory</small></div>
+        <div class="crawler-stat"><span>Verified fields updated</span><strong id="platform-crawler-fields">—</strong><small>Saved by the server workflow</small></div>
+        <div class="crawler-stat"><span>Failed / blocked</span><strong id="platform-crawler-blocked">—</strong><small>Skipped, blocked or unsuccessful pages</small></div>
       </div>
       <div class="crawler-live-activity"><div class="crawler-section-heading"><h3>Activity feed</h3><span id="platform-service-crawler-run-state">READY</span></div>
         <ol id="platform-service-crawler-activity"><li><span class="crawler-activity-dot"></span><div>Ready to crawl<small>Run a batch or select a university.</small></div></li></ol>
       </div>
       <div class="crawler-live-discoveries"><div class="crawler-section-heading"><h3>Latest discoveries</h3><span id="platform-service-crawler-result-count">0 results</span></div>
-        <p class="muted crawler-note">Live activity streams from this environment. Candidates stay out of the verified directory until the owner approves them.</p>
+        <p class="muted crawler-note">Live events from the current crawl. Every candidate remains unverified until the owner approves its official source.</p>
+        <div class="crawler-discovery-tools"><label class="crawler-search-field"><span class="sr-only">Search discovered pages</span><input id="platform-crawler-search" type="search" placeholder="Search university, office, URL or contact…" autocomplete="off"></label><label class="crawler-filter-field"><span class="sr-only">Filter candidate status</span><select id="platform-crawler-filter"><option value="all">All candidates</option><option value="pending">Awaiting review</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label></div>
         <div id="platform-service-crawler-results" class="platform-service-crawler-results" aria-live="polite"></div>
       </div>
       <div class="crawler-live-discoveries"><div class="crawler-section-heading"><h3>Previous crawl runs</h3><button class="btn secondary" type="button" id="platform-service-crawler-history-refresh">Refresh history</button></div><div id="platform-service-crawler-history"><p class="muted crawler-note">Loading crawl history…</p></div></div>
