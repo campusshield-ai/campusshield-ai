@@ -1,9 +1,11 @@
-name: CampusShield Forest Green + Emerald brand system
+name: CampusShield NEBULA PULSE brand system
 on:
   pull_request:
     branches: [staging/preview, main]
     paths:
       - "campusshield-brand-system.css"
+      - "campusshield-nebula-pulse.css"
+      - "campusshield-site-theme.js"
       - "campusshield-guide.css"
       - "index.html"
       - "about.html"
@@ -37,6 +39,8 @@ on:
     branches: [staging/preview]
     paths:
       - "campusshield-brand-system.css"
+      - "campusshield-nebula-pulse.css"
+      - "campusshield-site-theme.js"
       - "index.html"
       - "manifest.webmanifest"
       - "service-worker.js"
@@ -54,14 +58,14 @@ permissions:
   contents: read
 jobs:
   brand-system:
-    name: Brand palette, PWA metadata and page coverage
+    name: NEBULA PULSE palette, light/dark appearance and PWA coverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Verify Forest Green + Emerald brand system
+      - name: Verify NEBULA PULSE light/dark brand system
         run: node tests/brand-system-smoke.mjs
       - name: Install Playwright browser-test dependency
         run: npm install --no-save --no-package-lock @playwright/test@1.64.1 @axe-core/playwright

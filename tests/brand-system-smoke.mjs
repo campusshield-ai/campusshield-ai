@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 const read = path => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const readBinary = path => readFileSync(new URL("../" + path, import.meta.url));
 const brand = read("campusshield-brand-system.css");
+const nebulaTheme = read("campusshield-nebula-pulse.css");
+const siteTheme = read("campusshield-site-theme.js");
 const guide = read("campusshield-guide.css");
 const serviceWorker = read("service-worker.js");
 const lovableUxCss = read("campusshield-lovable-ux.css");
@@ -23,7 +25,9 @@ const pages = [
 for (const page of pages) {
   const html = read(page);
   assert.ok(html.includes('href="./campusshield-brand-system.css"'), page + " loads the shared Forest Green + Emerald theme");
-  assert.match(html, /<meta name="theme-color" content="#0B2E1B">/i, page + " exposes the matching browser theme colour");
+  assert.match(html, /<meta name="theme-color" content="#111329">/i, page + " exposes the NEBULA PULSE browser theme colour");
+  assert.ok(html.includes('href="./campusshield-nebula-pulse.css?v=20261114-1"'), page + " loads the shared NEBULA PULSE palette");
+  assert.ok(html.includes('src="./campusshield-site-theme.js?v=20261114-1"'), page + " supports the saved light/dark theme or guest-home mode");
 }
 
 
@@ -78,8 +82,8 @@ assert.ok(guide.includes("--guide-ink:#173325") && guide.includes("--guide-deep:
 
 assert.match(brand, /mobile-bottom-nav/, "Mobile navigation shares the brand system");
 
-assert.equal(manifest.theme_color, "#0B2E1B", "PWA theme colour matches the website");
-assert.equal(manifest.background_color, "#F5F9F5", "PWA canvas matches the website");
+assert.equal(manifest.theme_color, "#111329", "PWA theme colour matches the NEBULA PULSE indigo shell");
+assert.equal(manifest.background_color, "#F6F5FC", "PWA canvas matches the NEBULA PULSE light surface");
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield.svg" &&
   icon.type === "image/svg+xml"), "PWA uses the scalable branded SVG icon");
 assert.ok(manifest.icons.some(icon => icon.src === "./icons/campusshield-maskable-512.png" &&
@@ -159,4 +163,19 @@ assert.ok(read("index.html").indexOf("campusshield-brand-system.css") >
   read("index.html").indexOf("campusshield-guide.css"),
   "The shared brand override loads after existing workspace styles");
 
-console.log("CampusShield Forest Green + Emerald and green-logo checks passed.");
+
+assert.ok(nebulaTheme.includes("--cs-primary:#6D53EA"), "Electric Violet is the new primary brand colour");
+assert.ok(nebulaTheme.includes("--cs-navy:#111329"), "Cosmic Indigo is the new structural brand colour");
+assert.ok(nebulaTheme.includes("--cs-seafoam:#30D8C2"), "Arctic Mint is the new highlight colour");
+assert.ok(nebulaTheme.includes('html[data-theme="dark"]'), "NEBULA PULSE defines explicit dark-mode tokens and surfaces");
+assert.ok(nebulaTheme.includes('html[data-theme="light"]'), "NEBULA PULSE supports explicit light mode");
+assert.match(nebulaTheme, /prefers-reduced-motion/, "NEBULA PULSE respects reduced-motion accessibility");
+assert.doesNotThrow(() => new Function(siteTheme), "Public light/dark theme switch parses as JavaScript");
+assert.match(siteTheme, /prefers-color-scheme/, "Public pages follow the visitor's system appearance by default");
+assert.match(siteTheme, /campusshield-public-theme:v1/, "Public theme choice is remembered between page visits");
+assert.match(siteTheme, /aria-pressed/, "Public theme switch exposes its selected state accessibly");
+assert.match(siteTheme, /guestHomepage/, "The signed-out homepage gets a public appearance switch");
+assert.match(siteTheme, /campusshield:profile-ready/, "Public theme state yields to account-scoped preferences after sign-in");
+assert.match(nebulaTheme, /cs-theme-toggle-home/, "The guest homepage theme control is positioned accessibly");
+
+console.log("CampusShield NEBULA PULSE light/dark brand, public theme switch and PWA checks passed.");
