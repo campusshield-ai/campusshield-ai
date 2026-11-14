@@ -1383,6 +1383,7 @@ assert.match(institutionalPaymentsUi, /data-invoice-action/);
 assert.match(institutionalPaymentsUi, /window\\.print\\(\\)/);
 assert.match(institutionalPaymentsUi, /Verify \\/ reconcile payment/);
 assert.match(institutionalPaymentsCss, /@media print/);
+assert.doesNotThrow(() => new Function(institutionalPaymentsUi), "institutional invoice UI parses as JavaScript");
 assert.match(htmlMarkup, /id="campus-institutional-invoice-center"/);
 assert.match(htmlMarkup, /student school-fee payments or student financial records/);
 assert.match(htmlMarkup, /campus-institutional-payments\\.js/);
