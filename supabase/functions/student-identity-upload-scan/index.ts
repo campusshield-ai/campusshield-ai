@@ -26,6 +26,8 @@ function randomPath(userId: string, mime: string) { return userId + "/" + crypto
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return reply({ error: "Method not allowed." }, 405);
+  let identitySubmissionCreated = false;
+  let identityAutomaticallyApproved = false;
   try {
     const authorization = req.headers.get("Authorization");
     if (!authorization?.startsWith("Bearer ")) return reply({ error: "Sign in is required." }, 401);
@@ -146,6 +148,7 @@ Deno.serve(async (req: Request) => {
       await admin.from("student_identity_upload_scans").update({ status: "error", quarantine_path: null, failure_code: "identity_submission_rejected", updated_at: new Date().toISOString() }).eq("id", job.id);
       return reply({ error: "The file scanned clean, but the identity submission was rejected by the database. The file was discarded and no identity record was created.", status: "error" }, 403);
     }
+    identitySubmissionCreated = true;
     const shareWithOfficialVerifier = String(form.get("share_with_official_verifier") || "") === "true";
     const { data: identityRecord, error: identityReadError } = await admin.from("student_identity_verifications")
       .select("university_id,institution_name,student_number,object_path,status")
@@ -165,10 +168,14 @@ Deno.serve(async (req: Request) => {
     );
 
     const recordManualReview = async (reason: string, provider: string | null = null, reference: string | null = null) => {
+      if (!identityRecord?.university_id) {
+        console.error("Manual identity review could not be audited because the pending identity record has no university.");
+        return;
+      }
       reasonCode = reason;
       providerName = provider;
       providerReference = reference;
-      await admin.from("student_identity_verifications").update({
+      const { error: statusError } = await admin.from("student_identity_verifications").update({
         automated_review_status: "manual_review_required",
         automated_review_reason_code: reason,
         automated_reviewed_at: new Date().toISOString(),
@@ -176,7 +183,11 @@ Deno.serve(async (req: Request) => {
         automated_review_reference: reference,
         updated_at: new Date().toISOString()
       }).eq("user_id", user.id);
-      await admin.from("campus_identity_auto_review_audit").insert({
+      if (statusError) {
+        console.error("Manual identity review status could not be persisted.");
+        throw new Error("manual_review_status_update_failed");
+      }
+      const { error: auditError } = await admin.from("campus_identity_auto_review_audit").insert({
         subject_user_id: user.id,
         university_id: identityRecord.university_id,
         evidence_sha256: fileHash,
@@ -185,10 +196,16 @@ Deno.serve(async (req: Request) => {
         provider_name: provider,
         provider_reference: reference
       });
+      if (auditError) {
+        console.error("Manual identity review audit could not be written.");
+        throw new Error("manual_review_audit_write_failed");
+      }
     };
 
     if (identityReadError || !identityRecord || identityRecord.status !== "pending") {
       reasonCode = "identity_record_unavailable";
+      console.error("Identity record could not be re-read after submission; the account remains pending for campus review.");
+      if (identityRecord?.university_id) await recordManualReview(reasonCode);
     } else if (shareWithOfficialVerifier && verifierUrlValue && verifierToken) {
       let verifierUrl: URL | null = null;
       try { verifierUrl = new URL(verifierUrlValue); } catch { reasonCode = "verifier_configuration_invalid"; }
@@ -253,6 +270,7 @@ Deno.serve(async (req: Request) => {
           });
           if (!decisionError && decision?.approved === true) {
             automatedStatus = "auto_approved";
+            identityAutomaticallyApproved = true;
             reasonCode = "official_source_confirmed";
             providerName = provider;
             providerReference = sourceReference;
@@ -286,6 +304,20 @@ Deno.serve(async (req: Request) => {
     });
   } catch (error) {
     console.error("Identity upload scan failed:", error instanceof Error ? error.message : "unknown error");
+    if (identityAutomaticallyApproved) {
+      return reply({
+        status: "auto_approved",
+        message: "Your university confirmed your student identity and your account is approved. A final cleanup step needs administrator attention.",
+        reason_code: "post_approval_cleanup_warning"
+      });
+    }
+    if (identitySubmissionCreated) {
+      return reply({
+        status: "manual_review_required",
+        message: "Your document was scanned and securely submitted, but an automated review step could not be completed. Your account remains pending for campus administrator review; no automatic approval was granted.",
+        reason_code: "automated_review_step_failed"
+      });
+    }
     return reply({ error: "Secure identity upload could not complete. No unscanned file was approved." }, 500);
   }
 });
