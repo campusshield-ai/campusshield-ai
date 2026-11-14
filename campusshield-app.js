@@ -690,7 +690,7 @@
       ? [
           'First complete staff identity verification and obtain an approved, active university membership.',
           'A verified campus administrator may then appoint you separately as a finance officer for that university.',
-          'That appointment currently allows institutional billing requests and request tracking only.'
+          'A separate campus-admin appointment enables payment and reconciliation of CampusShield institutional invoices and access to their receipts for this university only.'
         ]
       : [
           'Use the verified staff workspace, including assigned classrooms, academic support, opportunities and official notices where enabled.',
@@ -703,7 +703,7 @@
       return li;
     }));
     $('staff-position-access-limit').textContent = finance
-      ? 'Finance appointment does not currently enable hosted invoice payment, student fee collection, payment reconciliation, refunds, incident management or campus administration. A job title alone never grants billing access.'
+      ? 'Finance appointment permits payment and reconciliation of CampusShield institutional invoices and receipt access for this university only. It never permits student fee collection, student financial record access, refunds, other universities, incidents or campus administration. A job title alone never grants billing access.'
       : security
         ? 'Security staff: this title alone does not unlock incident management, report resolution or risk analytics. A trusted administrator must separately provision the security system role.'
         : leadership
