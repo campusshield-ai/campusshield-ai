@@ -432,6 +432,11 @@ test("workspace-only feature scripts load on first use instead of initial app st
 
   const rewardsRequest = page.waitForRequest(request => request.url().endsWith("/student-rewards.js"));
   const activatePage = async id => page.evaluate(pageId => {
+    // Model the authenticated transition before exercising workspace-only routes.
+    const workspace = document.getElementById("workspace");
+    if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
+    const login = document.getElementById("login-screen");
+    if (login) { login.hidden = true; login.style.display = "none"; }
     document.querySelectorAll(".page.active").forEach(element => element.classList.remove("active"));
     document.getElementById(pageId)?.classList.add("active");
   }, id);
@@ -512,6 +517,11 @@ test("optional workspace bundles stay out of login startup and load on first use
   expect(deferredRequests, "optional modules should not download on the initial login path").toEqual([]);
 
   const activatePage = async id => page.evaluate(pageId => {
+    // Model the authenticated transition before exercising workspace-only routes.
+    const workspace = document.getElementById("workspace");
+    if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
+    const login = document.getElementById("login-screen");
+    if (login) { login.hidden = true; login.style.display = "none"; }
     document.querySelectorAll(".page.active").forEach(element => element.classList.remove("active"));
     document.getElementById(pageId)?.classList.add("active");
   }, id);
