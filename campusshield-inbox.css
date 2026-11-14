@@ -1,0 +1,31 @@
+/* CampusShield AI — Universal Campus Inbox */
+#workspace .campus-inbox-panel { padding:clamp(15px,2.3vw,22px); }
+#workspace .inbox-heading { align-items:flex-end; }
+#workspace .inbox-heading h1 { margin:4px 0 5px; }
+#workspace .inbox-heading p { max-width:700px; color:var(--cs-muted); font-size:12px; }
+#workspace .inbox-privacy-note { margin:0 0 14px; }
+#workspace .campus-inbox-toolbar { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+#workspace .campus-inbox-filters { display:flex; flex-wrap:wrap; gap:7px; }
+#workspace .campus-inbox-filter { min-height:36px; padding:7px 11px; border:1px solid var(--cs-line); border-radius:999px; background:var(--cs-card); color:var(--cs-muted); font-size:10px; font-weight:800; }
+#workspace .campus-inbox-filter.is-active { color:var(--cs-primary-strong); border-color:var(--cs-primary); background:var(--cs-seafoam-soft); }
+#workspace .campus-inbox-search { min-width:min(100%,260px); }
+#workspace .campus-inbox-search input { width:100%; min-height:38px; padding:8px 12px; border:1px solid var(--cs-line); border-radius:10px; background:var(--cs-card); color:var(--cs-ink); font-size:12px; }
+#workspace .campus-inbox-summary { margin:13px 0 10px; color:var(--cs-muted); font-size:10px; font-weight:800; }
+#workspace .campus-inbox-list { display:grid; gap:10px; }
+#workspace .campus-inbox-item { min-width:0; padding:15px; border:1px solid var(--cs-line); border-radius:13px; background:var(--cs-card); box-shadow:0 5px 16px rgba(15,23,42,.035); }
+#workspace .campus-inbox-item-top { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+#workspace .campus-inbox-type { color:var(--cs-primary-strong); font-size:9px; font-weight:900; letter-spacing:.6px; text-transform:uppercase; }
+#workspace .campus-inbox-item time { color:var(--cs-muted); font-size:10px; font-variant-numeric:tabular-nums; }
+#workspace .campus-inbox-item h3 { margin:8px 0 4px; font-size:14px; overflow-wrap:anywhere; }
+#workspace .campus-inbox-source { margin:0 0 7px; color:var(--cs-muted); font-size:10px; font-weight:700; }
+#workspace .campus-inbox-body { margin:0; color:var(--cs-ink); font-size:12px; line-height:1.6; white-space:pre-line; overflow-wrap:anywhere; }
+#workspace .campus-inbox-item-actions { display:flex; gap:8px; margin-top:12px; }
+#workspace .campus-inbox-empty { display:grid; gap:7px; padding:24px 16px; border:1px dashed var(--cs-line); border-radius:13px; color:var(--cs-muted); text-align:center; }
+#workspace .campus-inbox-empty strong { color:var(--cs-ink); font-size:13px; }
+#workspace .campus-inbox-empty p { margin:0; font-size:11px; line-height:1.55; }
+#workspace .campus-inbox-status { margin:12px 0 0; min-height:18px; color:var(--cs-muted); font-size:10px; }
+@media(max-width:620px) { #workspace .inbox-heading { align-items:flex-start; flex-direction:column; } #workspace .campus-inbox-search { width:100%; } #workspace .campus-inbox-filter { flex:1 1 auto; } #workspace .campus-inbox-item { padding:12px; } }
+html[data-theme="dark"] #workspace .campus-inbox-item { border-color:var(--cs-dark-border); background:var(--cs-dark-surface); }
+html[data-theme="dark"] #workspace .campus-inbox-item h3, html[data-theme="dark"] #workspace .campus-inbox-empty strong { color:var(--cs-dark-heading); }
+html[data-theme="dark"] #workspace .campus-inbox-body { color:var(--cs-dark-text); }
+html[data-theme="dark"] #workspace .campus-inbox-source, html[data-theme="dark"] #workspace .campus-inbox-item time, html[data-theme="dark"] #workspace .campus-inbox-status, html[data-theme="dark"] #workspace .campus-inbox-summary { color:var(--cs-dark-muted); }
