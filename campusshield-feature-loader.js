@@ -100,6 +100,8 @@
   }
 
   function activeRoute() {
+    // Do not download signed-in workspace features while the login screen is active.
+    if (workspace.hidden) return null;
     const page = workspace.querySelector(".page.active");
     if (!page || !page.id.startsWith("page-")) return null;
     return { name: page.id.slice(5), page };
@@ -222,7 +224,7 @@
   observer.observe(workspace, {
     subtree: true,
     attributes: true,
-    attributeFilter: ["class"]
+    attributeFilter: ["class", "hidden"]
   });
   observeActiveRoute();
 
