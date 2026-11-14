@@ -525,7 +525,7 @@
       .format(amount / 100);
   }
 
-  function renderInstitutionalInvoiceList(invoices) {
+  function renderInstitutionalInvoiceList(invoices, paymentsEnabled = false) {
     const container = $('institutional-invoice-list');
     if (!container) return;
     container.replaceChildren();
@@ -567,7 +567,11 @@
         const pay = document.createElement('button');
         pay.type = 'button';
         pay.className = 'btn';
-        pay.textContent = 'Pay invoice securely';
+        pay.disabled = !paymentsEnabled;
+        pay.textContent = paymentsEnabled ? 'Pay invoice securely' : 'Online payment not enabled';
+        pay.title = paymentsEnabled
+          ? 'Open the secure Paystack checkout for this invoice'
+          : 'Checkout is disabled until Paystack credentials and explicit payment enablement are configured';
         pay.addEventListener('click', async () => {
           pay.disabled = true;
           const message = $('institutional-invoice-message');
@@ -650,7 +654,7 @@
     try {
       const result = await callCampusInstitutionalPayment('list_invoices');
       if (!currentProfile || !canManageInstitutionalBilling()) return;
-      renderInstitutionalInvoiceList(result.invoices || []);
+      renderInstitutionalInvoiceList(result.invoices || [], result.payments_enabled === true);
       if (message) message.textContent = result.university_name
         ? 'Showing institutional invoices for ' + result.university_name + '. Student fee records are not part of this workspace.'
         : 'Showing invoices for your verified university only.';
