@@ -9083,6 +9083,10 @@ $('resend-confirmation-button').addEventListener('click', async () => {
     const gate = $('shieldmind-paid-gate');
     const workspace = $('shieldmind-workspace-grid');
     const quickActions = document.querySelector('#page-shieldmind .shieldmind-quick-actions');
+    const planLabels = {
+      starter: 'Campus Starter', plus: 'Campus Plus', elite: 'Campus Elite',
+      pro: 'Campus Ultimate', ultra: 'Legacy Ultra', max: 'Legacy Max', premium: 'Legacy Premium'
+    };
 
     const applyAccess = (active, subscription = null, message = '') => {
       const state = {
@@ -9099,6 +9103,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       const planCaps = {
         starter: { monthly: 150, images: 20 },
         plus: { monthly: 400, images: 60 },
+        elite: { monthly: 700, images: 100 },
         pro: { monthly: 1000, images: 150 },
         ultra: { monthly: 2000, images: 300 },
         max: { monthly: 3500, images: 600 },
@@ -9111,7 +9116,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         const expiry = $('shieldmind-plan-summary-expiry');
         const requests = $('shieldmind-plan-summary-requests');
         const images = $('shieldmind-plan-summary-images');
-        if (planName) planName.textContent = state.plan.toUpperCase();
+        if (planName) planName.textContent = planLabels[state.plan] || state.plan.toUpperCase();
         if (expiry) expiry.textContent = state.expiresAt
           ? 'Active until ' + new Date(state.expiresAt).toLocaleDateString()
           : 'Active subscription';
@@ -9119,12 +9124,12 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         if (images) images.textContent = caps.images.toLocaleString();
       }
       // Keep the header badge compact on narrow phones; full detail remains in the gate and billing page.
-      if (status) status.textContent = state.active ? state.plan.toUpperCase() + ' active' : 'No plan';
+      if (status) status.textContent = state.active ? (planLabels[state.plan] || state.plan.toUpperCase()) + ' active' : 'No plan';
       if (gateStatus) gateStatus.textContent = state.active
-        ? state.plan.toUpperCase() + ' is active until ' + new Date(state.expiresAt).toLocaleDateString() + '. Your ShieldMind workspace is unlocked.'
+        ? (planLabels[state.plan] || state.plan.toUpperCase()) + ' is active until ' + new Date(state.expiresAt).toLocaleDateString() + '. Your ShieldMind workspace is unlocked.'
         : (message || 'Choose a paid 30-day plan to unlock ShieldMind AI responses.');
       if (billingStatus) billingStatus.textContent = state.active
-        ? state.plan.toUpperCase() + ' active until ' + new Date(state.expiresAt).toLocaleDateString() + '.'
+        ? (planLabels[state.plan] || state.plan.toUpperCase()) + ' active until ' + new Date(state.expiresAt).toLocaleDateString() + '.'
         : (message || 'No active paid ShieldMind plan is attached to this account.');
       document.dispatchEvent(new CustomEvent('campusshield:shieldmind-access', { detail: state }));
       if (state.active) void loadShieldMindConversations({ force: true });
@@ -9147,7 +9152,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
       if (error) throw error;
       const active = Boolean(
         data &&
-        ['starter','plus','pro','ultra','max','premium'].includes(data.plan) &&
+        ['starter','plus','elite','pro','ultra','max','premium'].includes(data.plan) &&
         data.status === 'active' &&
         data.expires_at &&
         new Date(data.expires_at).getTime() > Date.now()
@@ -9170,7 +9175,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
                 ' / ' + Number(usage.image_upload_limit).toLocaleString();
             }
             if (status) {
-              status.textContent = String(usage.plan || data.plan).toUpperCase() + ' · ' +
+              status.textContent = (planLabels[String(usage.plan || data.plan)] || String(usage.plan || data.plan).toUpperCase()) + ' · ' +
                 Number(usage.requests_remaining).toLocaleString() + ' AI requests left this 30-day term';
             }
           }
@@ -9179,7 +9184,7 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         }
         return true;
       }
-      return applyAccess(false, null, 'Your ShieldMind plan is not active. Choose Starter, Plus, Pro, Ultra or Max to continue.');
+      return applyAccess(false, null, 'Your ShieldMind plan is not active. Choose Campus Starter, Campus Plus, Campus Elite or Campus Ultimate to continue.');
     } catch (error) {
       console.warn('ShieldMind subscription verification failed:', error?.message || 'Unknown error');
       return applyAccess(false, null, 'We could not verify your subscription. AI access stays locked until the payment status can be checked.');

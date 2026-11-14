@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 function hex(bytes:ArrayBuffer){return [...new Uint8Array(bytes)].map(b=>b.toString(16).padStart(2,"0")).join("");}
 async function validSignature(raw:string,signature:string,secret:string){const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),{name:"HMAC",hash:"SHA-512"},false,["sign"]);const expected=hex(await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(raw)));if(expected.length!==signature.length)return false;let diff=0;for(let i=0;i<expected.length;i++)diff|=expected.charCodeAt(i)^signature.charCodeAt(i);return diff===0;}
 const json=(body:Record<string,unknown>,status=200)=>new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json","Cache-Control":"no-store"}});
-const limits:Record<string,number>={starter:20,plus:60,pro:150,ultra:300,max:600};
+const limits:Record<string,number>={starter:20,plus:60,elite:100,pro:150,ultra:300,max:600};
 Deno.serve(async(req:Request)=>{
  if(req.method!=="POST")return json({error:"Method not allowed"},405);
  try{
@@ -44,7 +44,7 @@ Deno.serve(async(req:Request)=>{
      String(tx?.customer?.email||"").toLowerCase()!==String(p.customer?.email||"").toLowerCase()){
     return json({error:"Paystack verification failed"},400);
   }
-  if(!["starter","plus","pro","ultra","max"].includes(order.plan)||order.currency!=="NGN"){
+  if(!["starter","plus","elite","pro","ultra","max"].includes(order.plan)||order.currency!=="NGN"){
     return json({error:"Unsupported plan"},400);
   }
   if(!["pending","failed","paid"].includes(order.status)){

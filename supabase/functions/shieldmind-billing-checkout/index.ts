@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 
 const DEFAULT_APP_ORIGIN="https://campusshield-ai.github.io";
 const cors=(origin:string)=>({"Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"});
-const plans={starter:{amount:200000,limit:20},plus:{amount:500000,limit:60},pro:{amount:1000000,limit:150},ultra:{amount:2000000,limit:300},max:{amount:2800000,limit:600}} as const;
+const plans={starter:{amount:200000,limit:20},plus:{amount:500000,limit:60},elite:{amount:700000,limit:100},pro:{amount:1000000,limit:150}} as const;
 const json=(body:Record<string,unknown>,status=200,origin=DEFAULT_APP_ORIGIN)=>new Response(JSON.stringify(body),{status,headers:{...cors(origin),"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}});
 Deno.serve(async(req:Request)=>{
  const origin=(req.headers.get("origin")||"").replace(/\/$/,"");

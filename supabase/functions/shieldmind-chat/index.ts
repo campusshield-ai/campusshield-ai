@@ -116,7 +116,7 @@ Deno.serve(async (req: Request) => {
     }
     const paidPlanActive = Boolean(
       subscription &&
-      ["starter", "plus", "pro", "ultra", "max", "premium"].includes(String(subscription.plan)) &&
+      ["starter", "plus", "elite", "pro", "ultra", "max", "premium"].includes(String(subscription.plan)) &&
       subscription.status === "active" &&
       subscription.expires_at &&
       Date.parse(subscription.expires_at) > Date.now()

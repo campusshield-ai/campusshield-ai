@@ -5,6 +5,7 @@ const DEFAULT_ORIGIN = "https://campusshield-ai.github.io";
 const plans: Record<string, { amount: number; imageLimit: number }> = {
   starter: { amount: 200000, imageLimit: 20 },
   plus: { amount: 500000, imageLimit: 60 },
+  elite: { amount: 700000, imageLimit: 100 },
   pro: { amount: 1000000, imageLimit: 150 },
   ultra: { amount: 2000000, imageLimit: 300 },
   max: { amount: 2800000, imageLimit: 600 },

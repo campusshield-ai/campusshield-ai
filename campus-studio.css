@@ -1,0 +1,136 @@
+/* My Campus Studio — account-level visual preferences and subscription unlocks. */
+:root[data-campus-palette="emerald"]{--campus-accent:#16856d;--campus-accent-strong:#0c604f;--campus-accent-soft:#e0f4ed}
+:root[data-campus-palette="ocean"]{--campus-accent:#2875c7;--campus-accent-strong:#18518e;--campus-accent-soft:#e4f0ff}
+:root[data-campus-palette="violet"]{--campus-accent:#7657c8;--campus-accent-strong:#50359a;--campus-accent-soft:#f0eaff}
+:root[data-campus-palette="rose"]{--campus-accent:#c34d79;--campus-accent-strong:#8d3155;--campus-accent-soft:#ffeaf2}
+:root[data-campus-palette="sunset"]{--campus-accent:#c76e39;--campus-accent-strong:#91451f;--campus-accent-soft:#fff0e3}
+:root[data-campus-palette="monochrome"]{--campus-accent:#53616b;--campus-accent-strong:#303d46;--campus-accent-soft:#eaf0f2}
+:root[data-campus-palette="gold"]{--campus-accent:#a87918;--campus-accent-strong:#79550e;--campus-accent-soft:#fff4d9}
+
+html[data-campus-palette] .btn:not(.secondary):not(.danger),
+html[data-campus-palette] .profile-save-details,
+html[data-campus-palette] .institutional-subscribe-cta{
+  background:linear-gradient(135deg,var(--campus-accent),var(--campus-accent-strong));
+}
+html[data-campus-palette] .nav button:hover,
+html[data-campus-palette] .nav button.active,
+html[data-campus-palette] .mobile-bottom-nav button.active{
+  border-color:color-mix(in srgb,var(--campus-accent) 45%,transparent);
+}
+html[data-campus-palette] .nav button.active .nav-icon,
+html[data-campus-palette] .student-shortcut-icon,
+html[data-campus-palette] .campus-dashboard-quicklink:hover{
+  color:var(--campus-accent-strong);
+}
+html[data-campus-palette] .student-shortcut-icon{background:var(--campus-accent-soft)}
+html[data-campus-palette] .theme-toggle{border-color:color-mix(in srgb,var(--campus-accent) 25%,#dfe8e4);color:var(--campus-accent-strong)}
+html[data-campus-palette] .campus-studio-selected{border-color:var(--campus-accent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--campus-accent) 17%,transparent)!important}
+
+html[data-campus-wallpaper="aurora"] body{
+  background-image:radial-gradient(ellipse at 10% 0%,rgba(95,210,181,.18),transparent 38%),radial-gradient(ellipse at 95% 18%,rgba(79,137,214,.13),transparent 34%);
+  background-attachment:fixed;
+}
+html[data-campus-wallpaper="night"] body{
+  background-image:radial-gradient(ellipse at 14% 0%,rgba(95,110,215,.15),transparent 40%),radial-gradient(ellipse at 96% 90%,rgba(56,173,167,.12),transparent 36%);
+  background-attachment:fixed;
+}
+html[data-campus-wallpaper="grid"] body{
+  background-image:linear-gradient(rgba(33,126,108,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(33,126,108,.045) 1px,transparent 1px);
+  background-size:26px 26px;
+  background-attachment:fixed;
+}
+html[data-campus-wallpaper="sunset"] body{
+  background-image:radial-gradient(ellipse at 0% 0%,rgba(245,174,125,.18),transparent 40%),radial-gradient(ellipse at 100% 100%,rgba(174,135,224,.14),transparent 38%);
+  background-attachment:fixed;
+}
+html[data-campus-wallpaper="midnight"] body{
+  background-image:radial-gradient(ellipse at 8% 0%,rgba(54,115,173,.16),transparent 42%),radial-gradient(ellipse at 100% 100%,rgba(52,154,145,.11),transparent 38%);
+  background-attachment:fixed;
+}
+html[data-campus-wallpaper="clean"] body{background-image:none}
+
+html[data-campus-layout="compact"] .content{padding-top:16px;padding-bottom:16px}
+html[data-campus-layout="compact"] .panel,
+html[data-campus-layout="compact"] .stat,
+html[data-campus-layout="compact"] .campus-my-day-panel{padding:14px}
+html[data-campus-layout="spacious"] .content{padding-top:34px;padding-bottom:36px}
+html[data-campus-layout="spacious"] .panel,
+html[data-campus-layout="spacious"] .stat{padding:24px}
+html[data-campus-layout="focus"] .content{max-width:1120px}
+html[data-campus-layout="focus"] .campus-my-day-panel{box-shadow:0 12px 32px rgba(18,49,58,.08)}
+
+html[data-campus-icons="rounded"] .nav-icon,
+html[data-campus-icons="rounded"] .student-shortcut-icon{border-radius:14px}
+html[data-campus-icons="minimal"] .nav-icon,
+html[data-campus-icons="minimal"] .student-shortcut-icon{border-radius:7px;box-shadow:none}
+html[data-campus-icons="duotone"] .nav-icon,
+html[data-campus-icons="duotone"] .student-shortcut-icon{border:1px solid color-mix(in srgb,var(--campus-accent) 28%,transparent);background:linear-gradient(145deg,var(--campus-accent-soft),transparent)}
+html[data-campus-icons="bold"] .nav-icon,
+html[data-campus-icons="bold"] .student-shortcut-icon{border-radius:9px;box-shadow:0 5px 12px color-mix(in srgb,var(--campus-accent) 20%,transparent)}
+
+html[data-campus-font="rounded"] body{font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif}
+html[data-campus-font="serif"] body{font-family:Georgia,"Times New Roman",serif}
+html[data-campus-frame="soft"] #profile-settings-avatar-trigger{box-shadow:0 0 0 4px var(--campus-accent-soft),0 0 0 6px color-mix(in srgb,var(--campus-accent) 28%,transparent)}
+html[data-campus-frame="glow"] #profile-settings-avatar-trigger{box-shadow:0 0 0 3px var(--campus-accent-soft),0 0 0 6px var(--campus-accent),0 7px 26px color-mix(in srgb,var(--campus-accent) 32%,transparent)}
+
+.campus-studio-hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(220px,.8fr);gap:18px;align-items:center;overflow:hidden;border:1px solid var(--cs-border,#dce8e2);background:linear-gradient(120deg,#f0faf5,#eef5ff);color:var(--cs-text,#17313a)}
+.campus-studio-hero h2{margin:6px 0;font-size:clamp(20px,2.5vw,28px);letter-spacing:-.04em}
+.campus-studio-hero p{max-width:62ch;margin:6px 0;color:var(--cs-muted,#71828a);font-size:12px}
+.campus-studio-hero-art{display:grid;place-items:center;min-height:150px;border-radius:16px;background:radial-gradient(circle at 50% 45%,#d6f6e9 0,transparent 54%),linear-gradient(145deg,#e1f3ed,#e8effd);color:#186b57}
+.campus-studio-hero-art span{display:grid;place-items:center;width:78px;height:78px;border:1px solid #9fd7c2;border-radius:25px;background:#ffffffc9;box-shadow:0 14px 35px #347b6120;font-size:32px}
+.campus-studio-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:16px;align-items:start}
+.campus-studio-controls{min-width:0}
+.campus-studio-controls h2,.campus-studio-side h2{margin:0;font-size:16px;letter-spacing:-.02em}
+.campus-studio-controls-intro,.campus-studio-side p{margin:5px 0 14px;color:var(--muted);font-size:11px;line-height:1.55}
+.campus-studio-field{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;margin:15px 0}
+.campus-studio-field label{font-size:12px;font-weight:850}
+.campus-studio-field small{color:var(--muted);font-size:10px}
+.campus-studio-field select{width:100%;min-height:42px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--card);color:var(--ink);font:inherit;font-size:12px}
+.campus-studio-field select:focus-visible{outline:3px solid color-mix(in srgb,var(--campus-accent,#16856d) 24%,transparent);outline-offset:2px}
+.campus-studio-select-locked{color:#83918f}
+.campus-studio-preview{padding:16px;border:1px solid var(--cs-border,#dce8e2);border-radius:15px;background:var(--cs-surface-soft,#f4f8f6)}
+.campus-studio-preview-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.campus-studio-preview-top strong{font-size:12px}
+.campus-studio-preview-top span{color:var(--cs-muted,#71828a);font-size:10px}
+.campus-studio-preview-card{display:grid;gap:10px;padding:14px;border:1px solid var(--cs-border,#dce8e2);border-radius:12px;background:var(--cs-surface,#fff);color:var(--cs-text,#17313a)}
+.campus-studio-preview-brand{display:flex;align-items:center;gap:9px;font-size:11px;font-weight:850}
+.campus-studio-preview-mark{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:var(--campus-accent-soft,#e0f4ed);color:var(--campus-accent-strong,#0c604f)}
+.campus-studio-preview-line{height:8px;border-radius:99px;background:var(--cs-border,#dce8e2)}
+.campus-studio-preview-line.short{width:55%}
+.campus-studio-preview-action{display:inline-flex;justify-content:center;width:max-content;max-width:100%;padding:8px 12px;border-radius:9px;background:var(--campus-accent,#16856d);color:#fff;font-size:10px;font-weight:850}
+.campus-studio-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:15px}
+.campus-studio-status{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:11px}
+.campus-studio-tier-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--cs-border,#dce8e2);border-radius:999px;background:var(--cs-surface-soft,#f4f8f6);color:var(--cs-text,#17313a);font-size:10px;font-weight:850}
+.campus-studio-tier-dot{width:7px;height:7px;border-radius:50%;background:var(--campus-accent,#16856d)}
+.campus-studio-side{display:grid;gap:13px}
+.campus-studio-unlock-list{display:grid;gap:9px;margin:13px 0 0;padding:0;list-style:none}
+.campus-studio-unlock-list li{display:flex;align-items:flex-start;gap:9px;color:var(--cs-text,#17313a);font-size:11px;line-height:1.45}
+.campus-studio-unlock-list li span{color:var(--campus-accent,#16856d);font-weight:900}
+.campus-studio-locked-note{padding:12px;border:1px solid var(--cs-border,#dce8e2);border-radius:11px;background:var(--cs-surface-soft,#f4f8f6);color:var(--cs-muted,#71828a);font-size:10px;line-height:1.5}
+.campus-studio-note{margin:12px 0 0;color:var(--muted);font-size:10px;line-height:1.5}
+html[data-theme="dark"] .campus-studio-hero{border-color:var(--cs-border);background:linear-gradient(120deg,#12382d,#172b43);color:var(--cs-text)}
+html[data-theme="dark"] .campus-studio-hero-art{background:radial-gradient(circle at 50% 45%,#245b4a 0,transparent 54%),linear-gradient(145deg,#193d34,#1b3150);color:#a9f1d7}
+html[data-theme="dark"] .campus-studio-hero-art span{border-color:#3d806c;background:#16342e;color:#bff7e4}
+html[data-theme="dark"] .campus-studio-preview{background:var(--cs-surface-soft);border-color:var(--cs-border)}
+html[data-theme="dark"] .campus-studio-preview-card{background:var(--cs-surface);border-color:var(--cs-border);color:var(--cs-text)}
+html[data-theme="dark"] .campus-studio-field select{background:#10242a;border-color:#355058;color:var(--cs-text)}
+html[data-theme="dark"] .campus-studio-tier-pill,html[data-theme="dark"] .campus-studio-locked-note{background:var(--cs-surface-soft);border-color:var(--cs-border);color:var(--cs-text)}
+@media(max-width:850px){.campus-studio-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:650px){.campus-studio-hero{grid-template-columns:minmax(0,1fr)}.campus-studio-hero-art{min-height:105px}.campus-studio-hero-art span{width:62px;height:62px;border-radius:20px;font-size:26px}.campus-studio-layout{gap:11px}.campus-studio-controls,.campus-studio-side{padding:15px}.campus-studio-actions .btn{flex:1 1 auto}}
+@media(prefers-reduced-motion:reduce){.campus-studio-preview-card{transition:none}}
+
+
+/* Student plan comparison: four clear tiers with a free baseline. */
+#page-billing .shieldmind-prices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;align-items:stretch}
+#page-billing .shieldmind-price{min-width:0;display:flex;flex-direction:column}
+#page-billing .shieldmind-price ul{display:grid;gap:7px;margin:12px 0 15px;padding:0;list-style:none}
+#page-billing .shieldmind-price ul li{position:relative;padding-left:17px;color:var(--muted);font-size:10px;line-height:1.45}
+#page-billing .shieldmind-price ul li::before{position:absolute;left:0;top:0;color:var(--campus-accent,#16856d);content:"✓";font-weight:900}
+#page-billing .shieldmind-price button{margin-top:auto}
+#page-billing .campus-elite-price{border-color:var(--campus-accent,#16856d);box-shadow:0 0 0 2px color-mix(in srgb,var(--campus-accent,#16856d) 14%,transparent),var(--shadow)}
+#page-billing .campus-free-plan{display:flex;flex-wrap:wrap;align-items:center;gap:7px 13px;margin:12px 0 16px;padding:12px 15px;border:1px solid var(--line);border-radius:12px;background:var(--cs-surface-soft,#f4f8f6);color:var(--ink)}
+#page-billing .campus-free-plan strong{font-size:12px;white-space:nowrap}
+#page-billing .campus-free-plan span{flex:1 1 350px;color:var(--muted);font-size:11px;line-height:1.5}
+html[data-theme="dark"] #page-billing .campus-free-plan{background:var(--cs-surface-soft);border-color:var(--cs-border);color:var(--cs-text)}
+@media(max-width:1120px){#page-billing .shieldmind-prices{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#page-billing .shieldmind-prices{grid-template-columns:minmax(0,1fr)}#page-billing .shieldmind-price{padding:17px}}

@@ -29,6 +29,10 @@
     classroom: {
       scripts: ["./campus-live-classroom.js?v=20261113-1"]
     },
+    "campus-studio": {
+      scripts: ["./campus-studio.js?v=20261114-1"],
+      onEnter: () => window.CampusShieldStudio?.load?.()
+    },
     shieldmind: {
       scripts: ["./shieldmind-planner.js", "./shieldmind-learning-insights.js", "./shieldmind-study-room.js?v=20261114-2"],
       onEnter: () => {
@@ -144,7 +148,11 @@
   // timetable module out of public login startup, but load it after a verified
   // profile is ready so the signed-in dashboard is complete without navigation.
   window.addEventListener("campusshield:profile-ready", event => {
-    if (event.detail?.role) loadDashboardTimetable();
+    if (!event.detail?.role) return;
+    loadDashboardTimetable();
+    loadScript("./campus-studio.js?v=20261114-1")
+      .then(() => window.CampusShieldStudio?.load?.())
+      .catch(error => console.warn("Campus Studio preferences could not be loaded.", error?.message || "Unknown error"));
   });
 
   const observer = new MutationObserver(observeActiveRoute);
