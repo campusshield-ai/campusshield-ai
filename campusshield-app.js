@@ -652,11 +652,13 @@
         if (!currentProfile || (profileId && currentProfile.id !== profileId)) return;
         currentStaffPosition = String(row?.position_title || '').trim();
       }
-      const [financeAccess, billingCapability] = await Promise.all([
+      const [verifiedCampusContext, financeAccess, billingCapability] = await Promise.all([
+        backend.getMyCampusContext().catch(() => null),
         backend.getMyCampusFinanceAccess().catch(() => null),
         backend.canManageInstitutionalBilling().catch(() => null)
       ]);
       if (!currentProfile || (profileId && currentProfile.id !== profileId)) return;
+      campusContext = verifiedCampusContext || campusContext || null;
       currentCampusFinanceAccess = financeAccess || null;
       institutionalBillingCapability = typeof billingCapability === 'boolean' ? billingCapability : null;
       const billingPanel = $('institutional-billing-panel');
@@ -1101,6 +1103,9 @@
         if (typeof resetShieldMindForSession === 'function') resetShieldMindForSession();
         communityProfile = null;
         campusContext = null;
+        currentCampusFinanceAccess = null;
+        institutionalBillingCapability = null;
+        $('institutional-billing-panel').hidden = true;
         $('platform-admin-nav').hidden = true;
         $('platform-admin-tools').hidden = true;
         $('community-username-current').textContent = 'Not signed in';
