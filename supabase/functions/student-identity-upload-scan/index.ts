@@ -159,7 +159,7 @@ Deno.serve(async (req: Request) => {
     const configuredProviderName = Deno.env.get("UNIVERSITY_ID_VERIFIER_NAME");
     const allowedVerifierHosts = new Set(
       String(Deno.env.get("UNIVERSITY_ID_VERIFIER_ALLOWED_HOSTS") || "")
-        .split(/[;,\\s]+/)
+        .split(/[;,\s]+/)
         .map(host => host.trim().toLowerCase())
         .filter(Boolean)
     );
