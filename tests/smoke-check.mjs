@@ -1045,7 +1045,7 @@ assert.match(nigeriaUniversityVerificationDocs, /not yet an available CampusShie
   "national verification API access is not falsely claimed as available");
 assert.match(nigeriaUniversityVerificationDocs, /Email verification proves mailbox control; it does not guarantee current student status/,
   "email ownership alone does not approve a student identity");
-assert.match(nigeriaUniversityVerificationDocs, /exact domain/,
+assert.match(nigeriaUniversityVerificationDocs, /exact student domain/,
   "student email domains must be institution-sourced and exact");
 assert.match(campusShieldPr352IdentityUploadFunction, /document_authentic\s*===\s*true/,
   "automatic approval requires explicit confirmation of document authenticity");
