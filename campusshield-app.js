@@ -4481,6 +4481,7 @@
       const error = response.error;
       if (error || data?.error) throw new Error(data?.error || error?.message || 'Candidate review failed.');
       page.status = data?.candidate?.status || (decision === 'approve' ? 'approved_by_owner' : 'rejected_by_owner');
+      article.dataset.candidateStatus = page.status === 'approved_by_owner' ? 'approved' : 'rejected';
       if (state) state.textContent = page.status === 'approved_by_owner'
         ? 'APPROVED BY OWNER · Added to verified directory'
         : 'REJECTED BY OWNER · Not added to verified directory';
@@ -4501,6 +4502,8 @@
   function renderCrawlerCandidateCard(page, runId) {
     const article = document.createElement('article');
     article.className = 'platform-service-crawler-result';
+    const initialStatus = String(page.status || 'candidate_requires_review');
+    article.dataset.candidateStatus = initialStatus === 'approved_by_owner' ? 'approved' : initialStatus === 'rejected_by_owner' ? 'rejected' : 'pending';
     const h = document.createElement('h3');
     h.textContent = page.title || page.category || 'Office page';
     const meta = document.createElement('p');
