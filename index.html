@@ -30,6 +30,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./campus-dashboard-upgrade.css">
+<link rel="stylesheet" href="./campus-studio.css?v=20261114-1">
 <link rel="stylesheet" href="./shieldmind-learning-insights.css">
 <link rel="stylesheet" href="./shieldmind-chat-history.css?v=20261110-1">
 
@@ -2829,7 +2830,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 <div class="nav-section-label">INSIGHTS & SUPPORT</div>
 <button data-page="analytics" id="analytics-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"/><rect x="5" y="11" width="3.5" height="6.5" rx="1"/><rect x="10.25" y="7" width="3.5" height="10.5" rx="1"/><rect x="15.5" y="4" width="3.5" height="13.5" rx="1"/></svg></span>Analytics</button><button data-page="shieldmind" id="shieldmind-nav"><span class="nav-icon" aria-hidden="true">✦</span>ShieldMind AI</button><button data-page="staff-verification" id="staff-verification-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Staff verification</button><button data-page="staff-review" id="staff-review-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8l4 4v13H4V3z"/><path d="M8 11h8M8 15h8M16 3v5h4"/></svg></span>Staff applications</button>
 <div class="nav-section-label">ACCOUNT</div>
-<button data-page="profile-settings" id="profile-settings-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20v-1.2A4.8 4.8 0 0 1 9.3 14h5.4a4.8 4.8 0 0 1 4.8 4.8V20"/><path d="m18.5 4.5 1 .5.9-.5.6 1 .9.4-.3 1.1.3 1.1-.9.4-.6 1-1-.5-1 .5-.6-1-.9-.4.3-1.1-.3-1.1.9-.4z"/></svg></span data-original-label="My Profile &amp; Settings">My profile</button><button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; Billing</button>
+<button data-page="profile-settings" id="profile-settings-nav"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20v-1.2A4.8 4.8 0 0 1 9.3 14h5.4a4.8 4.8 0 0 1 4.8 4.8V20"/><path d="m18.5 4.5 1 .5.9-.5.6 1 .9.4-.3 1.1.3 1.1-.9.4-.6 1-1-.5-1 .5-.6-1-.9-.4.3-1.1-.3-1.1.9-.4z"/></svg></span data-original-label="My Profile &amp; Settings">My profile</button><button data-page="campus-studio" id="campus-studio-nav"><span class="nav-icon" aria-hidden="true">✦</span>My Campus Studio</button><button data-page="billing" id="billing-nav"><span class="nav-icon" aria-hidden="true">₦</span>Subscriptions &amp; Billing</button>
 <div class="nav-section-label" id="nav-staff-heading" hidden>STAFF TOOLS</div><button data-page="admin-rewards" id="admin-rewards-nav" hidden><span class="nav-icon" aria-hidden="true">◈</span>Rewards Management</button>
 <div class="nav-section-label" id="nav-admin-heading" hidden>ADMINISTRATION</div><button data-page="approvals" id="approvals-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>Account approvals</button><button data-page="platform-admin" id="platform-admin-nav" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>Platform administration</button>
 </nav>
@@ -4590,14 +4591,14 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   <section class="panel">
     <div class="panel-heading"><div><h2>ShieldMind AI · Individual plans</h2><p>Prepaid 30-day access to AI answers, study generation and image-assisted explanations. Plans do not auto-renew.</p></div><span class="shieldmind-pill">NGN</span></div>
     <p id="billing-ai-status" class="message" role="status" aria-live="polite">Checking your paid ShieldMind access and payment status…</p>
+    <div class="campus-free-plan"><strong>Campus Free · ₦0</strong><span>Dashboard, timetable, CampusPulse, standard academic tools, campus services and essential safety reporting remain available. ShieldMind AI answers require an active paid plan.</span></div>
     <div class="shieldmind-prices">
-      <article class="shieldmind-price premium"><strong>Starter</strong><b>₦2,000</b><span>5 requests/min · 25/day · 150 per 30 days</span><small>20 image uploads/month</small><button class="btn" type="button" data-billing-plan="starter" data-billing-kind="individual">Continue to payment</button></article>
-      <article class="shieldmind-price premium"><strong>Plus</strong><b>₦5,000</b><span>10 requests/min · 40/day · 400 per 30 days</span><small>60 image uploads/month</small><button class="btn" type="button" data-billing-plan="plus" data-billing-kind="individual">Continue to payment</button></article>
-      <article class="shieldmind-price premium"><strong>Pro</strong><b>₦10,000</b><span>15 requests/min · 80/day · 1,000 per 30 days</span><small>150 image uploads/month</small><button class="btn" type="button" data-billing-plan="pro" data-billing-kind="individual">Continue to payment</button></article>
-      <article class="shieldmind-price premium"><strong>Ultra</strong><b>₦20,000</b><span>20 requests/min · 120/day · 2,000 per 30 days</span><small>300 image uploads/month</small><button class="btn" type="button" data-billing-plan="ultra" data-billing-kind="individual">Continue to payment</button></article>
-      <article class="shieldmind-price premium"><strong>Max</strong><b>₦28,000</b><span>30 requests/min · 200/day · 3,500 per 30 days</span><small>600 image uploads/month</small><button class="btn" type="button" data-billing-plan="max" data-billing-kind="individual">Continue to payment</button></article>
+      <article class="shieldmind-price premium"><strong>Campus Starter</strong><b>₦2,000</b><span>5 requests/min · 25/day · 150 per 30 days</span><small>20 study-image uploads/month</small><ul><li>ShieldMind AI tutor and exam support</li><li>Extra app colour palettes</li><li>Personal Studio settings</li></ul><button class="btn" type="button" data-billing-plan="starter" data-billing-kind="individual">Choose Starter</button></article>
+      <article class="shieldmind-price premium"><strong>Campus Plus</strong><b>₦5,000</b><span>10 requests/min · 40/day · 400 per 30 days</span><small>60 study-image uploads/month</small><ul><li>Everything in Starter</li><li>Premium workspace wallpapers</li><li>Rounded and minimal icon styles</li></ul><button class="btn" type="button" data-billing-plan="plus" data-billing-kind="individual">Choose Plus</button></article>
+      <article class="shieldmind-price premium campus-elite-price"><strong>Campus Elite</strong><b>₦7,000</b><span>12 requests/min · 60/day · 700 per 30 days</span><small>100 study-image uploads/month</small><ul><li>Everything in Plus</li><li>Compact, spacious and focus layouts</li><li>Profile frames and expanded theme sets</li></ul><button class="btn" type="button" data-billing-plan="elite" data-billing-kind="individual">Choose Elite</button></article>
+      <article class="shieldmind-price premium"><strong>Campus Ultimate</strong><b>₦10,000</b><span>15 requests/min · 80/day · 1,000 per 30 days</span><small>150 study-image uploads/month</small><ul><li>Everything in Elite</li><li>All palettes, wallpapers and icon styles</li><li>Premium typography and full Studio access</li></ul><button class="btn" type="button" data-billing-plan="pro" data-billing-kind="individual">Choose Ultimate</button></article>
     </div>
-    <p class="muted" id="shieldmind-plan-usage-note">Each plan includes a fixed AI request allowance for its 30-day term, shared by ShieldMind chat, study-image explanations, AI-generated exam practice and AI marking. Per-minute and daily caps are additional anti-abuse limits. Each AI request consumes one allowance; actual provider cost varies with input/output tokens and images. Study images have a separate monthly upload limit. Plans activate only after server-side payment verification, last 30 days and renew manually.</p>
+    <p class="muted" id="shieldmind-plan-usage-note">Each paid plan includes a fixed AI request allowance for its 30-day prepaid term, shared by ShieldMind chat, study-image explanations, AI-generated exam practice and AI marking. Per-minute and daily caps are additional safeguards. Study images have a separate monthly upload limit. Plans activate only after server-side Paystack verification and renew manually. Existing Ultra and Max subscribers keep their current access until expiry; those legacy plans are no longer offered for new purchases.</p>
   </section>
   <section class="panel institutional-billing-shell" id="institutional-billing-panel" hidden>
     <div class="institutional-hero">
@@ -4850,6 +4851,147 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   </section>
 </section>
 
+
+<section class="page" id="page-campus-studio">
+  <div class="heading">
+    <div>
+      <span class="campus-hub-eyebrow" style="color:#27816c">CAMPUSSHIELD AI · PERSONAL EXPERIENCE</span>
+      <h1>My Campus Studio</h1>
+      <p>Make your university workspace feel like yours. Your Studio choices follow your signed-in account.</p>
+    </div>
+  </div>
+
+  <section class="panel campus-studio-hero">
+    <div>
+      <span class="campus-studio-tier-pill"><span class="campus-studio-tier-dot" id="campus-studio-plan-dot"></span><strong id="campus-studio-plan-name">Checking your plan…</strong></span>
+      <h2>Your campus. Your style.</h2>
+      <p id="campus-studio-plan-note">Loading your subscription and personal settings…</p>
+      <p>Choose colours, backgrounds, icon styles and layouts. Standard light and dark mode remain available to everyone.</p>
+    </div>
+    <div class="campus-studio-hero-art" aria-hidden="true"><span>✦</span></div>
+  </section>
+
+  <div class="campus-studio-layout">
+    <section class="panel campus-studio-controls" aria-labelledby="campus-studio-controls-title">
+      <h2 id="campus-studio-controls-title">Personalise your workspace</h2>
+      <p class="campus-studio-controls-intro">Try a look instantly. Select Save changes to sync it to your signed-in CampusShield account.</p>
+
+      <div class="campus-studio-field">
+        <label for="campus-studio-palette">App colour palette</label>
+        <select id="campus-studio-palette">
+          <option value="emerald">Campus Green · Included</option>
+          <option value="ocean">Ocean Blue</option>
+          <option value="violet">Digital Violet</option>
+          <option value="rose">Rose Quartz</option>
+          <option value="sunset">Warm Sunset</option>
+          <option value="monochrome">Monochrome</option>
+          <option value="gold">Signature Gold</option>
+        </select>
+        <small>Changes key accents, buttons and in-app icon colours.</small>
+      </div>
+
+      <div class="campus-studio-field">
+        <label for="campus-studio-wallpaper">Workspace wallpaper</label>
+        <select id="campus-studio-wallpaper">
+          <option value="clean">Clean and minimal · Included</option>
+          <option value="aurora">Aurora Mist</option>
+          <option value="night">Night Sky</option>
+          <option value="grid">Soft Grid</option>
+          <option value="sunset">Sunset Glass</option>
+          <option value="midnight">Midnight Glow</option>
+        </select>
+        <small>Subtle backgrounds designed to keep text readable.</small>
+      </div>
+
+      <div class="campus-studio-field">
+        <label for="campus-studio-icons">In-app icon style</label>
+        <select id="campus-studio-icons">
+          <option value="standard">Campus Standard · Included</option>
+          <option value="rounded">Rounded</option>
+          <option value="minimal">Minimal</option>
+          <option value="duotone">Duo-tone</option>
+          <option value="bold">Bold</option>
+        </select>
+        <small>Applies to supported navigation and shortcut icons inside CampusShield.</small>
+      </div>
+
+      <div class="campus-studio-field">
+        <label for="campus-studio-layout">Dashboard spacing</label>
+        <select id="campus-studio-layout">
+          <option value="standard">Standard · Included</option>
+          <option value="compact">Compact</option>
+          <option value="spacious">Spacious</option>
+          <option value="focus">Focus layout</option>
+        </select>
+        <small>Adjusts supported dashboard spacing and content width.</small>
+      </div>
+
+      <div class="campus-studio-field">
+        <label for="campus-studio-font">Typography</label>
+        <select id="campus-studio-font">
+          <option value="system">System default · Included</option>
+          <option value="rounded">Rounded Sans</option>
+          <option value="serif">Classic Serif</option>
+        </select>
+        <small>Optional app-wide type styles on supported screens.</small>
+      </div>
+
+      <div class="campus-studio-field">
+        <label for="campus-studio-frame">Profile photo frame</label>
+        <select id="campus-studio-frame">
+          <option value="none">No frame · Included</option>
+          <option value="soft">Campus Ring</option>
+          <option value="glow">Signature Glow</option>
+        </select>
+        <small>Decorative only; does not change verification or account status.</small>
+      </div>
+
+      <div class="campus-studio-preview" id="campus-studio-preview">
+        <div class="campus-studio-preview-top">
+          <strong>Live preview</strong>
+          <span id="campus-studio-preview-theme">Campus Green campus</span>
+        </div>
+        <div class="campus-studio-preview-card">
+          <div class="campus-studio-preview-brand">
+            <span class="campus-studio-preview-mark">✦</span>
+            <span>CampusShield AI</span>
+          </div>
+          <span class="campus-studio-preview-line"></span>
+          <span class="campus-studio-preview-line short"></span>
+          <span class="campus-studio-preview-action">My campus, connected</span>
+        </div>
+      </div>
+
+      <div class="campus-studio-actions">
+        <button class="btn" type="button" id="campus-studio-save">Save changes</button>
+        <button class="btn secondary" type="button" id="campus-studio-reset">Reset preview</button>
+      </div>
+      <p class="campus-studio-status" id="campus-studio-status" role="status" aria-live="polite">Loading Studio…</p>
+      <p class="campus-studio-note">Mobile operating systems control the actual home-screen launcher icon. This Studio changes supported icon styles and colours inside the CampusShield application.</p>
+    </section>
+
+    <aside class="campus-studio-side">
+      <section class="panel">
+        <h2>Unlock more ways to customise</h2>
+        <p>Studio options are matched to your active ShieldMind student plan. Your plan is checked securely before premium settings are enabled.</p>
+        <ul class="campus-studio-unlock-list">
+          <li><span>✓</span><span><strong>Campus Starter</strong> — extra colour palettes.</span></li>
+          <li><span>✓</span><span><strong>Campus Plus</strong> — wallpaper collections and icon styles.</span></li>
+          <li><span>✓</span><span><strong>Campus Elite</strong> — dashboard layouts and profile frames.</span></li>
+          <li><span>✓</span><span><strong>Campus Ultimate</strong> — all Studio palettes, backgrounds, layouts and fonts.</span></li>
+        </ul>
+        <div class="actions" style="margin-top:16px">
+          <button class="btn" type="button" data-page="billing">Compare student plans</button>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Your privacy and control</h2>
+        <p>Studio settings are personal appearance preferences saved to your own signed-in account. They do not change student verification, AI permissions, campus access or university records.</p>
+        <div class="campus-studio-locked-note">Core campus features and essential safety reporting stay available on the free experience. A subscription only unlocks additional AI usage and optional personalisation.</div>
+      </section>
+    </aside>
+  </div>
+</section>
 
 <section class="page" id="page-profile-settings">
   <div class="heading profile-page-heading">
