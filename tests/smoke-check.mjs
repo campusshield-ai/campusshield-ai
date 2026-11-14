@@ -1059,6 +1059,14 @@ assert.match(campusShieldPr352IdentityUploadFunction, /auto_approve_student_iden
   "only the restricted database routine can grant automatic student approval");
 assert.match(campusShieldPr352IdentityUploadFunction, /recordManualReview/,
   "inconclusive or unavailable university checks are retained for human review");
+assert.match(campusShieldPr352IdentityUploadFunction, /manual_review_status_update_failed/,
+  "manual-review state persistence failures are surfaced instead of silently ignored");
+assert.match(campusShieldPr352IdentityUploadFunction, /manual_review_audit_write_failed/,
+  "manual-review audit failures are surfaced instead of silently ignored");
+assert.match(campusShieldPr352IdentityUploadFunction, /Identity record could not be re-read after submission/,
+  "missing identity records cannot accidentally enter the auto-approval path");
+assert.match(campusShieldPr352IdentityUploadFunction, /Your account remains pending for campus administrator review; no automatic approval was granted/,
+  "post-submission failures explicitly retain the pending manual-review fallback");
 assert.match(campusShieldPr352IdentityMigration, /requested_role IS DISTINCT FROM 'student'/,
   "automatic approval is strictly limited to student applications");
 assert.match(campusShieldPr352IdentityMigration, /student_identity_upload_scans/,
