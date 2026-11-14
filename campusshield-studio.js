@@ -214,12 +214,13 @@
   }
 
   async function load() {
+    state = Object.assign({}, DEFAULTS);
     const page = ensurePage();
     if (!page) return;
     ensureNavigation();
     bindEvents();
     const title = $("sectionTitle");
-    if (title) title.textContent = "My Campus Studio";
+    if (title && page.classList.contains("active")) title.textContent = "My Campus Studio";
     try {
       const userId = await getUserId();
       storageKey = userId ? STORAGE_PREFIX + userId : "";
@@ -249,6 +250,9 @@
     mediaQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
     if (mediaQuery?.addEventListener) mediaQuery.addEventListener("change", () => {
       if (state.appearance === "system") setAppearance();
+    });
+    window.addEventListener("campusshield:profile-ready", event => {
+      if (event.detail?.role) void load();
     });
   }
 
