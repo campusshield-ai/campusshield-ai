@@ -28,17 +28,17 @@ assert.ok(reconcile.includes('if (latest?.status !== "paid")'), "Reconciliation 
 const pricePairs = [
   ["starter", "200000", "₦2,000"],
   ["plus", "500000", "₦5,000"],
+  ["elite", "700000", "₦7,000"],
   ["pro", "1000000", "₦10,000"],
-  ["ultra", "2000000", "₦20,000"],
-  ["max", "2800000", "₦28,000"],
 ];
 for (const [plan, kobo, display] of pricePairs) {
   assert.ok(initialize.includes(plan + ":" + kobo), "Checkout amount must match " + plan);
   assert.ok(html.includes(display), "Billing page display must match " + plan);
 }
 
+assert.ok(!initialize.includes("ultra:2000000") && !initialize.includes("max:2800000"), "Legacy Ultra and Max plans cannot be newly purchased");
 assert.ok(chat.indexOf("const providerKey =") < chat.indexOf("consume_shieldmind_quota"), "OpenAI configuration must be checked before consuming user request quota");
-assert.ok(html.includes("Each plan includes a fixed AI request allowance for its 30-day term"), "Billing UI must show the prepaid term request allowance");
+assert.ok(html.includes("Each paid plan includes a fixed AI request allowance for its 30-day prepaid term"), "Billing UI must show the prepaid term request allowance");
 assert.ok(chat.includes('const model = "gpt-6-luna"'), "Production ShieldMind chat must use GPT-6 Luna");
 assert.ok(chat.includes("max_completion_tokens: 900"), "Chat output length must be bounded for predictable provider spend");
 assert.ok(chat.includes("record_shieldmind_usage"), "Actual provider token use must be written to the server-side ledger");
