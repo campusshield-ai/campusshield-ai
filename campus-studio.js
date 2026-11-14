@@ -117,9 +117,11 @@
       for (const option of Array.from(select.options)) {
         const value = option.value;
         const required = Number.isInteger(ranks[value]) ? ranks[value] : 99;
+        const baseLabel = option.dataset.label || option.textContent.replace(/ · .*$/, "");
+        option.dataset.label = baseLabel;
         option.disabled = required > currentRank;
-        option.textContent = option.dataset.label || option.textContent.replace(/ · .*$/, "");
-        if (required > 0) option.dataset.label = option.textContent;
+        const requiredPlan = ["", "Campus Starter", "Campus Plus", "Campus Elite", "Campus Ultimate"][required] || "a higher plan";
+        option.textContent = required > currentRank ? baseLabel + " · " + requiredPlan : baseLabel;
       }
       select.value = preferences[key];
       select.disabled = loading;
