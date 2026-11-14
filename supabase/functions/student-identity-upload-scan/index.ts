@@ -157,6 +157,12 @@ Deno.serve(async (req: Request) => {
     const verifierUrlValue = Deno.env.get("UNIVERSITY_ID_VERIFIER_URL");
     const verifierToken = Deno.env.get("UNIVERSITY_ID_VERIFIER_TOKEN");
     const configuredProviderName = Deno.env.get("UNIVERSITY_ID_VERIFIER_NAME");
+    const allowedVerifierHosts = new Set(
+      String(Deno.env.get("UNIVERSITY_ID_VERIFIER_ALLOWED_HOSTS") || "")
+        .split(/[;,\\s]+/)
+        .map(host => host.trim().toLowerCase())
+        .filter(Boolean)
+    );
 
     const recordManualReview = async (reason: string, provider: string | null = null, reference: string | null = null) => {
       reasonCode = reason;
@@ -186,8 +192,15 @@ Deno.serve(async (req: Request) => {
     } else if (shareWithOfficialVerifier && verifierUrlValue && verifierToken) {
       let verifierUrl: URL | null = null;
       try { verifierUrl = new URL(verifierUrlValue); } catch { reasonCode = "verifier_configuration_invalid"; }
-      if (verifierUrl && (verifierUrl.protocol !== "https:" || verifierUrl.username || verifierUrl.password ||
-          ["localhost", "127.0.0.1", "::1"].includes(verifierUrl.hostname.toLowerCase()))) {
+      if (verifierUrl && (
+          verifierUrl.protocol !== "https:" ||
+          verifierUrl.username ||
+          verifierUrl.password ||
+          (verifierUrl.port && verifierUrl.port !== "443") ||
+          !allowedVerifierHosts.has(verifierUrl.hostname.toLowerCase()) ||
+          verifierUrl.hostname.toLowerCase() === "localhost" ||
+          verifierUrl.hostname.toLowerCase().endsWith(".localhost")
+        )) {
         verifierUrl = null;
         reasonCode = "verifier_configuration_invalid";
       }
