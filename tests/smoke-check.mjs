@@ -67,6 +67,10 @@ const profileAvatar20MbMigration = await readFile(new URL("../supabase/migration
 const profileAvatarPathFixMigration = await readFile(new URL("../supabase/migrations/20261027030000_fix_profile_avatar_path_validation.sql", import.meta.url), "utf8");
 const profileAvatarRlsFixMigration = await readFile(new URL("../supabase/migrations/20261027032000_fix_profile_avatar_upload_rls_size_check.sql", import.meta.url), "utf8");
 const studentIdentityPathFixMigration = await readFile(new URL("../supabase/migrations/20261027052000_fix_student_identity_uuid_path_regex.sql", import.meta.url), "utf8");
+const campusShieldPr352IdentityMigration = await readFile(new URL("../supabase/migrations/20261114140000_student_identity_automated_verification.sql", import.meta.url), "utf8");
+const campusShieldPr352IdentityUploadFunction = await readFile(new URL("../supabase/functions/student-identity-upload-scan/index.ts", import.meta.url), "utf8");
+const campusShieldPr352IdentityDocs = await readFile(new URL("../docs/automatic-student-identity-verification.md", import.meta.url), "utf8");
+const nigeriaUniversityVerificationDocs = await readFile(new URL("../docs/nigeria-university-verification-integration.md", import.meta.url), "utf8");
 const requestedRoleRpcMigration = await readFile(new URL("../supabase/migrations/20261027062000_add_save_my_requested_role_rpc.sql", import.meta.url), "utf8");
 const pastQuestionMigration = await readFile(new URL("../supabase/migrations/20261027230000_past_questions_exam_prep.sql", import.meta.url), "utf8");
 const pastQuestionFunction = await readFile(new URL("../supabase/functions/past-question-practice/index.ts", import.meta.url), "utf8");
@@ -999,6 +1003,84 @@ assert.match(profileAvatarRlsFixMigration, /image\/jpeg.*image\/png.*image\/webp
 assert.match(studentIdentityPathFixMigration, /\[\.\]\(jpg\|jpeg\|png\|pdf\)/, "student identity validation accepts UUID filenames with supported document extensions");
 assert.match(studentIdentityPathFixMigration, /p\.role='student' and p\.requested_role='student'/, "student identity submission remains limited to student accounts");
 assert.ok(studentIdentityPathFixMigration.includes("'^' || v_user_id::text || '/"), "student identity path remains scoped to the authenticated user");
+
+// Automated student verification must be consent-based, source-confirmed and fail-closed.
+assert.match(htmlMarkup, /id="identity-share-university-verifier"[^>]*type="checkbox"/,
+  "students have a separate, optional consent control for sharing ID evidence with the university verifier");
+assert.match(backend, /client\.functions\.invoke\("student-identity-upload-scan"/,
+  "student identity files are routed through the authenticated secure scanning Edge Function");
+assert.match(backend, /share_with_official_verifier/);
+assert.match(backend, /attest_original_document/);
+assert.match(appScript, /shareWithOfficialVerifier:\s*\$\('identity-share-university-verifier'\)\.checked/,
+  "the optional consent choice is passed into the secure upload request");
+assert.match(campusShieldPr352IdentityUploadFunction, /originalDocumentAttested/,
+  "the upload Edge Function enforces original-document attestation server-side");
+assert.match(campusShieldPr352IdentityUploadFunction, /share_with_official_verifier/,
+  "the upload Edge Function reads the explicit university-verifier consent");
+assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_URL/);
+assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_TOKEN/);
+assert.ok(campusShieldPr352IdentityUploadFunction.includes(".split(/[;,") && campusShieldPr352IdentityUploadFunction.includes("]+/)"),
+  "the exact verifier host allowlist supports comma, semicolon and whitespace separators");
+assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_ALLOWED_HOSTS/,
+  "the official verifier must use an explicit administrator-configured host allowlist");
+assert.match(campusShieldPr352IdentityUploadFunction, /allowedVerifierHosts\.has\(verifierUrl\.hostname\.toLowerCase\(\)\)/,
+  "outbound identity evidence is never sent to an arbitrary HTTPS host");
+assert.match(campusShieldPr352IdentityUploadFunction, /verifierUrl\.port && verifierUrl\.port !== "443"/,
+  "the university verifier is restricted to HTTPS port 443");
+assert.match(campusShieldPr352IdentityDocs, /Babcock University pilot integration/,
+  "the Babcock integration process is documented");
+assert.match(campusShieldPr352IdentityDocs, /Do not scrape the authenticated portal/,
+  "the Babcock UMIS integration requires formal institutional access");
+assert.match(htmlMarkup, /id="auth-email-help"[^>]*hidden/,
+  "university email guidance is shown only for student signup");
+assert.match(htmlMarkup, /university Google Workspace\/Gmail account/,
+  "students are told they can use their university-issued Google Workspace mailbox");
+assert.match(appScript, /function syncStudentUniversityEmailHint/,
+  "the university-email guidance follows the student signup role");
+assert.match(appScript, /authMode !== 'signup' \|\| identityCompletionMode/,
+  "university-email guidance is hidden outside new student registration");
+assert.match(nigeriaUniversityVerificationDocs, /NERD Limited shall be the system operator/,
+  "the national integration documents reflect the operator structure in the gazetted NERD policy");
+assert.match(nigeriaUniversityVerificationDocs, /secretariat@ned\.gov\.ng/,
+  "the official national NERD contact route is documented");
+assert.match(nigeriaUniversityVerificationDocs, /not yet an available CampusShield integration/,
+  "national verification API access is not falsely claimed as available");
+assert.match(nigeriaUniversityVerificationDocs, /Email verification proves mailbox control; it does not guarantee current student status/,
+  "email ownership alone does not approve a student identity");
+assert.match(nigeriaUniversityVerificationDocs, /exact student domain/,
+  "student email domains must be institution-sourced and exact");
+assert.match(campusShieldPr352IdentityUploadFunction, /document_authentic\s*===\s*true/,
+  "automatic approval requires explicit confirmation of document authenticity");
+assert.match(campusShieldPr352IdentityUploadFunction, /active_enrollment\s*===\s*true/,
+  "automatic approval requires confirmation of active enrolment");
+assert.match(campusShieldPr352IdentityUploadFunction, /student_number_match\s*===\s*true/);
+assert.match(campusShieldPr352IdentityUploadFunction, /university_match\s*===\s*true/);
+assert.match(campusShieldPr352IdentityUploadFunction, /auto_approve_student_identity_from_official_verifier/,
+  "only the restricted database routine can grant automatic student approval");
+assert.match(campusShieldPr352IdentityUploadFunction, /recordManualReview/,
+  "inconclusive or unavailable university checks are retained for human review");
+assert.match(campusShieldPr352IdentityUploadFunction, /manual_review_status_update_failed/,
+  "manual-review state persistence failures are surfaced instead of silently ignored");
+assert.match(campusShieldPr352IdentityUploadFunction, /manual_review_audit_write_failed/,
+  "manual-review audit failures are surfaced instead of silently ignored");
+assert.match(campusShieldPr352IdentityUploadFunction, /Identity record could not be re-read after submission/,
+  "missing identity records cannot accidentally enter the auto-approval path");
+assert.match(campusShieldPr352IdentityUploadFunction, /Your account remains pending for campus administrator review; no automatic approval was granted/,
+  "post-submission failures explicitly retain the pending manual-review fallback");
+assert.match(campusShieldPr352IdentityMigration, /requested_role IS DISTINCT FROM 'student'/,
+  "automatic approval is strictly limited to student applications");
+assert.match(campusShieldPr352IdentityMigration, /student_identity_upload_scans/,
+  "automatic approval requires a recorded clean file scan");
+assert.match(campusShieldPr352IdentityMigration, /duplicate_identity_signal/,
+  "duplicate matric numbers or document hashes are routed to manual review");
+assert.match(campusShieldPr352IdentityMigration, /campus_identity_auto_review_audit/,
+  "automated decisions have an audit record");
+assert.match(campusShieldPr352IdentityMigration, /FROM PUBLIC, anon, authenticated[\s\S]*?TO service_role/,
+  "automatic approval execution is restricted to the trusted service role");
+assert.match(campusShieldPr352IdentityMigration, /campus_memberships[\s\S]*?membership_status = 'active'/,
+  "automatic approval requires an active membership at the selected university");
+assert.match(campusShieldPr352IdentityMigration, /email_confirmed_at/,
+  "automatic approval requires a confirmed email address");
 assert.match(backend, /rpc\("save_my_requested_role"/, "requested-role persistence uses the dedicated Supabase RPC");
 assert.match(requestedRoleRpcMigration, /create or replace function public\.save_my_requested_role\(p_requested_role text\)/i, "requested-role RPC is defined in a migration");
 assert.match(requestedRoleRpcMigration, /p_requested_role not in \('student', 'teacher'\)/, "requested-role RPC rejects elevated roles");
@@ -1394,3 +1476,13 @@ assert.match(institutionalPaymentWebhook, /verifyModernPaystackSignature/);
 assert.match(institutionalPaymentWebhook, /Math\.abs\(Math\.floor\(Date\.now\(\) \/ 1000\) - timestamp\) > 300/);
 console.log("PASS university institutional invoice, private payment, receipt and webhook security safeguards");
 
+
+
+
+const studentIdentityScanGuardMigration = await readFile(
+  new URL("../supabase/migrations/20261114142000_identity_auto_approve_accept_verified_scan_state.sql", import.meta.url), "utf8"
+);
+assert.match(studentIdentityScanGuardMigration, /s\.status IN \('scanning','clean'\)/,
+  "the service-only approval RPC accepts the scanner's in-flight state only after the scanner has verified the file clean");
+assert.match(studentIdentityScanGuardMigration, /TO service_role/,
+  "the follow-up scan-state guard preserves service-role-only execution");

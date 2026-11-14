@@ -1097,6 +1097,12 @@
       /[^A-Za-z0-9]/.test(password);
   }
 
+  function syncStudentUniversityEmailHint() {
+    const hint = $('auth-email-help');
+    if (!hint) return;
+    hint.hidden = authMode !== 'signup' || identityCompletionMode || $('auth-role')?.value !== 'student';
+  }
+
   function setAuthMode(mode) {
     authMode = mode === 'signup' ? 'signup' : mode === 'reset' ? 'reset' : 'signin';
     const isSignUp = authMode === 'signup';
@@ -1114,6 +1120,7 @@
     $('auth-tabs').hidden = isReset || identityCompletionMode;
     $('auth-email-field').hidden = isReset || identityCompletionMode;
     $('auth-email').required = !isReset && !identityCompletionMode;
+    syncStudentUniversityEmailHint();
     $('auth-password-field').hidden = isReset || identityCompletionMode;
     $('auth-password').required = !isReset && !identityCompletionMode;
     $('password-reset-fields').hidden = !isReset;
@@ -1186,6 +1193,7 @@
 
   $('auth-role').addEventListener('change', () => {
     syncSignupRoleFields();
+    syncStudentUniversityEmailHint();
     updateStaffPositionAccessPreview();
     $('signup-student-identity-panel').hidden = authMode !== 'signup' || ($('auth-role').value === 'teacher' && !identityCompletionMode);
     const selected = $('auth-university').selectedOptions?.[0];
@@ -5247,7 +5255,9 @@
         if (identityCompletionMode) closeIdentityCompletionView();
       } else if (submission.status === 'pending') {
         $('identity-student-number').value = submission.student_number || '';
-        status.textContent = 'Your ID submission is awaiting administrator review. Your account permissions remain governed by server-side verification.';
+        status.textContent = submission.automated_review_status === 'manual_review_required'
+          ? 'Your document passed the security scan. Automatic identity verification could not safely confirm it, so it is waiting for campus administrator review.'
+          : 'Your ID submission is awaiting administrator review. Your account permissions remain governed by server-side verification.';
         form.hidden = true;
         submit.hidden = true;
         $('student-identity-setup-button').hidden = true;
@@ -5325,11 +5335,19 @@
       if (!$('identity-original-document-confirmation').checked) throw new Error('Confirm that this is a genuine university-issued document and has not been AI-generated or digitally altered.');
       submit.disabled = true;
       status.textContent = 'Uploading your document securely…';
-      await backend.uploadStudentIdentityDocument(file, { institutionName: lockedInstitution, studentNumber, attestOriginalDocument: $('identity-original-document-confirmation').checked });
+      const uploadResult = await backend.uploadStudentIdentityDocument(file, {
+        institutionName: lockedInstitution,
+        studentNumber,
+        attestOriginalDocument: $('identity-original-document-confirmation').checked,
+        shareWithOfficialVerifier: $('identity-share-university-verifier').checked
+      });
       $('identity-document').value = '';
       $('identity-original-document-confirmation').checked = false;
+      $('identity-share-university-verifier').checked = false;
       studentIdentitySubmission = await backend.getMyStudentIdentityVerification();
-      status.textContent = 'Identity document submitted for administrator review.';
+      status.textContent = uploadResult?.status === 'auto_approved'
+        ? 'Your university confirmed your identity automatically. Your student account is approved.'
+        : 'Your document passed the security scan and is waiting for campus administrator review.';
       identityCompletionMode = false;
       setAuthMode('signin');
       $('workspace').hidden = false;
@@ -7804,11 +7822,19 @@ $('page-marketplace').addEventListener('click',async function(event){
         });
         if (!isTeacher) {
           try {
-            await backend.uploadStudentIdentityDocument(studentDocument, { institutionName, studentNumber, attestOriginalDocument: $('identity-original-document-confirmation').checked });
+            const identityResult = await backend.uploadStudentIdentityDocument(studentDocument, {
+              institutionName,
+              studentNumber,
+              attestOriginalDocument: $('identity-original-document-confirmation').checked,
+              shareWithOfficialVerifier: $('identity-share-university-verifier').checked
+            });
             studentIdentitySubmission = await backend.getMyStudentIdentityVerification();
             $('identity-document').value = '';
             $('identity-original-document-confirmation').checked = false;
-            msg.textContent = 'Account created. Your student ID was uploaded privately and is awaiting administrator review.';
+            $('identity-share-university-verifier').checked = false;
+            msg.textContent = identityResult?.status === 'auto_approved'
+              ? 'Account created and your university confirmed your student identity automatically.'
+              : 'Account created. Your document passed the security scan and is waiting for campus administrator review.';
           } catch (uploadError) {
             msg.textContent = 'Account created, but the ID upload did not complete: ' + (uploadError?.message || 'sign in and use Complete student setup to retry.');
           }

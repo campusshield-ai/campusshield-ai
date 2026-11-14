@@ -348,6 +348,95 @@ async getCurrentUser() {
       return data || [];
     },
 
+    async getMyStudentIdentityVerification() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in before checking student identity.");
+      const baseFields = "user_id,university_id,institution_name,student_number,object_path,status,rejection_reason,created_at,reviewed_at,confirmed_fraud,fraud_decision_reason,fraud_decided_at,fraud_notice_at,fraud_lock_at";
+      const automationFields = baseFields + ",automated_review_status,automated_review_reason_code,automated_reviewed_at,automated_review_provider,automated_review_reference";
+      let result = await client.from("student_identity_verifications")
+        .select(automationFields).eq("user_id", user.id).maybeSingle();
+      // Keep older Production databases readable until the staged migration is promoted.
+      if (result.error && /automated_review_|schema cache|column .* does not exist/i.test(result.error.message || "")) {
+        result = await client.from("student_identity_verifications")
+          .select(baseFields).eq("user_id", user.id).maybeSingle();
+      }
+      if (result.error) throw result.error;
+      return result.data || null;
+    },
+
+    async createStudentIdentityDocumentUrl(objectPath) {
+      if (!client) throw new Error("Supabase is not configured.");
+      const safePath = String(objectPath || "");
+      if (!/^[0-9a-fA-F-]{36}\/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|pdf)$/.test(safePath)) {
+        throw new Error("The student document path is invalid.");
+      }
+      const { data, error } = await client.storage
+        .from("student-identity-documents").createSignedUrl(safePath, 90);
+      if (error) throw error;
+      if (!data?.signedUrl) throw new Error("A temporary document link could not be created.");
+      return data.signedUrl;
+    },
+
+    async uploadStudentIdentityDocument(file, details = {}) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!file) throw new Error("Choose a student ID image or PDF.");
+      if (!Number.isFinite(file.size) || file.size < 1 || file.size > 5 * 1024 * 1024) {
+        throw new Error("Student ID files must be no larger than 5 MiB.");
+      }
+      const extension = String(file.name || "").split(".").pop().toLowerCase();
+      const mimeByExtension = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", pdf: "application/pdf" };
+      const expectedMime = mimeByExtension[extension];
+      if (!expectedMime || (file.type && file.type !== expectedMime)) {
+        throw new Error("Upload a JPEG, PNG, or PDF student ID document.");
+      }
+      const institutionName = String(details.institutionName || "").trim();
+      const studentNumber = String(details.studentNumber || "").trim();
+      if (institutionName.length < 2 || institutionName.length > 180) {
+        throw new Error("Institution name must be 2–180 characters.");
+      }
+      if (studentNumber.length < 2 || studentNumber.length > 80) {
+        throw new Error("Student or matric number must be 2–80 characters.");
+      }
+      if (details.attestOriginalDocument !== true) {
+        throw new Error("Confirm that this is a genuine, unaltered university-issued document.");
+      }
+
+      const user = await this.getCurrentUser();
+      if (!user) throw new Error("Sign in before submitting student identity.");
+      const previous = await this.getMyStudentIdentityVerification();
+      if (previous?.status === "pending") {
+        throw new Error("Your current identity submission is awaiting review.");
+      }
+      if (previous?.status === "approved") {
+        throw new Error("Your student identity is already approved. Contact your campus administrator if it needs re-review.");
+      }
+
+      const body = new FormData();
+      body.append("file", file, file.name || ("student-id." + extension));
+      body.append("institution_name", institutionName);
+      body.append("student_number", studentNumber);
+      body.append("attest_original_document", "true");
+      body.append("share_with_official_verifier", details.shareWithOfficialVerifier === true ? "true" : "false");
+
+      const { data, error } = await client.functions.invoke("student-identity-upload-scan", { body });
+      if (error) {
+        let message = error.message || "Secure identity scanning is unavailable.";
+        try {
+          const response = error.context;
+          if (response && typeof response.clone === "function") {
+            const payload = await response.clone().json();
+            message = payload?.error || payload?.message || message;
+          }
+        } catch (_ignored) {}
+        throw new Error(message);
+      }
+      if (!data || !["clean", "manual_review_required", "auto_approved"].includes(data.status)) {
+        throw new Error(data?.error || data?.message || "The identity document was not accepted by the secure scanner.");
+      }
+      return data;
+    },
+
     async createCampusStaffDocumentUrl(path) {
       if (!client) throw new Error("Supabase is not configured.");
       if (!path) return null;

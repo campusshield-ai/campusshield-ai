@@ -2612,7 +2612,8 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
             <details class="identity-extra-proof"><summary>School-fee receipt (optional)</summary><div class="field"><label for="identity-fee-receipt">Receipt file</label><input id="identity-fee-receipt" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf"><small>Only if your ID is unavailable or a reviewer asks. JPG, PNG or PDF · up to 5 MiB.</small></div></details>
             <details class="identity-privacy-details"><summary>Privacy and document requirements</summary><p class="muted" id="identity-document-privacy-note">cover bank/card details and unrelated information on receipts. Never upload passwords, PINs, or full payment-card details.</p><p class="muted">Submit only a genuine, unaltered university-issued document. Authorized campus staff review submissions; the checkbox below is an attestation, not an automated AI detector.</p></details>
             <label class="remember-field"><input id="identity-original-document-confirmation" type="checkbox" required> I confirm this is a genuine, unaltered university document.</label>
-            <button class="btn" type="button" id="identity-submit" hidden>Submit for review</button>
+            <label class="remember-field"><input id="identity-share-university-verifier" type="checkbox"> I consent to sending this ID document and matric number to my university's authorised verification service for an automatic enrolment check. If unavailable or inconclusive, my application stays pending for campus review.</label>
+            <button class="btn" type="button" id="identity-submit" hidden>Submit for verification</button>
           </div>
           <details id="identity-university-request" style="margin-top:16px">
             <summary>Other / institution not listed</summary>
@@ -2630,7 +2631,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   </div>
 </div>
         </div>
-        <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+        <div class="field" id="auth-email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com"><small id="auth-email-help" class="muted" hidden>Students may use their university-issued student email here, including a university Google Workspace/Gmail account. Confirm the email link to prove you can access that inbox. This is supporting evidence only; your matriculation details and student ID may still need verification. A personal email address is also accepted.</small></div>
         <div class="field" id="auth-password-field"><label for="auth-password">Password</label><div class="password-input-wrap"><input id="auth-password" type="password" autocomplete="current-password" minlength="1" required placeholder="Enter your password"><button type="button" class="password-toggle" data-toggle-password="auth-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
         <div class="field" id="forgot-password-field"><button type="button" id="forgot-password-button" class="btn secondary">Forgot password?</button></div>
         <div id="password-reset-fields" hidden>
