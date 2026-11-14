@@ -11,6 +11,10 @@
   let dashboardTimetableScriptPromise = null;
 
   const features = {
+    dashboard: {
+      scripts: ["./campusshield-campus-home.js?v=20261114-1"],
+      onEnter: () => window.CampusShieldCampusHome?.load?.()
+    },
     groups: {
       scripts: ["./campus-course-community.js"]
     },
