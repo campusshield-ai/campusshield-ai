@@ -37,7 +37,7 @@
 
 <link rel="stylesheet" href="./campus-dashboard-insights.css">
 <link rel="stylesheet" href="./campus-live-classroom.css">
-<link rel="stylesheet" href="./institutional-billing-experience.css?v=20261114-3">
+<link rel="stylesheet" href="./institutional-billing-experience.css?v=20261114-4">
 <link rel="stylesheet" href="./university-crawler-command-center.css?v=20261114-1">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
@@ -4629,8 +4629,17 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 
     <div class="institutional-section-heading institutional-packages-heading">
       <span class="institutional-eyebrow">CHOOSE YOUR LEVEL OF COVERAGE</span>
-      <h3>What your university receives in each package</h3>
-      <p>Four institutional tiers provide a clear progression from core campus workflows to managed, institution-wide governance. Packages are for the university or institution, not individual student accounts; permissions, delivery scope and service commitments are confirmed during institutional review.</p>
+      <h3>Choose a package. Start securely or speak to our team.</h3>
+      <p>Every tier gives your institution two clear paths: start the official subscription and invoice process, or request a tailored consultation before deciding. Payments are made only against an issued CampusShield invoice.</p>
+    </div>
+    <div class="institutional-package-controls">
+      <label for="institutional-package-period">Preferred billing period
+        <select id="institutional-package-period">
+          <option value="monthly">Monthly billing</option>
+          <option value="yearly">Yearly billing</option>
+        </select>
+      </label>
+      <p><strong>How secure subscription works:</strong> an issued invoice can be paid immediately through verified Paystack checkout. If you do not have an invoice yet, the subscription option creates an official invoice request first. No payment is taken when submitting a request.</p>
     </div>
     <div class="shieldmind-prices institutional-plan-grid">
       <article class="shieldmind-price institutional-plan-card">
@@ -4647,7 +4656,10 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
           <li>Role-aware access and standard onboarding guidance</li>
         </ul>
         <p class="institutional-plan-outcome"><b>Best for:</b> one campus establishing trusted communication, safety and student-service workflows.</p>
-        <button class="btn secondary" type="button" data-billing-plan="university-starter" data-billing-kind="institution">Request Starter package</button>
+        <div class="institutional-plan-actions">
+          <button class="btn institutional-subscribe-cta" type="button" data-billing-plan="university-starter" data-billing-kind="institution" data-billing-action="subscribe">Subscribe securely</button>
+          <button class="btn secondary institutional-consult-cta" type="button" data-billing-plan="university-starter" data-billing-kind="institution" data-billing-action="consultation">Request consultation</button>
+        </div>
       </article>
 
       <article class="shieldmind-price institutional-plan-card institutional-plan-featured">
@@ -4665,7 +4677,10 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
           <li>Guided administrative configuration and onboarding</li>
         </ul>
         <p class="institutional-plan-outcome"><b>Best for:</b> universities coordinating several departments and campus-facing teams.</p>
-        <button class="btn" type="button" data-billing-plan="university-professional" data-billing-kind="institution">Request Professional package</button>
+        <div class="institutional-plan-actions">
+          <button class="btn institutional-subscribe-cta" type="button" data-billing-plan="university-professional" data-billing-kind="institution" data-billing-action="subscribe">Subscribe securely</button>
+          <button class="btn secondary institutional-consult-cta" type="button" data-billing-plan="university-professional" data-billing-kind="institution" data-billing-action="consultation">Request consultation</button>
+        </div>
       </article>
 
       <article class="shieldmind-price institutional-plan-card">
@@ -4683,7 +4698,10 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
           <li>Tailored governance and support schedule</li>
         </ul>
         <p class="institutional-plan-outcome"><b>Best for:</b> universities and institution groups coordinating multiple campuses or units.</p>
-        <button class="btn" type="button" data-billing-plan="university-enterprise" data-billing-kind="institution">Request Enterprise consultation</button>
+        <div class="institutional-plan-actions">
+          <button class="btn institutional-subscribe-cta" type="button" data-billing-plan="university-enterprise" data-billing-kind="institution" data-billing-action="subscribe">Get quote &amp; invoice</button>
+          <button class="btn secondary institutional-consult-cta" type="button" data-billing-plan="university-enterprise" data-billing-kind="institution" data-billing-action="consultation">Request consultation</button>
+        </div>
       </article>
 
       <article class="shieldmind-price institutional-plan-card institutional-plan-featured institutional-plan-command">
@@ -4703,21 +4721,23 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
           <li>Integration architecture review for approved university systems</li>
         </ul>
         <p class="institutional-plan-outcome"><b>Best for:</b> large universities and university groups seeking a managed, institution-wide operating model.</p>
-        <a class="btn" href="https://paystack.shop/pay/-yix8599da" target="_blank" rel="noopener noreferrer">Subscribe monthly · ₦1,200,000</a>
-        <button class="btn secondary" type="button" data-billing-plan="university-premier" data-billing-kind="institution">Request Premier Command / onboarding</button>
+        <div class="institutional-plan-actions">
+          <button class="btn institutional-subscribe-cta" type="button" data-billing-plan="university-premier" data-billing-kind="institution" data-billing-action="subscribe">Subscribe securely</button>
+          <button class="btn secondary institutional-consult-cta" type="button" data-billing-plan="university-premier" data-billing-kind="institution" data-billing-action="consultation">Request Premier onboarding</button>
+        </div>
       </article>
     </div>
     <p class="institutional-scope-note"><strong>Scope and availability:</strong> package descriptions are the proposed service scope. Specific modules, campus coverage, integrations, onboarding deliverables and support commitments are confirmed in writing before payment and activation. Premier governance controls, approval matrices, quarterly reviews and integration work are delivered through a documented onboarding and service schedule. Custom integrations or controls are not presented as active until technically reviewed, agreed and configured. Published package prices are base service fees; any applicable tax is itemised separately on the official invoice.</p>
 
     <div class="institutional-section-heading">
       <span class="institutional-eyebrow">HOW IT WORKS</span>
-      <h3>From institutional request to an active campus workspace</h3>
-      <p>The university stays in control of who represents it, what is included and when the service is activated.</p>
+      <h3>From package selection to an active campus workspace</h3>
+      <p>Choose a secure invoice-led subscription or request a no-charge consultation. The university remains in control of its authorised representatives, agreed scope and activation.</p>
     </div>
     <ol class="institutional-onboarding-steps">
-      <li><b>1</b><div><strong>Submit an official request</strong><p>An authorised representative provides the institution name, official contact details, selected package and preferred billing period.</p></div></li>
-      <li><b>2</b><div><strong>Verify the institution and agree the scope</strong><p>CampusShield reviews the request, confirms the representative's authority and clarifies campuses, modules, access roles and any custom requirements.</p></div></li>
-      <li><b>3</b><div><strong>Receive an invoice and arrange payment</strong><p>The institution receives the agreed billing details. Invoice or bank-transfer payments are manually reconciled by authorised CampusShield staff.</p></div></li>
+      <li><b>1</b><div><strong>Choose how to proceed</strong><p>Pay an already-issued invoice through secure checkout, request an official invoice for a new subscription, or send a consultation enquiry before committing.</p></div></li>
+      <li><b>2</b><div><strong>Verify the institution and agree the scope</strong><p>CampusShield checks the representative's authority and confirms campuses, modules, access roles, billing period and any custom requirements before an invoice is issued.</p></div></li>
+      <li><b>3</b><div><strong>Pay the official invoice securely</strong><p>Use the invoice's secure Paystack checkout when enabled, or follow its documented alternative payment instructions. A browser redirect or payment screenshot alone never activates a subscription.</p></div></li>
       <li><b>4</b><div><strong>Provision and onboard authorised teams</strong><p>After payment and approval are confirmed, the agreed institutional access is configured and relevant staff receive onboarding guidance.</p></div></li>
       <li><b>5</b><div><strong>Use, review and improve</strong><p>Teams use the tools within their permissions, review activity and identify operational improvements over the subscription period.</p></div></li>
     </ol>
@@ -4763,9 +4783,10 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 
     <p class="muted institutional-billing-footnote">University subscriptions require an authorised institutional representative. Prices shown are the published starting packages; final Enterprise pricing and any custom scope are confirmed in a written quotation. Invoice or bank-transfer requests are manually reconciled and do not automatically unlock an institution.</p>
 
-    <form id="institutional-billing-form" hidden>
-      <h3>Request institutional billing</h3>
-      <p class="muted">This submits a request for review only. It does not charge your institution or activate any premium access.</p>
+    <form id="institutional-billing-form" hidden data-request-intent="subscribe">
+      <h3 id="institutional-billing-form-title">Start an institutional subscription</h3>
+      <p class="muted" id="institutional-billing-form-intro">We will verify the request and issue an official invoice. No payment is taken at this stage.</p>
+      <div class="institutional-request-intent-note" id="institutional-billing-intent-note">Your university will receive an official invoice request for the selected package and billing period.</div>
       <div class="grid two">
         <div class="field"><label for="institution-billing-name">Official institution name *</label><input id="institution-billing-name" required maxlength="180" placeholder="University / institution name"></div>
         <div class="field"><label for="institution-billing-plan">Requested plan *</label><select id="institution-billing-plan" required><option value="university-starter">Starter · University</option><option value="university-professional">Professional · University</option><option value="university-enterprise">Enterprise · Multi-Campus</option><option value="university-premier">Premier · Institutional Command</option></select></div>
@@ -4773,7 +4794,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
         <div class="field"><label for="institution-billing-email">Contact email *</label><input id="institution-billing-email" type="email" required maxlength="254" placeholder="Your institutional contact email"></div>
       </div>
       <div class="field"><label for="institution-billing-message">Additional details (optional)</label><textarea id="institution-billing-message" maxlength="2000" placeholder="Expected campus size, procurement contact, or questions"></textarea></div>
-      <div class="actions"><button class="btn" type="submit" id="institution-billing-submit">Submit billing request</button><button class="btn secondary" type="button" id="institution-billing-cancel">Cancel</button></div>
+      <div class="actions"><button class="btn" type="submit" id="institution-billing-submit">Request official invoice</button><button class="btn secondary" type="button" id="institution-billing-cancel">Cancel</button></div>
       <p id="institution-billing-status" class="message" role="status" aria-live="polite"></p>
     </form>
     <div id="institutional-billing-requests" class="muted">Your submitted institutional billing requests will appear here.</div>
