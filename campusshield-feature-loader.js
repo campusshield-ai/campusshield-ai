@@ -147,9 +147,72 @@
   // The dashboard's My Day card uses the timetable snapshot too. Keep the
   // timetable module out of public login startup, but load it after a verified
   // profile is ready so the signed-in dashboard is complete without navigation.
+  async function restoreSavedStudioPreferences() {
+    try {
+      const auth = window.CampusShieldBackend?.client?.auth;
+      if (!auth?.getSession) return;
+      const sessionResult = await auth.getSession();
+      const userId = sessionResult?.data?.session?.user?.id;
+      if (!userId) return;
+      const raw = localStorage.getItem("campusshield-studio:v1:" + userId);
+      if (!raw) return;
+      const prefs = JSON.parse(raw);
+      if (!prefs || typeof prefs !== "object") return;
+
+      if (!document.querySelector('link[data-campusshield-studio-style="true"]')) {
+        const style = document.createElement("link");
+        style.rel = "stylesheet";
+        style.href = "./campusshield-my-campus-studio.css?v=20261114-1";
+        style.dataset.campusshieldStudioStyle = "true";
+        document.head.appendChild(style);
+      }
+
+      const root = document.documentElement;
+      const palettes = ["emerald", "ocean", "violet", "rose", "amber"];
+      const palette = palettes.includes(prefs.palette) ? prefs.palette : "emerald";
+      const custom = /^#[0-9a-f]{6}$/i.test(String(prefs.customAccent || "")) ? prefs.customAccent : "";
+      root.dataset.campusStudioPalette = custom && prefs.palette === "custom" ? "custom" : palette;
+      ["--cs-primary","--cs-primary-strong","--cs-primary-hover","--cs-seafoam","--cs-seafoam-soft","--cs-lime"].forEach(name => root.style.removeProperty(name));
+      if (custom && prefs.palette === "custom") {
+        root.style.setProperty("--cs-primary", custom);
+        root.style.setProperty("--cs-primary-strong", custom);
+        root.style.setProperty("--cs-primary-hover", custom);
+        root.style.setProperty("--cs-seafoam", custom);
+        root.style.setProperty("--cs-seafoam-soft", "color-mix(in srgb, " + custom + " 14%, white)");
+        root.style.setProperty("--cs-lime", custom);
+      }
+      const wallpapers = ["soft","aurora","paper","midnight"];
+      root.dataset.campusStudioWallpaper = wallpapers.includes(prefs.wallpaper) ? prefs.wallpaper : "soft";
+      root.dataset.campusStudioReducedMotion = prefs.reduceMotion === true ? "true" : "false";
+      const density = ["compact","comfortable","spacious"].includes(prefs.density) ? prefs.density : "comfortable";
+      workspace.dataset.campusStudioDensity = density;
+      const scale = Math.max(90, Math.min(110, Number(prefs.fontScale) || 100)) / 100;
+      workspace.style.setProperty("--campus-studio-font-scale", String(scale));
+      const dark = prefs.appearance === "dark" ||
+        (prefs.appearance === "system" && window.matchMedia?.("(prefers-color-scheme: dark)")?.matches);
+      if (dark) root.dataset.theme = "dark";
+      else root.removeAttribute("data-theme");
+    } catch (error) {
+      console.warn("CampusShield saved appearance preferences could not be restored.", error?.message || error);
+    }
+  }
+
+  function clearStudioAppearance() {
+    const root = document.documentElement;
+    ["data-campus-studio-palette","data-campus-studio-wallpaper","data-campus-studio-reduced-motion","data-theme"].forEach(name => root.removeAttribute(name));
+    ["--cs-primary","--cs-primary-strong","--cs-primary-hover","--cs-seafoam","--cs-seafoam-soft","--cs-lime"].forEach(name => root.style.removeProperty(name));
+    workspace.removeAttribute("data-campus-studio-density");
+    workspace.style.removeProperty("--campus-studio-font-scale");
+  }
+
   window.addEventListener("campusshield:profile-ready", event => {
-    if (event.detail?.role) loadDashboardTimetable();
+    if (event.detail?.role) {
+      loadDashboardTimetable();
+      void restoreSavedStudioPreferences();
+    }
   });
+  window.addEventListener("campusshield:profile-cleared", clearStudioAppearance);
+  window.addEventListener("campusshield:session-signed-out", clearStudioAppearance);
 
   const observer = new MutationObserver(observeActiveRoute);
   observer.observe(workspace, {
