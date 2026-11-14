@@ -5,6 +5,8 @@ import { runInNewContext } from "node:vm";
 const htmlMarkup = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const appScript = await readFile(new URL("../campusshield-app.js", import.meta.url), "utf8");
 const featureLoader = await readFile(new URL("../campusshield-feature-loader.js", import.meta.url), "utf8");
+const campusStudioScript = await readFile(new URL("../campusshield-studio.js", import.meta.url), "utf8");
+const campusStudioCss = await readFile(new URL("../campusshield-my-campus-studio.css", import.meta.url), "utf8");
 const launchIntroScript = await readFile(new URL("../campusshield-launch-intro.js", import.meta.url), "utf8");
 const launchIntroCss = await readFile(new URL("../campusshield-launch-intro.css", import.meta.url), "utf8");
 const html = htmlMarkup + "\n" + appScript + "\n" + featureLoader;
@@ -728,7 +730,7 @@ assert.match(serviceWorker, /STATIC_DESTINATIONS\.has\(request\.destination\)/, 
 assert.match(serviceWorker, /request\.headers\.has\("authorization"\)/, "authenticated requests bypass static caching");
 assert.match(serviceWorker, /request\.cache === "no-store"/, "explicit no-store requests bypass static caching");
 assert.match(serviceWorker, /await cache\.put\(request, response\.clone\(\)\)/, "successful static assets are saved for repeat visits");
-assert.match(serviceWorker, /campusshield-static-v16/, "the static asset cache version advances with the login/dashboard lazy-loading release");
+assert.match(serviceWorker, /campusshield-static-v17/, "the static asset cache version advances with the login/dashboard lazy-loading release");
 assert.ok(htmlMarkup.includes('href="./campusshield-performance-polish.css?v=20261113-1"'), "mobile performance polish is versioned for cache-safe updates");
 assert.match(appScript, /image\.decoding = 'async'/, "private profile photos decode asynchronously");
 assert.match(appScript, /loading="lazy" decoding="async"/, "community image attachments load lazily and decode asynchronously");
@@ -1299,6 +1301,14 @@ const qrAttendance = await readFile(new URL("../campus-qr-attendance.js", import
 const liveClassroom = await readFile(new URL("../campus-live-classroom.js", import.meta.url), "utf8");
 const adminRewards = await readFile(new URL("../student-rewards-admin.js", import.meta.url), "utf8");
 const pastQuestionPractice = await readFile(new URL("../past-question-practice.js", import.meta.url), "utf8");
+assert.match(featureLoader, /studio:\s*\{[\s\S]*?campusshield-studio\.js[\s\S]*?CampusShieldStudio\?\.load/, "My Campus Studio is registered as a first-use workspace feature");
+assert.match(featureLoader, /CampusShieldStudio\?\.mount/, "My Campus Studio mounts its navigation and page after the workspace shell is ready");
+assert.doesNotThrow(() => new Function(campusStudioScript), "My Campus Studio script parses");
+assert.match(campusStudioScript, /campusshield-studio:v1:/, "Studio preferences are isolated by signed-in user");
+assert.match(campusStudioScript, /campusshield:profile-ready/, "saved Studio preferences are restored after sign-in");
+assert.match(campusStudioScript, /data-studio-palette|data-studio-wallpaper|data-studio-density/, "Studio exposes theme, wallpaper and layout controls");
+assert.match(campusStudioCss, /data-campus-studio-palette="ocean"/, "Studio includes independently styled colour palettes");
+assert.match(campusStudioCss, /data-campus-studio-reduced-motion="true"/, "Studio supports reduced-motion preferences");
 assert.match(featureLoader, /new MutationObserver\(observeActiveRoute\)/, "workspace-only modules load when their page becomes active");
 assert.match(featureLoader, /marketplace:\s*\{[\s\S]*?campus-discovery-ui\.js/, "Marketplace discovery controls are first-use loaded");
 assert.match(featureLoader, /opportunities:\s*\{[\s\S]*?campus-discovery-ui\.js/, "Opportunity discovery controls load on first use");
@@ -1306,7 +1316,7 @@ assert.match(featureLoader, /"campus-contacts":\s*\{[\s\S]*?campus-service-direc
 assert.match(featureLoader, /"student-rewards":[\s\S]*student-rewards\.js/, "Student Rewards is first-use loaded");
 assert.match(featureLoader, /CampusShieldStudentRewards\?\.load/, "Student Rewards refreshes after its lazy module loads");
 assert.match(featureLoader, /campusshield:profile-ready[\s\S]*loadDashboardTimetable\(\)/, "Dashboard timetable loads after a signed-in profile is ready");
-assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v16"/, "static asset cache is advanced for the new lazy modules");
+assert.match(serviceWorkerSource, /STATIC_CACHE_NAME = "campusshield-static-v17"/, "static asset cache is advanced for the new lazy modules");
 assert.doesNotMatch(htmlMarkup, /<script[^>]+src=["']\.\/(?:vendor\/qrcode\.js|student-rewards-admin\.js|campus-live-classroom\.js|past-question-practice\.js)/,
   "QR, admin rewards, live classroom and exam-prep bundles are not requested during initial app startup");
 assert.match(featureLoader, /"admin-rewards":[\s\S]*?student-rewards-admin\.js[\s\S]*?CampusShieldAdminRewards\?\.load/,
