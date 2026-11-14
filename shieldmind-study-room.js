@@ -13,19 +13,19 @@
   const formats = {
     guided: {
       title: "guided interactive lesson",
-      instructions: "Teach in short, clearly titled sections. Start with 3 measurable learning objectives. Explain each idea in plain language, use a relevant university-level analogy and one worked example, then ask a short understanding check. Wait for my response before moving to the next section. Correct misunderstandings kindly and adapt the next step."
+      instructions: "Teach in short titled sections. Give 3 learning objectives, explain plainly, add one university-level analogy and a worked example. Ask one understanding-check question and wait for my reply before continuing; adapt to my answer."
     },
     quiz: {
       title: "one-question-at-a-time quiz",
-      instructions: "Act as an adaptive tutor. Ask one question, then stop and wait for my answer. Do not reveal the correct answer or explanation before I respond. After my attempt, explain the reasoning, give a hint if I am stuck, and adjust the next question to my demonstrated understanding. Finish with a concise review of strengths and topics to revisit."
+      instructions: "Ask one question at a time and wait. Do not reveal the answer early. After my response, explain the reasoning, offer a hint when useful, adapt difficulty and recap topics to revisit."
     },
     simulation: {
       title: "practical scenario simulation",
-      instructions: "Create a realistic, safe academic scenario related to the topic. Present the context and one decision at a time. Wait for my choice before revealing consequences. Explain the concept behind each outcome, allow me to try again and end with a debrief connecting the scenario to the course."
+      instructions: "Present a realistic academic scenario, one decision at a time. Wait for my choice, explain the consequence and concept, allow a retry, and finish with a debrief."
     },
     exam: {
       title: "exam revision session",
-      instructions: "Run a structured exam-revision session. Start with a quick diagnostic question, then cover the highest-value concepts and common misconceptions. Give exam-style questions one at a time and wait for my answer before showing a worked solution. Finish with a compact revision checklist and a short list of concepts I should practise again. Make clear that your questions and feedback are practice material, not official university examination content or grades."
+      instructions: "Start with a diagnostic question; review key concepts and common errors. Ask one exam-style question at a time, wait for my answer, then explain with a worked solution. Finish with a revision checklist and label practice questions as unofficial."
     }
   };
 
@@ -65,8 +65,8 @@
       "Time available: " + duration,
       goal ? "Learning goal: " + goal : "",
       "Teaching approach: " + format.instructions,
-      "Session rules: keep the pacing appropriate for the time available; use accurate, relevant examples; ask me to clarify if the topic is too broad; do not invent citations, university policies, lecturer instructions or official marking schemes. State uncertainty when necessary. Use accessible language and define technical terms.",
-      "Begin now with a brief welcome, the session roadmap and the first learning step. Do not send the full lesson all at once."
+      "Session rules: use accurate examples and plain language. Define technical terms; clarify ambiguity. Never invent citations, campus policies or lecturer instructions.",
+      "Begin now: welcome me, show a roadmap and start with one step. Keep the session interactive."
     ].filter(Boolean).join("\n\n");
 
     if (prompt.length > 1150) {
