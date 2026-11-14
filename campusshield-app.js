@@ -429,6 +429,11 @@
       const period = String($('institution-billing-period')?.value || 'monthly');
       const contactEmail = String($('institution-billing-email')?.value || '').trim();
       const message = String($('institution-billing-message')?.value || '').trim();
+      const requestIntent = institutionBillingForm.dataset.requestIntent === 'consultation' ? 'consultation' : 'subscribe';
+      const intentMessage = requestIntent === 'consultation'
+        ? 'CONSULTATION REQUEST — Please review the institution and contact us to discuss the appropriate package and scope.'
+        : 'SUBSCRIPTION / OFFICIAL INVOICE REQUEST — Please verify the institution and issue an official invoice for the selected package and billing period. Do not initiate payment until an invoice is issued.';
+      const requestMessage = [intentMessage, message].filter(Boolean).join('\\n\\n').slice(0, 2000);
       if (!universityId) {
         status.textContent = 'Your verified university could not be confirmed. Refresh your campus session before submitting.';
         return;
@@ -449,11 +454,15 @@
           requested_plan: plan,
           billing_period: period,
           contact_email: contactEmail,
-          message: message || null
+          message: requestMessage || null
         });
         if (error) throw error;
-        status.textContent = 'Request submitted. It is pending review; no payment was taken and no campus subscription has been activated.';
+        status.textContent = requestIntent === 'consultation'
+          ? 'Your consultation request has been submitted. The CampusShield team will review it and follow up. No invoice or payment has been created.'
+          : 'Your official invoice request has been submitted. A platform administrator will verify the institution and issue the invoice. You can then pay it securely from University invoices; no payment was taken and the subscription is not active yet.';
         institutionBillingForm.reset();
+        institutionBillingForm.hidden = true;
+        institutionBillingForm.dataset.requestIntent = 'subscribe';
         await loadInstitutionalBillingRequests();
       } catch (error) {
         status.textContent = error?.message || 'The request could not be submitted. Please try again.';
