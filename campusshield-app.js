@@ -4482,6 +4482,13 @@
       if (error || data?.error) throw new Error(data?.error || error?.message || 'Candidate review failed.');
       page.status = data?.candidate?.status || (decision === 'approve' ? 'approved_by_owner' : 'rejected_by_owner');
       article.dataset.candidateStatus = page.status === 'approved_by_owner' ? 'approved' : 'rejected';
+      const latestResults = $('platform-service-crawler-results');
+      const latestCards = Array.from(latestResults?.querySelectorAll('.platform-service-crawler-result') || []);
+      const awaitingReview = latestCards.filter(card => card.dataset.candidateStatus === 'pending').length;
+      const pendingMetric = $('platform-crawler-pending');
+      const resultCount = $('platform-service-crawler-result-count');
+      if (pendingMetric) pendingMetric.textContent = String(awaitingReview);
+      if (resultCount) resultCount.textContent = latestCards.length + ' source(s) · ' + awaitingReview + ' awaiting review';
       if (state) state.textContent = page.status === 'approved_by_owner'
         ? 'APPROVED BY OWNER · Added to verified directory'
         : 'REJECTED BY OWNER · Not added to verified directory';
