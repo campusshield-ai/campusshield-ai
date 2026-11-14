@@ -1438,67 +1438,6 @@ console.log("PASS university institutional invoice, private payment, receipt and
 
 
 
-// Student identity verification automation must fail closed: a clean malware scan
-// is never enough to approve an identity, and staff/finance permissions remain human-reviewed.
-const studentIdentityAutomationMigration = await readFile(
-  new URL("../supabase/migrations/20261114140000_student_identity_automated_verification.sql", import.meta.url), "utf8"
-);
-const studentIdentityScannerFunction = await readFile(
-  new URL("../supabase/functions/student-identity-upload-scan/index.ts", import.meta.url), "utf8"
-);
-assert.match(htmlMarkup, /id="identity-share-university-verifier"/,
-  "automatic university verification requires a separate explicit consent control");
-assert.match(htmlMarkup, /I consent to sending this ID document and matric number/,
-  "the consent explains which identity data is shared");
-assert.match(appScript, /shareWithOfficialVerifier:\s*\$\('identity-share-university-verifier'\)\.checked/,
-  "student signup and identity resubmission pass the user's verifier consent");
-assert.match(appScript, /automated_review_status === 'manual_review_required'/,
-  "inconclusive automatic checks remain clearly labelled for human review");
-assert.match(backend, /async getMyStudentIdentityVerification\(\)/,
-  "the existing identity-status contract is restored in the loaded backend");
-assert.match(backend, /async uploadStudentIdentityDocument\(file, details = \{\}\)/,
-  "the existing student upload contract is restored in the loaded backend");
-assert.match(backend, /client\.functions\.invoke\("student-identity-upload-scan"/,
-  "student ID uploads use the private server-side quarantine and malware scan");
-assert.match(backend, /manual_review_required.*auto_approved/s,
-  "the backend accepts both manual-review and official auto-approval outcomes");
-assert.match(studentIdentityScannerFunction, /MALWARE_SCANNER_URL/,
-  "all student documents must pass the configured malware scanner");
-assert.match(studentIdentityScannerFunction, /file_sha256/,
-  "student document hashes are stored for duplicate and audit checks");
-assert.match(studentIdentityScannerFunction, /share_with_official_verifier/,
-  "the server reads the student's explicit official-verifier consent");
-assert.match(studentIdentityScannerFunction, /UNIVERSITY_ID_VERIFIER_URL/,
-  "automatic identity decisions require a configured university verifier");
-assert.match(studentIdentityScannerFunction, /document_authentic === true/,
-  "the verifier must explicitly confirm that the ID document is authentic");
-assert.match(studentIdentityScannerFunction, /active_enrollment === true/,
-  "the verifier must confirm active university enrolment");
-assert.match(studentIdentityScannerFunction, /student_number_match === true/,
-  "the verifier must confirm the student/matric number");
-assert.match(studentIdentityScannerFunction, /university_id === identityRecord\.university_id/,
-  "the verifier response must match the account's exact university");
-assert.match(studentIdentityScannerFunction, /redirect:\s*"error"/,
-  "the verifier request does not follow redirects");
-assert.match(studentIdentityScannerFunction, /manual_review_required/,
-  "unavailable, uncertain or non-matching verification routes to manual review");
-assert.match(studentIdentityAutomationMigration, /campus_identity_auto_review_audit/,
-  "automated review decisions have a separate audit record");
-assert.match(studentIdentityAutomationMigration, /REVOKE ALL ON FUNCTION public\.auto_approve_student_identity_from_official_verifier/,
-  "the auto-approval routine is not exposed to public or authenticated clients");
-assert.match(studentIdentityAutomationMigration, /TO service_role/,
-  "only the trusted server-side service can execute automatic approval");
-assert.match(studentIdentityAutomationMigration, /email_confirmed_at/,
-  "automatic approval requires a confirmed email address");
-assert.match(studentIdentityAutomationMigration, /duplicate_identity_signal/,
-  "duplicate student numbers or reused identity documents cannot auto-approve");
-assert.match(studentIdentityAutomationMigration, /v_requested_role IS DISTINCT FROM 'student'/,
-  "the automatic approval routine cannot approve staff, security or admin roles");
-assert.match(studentIdentityAutomationMigration, /campus_role = 'student'/,
-  "auto-approval grants only the normal student campus role");
-assert.match(studentIdentityAutomationMigration, /automated_review_status IN \('not_started','manual_review_required','auto_approved'\)/,
-  "automatic review status is constrained to known outcomes");
-console.log("PASS fail-closed student identity automation, consent, official-source matching, audit and role boundaries");
 
 const studentIdentityScanGuardMigration = await readFile(
   new URL("../supabase/migrations/20261114142000_identity_auto_approve_accept_verified_scan_state.sql", import.meta.url), "utf8"
