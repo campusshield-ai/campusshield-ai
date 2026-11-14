@@ -1381,7 +1381,7 @@ assert.doesNotMatch(institutionalPaymentWebhook, /campus_student_fees|student_fe
 assert.ok(institutionalPaymentsUi.includes('functions.invoke("campus-institutional-payment-admin"'));
 assert.ok(institutionalPaymentsUi.includes("data-invoice-action"));
 assert.ok(institutionalPaymentsUi.includes("window.print()"));
-assert.ok(institutionalPaymentsUi.includes("Verify / reconcile payment"));
+assert.ok(htmlMarkup.includes("Verify / reconcile payment"));
 assert.ok(institutionalPaymentsCss.includes("@media print"));
 assert.doesNotThrow(() => new Function(institutionalPaymentsUi), "institutional invoice UI parses as JavaScript");
 assert.ok(htmlMarkup.includes('id="campus-institutional-invoice-center"'));
