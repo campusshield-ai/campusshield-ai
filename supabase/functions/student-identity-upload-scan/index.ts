@@ -54,6 +54,10 @@ Deno.serve(async (req: Request) => {
     if (previous?.status === "pending") return reply({ error: "Your current identity submission is awaiting review." }, 409);
 
     const form = await req.formData();
+    const originalDocumentAttested = String(form.get("attest_original_document") || "") === "true";
+    if (!originalDocumentAttested) {
+      return reply({ error: "Confirm that this is a genuine, unaltered university-issued document before submitting it." }, 400);
+    }
     const file = form.get("file");
     const institutionName = String(form.get("institution_name") || "").trim();
     const studentNumber = String(form.get("student_number") || "").trim();
