@@ -70,6 +70,7 @@ const studentIdentityPathFixMigration = await readFile(new URL("../supabase/migr
 const campusShieldPr352IdentityMigration = await readFile(new URL("../supabase/migrations/20261114140000_student_identity_automated_verification.sql", import.meta.url), "utf8");
 const campusShieldPr352IdentityUploadFunction = await readFile(new URL("../supabase/functions/student-identity-upload-scan/index.ts", import.meta.url), "utf8");
 const campusShieldPr352IdentityDocs = await readFile(new URL("../docs/automatic-student-identity-verification.md", import.meta.url), "utf8");
+const nigeriaUniversityVerificationDocs = await readFile(new URL("../docs/nigeria-university-verification-integration.md", import.meta.url), "utf8");
 const requestedRoleRpcMigration = await readFile(new URL("../supabase/migrations/20261027062000_add_save_my_requested_role_rpc.sql", import.meta.url), "utf8");
 const pastQuestionMigration = await readFile(new URL("../supabase/migrations/20261027230000_past_questions_exam_prep.sql", import.meta.url), "utf8");
 const pastQuestionFunction = await readFile(new URL("../supabase/functions/past-question-practice/index.ts", import.meta.url), "utf8");
@@ -1030,6 +1031,22 @@ assert.match(campusShieldPr352IdentityDocs, /Babcock University pilot integratio
   "the Babcock integration process is documented");
 assert.match(campusShieldPr352IdentityDocs, /Do not scrape the authenticated portal/,
   "the Babcock UMIS integration requires formal institutional access");
+assert.match(htmlMarkup, /id="auth-email-help"[^>]*hidden/,
+  "university email guidance is shown only for student signup");
+assert.match(htmlMarkup, /university Google Workspace\/Gmail account/,
+  "students are told they can use their university-issued Google Workspace mailbox");
+assert.match(appScript, /function syncStudentUniversityEmailHint/,
+  "the university-email guidance follows the student signup role");
+assert.match(appScript, /authMode !== 'signup' \|\| identityCompletionMode/,
+  "university-email guidance is hidden outside new student registration");
+assert.match(nigeriaUniversityVerificationDocs, /secretariat@ned\.gov\.ng/,
+  "the official national NERD contact route is documented");
+assert.match(nigeriaUniversityVerificationDocs, /No public CampusShield integration/,
+  "national verification API access is not falsely claimed as available");
+assert.match(nigeriaUniversityVerificationDocs, /A confirmed email proves access to the mailbox/,
+  "email ownership alone does not approve a student identity");
+assert.match(nigeriaUniversityVerificationDocs, /exact domain/,
+  "student email domains must be institution-sourced and exact");
 assert.match(campusShieldPr352IdentityUploadFunction, /document_authentic\s*===\s*true/,
   "automatic approval requires explicit confirmation of document authenticity");
 assert.match(campusShieldPr352IdentityUploadFunction, /active_enrollment\s*===\s*true/,
