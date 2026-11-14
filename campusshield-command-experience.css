@@ -1,0 +1,172 @@
+/* CampusShield command experience — calm glass, flat hierarchy and high-contrast controls. */
+#page-shieldmind .shieldmind-study-room-builder{
+  grid-column:1 / -1;min-width:0;margin:0 0 16px;padding:clamp(16px,2.2vw,24px);
+  border:1px solid #cfe4d5;border-radius:20px;
+  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(239,248,241,.92));
+  box-shadow:0 14px 34px rgba(21,75,43,.07)
+}
+#page-shieldmind .shieldmind-study-room-heading{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px
+}
+#page-shieldmind .shieldmind-study-room-eyebrow,
+#platform-admin-command-center .platform-admin-command-eyebrow{
+  display:block;color:#26784a;font-size:9px;font-weight:900;letter-spacing:.14em;text-transform:uppercase
+}
+#page-shieldmind .shieldmind-study-room-heading h2,
+#platform-admin-command-center h2{
+  margin:5px 0 4px;color:#153e2a;font-size:clamp(18px,2.1vw,23px);letter-spacing:-.035em
+}
+#page-shieldmind .shieldmind-study-room-heading p,
+#platform-admin-command-center .platform-admin-command-heading p{
+  max-width:760px;margin:0;color:#607668;font-size:12px;line-height:1.65
+}
+#page-shieldmind .shieldmind-study-room-icon,
+#platform-admin-command-center .platform-admin-command-mark{
+  display:grid;flex:0 0 44px;width:44px;height:44px;place-items:center;border:1px solid #c8e4d0;
+  border-radius:14px;background:linear-gradient(145deg,#fafffb,#e7f5eb);color:#1b7b48;font-size:22px;
+  box-shadow:5px 5px 12px rgba(24,82,49,.07),-4px -4px 10px rgba(255,255,255,.86)
+}
+#page-shieldmind .shieldmind-study-room-form{display:grid;gap:13px}
+#page-shieldmind .shieldmind-study-room-fields{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 13px
+}
+#page-shieldmind .shieldmind-study-room-fields .field{min-width:0;margin:0}
+#page-shieldmind .shieldmind-study-room-fields label{
+  display:block;margin-bottom:6px;color:#315842;font-size:10px;font-weight:850
+}
+#page-shieldmind .shieldmind-study-room-fields input,
+#page-shieldmind .shieldmind-study-room-fields select{
+  box-sizing:border-box;width:100%;min-width:0;min-height:42px;padding:9px 11px;
+  border:1px solid #d4e5d9;border-radius:10px;background:rgba(255,255,255,.88);
+  color:#193e2b;font-size:12px;transition:border-color .16s ease,box-shadow .16s ease
+}
+#page-shieldmind .shieldmind-study-room-fields input::placeholder{color:#91a399}
+#page-shieldmind .shieldmind-study-room-fields :where(input,select):focus-visible{
+  outline:3px solid rgba(31,132,76,.18);outline-offset:1px;border-color:#31895a
+}
+#page-shieldmind .shieldmind-study-room-footer{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;padding-top:3px
+}
+#page-shieldmind .shieldmind-study-room-footer p{
+  max-width:680px;margin:0;color:#6b7e71;font-size:10px;line-height:1.6
+}
+#page-shieldmind .shieldmind-study-room-footer p strong{color:#315e40}
+#page-shieldmind .shieldmind-study-room-footer .btn{
+  flex:0 0 auto;min-height:42px;padding:10px 15px;border:1px solid #167345;
+  background:linear-gradient(135deg,#18804a,#12643c);box-shadow:0 7px 16px rgba(20,111,62,.13)
+}
+#page-shieldmind .shieldmind-study-room-status{
+  min-height:16px;margin:0;color:#66806e;font-size:10px;line-height:1.5
+}
+#page-shieldmind .shieldmind-study-room-status[data-state="success"]{color:#176b3e}
+#page-shieldmind .shieldmind-study-room-status[data-state="error"]{color:#a53e3e}
+#platform-admin-command-center{
+  border-color:#cfe4d5;border-radius:19px;
+  background:linear-gradient(145deg,#fbfefc 0%,#f0f8f2 100%);
+  box-shadow:0 12px 30px rgba(20,76,43,.06)
+}
+#platform-admin-command-center .platform-admin-command-heading{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:15px
+}
+#platform-admin-command-center .platform-admin-command-grid{
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px
+}
+#platform-admin-command-center .platform-admin-command-grid a{
+  display:flex;min-width:0;min-height:150px;flex-direction:column;align-items:flex-start;gap:7px;
+  padding:13px;border:1px solid #dcebe0;border-radius:14px;background:rgba(255,255,255,.86);
+  color:#234b34;text-decoration:none;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease
+}
+#platform-admin-command-center .platform-admin-command-grid a:hover{
+  transform:translateY(-2px);border-color:#9acbaa;box-shadow:0 9px 19px rgba(20,76,43,.08)
+}
+#platform-admin-command-center .platform-admin-command-grid a:focus-visible{
+  outline:3px solid rgba(31,132,76,.22);outline-offset:3px
+}
+#platform-admin-command-center .platform-admin-command-number{
+  display:inline-flex;align-items:center;justify-content:center;min-width:28px;min-height:24px;
+  padding:3px 6px;border:1px solid #d3e8d9;border-radius:7px;background:#eff8f1;
+  color:#277547;font-size:9px;font-weight:900;font-variant-numeric:tabular-nums
+}
+#platform-admin-command-center .platform-admin-command-grid strong{font-size:12px;line-height:1.35}
+#platform-admin-command-center .platform-admin-command-grid small{color:#6b7d71;font-size:10px;line-height:1.5}
+#platform-admin-command-center .platform-admin-command-grid b{
+  margin-top:auto;color:#187345;font-size:10px;font-weight:850
+}
+#platform-admin-command-center .platform-admin-command-note{
+  margin:12px 0 0;color:#6c7e71;font-size:10px;line-height:1.55
+}
+/* Map controls borrow the visual language of the reference dashboards without hiding map detail. */
+#page-campus-map .campus-map-overlay{isolation:isolate}
+#page-campus-map .campus-map-search-wrap,
+#page-campus-map .campus-map-controls,
+#page-campus-map .campus-map-layer-toggle,
+#page-campus-map .campus-map-layer-panel{
+  border:1px solid rgba(205,228,212,.88);
+  background:rgba(250,254,251,.88);
+  box-shadow:0 9px 24px rgba(12,43,26,.12);
+  -webkit-backdrop-filter:blur(16px) saturate(135%);
+  backdrop-filter:blur(16px) saturate(135%)
+}
+#page-campus-map .campus-map-layer-panel{border-radius:15px}
+#page-campus-map .campus-map-controls button:focus-visible,
+#page-campus-map .campus-map-layer-toggle:focus-visible,
+#page-campus-map .campus-map-search-wrap:focus-within{
+  outline:3px solid rgba(35,137,77,.25);outline-offset:2px
+}
+@media(max-width:1050px){
+  #platform-admin-command-center .platform-admin-command-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  #page-shieldmind .shieldmind-study-room-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #page-shieldmind .shieldmind-study-room-footer{align-items:stretch;flex-direction:column}
+  #page-shieldmind .shieldmind-study-room-footer .btn{width:100%}
+  #platform-admin-command-center .platform-admin-command-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:430px){
+  #page-shieldmind .shieldmind-study-room-builder{padding:14px;border-radius:16px}
+  #page-shieldmind .shieldmind-study-room-fields{grid-template-columns:minmax(0,1fr)}
+  #page-shieldmind .shieldmind-study-room-heading{gap:9px}
+  #page-shieldmind .shieldmind-study-room-icon{width:36px;height:36px;flex-basis:36px}
+  #platform-admin-command-center .platform-admin-command-grid{grid-template-columns:minmax(0,1fr)}
+  #platform-admin-command-center .platform-admin-command-grid a{min-height:112px}
+}
+html[data-theme="dark"] #page-shieldmind .shieldmind-study-room-builder,
+html[data-theme="dark"] #platform-admin-command-center{
+  border-color:#315642;background:linear-gradient(145deg,rgba(17,43,29,.97),rgba(19,53,35,.94));
+  box-shadow:0 14px 34px rgba(0,0,0,.18)
+}
+html[data-theme="dark"] #page-shieldmind .shieldmind-study-room-heading h2,
+html[data-theme="dark"] #platform-admin-command-center h2{color:#e2f3e6}
+html[data-theme="dark"] #page-shieldmind .shieldmind-study-room-heading p,
+html[data-theme="dark"] #platform-admin-command-center .platform-admin-command-heading p,
+html[data-theme="dark"] #page-shieldmind .shieldmind-study-room-footer p,
+html[data-theme="dark"] #page-shieldmind .shieldmind-study-room-status,
+html[data-theme="dark"] #platform-admin-command-center .platform-admin-command-note{color:#b6cdbd}
+html[data-theme="dark"] #page-shieldmind .shieldmind-study-room-fields label{color:#c5e2cc}
+html[data-theme="dark"] #page-shieldmind .shieldmind-study-room-fields input,
+html[data-theme="dark"] #page-shieldmind .shieldmind-study-room-fields select{
+  border-color:#345941;background:#10291c;color:#e4f2e8
+}
+html[data-theme="dark"] #page-shieldmind .shieldmind-study-room-icon,
+html[data-theme="dark"] #platform-admin-command-center .platform-admin-command-mark{
+  border-color:#345d42;background:linear-gradient(145deg,#1e4630,#143522);color:#aee3bc
+}
+html[data-theme="dark"] #platform-admin-command-center .platform-admin-command-grid a{
+  border-color:#315540;background:rgba(13,37,24,.86);color:#e0f1e4
+}
+html[data-theme="dark"] #platform-admin-command-center .platform-admin-command-grid a:hover{border-color:#538763}
+html[data-theme="dark"] #platform-admin-command-center .platform-admin-command-grid small{color:#b2c9b8}
+html[data-theme="dark"] #platform-admin-command-center .platform-admin-command-grid b{color:#9cddb0}
+html[data-theme="dark"] #platform-admin-command-center .platform-admin-command-number{
+  border-color:#345d42;background:#173a26;color:#b6e7c3
+}
+html[data-theme="dark"] #page-campus-map .campus-map-search-wrap,
+html[data-theme="dark"] #page-campus-map .campus-map-controls,
+html[data-theme="dark"] #page-campus-map .campus-map-layer-toggle,
+html[data-theme="dark"] #page-campus-map .campus-map-layer-panel{
+  border-color:rgba(76,117,88,.9);background:rgba(13,32,22,.9);color:#e1f0e5
+}
+@media(prefers-reduced-motion:reduce){
+  #platform-admin-command-center .platform-admin-command-grid a{transition:none}
+  #platform-admin-command-center .platform-admin-command-grid a:hover{transform:none}
+}

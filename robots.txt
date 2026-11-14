@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://campusshield-ai.github.io/campusshield-ai/sitemap.xml

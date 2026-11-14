@@ -2,7 +2,7 @@
   "id": "./",
   "name": "CampusShield AI",
   "short_name": "CampusShield",
-  "description": "Campus safety incident reporting and review prototype.",
+  "description": "CampusShield AI connects campus safety workflows, verified university information, campus mapping, student services and private learning support.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
