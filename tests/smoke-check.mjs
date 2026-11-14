@@ -1349,6 +1349,11 @@ assert.doesNotThrow(() => new Function(backend), "finance capability backend met
 
 const premierInstitutionalPlanMigration = await readFile(new URL("../supabase/migrations/20261114162000_add_university_premier_institutional_plan.sql", import.meta.url), "utf8");
 assert.match(premierInstitutionalPlanMigration, /university-premier/);
+const premierInvoicePricingMigration = await readFile(new URL("../supabase/migrations/20261114163000_enforce_premier_institutional_invoice_pricing.sql", import.meta.url), "utf8");
+assert.match(premierInvoicePricingMigration, /NEW\.subtotal_kobo IS DISTINCT FROM 120000000/);
+assert.match(premierInvoicePricingMigration, /NEW\.subtotal_kobo IS DISTINCT FROM 1200000000/);
+assert.match(appScript, /premierBasePrice/);
+assert.match(appScript, /subtotal\.input\.readOnly = true/);
 assert.match(premierInstitutionalPlanMigration, /campus_institutional_billing_requests_requested_plan_check/);
 assert.match(premierInstitutionalPlanMigration, /campus_institutional_invoices_plan_check/);
 assert.match(premierInstitutionalPlanMigration, /campus_institutional_subscriptions_plan_check/);
