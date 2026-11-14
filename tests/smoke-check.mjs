@@ -1499,3 +1499,11 @@ assert.match(studentIdentityAutomationMigration, /campus_role = 'student'/,
 assert.match(studentIdentityAutomationMigration, /automated_review_status IN \('not_started','manual_review_required','auto_approved'\)/,
   "automatic review status is constrained to known outcomes");
 console.log("PASS fail-closed student identity automation, consent, official-source matching, audit and role boundaries");
+
+const studentIdentityScanGuardMigration = await readFile(
+  new URL("../supabase/migrations/20261114142000_identity_auto_approve_accept_verified_scan_state.sql", import.meta.url), "utf8"
+);
+assert.match(studentIdentityScanGuardMigration, /s\.status IN \('scanning','clean'\)/,
+  "the service-only approval RPC accepts the scanner's in-flight state only after the scanner has verified the file clean");
+assert.match(studentIdentityScanGuardMigration, /TO service_role/,
+  "the follow-up scan-state guard preserves service-role-only execution");
