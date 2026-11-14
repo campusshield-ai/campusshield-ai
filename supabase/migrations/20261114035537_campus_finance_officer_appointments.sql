@@ -3,6 +3,23 @@
 -- an active, verified campus membership. Only a verified campus administrator at
 -- that same university may appoint or revoke the finance capability.
 
+-- Production's billing-request table predates the campus university scope column.
+-- Keep it nullable for historical requests; all new requests are required by RLS to include it.
+ALTER TABLE public.campus_institutional_billing_requests
+  ADD COLUMN IF NOT EXISTS university_id uuid
+  REFERENCES public.campus_universities(id) ON DELETE RESTRICT;
+
+UPDATE public.campus_institutional_billing_requests r
+SET university_id = u.id
+FROM public.campus_universities u
+WHERE r.university_id IS NULL
+  AND lower(btrim(r.institution_name)) = lower(btrim(u.name))
+  AND (SELECT count(*) FROM public.campus_universities u2
+       WHERE lower(btrim(u2.name)) = lower(btrim(r.institution_name))) = 1;
+
+CREATE INDEX IF NOT EXISTS campus_institutional_billing_requests_university_requester_idx
+  ON public.campus_institutional_billing_requests (university_id, requester_id, created_at DESC);
+
 ALTER TABLE public.campus_staff_verifications
   ADD COLUMN IF NOT EXISTS finance_appointment_status text NOT NULL DEFAULT 'not_appointed',
   ADD COLUMN IF NOT EXISTS finance_appointed_by uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
@@ -429,8 +446,10 @@ USING (
   public.platform_is_admin()
   OR (
     requester_id = (SELECT auth.uid())
-    AND university_id IS NOT NULL
-    AND private.current_user_can_manage_institutional_billing(university_id)
+    AND (
+      university_id IS NULL -- preserve visibility of any historical request owned by this user
+      OR private.current_user_can_manage_institutional_billing(university_id)
+    )
   )
 );
 
