@@ -82,8 +82,12 @@
     {title:"Profile & settings", description:"Manage your profile and preferences", page:"profile-settings", keywords:"account settings personal"}
   ];
   function isAvailableTrigger(element) {
-    return Boolean(element && !element.hidden && !element.disabled &&
-      element.getAttribute("aria-disabled") !== "true" && !element.closest("[hidden]"));
+    if (!element || !element.isConnected || element.hidden || element.disabled ||
+      element.getAttribute("aria-disabled") === "true" ||
+      element.closest('[hidden], [aria-hidden="true"]')) return false;
+    const style = window.getComputedStyle(element);
+    return style.display !== "none" && style.visibility !== "hidden" &&
+      element.getClientRects().length > 0;
   }
 
   function findDestinationTrigger(pageName) {
