@@ -1018,6 +1018,8 @@ assert.match(campusShieldPr352IdentityUploadFunction, /share_with_official_verif
   "the upload Edge Function reads the explicit university-verifier consent");
 assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_URL/);
 assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_TOKEN/);
+assert.ok(campusShieldPr352IdentityUploadFunction.includes(".split(/[;,") && campusShieldPr352IdentityUploadFunction.includes("]+/)"),
+  "the exact verifier host allowlist supports comma, semicolon and whitespace separators");
 assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_ALLOWED_HOSTS/,
   "the official verifier must use an explicit administrator-configured host allowlist");
 assert.match(campusShieldPr352IdentityUploadFunction, /allowedVerifierHosts\.has\(verifierUrl\.hostname\.toLowerCase\(\)\)/,
