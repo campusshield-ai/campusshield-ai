@@ -74,10 +74,13 @@
       page = document.createElement("section");
       page.className = "page";
       page.id = "page-studio";
-      page.innerHTML = pageMarkup();
       const profilePage = $("page-profile-settings");
       if (profilePage?.parentNode === content) content.insertBefore(page, profilePage);
       else content.appendChild(page);
+    }
+    if (page.dataset.studioMounted !== "true") {
+      page.innerHTML = pageMarkup();
+      page.dataset.studioMounted = "true";
     }
     return page;
   }
@@ -215,6 +218,7 @@
   }
 
   async function load() {
+    mount();
     const sequence = ++loadSequence;
     state = Object.assign({}, DEFAULTS);
     const page = ensurePage();
