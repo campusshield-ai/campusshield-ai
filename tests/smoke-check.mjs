@@ -483,7 +483,6 @@ assert.match(billingMarkup, /1,000 per 30 days/);
 assert.match(billingMarkup, /700 per 30 days/);
 assert.match(billingMarkup, /100 study-image uploads\/month/);
 assert.match(billingMarkup, /150 study-image uploads\/month/);
-assert.match(billingMarkup, /1,000 per 30 days/);
 assert.match(billingMarkup, /shared by ShieldMind chat, study-image explanations, AI-generated exam practice and AI marking/);
 assert.match(shieldmindFunction, /const model = "gpt-6-luna"/, "ShieldMind chat uses GPT-6 Luna");
 assert.match(shieldmindFunction, /reasoning_effort: "low", max_completion_tokens: 900/, "GPT-6 Luna uses bounded completion output");
