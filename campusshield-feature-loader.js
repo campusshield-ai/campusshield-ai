@@ -30,7 +30,7 @@
       scripts: ["./campus-live-classroom.js?v=20261113-1"]
     },
     shieldmind: {
-      scripts: ["./shieldmind-planner.js", "./shieldmind-learning-insights.js"],
+      scripts: ["./shieldmind-planner.js", "./shieldmind-learning-insights.js", "./shieldmind-study-room.js?v=20261114-1"],
       onEnter: () => {
         window.CampusShieldPlanner?.load?.();
         window.CampusShieldLearningInsights?.load?.();
