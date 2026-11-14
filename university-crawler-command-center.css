@@ -1,0 +1,66 @@
+/* CampusShield AI — private university crawler command centre */
+#platform-service-directory-crawler{position:relative;isolation:isolate;padding:clamp(16px,2.2vw,28px);border-radius:24px;background:
+  radial-gradient(ellipse at 12% 0%,rgba(17,230,183,.12),transparent 34%),
+  radial-gradient(ellipse at 100% 16%,rgba(0,159,197,.13),transparent 30%),
+  linear-gradient(145deg,#071725 0%,#0a1c2b 56%,#081725 100%);border:1px solid #24475a;
+  box-shadow:0 22px 65px rgba(4,20,32,.22);color:#eaf5fb
+}
+#platform-service-directory-crawler:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;opacity:.18;background-image:linear-gradient(rgba(108,164,183,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(108,164,183,.14) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(120deg,#000,transparent 75%)}
+#platform-service-directory-crawler .crawler-live-top{align-items:flex-start;margin-bottom:18px}
+#platform-service-directory-crawler .crawler-live-top h2{color:#f2fbff;font-size:clamp(25px,3.4vw,36px);font-weight:850;letter-spacing:-.045em;margin:7px 0 9px}
+#platform-service-directory-crawler .crawler-live-top p:not(.crawler-eyebrow){max-width:720px;color:#a6bdcd;font-size:14px;line-height:1.7}
+#platform-service-directory-crawler .crawler-eyebrow{font-size:11px;letter-spacing:.15em}
+#platform-service-directory-crawler .crawler-owner-pill{display:inline-flex;align-items:center;gap:8px;border-color:#6d5830;background:rgba(65,48,17,.28);color:#ffdc8a}
+#platform-service-directory-crawler .crawler-command-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0 18px}
+#platform-service-directory-crawler .crawler-command-summary span{display:flex;align-items:center;gap:9px;min-width:0;padding:10px 12px;border:1px solid #1d4054;border-radius:11px;background:rgba(7,24,39,.68);color:#b9cbd8;font-size:12px}
+#platform-service-directory-crawler .crawler-command-summary strong{display:grid;place-items:center;width:25px;height:25px;flex:0 0 25px;border-radius:8px;background:rgba(17,230,183,.12);color:#30e8c0;font-size:10px}
+#platform-service-directory-crawler .crawler-network{height:clamp(150px,20vw,205px);margin:16px 0 14px;border:1px solid #1c4257;background:radial-gradient(circle at center,rgba(15,79,87,.8),rgba(9,35,52,.8) 52%,rgba(5,20,34,.8))}
+#platform-service-directory-crawler .crawler-progress-card,#platform-service-directory-crawler .crawler-live-activity,#platform-service-directory-crawler .crawler-live-discoveries{margin:12px 0;padding:clamp(13px,1.6vw,18px);border-color:#1e4054;background:rgba(6,22,36,.82);box-shadow:inset 0 1px rgba(255,255,255,.025)}
+#platform-service-directory-crawler .crawler-progress-label{color:#d7e6ef}
+#platform-service-directory-crawler .crawler-progress-label strong{font-size:13px}
+#platform-service-directory-crawler .crawler-progress-label span{font-variant-numeric:tabular-nums;color:#9fb8c9}
+#platform-service-directory-crawler .crawler-progress-track{height:9px;background:#19384b}
+#platform-service-directory-crawler .crawler-stat-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:12px 0}
+#platform-service-directory-crawler .crawler-stat{min-width:0;padding:14px;border-color:#1d4054;background:rgba(6,22,36,.88)}
+#platform-service-directory-crawler .crawler-stat span{min-height:32px;color:#9fb6c7;font-size:11px;font-weight:700;line-height:1.45}
+#platform-service-directory-crawler .crawler-stat strong{margin-top:8px;color:#f3fbff;font-size:clamp(23px,2.3vw,30px);font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+#platform-service-directory-crawler .crawler-stat small{display:block;margin-top:4px;color:#7794a8;font-size:10px;line-height:1.45}
+#platform-service-directory-crawler .crawler-section-heading{margin-bottom:8px}
+#platform-service-directory-crawler .crawler-section-heading h3{color:#eaf5fb;font-size:15px;font-weight:800}
+#platform-service-directory-crawler .crawler-section-heading>span{color:#3be5c0}
+#platform-service-directory-crawler .crawler-live-activity ol{max-height:310px;overflow:auto;padding-right:5px}
+#platform-service-directory-crawler .crawler-live-activity li{border-color:#18364a;color:#dceaf2;font-size:12px}
+#platform-service-directory-crawler .crawler-live-activity li.done .crawler-activity-dot{box-shadow:0 0 10px rgba(18,230,176,.42)}
+#platform-service-directory-crawler .crawler-note{color:#91aabd;line-height:1.6}
+#platform-service-directory-crawler .crawler-discovery-tools{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,.32fr);gap:10px;margin:12px 0}
+#platform-service-directory-crawler .crawler-discovery-tools input,#platform-service-directory-crawler .crawler-discovery-tools select{box-sizing:border-box;width:100%;min-width:0;min-height:43px;border:1px solid #294b60;border-radius:10px;padding:10px 12px;background:#0b2234;color:#eaf5fb;font:inherit;font-size:12px;outline:none}
+#platform-service-directory-crawler .crawler-discovery-tools input::placeholder{color:#7793a7}
+#platform-service-directory-crawler .crawler-discovery-tools input:focus-visible,#platform-service-directory-crawler .crawler-discovery-tools select:focus-visible{border-color:#28dcb7;box-shadow:0 0 0 3px rgba(40,220,183,.15)}
+#platform-service-directory-crawler .platform-service-crawler-result{border-color:#23475b;background:linear-gradient(145deg,#0c2334,#0a1b2a);padding:15px}
+#platform-service-directory-crawler .platform-service-crawler-result h3{color:#eaf7fc;font-size:14px}
+#platform-service-directory-crawler .platform-service-crawler-result p{color:#9bb3c5}
+#platform-service-directory-crawler .platform-service-crawler-result a{color:#51d9c2;font-size:12px}
+#platform-service-directory-crawler .crawler-candidate-state{color:#f5cf79}
+#platform-service-directory-crawler .crawler-candidate-actions .btn{min-height:36px}
+#platform-service-directory-crawler .crawler-private-note{border-color:#176c62;background:rgba(5,66,58,.5)}
+#platform-service-directory-crawler .crawler-action-hint{align-self:center;color:#87a2b5;font-size:11px}
+#platform-service-directory-crawler .crawler-actions{align-items:center;gap:10px}
+#platform-service-directory-crawler button:disabled{opacity:.55;cursor:wait}
+#platform-service-directory-crawler button:focus-visible,#platform-service-directory-crawler a:focus-visible{outline:3px solid #42e8c7;outline-offset:3px}
+#platform-service-directory-crawler [hidden]{display:none!important}
+@media(max-width:1050px){#platform-service-directory-crawler .crawler-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:640px){
+  #platform-service-directory-crawler{padding:13px;border-radius:17px}
+  #platform-service-directory-crawler .crawler-command-summary{grid-template-columns:1fr;gap:6px}
+  #platform-service-directory-crawler .crawler-command-summary span{padding:8px 10px}
+  #platform-service-directory-crawler .crawler-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #platform-service-directory-crawler .crawler-stat{padding:11px}
+  #platform-service-directory-crawler .crawler-stat span{min-height:unset}
+  #platform-service-directory-crawler .crawler-discovery-tools{grid-template-columns:1fr}
+  #platform-service-directory-crawler .crawler-actions{display:grid;grid-template-columns:1fr}
+  #platform-service-directory-crawler .crawler-actions .btn{width:100%}
+  #platform-service-directory-crawler .crawler-action-hint{line-height:1.5}
+  #platform-service-directory-crawler .crawler-network{height:150px}
+  #platform-service-directory-crawler .crawler-float{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#platform-service-directory-crawler .crawler-links{animation:none}#platform-service-directory-crawler .crawler-progress-track span{transition:none}}
