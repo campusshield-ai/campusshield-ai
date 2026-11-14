@@ -6,7 +6,19 @@ async function openWorkspace(page, target) {
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   await page.locator("#workspace .global-search-input").waitFor({ state: "attached" });
   await page.locator("#shieldmind-paid-gate").waitFor({ state: "attached" });
+  const pastQuestionsRequest = target === "past-questions"
+    ? page.waitForRequest(request => new URL(request.url()).pathname.endsWith("/past-question-practice.js"))
+    : null;
   await page.evaluate(targetPage => {
+    if (targetPage === "past-questions") {
+      // This test covers the UI entitlement gate only. Enable the staging-only
+      // feature locally and stub the backend so no Supabase request is made.
+      Object.defineProperty(window, "CAMPUSSHIELD_SUPABASE_CONFIG", {
+        configurable: true,
+        value: { url: "https://hywcpnoqqhxvujnimhxl.supabase.co" }
+      });
+      window.CampusShieldBackend = { isConfigured: false, client: null };
+    }
     document.querySelector("#login-screen").style.display = "none";
     const workspace = document.querySelector("#workspace");
     workspace.hidden = false;
@@ -18,6 +30,15 @@ async function openWorkspace(page, target) {
     document.querySelectorAll("#workspace .page").forEach(section => section.classList.remove("active"));
     document.querySelector("#page-" + targetPage).classList.add("active");
   }, target);
+  if (pastQuestionsRequest) {
+    await pastQuestionsRequest;
+    await expect.poll(() => page.evaluate(() => Boolean(window.PastQuestionPractice))).toBe(true);
+    await expect.poll(() => page.locator("#page-past-questions").getAttribute("data-feature-loaded")).toBe("true");
+    // This test isolates the paid-plan gate. The mock account has no campus
+    // membership, so expose this one section after its separate campus gate
+    // has run; do not pretend the mock is a verified student account.
+    await page.locator("#pq-ai-section").evaluate(section => { section.hidden = false; });
+  }
 }
 
 test("ShieldMind locks AI chat until the account has an active paid plan", async ({ page }) => {

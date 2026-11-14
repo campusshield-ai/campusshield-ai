@@ -84,23 +84,8 @@
       if (refresh) refresh.disabled = false;
     }
   }
-  function syncNav() {
-    const backend = window.CampusShieldBackend;
-    if (!backend?.client) return;
-    backend.client.auth.getUser().then(async ({data, error}) => {
-      if (error || !data?.user) { nav.hidden = true; return; }
-      const {data: profile, error: profileError} = await backend.client.from("profiles")
-        .select("role,verification_status").eq("id", data.user.id).maybeSingle();
-      nav.hidden = Boolean(profileError || profile?.role !== "admin" || profile?.verification_status !== "verified");
-    }).catch(() => { nav.hidden = true; });
-  }
+
+  window.CampusShieldAdminRewards = { load };
   $("admin-rewards-refresh")?.addEventListener("click", load);
   nav?.addEventListener("click", () => { void load(); });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNav(); });
-  if (window.CampusShieldBackend?.client) {
-    window.CampusShieldBackend.client.auth.onAuthStateChange(() => { window.setTimeout(syncNav, 0); });
-    syncNav();
-  } else {
-    window.addEventListener("load", syncNav, {once:true});
-  }
 })();

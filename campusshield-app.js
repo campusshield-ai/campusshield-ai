@@ -611,19 +611,27 @@
     $('role-access-title').textContent=title;$('role-access-description').textContent=description;setRoleAccessList(items);$('role-access-limit').textContent=limit;
   }
   async function loadRoleAccessSummaryContext() {
-    const profileId=currentProfile?.id, backend=window.CampusShieldBackend;
-    if(!backend?.isConfigured){renderRoleAccessSummary();return;}
-    try{
-      const user=await backend.getCurrentUser();
-      if(!currentProfile||(profileId&&currentProfile.id!==profileId))return;
-      const metadata=user?.user_metadata||{};currentStaffPosition=String(metadata.campus_position||'').trim();
-      if(!currentStaffPosition && ['teacher','security'].includes(String(currentProfile.role||'').toLowerCase())){
-        const row=await backend.getMyCampusStaffVerification().catch(()=>null);
-        if(!currentProfile||(profileId&&currentProfile.id!==profileId))return;
-        currentStaffPosition=String(row?.position_title||'').trim();
+    const profileId = currentProfile?.id, backend = window.CampusShieldBackend;
+    if (!backend?.isConfigured || !backend?.client) {
+      renderRoleAccessSummary();
+      return;
+    }
+    try {
+      const { data: sessionData, error: sessionError } = await backend.client.auth.getSession();
+      if (sessionError) throw sessionError;
+      const user = sessionData?.session?.user || null;
+      if (!currentProfile || (profileId && currentProfile.id !== profileId)) return;
+      const metadata = user?.user_metadata || {};
+      currentStaffPosition = String(metadata.campus_position || '').trim();
+      if (!currentStaffPosition && ['teacher', 'security'].includes(String(currentProfile.role || '').toLowerCase())) {
+        const row = await backend.getMyCampusStaffVerification().catch(() => null);
+        if (!currentProfile || (profileId && currentProfile.id !== profileId)) return;
+        currentStaffPosition = String(row?.position_title || '').trim();
       }
       renderRoleAccessSummary(metadata);
-    }catch(_){renderRoleAccessSummary();}
+    } catch (_) {
+      renderRoleAccessSummary();
+    }
   }
   function updateStaffPositionAccessPreview() {
     const preview=$('staff-position-access-preview'), role=$('auth-role'), position=String($('auth-staff-position')?.value||'').trim();
@@ -660,6 +668,25 @@
     if (screen) screen.hidden = false;
   }
 
+  function scheduleWorkspaceTask(task) {
+    const run = () => {
+      if (!currentProfile || typeof task !== 'function') return;
+      try {
+        const result = task();
+        if (result && typeof result.catch === 'function') {
+          result.catch(error => console.info('CampusShield background workspace task was skipped.', error));
+        }
+      } catch (error) {
+        console.info('CampusShield background workspace task was skipped.', error);
+      }
+    };
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(run, { timeout: 1200 });
+    } else {
+      window.setTimeout(run, 140);
+    }
+  }
+
   function showWorkspace(profile) {
     if (!profile) {
       currentProfile = null;
@@ -678,7 +705,7 @@
     currentStaffPosition = '';
     studentIdentitySubmission = null;
     renderRoleAccessSummary();
-    void loadRoleAccessSummaryContext();
+    scheduleWorkspaceTask(loadRoleAccessSummaryContext);
     // Hydrate the saved identity immediately so both the profile card and dashboard
     // greeting reflect this signed-in user's own name and private avatar.
     syncDashboardProfileIdentity().catch(() => {});
@@ -735,7 +762,7 @@
       refreshShieldMindPlan();
       loadInstitutionalBillingRequests();
     }
-    refreshPlatformAdminAccess();
+    scheduleWorkspaceTask(refreshPlatformAdminAccess);
     window.dispatchEvent(new CustomEvent('campusshield:profile-ready', {
       detail: { role: currentProfile.role }
     }));
@@ -2052,20 +2079,26 @@
 
   async function syncDashboardProfileIdentity() {
     const backend = window.CampusShieldBackend;
-    if (!backend?.isConfigured || !backend?.client) return;
-    const { data: authData, error: authError } = await backend.client.auth.getUser();
-    if (authError || !authData?.user) return;
-    const user = authData.user;
+    const profileId = String(currentProfile?.id || "");
+    const requestVersion = authSessionVersion;
+    if (!backend?.isConfigured || !backend?.client || !profileId) return;
+
+    // getSession() reads the already-restored local session. The RLS-protected
+    // profile query supplies the private display name and avatar without making
+    // two extra remote /auth/v1/user requests during dashboard startup.
+    const { data: sessionData, error: sessionError } = await backend.client.auth.getSession();
+    if (sessionError || requestVersion !== authSessionVersion) return;
+    const user = sessionData?.session?.user;
+    if (!user?.id || user.id !== profileId || currentProfile?.id !== profileId) return;
+
     const { data: saved, error } = await backend.client
       .from('profiles')
       .select('display_name, avatar_path')
-      .eq('id', user.id)
+      .eq('id', profileId)
       .single();
-    if (error || !saved) return;
-    // Do not let a late response for a previous session overwrite the current account.
-    const { data: latestAuth } = await backend.client.auth.getUser();
-    if (latestAuth?.user?.id !== user.id) return;
-    Object.assign(currentProfile || {}, saved);
+    if (error || !saved || requestVersion !== authSessionVersion || currentProfile?.id !== profileId) return;
+
+    Object.assign(currentProfile, saved);
     const metadata = user.user_metadata || {};
     const displayName = String(saved.display_name || saved.full_name || saved.name ||
       metadata.display_name || metadata.full_name || metadata.name || '').trim();
@@ -4786,7 +4819,7 @@
         if (user) {
           const {data:profile, error:profileError} = await window.CampusShieldBackend.client
             .from('profiles')
-            .select('role, requested_role, verification_status')
+            .select('id, role, requested_role, verification_status')
             .eq('id', user.id)
             .single();
           if (!profileError && profile) currentProfile = profile;
@@ -7453,7 +7486,7 @@ $('page-marketplace').addEventListener('click',async function(event){
 
       const {data:profile, error:profileError} = await backend.client
         .from('profiles')
-        .select('role, requested_role, verification_status')
+        .select('id, role, requested_role, verification_status')
         .eq('id', user.id)
         .single();
 
@@ -8104,19 +8137,34 @@ $('resend-confirmation-button').addEventListener('click', async () => {
         return;
       }
 
-      // Verify the persisted user with Supabase before requesting their RLS-protected profile.
-      const user = await backend.getCurrentUser();
+      // Validate the restored session with Supabase while the signed-in user's
+      // RLS-protected profile is fetched in parallel. The server-verified user ID
+      // must match the ID from the restored session before the workspace is shown.
+      const sessionUserId = String(restoredSession.user?.id || '');
+      const profilePromise = sessionUserId
+        ? backend.client.from('profiles')
+          .select('id, role, requested_role, verification_status')
+          .eq('id', sessionUserId)
+          .single()
+        : Promise.resolve(null);
+      const [user, profileResponse] = await Promise.all([
+        backend.getCurrentUser(),
+        profilePromise
+      ]);
       if (!user) {
         if (passwordRecoveryActive) return;
         showSessionRestoreFailure();
         return;
       }
+      if (sessionUserId && user.id !== sessionUserId) {
+        throw new Error('The restored session changed while the workspace was loading.');
+      }
 
-      const { data: profile, error: profileError } = await backend.client
-        .from('profiles')
-        .select('role, requested_role, verification_status')
-        .eq('id', user.id)
-        .single();
+      const { data: profile, error: profileError } = profileResponse ||
+        await backend.client.from('profiles')
+          .select('id, role, requested_role, verification_status')
+          .eq('id', user.id)
+          .single();
       if (profileError) throw profileError;
       if (!profile) throw new Error('The signed-in account profile is not available yet.');
 

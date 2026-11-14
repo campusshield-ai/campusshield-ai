@@ -426,4 +426,7 @@
   });
   observer.observe(page, { attributes: true, attributeFilter: ["class"] });
 
+  // The route loader imports this module after the page may already be active.
+  if (page.classList.contains("active")) void refresh();
+
 })();

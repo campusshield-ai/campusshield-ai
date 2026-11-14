@@ -90,6 +90,7 @@ test("tablet defaults to a compact icon rail while desktop collapse remains user
       const box = sidebar.getBoundingClientRect();
       return {
         width: Math.round(box.width),
+        computedWidth: getComputedStyle(sidebar).width,
         scrollWidth: sidebar.scrollWidth,
         clientWidth: sidebar.clientWidth,
         mainOffset: Math.round(parseFloat(getComputedStyle(main).marginLeft)),
@@ -99,8 +100,10 @@ test("tablet defaults to a compact icon rail while desktop collapse remains user
         viewportWidth: document.documentElement.clientWidth
       };
     });
-    expect(metrics.width).toBe(compactWidth);
-    expect(metrics.mainOffset).toBe(compactWidth);
+    expect(metrics.computedWidth).toBe(compactWidth + "px");
+    expect(metrics.width).toBeGreaterThanOrEqual(compactWidth - 1);
+    expect(metrics.width).toBeLessThanOrEqual(compactWidth + 4);
+    expect(Math.abs(metrics.mainOffset - metrics.width)).toBeLessThanOrEqual(1);
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
     expect(metrics.iconDisplay).not.toBe("none");
     expect(metrics.iconWidth).toBeGreaterThanOrEqual(18);

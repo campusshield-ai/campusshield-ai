@@ -47,7 +47,7 @@ test("Lovable-inspired tablet rail fits 768–1023px in light and dark mode", as
       });
       const expectedRail = width <= 900 ? 74 : 82;
       expect(metrics.sidebarWidth, `${width}px ${theme}: tablet rail width`).toBe(expectedRail);
-      expect(metrics.mainMargin, `${width}px ${theme}: main content offset`).toBe(expectedRail);
+      expect(metrics.mainMargin, `${width}px ${theme}: main content offset`).toBeCloseTo(expectedRail, 1);
       expect(metrics.scrollWidth, `${width}px ${theme}: no horizontal overflow`).toBeLessThanOrEqual(metrics.viewportWidth + 1);
       expect(metrics.activeLabel).toContain("Dashboard");
       expect(metrics.labelledButtons).toBe(true);

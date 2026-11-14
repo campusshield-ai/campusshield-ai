@@ -13,6 +13,31 @@
   let pendingDeepLinkInMemory = null;
   const pendingDeepLinkStorageKey = "campusshield:attendance:pending:v1";
 
+  let qrCodeLibraryPromise = null;
+
+  function ensureQrCodeLibrary() {
+    if (typeof window.qrcode === "function") return Promise.resolve();
+    if (qrCodeLibraryPromise) return qrCodeLibraryPromise;
+
+    const script = document.createElement("script");
+    script.src = new URL("./vendor/qrcode.js", document.baseURI).href;
+    script.async = true;
+    script.dataset.campusshieldLazyQr = "true";
+    qrCodeLibraryPromise = new Promise((resolve, reject) => {
+      script.onload = () => {
+        if (typeof window.qrcode === "function") resolve();
+        else reject(new Error("The attendance QR generator did not initialize."));
+      };
+      script.onerror = () => reject(new Error("The attendance QR generator could not be downloaded."));
+      document.head.appendChild(script);
+    }).catch(error => {
+      script.remove();
+      qrCodeLibraryPromise = null;
+      throw error;
+    });
+    return qrCodeLibraryPromise;
+  }
+
   function escapeHtml(value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, (ch) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -230,7 +255,10 @@
       if (!slot || !countdown) return;
       countdown.textContent = "Refreshing secure QR…";
       try {
-        const token = await backend().issueCampusClassAttendanceQrToken(sessionId);
+        const [_, token] = await Promise.all([
+          ensureQrCodeLibrary(),
+          backend().issueCampusClassAttendanceQrToken(sessionId)
+        ]);
         if (!currentQrSession || currentQrSession.sessionId !== sessionId || !slot.isConnected) return;
         if (!token || !token.qr_token || !token.expires_at) throw new Error("The QR service did not return a valid token.");
         const url = new URL(window.location.href);
