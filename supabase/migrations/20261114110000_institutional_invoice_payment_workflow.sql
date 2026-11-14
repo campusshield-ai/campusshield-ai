@@ -183,6 +183,9 @@ GRANT SELECT, INSERT ON TABLE private.campus_institutional_payment_audit TO serv
 GRANT SELECT, INSERT, UPDATE ON TABLE private.campus_institutional_paystack_events TO service_role;
 GRANT SELECT, INSERT ON TABLE public.campus_institutional_invoices TO authenticated;
 GRANT SELECT ON TABLE public.campus_institutional_subscriptions TO authenticated;
+GRANT ALL ON TABLE public.campus_institutional_invoices TO service_role;
+GRANT ALL ON TABLE public.campus_institutional_subscriptions TO service_role;
+GRANT USAGE ON SCHEMA private TO service_role;
 REVOKE UPDATE, DELETE ON TABLE public.campus_institutional_invoices FROM authenticated;
 REVOKE INSERT, UPDATE, DELETE ON TABLE public.campus_institutional_subscriptions FROM authenticated;
 
@@ -458,7 +461,8 @@ REVOKE ALL ON FUNCTION public.issue_campus_institutional_invoice(uuid,bigint,big
 GRANT EXECUTE ON FUNCTION public.issue_campus_institutional_invoice(uuid,bigint,bigint,date,text)
   TO authenticated;
 
-CREATE OR REPLACE FUNCTION public.commit_campus_institutional_invoice_payment(
+DROP FUNCTION IF EXISTS public.commit_campus_institutional_invoice_payment(uuid,uuid,text,text,bigint,text,text,text,timestamptz,uuid,text);
+CREATE FUNCTION public.commit_campus_institutional_invoice_payment(
   p_attempt_id uuid,
   p_actor_user_id uuid,
   p_reference text,
@@ -469,7 +473,8 @@ CREATE OR REPLACE FUNCTION public.commit_campus_institutional_invoice_payment(
   p_provider_domain text,
   p_paid_at timestamptz,
   p_event_id uuid DEFAULT NULL,
-  p_verified_source text DEFAULT 'finance'
+  p_verified_source text DEFAULT 'finance',
+  p_verified_by_user_id uuid DEFAULT NULL
 )
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -492,7 +497,9 @@ BEGIN
      OR nullif(btrim(coalesce(p_customer_email, '')), '') IS NULL
      OR p_provider_domain IS NULL OR p_provider_domain NOT IN ('test', 'live')
      OR p_paid_at IS NULL OR p_paid_at > now() + interval '10 minutes'
-     OR p_verified_source IS NULL OR p_verified_source NOT IN ('finance', 'paystack_webhook') THEN
+     OR p_verified_source IS NULL OR p_verified_source NOT IN ('finance', 'paystack_webhook')
+     OR (p_verified_source = 'finance' AND p_verified_by_user_id IS NULL)
+     OR (p_verified_source = 'paystack_webhook' AND p_verified_by_user_id IS NOT NULL) THEN
     RAISE EXCEPTION 'Verified institutional invoice payment details are incomplete or invalid.';
   END IF;
 
@@ -533,7 +540,7 @@ BEGIN
     SELECT 1
     FROM public.profiles p
     JOIN public.campus_memberships cm ON cm.user_id = p.id
-    WHERE p.id = p_actor_user_id
+    WHERE p.id = p_verified_by_user_id
       AND p.verification_status::text = 'verified'
       AND cm.university_id = v_invoice.university_id
       AND cm.membership_status = 'active'
@@ -665,7 +672,7 @@ BEGIN
     payment_kind, verified_source, period_start, period_end
   ) VALUES (
     v_invoice.id, v_subscription_id, p_event_id, v_invoice.university_id,
-    CASE WHEN p_verified_source = 'finance' THEN p_actor_user_id ELSE NULL END,
+    CASE WHEN p_verified_source = 'finance' THEN p_verified_by_user_id ELSE NULL END,
     'paystack', p_reference, p_transaction_id, p_provider_domain,
     lower(btrim(p_customer_email)), p_amount_kobo, p_currency, p_paid_at,
     v_payment_kind, p_verified_source, p_paid_at, v_expires_at
@@ -684,7 +691,7 @@ BEGIN
     UPDATE private.campus_institutional_paystack_events
     SET review_status = 'reconciled',
         matched_invoice_id = v_invoice.id,
-        reviewed_by = p_actor_user_id,
+        reviewed_by = p_verified_by_user_id,
         reviewed_at = now()
     WHERE id = p_event_id;
   END IF;
@@ -697,9 +704,9 @@ BEGIN
 END;
 $function$;
 
-REVOKE ALL ON FUNCTION public.commit_campus_institutional_invoice_payment(uuid,uuid,text,text,bigint,text,text,text,timestamptz,uuid,text)
+REVOKE ALL ON FUNCTION public.commit_campus_institutional_invoice_payment(uuid,uuid,text,text,bigint,text,text,text,timestamptz,uuid,text,uuid)
   FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.commit_campus_institutional_invoice_payment(uuid,uuid,text,text,bigint,text,text,text,timestamptz,uuid,text)
+GRANT EXECUTE ON FUNCTION public.commit_campus_institutional_invoice_payment(uuid,uuid,text,text,bigint,text,text,text,timestamptz,uuid,text,uuid)
   TO service_role;
 
 COMMENT ON TABLE public.campus_institutional_invoices IS
@@ -708,5 +715,5 @@ COMMENT ON TABLE private.campus_institutional_payment_audit IS
   'Append-only private audit of verified payments for CampusShield institutional invoices.';
 COMMENT ON FUNCTION public.issue_campus_institutional_invoice(uuid,bigint,bigint,date,text) IS
   'Atomically approves an eligible institutional billing request and issues its university subscription invoice; trusted platform administrators only.';
-COMMENT ON FUNCTION public.commit_campus_institutional_invoice_payment(uuid,uuid,text,text,bigint,text,text,text,timestamptz,uuid,text) IS
+COMMENT ON FUNCTION public.commit_campus_institutional_invoice_payment(uuid,uuid,text,text,bigint,text,text,text,timestamptz,uuid,text,uuid) IS
   'Service-role-only atomic reconciliation of a server-verified Paystack transaction against an issued university subscription invoice.';
