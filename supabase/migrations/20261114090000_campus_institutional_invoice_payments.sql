@@ -315,10 +315,9 @@ WITH CHECK (
   AND currency = 'NGN'
 );
 
-DROP POLICY IF EXISTS campus_institutional_invoices_account_lifecycle_active_guard
-  ON public.campus_institutional_invoices;
-CREATE POLICY campus_institutional_invoices_account_lifecycle_active_guard
-ON public.campus_institutional_invoices FOR ALL TO authenticated
+DROP POLICY IF EXISTS account_lifecycle_active_guard ON public.campus_institutional_invoices;
+CREATE POLICY account_lifecycle_active_guard
+ON public.campus_institutional_invoices AS RESTRICTIVE FOR ALL TO authenticated
 USING ((SELECT private.account_lifecycle_is_active()))
 WITH CHECK ((SELECT private.account_lifecycle_is_active()));
 
@@ -344,10 +343,9 @@ USING (
   )
 );
 
-DROP POLICY IF EXISTS campus_institutional_subscriptions_account_lifecycle_active_guard
-  ON public.campus_institutional_subscriptions;
-CREATE POLICY campus_institutional_subscriptions_account_lifecycle_active_guard
-ON public.campus_institutional_subscriptions FOR ALL TO authenticated
+DROP POLICY IF EXISTS account_lifecycle_active_guard ON public.campus_institutional_subscriptions;
+CREATE POLICY account_lifecycle_active_guard
+ON public.campus_institutional_subscriptions AS RESTRICTIVE FOR ALL TO authenticated
 USING ((SELECT private.account_lifecycle_is_active()))
 WITH CHECK ((SELECT private.account_lifecycle_is_active()));
 
