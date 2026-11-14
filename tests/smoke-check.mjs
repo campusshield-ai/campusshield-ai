@@ -1333,7 +1333,7 @@ assert.match(appScript, /backend\.canManageInstitutionalBilling\(\)/);
 assert.match(appScript, /backend\.getMyCampusContext\(\)\.catch\(\(\) => null\)/);
 assert.match(appScript, /university_id: universityId/);
 assert.match(appScript, /data-finance-action/);
-assert.match(appScript, /finance appointment does not currently enable hosted invoice payment/i);
+assert.match(appScript, /student fee payments, refunds, student financial records/i);
 assert.match(backend, /get_my_campus_finance_access/);
 assert.match(backend, /can_manage_institutional_billing/);
 assert.match(backend, /appoint_campus_finance_officer/);
