@@ -43,7 +43,9 @@ function appCallbackUrl(request: Request): string {
     "www.campusshieldai.com",
     "campusshield-ai-staging-preview.vercel.app",
   ]);
-  if (parsed.protocol !== "https:" || !allowedHosts.has(parsed.hostname)) {
+  const approvedPreview = parsed.hostname.startsWith("campusshield-ai-staging-preview-") &&
+    parsed.hostname.endsWith(".vercel.app");
+  if (parsed.protocol !== "https:" || (!allowedHosts.has(parsed.hostname) && !approvedPreview)) {
     throw new Error("The institutional payment return address is not an approved CampusShield app origin.");
   }
   const path = parsed.hostname === "campusshield-ai.github.io"
