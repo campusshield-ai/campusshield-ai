@@ -269,11 +269,11 @@ assert.match(shieldmindBillingCheckout, /CAMPUSSHIELD_APP_ORIGIN/, "staging chec
 assert.match(shieldmindBillingCheckout, /if\(!isAllowed\)return json\(/, "rejected origins are not reflected in CORS responses");
 assert.match(shieldmindBillingCheckout, /isLocalPreview/, "staging checkout supports localhost browser testing");
 assert.match(shieldmindBillingCheckout, /sk_test_/, "staging checkout rejects live Paystack credentials");
-assert.match(shieldmindBillingCheckout, /starter:\\{amount:200000,limit:20\\}/, "Starter checkout uses the published ₦2,000 price and 20-image allowance");
-assert.match(shieldmindBillingCheckout, /plus:\\{amount:500000,limit:60\\}/, "Plus checkout uses the published ₦5,000 price and 60-image allowance");
-assert.match(shieldmindBillingCheckout, /pro:\\{amount:1000000,limit:150\\}/, "Pro checkout uses the published ₦10,000 price and 150-image allowance");
-assert.match(shieldmindBillingCheckout, /ultra:\\{amount:2000000,limit:300\\}/, "Ultra checkout uses the published ₦20,000 price and 300-image allowance");
-assert.match(shieldmindBillingCheckout, /max:\\{amount:2800000,limit:600\\}/, "Max checkout uses the published ₦28,000 price and 600-image allowance");
+assert.ok(shieldmindBillingCheckout.includes("starter:{amount:200000,limit:20}"), "Starter checkout uses the published ₦2,000 price and 20-image allowance");
+assert.ok(shieldmindBillingCheckout.includes("plus:{amount:500000,limit:60}"), "Plus checkout uses the published ₦5,000 price and 60-image allowance");
+assert.ok(shieldmindBillingCheckout.includes("pro:{amount:1000000,limit:150}"), "Pro checkout uses the published ₦10,000 price and 150-image allowance");
+assert.ok(shieldmindBillingCheckout.includes("ultra:{amount:2000000,limit:300}"), "Ultra checkout uses the published ₦20,000 price and 300-image allowance");
+assert.ok(shieldmindBillingCheckout.includes("max:{amount:2800000,limit:600}"), "Max checkout uses the published ₦28,000 price and 600-image allowance");
 assert.doesNotMatch(shieldmindBillingCheckout, /elite:/, "checkout does not expose the retired Elite plan");
 assert.doesNotMatch(shieldmindBillingCheckout, /student_identity_verifications|membership_status!==\"active\"|verification_status!==\"verified\"/, "purchase eligibility does not depend on campus verification");
 assert.match(shieldmindBillingCheckout, /monthly_prepaid/, "checkout identifies the plan as a prepaid monthly term");
