@@ -563,6 +563,31 @@
 
       const actions = document.createElement('div');
       actions.className = 'actions';
+      if (invoice.status === 'issued' && ['pending', 'review_required'].includes(invoice.latest_attempt?.status)) {
+        const verify = document.createElement('button');
+        verify.type = 'button';
+        verify.className = 'btn secondary';
+        verify.textContent = 'Verify payment';
+        verify.title = 'Verify an existing institutional invoice payment reference';
+        verify.addEventListener('click', async () => {
+          verify.disabled = true;
+          const message = $('institutional-invoice-message');
+          if (message) message.textContent = 'Checking the transaction directly with Paystack…';
+          try {
+            const checked = await callCampusInstitutionalPayment('verify_invoice_payment', {
+              reference: invoice.latest_attempt.reference
+            });
+            if (message) message.textContent = checked.verified && checked.reconciled
+              ? 'Payment reconciled. Receipt ' + (checked.receipt_number || 'recorded') + ' is now available.'
+              : (checked.error || 'Paystack has not confirmed this payment yet.');
+            await loadInstitutionalInvoices();
+          } catch (error) {
+            if (message) message.textContent = error.message || 'Payment verification is unavailable.';
+            verify.disabled = false;
+          }
+        });
+        actions.appendChild(verify);
+      }
       if (invoice.status === 'issued') {
         const pay = document.createElement('button');
         pay.type = 'button';
