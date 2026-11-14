@@ -1304,6 +1304,8 @@ const liveClassroom = await readFile(new URL("../campus-live-classroom.js", impo
 const adminRewards = await readFile(new URL("../student-rewards-admin.js", import.meta.url), "utf8");
 const pastQuestionPractice = await readFile(new URL("../past-question-practice.js", import.meta.url), "utf8");
 assert.match(featureLoader, /dashboard:\s*\{[\s\S]*?campusshield-campus-home\.js[\s\S]*?CampusShieldCampusHome\?\.load/, "Campus Home is loaded lazily when the dashboard opens");
+assert.match(featureLoader, /function activeRoute\(\)\s*\{\s*\/\/ Do not download signed-in workspace features while the login screen is active\.\s*if \(workspace\.hidden\) return null;/, "signed-in workspace feature bundles are not loaded on the public login screen");
+assert.match(featureLoader, /attributeFilter: \["class", "hidden"\]/, "workspace features begin loading when sign-in reveals the dashboard");
 assert.doesNotThrow(() => new Function(campusHomeScript), "Campus Home script parses");
 assert.match(campusHomeScript, /getTodaySnapshot/, "Campus Home uses the existing private timetable projection");
 assert.match(campusHomeScript, /campusshield:timetable-updated/, "Campus Home refreshes when the private timetable changes");
