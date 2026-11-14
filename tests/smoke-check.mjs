@@ -1438,7 +1438,7 @@ assert.match(htmlMarkup, /shieldmind-study-room-builder/, "ShieldMind includes t
 assert.match(htmlMarkup, /platform-admin-command-center/, "platform administration includes a unified command desk");
 assert.match(htmlMarkup, /platform-university-listing-requests/);
 assert.match(htmlMarkup, /platform-senior-staff-requests/);
-assert.match(featureLoader, /shieldmind-study-room\.js/, "Study Room builder is lazy-loaded with ShieldMind");
+assert.match(featureLoader, /shieldmind-study-room\.js\?v=20261114-2/, "updated Study Room prompt uses a fresh lazy-load cache key");
 assert.doesNotThrow(() => new Function(shieldmindStudyRoom), "Study Room builder parses as JavaScript");
 
 function runStudyRoomScenario(format) {
