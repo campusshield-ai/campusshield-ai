@@ -263,6 +263,42 @@ async getCurrentUser() {
       return data || null;
     },
 
+
+    async getMyCampusFinanceAccess() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("get_my_campus_finance_access");
+      if (error) throw error;
+      return Array.isArray(data) ? data[0] || null : data || null;
+    },
+
+    async canManageInstitutionalBilling() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("can_manage_institutional_billing");
+      if (error) throw error;
+      return data === true;
+    },
+
+    async listCampusFinanceStaff() {
+      if (!client) throw new Error("Supabase is not configured.");
+      const { data, error } = await client.rpc("list_campus_finance_staff");
+      if (error) throw error;
+      return data || [];
+    },
+
+    async appointCampusFinanceOfficer(userId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!userId) throw new Error("Choose a verified finance staff member.");
+      const { error } = await client.rpc("appoint_campus_finance_officer", { p_user_id: userId });
+      if (error) throw error;
+    },
+
+    async revokeCampusFinanceOfficer(userId) {
+      if (!client) throw new Error("Supabase is not configured.");
+      if (!userId) throw new Error("Choose a finance appointment to revoke.");
+      const { error } = await client.rpc("revoke_campus_finance_officer", { p_user_id: userId });
+      if (error) throw error;
+    },
+
     async listCampusStaffVerificationReviews() {
       if (!client) throw new Error("Supabase is not configured.");
       const { data, error } = await client.rpc("list_campus_staff_verification_reviews");
