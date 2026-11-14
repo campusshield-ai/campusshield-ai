@@ -27,7 +27,7 @@ for (const page of pages) {
   assert.ok(html.includes('href="./campusshield-brand-system.css"'), page + " loads the shared Forest Green + Emerald theme");
   assert.match(html, /<meta name="theme-color" content="#111329">/i, page + " exposes the NEBULA PULSE browser theme colour");
   assert.ok(html.includes('href="./campusshield-nebula-pulse.css?v=20261114-1"'), page + " loads the shared NEBULA PULSE palette");
-  if (page !== "index.html") assert.ok(html.includes('src="./campusshield-site-theme.js?v=20261114-1"'), page + " supports the saved public light/dark theme");
+  assert.ok(html.includes('src="./campusshield-site-theme.js?v=20261114-1"'), page + " supports the saved light/dark theme or guest-home mode");
 }
 
 
@@ -174,5 +174,8 @@ assert.doesNotThrow(() => new Function(siteTheme), "Public light/dark theme swit
 assert.match(siteTheme, /prefers-color-scheme/, "Public pages follow the visitor's system appearance by default");
 assert.match(siteTheme, /campusshield-public-theme:v1/, "Public theme choice is remembered between page visits");
 assert.match(siteTheme, /aria-pressed/, "Public theme switch exposes its selected state accessibly");
+assert.match(siteTheme, /guestHomepage/, "The signed-out homepage gets a public appearance switch");
+assert.match(siteTheme, /campusshield:profile-ready/, "Public theme state yields to account-scoped preferences after sign-in");
+assert.match(nebulaTheme, /cs-theme-toggle-home/, "The guest homepage theme control is positioned accessibly");
 
 console.log("CampusShield NEBULA PULSE light/dark brand, public theme switch and PWA checks passed.");

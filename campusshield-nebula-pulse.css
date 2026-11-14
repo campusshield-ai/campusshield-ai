@@ -229,3 +229,18 @@ html[data-theme="dark"] .shell .tabs button.active{background:#5B42D4;color:#FFF
 html[data-theme="dark"] .shell .quick .qicon,html[data-theme="dark"] .shell .day-chip{border-color:#45486B;background:#202244;color:#B8ADFF}
 html[data-theme="dark"] .shell .primary{background:linear-gradient(135deg,#7657F6,#5B42D4);color:#FFFFFF}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto !important}*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+
+
+/* Guest homepage toggle sits in the top corner of the sign-in hero.
+   It is removed when an authenticated workspace becomes active. */
+#login-screen .login-intro { position:relative; }
+#login-screen .cs-theme-toggle-home {
+  position:absolute;
+  top:22px;
+  right:clamp(18px,4vw,54px);
+  z-index:3;
+  align-self:auto;
+}
+@media(max-width:520px) {
+  #login-screen .cs-theme-toggle-home { top:14px; right:14px; }
+}

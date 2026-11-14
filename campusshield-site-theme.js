@@ -6,8 +6,11 @@
   const storageKey = "campusshield-public-theme:v1";
   const body = document.body;
   if (!body) return;
+  const workspace = document.getElementById("workspace");
+  const loginIntro = document.querySelector("#login-screen .login-intro");
+  const guestHomepage = Boolean(loginIntro) && (!workspace || workspace.hidden);
   const supported = body.classList.contains("public-page") ||
-    body.classList.contains("offline-body") || Boolean(document.querySelector(".shell"));
+    body.classList.contains("offline-body") || Boolean(document.querySelector(".shell")) || guestHomepage;
   if (!supported) return;
   const media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
   let preference = "system";
@@ -42,9 +45,27 @@
   const host = document.querySelector(".public-nav") ||
     document.querySelector(".offline-header") ||
     document.querySelector(".top-actions") ||
-    document.querySelector(".public-header-row");
+    document.querySelector(".public-header-row") ||
+    (guestHomepage ? loginIntro : null);
+  if (guestHomepage) button.classList.add("cs-theme-toggle-home");
   if (host) host.appendChild(button);
   render();
+
+  // Once sign-in succeeds, hand theme ownership back to the account-scoped
+  // workspace preferences. Never let a visitor-wide choice override them.
+  window.addEventListener("campusshield:profile-ready", () => {
+    if (workspace && !workspace.hidden) {
+      button.remove();
+      root.removeAttribute("data-theme");
+      root.style.removeProperty("color-scheme");
+    }
+  });
+  window.addEventListener("campusshield:session-signed-out", () => {
+    if (guestHomepage && (!workspace || workspace.hidden)) {
+      if (!button.isConnected) loginIntro.appendChild(button);
+      render();
+    }
+  });
   if (media) {
     const onSystemChange = () => { if (preference === "system") render(); };
     if (media.addEventListener) media.addEventListener("change", onSystemChange);
