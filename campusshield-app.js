@@ -7769,7 +7769,39 @@ $('page-marketplace').addEventListener('click',async function(event){
     }
   }
 
+  async function loadCampusFinanceStaff() {
+    const tbody = $('campus-finance-staff-rows');
+    const message = $('campus-finance-staff-message');
+    if (!tbody || !message) return;
+    tbody.innerHTML = '<tr><td colspan="4">Loading verified finance staff…</td></tr>';
+    try {
+      const rows = await window.CampusShieldBackend.listCampusFinanceStaff();
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="4">No approved finance-related staff positions found for this university.</td></tr>';
+        message.textContent = 'Only staff with an approved Bursar, finance, accountant, accounts or treasurer position appear here.';
+        return;
+      }
+      tbody.innerHTML = rows.map(row => {
+        const active = row.appointment_status === 'active';
+        const statusText = active
+          ? 'Appointed' + (row.appointed_at ? ' · ' + dateText(row.appointed_at) : '')
+          : row.appointment_status === 'revoked' ? 'Previously revoked' : 'Not appointed';
+        const action = active ? 'revoke' : 'appoint';
+        const label = active ? 'Revoke appointment' : 'Appoint finance officer';
+        const buttonClass = active ? 'btn danger' : 'btn';
+        return '<tr><td><strong>@' + esc(row.username || 'verified staff') + '</strong><br><code>' + esc(row.user_id) + '</code></td>' +
+          '<td>' + esc(row.position_title) + '</td><td>' + esc(statusText) + '</td>' +
+          '<td><button type="button" class="' + buttonClass + '" data-finance-action="' + action + '" data-finance-user="' + esc(row.user_id) + '">' + label + '</button></td></tr>';
+      }).join('');
+      message.textContent = 'Appointments apply only to this university. A finance officer can submit and track institutional billing requests; this does not enable payment reconciliation or refunds.';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="4">Finance appointments could not be loaded.</td></tr>';
+      message.textContent = err?.message || 'Only a verified campus administrator can manage finance appointments.';
+    }
+  }
+
   async function loadCampusStaffVerificationQueue() {
+    loadCampusFinanceStaff();
     const tbody = $('campus-staff-verification-queue');
     const message = $('staff-review-message');
     if (!tbody || !message) return;
@@ -7885,6 +7917,28 @@ $('page-marketplace').addEventListener('click',async function(event){
   });
 
   $('refresh-staff-verification-queue').addEventListener('click', loadCampusStaffVerificationQueue);
+  $('refresh-campus-finance-staff')?.addEventListener('click', loadCampusFinanceStaff);
+  $('campus-finance-staff-rows')?.addEventListener('click', async event => {
+    const button = event.target.closest('[data-finance-action]');
+    if (!button) return;
+    const userId = button.dataset.financeUser;
+    const action = button.dataset.financeAction;
+    if (!userId || !['appoint', 'revoke'].includes(action)) return;
+    const confirmed = window.confirm(action === 'appoint'
+      ? 'Appoint this verified employee as a finance officer for your university? They will be able to submit and track institutional billing requests only.'
+      : 'Revoke this finance officer appointment? They will immediately lose the institutional billing request capability.');
+    if (!confirmed) return;
+    button.disabled = true;
+    try {
+      if (action === 'appoint') await window.CampusShieldBackend.appointCampusFinanceOfficer(userId);
+      else await window.CampusShieldBackend.revokeCampusFinanceOfficer(userId);
+      toast(action === 'appoint' ? 'Finance officer appointed for this university.' : 'Finance officer appointment revoked.');
+      await loadCampusFinanceStaff();
+    } catch (err) {
+      toast(err?.message || 'The finance appointment could not be changed.');
+      button.disabled = false;
+    }
+  });
   $('refresh-evidence-audit')?.addEventListener('click', loadCampusIdentityEvidenceAudit);
   document.querySelectorAll('[data-page="staff-review"]').forEach(button => button.addEventListener('click', () => {
     if (button.dataset.page === 'staff-review') loadCampusStaffVerificationQueue();
