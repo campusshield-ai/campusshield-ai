@@ -4580,7 +4580,11 @@
     const pagesMetric = $('platform-crawler-pages');
     const officesMetric = $('platform-crawler-offices');
     const fieldsMetric = $('platform-crawler-fields');
+    const pendingMetric = $('platform-crawler-pending');
+    const blockedMetric = $('platform-crawler-blocked');
     const resultCount = $('platform-service-crawler-result-count');
+    const searchInput = $('platform-crawler-search');
+    const statusFilter = $('platform-crawler-filter');
     const discoveredUrls = [];
     let pagesSeen = 0;
     const activityLine = (title, detail, done = false, url = '') => {
@@ -4596,6 +4600,7 @@
         content.appendChild(a);
       }
       li.append(dot, content); activity?.prepend(li);
+      while (activity && activity.children.length > 30) activity.lastElementChild.remove();
     };
     const renderMap = (urls) => {
       const svg = document.querySelector('.crawler-network svg');
@@ -4623,15 +4628,35 @@
       });
       document.querySelectorAll('.crawler-float').forEach(el=>el.hidden=true);
     };
+    const applyCandidateFilters = () => {
+      if (!results) return;
+      const query = String(searchInput?.value || '').trim().toLowerCase();
+      const filter = String(statusFilter?.value || 'all');
+      let visible = 0;
+      Array.from(results.querySelectorAll('.platform-service-crawler-result')).forEach(card => {
+        const status = card.dataset.candidateStatus || 'pending';
+        const matchesStatus = filter === 'all' || status === filter;
+        const matchesText = !query || String(card.textContent || '').toLowerCase().includes(query);
+        const show = matchesStatus && matchesText;
+        card.hidden = !show;
+        if (show) visible++;
+      });
+      const empty = results.querySelector('[data-crawler-filter-empty]');
+      if (empty) empty.hidden = visible > 0;
+    };
     const renderResults = (items, activeRunId) => {
       const all = [];
       (Array.isArray(items)?items:[]).forEach(item => (item.discovered_pages||[]).forEach(page => all.push({...page, university_id:item.university_id, university_name:item.university_name})));
-      if (resultCount) resultCount.textContent = all.length + ' candidate page(s) · review each source';
+      const pending = all.filter(page => !['approved_by_owner','rejected_by_owner'].includes(String(page.status || 'candidate_requires_review'))).length;
+      if (resultCount) resultCount.textContent = all.length + ' source(s) · ' + pending + ' awaiting review';
+      if (pendingMetric) pendingMetric.textContent = String(pending);
       results.replaceChildren();
       if (!all.length) {
         const p=document.createElement('p');p.className='muted';p.textContent='No office-specific candidate pages were returned by this crawl.';results.appendChild(p);return;
       }
       all.forEach(page => results.appendChild(renderCrawlerCandidateCard(page, activeRunId)));
+      const empty=document.createElement('p');empty.className='muted';empty.dataset.crawlerFilterEmpty='true';empty.textContent='No candidate sources match this search or status filter.';empty.hidden=true;results.appendChild(empty);
+      applyCandidateFilters();
     };
     const loadHistory = async () => {
       const target=$('platform-service-crawler-history'); if(!target)return;
@@ -4653,6 +4678,10 @@
       } catch(err) {target.textContent=err?.message||'Crawl history could not be loaded.';}
     };
     batchButton.disabled = true; oneButton.disabled = true;
+    batchButton.dataset.originalLabel = batchButton.dataset.originalLabel || batchButton.textContent;
+    oneButton.dataset.originalLabel = oneButton.dataset.originalLabel || oneButton.textContent;
+    batchButton.textContent = 'Crawl running…'; oneButton.textContent = 'Please wait…';
+    batchButton.setAttribute('aria-busy','true'); oneButton.setAttribute('aria-busy','true');
     results.replaceChildren(); if(activity)activity.replaceChildren();
     if(progressBar)progressBar.style.width='2%'; if(progressLabel)progressLabel.textContent='Starting live crawl…';
     if(runState)runState.textContent='RUNNING';
@@ -4698,10 +4727,14 @@
           if(payload.type==='started') {
             runId=payload.run_id;activityLine('Live crawl started','Run ID: '+runId,true);
             if(progressLabel)progressLabel.textContent='0 pages processed · live events connected';
+            status.textContent='Crawl is running. Source events will appear below as the server scans each registered university website.';
           } else if(payload.type==='event'&&payload.event) {
             const e=payload.event;const url=e.page_url||'';
             if(url&&['page_fetch_started','page_scanned','office_candidate_found'].includes(e.event_type)){discoveredUrls.push(url);renderMap(discoveredUrls);}
             activityLine(String(e.event_type||'crawl event').replaceAll('_',' '),e.message||'',e.status==='success'||e.status==='allowed',url);
+            if(['page_blocked','page_fetch_failed','robots_disallowed','page_error'].includes(e.event_type) || e.status==='error') {
+              const current=Number(blockedMetric?.textContent||0)+1;if(blockedMetric)blockedMetric.textContent=String(current);
+            }
             if(e.event_type==='page_scanned') {
               pagesSeen++;if(pagesMetric)pagesMetric.textContent=String(pagesSeen);
               if(progressLabel)progressLabel.textContent=pagesSeen+' pages scanned · live';
@@ -4714,6 +4747,7 @@
             if(pagesMetric)pagesMetric.textContent=String(payload.pages_scanned||0);
             if(officesMetric)officesMetric.textContent=String(payload.office_pages_found||0);
             if(fieldsMetric)fieldsMetric.textContent=String(payload.fields_populated||0);
+            if(blockedMetric)blockedMetric.textContent=String(payload.failed_or_blocked||blockedMetric?.textContent||0);
             if(progressBar)progressBar.style.width='100%';
             if(progressLabel)progressLabel.textContent='Completed · '+Number(payload.batch_size||0)+' university site(s)';
             if(runState)runState.textContent=String(payload.status||'completed').toUpperCase();
@@ -4733,8 +4767,30 @@
       if(runState)runState.textContent='ERROR';
       status.textContent=error?.message||'The live crawler could not complete.';
       activityLine('Crawler request failed',status.textContent,true);
-    } finally {batchButton.disabled=false;oneButton.disabled=false;}
+    } finally {
+      batchButton.disabled=false; oneButton.disabled=false;
+      batchButton.textContent=batchButton.dataset.originalLabel || 'Start next batch';
+      oneButton.textContent=oneButton.dataset.originalLabel || 'Crawl selected university';
+      batchButton.removeAttribute('aria-busy'); oneButton.removeAttribute('aria-busy');
+    }
   }
+
+  $('platform-crawler-search')?.addEventListener('input', function() {
+    const results = $('platform-service-crawler-results');
+    const query = String(this.value || '').trim().toLowerCase();
+    const filter = String($('platform-crawler-filter')?.value || 'all');
+    if (!results) return;
+    let visible = 0;
+    Array.from(results.querySelectorAll('.platform-service-crawler-result')).forEach(card => {
+      const status = card.dataset.candidateStatus || 'pending';
+      const show = (!query || String(card.textContent || '').toLowerCase().includes(query)) && (filter === 'all' || status === filter);
+      card.hidden = !show; if (show) visible++;
+    });
+    const empty = results.querySelector('[data-crawler-filter-empty]'); if (empty) empty.hidden = visible > 0;
+  });
+  $('platform-crawler-filter')?.addEventListener('change', function() {
+    $('platform-crawler-search')?.dispatchEvent(new Event('input', { bubbles: true }));
+  });
 
   $('platform-service-crawler-batch').addEventListener('click', function () {
     runPlatformServiceDirectoryCrawl('crawl_batch');
