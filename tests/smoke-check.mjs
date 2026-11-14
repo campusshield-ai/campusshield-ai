@@ -1017,6 +1017,16 @@ assert.match(campusShieldPr352IdentityUploadFunction, /share_with_official_verif
   "the upload Edge Function reads the explicit university-verifier consent");
 assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_URL/);
 assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_TOKEN/);
+assert.match(campusShieldPr352IdentityUploadFunction, /UNIVERSITY_ID_VERIFIER_ALLOWED_HOSTS/,
+  "the official verifier must use an explicit administrator-configured host allowlist");
+assert.match(campusShieldPr352IdentityUploadFunction, /allowedVerifierHosts\.has\(verifierUrl\.hostname\.toLowerCase\(\)\)/,
+  "outbound identity evidence is never sent to an arbitrary HTTPS host");
+assert.match(campusShieldPr352IdentityUploadFunction, /verifierUrl\.port && verifierUrl\.port !== "443"/,
+  "the university verifier is restricted to HTTPS port 443");
+assert.match(campusShieldPr352IdentityDocs, /Babcock University pilot integration/,
+  "the Babcock integration process is documented");
+assert.match(campusShieldPr352IdentityDocs, /Do not scrape the authenticated portal/,
+  "the Babcock UMIS integration requires formal institutional access");
 assert.match(campusShieldPr352IdentityUploadFunction, /document_authentic\s*===\s*true/,
   "automatic approval requires explicit confirmation of document authenticity");
 assert.match(campusShieldPr352IdentityUploadFunction, /active_enrollment\s*===\s*true/,
