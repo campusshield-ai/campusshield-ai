@@ -20,9 +20,9 @@ Finance is a **capability attached to a verified staff member**, not a fifth acc
 2. A campus administrator at that university reviews the evidence and approves the staff record.
 3. The campus administrator separately appoints an eligible Bursar, Director of Finance, Finance Officer, Accountant, Accounts Officer or Treasurer using the University Finance Appointments panel.
 4. The appointment can be revoked and is recorded in a private audit table.
-5. The finance officer can submit an institutional CampusShield billing request and see the requests they personally submitted for that university. Supabase RLS checks the identity, active membership, university ID and appointment; the browser does not confer the permission.
+5. The finance officer can submit and track institutional CampusShield billing requests, view invoices issued to that university, initiate secure one-time Paystack checkout, verify the payment reference and retrieve a receipt. Invoice lists and receipts are returned by an authenticated server function scoped to the verified university; the browser never reads private payment-attempt or audit tables directly.
 
-**Not enabled by this appointment:** paying a university invoice, collecting student school fees, reconciliation, refunds, disbursements, changing prices, viewing other users’ billing records or accessing payment-provider credentials. Those require a separate finance ledger, invoice/payment workflow, maker-checker approval, server-side Paystack transaction initialization and webhook verification, and tested production configuration. The older institutional invoice/subscription draft must not be treated as live payment capability.
+**Still excluded:** student school-fee collection, student financial records, refunds, disbursements, changing prices, access to another university’s invoices, platform-wide billing administration and payment-provider credentials. Finance officers only see CampusShield institutional invoices for their own verified university. Paystack payments are one-time/prepaid and do not silently create auto-renewing subscriptions; activation is based on server-side transaction verification and an idempotent receipt/audit record. Student fees remain a separate product requiring institution-approved fee schedules, payer identity, reconciliation ownership, refunds and dispute handling.
 
 ## Other university positions
 
@@ -64,9 +64,9 @@ The product already has a growing foundation: CampusPulse and private messaging,
 - Library catalogue and borrowing integrations.
 
 ### Phase 4 — University finance
-- Institution subscription invoices for approved university finance officers.
-- Maker-checker approval for invoice creation and payments, clear invoice numbers, receipts and audit logs.
-- Paystack server-side initialization, signed webhook verification, reconciliation and idempotency.
+- Institution subscription invoices for approved university finance officers, limited to their own institution.
+- Clear invoice numbers, one-time Paystack checkout, transaction verification, receipts and reconciliation audit logs.
+- Staged webhook processing with idempotent payment commits; manual bank-transfer reconciliation remains a separate reviewed operation.
 - Student school fees only after each institution signs off on fee schedules, payer identity, reconciliation ownership, refunds and dispute handling.
 
 ### Phase 5 — Campus intelligence and daily life
@@ -81,5 +81,5 @@ The product already has a growing foundation: CampusPulse and private messaging,
 - Test each role against both allowed and denied operations, including cross-university access.
 - Use synthetic test identities and never copy real student records into automated tests.
 - Keep provider secrets in Supabase Edge Function secrets; never in the browser or GitHub.
-- Do not activate a payment button until server verification, webhook reconciliation and receipt flows pass.
+- Keep the institutional checkout separate from student-fee and individual ShieldMind billing. Enable live charges only after Production invoice schema, Paystack live credentials, webhook routing and receipt verification have all passed.
 - Mark features as “planned” until the required backend, integrations and operational ownership exist.
