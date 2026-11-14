@@ -283,3 +283,32 @@ html[data-theme="dark"] #page-billing .institutional-billing-footnote{
   background:#142b1e;
   color:#c1d8c7;
 }
+
+
+/* Invoice review and approval safeguards */
+#page-platform-admin .institutional-invoice-total{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 18px;
+  margin:14px 0;padding:16px 18px;border:1px solid #cfe4d5;border-radius:14px;
+  background:linear-gradient(120deg,#f1faf3,#fbfefb);color:#254b34
+}
+#page-platform-admin .institutional-invoice-total span{font-size:13px;font-weight:750}
+#page-platform-admin .institutional-invoice-total strong{font-size:clamp(20px,2.5vw,27px);font-variant-numeric:tabular-nums;color:#126b38}
+#page-platform-admin .institutional-invoice-total small{flex-basis:100%;color:#607968}
+#page-platform-admin .institutional-invoice-confirm{
+  display:flex;align-items:flex-start;gap:11px;margin:16px 0;padding:14px 16px;
+  border:1px solid #d8e6dc;border-radius:12px;background:#f8fcf9;color:#294b37;
+  font-size:13px;line-height:1.6;cursor:pointer
+}
+#page-platform-admin .institutional-invoice-confirm input{width:18px;height:18px;flex:0 0 18px;margin:2px 0 0;accent-color:#168044}
+#page-platform-admin .platform-institutional-request .message.warning{padding:12px 14px;border:1px solid #ead6a5;border-radius:10px;background:#fffaf0;color:#77551a}
+#page-platform-admin .platform-institutional-request .message.error{padding:10px 12px;border-radius:9px;background:#fff2f1;color:#9b2e25}
+#page-platform-admin .platform-institutional-request .message.success{padding:10px 12px;border-radius:9px;background:#effaf2;color:#176b37}
+#page-platform-admin .platform-institutional-request textarea{min-height:116px;resize:vertical}
+#page-platform-admin .platform-institutional-request button:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+@media(prefers-color-scheme:dark){
+  #page-platform-admin .institutional-invoice-total{background:#10291d;border-color:#28583a;color:#d6efdd}
+  #page-platform-admin .institutional-invoice-total strong{color:#78d99a}
+  #page-platform-admin .institutional-invoice-total small{color:#b0c9b8}
+  #page-platform-admin .institutional-invoice-confirm{background:#10291d;border-color:#28583a;color:#d6efdd}
+  #page-platform-admin .platform-institutional-request .message.warning{background:#302716;border-color:#6c5427;color:#f0d59a}
+}
