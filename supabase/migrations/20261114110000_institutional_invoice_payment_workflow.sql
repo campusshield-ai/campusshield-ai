@@ -4,7 +4,10 @@
 
 ALTER TABLE public.campus_institutional_billing_requests
   ADD COLUMN IF NOT EXISTS university_id uuid
-  REFERENCES public.campus_universities(id) ON DELETE RESTRICT;
+  REFERENCES public.campus_universities(id) ON DELETE RESTRICT,
+  ADD COLUMN IF NOT EXISTS response_message text,
+  ADD COLUMN IF NOT EXISTS reviewed_at timestamptz,
+  ADD COLUMN IF NOT EXISTS reviewed_by uuid REFERENCES auth.users(id) ON DELETE SET NULL;
 
 UPDATE public.campus_institutional_billing_requests r
 SET university_id = u.id
