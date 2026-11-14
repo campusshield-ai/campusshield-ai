@@ -343,7 +343,7 @@
         return;
       }
       if (["SIGNED_IN", "TOKEN_REFRESHED", "USER_UPDATED"].includes(event)) {
-        void refreshInvoices();
+        window.setTimeout(() => { void refreshInvoices(); }, 0);
       }
     });
   }
