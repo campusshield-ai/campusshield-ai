@@ -1187,7 +1187,9 @@ const stagingSupabaseConfig = supabaseConfig.match(/const staging = \{([\s\S]*?)
 const productionSupabaseConfig = supabaseConfig.match(/const production = \{([\s\S]*?)\};/)?.[1] || "";
 assert.match(stagingSupabaseConfig, /provider:\s*"turnstile"/, "Staging Auth uses the configured Turnstile provider");
 assert.match(stagingSupabaseConfig, /siteKey:\s*"0x4AAAAAAF6tOY7MqWYcC3h8"/, "Staging uses the existing allowlisted Turnstile sitekey");
-assert.doesNotMatch(productionSupabaseConfig, /captcha|turnstile/i, "Production CAPTCHA configuration is unchanged");
+assert.match(productionSupabaseConfig, /provider:\s*"turnstile"/, "Production Auth uses its dedicated Turnstile provider");
+assert.match(productionSupabaseConfig, /siteKey:\s*"0x4AAAAAAGBCYZUA6wurC0U1"/, "Production uses its own allowlisted Turnstile sitekey");
+assert.doesNotMatch(productionSupabaseConfig, /0x4AAAAAAF6tOY7MqWYcC3h8/, "Production never reuses the Staging widget");
 assert.match(htmlMarkup, /id="auth-captcha-wrap"/, "the sign-in form provides an accessible CAPTCHA surface");
 assert.match(appScript, /window\.CampusShieldAuthCaptcha\s*=/, "the app exposes an in-memory CAPTCHA token provider to the backend");
 assert.match(appScript, /turnstile\.render\(/, "the app renders the explicit Cloudflare Turnstile widget");
