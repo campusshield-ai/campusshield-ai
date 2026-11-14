@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS public.campus_institutional_invoices (
   description text NOT NULL,
   subtotal_kobo bigint NOT NULL,
   tax_kobo bigint NOT NULL DEFAULT 0,
-  total_kobo bigint,
+  total_kobo bigint GENERATED ALWAYS AS (subtotal_kobo + tax_kobo) STORED,
   currency text NOT NULL DEFAULT 'NGN',
   due_date date NOT NULL,
   payment_instructions text NOT NULL,
@@ -250,12 +250,6 @@ BEGIN
   NEW.status := 'issued';
   NEW.issued_by := auth.uid();
   NEW.issued_at := pg_catalog.now();
-  IF NEW.total_kobo IS NULL THEN
-    NEW.total_kobo := NEW.subtotal_kobo + NEW.tax_kobo;
-  END IF;
-  IF NEW.total_kobo <> NEW.subtotal_kobo + NEW.tax_kobo THEN
-    RAISE EXCEPTION 'Invoice total must equal subtotal plus tax.';
-  END IF;
   RETURN NEW;
 END;
 $function$;
@@ -394,9 +388,9 @@ BEGIN
      OR p_amount_kobo IS NULL OR p_amount_kobo <= 0
      OR p_currency IS DISTINCT FROM 'NGN'
      OR nullif(btrim(coalesce(p_customer_email, '')), '') IS NULL
-     OR p_provider_domain NOT IN ('test', 'live')
+     OR p_provider_domain IS NULL OR p_provider_domain NOT IN ('test', 'live')
      OR p_paid_at IS NULL OR p_paid_at > now() + interval '10 minutes'
-     OR p_verified_source NOT IN ('finance', 'paystack_webhook') THEN
+     OR p_verified_source IS NULL OR p_verified_source NOT IN ('finance', 'paystack_webhook') THEN
     RAISE EXCEPTION 'Verified institutional invoice payment details are incomplete or invalid.';
   END IF;
 
@@ -406,6 +400,12 @@ BEGIN
   FOR UPDATE;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'The payment attempt could not be matched to this reference.';
+  END IF;
+  IF v_attempt.actor_user_id IS DISTINCT FROM p_actor_user_id THEN
+    RAISE EXCEPTION 'The payment actor does not match the user who initialized this invoice checkout.';
+  END IF;
+  IF p_paid_at > v_attempt.expires_at THEN
+    RAISE EXCEPTION 'The verified transaction was paid after this invoice payment attempt expired.';
   END IF;
 
   SELECT * INTO v_invoice
@@ -427,7 +427,11 @@ BEGIN
     RAISE EXCEPTION 'The verified transaction does not exactly match the university invoice and payment attempt.';
   END IF;
 
-  IF NOT EXISTS (
+  -- A manual finance reconciliation must still be authorised at verification time.
+  -- A signed Paystack webhook may finish a previously authorised attempt after an
+  -- appointment is revoked; the attempt is service-role-created only and its
+  -- actor is bound above to prevent reassignment or cross-university use.
+  IF p_verified_source = 'finance' AND NOT EXISTS (
     SELECT 1
     FROM public.profiles p
     JOIN public.campus_memberships cm ON cm.user_id = p.id
@@ -566,7 +570,8 @@ BEGIN
     payment_kind, verified_source, period_start, period_end
   ) VALUES (
     v_invoice.id, v_subscription_id, p_event_id, v_invoice.university_id,
-    p_actor_user_id, 'paystack', p_reference, p_transaction_id, p_provider_domain,
+    CASE WHEN p_verified_source = 'finance' THEN p_actor_user_id ELSE NULL END,
+    'paystack', p_reference, p_transaction_id, p_provider_domain,
     lower(btrim(p_customer_email)), p_amount_kobo, p_currency, p_paid_at,
     v_payment_kind, p_verified_source, p_paid_at, v_expires_at
   )
