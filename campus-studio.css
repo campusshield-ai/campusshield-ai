@@ -118,3 +118,19 @@ html[data-theme="dark"] .campus-studio-tier-pill,html[data-theme="dark"] .campus
 @media(max-width:850px){.campus-studio-layout{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:650px){.campus-studio-hero{grid-template-columns:minmax(0,1fr)}.campus-studio-hero-art{min-height:105px}.campus-studio-hero-art span{width:62px;height:62px;border-radius:20px;font-size:26px}.campus-studio-layout{gap:11px}.campus-studio-controls,.campus-studio-side{padding:15px}.campus-studio-actions .btn{flex:1 1 auto}}
 @media(prefers-reduced-motion:reduce){.campus-studio-preview-card{transition:none}}
+
+
+/* Student plan comparison: four clear tiers with a free baseline. */
+#page-billing .shieldmind-prices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;align-items:stretch}
+#page-billing .shieldmind-price{min-width:0;display:flex;flex-direction:column}
+#page-billing .shieldmind-price ul{display:grid;gap:7px;margin:12px 0 15px;padding:0;list-style:none}
+#page-billing .shieldmind-price ul li{position:relative;padding-left:17px;color:var(--muted);font-size:10px;line-height:1.45}
+#page-billing .shieldmind-price ul li::before{position:absolute;left:0;top:0;color:var(--campus-accent,#16856d);content:"✓";font-weight:900}
+#page-billing .shieldmind-price button{margin-top:auto}
+#page-billing .campus-elite-price{border-color:var(--campus-accent,#16856d);box-shadow:0 0 0 2px color-mix(in srgb,var(--campus-accent,#16856d) 14%,transparent),var(--shadow)}
+#page-billing .campus-free-plan{display:flex;flex-wrap:wrap;align-items:center;gap:7px 13px;margin:12px 0 16px;padding:12px 15px;border:1px solid var(--line);border-radius:12px;background:var(--cs-surface-soft,#f4f8f6);color:var(--ink)}
+#page-billing .campus-free-plan strong{font-size:12px;white-space:nowrap}
+#page-billing .campus-free-plan span{flex:1 1 350px;color:var(--muted);font-size:11px;line-height:1.5}
+html[data-theme="dark"] #page-billing .campus-free-plan{background:var(--cs-surface-soft);border-color:var(--cs-border);color:var(--cs-text)}
+@media(max-width:1120px){#page-billing .shieldmind-prices{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#page-billing .shieldmind-prices{grid-template-columns:minmax(0,1fr)}#page-billing .shieldmind-price{padding:17px}}
