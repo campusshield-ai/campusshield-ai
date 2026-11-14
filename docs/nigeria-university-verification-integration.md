@@ -24,7 +24,9 @@ Sources reviewed:
 
 The Ministry's 6 March 2026 announcement states that more than 250 tertiary institutions had been integrated for real-time credential verification at the time of publication. The NERD policy describes a National Credential Management and Verification System and mutually agreed API calls to tertiary-institution servers. It also describes national student identifiers and yearly records intended to provide evidence of continuous enrolment.
 
-This is the best first partnership target for broad national coverage. However, it is not yet an available CampusShield integration: the public matriculation/graduation portals show sign-in steps, not developer/API documentation. No public API base URL, authentication contract, sandbox credentials, rate limits or CampusShield partner agreement were found.
+This is the best first partnership target for broad national coverage. The legal/governance structure matters: Sections 9–10 of the gazetted NERD policy describe a Federal Government/private-sector joint venture and state that NERD Limited shall be the system operator, with the JV partner commercially operating it. Section 14(c) describes mutually agreeable API calls to institution servers and national systems, subject to institutional collaboration. CampusShield must obtain written confirmation of the current legal operator, the named commercial operator/partner, their authority over each requested data source and the exact entity that may issue partner credentials or sign a data-processing agreement.
+
+However, NERD is not yet an available CampusShield integration: the public matriculation/graduation portals show sign-in steps, not developer/API documentation. No public API base URL, authentication contract, sandbox credentials, rate limits or CampusShield partner agreement were found.
 
 ### Official contact routes to request partner access
 
@@ -35,7 +37,7 @@ This is the best first partnership target for broad national coverage. However, 
 
 Ask NERD/FME to confirm whether the service supports current active-enrolment checks (not only completed degree verification), provide the authorised operator/API documentation, sandbox and contract, and explain student-consent, data minimisation, retention/deletion, audit, pricing and data-location requirements.
 
-The page at verify.ned.gov.ng advertises a National Credential Verification Service and REST API. Treat it as a lead only until NERD/FME confirms its operator, legal mandate, data sources, endpoint and right to process student records in writing.
+The page at verify.ned.gov.ng advertises a National Credential Verification Service and REST API. Treat it as an unverified lead only until the NERD Secretariat and FME confirm in writing whether it is the authorised commercial operator/JV partner, provide its corporate/legal identity and authority, confirm the data sources and permitted student-record fields, and issue a verifiable partner agreement and API sandbox. Do not send real student ID documents, matriculation numbers, tokens or money to the advertised service based on the marketing page alone.
 
 ## University-issued email as a sign-up option
 
