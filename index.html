@@ -41,6 +41,17 @@
 <link rel="stylesheet" href="./university-crawler-command-center.css?v=20261114-1">
 <link rel="icon" href="./icons/campusshield.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CampusShield AI",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web",
+  "url": "https://campusshield-ai.github.io/campusshield-ai/",
+  "description": "CampusShield AI brings verified campus safety reporting, university information, interactive campus mapping, learning support and student services into one privacy-conscious platform."
+}
+</script>
 <title>CampusShield AI | Intelligent Campus Safety</title>
 <style>
 :root{--navy:#07172d;--navy2:#0d2442;--blue:#1687f8;--teal:#19d3b0;--ink:#17263d;--muted:#6d7c91;--bg:#f3f6fb;--card:#fff;--line:#e2e9f2;--red:#e24d63;--amber:#d99520;--shadow:0 12px 34px rgba(16,37,68,.07)}
@@ -4111,6 +4122,27 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
   </section>
 
   <div class="shieldmind-grid shieldmind-workspace-grid" id="shieldmind-workspace-grid" hidden>
+    <section class="panel shieldmind-study-room-builder" id="shieldmind-study-room-builder" aria-labelledby="shieldmind-study-room-title">
+      <div class="shieldmind-study-room-heading">
+        <div><span class="shieldmind-study-room-eyebrow">SHIELDMIND · INTERACTIVE CLASSROOM STUDIO</span><h2 id="shieldmind-study-room-title">Build a guided study room</h2><p>Turn a course topic into a structured lesson, one-question-at-a-time quiz, scenario simulation or exam revision session.</p></div>
+        <span class="shieldmind-study-room-icon" aria-hidden="true">✦</span>
+      </div>
+      <form id="shieldmind-study-room-form" class="shieldmind-study-room-form">
+        <div class="shieldmind-study-room-fields">
+          <div class="field"><label for="shieldmind-study-course">Course / subject</label><input id="shieldmind-study-course" maxlength="120" placeholder="e.g. COS 201 · Data Structures"></div>
+          <div class="field"><label for="shieldmind-study-topic">Topic to learn *</label><input id="shieldmind-study-topic" required minlength="2" maxlength="160" placeholder="e.g. Linked lists and traversal"></div>
+          <div class="field"><label for="shieldmind-study-level">Study level</label><select id="shieldmind-study-level"><option value="University beginner">University beginner</option><option value="100 level">100 level</option><option value="200 level" selected>200 level</option><option value="300 level">300 level</option><option value="400 level">400 level</option><option value="Postgraduate">Postgraduate</option></select></div>
+          <div class="field"><label for="shieldmind-study-format">Learning format</label><select id="shieldmind-study-format"><option value="guided">Guided interactive lesson</option><option value="quiz">One-question-at-a-time quiz</option><option value="simulation">Practical scenario simulation</option><option value="exam">Exam revision session</option></select></div>
+          <div class="field"><label for="shieldmind-study-duration">Session length</label><select id="shieldmind-study-duration"><option value="15 minutes">15 minutes</option><option value="25 minutes" selected>25 minutes</option><option value="40 minutes">40 minutes</option><option value="60 minutes">60 minutes</option></select></div>
+          <div class="field"><label for="shieldmind-study-goal">What should you be able to do?</label><input id="shieldmind-study-goal" maxlength="180" placeholder="e.g. Trace a linked list and explain its complexity"></div>
+        </div>
+        <div class="shieldmind-study-room-footer">
+          <p><strong>How it works:</strong> this creates a reviewable prompt in Ask ShieldMind. Nothing is sent until you press Ask ShieldMind, and normal subscription limits still apply.</p>
+          <button class="btn" type="submit" id="shieldmind-study-room-build">Build my study session <span aria-hidden="true">→</span></button>
+        </div>
+        <p class="shieldmind-study-room-status" id="shieldmind-study-room-status" role="status" aria-live="polite">Choose a topic and learning format to create your study-session draft.</p>
+      </form>
+    </section>
     <section class="panel shieldmind-chat-panel" aria-labelledby="shieldmind-chat-title">
       <div class="panel-heading shieldmind-chat-heading">
         <div><h2 id="shieldmind-chat-title">Ask ShieldMind</h2><p>Ask a question, explore a topic or work through your notes.</p></div>
@@ -5347,6 +5379,17 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     <p id="platform-admin-access-message" class="message" role="status" aria-live="polite">Checking platform administrator access…</p>
   </section>
   <div id="platform-admin-tools" hidden>
+    <section class="panel platform-admin-command-center" id="platform-admin-command-center" aria-labelledby="platform-admin-command-title">
+      <div class="platform-admin-command-heading"><div><span class="platform-admin-command-eyebrow">TRUSTED OPERATIONS · COMMAND DESK</span><h2 id="platform-admin-command-title">Platform operations centre</h2><p>One place to move between the review queues, institutional finance and university intelligence tools.</p></div><span class="platform-admin-command-mark" aria-hidden="true">⌘</span></div>
+      <nav class="platform-admin-command-grid" aria-label="Platform administration work queues">
+        <a href="#account-lifecycle-admin-panel"><span class="platform-admin-command-number">01</span><strong>Account recovery</strong><small>Deactivation, restoration and lifecycle review</small><b>Open queue →</b></a>
+        <a href="#platform-institutional-billing-panel"><span class="platform-admin-command-number">02</span><strong>Institutional finance</strong><small>University subscriptions, invoice review and reconciliation</small><b>Open finance →</b></a>
+        <a href="#platform-university-listing-requests"><span class="platform-admin-command-number">03</span><strong>University directory</strong><small>Validate and approve official institution listings</small><b>Review listings →</b></a>
+        <a href="#platform-senior-staff-requests"><span class="platform-admin-command-number">04</span><strong>Staff &amp; permissions</strong><small>Review appointments and campus administrator access</small><b>Review access →</b></a>
+        <a href="#platform-service-directory-crawler"><span class="platform-admin-command-number">05</span><strong>University intelligence</strong><small>Discover official services and review source evidence</small><b>Open crawler →</b></a>
+      </nav>
+      <p class="platform-admin-command-note">Queue content and counts are loaded by each existing authorized tool. These shortcuts do not grant permissions or perform approvals by themselves.</p>
+    </section>
     <section class="panel" id="account-lifecycle-admin-panel">
       <div class="panel-heading"><div><h2>Account deactivation &amp; recovery</h2><p>Review accounts in the 90-day recovery window and restore access before the deadline.</p></div><button class="btn secondary" type="button" id="account-lifecycle-admin-refresh">Refresh list</button></div>
       <p id="account-lifecycle-admin-message" class="message" role="status" aria-live="polite">Loading deactivated accounts…</p>
@@ -5363,12 +5406,12 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
       <div id="platform-institutional-billing-requests" class="platform-institutional-billing-requests"></div>
       <p class="muted">Only platform administrators can approve and issue invoices. Invoices cover CampusShield university subscriptions, not student tuition or fees. Payment confirmation is server-verified and receipts are written to a private append-only audit log.</p>
     </section>
-    <section class="panel">
+    <section class="panel" id="platform-university-listing-requests">
       <div class="panel-heading"><div><h2>University listing requests</h2><p>Approve only after verifying the official institution name and website.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-requests">Refresh requests</button></div>
       <p id="platform-admin-requests-message" class="message" role="status" aria-live="polite">Loading requests…</p>
       <div class="table-wrap"><table><caption class="sr-only">Pending requests to add a university to the CampusShield directory</caption><thead><tr><th scope="col">University</th><th scope="col">State / FCT</th><th scope="col">Ownership</th><th scope="col">Official website</th><th scope="col">Requested</th><th scope="col">Decision</th></tr></thead><tbody id="platform-admin-requests-table"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
     </section>
-    <section class="panel">
+    <section class="panel" id="platform-senior-staff-requests">
       <div class="panel-heading"><div><h2>Verified senior-staff requests</h2><p>Only approved staff who explicitly requested administrator consideration appear here. Assignment is a separate trusted action.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-admin-requests">Refresh requests</button></div>
       <p id="platform-admin-admin-requests-message" class="message" role="status" aria-live="polite">Loading verified staff requests…</p>
       <div class="table-wrap"><table><caption class="sr-only">Approved senior staff requesting campus administrator appointment</caption><thead><tr><th scope="col">Applicant</th><th scope="col">University</th><th scope="col">Verified position</th><th scope="col">Official email</th><th scope="col">Submitted</th><th scope="col">Action</th></tr></thead><tbody id="platform-admin-admin-requests-table"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
@@ -6540,6 +6583,7 @@ table { max-width: 100%; }
 <link rel="stylesheet" href="./campusshield-module-experience.css?v=20261110-2">
 <link rel="stylesheet" href="./campus-private-messages-polish.css?v=20261112-3">
 <link rel="stylesheet" href="./campusshield-public-experience.css?v=20261112-1">
+<link rel="stylesheet" href="./campusshield-command-experience.css?v=20261114-1">
 <link rel="stylesheet" href="./campusshield-performance-polish.css?v=20261113-1">
 <script src="./campus-dashboard-upgrade.js" defer></script>
 <script src="./campusshield-lovable-ux.js" defer></script>
