@@ -1302,8 +1302,11 @@ const liveClassroom = await readFile(new URL("../campus-live-classroom.js", impo
 const adminRewards = await readFile(new URL("../student-rewards-admin.js", import.meta.url), "utf8");
 const pastQuestionPractice = await readFile(new URL("../past-question-practice.js", import.meta.url), "utf8");
 assert.match(featureLoader, /studio:\s*\{[\s\S]*?campusshield-studio\.js[\s\S]*?CampusShieldStudio\?\.load/, "My Campus Studio is registered as a first-use workspace feature");
-assert.match(featureLoader, /CampusShieldStudio\?\.mount/, "My Campus Studio mounts its navigation and page after the workspace shell is ready");
+assert.match(featureLoader, /function ensureStudioEntry\(\)/, "My Campus Studio navigation and page shell are registered without loading the feature bundle");
+assert.doesNotMatch(featureLoader, /loadScript\("\.\/campusshield-studio\.js[^)]*\)\s*\.then/, "Studio code stays lazy-loaded until its route is opened");
 assert.doesNotThrow(() => new Function(campusStudioScript), "My Campus Studio script parses");
+assert.match(campusStudioScript, /page\.dataset\.studioMounted !== "true"/, "the lazy Studio module hydrates its route shell on first use");
+assert.match(campusStudioScript, /async function load\(\)\s*\{\s*mount\(\);/, "first-use loading mounts the Studio UI and its controls");
 assert.match(campusStudioScript, /campusshield-studio:v1:/, "Studio preferences are isolated by signed-in user");
 assert.match(campusStudioScript, /campusshield:profile-ready/, "saved Studio preferences are restored after sign-in");
 assert.match(campusStudioScript, /campusshield:session-signed-out/, "Studio clears the active account theme on sign-out without deleting saved preferences");
