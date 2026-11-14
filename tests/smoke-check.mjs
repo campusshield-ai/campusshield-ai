@@ -1041,7 +1041,7 @@ assert.match(appScript, /authMode !== 'signup' \|\| identityCompletionMode/,
   "university-email guidance is hidden outside new student registration");
 assert.match(nigeriaUniversityVerificationDocs, /secretariat@ned\.gov\.ng/,
   "the official national NERD contact route is documented");
-assert.match(nigeriaUniversityVerificationDocs, /No public CampusShield integration/,
+assert.match(nigeriaUniversityVerificationDocs, /not yet an available CampusShield integration/,
   "national verification API access is not falsely claimed as available");
 assert.match(nigeriaUniversityVerificationDocs, /A confirmed email proves access to the mailbox/,
   "email ownership alone does not approve a student identity");
