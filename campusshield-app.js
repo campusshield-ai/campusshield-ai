@@ -719,43 +719,147 @@
 
   $('profile-settings-signout')?.addEventListener('click', () => $('signout-button')?.click());
 
-  document.querySelectorAll('[data-billing-plan]').forEach(button => {
+  async function openInstitutionalBillingRequestForm(plan, intent, period) {
+    const form = $('institutional-billing-form');
+    if (!form) throw new Error('Institutional request form is not available.');
+    if (!canManageInstitutionalBilling()) {
+      throw new Error('A verified campus administrator or appointed finance officer is required for institutional billing.');
+    }
+    form.dataset.requestIntent = intent === 'consultation' ? 'consultation' : 'subscribe';
+    form.hidden = false;
+    const planField = $('institution-billing-plan');
+    if (planField) planField.value = plan;
+    const periodField = $('institution-billing-period');
+    if (periodField) periodField.value = ['monthly','yearly'].includes(period) ? period : 'monthly';
+    const verifiedCampus = currentCampusFinanceAccess || campusContext || {};
+    const campusName = verifiedCampus.university_name || '';
+    const nameField = $('institution-billing-name');
+    if (nameField && campusName) {
+      nameField.value = campusName;
+      nameField.readOnly = true;
+    }
+    const backend = window.CampusShieldBackend;
+    try {
+      const { data: { user }, error } = await backend.client.auth.getUser();
+      const emailField = $('institution-billing-email');
+      if (!error && user?.email && emailField && !emailField.value) emailField.value = user.email;
+    } catch (_) { /* The required email field remains available for manual entry. */ }
+    const title = $('institutional-billing-form-title');
+    const intro = $('institutional-billing-form-intro');
+    const intentNote = $('institutional-billing-intent-note');
+    const submit = $('institution-billing-submit');
+    const details = $('institution-billing-message');
+    if (intent === 'consultation') {
+      if (title) title.textContent = 'Request an institutional consultation';
+      if (intro) intro.textContent = 'Tell us about your institution and what you want to achieve. Our team will review the scope before proposing a package or invoice.';
+      if (intentNote) intentNote.textContent = 'Consultation only · no invoice is created and no payment is taken by submitting this request.';
+      if (submit) submit.textContent = 'Send consultation request';
+      if (details) details.placeholder = 'Share your campus count, governance needs, integrations, onboarding questions or preferred meeting times.';
+    } else {
+      if (title) title.textContent = 'Start your secure institutional subscription';
+      if (intro) intro.textContent = 'We first verify the institution and issue an official invoice. Once the invoice appears in University invoices, you can pay securely through verified Paystack checkout.';
+      if (intentNote) intentNote.textContent = 'Invoice-first checkout · this request does not charge your institution or activate the subscription. A valid issued invoice is required before payment.';
+      if (submit) submit.textContent = 'Request official invoice';
+      if (details) details.placeholder = 'Optional: procurement contact, purchase-order reference, expected campus coverage or invoice requirements.';
+    }
+    if (details) details.value = '';
+    const status = $('institution-billing-status');
+    if (status) status.textContent = '';
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('institution-billing-name')?.focus();
+  }
+
+  async function startInstitutionalPlanCheckout(plan, period, button, status) {
+    if (!canManageInstitutionalBilling()) {
+      toast('Institutional billing requires a verified campus administrator or an appointed finance officer.');
+      return;
+    }
+    if (!window.CampusShieldBackend?.client) {
+      if (status) status.textContent = 'Secure institutional billing is unavailable because the backend is not configured.';
+      return;
+    }
+    button.disabled = true;
+    const previousLabel = button.textContent;
+    button.textContent = 'Checking issued invoice…';
+    if (status) status.textContent = 'Checking for an issued invoice for this university, package and billing period…';
+    try {
+      const finance = await callCampusInstitutionalPayment('list_invoices');
+      const invoice = (finance.invoices || []).find(item =>
+        item.plan === plan &&
+        item.billing_period === period &&
+        item.status === 'issued'
+      );
+      if (invoice && finance.payments_enabled !== true) {
+        if (status) status.textContent = 'An official invoice already exists (' + invoice.invoice_number + '), but online payment is not enabled for this environment. Open University invoices to review the payment instructions or contact CampusShield finance. No payment was initiated.';
+        $('institutional-invoice-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if (invoice) {
+        if (status) status.textContent = 'Opening the secure Paystack checkout for invoice ' + invoice.invoice_number + '…';
+        const checkout = await callCampusInstitutionalPayment('initialize_invoice_payment', { invoice_id: invoice.id });
+        if (!/^https:\/\/checkout\.paystack\.com\//i.test(String(checkout.authorization_url || ''))) {
+          throw new Error('Paystack did not return an approved checkout URL. No payment was taken.');
+        }
+        window.location.assign(checkout.authorization_url);
+        return;
+      }
+      if (status) status.textContent = 'No issued invoice was found for this package and billing period. Complete the official invoice request to begin the subscription process.';
+      await openInstitutionalBillingRequestForm(plan, 'subscribe', period);
+    } catch (error) {
+      if (status) status.textContent = error?.message || 'The secure subscription flow could not be started. No payment was taken.';
+    } finally {
+      button.disabled = false;
+      button.textContent = previousLabel;
+    }
+  }
+
+  document.querySelectorAll('[data-billing-plan][data-billing-action]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const status = $('billing-payment-message');
+      const plan = button.dataset.billingPlan;
+      const action = button.dataset.billingAction;
+      const period = ['monthly','yearly'].includes($('institutional-package-period')?.value)
+        ? $('institutional-package-period').value
+        : 'monthly';
+      if (!canManageInstitutionalBilling()) {
+        toast('Institutional billing requires a verified campus administrator or an appointed finance officer.');
+        return;
+      }
+      if (action === 'consultation') {
+        try {
+          await openInstitutionalBillingRequestForm(plan, 'consultation', period);
+          if (status) status.textContent = 'Complete the consultation form. No invoice or payment is created by this request.';
+        } catch (error) {
+          if (status) status.textContent = error?.message || 'The consultation form could not be opened.';
+        }
+        return;
+      }
+      await startInstitutionalPlanCheckout(plan, period, button, status);
+    });
+  });
+
+  document.querySelectorAll('[data-billing-plan]:not([data-billing-action])').forEach(button => {
     button.addEventListener('click', async () => {
       const status = $('billing-payment-message');
       const plan = button.dataset.billingPlan;
       const kind = button.dataset.billingKind;
-      if (kind === 'institution' && !canManageInstitutionalBilling()) {
-        toast('Institutional billing requires a verified campus administrator or an appointed finance officer.');
+      if (kind === 'institution') {
+        try {
+          const period = $('institutional-package-period')?.value || 'monthly';
+          await openInstitutionalBillingRequestForm(plan, 'subscribe', period);
+          if (status) status.textContent = 'Complete the official invoice request. No payment is taken until a verified invoice has been issued and paid.';
+        } catch (error) {
+          if (status) status.textContent = error?.message || 'The institutional request form could not be opened.';
+        }
         return;
       }
       if (!window.CampusShieldBackend?.client) {
-        status.textContent = 'Billing is unavailable because the secure backend is not configured.';
-        return;
-      }
-      if (kind === 'institution') {
-        const form = $('institutional-billing-form');
-        if (form) {
-          form.hidden = false;
-          const planField = $('institution-billing-plan');
-          if (planField) planField.value = plan;
-          const campusName = currentCampusFinanceAccess?.university_name || campusContext?.university_name;
-          const nameField = $('institution-billing-name');
-          if (nameField && campusName) {
-            nameField.value = campusName;
-            nameField.readOnly = true;
-          }
-          const periodField = $('institution-billing-period');
-          if (periodField) periodField.value = 'monthly';
-          form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          $('institution-billing-name')?.focus();
-          status.textContent = 'Complete the institutional billing request form. No payment will be taken at this stage.';
-        }
+        if (status) status.textContent = 'Billing is unavailable because the secure backend is not configured.';
         return;
       }
       button.disabled = true;
       const stagingBilling = isStagingSupabaseEnvironment();
-      button.disabled = true;
-      status.textContent = stagingBilling
+      if (status) status.textContent = stagingBilling
         ? 'Preparing secure Paystack test checkout…'
         : 'Preparing secure live Paystack checkout…';
       try {
@@ -777,12 +881,13 @@
         }
         window.location.assign(data.authorization_url);
       } catch (error) {
-        status.textContent = error?.message || 'Secure checkout is not available yet. No payment has been taken.';
+        if (status) status.textContent = error?.message || 'Secure checkout is not available yet. No payment has been taken.';
       } finally {
         button.disabled = false;
       }
     });
   });
+
 
   // Database-assigned elevated roles are authoritative; requested metadata is for onboarding only.
   function getWorkspaceAccountType(profile = currentProfile) {
