@@ -289,6 +289,7 @@ Deno.serve(async (req: Request) => {
             p_paid_at: paidAt,
             p_event_id: eventId,
             p_verified_source: "paystack_webhook",
+            p_verified_by_user_id: null,
           },
         );
 
