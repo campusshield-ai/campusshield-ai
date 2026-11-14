@@ -7,9 +7,10 @@ async function clearStoredIntro(page) {
   await page.evaluate((key) => localStorage.removeItem(key), STORAGE_KEY);
 }
 
-test("first opening shows the intro, then one Monday opening per local week", async ({ page }) => {
-  await page.clock.install({ time: new Date("2026-11-11T09:00:00") });
-  await page.clock.pauseAt(new Date("2026-11-11T09:00:00"));
+test("first opening shows the intro; repeats only after 45 days", async ({ page }) => {
+  const firstOpen = new Date("2026-11-11T09:00:00");
+  await page.clock.install({ time: firstOpen });
+  await page.clock.pauseAt(firstOpen);
   await clearStoredIntro(page);
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
 
@@ -48,44 +49,45 @@ test("first opening shows the intro, then one Monday opening per local week", as
   await expect(intro).toHaveCount(0);
 
   const savedFirstLaunch = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
-  expect(savedFirstLaunch.version).toBe("2.0.0");
-  expect(Number.isFinite(savedFirstLaunch.firstShownAt)).toBeTruthy();
-  expect(savedFirstLaunch.lastMondayShown).toBeNull();
+  expect(savedFirstLaunch.version).toBe("3.0.0");
+  expect(savedFirstLaunch.firstShownAt).toBe(firstOpen.getTime());
+  expect(savedFirstLaunch.lastShownAt).toBe(firstOpen.getTime());
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(intro).toHaveCount(0);
 
-  // First opening on Monday: show once and remember that local Monday.
-  await page.clock.setFixedTime(new Date("2026-11-16T09:00:00"));
+  // 44 days later is still inside the cooldown.
+  await page.clock.setFixedTime(new Date("2026-12-25T09:00:00"));
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(intro).toHaveCount(0);
+
+  // At 45 full days, the next app opening may show the intro again.
+  const secondOpen = new Date("2026-12-26T09:00:00");
+  await page.clock.setFixedTime(secondOpen);
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(intro).toBeVisible();
   await intro.getByRole("button", { name: /skip intro/i }).click();
-  await expect(intro).toHaveCount(0);
 
-  const mondayRecord = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
-  expect(mondayRecord.lastMondayShown).toBe("2026-11-16");
-  expect(mondayRecord.firstShownAt).toBe(savedFirstLaunch.firstShownAt);
+  const secondRecord = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+  expect(secondRecord.firstShownAt).toBe(firstOpen.getTime());
+  expect(secondRecord.lastShownAt).toBe(secondOpen.getTime());
 
-  // More opens on Monday and Tuesday do not replay the brand animation.
-  await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(intro).toHaveCount(0);
-  await page.clock.setFixedTime(new Date("2026-11-17T09:00:00"));
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(intro).toHaveCount(0);
 
-  // The first opening on the next Monday displays it again exactly once.
-  await page.clock.setFixedTime(new Date("2026-11-23T09:00:00"));
+  // A second rare repeat is also blocked until another 45 days have elapsed.
+  await page.clock.setFixedTime(new Date("2027-02-08T09:00:00"));
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(intro).toHaveCount(0);
+  await page.clock.setFixedTime(new Date("2027-02-09T09:00:00"));
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(intro).toBeVisible();
-  await intro.getByRole("button", { name: /skip intro/i }).click();
-  const nextMondayRecord = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
-  expect(nextMondayRecord.lastMondayShown).toBe("2026-11-23");
 });
 
-test("a missed Monday does not cause a delayed Tuesday introduction", async ({ page }) => {
-  const sunday = new Date("2026-11-15T09:00:00").getTime();
-  await page.clock.install({ time: new Date("2026-11-17T09:00:00") });
-  await page.clock.pauseAt(new Date("2026-11-17T09:00:00"));
+test("previous weekly records migrate without an early replay", async ({ page }) => {
+  const firstShownAt = new Date("2026-10-01T09:00:00").getTime();
+  await page.clock.install({ time: new Date("2026-12-24T12:00:00") });
+  await page.clock.pauseAt(new Date("2026-12-24T12:00:00"));
   await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
   await page.evaluate(({ key, firstShownAt }) => {
     localStorage.setItem(key, JSON.stringify({
@@ -93,31 +95,48 @@ test("a missed Monday does not cause a delayed Tuesday introduction", async ({ p
       lastMondayShown: "2026-11-09",
       version: "2.0.0"
     }));
-  }, { key: STORAGE_KEY, firstShownAt: sunday });
-  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("#campusshield-launch-intro")).toHaveCount(0);
-});
+  }, { key: STORAGE_KEY, firstShownAt });
 
-test("legacy completion records migrate without replaying on the same Monday", async ({ page }) => {
-  const legacyMonday = new Date("2026-11-16T08:00:00").getTime();
-  await page.clock.install({ time: new Date("2026-11-16T12:00:00") });
-  await page.clock.pauseAt(new Date("2026-11-16T12:00:00"));
-  await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
-  await page.evaluate(({ key, completedAt }) => {
-    localStorage.setItem(key, JSON.stringify({ completedAt, version: "1.0.0" }));
-  }, { key: STORAGE_KEY, completedAt: legacyMonday });
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   const intro = page.locator("#campusshield-launch-intro");
   await expect(intro).toHaveCount(0);
 
-  await page.clock.setFixedTime(new Date("2026-11-23T09:00:00"));
+  // The old record uses a date, not a time, so migration waits until the
+  // full 45 days have passed from the end of that Monday.
+  const eligibleOpen = new Date("2026-12-25T09:00:00");
+  await page.clock.setFixedTime(eligibleOpen);
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(intro).toBeVisible();
   await intro.getByRole("button", { name: /skip intro/i }).click();
 
-  const saved = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
-  expect(saved.firstShownAt).toBe(legacyMonday);
-  expect(saved.lastMondayShown).toBe("2026-11-23");
+  const migrated = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+  expect(migrated.version).toBe("3.0.0");
+  expect(migrated.firstShownAt).toBe(firstShownAt);
+  expect(migrated.lastShownAt).toBe(eligibleOpen.getTime());
+});
+
+test("legacy completion timestamps respect the 45-day cooldown", async ({ page }) => {
+  const completedAt = new Date("2026-11-16T08:00:00").getTime();
+  await page.clock.install({ time: new Date("2026-12-30T09:00:00") });
+  await page.clock.pauseAt(new Date("2026-12-30T09:00:00"));
+  await page.goto("/index.html?password-reset=1", { waitUntil: "domcontentloaded" });
+  await page.evaluate(({ key, completedAt }) => {
+    localStorage.setItem(key, JSON.stringify({ completedAt, version: "1.0.0" }));
+  }, { key: STORAGE_KEY, completedAt });
+
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  const intro = page.locator("#campusshield-launch-intro");
+  await expect(intro).toHaveCount(0);
+
+  await page.clock.setFixedTime(new Date("2027-01-01T09:00:00"));
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(intro).toBeVisible();
+  await intro.getByRole("button", { name: /skip intro/i }).click();
+
+  const migrated = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+  expect(migrated.version).toBe("3.0.0");
+  expect(migrated.firstShownAt).toBe(completedAt);
+  expect(migrated.lastShownAt).toBe(new Date("2027-01-01T09:00:00").getTime());
 });
 
 test("reduced motion uses a static intro and password recovery bypasses it", async ({ page }) => {

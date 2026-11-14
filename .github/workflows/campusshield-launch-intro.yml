@@ -1,4 +1,4 @@
-name: CampusShield first-launch and Monday intro checks
+name: CampusShield first-launch and rare-repeat intro checks
 
 on:
   pull_request:

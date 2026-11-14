@@ -1,4 +1,4 @@
-/* CampusShield AI — first launch + first opening every Monday. */
+/* CampusShield AI — first launch + rare 45-day repeat. */
 (() => {
   "use strict";
 
@@ -7,6 +7,7 @@
   const NORMAL_DURATION_MS = 4800;
   const REDUCED_MOTION_DURATION_MS = 1200;
   const EXIT_DURATION_MS = 280;
+  const REPEAT_INTERVAL_MS = 45 * 24 * 60 * 60 * 1000;
 
   function isPasswordRecovery() {
     const query = new URLSearchParams(window.location.search);
@@ -41,42 +42,45 @@
     return Number.isFinite(value) && value > 0 ? value : null;
   }
 
-  function lastMondayShown(record) {
+  function lastShownAt(record) {
     if (!record || typeof record !== "object") return null;
 
+    const savedTimestamp = Number(record.lastShownAt);
+    if (Number.isFinite(savedTimestamp) && savedTimestamp > 0) return savedTimestamp;
+
+    // Migrate v2 weekly records conservatively. The exact Monday time was not
+    // stored, so use the end of that local calendar day before starting the
+    // 45-day cooldown. This prevents an early repeat after migration.
     if (typeof record.lastMondayShown === "string"
       && /^\d{4}-\d{2}-\d{2}$/.test(record.lastMondayShown)) {
-      return record.lastMondayShown;
+      const [year, month, day] = record.lastMondayShown.split("-").map(Number);
+      const legacyMondayEnd = new Date(year, month - 1, day, 23, 59, 59, 999);
+      if (localDateKey(legacyMondayEnd) === record.lastMondayShown) {
+        return legacyMondayEnd.getTime();
+      }
     }
 
-    // Upgrade existing v1 records without replaying the intro twice on the
-    // same Monday. Legacy records stored only the completion timestamp.
-    const legacyCompletedAt = Number(record.completedAt);
-    if (Number.isFinite(legacyCompletedAt) && legacyCompletedAt > 0) {
-      const legacyDate = new Date(legacyCompletedAt);
-      if (legacyDate.getDay() === 1) return localDateKey(legacyDate);
-    }
-    return null;
+    // v1 records used completedAt; records that only kept firstShownAt also
+    // retain a safe cooldown rather than immediately replaying the intro.
+    const legacyTimestamp = Number(record.completedAt ?? record.firstShownAt);
+    return Number.isFinite(legacyTimestamp) && legacyTimestamp > 0
+      ? legacyTimestamp
+      : null;
   }
 
   function shouldShow(record, now) {
     // The very first app opening is always the brand introduction.
     if (!firstShownAt(record)) return true;
 
-    const today = new Date(now);
-    if (today.getDay() !== 1) return false;
-
-    // On Mondays, show only on the first app opening of that local calendar day.
-    return lastMondayShown(record) !== localDateKey(today);
+    const previousShownAt = lastShownAt(record) || firstShownAt(record);
+    return now - previousShownAt >= REPEAT_INTERVAL_MS;
   }
 
   function saveCompletion(now, previousRecord) {
-    const today = new Date(now);
-    const mondayAlreadyShown = lastMondayShown(previousRecord);
     const record = {
       firstShownAt: firstShownAt(previousRecord) || now,
-      lastMondayShown: today.getDay() === 1 ? localDateKey(today) : mondayAlreadyShown,
-      version: "2.0.0"
+      lastShownAt: now,
+      version: "3.0.0"
     };
 
     try {
