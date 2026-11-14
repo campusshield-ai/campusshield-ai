@@ -1306,6 +1306,7 @@ assert.match(featureLoader, /CampusShieldStudio\?\.mount/, "My Campus Studio mou
 assert.doesNotThrow(() => new Function(campusStudioScript), "My Campus Studio script parses");
 assert.match(campusStudioScript, /campusshield-studio:v1:/, "Studio preferences are isolated by signed-in user");
 assert.match(campusStudioScript, /campusshield:profile-ready/, "saved Studio preferences are restored after sign-in");
+assert.match(campusStudioScript, /campusshield:session-signed-out/, "Studio clears the active account theme on sign-out without deleting saved preferences");
 assert.match(campusStudioScript, /data-studio-palette|data-studio-wallpaper|data-studio-density/, "Studio exposes theme, wallpaper and layout controls");
 assert.match(campusStudioCss, /data-campus-studio-palette="ocean"/, "Studio includes independently styled colour palettes");
 assert.match(campusStudioCss, /data-campus-studio-reduced-motion="true"/, "Studio supports reduced-motion preferences");
