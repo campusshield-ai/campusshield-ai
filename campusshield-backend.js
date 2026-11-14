@@ -431,7 +431,7 @@ async getCurrentUser() {
         } catch (_ignored) {}
         throw new Error(message);
       }
-      if (!data || data.status !== "clean") {
+      if (!data || !["clean", "manual_review_required", "auto_approved"].includes(data.status)) {
         throw new Error(data?.error || data?.message || "The identity document was not accepted by the secure scanner.");
       }
       return data;
