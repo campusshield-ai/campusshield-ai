@@ -11,6 +11,10 @@
   let dashboardTimetableScriptPromise = null;
 
   const features = {
+    dashboard: {
+      scripts: ["./campusshield-campus-home.js?v=20261114-1"],
+      onEnter: () => window.CampusShieldCampusHome?.load?.()
+    },
     groups: {
       scripts: ["./campus-course-community.js"]
     },
@@ -67,6 +71,10 @@
     },
     "campus-messages": {
       scripts: ["./campus-private-messages-polish.js?v=20261112-4", "./campus-voice-notes.js"]
+    },
+    studio: {
+      scripts: ["./campusshield-studio.js?v=20261114-1"],
+      onEnter: () => window.CampusShieldStudio?.load?.()
     }
   };
 
@@ -92,6 +100,8 @@
   }
 
   function activeRoute() {
+    // Do not download signed-in workspace features while the login screen is active.
+    if (workspace.hidden) return null;
     const page = workspace.querySelector(".page.active");
     if (!page || !page.id.startsWith("page-")) return null;
     return { name: page.id.slice(5), page };
@@ -143,15 +153,111 @@
   // The dashboard's My Day card uses the timetable snapshot too. Keep the
   // timetable module out of public login startup, but load it after a verified
   // profile is ready so the signed-in dashboard is complete without navigation.
+  async function restoreSavedStudioPreferences() {
+    try {
+      const auth = window.CampusShieldBackend?.client?.auth;
+      if (!auth?.getSession) return;
+      const sessionResult = await auth.getSession();
+      const userId = sessionResult?.data?.session?.user?.id;
+      if (!userId) return;
+      const raw = localStorage.getItem("campusshield-studio:v1:" + userId);
+      if (!raw) return;
+      const prefs = JSON.parse(raw);
+      if (!prefs || typeof prefs !== "object") return;
+
+      if (!document.querySelector('link[data-campusshield-studio-style="true"]')) {
+        const style = document.createElement("link");
+        style.rel = "stylesheet";
+        style.href = "./campusshield-my-campus-studio.css?v=20261114-1";
+        style.dataset.campusshieldStudioStyle = "true";
+        document.head.appendChild(style);
+      }
+
+      const root = document.documentElement;
+      const palettes = ["emerald", "ocean", "violet", "rose", "amber"];
+      const palette = palettes.includes(prefs.palette) ? prefs.palette : "emerald";
+      const custom = /^#[0-9a-f]{6}$/i.test(String(prefs.customAccent || "")) ? prefs.customAccent : "";
+      root.dataset.campusStudioPalette = custom && prefs.palette === "custom" ? "custom" : palette;
+      ["--cs-primary","--cs-primary-strong","--cs-primary-hover","--cs-seafoam","--cs-seafoam-soft","--cs-lime"].forEach(name => root.style.removeProperty(name));
+      if (custom && prefs.palette === "custom") {
+        root.style.setProperty("--cs-primary", custom);
+        root.style.setProperty("--cs-primary-strong", custom);
+        root.style.setProperty("--cs-primary-hover", custom);
+        root.style.setProperty("--cs-seafoam", custom);
+        root.style.setProperty("--cs-seafoam-soft", "color-mix(in srgb, " + custom + " 14%, white)");
+        root.style.setProperty("--cs-lime", custom);
+      }
+      const wallpapers = ["soft","aurora","paper","midnight"];
+      root.dataset.campusStudioWallpaper = wallpapers.includes(prefs.wallpaper) ? prefs.wallpaper : "soft";
+      root.dataset.campusStudioReducedMotion = prefs.reduceMotion === true ? "true" : "false";
+      const density = ["compact","comfortable","spacious"].includes(prefs.density) ? prefs.density : "comfortable";
+      workspace.dataset.campusStudioDensity = density;
+      const scale = Math.max(90, Math.min(110, Number(prefs.fontScale) || 100)) / 100;
+      workspace.style.setProperty("--campus-studio-font-scale", String(scale));
+      const dark = prefs.appearance === "dark" ||
+        (prefs.appearance === "system" && window.matchMedia?.("(prefers-color-scheme: dark)")?.matches);
+      if (dark) root.dataset.theme = "dark";
+      else root.removeAttribute("data-theme");
+    } catch (error) {
+      console.warn("CampusShield saved appearance preferences could not be restored.", error?.message || error);
+    }
+  }
+
+  function clearStudioAppearance() {
+    const root = document.documentElement;
+    ["data-campus-studio-palette","data-campus-studio-wallpaper","data-campus-studio-reduced-motion","data-theme"].forEach(name => root.removeAttribute(name));
+    ["--cs-primary","--cs-primary-strong","--cs-primary-hover","--cs-seafoam","--cs-seafoam-soft","--cs-lime"].forEach(name => root.style.removeProperty(name));
+    workspace.removeAttribute("data-campus-studio-density");
+    workspace.style.removeProperty("--campus-studio-font-scale");
+  }
+
   window.addEventListener("campusshield:profile-ready", event => {
-    if (event.detail?.role) loadDashboardTimetable();
+    if (event.detail?.role) {
+      loadDashboardTimetable();
+      void restoreSavedStudioPreferences();
+    }
   });
+  window.addEventListener("campusshield:profile-cleared", clearStudioAppearance);
+  window.addEventListener("campusshield:session-signed-out", clearStudioAppearance);
 
   const observer = new MutationObserver(observeActiveRoute);
   observer.observe(workspace, {
     subtree: true,
     attributes: true,
-    attributeFilter: ["class"]
+    attributeFilter: ["class", "hidden"]
   });
+  observeActiveRoute();
+
+  // Add the route shell without downloading Studio code during dashboard startup.
+  // The Studio bundle and stylesheet load only when a student opens the route.
+  function ensureStudioEntry() {
+    const nav = workspace.querySelector(".nav");
+    const content = workspace.querySelector(".content");
+    if (!nav || !content) return;
+
+    if (!workspace.querySelector("#campus-studio-nav")) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.id = "campus-studio-nav";
+      button.dataset.page = "studio";
+      button.innerHTML = '<span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 4.3-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.3 16 4 20Z"/><path d="m14.5 6.5 3 3"/></svg></span>My Campus Studio';
+      const billingButton = workspace.querySelector("#billing-nav");
+      if (billingButton && billingButton.parentNode === nav) nav.insertBefore(button, billingButton);
+      else nav.appendChild(button);
+    }
+
+    if (!workspace.querySelector("#page-studio")) {
+      const page = document.createElement("section");
+      page.className = "page";
+      page.id = "page-studio";
+      page.setAttribute("aria-label", "My Campus Studio");
+      page.innerHTML = '<section class="panel"><p>My Campus Studio loads when you open this page.</p></section>';
+      const profilePage = workspace.querySelector("#page-profile-settings");
+      if (profilePage && profilePage.parentNode === content) content.insertBefore(page, profilePage);
+      else content.appendChild(page);
+    }
+  }
+
+  ensureStudioEntry();
   observeActiveRoute();
 })();

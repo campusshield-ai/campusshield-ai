@@ -1,0 +1,50 @@
+/* CampusShield AI — single-home university dashboard. */
+#workspace .campus-home-hq { margin-top:18px; padding:clamp(17px,2.4vw,25px); }
+#workspace .campus-home-hq-header { margin-bottom:17px; }
+#workspace .campus-home-hq-eyebrow { display:block; color:var(--cs-primary-strong); font-size:9px; font-weight:900; letter-spacing:1.45px; }
+#workspace .campus-home-hq-header h2 { margin:5px 0 5px; font-size:clamp(19px,2.2vw,25px); }
+#workspace .campus-home-hq-header p,
+#workspace .campus-home-today-header p { margin:0; color:var(--cs-muted); font-size:12px; line-height:1.55; }
+#workspace .campus-home-hq-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+#workspace .campus-home-group { min-width:0; padding:15px; border:1px solid var(--cs-line); border-radius:15px; background:linear-gradient(145deg,#fff,#f8fbfc); }
+#workspace .campus-home-group-head { display:flex; align-items:flex-start; gap:11px; margin-bottom:12px; }
+#workspace .campus-home-group-icon { display:grid; place-items:center; flex:0 0 36px; width:36px; height:36px; border-radius:11px; color:var(--cs-primary-strong); background:var(--cs-seafoam-soft); font-size:19px; font-weight:900; }
+#workspace .campus-home-group h3 { margin:0 0 3px; font-size:14px; }
+#workspace .campus-home-group p { margin:0; color:var(--cs-muted); font-size:10px; line-height:1.45; }
+#workspace .campus-home-group-actions { display:flex; flex-wrap:wrap; gap:7px; }
+#workspace .campus-home-action { min-height:34px; padding:7px 10px; border:1px solid var(--cs-line); border-radius:9px; color:var(--cs-ink); background:var(--cs-card); font-size:10px; font-weight:800; text-align:left; }
+#workspace .campus-home-action:hover { border-color:var(--cs-primary); color:var(--cs-primary-strong); background:var(--cs-seafoam-soft); }
+#workspace .campus-home-action.is-primary { color:#fff; border-color:var(--cs-primary-strong); background:var(--cs-primary-strong); }
+#workspace .campus-home-today { margin-top:15px; padding:16px; border:1px solid #14b8a633; border-radius:15px; background:linear-gradient(135deg,#f0fdfa,#f8fafc); }
+#workspace .campus-home-today-header { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:11px; }
+#workspace .campus-home-today-header h3 { margin:4px 0 3px; font-size:15px; }
+#workspace .campus-home-today-feed { display:grid; gap:7px; }
+#workspace .campus-home-today-item { display:grid; grid-template-columns:82px minmax(0,1fr) auto; gap:11px; align-items:center; padding:10px 11px; border:1px solid #d8e8e5; border-radius:10px; background:#ffffffc7; }
+#workspace .campus-home-today-item time { color:var(--cs-primary-strong); font-size:10px; font-weight:900; font-variant-numeric:tabular-nums; }
+#workspace .campus-home-today-item strong { display:block; color:var(--cs-ink); font-size:11px; overflow-wrap:anywhere; }
+#workspace .campus-home-today-item p { margin:3px 0 0; color:var(--cs-muted); font-size:9px; }
+#workspace .campus-home-today-item.is-completed { opacity:.65; }
+#workspace .campus-home-today-done,
+#workspace .campus-home-today-tag { color:var(--cs-primary-strong); font-size:9px; font-weight:900; white-space:nowrap; }
+#workspace .campus-home-today-empty { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin:0; padding:12px; border:1px dashed #9ccbc1; border-radius:10px; color:var(--cs-muted); background:#ffffffb5; font-size:11px; line-height:1.5; }
+#workspace .campus-home-today-status { margin:9px 0 0; color:var(--cs-muted); font-size:10px; }
+@media(max-width:760px) {
+  #workspace .campus-home-hq-grid { grid-template-columns:1fr; }
+}
+@media(max-width:520px) {
+  #workspace .campus-home-hq { padding:14px; }
+  #workspace .campus-home-group { padding:12px; }
+  #workspace .campus-home-today-header { align-items:flex-start; flex-direction:column; }
+  #workspace .campus-home-today-item { grid-template-columns:1fr auto; gap:7px 10px; }
+  #workspace .campus-home-today-item time { grid-column:1 / -1; }
+}
+html[data-theme="dark"] #workspace .campus-home-group { border-color:var(--cs-dark-border); background:var(--cs-dark-surface); }
+html[data-theme="dark"] #workspace .campus-home-group h3,
+html[data-theme="dark"] #workspace .campus-home-today-item strong { color:var(--cs-dark-heading); }
+html[data-theme="dark"] #workspace .campus-home-group p,
+html[data-theme="dark"] #workspace .campus-home-today-header p,
+html[data-theme="dark"] #workspace .campus-home-today-status { color:var(--cs-dark-muted); }
+html[data-theme="dark"] #workspace .campus-home-today { border-color:#315b48; background:linear-gradient(135deg,#102d22,#132a1f); }
+html[data-theme="dark"] #workspace .campus-home-today-item,
+html[data-theme="dark"] #workspace .campus-home-today-empty { border-color:var(--cs-dark-border); background:#0f2419; color:var(--cs-dark-text); }
+html[data-theme="dark"] #workspace .campus-home-today-item p { color:var(--cs-dark-muted); }

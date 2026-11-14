@@ -113,8 +113,13 @@ test("global search keeps recently opened destinations handy and can clear them"
     if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
     const login = document.getElementById("login-screen");
     if (login) { login.hidden = true; login.style.display = "none"; }
-    // Provide a visible destination trigger without relying on a signed-in session.
-    // This isolates the in-session recent-history behavior from auth navigation.
+  });
+
+  await expect(page.locator("#campus-global-search")).toBeVisible();
+  await expect(page.locator("#page-dashboard")).toHaveAttribute("data-feature-loaded", "true");
+  await page.evaluate(() => {
+    // Hide the real role-gated controls first, then add one fixture entry point.
+    // This isolates recent-destination history without bypassing search visibility rules.
     document.querySelectorAll('[data-page="opportunities"]').forEach(element => { element.hidden = true; });
     const trigger = document.createElement("button");
     trigger.type = "button";
@@ -153,6 +158,12 @@ test("global search respects role-gated destinations and activates an available 
     if (workspace) { workspace.hidden = false; workspace.style.display = "block"; }
     const login = document.getElementById("login-screen");
     if (login) { login.hidden = true; login.style.display = "none"; }
+
+  });
+
+  await expect(page.locator("#campus-global-search")).toBeVisible();
+  await expect(page.locator("#page-dashboard")).toHaveAttribute("data-feature-loaded", "true");
+  await page.evaluate(() => {
     document.querySelectorAll('[data-page="noticeboard"]').forEach(element => { element.hidden = true; });
   });
 
