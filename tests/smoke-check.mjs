@@ -474,7 +474,9 @@ assert.match(shieldmindMonthlyUsageMigration, /public\.record_shieldmind_usage/)
 
 assert.match(html, /id="institutional-billing-panel" hidden/);
 assert.match(html, /function canManageInstitutionalBilling\(\)/);
-assert.match(html, /if \(kind === 'institution' && !canManageInstitutionalBilling\(\)\)/);
+assert.match(appScript, /if \(!canManageInstitutionalBilling\(\)\)/);
+assert.match(appScript, /startInstitutionalPlanCheckout/);
+assert.match(appScript, /openInstitutionalBillingRequestForm/);
 
 // Both model-backed Edge Functions require an active, unexpired paid subscription.
 const chatSubscriptionGate = shieldmindFunction.indexOf('from("shieldmind_subscriptions")');
