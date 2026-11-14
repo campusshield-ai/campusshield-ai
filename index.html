@@ -4756,6 +4756,17 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
     </form>
     <div id="institutional-billing-requests" class="muted">Your submitted institutional billing requests will appear here.</div>
   </section>
+
+    <section class="panel institutional-invoice-panel" id="institutional-invoice-panel" hidden>
+      <div class="panel-heading">
+        <div><h2>University invoices</h2><p>View, pay and retrieve receipts for institutional CampusShield subscriptions at your verified university.</p></div>
+        <button class="btn secondary" type="button" id="refresh-institutional-invoices">Refresh invoices</button>
+      </div>
+      <p id="institutional-invoice-message" class="message" role="status" aria-live="polite">Institutional invoice status has not been loaded.</p>
+      <div id="institutional-invoice-list" class="institutional-invoice-list" aria-live="polite"></div>
+      <p class="muted">This workspace covers CampusShield institutional subscriptions only. Student tuition, student charges, fee receipts and individual student financial records are stored and handled separately and are not visible here.</p>
+    </section>
+
   <section class="panel">
     <h2>Payment status &amp; help</h2>
     <p id="billing-payment-message" class="message" role="status" aria-live="polite">No payment has been initiated from this screen.</p>
@@ -5276,7 +5287,7 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
       <div class="panel-heading"><div><h2>University finance appointments</h2><p>Appoint or revoke a verified Bursar, finance officer, accountant, accounts officer or treasurer for this university only.</p></div><button type="button" class="btn secondary" id="refresh-campus-finance-staff">Refresh staff</button></div>
       <p id="campus-finance-staff-message" class="muted" role="status" aria-live="polite">Loading eligible finance staff…</p>
       <div class="table-wrap"><table><thead><tr><th>Staff account</th><th>Verified position</th><th>Appointment</th><th>Action</th></tr></thead><tbody id="campus-finance-staff-rows"><tr><td colspan="4">Loading eligible staff…</td></tr></tbody></table></div>
-      <p class="muted">A finance appointment only enables institutional billing requests and request tracking. It does not permit student fee collection, payment reconciliation, refunds, incident management, staff approvals or platform administration. Hosted institutional invoice payments are not live yet.</p>
+      <p class="muted">A finance appointment enables access to institutional CampusShield invoices, secure Paystack payment and receipts for this university only. It does not permit student fee collection, tuition payments, student financial records, refunds, incident management, staff approvals or platform administration.</p>
     </section>
     <section class="panel" style="margin-top:16px">
       <div class="panel-heading"><div><h2>Evidence review history</h2><p>Audit records for this university only. “Institution confirmed” requires an authoritative source and reference.</p></div><button type="button" class="btn secondary" id="refresh-evidence-audit">Refresh history</button></div>
@@ -5298,6 +5309,16 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
       <p id="account-lifecycle-admin-message" class="message" role="status" aria-live="polite">Loading deactivated accounts…</p>
       <div class="table-wrap"><table><caption class="sr-only">Deactivated accounts awaiting reactivation or the 90-day permanent deletion deadline</caption><thead><tr><th scope="col">Account</th><th scope="col">State</th><th scope="col">Permanent deletion</th><th scope="col">Purge attempts</th><th scope="col">Action</th></tr></thead><tbody id="account-lifecycle-admin-rows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
       <p class="muted">Legacy Auth soft-deleted accounts cannot be restored through the supported Supabase Auth API. New deactivations use a reversible ban and can be restored here before the 90-day deadline.</p>
+    </section>
+
+    <section class="panel" id="platform-institutional-billing-panel">
+      <div class="panel-heading">
+        <div><h2>Institutional billing &amp; invoice issuance</h2><p>Review university billing requests, confirm agreed pricing and issue a scoped institutional invoice.</p></div>
+        <button class="btn secondary" type="button" id="refresh-platform-institutional-billing">Refresh requests</button>
+      </div>
+      <p id="platform-institutional-billing-message" class="message" role="status" aria-live="polite">Loading institutional billing requests…</p>
+      <div id="platform-institutional-billing-requests" class="platform-institutional-billing-requests"></div>
+      <p class="muted">Only platform administrators can approve and issue invoices. Invoices cover CampusShield university subscriptions, not student tuition or fees. Payment confirmation is server-verified and receipts are written to a private append-only audit log.</p>
     </section>
     <section class="panel">
       <div class="panel-heading"><div><h2>University listing requests</h2><p>Approve only after verifying the official institution name and website.</p></div><button class="btn secondary" type="button" id="platform-admin-refresh-requests">Refresh requests</button></div>
@@ -5378,16 +5399,32 @@ body.dark .campus-dm-thread-empty p,[data-theme="dark"] .campus-dm-thread-empty 
 html[data-theme="dark"] .auth-captcha-wrap{border-color:#34594d;background:#102b23;color:#e6f4ec}
 html[data-theme="dark"] .auth-captcha-message{color:#b8d1c4}
 </style>
+
+<style id="campusshield-institutional-invoice-styles">
+.institutional-invoice-panel{margin-top:18px}
+.institutional-invoice-list,.platform-institutional-billing-requests{display:grid;gap:12px}
+.institutional-invoice-card,.platform-institutional-request{border:1px solid var(--border,#dce8e2);border-radius:14px;padding:14px;background:var(--surface,#fff)}
+.institutional-invoice-amount{font-size:clamp(20px,3vw,26px);font-weight:850;color:var(--text,#173d35);margin:8px 0}
+.institutional-invoice-card .panel-heading{align-items:center;gap:10px;flex-wrap:wrap}
+.institutional-invoice-card .panel-heading h3{margin:0}
+.institutional-invoice-card .status-badge{border:1px solid var(--border,#dce8e2);border-radius:999px;padding:4px 9px;font-size:11px;text-transform:capitalize}
+.institutional-receipt{margin-top:12px;padding:12px;border-left:3px solid #21846e;background:rgba(33,132,110,.07);border-radius:8px}
+.institutional-receipt h4{margin:0 0 7px}
+.platform-institutional-request .grid{margin:10px 0}
+.platform-institutional-request textarea{min-height:76px}
+@media(max-width:640px){.institutional-invoice-card,.platform-institutional-request{padding:11px}.institutional-invoice-card .actions button,.platform-institutional-request .actions button{width:100%}}
+html[data-theme="dark"] .institutional-invoice-card,html[data-theme="dark"] .platform-institutional-request{background:var(--surface,#102b23);border-color:var(--border,#34594d)}
+</style>
 <div class="toast" id="toast" role="status"></div>
 <!-- Load dependencies BEFORE the application code. Keep these files beside this HTML file. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="./supabase-config.js" defer></script>
 <script src="./campusshield-backend.js" defer></script>
-<script src="./campusshield-feature-loader.js?v=20261113-2" defer></script>
+<script src="./campusshield-feature-loader.js?v=20261114-1" defer></script>
 <script src="./campus-qr-attendance.js" defer></script>
 
 <script type="module" src="./campus-map-loader.js"></script>
-<script src="./campusshield-app.js?v=20261113-2" defer></script>
+<script src="./campusshield-app.js?v=20261114-1" defer></script>
 <script>
 if ('serviceWorker' in navigator && window.isSecureContext) {
   window.addEventListener('load', () => {
