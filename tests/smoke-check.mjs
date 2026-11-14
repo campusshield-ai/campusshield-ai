@@ -1314,3 +1314,36 @@ assert.match(appScript, /currentProfile\?\.id|requestVersion !== authSessionVers
 assert.match(serviceWorkerSource, /STATIC_DESTINATIONS = new Set\(\["script", "style", "image", "font"\]\)/, "only static browser resources use the repeat-visit cache");
 assert.match(serviceWorkerSource, /request\.headers\.has\("authorization"\)/, "authenticated requests are excluded from the service-worker cache");
 console.log("PASS lazy feature startup and versioned static asset caching");
+
+
+// Verified university finance appointments must remain a separate, auditable
+// capability and must never be inferred from a selectable job title.
+const campusFinanceMigration = await readFile(new URL("../supabase/migrations/20261114035537_campus_finance_officer_appointments.sql", import.meta.url), "utf8");
+assert.match(campusFinanceMigration, /finance_appointment_status text NOT NULL DEFAULT 'not_appointed'/);
+assert.match(campusFinanceMigration, /finance_appointment_status = 'active'/);
+assert.match(campusFinanceMigration, /CREATE TABLE IF NOT EXISTS private\.campus_finance_appointment_audit/);
+assert.match(campusFinanceMigration, /REVOKE ALL ON TABLE private\.campus_finance_appointment_audit FROM PUBLIC, anon, authenticated/);
+assert.match(campusFinanceMigration, /private\.current_user_can_manage_institutional_billing\(university_id\)/);
+assert.match(campusFinanceMigration, /CREATE OR REPLACE FUNCTION public\.appoint_campus_finance_officer/);
+assert.match(campusFinanceMigration, /CREATE OR REPLACE FUNCTION public\.revoke_campus_finance_officer/);
+assert.match(campusFinanceMigration, /SET search_path TO ''/);
+assert.match(campusFinanceMigration, /SECURITY INVOKER/);
+assert.match(appScript, /backend\.getMyCampusFinanceAccess\(\)/);
+assert.match(appScript, /backend\.canManageInstitutionalBilling\(\)/);
+assert.match(appScript, /backend\.getMyCampusContext\(\)\.catch\(\(\) => null\)/);
+assert.match(appScript, /university_id: universityId/);
+assert.match(appScript, /data-finance-action/);
+assert.match(appScript, /finance appointment does not currently enable hosted invoice payment/i);
+assert.match(backend, /get_my_campus_finance_access/);
+assert.match(backend, /can_manage_institutional_billing/);
+assert.match(backend, /appoint_campus_finance_officer/);
+assert.match(backend, /revoke_campus_finance_officer/);
+assert.match(htmlMarkup, /id="campus-finance-staff-rows"/);
+assert.match(htmlMarkup, /id="refresh-campus-finance-staff"/);
+assert.match(htmlMarkup, /<option>Director of Finance<\/option>/);
+assert.match(htmlMarkup, /<option>Finance Officer<\/option>/);
+assert.match(htmlMarkup, /<option>Accounts Officer<\/option>/);
+assert.match(htmlMarkup, /finance-related title does not grant billing access by itself/i);
+assert.doesNotThrow(() => new Function(appScript), "finance capability UI changes parse as JavaScript");
+assert.doesNotThrow(() => new Function(backend), "finance capability backend methods parse as JavaScript");
+console.log("PASS verified campus finance officer appointment, billing scope and least-privilege safeguards");
