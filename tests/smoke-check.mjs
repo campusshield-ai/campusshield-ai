@@ -1356,6 +1356,8 @@ assert.match(institutionalInvoiceMigration, /CREATE TABLE IF NOT EXISTS private\
 assert.match(institutionalInvoiceMigration, /CREATE TABLE IF NOT EXISTS private\.campus_institutional_paystack_events/);
 assert.match(institutionalInvoiceMigration, /issue_campus_institutional_invoice/);
 assert.match(institutionalInvoiceMigration, /commit_campus_institutional_invoice_payment/);
+assert.match(institutionalInvoiceMigration, /p_verified_by_user_id uuid DEFAULT NULL/);
+assert.match(institutionalInvoiceMigration, /GRANT ALL ON TABLE public\.campus_institutional_subscriptions TO service_role/);
 assert.match(institutionalInvoiceMigration, /REVOKE ALL ON TABLE private\.campus_institutional_payment_audit FROM PUBLIC, anon, authenticated/);
 assert.match(institutionalInvoiceMigration, /GRANT EXECUTE ON FUNCTION public\.commit_campus_institutional_invoice_payment/);
 assert.match(institutionalPaymentAdmin, /can_manage_institutional_billing/);
@@ -1365,6 +1367,8 @@ assert.match(institutionalPaymentAdmin, /get_invoice_receipt/);
 assert.match(institutionalPaymentAdmin, /checkout\.paystack\.com/);
 assert.match(institutionalPaymentAdmin, /PAYSTACK_SECRET_KEY/);
 assert.match(institutionalPaymentAdmin, /CAMPUS_INSTITUTIONAL_PAYMENTS_ENABLED/);
+assert.match(institutionalPaymentAdmin, /p_verified_by_user_id: user\.id/);
+assert.match(institutionalPaymentAdmin, /latest_attempt/);
 assert.match(institutionalPaymentAdmin, /payments_enabled: paymentsEnabled/);
 assert.match(institutionalPaymentAdmin, /markAttemptForReview\(db, attemptId\)/);
 assert.match(institutionalPaymentWebhook, /Paystack-Signature/);
