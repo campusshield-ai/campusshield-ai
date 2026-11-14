@@ -283,3 +283,79 @@ html[data-theme="dark"] #page-billing .institutional-billing-footnote{
   background:#142b1e;
   color:#c1d8c7;
 }
+
+
+/* Institutional invoice issuance — responsive, overflow-safe review form */
+#platform-institutional-billing-panel,
+#platform-institutional-billing-panel *{box-sizing:border-box}
+#platform-institutional-billing-panel{min-width:0;max-width:100%;overflow:hidden}
+#platform-institutional-billing-panel .platform-institutional-billing-requests{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;min-width:0;width:100%}
+#platform-institutional-billing-panel .platform-institutional-request{
+  display:grid;gap:15px;min-width:0;width:100%;max-width:100%;padding:clamp(16px,2vw,24px);
+  border:1px solid #d6e7dc;border-radius:18px;background:linear-gradient(155deg,#fff 0%,#fbfdfb 100%);
+  box-shadow:0 9px 28px rgba(18,65,43,.055)
+}
+#platform-institutional-billing-panel .platform-institutional-request>*{min-width:0;max-width:100%}
+#platform-institutional-billing-panel .platform-institutional-request h3{margin:0;color:#163d2d;font-size:clamp(17px,2vw,21px);line-height:1.35;overflow-wrap:anywhere}
+#platform-institutional-billing-panel .platform-institutional-request>.muted{margin:0;color:#60776b;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+#platform-institutional-billing-panel .institutional-request-context{margin:0;padding:12px 14px;border:1px solid #e1ebe4;border-radius:11px;background:#f7faf8;color:#425e4e;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+#platform-institutional-billing-panel .institutional-request-context.warning{border-color:#ead8a9;background:#fffaf0;color:#765b25}
+#platform-institutional-billing-panel .institutional-invoice-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-width:0;width:100%}
+#platform-institutional-billing-panel .institutional-invoice-field{display:block;min-width:0;width:100%;max-width:100%;margin:0}
+#platform-institutional-billing-panel .institutional-invoice-field label,
+#platform-institutional-billing-panel .institutional-invoice-instructions label{display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:0;width:100%;color:#244434;font-size:13px;font-weight:750;line-height:1.45}
+#platform-institutional-billing-panel .institutional-invoice-field input,
+#platform-institutional-billing-panel .institutional-invoice-instructions textarea{
+  display:block;box-sizing:border-box;width:100%;min-width:0;max-width:100%;margin:0;
+  border:1px solid #cfe0d4;border-radius:12px;background:#fff;color:#193c2b;
+  font:inherit;font-size:14px;line-height:1.5;padding:12px 14px
+}
+#platform-institutional-billing-panel .institutional-invoice-field input{min-height:49px}
+#platform-institutional-billing-panel .institutional-invoice-field input[readonly]{background:#f2f8f4;color:#345b43;font-weight:750}
+#platform-institutional-billing-panel .institutional-invoice-field input:focus-visible,
+#platform-institutional-billing-panel .institutional-invoice-instructions textarea:focus-visible{outline:3px solid rgba(22,132,75,.18);border-color:#16834b}
+#platform-institutional-billing-panel .institutional-invoice-instructions{display:block;min-width:0;width:100%;max-width:100%;margin:0}
+#platform-institutional-billing-panel .institutional-invoice-instructions textarea{min-height:128px;resize:vertical}
+#platform-institutional-billing-panel .institutional-invoice-instructions small{display:block;margin-top:7px;color:#6c8174;font-size:11px;line-height:1.5}
+#platform-institutional-billing-panel .institutional-invoice-total{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 14px;
+  min-width:0;padding:15px 17px;border:1px solid #cfe4d5;border-radius:13px;
+  background:linear-gradient(120deg,#f0faf3,#fbfefb);color:#294c37
+}
+#platform-institutional-billing-panel .institutional-invoice-total span{font-size:12px;font-weight:800}
+#platform-institutional-billing-panel .institutional-invoice-total strong{color:#126b38;font-size:clamp(21px,2.5vw,28px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;text-align:right}
+#platform-institutional-billing-panel .institutional-invoice-total small{grid-column:1/-1;color:#698071;font-size:11px}
+#platform-institutional-billing-panel .institutional-invoice-confirm{
+  display:flex;align-items:flex-start;gap:11px;min-width:0;margin:0;padding:14px 15px;
+  border:1px solid #d8e7dc;border-radius:12px;background:#f7fbf8;color:#31523e;
+  font-size:12px;line-height:1.6;cursor:pointer
+}
+#platform-institutional-billing-panel .institutional-invoice-confirm input{flex:0 0 18px;width:18px;height:18px;margin:2px 0 0;accent-color:#168044}
+#platform-institutional-billing-panel .institutional-invoice-safety-note{margin:0;padding:11px 13px;border-left:3px solid #6eb88a;background:#f5faf6;color:#5d7666;font-size:11px;line-height:1.6}
+#platform-institutional-billing-panel .institutional-invoice-feedback{margin:0;overflow-wrap:anywhere}
+#platform-institutional-billing-panel .institutional-invoice-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0}
+#platform-institutional-billing-panel .institutional-invoice-actions .btn{min-height:46px;max-width:100%;white-space:normal}
+#platform-institutional-billing-panel .institutional-invoice-actions .btn:disabled{opacity:.55;cursor:not-allowed}
+#platform-institutional-billing-panel button:focus-visible{outline:3px solid rgba(22,132,75,.3);outline-offset:3px}
+@media(max-width:640px){
+  #platform-institutional-billing-panel .platform-institutional-request{padding:15px;border-radius:14px;gap:13px}
+  #platform-institutional-billing-panel .institutional-invoice-fields{grid-template-columns:minmax(0,1fr);gap:13px}
+  #platform-institutional-billing-panel .institutional-invoice-total{padding:13px}
+  #platform-institutional-billing-panel .institutional-invoice-actions{display:grid;grid-template-columns:minmax(0,1fr)}
+  #platform-institutional-billing-panel .institutional-invoice-actions .btn{width:100%}
+}
+html[data-theme="dark"] #platform-institutional-billing-panel .platform-institutional-request{border-color:#315541;background:linear-gradient(155deg,#142c20,#10251b);box-shadow:0 9px 28px rgba(0,0,0,.15)}
+html[data-theme="dark"] #platform-institutional-billing-panel .platform-institutional-request h3,
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-field label,
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-instructions label{color:#e1f1e5}
+html[data-theme="dark"] #platform-institutional-billing-panel .platform-institutional-request>.muted,
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-instructions small{color:#b0c7b7}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-field input,
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-instructions textarea{border-color:#365c43;background:#0d2117;color:#e6f3e9}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-field input[readonly]{background:#193726;color:#d5ead9}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-total{border-color:#315c40;background:#10291b;color:#d6efdd}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-total strong{color:#7cdda0}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-confirm,
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-invoice-safety-note{border-color:#315c40;background:#142d1d;color:#d2e7d6}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-request-context{border-color:#315541;background:#142d1e;color:#c7dfcd}
+html[data-theme="dark"] #platform-institutional-billing-panel .institutional-request-context.warning{border-color:#6d572b;background:#302817;color:#f1d89e}
