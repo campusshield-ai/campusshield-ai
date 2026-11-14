@@ -240,6 +240,8 @@
   let currentProfile = null;
   let communityProfile = null;
   let campusContext = null;
+  let currentCampusFinanceAccess = null;
+  let institutionalBillingCapability = null;
   let campusMarketplaceRows = [];
   let campusMarketplaceOwnRows = [];
   let campusOpportunityRows = [];
@@ -381,7 +383,12 @@
   }
 
   function canManageInstitutionalBilling() {
-    return currentProfile?.role === 'admin' && currentProfile?.verification_status === 'verified';
+    if (institutionalBillingCapability === true) return true;
+    if (institutionalBillingCapability === false) return false;
+    // Backward-compatible fallback while Production receives the matching RPC migration.
+    return currentProfile?.role === 'admin' &&
+      currentProfile?.verification_status === 'verified' &&
+      hasVerifiedCampusStaffMembership();
   }
 
   function syncCampusAccessNavigation() {
@@ -408,18 +415,24 @@
       const submit = $('institution-billing-submit');
       if (!canManageInstitutionalBilling()) {
         institutionBillingForm.hidden = true;
-        toast('Only verified administrators can submit institutional billing requests.');
+        toast('A verified campus administrator or separately appointed finance officer is required for this university.');
         return;
       }
       if (!currentProfile || !backend?.isConfigured) {
         status.textContent = 'Please sign in before submitting an institutional request.';
         return;
       }
-      const institutionName = String($('institution-billing-name')?.value || '').trim();
+      const verifiedCampus = currentCampusFinanceAccess || campusContext || {};
+      const universityId = verifiedCampus.university_id || null;
+      const institutionName = String(verifiedCampus.university_name || $('institution-billing-name')?.value || '').trim();
       const plan = String($('institution-billing-plan')?.value || '');
       const period = String($('institution-billing-period')?.value || 'monthly');
       const contactEmail = String($('institution-billing-email')?.value || '').trim();
       const message = String($('institution-billing-message')?.value || '').trim();
+      if (!universityId) {
+        status.textContent = 'Your verified university could not be confirmed. Refresh your campus session before submitting.';
+        return;
+      }
       if (!institutionName || !contactEmail || !['monthly','yearly'].includes(period)) {
         status.textContent = 'Complete the required fields before submitting.';
         return;
@@ -431,6 +444,7 @@
         if (userError || !user) throw new Error('Your session could not be verified. Please sign in again.');
         const { error } = await backend.client.from('campus_institutional_billing_requests').insert({
           requester_id: user.id,
+          university_id: universityId,
           institution_name: institutionName,
           requested_plan: plan,
           billing_period: period,
@@ -496,7 +510,7 @@
       const plan = button.dataset.billingPlan;
       const kind = button.dataset.billingKind;
       if (kind === 'institution' && !canManageInstitutionalBilling()) {
-        toast('Only verified administrators can access institutional billing.');
+        toast('Institutional billing requires a verified campus administrator or an appointed finance officer.');
         return;
       }
       if (!window.CampusShieldBackend?.client) {
@@ -509,6 +523,12 @@
           form.hidden = false;
           const planField = $('institution-billing-plan');
           if (planField) planField.value = plan;
+          const campusName = currentCampusFinanceAccess?.university_name || campusContext?.university_name;
+          const nameField = $('institution-billing-name');
+          if (nameField && campusName) {
+            nameField.value = campusName;
+            nameField.readOnly = true;
+          }
           const periodField = $('institution-billing-period');
           if (periodField) periodField.value = 'monthly';
           form.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -594,10 +614,14 @@
       state='approved';badge='Verified campus security';title='Campus safety operations';description='Your approved security role unlocks safety operations for your verified campus.';
       items=['Review and manage incident reports available to your security role.','Use risk analysis and incident analytics for your authorized campus.','Resolve or update incidents only through actions permitted by your role and database policies.'];
       limit='Security access does not grant staff-application approvals, institutional billing administration, campus administrator powers, or platform-wide controls.';
+    } else if(role==='teacher' && campusOk && currentCampusFinanceAccess?.university_id){
+      state='approved';badge='Appointed campus finance officer';title='University finance workspace';description='Your verified staff appointment adds a narrow finance capability for '+String(currentCampusFinanceAccess.university_name || 'your university')+'.';
+      items=['Submit and track institutional CampusShield billing requests for your own university.','Use the regular verified staff workspace, including assigned teaching/classroom tools where enabled.','Keep institution billing requests and finance communications tied to your approved campus identity.'];
+      limit='Your finance appointment does not grant invoice payment/reconciliation, refunds, student fee collection, incident management, staff approvals, campus administration or platform-wide access. The production hosted-invoice payment flow is not enabled yet.';
     } else if(role==='teacher' && campusOk){
       state='approved';badge='Verified university staff';title='University staff workspace';description='Your verified staff workspace is based on the teacher/staff system role, not your job title.';
       items=['Create and manage classroom spaces where enabled for verified teachers.','Use campus opportunities, community and student-support features available to verified staff.','Publish official campus notices where the feature and campus policies allow it.'];
-      limit='The standard staff role cannot manage/resolve incident reports, access staff-review queues, administer institutional billing, or grant campus/platform administrator access. Security-console access requires a separate security-role assignment.';
+      limit='The standard staff role cannot manage/resolve incident reports, access staff-review queues, administer institutional billing, or grant campus/platform administrator access. A verified Bursar/Finance staff member needs a separate campus-admin appointment to access institutional billing requests. Security-console access requires a separate security-role assignment.';
     } else if(['teacher','security','admin'].includes(role) && !campusOk){
       state='restricted';badge='Campus membership not verified';title='Campus access is not fully enabled';description='Your account exists, but the campus membership required for these tools is not currently verified.';
       items=['Check your account and identity-verification status.','Contact the authorized administrator for your campus if the membership status is incorrect.','Only use actions currently shown and permitted for your account.'];
@@ -628,26 +652,61 @@
         if (!currentProfile || (profileId && currentProfile.id !== profileId)) return;
         currentStaffPosition = String(row?.position_title || '').trim();
       }
+      const [financeAccess, billingCapability] = await Promise.all([
+        backend.getMyCampusFinanceAccess().catch(() => null),
+        backend.canManageInstitutionalBilling().catch(() => null)
+      ]);
+      if (!currentProfile || (profileId && currentProfile.id !== profileId)) return;
+      currentCampusFinanceAccess = financeAccess || null;
+      institutionalBillingCapability = typeof billingCapability === 'boolean' ? billingCapability : null;
+      const billingPanel = $('institutional-billing-panel');
+      if (billingPanel) billingPanel.hidden = !canManageInstitutionalBilling();
+      if (canManageInstitutionalBilling()) await loadInstitutionalBillingRequests();
       renderRoleAccessSummary(metadata);
     } catch (_) {
       renderRoleAccessSummary();
     }
   }
   function updateStaffPositionAccessPreview() {
-    const preview=$('staff-position-access-preview'), role=$('auth-role'), position=String($('auth-staff-position')?.value||'').trim();
-    if(!preview||!role)return;
-    preview.hidden=authMode!=='signup'||role.value!=='teacher';if(preview.hidden)return;
-    const security=position.toLowerCase()==='security staff';
-    const leadership=['vice-chancellor','deputy vice-chancellor','registrar','bursar','university librarian','dean','head of department'].includes(position.toLowerCase());
-    $('staff-position-access-title').textContent=position?position+': access after approval':'What your staff position means';
-    $('staff-position-access-description').textContent=position?'Your selected position is saved for verification. After staff identity and campus membership are approved, the standard staff workspace is enabled.':'Choose your university appointment. Every listed position follows the same staff-verification and least-privilege process.';
-    const items=['Use classroom tools, campus opportunities, student-support features and official notices where enabled for verified staff.','Submit and track your own staff identity-verification application.','See only pages and actions allowed by your approved system role and verified campus membership.'];
-    $('staff-position-access-list').replaceChildren(...items.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
-    $('staff-position-access-limit').textContent=security
-      ? 'Security staff: this title alone does not unlock incident management, report resolution or risk analytics. A trusted administrator must separately provision the security system role.'
-      : leadership
-        ? 'Leadership/administration: this title and the campus-admin request checkbox do not grant campus administrator powers. A separate authorized appointment is required.'
-        : 'A job title never grants incident-management, risk-analysis, staff-approval, institutional-billing or administrator permissions. Those require separate system-role authorization.';
+    const preview = $('staff-position-access-preview');
+    const role = $('auth-role');
+    const position = String($('auth-staff-position')?.value || '').trim();
+    if (!preview || !role) return;
+    preview.hidden = authMode !== 'signup' || role.value !== 'teacher';
+    if (preview.hidden) return;
+
+    const normalized = position.toLowerCase();
+    const security = /security/.test(normalized);
+    const finance = /(bursar|finance|accountant|accounts|treasurer)/.test(normalized);
+    const leadership = /(vice-chancellor|registrar|deputy|dean|head of department|director)/.test(normalized);
+    $('staff-position-access-title').textContent = position ? position + ': access after approval' : 'What your staff position means';
+    $('staff-position-access-description').textContent = position
+      ? 'Your selected position is stored for identity review. Your approved system role and a separate campus appointment determine protected access.'
+      : 'Choose the position that matches your university appointment. Every staff applicant completes the same identity-verification process.';
+
+    const items = finance
+      ? [
+          'First complete staff identity verification and obtain an approved, active university membership.',
+          'A verified campus administrator may then appoint you separately as a finance officer for that university.',
+          'That appointment currently allows institutional billing requests and request tracking only.'
+        ]
+      : [
+          'Use the verified staff workspace, including assigned classrooms, academic support, opportunities and official notices where enabled.',
+          'Submit and track your own staff identity-verification application.',
+          'See only the tools enabled for your approved system role and verified campus membership.'
+        ];
+    $('staff-position-access-list').replaceChildren(...items.map(text => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      return li;
+    }));
+    $('staff-position-access-limit').textContent = finance
+      ? 'Finance appointment does not currently enable hosted invoice payment, student fee collection, payment reconciliation, refunds, incident management or campus administration. A job title alone never grants billing access.'
+      : security
+        ? 'Security staff: this title alone does not unlock incident management, report resolution or risk analytics. A trusted administrator must separately provision the security system role.'
+        : leadership
+          ? 'Leadership/administration: this title and the campus-admin request checkbox do not grant campus administrator powers. A separate authorized appointment is required.'
+          : 'A job title never grants incident-management, risk-analysis, staff-approval, institutional-billing or administrator permissions. Those require separate system-role authorization.';
   }
 
   function hideSessionRestore() {
@@ -703,6 +762,8 @@
     currentProfile = profile;
     hideSessionRestore();
     currentStaffPosition = '';
+    currentCampusFinanceAccess = null;
+    institutionalBillingCapability = null;
     studentIdentitySubmission = null;
     renderRoleAccessSummary();
     scheduleWorkspaceTask(loadRoleAccessSummaryContext);
