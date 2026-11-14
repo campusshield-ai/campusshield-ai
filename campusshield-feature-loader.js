@@ -68,6 +68,11 @@
     "campus-messages": {
       scripts: ["./campus-private-messages-polish.js?v=20261112-4", "./campus-voice-notes.js"]
     }
+    ,
+    studio: {
+      scripts: ["./campusshield-studio.js?v=20261114-1"],
+      onEnter: () => window.CampusShieldStudio?.load?.()
+    }
   };
 
   function loadScript(source) {
@@ -154,4 +159,10 @@
     attributeFilter: ["class"]
   });
   observeActiveRoute();
+
+  // Mount the preference studio after the authenticated workspace shell exists.
+  // Appearance settings do not grant access to paid or university-only features.
+  void loadScript("./campusshield-studio.js?v=20261114-1")
+    .then(() => window.CampusShieldStudio?.mount?.())
+    .catch(error => console.warn("CampusShield Studio could not initialise.", error?.message || error));
 })();
