@@ -168,7 +168,8 @@ Deno.serve(async (req: Request) => {
           latest_attempt: latestAttempt.get(invoice.id) || null,
         })),
         university_name: campus.university_name || null,
-        payments_enabled: paymentsEnabled,
+        payments_enabled: paymentsEnabled && !!paystack &&
+          paystack.startsWith("sk_" + expectedDomain + "_"),
       });
     }
 
