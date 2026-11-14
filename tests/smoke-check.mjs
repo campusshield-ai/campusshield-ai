@@ -354,7 +354,7 @@ const studentIdentityRead = appScript.match(/\.from\('student_identity_verificat
 assert.ok(studentIdentityRead, "student identity review query remains present");
 assert.ok(studentIdentityRead[1].split(',').map((field) => field.trim()).includes("institution_name"), "student identity review reads the submitted institution");
 assert.ok(!studentIdentityRead[1].split(',').map((field) => field.trim()).includes("university_id"), "student identity review does not request a column absent from Production");
-assert.equal(configuredSupabaseProject("localhost"), "hywcpnoqqhxvujnimhxl.supabase.co", "local development remains isolated on Staging");
+assert.equal(new URL(configuredSupabaseSettings("localhost").url).hostname, "hywcpnoqqhxvujnimhxl.supabase.co", "local development remains isolated on Staging");
 
 const supabasePrimarySdkTag = htmlMarkup.indexOf('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>');
 const supabaseFallbackSdkTag = htmlMarkup.indexOf('<script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>');
