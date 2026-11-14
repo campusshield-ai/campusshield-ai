@@ -86,7 +86,10 @@ const offlinePage = await readFile(new URL("../offline.html", import.meta.url), 
 const privacyPage = await readFile(new URL("../privacy.html", import.meta.url), "utf8");
 const termsPage = await readFile(new URL("../terms.html", import.meta.url), "utf8");
 const contactPage = await readFile(new URL("../contact.html", import.meta.url), "utf8");
-const inlineScripts = [...htmlMarkup.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((match) => match[1]).filter((value) => value.trim());
+const inlineScripts = [...htmlMarkup.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)]
+  .filter((match) => !/type=["']application\/ld\+json["']/i.test(match[1]))
+  .map((match) => match[2])
+  .filter((value) => value.trim());
 
 
 assert.match(htmlMarkup, /<link rel="canonical" href="https:\/\/campusshield-ai\.github\.io\/campusshield-ai\/">/,
