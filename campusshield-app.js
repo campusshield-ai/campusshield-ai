@@ -487,7 +487,7 @@
       const { data: { user }, error: userError } = await backend.client.auth.getUser();
       if (userError || !user) throw new Error('Session could not be verified.');
       const { data, error } = await backend.client.from('campus_institutional_billing_requests')
-        .select('institution_name,requested_plan,billing_period,status,created_at')
+        .select('institution_name,requested_plan,billing_period,status,created_at,message')
         .eq('requester_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -503,7 +503,10 @@
         const title = document.createElement('strong');
         title.textContent = item.institution_name + ' · ' + item.requested_plan.replace(/-/g, ' ');
         const detail = document.createElement('p');
-        detail.textContent = item.billing_period + ' · ' + item.status + ' · ' + new Date(item.created_at).toLocaleDateString();
+        const requestKind = String(item.message || '').startsWith('CONSULTATION REQUEST')
+          ? 'Consultation'
+          : 'Subscription / invoice';
+        detail.textContent = requestKind + ' · ' + item.billing_period + ' · ' + item.status + ' · ' + new Date(item.created_at).toLocaleDateString();
         card.append(title, detail);
         container.appendChild(card);
       });
@@ -4324,7 +4327,7 @@
         message.textContent = 'No institutional billing requests are waiting for invoice issuance.';
         return;
       }
-      message.textContent = 'Review the institution, authorised billing contact, requested package and procurement context before issuing an invoice. Server-side pricing and permissions remain authoritative.';
+      message.textContent = 'Subscription / invoice requests include the invoice review form. Consultation-only enquiries are shown separately and must be discussed with the institution before any invoice is requested.';
       const money = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 });
       const localDate = (date = new Date()) => {
         const year = date.getFullYear();
