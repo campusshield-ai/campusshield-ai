@@ -159,9 +159,36 @@
   });
   observeActiveRoute();
 
-  // Mount the preference studio after the authenticated workspace shell exists.
-  // Appearance settings do not grant access to paid or university-only features.
-  void loadScript("./campusshield-studio.js?v=20261114-1")
-    .then(() => window.CampusShieldStudio?.mount?.())
-    .catch(error => console.warn("CampusShield Studio could not initialise.", error?.message || error));
+  // Add the route shell without downloading Studio code during dashboard startup.
+  // The Studio bundle and stylesheet load only when a student opens the route.
+  function ensureStudioEntry() {
+    const nav = workspace.querySelector(".nav");
+    const content = workspace.querySelector(".content");
+    if (!nav || !content) return;
+
+    if (!workspace.querySelector("#campus-studio-nav")) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.id = "campus-studio-nav";
+      button.dataset.page = "studio";
+      button.innerHTML = '<span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 4.3-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.3 16 4 20Z"/><path d="m14.5 6.5 3 3"/></svg></span>My Campus Studio';
+      const billingButton = workspace.querySelector("#billing-nav");
+      if (billingButton && billingButton.parentNode === nav) nav.insertBefore(button, billingButton);
+      else nav.appendChild(button);
+    }
+
+    if (!workspace.querySelector("#page-studio")) {
+      const page = document.createElement("section");
+      page.className = "page";
+      page.id = "page-studio";
+      page.setAttribute("aria-label", "My Campus Studio");
+      page.innerHTML = '<section class="panel"><p>My Campus Studio loads when you open this page.</p></section>';
+      const profilePage = workspace.querySelector("#page-profile-settings");
+      if (profilePage && profilePage.parentNode === content) content.insertBefore(page, profilePage);
+      else content.appendChild(page);
+    }
+  }
+
+  ensureStudioEntry();
+  observeActiveRoute();
 })();
