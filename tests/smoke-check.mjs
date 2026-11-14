@@ -1342,6 +1342,7 @@ assert.match(htmlMarkup, /id="campus-finance-staff-rows"/);
 assert.match(htmlMarkup, /id="refresh-campus-finance-staff"/);
 assert.match(htmlMarkup, /<option>Director of Finance<\/option>/);
 assert.match(htmlMarkup, /<option>Finance Officer<\/option>/);
+assert.match(htmlMarkup, /<option>Accounts Officer<\/option>/);
 assert.match(htmlMarkup, /finance-related title does not grant billing access by itself/i);
 assert.doesNotThrow(() => new Function(appScript), "finance capability UI changes parse as JavaScript");
 assert.doesNotThrow(() => new Function(backend), "finance capability backend methods parse as JavaScript");
