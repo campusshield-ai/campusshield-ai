@@ -15,6 +15,7 @@
   let storageKey = "";
   let mounted = false;
   let mediaQuery = null;
+  let loadSequence = 0;
   const $ = id => document.getElementById(id);
 
   function getUserId() {
@@ -214,6 +215,7 @@
   }
 
   async function load() {
+    const sequence = ++loadSequence;
     state = Object.assign({}, DEFAULTS);
     const page = ensurePage();
     if (!page) return;
@@ -223,6 +225,7 @@
     if (title && page.classList.contains("active")) title.textContent = "My Campus Studio";
     try {
       const userId = await getUserId();
+      if (sequence !== loadSequence) return;
       storageKey = userId ? STORAGE_PREFIX + userId : "";
       if (storageKey) {
         const raw = localStorage.getItem(storageKey);
@@ -233,10 +236,11 @@
         setStatus("Changes can be previewed now. Sign in again to save preferences.", true);
       }
     } catch (_error) {
+      if (sequence !== loadSequence) return;
       state = Object.assign({}, DEFAULTS);
       setStatus("Preferences could not be loaded. You can still preview this Studio session.", true);
     }
-    apply();
+    if (sequence === loadSequence) apply();
   }
 
   function mount() {
@@ -253,6 +257,12 @@
     });
     window.addEventListener("campusshield:profile-ready", event => {
       if (event.detail?.role) void load();
+    });
+    window.addEventListener("campusshield:session-signed-out", () => {
+      loadSequence++;
+      storageKey = "";
+      state = Object.assign({}, DEFAULTS);
+      apply();
     });
   }
 
