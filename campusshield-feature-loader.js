@@ -67,8 +67,7 @@
     },
     "campus-messages": {
       scripts: ["./campus-private-messages-polish.js?v=20261112-4", "./campus-voice-notes.js"]
-    }
-    ,
+    },
     studio: {
       scripts: ["./campusshield-studio.js?v=20261114-1"],
       onEnter: () => window.CampusShieldStudio?.load?.()
