@@ -1330,6 +1330,7 @@ assert.match(campusFinanceMigration, /SET search_path TO ''/);
 assert.match(campusFinanceMigration, /SECURITY INVOKER/);
 assert.match(appScript, /backend\.getMyCampusFinanceAccess\(\)/);
 assert.match(appScript, /backend\.canManageInstitutionalBilling\(\)/);
+assert.match(appScript, /backend\.getMyCampusContext\(\)\.catch\(\(\) => null\)/);
 assert.match(appScript, /university_id: universityId/);
 assert.match(appScript, /data-finance-action/);
 assert.match(appScript, /finance appointment does not currently enable hosted invoice payment/i);
