@@ -880,8 +880,6 @@
       if (billingPanel) billingPanel.hidden = !canManageInstitutionalBilling();
       const invoicePanel = $('institutional-invoice-panel');
       if (invoicePanel) invoicePanel.hidden = !canManageInstitutionalBilling();
-      const invoicePanel = $('institutional-invoice-panel');
-      if (invoicePanel) invoicePanel.hidden = !canManageInstitutionalBilling();
       if (canManageInstitutionalBilling()) {
         await Promise.all([loadInstitutionalBillingRequests(), loadInstitutionalInvoices()]);
       }
