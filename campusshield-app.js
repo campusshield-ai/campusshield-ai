@@ -1097,6 +1097,12 @@
       /[^A-Za-z0-9]/.test(password);
   }
 
+  function syncStudentUniversityEmailHint() {
+    const hint = $('auth-email-help');
+    if (!hint) return;
+    hint.hidden = authMode !== 'signup' || identityCompletionMode || $('auth-role')?.value !== 'student';
+  }
+
   function setAuthMode(mode) {
     authMode = mode === 'signup' ? 'signup' : mode === 'reset' ? 'reset' : 'signin';
     const isSignUp = authMode === 'signup';
@@ -1114,6 +1120,7 @@
     $('auth-tabs').hidden = isReset || identityCompletionMode;
     $('auth-email-field').hidden = isReset || identityCompletionMode;
     $('auth-email').required = !isReset && !identityCompletionMode;
+    syncStudentUniversityEmailHint();
     $('auth-password-field').hidden = isReset || identityCompletionMode;
     $('auth-password').required = !isReset && !identityCompletionMode;
     $('password-reset-fields').hidden = !isReset;
@@ -1186,6 +1193,7 @@
 
   $('auth-role').addEventListener('change', () => {
     syncSignupRoleFields();
+    syncStudentUniversityEmailHint();
     updateStaffPositionAccessPreview();
     $('signup-student-identity-panel').hidden = authMode !== 'signup' || ($('auth-role').value === 'teacher' && !identityCompletionMode);
     const selected = $('auth-university').selectedOptions?.[0];
