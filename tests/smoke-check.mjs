@@ -1039,7 +1039,7 @@ assert.match(appScript, /function syncStudentUniversityEmailHint/,
   "the university-email guidance follows the student signup role");
 assert.match(appScript, /authMode !== 'signup' \|\| identityCompletionMode/,
   "university-email guidance is hidden outside new student registration");
-assert.match(nigeriaUniversityVerificationDocs, /NERD Limited as system operator/,
+assert.match(nigeriaUniversityVerificationDocs, /NERD Limited shall be the system operator/,
   "the national integration documents reflect the operator structure in the gazetted NERD policy");
 assert.match(nigeriaUniversityVerificationDocs, /secretariat@ned\.gov\.ng/,
   "the official national NERD contact route is documented");
