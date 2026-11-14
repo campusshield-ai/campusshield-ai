@@ -108,3 +108,178 @@ html[data-theme="dark"] #page-billing #institutional-billing-form{border-color:#
 #page-billing .institutional-plan-command .btn:hover{background:#d0f5d8!important}
 html[data-theme="dark"] #page-billing .institutional-plan-command{border-color:#367b55!important;background:linear-gradient(155deg,#0a2b20 0%,#103c2a 58%,#0c3023 100%)!important}
 @media(max-width:560px){#page-billing .institutional-plan-command{min-height:0}}
+
+
+/* Professional payment and subscription presentation — additive, no checkout logic changes */
+#page-billing .shieldmind-prices:not(.institutional-plan-grid){
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:13px;
+  align-items:stretch;
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  min-width:0;
+  padding:19px 16px 16px;
+  border:1px solid #dce9e3;
+  border-radius:16px;
+  background:linear-gradient(160deg,#fff 0%,#f8fbf9 100%);
+  box-shadow:0 8px 24px rgba(20,58,46,.055);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price:hover{
+  transform:translateY(-3px);
+  border-color:#91c9b1;
+  box-shadow:0 14px 30px rgba(20,80,58,.10);
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price strong{
+  color:#174a3b;
+  font-size:13px;
+  font-weight:850;
+  letter-spacing:.01em;
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price>b{
+  color:#102f3a;
+  font-size:clamp(25px,2.2vw,31px);
+  font-weight:900;
+  letter-spacing:-.055em;
+  line-height:1.1;
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price>span{
+  color:#647a72;
+  font-size:10px;
+  line-height:1.55;
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price>small{
+  display:block;
+  min-height:34px;
+  padding-top:9px;
+  border-top:1px solid #e7efea;
+  color:#536d61;
+  font-size:10px;
+  line-height:1.55;
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price .btn{
+  width:100%;
+  min-height:43px;
+  margin-top:auto;
+  border:1px solid #1a715a;
+  border-radius:10px;
+  background:linear-gradient(135deg,#176b56,#124c4b);
+  color:#fff;
+  font-size:11px;
+  font-weight:850;
+  box-shadow:0 5px 12px rgba(18,76,75,.13);
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price .btn:hover{
+  background:linear-gradient(135deg,#208269,#155b59);
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price .btn:focus-visible,
+#page-billing .institutional-plan-card .btn:focus-visible{
+  outline:3px solid #58b99b;
+  outline-offset:3px;
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price.premium:nth-child(3){
+  border-color:#77bda0;
+  background:linear-gradient(160deg,#f2fbf6,#fff 80%);
+}
+#page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price.premium:nth-child(3):after{
+  content:"POPULAR";
+  position:absolute;
+  top:11px;
+  right:11px;
+  padding:4px 7px;
+  border:1px solid #c8e6d6;
+  border-radius:999px;
+  background:#eaf7ef;
+  color:#26734f;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+#page-billing #billing-ai-status,
+#page-billing #billing-payment-message{
+  padding:12px 14px;
+  border:1px solid #dceae2;
+  border-radius:11px;
+  background:#f6faf7;
+  color:#466557;
+  font-size:12px;
+  line-height:1.6;
+}
+#page-billing .institutional-plan-card{
+  box-shadow:0 8px 25px rgba(18,62,43,.055);
+}
+#page-billing .institutional-plan-card:not(.institutional-plan-command) .btn{
+  width:100%;
+  border-radius:10px;
+  font-weight:850;
+}
+#page-billing .institutional-plan-card:not(.institutional-plan-command)>b{
+  color:#123d32;
+  letter-spacing:-.055em;
+}
+#page-billing .institutional-plan-card:not(.institutional-plan-command)>span:not(.institutional-plan-tag){
+  color:#5e7769;
+  font-size:11px;
+  font-weight:750;
+}
+#page-billing .institutional-plan-card .institutional-plan-tag{
+  letter-spacing:.09em;
+}
+#page-billing .institutional-plan-card .institutional-plan-outcome{
+  min-height:58px;
+}
+#page-billing .institutional-scope-note{
+  border:1px solid #dcebe1;
+  border-left:3px solid #69b77e;
+}
+#page-billing .institutional-billing-footnote{
+  padding:12px 14px;
+  border:1px solid #e0ebe4;
+  border-radius:11px;
+  background:#f8fbf9;
+  color:#5d7568;
+}
+@media(max-width:1120px){
+  #page-billing .shieldmind-prices:not(.institutional-plan-grid){grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  #page-billing .shieldmind-prices:not(.institutional-plan-grid){grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price{padding:16px 13px}
+}
+@media(max-width:430px){
+  #page-billing .shieldmind-prices:not(.institutional-plan-grid){grid-template-columns:minmax(0,1fr)}
+  #page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price{padding:17px}
+  #page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price>small{min-height:0}
+}
+html[data-theme="dark"] #page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price{
+  border-color:#315542;
+  background:linear-gradient(160deg,#142e22,#10271e);
+  box-shadow:0 8px 24px rgba(0,0,0,.14);
+}
+html[data-theme="dark"] #page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price strong,
+html[data-theme="dark"] #page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price>b{
+  color:#e4f5e9;
+}
+html[data-theme="dark"] #page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price>span,
+html[data-theme="dark"] #page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price>small{
+  color:#b4cdbb;
+}
+html[data-theme="dark"] #page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price>small{
+  border-color:#2d4937;
+}
+html[data-theme="dark"] #page-billing .shieldmind-prices:not(.institutional-plan-grid) .shieldmind-price.premium:nth-child(3){
+  border-color:#397b58;
+  background:linear-gradient(160deg,#183c2a,#142e22 80%);
+}
+html[data-theme="dark"] #page-billing #billing-ai-status,
+html[data-theme="dark"] #page-billing #billing-payment-message,
+html[data-theme="dark"] #page-billing .institutional-billing-footnote{
+  border-color:#315542;
+  background:#142b1e;
+  color:#c1d8c7;
+}
